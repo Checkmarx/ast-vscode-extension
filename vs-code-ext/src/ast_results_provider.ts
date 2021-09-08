@@ -28,8 +28,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
 
   private _onDidChangeTreeData: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
   readonly onDidChangeTreeData: vscode.Event<undefined> = this._onDidChangeTreeData.event;
-
-  refresh(): void {
+  constructor() {
+    let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(__dirname, '/ast-results.json'),false,false,false);
+    fileWatcher.onDidChange(() => {
+      this.refresh();
+      this.getChildren();
+    });
+  }
+  refresh(): void {    
     this._onDidChangeTreeData.fire();
   }
 

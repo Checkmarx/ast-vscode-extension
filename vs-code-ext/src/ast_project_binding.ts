@@ -5,18 +5,20 @@ import * as CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxSc
 import * as path from 'path';
 import * as fs from 'fs';
 import { CxResultType } from '@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxResultType';
+import { AstResultsProvider } from './ast_results_provider';
 
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'astProjectView';
 	private _view?: vscode.WebviewView;
-	private projectID: string = "";
 	private scanID: string = "";
-	private projectList: Array<any> = [];
 	private scanList: Array<any> = [];
 	
 	constructor(
 		private readonly _extensionUri: vscode.Uri
-	) { 
+	) {
+		if(!this.scanID) {
+			this.loadResults(this.scanID);
+		}
 		this.refresh();
 	}
 
@@ -40,11 +42,6 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		return config;
 	}
 
-	public getProjectList() {
-		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
-		return cx.projectList();
-	}
-
 	public getScanList() {
 		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
 		return cx.scanList();
@@ -65,31 +62,17 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		};
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
-				case 'pickedProject':
-					this.projectID = data.projectID;
-					this.scanID = "";
-					this.loadScanList();
-					break;
 				case 'pickedScan':
 					this.scanID = data.scanID;
 					break;
-				case 'loadScan':
-					vscode.window.showInformationMessage('Loading Results data!');
+				case 'loadASTResults':
+					console.log("scanID from submitted request: ",this.scanID);	
+					vscode.window.showInformationMessage('Loading Results data for ID:', data.scanID);
+					this.scanID = data.scanID;
 					this.loadResults(this.scanID);
-					vscode.window.showInformationMessage('Results data Loaded!');
-					
-					// Do something....
 					break;
 			}
 		});
-		// Fetch the current project list
-		this.getProjectList().then((projects) => {
-			this.projectList = projects.scanObjectList;
-		}).then(() => {
-			webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-		}).catch((res) => {
-			vscode.window.showInformationMessage('Error communicating with AST server!');
-		});		
 	}
 	async loadResults(scanID: string) {
 		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
@@ -98,19 +81,32 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		console.log(resultData);
 	}
 
+	async resultsExist(scanID: string) {
+		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
+		const result = await cx.getResultsList(scanID);
+		console.log(result);
+		if(result.length>20) {
+			return true;
+		}
+		else{
+		return false;
+		}
+		
+	}
+
 	private loadScanList() {
 		this.getScanList().then((scans) => {
 			this.scanList = scans.scanObjectList;
 			let filterList: Array<CxScan.default> = [];
-			// Filter for the currently selected project
-			this.scanList.forEach((value) => {
-				if (value.ProjectID === this.projectID) {
-					const d = new Date(value.CreatedAt);
-					value.CreatedAt = d.toLocaleDateString();
-					value.CreatedAt += " " + d.toLocaleTimeString();
-					filterList.push(value);
+			for( var value of this.scanList){
+				if(value.Status === "Completed" && this.resultsExist(value.ID)) {
+					this.scanID = value.ID;
+					this.loadResults(this.scanID);
+					break;
 				}
-			});
+
+			}
+
 			this.scanList = filterList;
 			this.refresh();
 		}).catch((res) => {
@@ -119,8 +115,11 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
+		if(!this.scanID){
+			this.loadScanList();
+		}
 		console.log("GETTING HTML FOR VIEW");
-		let html = `
+		return `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
@@ -157,25 +156,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					<div class="labelField">
 						Scans
 					</div>
-					<div class="ctrlField">`;
-			if (this.scanList.length > 0) {
-				html += `<select onchange="pickedScan(this.value)">`;
-				html += `  <option value="0">Choose Scan</option>`;			
-			} else {
-				html += `<select disabled>`;
-				html += `  <option value="0">Choose Project First</option>`;			
-			}
-			for (let result of this.scanList) {
-				let scanID = result.ID;
-				let date = result.CreatedAt;
-				if(this.scanID === result.ID) {
-					html += `  <option value="${scanID}" selected>${date}</option>`;					
-				} else {
-					html += `  <option value="${scanID}">${date}</option>`;
-				}
-			}
-			html +=	`
-						</select>
+					<div class="ctrlField">
+				 <input type="text" id="scanIDTest" value="${this.scanID}">Please enter scanID</input>
 					</div>
 				</div>
 				<!-- The "Load" button -->
@@ -183,43 +165,36 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					<div class="labelField">
 						&nbsp;
 					</div>
-					<div class="ctrlField">
-						<input id="loadScanBtn"
-									 onclick="loadScan()"
-									 type="button" 
-									 value="Load" 
-									 disabled
-									 class="loadScanBtn"/>
-					</div>
-				</div>
-				<script>
+					<script>
 					const vscode = acquireVsCodeApi();
-					function pickedProject(projectID) {	
+					function loadScan() {
 						vscode.postMessage({
-							command: 'pickedProject',
-							projectID: projectID
-						})
-					}
-					function pickedScan(scanID) {	
-						if (scanID != "0") {
-							document.getElementById('loadScanBtn').removeAttribute('disabled');
-						} else {
-							document.getElementById('loadScanBtn').setAttribute('disabled', true);
-						}
-						vscode.postMessage({
-							command: 'pickedScan',
+							command: 'loadScan',
 							scanID: scanID
 						})
 					}
-					function loadScan() {
+					function loadASTResults() {
+						let scanID =document.getElementById("scanIDTest").value
 						vscode.postMessage({
-							command: 'loadScan'
+							command: 'loadASTResults',
+							scanID: scanID
 						})
 					}
     		</script>
+				
+					<div class="ctrlField">
+						<input id="loadScanBtn"
+									 onclick="loadASTResults()"
+									 type="button" 
+									 value="Load" 
+									 class="loadScanBtn"/>
+					</div>
+				</div>
+				
 			</body>
 		</html>
 		`;
-		return html;
 	}
 }
+
+
