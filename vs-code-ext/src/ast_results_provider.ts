@@ -28,13 +28,13 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
 
   private _onDidChangeTreeData: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
   readonly onDidChangeTreeData: vscode.Event<undefined> = this._onDidChangeTreeData.event;
-  constructor() {
-    let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(__dirname, '/ast-results.json'),false,false,false);
-    fileWatcher.onDidChange(() => {
-      this.refresh();
-      this.getChildren();
-    });
-  }
+  // constructor() {
+  //   let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(__dirname, '/ast-results.json'),false,false,false);
+  //   fileWatcher.onDidChange(() => {
+  //     this.refresh();
+  //     this.getChildren();
+  //   });
+  // }
   refresh(): void {    
     this._onDidChangeTreeData.fire();
   }
@@ -105,23 +105,29 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     
     for (let result of results) {
       if (result.type === ResultNodeType.sast) {
+        result.contextValue = "sastNode";
+      } else if(result.type === ResultNodeType.kics){
+        result.contextValue = "kicsNode";
+      } else if(result.type === ResultNodeType.sca){
+        result.contextValue = "scaNode";
+      }
         if (this.issueFilter === IssueFilter.fileName && result.fileName === element.fileName) { 
-          result.contextValue = "sastNode";
+          //result.contextValue = "sastNode";
           items.push(result);
         }
         if (this.issueFilter === IssueFilter.severity && result.severity === element.severity) { 
-          result.contextValue = "sastNode";
+          //result.contextValue = "sastNode";
           items.push(result);
         }
         if (this.issueFilter === IssueFilter.status && result.status === element.status) { 
-          result.contextValue = "sastNode";
+          //result.contextValue = "sastNode";
           items.push(result);
         }
         if (this.issueFilter === IssueFilter.language && result.language === element.language) { 
-          result.contextValue = "sastNode";
+          //result.contextValue = "sastNode";
           items.push(result);
         }
-      }      
+            
     }
     return items;
   }
@@ -132,7 +138,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     for (let result of results) {
       if (result.type === vulnType) {  
         result.contextValue = "sastNode";
-        this.sortByFilename(result);
+        this.sortByFilename(result,result.contextValue);
       }      
     }
     return this.sortList;
@@ -142,20 +148,11 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   getFileNodeOfType(results: AstResult[], vulnType: ResultNodeType): AstResult[] {    
     this.sortList = [];
     for (let result of results) {
-      if (result.type === vulnType) {  
-        result.contextValue = "sastNode";
+      if (result.type === ResultNodeType.kics) {  
+        result.contextValue = "kicksNode";
+      
         if (this.issueFilter === IssueFilter.fileName) {
-          this.sortByFilename(result);  
-        } else if (this.issueFilter === IssueFilter.severity) {
-          this.sortBySeverity(result);  
-        }
-        else{
-          this.sortByLanguage(result);
-        }
-      }      
-      else {
-        if (this.issueFilter === IssueFilter.fileName) {
-          this.sortByFilename(result);  
+          this.sortByFilename(result,result.contextValue);  
         } else if (this.issueFilter === IssueFilter.severity) {
           this.sortBySeverity(result);  
         }
@@ -163,6 +160,28 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           this.sortByLanguage(result);
         }
       }
+      if (result.type === ResultNodeType.sca) {  
+        result.contextValue = "scaNode";
+      
+        if (this.issueFilter === IssueFilter.fileName) {
+          this.sortByFilename(result,result.contextValue);  
+        } else if (this.issueFilter === IssueFilter.severity) {
+          this.sortBySeverity(result);  
+        }
+        else{
+          this.sortByLanguage(result);
+        }
+      }
+      // else {
+      //   if (this.issueFilter === IssueFilter.fileName) {
+      //     this.sortByFilename(result);  
+      //   } else if (this.issueFilter === IssueFilter.severity) {
+      //     this.sortBySeverity(result);  
+      //   }
+      //   else{
+      //     this.sortByLanguage(result);
+      //   }
+      // }
     }
     return this.sortList;
   }
@@ -174,7 +193,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         result.contextValue = "sastNode";
         switch(this.issueFilter) {
           case IssueFilter.fileName:
-            this.sortByFilename(result);
+            this.sortByFilename(result,result.contextValue);
             break;
           case IssueFilter.severity:
             this.sortBySeverity(result);  
@@ -256,16 +275,22 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       astResultItem.contextValue = "severityNode";
       astResultItem.severity = result.severity;
       astResultItem.label = result.severity;
+      // if( result.packageData !== undefined && result.packageData.length > 0) {
+      //   astResultItem.fileName = astResultItem.packageData[0].type + "-" + astResultItem.packageData[0].url;
+      // }
       this.sortList.push(astResultItem);
     }    
   }
 
-  sortByFilename(result: AstResult) {
+  sortByFilename(result: AstResult,resultContext: string) {
     let astResultItem: any;
     let fileName: string = "";
-    if (result.sastNodes !== undefined && result.sastNodes.length > 0) {
+    if (resultContext === "sastNode" && result.sastNodes !== undefined && result.sastNodes.length > 0) {
       fileName = result.sastNodes[0].fileName;
     }
+    // } else if (resultContext === "scaNode" && result.packageData !== undefined && result.packageData.length > 0) {
+    //   fileName = result.packageData[0].url;
+    // }
     for (let fnr of this.sortList) {
       if (fnr.fileName === fileName) {
         astResultItem = fnr;
@@ -309,13 +334,20 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           return astResult;
         } else if(result.type === "dependency") {
           // TODO: fix
-          return new AstResult(
+          let astResult: AstResult = new AstResult(
             result.type,
             ResultNodeType.sca,
-            "",
+            result.id,
             result.comments,
             vscode.TreeItemCollapsibleState.Collapsed
           );
+          astResult.severity = result.severity;
+          astResult.id = result.id;
+          astResult.status = result.status;
+          // if(astResult.packageData !== undefined && astResult.packageData.length > 0) {
+          //   astResult.fileName = astResult.packageData[0].type + "-" + astResult.packageData[0].url;
+          // }
+          return astResult;
         } else if(result.type === "license") {
           // TODO: fix
           return new AstResult(
@@ -411,6 +443,14 @@ class SastNode {
     public nodeSystemId: string,
     public nodeHash: string
   ) { }
+}
+
+class PackageData {
+  constructor(
+    public comment: string,
+    public type: string,
+    public url: string
+  ){}
 }
 
 class ScaResult {
