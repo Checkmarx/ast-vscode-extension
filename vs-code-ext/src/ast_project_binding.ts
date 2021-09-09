@@ -77,7 +77,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	async loadResults(scanID: string) {
 		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
 		const resultData = await cx.getResults(scanID,"json","ast-results",__dirname);
-		this.refresh();
+		this.refresh(); // TODO: refresh tree view on loading results 
 		console.log(resultData);
 	}
 
