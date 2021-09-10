@@ -181,7 +181,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 				for (let result of this.astResult.sastNodes) {
 					let fileName: string = result.fileName;
 					let lineNum: number = result.line;
-					html += `<li><a href="#" onclick="showVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comment}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
+					html += `<li><a href="#" onclick="showVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comments}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
 				}
 			}
 		}
