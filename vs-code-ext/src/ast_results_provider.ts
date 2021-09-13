@@ -65,7 +65,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         case ResultNodeType.sast:
           if(this.results.get(ResultNodeType.sast) !== undefined) {
             this.parentNode = ResultNodeType.sast;
-          return Promise.resolve(this.getSastNodeOfType(this.results.get(ResultNodeType.sast)!));
+            return Promise.resolve(this.getSastNodeOfType(this.results.get(ResultNodeType.sast)!));
           }
           else {
             throw new Error("Sast results not available");
@@ -92,7 +92,8 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         case ResultNodeType.language:
           if(this.parentNode !== ResultNodeType.unknown) {
             let result = this.results.get(this.parentNode);
-          return Promise.resolve(this.getSastOfType(result!, element, ""+context!));
+            console.log("Parent node:",this.parentNode);
+          return Promise.resolve(this.getSastOfType(result!, element, ""+ ResultNodeType[this.parentNode]));
           }
           else{
             throw new Error("Did not receive the parent Selection");
@@ -317,9 +318,12 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     if (resultContext === "sastNode" && result.sastNodes !== undefined && result.sastNodes.length > 0) {
       fileName = result.sastNodes[0].fileName;
     }
-    // } else if (resultContext === "scaNode" && result.packageData !== undefined && result.packageData.length > 0) {
-    //   fileName = result.packageData[0].url;
-    // }
+     else if (resultContext === "scaNode" && result.id !== undefined) {
+      fileName = result.id;
+    }
+    else if (resultContext === "kicsNode" && result.queryName !== undefined) {
+      fileName = result.queryName;
+    }
     for (let fnr of this.sortList) {
       if (fnr.fileName === fileName) {
         astResultItem = fnr;
@@ -350,8 +354,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       let licenseResult: AstResult[] = [];
       let unknownResult: AstResult[] = [];
       let resultMap = new Map<ResultNodeType,AstResult[]>();
-      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult): void => {        
+      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult | KicsJsonResult): void => {        
         if (result.type === "sast") {
+          result = <SastJsonResult> result;
           let astResult: AstResult = new AstResult(
             result.data.queryName,
             ResultNodeType.sast,
@@ -369,19 +374,24 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           sastResult.push(astResult);
         } else if(result.type === "dependency") {
           // TODO: fix
+          result = <ScaJsonResult> result;
           let astResult: AstResult = new AstResult(
-            result.type,
-            ResultNodeType.sca,
             result.id,
+            ResultNodeType.sca,
+            result.data.description,
             result.comments,
-            vscode.TreeItemCollapsibleState.Collapsed
+            vscode.TreeItemCollapsibleState.None
           );
+          
           astResult.severity = result.severity;
-          astResult.id = result.id;
+          if(result.data) {
+            astResult.scaNodes = <ScaNode> <unknown>result.data;
+          }  
+          astResult.description = result.data.description;
           astResult.status = result.status;
-          // if(astResult.packageData !== undefined && astResult.packageData.length > 0) {
-          //   astResult.fileName = astResult.packageData[0].type + "-" + astResult.packageData[0].url;
-          // }
+          if (astResult.scaNodes !== undefined) {
+            astResult.fileName = astResult.scaNodes.description;
+          }
           scaResult.push(astResult);
         } 
         
@@ -397,6 +407,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           licenseResult.push(astResult);
         } else if(result.type === "infrastructure") {
           // TODO: fix
+          result = <KicsJsonResult> result;
           let astResult: AstResult = new AstResult(
             // result.type,
             // ResultNodeType.kics,
@@ -411,9 +422,12 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           );            
           astResult.severity = result.severity;
           astResult.status = result.status;
-          astResult.language = result.data.languageName;
-          if (astResult.sastNodes !== undefined && astResult.sastNodes.length > 0) {
-            astResult.fileName = astResult.sastNodes[0].fileName;
+          astResult.language = result.data.group;
+          // if (astResult.kicsNodes !== undefined && astResult.kicsNodes.length > 0) {
+          //   astResult.fileName = astResult.kicsNodes[0].description;
+          // }
+          if(result.data) {
+            astResult.kicsNodes =<KicsNode><unknown>result.data;
           }
           kicsResult.push(astResult);
         } else {
@@ -499,7 +513,7 @@ class ScaJsonResult {
     public severity: string,
     public status: string,
     public state: string,
-    public data: SastData,
+    public data: ScaNode,
     public vulnerabilityDetails: VulnerabilityDetails
   ) { }
 }
@@ -540,6 +554,16 @@ class ScaNode {
   ) { }
 }
 
+class KicsNode {  
+  constructor(
+    public queryId:string,
+    public queryName:string,
+    public group:string,
+    public description:string,
+
+  ) { }
+}
+
 class PackageData {
   constructor(
     public comment: string,
@@ -554,17 +578,25 @@ class ScaResult {
   ) { }
 }
 
-class KicsResult {
+class KicsJsonResult {
   constructor(
-    public group: string,
-    public description:string,
+    public similarityId: string,
+    public id: string,
+    public comments: string,
+    public type: string,
+    public severity: string,
+    public status: string,
+    public state: string,
+    public data: KicsNode,
+    public vulnerabilityDetails: VulnerabilityDetails
 
   ) { }
 }
 
 export class AstResult extends vscode.TreeItem {
   public sastNodes: SastNode[] = [];
-  public scaNodes: ScaNode[] = [];
+  public scaNodes!: ScaNode;
+  public kicsNodes!: KicsNode;
   public severity: string = "";
   public fileName: string = "";
   public severityName: string = "";
