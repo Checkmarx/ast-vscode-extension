@@ -35,13 +35,21 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
-				case 'showVuln':
+				case 'showSastVuln':
 					{
 						console.log("IN VS code size: " + data.text);
 						console.log(data);
 						this.loadDecorations(data);
 						break;
 					}
+					case 'showScaVuln':
+						{
+							console.log("IN VS code size SCA vulnerabilty data: " + data.text);
+							console.log(data);
+							//this.loadDecorations(data);
+							break;
+						}	
+
 			}
 		});
 	}
@@ -154,10 +162,33 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		const styleMainUri = "";
 		let queryName: string = "";
 		let severity: string = "";
+		let context: string = "";
 		if (this.astResult !== undefined) {
-			queryName = this.astResult.queryName;
-			severity = this.astResult.severity;
+			switch(this.astResult.contextValue) {
+				case "sast":
+					queryName = this.astResult.queryName;
+					severity = this.astResult.severity;
+					context = "SAST";
+					break;
+				case "sca":
+					queryName = this.astResult.label;
+					severity = this.astResult.severity;
+					context = "SCA";	
+					break;
+				case "kics":
+					queryName = this.astResult.label + "";	
+					severity = this.astResult.severity;	
+					context = "KICS";
+					break;
+				default:
+						queryName = "Unknown queryname";
+						severity = this.astResult.severity;	
+
+			}
+			
+			
 		}
+
 
 		let html = `<!DOCTYPE html>
 			<html lang="en">
@@ -172,17 +203,31 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 			</head>
 			<body>
 				<h2>${queryName}</h2>
-				<h3>SAST | ${severity}</h3><br/>
+				<h3> ${context} | ${severity}</h3><br/>`;
 
-				<h2><u>Attack Vector</u></h2>
+				if(this.astResult?.description){
+					html += `<p>${this.astResult.description}</p>`;
+				}
+
+			html +=	`<h2><u>Attack Vector</u></h2>
 				<ol>`;
 		if(this.astResult !== undefined) {
-			if(this.astResult.sastNodes !== undefined) {
+			if(this.astResult.sastNodes.length > 0) {
 				for (let result of this.astResult.sastNodes) {
 					let fileName: string = result.fileName;
 					let lineNum: number = result.line;
-					html += `<li><a href="#" onclick="showVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comments}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
+					html += `<li><a href="#" onclick="showSastVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comments}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
 				}
+			}
+			else if ( this.astResult.contextValue === "sca" && this.astResult.scaNodes.packageData.length > 0) {
+				for (let result of this.astResult.scaNodes.packageData) {
+					let comment = result.comment;
+					html += `<li><a href="${comment}">${comment}</a>`;
+				}
+			}
+			else if (this.astResult.contextValue === "kics") {			
+					let comment = this.astResult.kicsNodes.queryName;
+					html += `<li><p>${comment}</p>`;				
 			}
 		}
 		html +=	
@@ -191,9 +236,9 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 				<script>
 				const vscode = acquireVsCodeApi();
 
-				function showVuln(fileName, fullName, lineNum, columnNum, vulnLength, resultComment, query) {
+				function showSastVuln(fileName, fullName, lineNum, columnNum, vulnLength, resultComment, query) {
 						vscode.postMessage({
-							command: 'showVuln',
+							command: 'showSastVuln',
 							sourceFile: fileName,
 							path: fullName,
 							line: lineNum,
@@ -203,6 +248,16 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 							queryName: query
 						})
 				}
+				function showScaVuln(comment, type, description, queryName) {
+					vscode.postMessage({
+						command: 'showScaVuln',
+						comment: comment,
+						type: type,
+						description: description,
+						queryName: query
+					})
+			}	
+
 				</script>
 			</body>
 		</html>`;
