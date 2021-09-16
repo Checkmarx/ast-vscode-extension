@@ -27,6 +27,11 @@
         "title": "Hello World"
       },
       {
+        "command": "ast-results.refreshTree",
+        "category": "checkmarx-ast",
+        "title": "XXX"
+      },
+      {
         "command": "ast-results.viewSastResult",
         "category": "checkmarx-ast",
         "title": "View"
@@ -120,22 +125,16 @@
           "type": "string",
           "default": "",
           "description": "AST Server authentication server URI"
+        },        
+        "checkmarxAST.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API KEY"
         },
         "checkmarxAST.tenant": {
           "type": "string",
           "default": "",
-          "description": "AST Server authentication server tenant",
-          "required": true
-        },
-        "checkmarxAST.client-id": {
-          "type": "string",
-          "default": "",
-          "description": "Client ID"
-        },
-        "checkmarxAST.client-secret": {
-          "type": "string",
-          "default": "",
-          "description": "Client Secret"
+          "description": "Tenant"
         },
         "checkmarxAST.useProxy": {
           "type": "boolean",
