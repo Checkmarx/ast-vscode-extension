@@ -82,7 +82,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		const folder = vscode.workspace.workspaceFolders?.[0];				
 		if (folder) {	
 			//const pattern1 = new vscode.RelativePattern(folder, '*.ts');
-			let absPath = folder.uri.path + data.path;
+			let absPath = folder.uri.path + data.sourceFile;
 			console.log(absPath);
 			let filePath = vscode.Uri.file(absPath);
 			vscode.workspace.openTextDocument(filePath).then((a: vscode.TextDocument) => {
@@ -108,7 +108,8 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		//const decoration = { range: new vscode.Range(startPos, endPos), hoverMessage: data.comment};		
 		//cxVulns.push(decoration);
 		let line = (data.line-1);
-		const decoration2 = {range: new vscode.Range(line, data.column, line, (data.column + data.length)), hoverMessage: (data.queryName + ", Comment: " + data.comment)};
+		let column = 1;
+		const decoration2 = {range: new vscode.Range(line, column, line, (column + data.length)), hoverMessage: (data.queryName + ", Comment: " + data.comment)};
 		cxVulns.push(decoration2);
 		editor.setDecorations(this.vulnHighlightType, cxVulns);
 	}
@@ -165,25 +166,24 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		let context: string = "";
 		if (this.astResult !== undefined) {
 			switch(this.astResult.contextValue) {
-				case "sast":
+				case "sastNode":
 					queryName = this.astResult.queryName;
 					severity = this.astResult.severity;
 					context = "SAST";
 					break;
-				case "sca":
+				case "scaNode":
 					queryName = this.astResult.label;
 					severity = this.astResult.severity;
 					context = "SCA";	
 					break;
-				case "kics":
+				case "kicsNode":
 					queryName = this.astResult.label + "";	
 					severity = this.astResult.severity;	
 					context = "KICS";
 					break;
 				default:
-						queryName = "Unknown queryname";
-						severity = this.astResult.severity;	
-
+						queryName = "";
+						severity = "";	
 			}
 			
 			
@@ -201,32 +201,43 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 				
 				<title>AST Result</title>
 			</head>
-			<body>
-				<h2>${queryName}</h2>
+			<body>`;
+			if(queryName !== "" && severity !== "") {
+			html += `<h2>${queryName}</h2>
 				<h3> ${context} | ${severity}</h3><br/>`;
+			}
 
 				if(this.astResult?.description){
 					html += `<p>${this.astResult.description}</p>`;
 				}
-
+			if(this.astResult?.contextValue === "sastNode"){	
 			html +=	`<h2><u>Attack Vector</u></h2>
 				<ol>`;
+			}
+			else if(this.astResult?.contextValue === "scaNode"){
+				html +=	`<h2><u>Package Data</u></h2>
+				<ol>`;
+			}
+			else if(this.astResult?.contextValue === "kicsNode"){
+				html +=	`<h2><u>Description</u></h2>
+				<ol>`;
+			}	
 		if(this.astResult !== undefined) {
 			if(this.astResult.sastNodes.length > 0) {
 				for (let result of this.astResult.sastNodes) {
 					let fileName: string = result.fileName;
 					let lineNum: number = result.line;
-					html += `<li><a href="#" onclick="showSastVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comments}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
+					html += `<li><a href="#" onclick="showSastVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comment}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
 				}
 			}
-			else if ( this.astResult.contextValue === "sca" && this.astResult.scaNodes.packageData.length > 0) {
+			else if ( this.astResult.contextValue === "scaNode" && this.astResult.scaNodes!== undefined &&this.astResult.scaNodes.packageData.length > 0) {
 				for (let result of this.astResult.scaNodes.packageData) {
 					let comment = result.comment;
 					html += `<li><a href="${comment}">${comment}</a>`;
 				}
 			}
-			else if (this.astResult.contextValue === "kics") {			
-					let comment = this.astResult.kicsNodes.queryName;
+			else if (this.astResult.contextValue === "kicsNode" && this.astResult.kicsNodes !== undefined) {			
+					let comment = this.astResult.kicsNodes.queryName + "[" + this.astResult.kicsNodes.queryId + "]";
 					html += `<li><p>${comment}</p>`;				
 			}
 		}

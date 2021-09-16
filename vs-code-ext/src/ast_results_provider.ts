@@ -12,7 +12,6 @@ export enum ResultNodeType {
   language,
   status,
   vulnerability,
-  unknown
 }
 
 export enum IssueFilter {
@@ -25,26 +24,12 @@ export enum IssueFilter {
 
 export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   public issueFilter: IssueFilter = IssueFilter.severity;
-  private sortList: AstResult[]=[];
-  private sastResultCount: number = 0;
-  private parentNode: number = 0;
-  private sastLabel:string = "SAST("+ this.sastResultCount + ")";
-  private scaResultCount: number = 0;
-  private scaLabel:string = "SCA("+ this.sastResultCount + ")";
-  private kicsResultCount: number = 0;
-  private kicsLabel:string = "KICS("+ this.sastResultCount + ")";
-  private results: Map<ResultNodeType,AstResult[]> = new Map<ResultNodeType,AstResult[]>();
+  private sortList: AstResult[] = [];
 
   private _onDidChangeTreeData: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
   readonly onDidChangeTreeData: vscode.Event<undefined> = this._onDidChangeTreeData.event;
-  // constructor() {
-  //   let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(__dirname, '/ast-results.json'),false,false,false);
-  //   fileWatcher.onDidChange(() => {
-  //     this.refresh();
-  //     this.getChildren();
-  //   });
-  // }
-  refresh(): void {    
+
+  refresh(): void { 
     this._onDidChangeTreeData.fire();
   }
 
@@ -55,50 +40,26 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   getChildren(element?: AstResult): Promise<AstResult[]> {
     console.log("TODO: tie the results in with the project chooser!");  
     let packageJsonPath = path.join(__dirname, '/ast-results.json');
-    console.log("Package location: ",packageJsonPath);
-    
+    let results: AstResult[] = [];
     if (this.pathExists(packageJsonPath)) {
-      this.results = this.getAstResultsList(packageJsonPath);
+      results = this.getAstResultsList(packageJsonPath);
     }
     if(element !== undefined) {
       switch(element.type) {
         case ResultNodeType.sast:
-          if(this.results.get(ResultNodeType.sast) !== undefined) {
-            this.parentNode = ResultNodeType.sast;
-            return Promise.resolve(this.getSastNodeOfType(this.results.get(ResultNodeType.sast)!));
-          }
-          else {
-            throw new Error("Sast results not available");
-          }
+          return Promise.resolve(this.getSastNodeOfType(results));
         case ResultNodeType.kics:
-          if(this.results.get(ResultNodeType.kics) !== undefined) {
-            this.parentNode = ResultNodeType.kics;
-          return Promise.resolve(this.getFileNodeOfType(this.results.get(ResultNodeType.kics)!,ResultNodeType.kics));
-          }
-          else {
-            throw new Error("Kics results not available");
-          }
+          //return Promise.resolve(this.getSastNodeOfType(results,ResultNodeType.kics));
+          return Promise.resolve(this.getKicsNodeOfType(results));
         case ResultNodeType.sca:
-          this.parentNode = ResultNodeType.sca;
-          if(this.results.get(ResultNodeType.sca) !== undefined) {
-            return Promise.resolve(this.getFileNodeOfType(this.results.get(ResultNodeType.sca)!,ResultNodeType.sca));
-            }
-            else {
-              throw new Error("Sca results not available");
-            }
+          //return Promise.resolve(this.getSastNodeOfType(results,ResultNodeType.sca));
+          return Promise.resolve(this.getScaNodeOfType(results));
         case ResultNodeType.fileName:
         case ResultNodeType.severity:
+          return Promise.resolve(this.getSastOfType(results, element));
         case ResultNodeType.status:
         case ResultNodeType.language:
-          if(this.parentNode !== ResultNodeType.unknown) {
-            let result = this.results.get(this.parentNode);
-            console.log("Parent node:",this.parentNode);
-          return Promise.resolve(this.getSastOfType(result!, element, ""+ ResultNodeType[this.parentNode]));
-          }
-          else{
-            throw new Error("Did not receive the parent Selection");
-          }
-         
+          return Promise.resolve(this.getSastOfType(results, element));
         default:
           return Promise.resolve([]);
       }
@@ -109,24 +70,27 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
 
   getRootChildren(): AstResult[] {
     const d1 = new AstResult(
-      this.sastLabel,
+      "SAST",
       ResultNodeType.sast,
       "",
       "",
+      ResultNodeType.sast,
       vscode.TreeItemCollapsibleState.Collapsed
     );
     const d2 = new AstResult(
-      this.kicsLabel,
+      "KICS",
       ResultNodeType.kics,
       "",
       "",
+      ResultNodeType.kics,
       vscode.TreeItemCollapsibleState.Collapsed
     );
     const d3 = new AstResult(
-      this.scaLabel,
+      "SCA",
       ResultNodeType.sca,
       "",
       "",
+      ResultNodeType.sca,
       vscode.TreeItemCollapsibleState.Collapsed
     );
     return [d1, d2, d3];    
@@ -135,25 +99,34 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   //
   /// Sort By: file, severity, status, language
   //
-  getSastOfType(results: AstResult[], element: AstResult, resultContext: string): AstResult[] {
+  getSastOfType(results: AstResult[], element: AstResult): AstResult[] {
     let items: AstResult[] = [];
-    
+    let contextValue = "";
+    if(element.sourceNodeType === 2){
+      contextValue = "sastNode";
+    }
+    else if(element.sourceNodeType === 0) {
+      contextValue = "kicsNode";
+    }
+    else if(element.sourceNodeType === 1) {
+      contextValue = "scaNode";
+    }
     for (let result of results) {
-    
-        if (this.issueFilter === IssueFilter.fileName && result.fileName === element.fileName) { 
-          result.contextValue = resultContext;
+      
+        if (this.issueFilter === IssueFilter.fileName && result.fileName === element.fileName && result.sourceNodeType === element.sourceNodeType ) { 
+          result.contextValue = contextValue;
           items.push(result);
         }
-        if (this.issueFilter === IssueFilter.severity && result.severity === element.severity) { 
-          result.contextValue = resultContext;
+        if (this.issueFilter === IssueFilter.severity && result.severity === element.severity && result.sourceNodeType === element.sourceNodeType) { 
+          result.contextValue = contextValue;
           items.push(result);
         }
-        if (this.issueFilter === IssueFilter.status && result.status === element.status) { 
-          result.contextValue = resultContext;
+        if (this.issueFilter === IssueFilter.status && result.status === element.status && result.sourceNodeType === element.sourceNodeType) { 
+          result.contextValue = contextValue;
           items.push(result);
         }
-        if (this.issueFilter === IssueFilter.language && result.language === element.language) { 
-          result.contextValue = resultContext;
+        if (this.issueFilter === IssueFilter.language && result.language === element.language && result.sourceNodeType === element.sourceNodeType) { 
+          result.contextValue = contextValue;
           items.push(result);
         }
             
@@ -177,40 +150,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   getFileNodeOfType(results: AstResult[], vulnType: ResultNodeType): AstResult[] {    
     this.sortList = [];
     for (let result of results) {
-      if (result.type === ResultNodeType.kics) {  
-        result.contextValue = "kicksNode";
-      
+      if (result.type === vulnType) {  
+        result.contextValue = "sastNode";
         if (this.issueFilter === IssueFilter.fileName) {
-          this.sortByFilename(result,result.contextValue);  
+          this.sortByFilename(result);  
         } else if (this.issueFilter === IssueFilter.severity) {
           this.sortBySeverity(result);  
         }
-        else{
-          this.sortByLanguage(result);
-        }
-      }
-      if (result.type === ResultNodeType.sca) {  
-        result.contextValue = "scaNode";
-      
-        if (this.issueFilter === IssueFilter.fileName) {
-          this.sortByFilename(result,result.contextValue);  
-        } else if (this.issueFilter === IssueFilter.severity) {
-          this.sortBySeverity(result);  
-        }
-        else{
-          this.sortByLanguage(result);
-        }
-      }
-      // else {
-      //   if (this.issueFilter === IssueFilter.fileName) {
-      //     this.sortByFilename(result);  
-      //   } else if (this.issueFilter === IssueFilter.severity) {
-      //     this.sortBySeverity(result);  
-      //   }
-      //   else{
-      //     this.sortByLanguage(result);
-      //   }
-      // }
+      }      
     }
     return this.sortList;
   }
@@ -219,11 +166,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     this.sortList = [];
     for (let result of results) {
       if (result.type === ResultNodeType.sast) {
-        this.sastResultCount += 1;  
         result.contextValue = "sastNode";
         switch(this.issueFilter) {
           case IssueFilter.fileName:
-            this.sortByFilename(result,result.contextValue);
+            this.sortByFilename(result);
             break;
           case IssueFilter.severity:
             this.sortBySeverity(result);  
@@ -238,12 +184,61 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       }      
     }
     return this.sortList;
-  }  
+  }
+
+  getScaNodeOfType(results: AstResult[]): AstResult[] {    
+    this.sortList = [];
+    for (let result of results) {
+      if (result.type === ResultNodeType.sca) {  
+        result.contextValue = "scaNode";
+        switch(this.issueFilter) {
+          case IssueFilter.fileName:
+            this.sortByFilename(result);
+            break;
+          case IssueFilter.severity:
+            this.sortBySeverity(result);  
+            break;
+          case IssueFilter.language:
+            this.sortByLanguage(result);
+            break;
+          case IssueFilter.status:
+            this.sortByStatus(result);
+            break;
+        }
+      }      
+    }
+    return this.sortList;
+  }
+
+  getKicsNodeOfType(results: AstResult[]): AstResult[] {    
+    this.sortList = [];
+    for (let result of results) {
+      if (result.type === ResultNodeType.kics) {  
+        result.contextValue = "kicsNode";
+        switch(this.issueFilter) {
+          case IssueFilter.fileName:
+            this.sortByFilename(result);
+            break;
+          case IssueFilter.severity:
+            this.sortBySeverity(result);  
+            break;
+          case IssueFilter.language:
+            this.sortByLanguage(result);
+            break;
+          case IssueFilter.status:
+            this.sortByStatus(result);
+            break;
+        }
+      }      
+    }
+    return this.sortList;
+  }
+ 
 
   sortByLanguage(result: AstResult) {
     let astResultItem: any;
     for (let fnr of this.sortList) {
-      if (fnr.language === result.language) {
+      if (fnr.language === result.language  && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
         break;
       }
@@ -254,6 +249,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         ResultNodeType.language,
         "",
         "",
+        result.type,
         vscode.TreeItemCollapsibleState.Collapsed
       );
       astResultItem.contextValue = "languageNode";
@@ -266,7 +262,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   sortByStatus(result: AstResult) {
     let astResultItem: any;
     for (let fnr of this.sortList) {
-      if (fnr.status === result.status) {
+      if (fnr.status === result.status && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
         break;
       }
@@ -277,6 +273,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         ResultNodeType.status,
         "",
         "",
+        result.type,
         vscode.TreeItemCollapsibleState.Collapsed
       );
       astResultItem.contextValue = "statusNode";
@@ -289,43 +286,41 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   sortBySeverity(result: AstResult) {
     let astResultItem: any;
     for (let fnr of this.sortList) {
-      if (fnr.severity === result.severity) {
+      if (fnr.severity === result.severity && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
         break;
       }
     }
-    if (astResultItem === undefined) {
+    if (astResultItem === undefined ) {
       astResultItem = new AstResult(
         "Severity",
         ResultNodeType.severity,
         "",
         "",
+        result.type,
         vscode.TreeItemCollapsibleState.Collapsed
       );
       astResultItem.contextValue = "severityNode";
       astResultItem.severity = result.severity;
       astResultItem.label = result.severity;
-      // if( result.packageData !== undefined && result.packageData.length > 0) {
-      //   astResultItem.fileName = astResultItem.packageData[0].type + "-" + astResultItem.packageData[0].url;
-      // }
       this.sortList.push(astResultItem);
     }    
   }
 
-  sortByFilename(result: AstResult,resultContext: string) {
+  sortByFilename(result: AstResult) {
     let astResultItem: any;
     let fileName: string = "";
-    if (resultContext === "sastNode" && result.sastNodes !== undefined && result.sastNodes.length > 0) {
+    if (result.sastNodes !== undefined && result.sastNodes.length > 0) {
       fileName = result.sastNodes[0].fileName;
     }
-     else if (resultContext === "scaNode" && result.id !== undefined) {
-      fileName = result.id;
+    else if (result.scaNodes !== undefined && result.scaNodes.packageData.length > 0) {
+      fileName = result.scaNodes.packageData[0].type;
     }
-    else if (resultContext === "kicsNode" && result.queryName !== undefined) {
-      fileName = result.queryName;
+    else if (result.kicsNodes !== undefined && result.kicsNodes.queryName !== undefined) {
+      fileName = result.kicsNodes.queryName;
     }
-    for (let fnr of this.sortList) {
-      if (fnr.fileName === fileName) {
+    for (let fnr of this.sortList ) {
+      if (fnr.fileName === fileName && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
         break;
       }
@@ -336,6 +331,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         ResultNodeType.fileName,
         "",
         "",
+        result.type,
         vscode.TreeItemCollapsibleState.Collapsed
       );
       astResultItem.fileName = fileName;
@@ -345,16 +341,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     }
   }
 
-  private getAstResultsList(resultsJsonPath: string): Map<ResultNodeType,AstResult[]> {
+  private getAstResultsList(resultsJsonPath: string): AstResult[] {
     if(this.pathExists(resultsJsonPath)) {
       const packageJson = JSON.parse(fs.readFileSync(resultsJsonPath, 'utf-8'));
-      let sastResult: AstResult[]=[];
-      let scaResult: AstResult[] = [];
-      let kicsResult: AstResult[] = [];
-      let licenseResult: AstResult[] = [];
-      let unknownResult: AstResult[] = [];
-      let resultMap = new Map<ResultNodeType,AstResult[]>();
-      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult | KicsJsonResult): void => {        
+      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult | KicsJsonResult): AstResult => {        
         if (result.type === "sast") {
           result = <SastJsonResult> result;
           let astResult: AstResult = new AstResult(
@@ -362,6 +352,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             ResultNodeType.sast,
             result.data.queryName,
             result.comments,
+            ResultNodeType.sast,
             vscode.TreeItemCollapsibleState.None
           );
           astResult.sastNodes = result.data.nodes;
@@ -371,90 +362,71 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           if (astResult.sastNodes !== undefined && astResult.sastNodes.length > 0) {
             astResult.fileName = astResult.sastNodes[0].fileName;
           }
-          sastResult.push(astResult);
+          return astResult;
         } else if(result.type === "dependency") {
-          // TODO: fix
           result = <ScaJsonResult> result;
           let astResult: AstResult = new AstResult(
             result.id,
             ResultNodeType.sca,
             result.data.description,
             result.comments,
+            ResultNodeType.sca,
             vscode.TreeItemCollapsibleState.None
           );
           
           astResult.severity = result.severity;
-          if(result.data) {
-            astResult.scaNodes = <ScaNode> <unknown>result.data;
-          }  
           astResult.description = result.data.description;
           astResult.status = result.status;
-          if (astResult.scaNodes !== undefined) {
-            astResult.fileName = astResult.scaNodes.description;
+          if (result.data !== undefined) {
+            astResult.scaNodes = result.data;
           }
-          scaResult.push(astResult);
-        } 
-        
-        else if(result.type === "license") {
+          return astResult;
+        } else if(result.type === "license") {
           // TODO: fix
-          let astResult = new AstResult(
+          return new AstResult(
             result.type,
             ResultNodeType.sca,
             "",
             result.comments,
+            ResultNodeType.sca,
             vscode.TreeItemCollapsibleState.Collapsed
           );  
-          licenseResult.push(astResult);
         } else if(result.type === "infrastructure") {
-          // TODO: fix
           result = <KicsJsonResult> result;
           let astResult: AstResult = new AstResult(
-            // result.type,
-            // ResultNodeType.kics,
-            // "",
-            // result.comments,
-            // vscode.TreeItemCollapsibleState.Collapsed
             result.data.queryName,
             ResultNodeType.kics,
             result.data.queryName,
             result.comments,
+            ResultNodeType.kics,
             vscode.TreeItemCollapsibleState.None
           );            
           astResult.severity = result.severity;
           astResult.status = result.status;
           astResult.language = result.data.group;
-          // if (astResult.kicsNodes !== undefined && astResult.kicsNodes.length > 0) {
-          //   astResult.fileName = astResult.kicsNodes[0].description;
-          // }
           if(result.data) {
             astResult.kicsNodes =<KicsNode><unknown>result.data;
           }
-          kicsResult.push(astResult);
+          return astResult;
         } else {
-          let astResult= new AstResult(
+          return new AstResult(
             "Unknown Vulnerability Type",
             ResultNodeType.vulnerability,
             "",
             "",
+            ResultNodeType.vulnerability,
             vscode.TreeItemCollapsibleState.None
           ); 
-          unknownResult.push(astResult);
         }
-      
-       resultMap.set(ResultNodeType.sast,sastResult);
-       resultMap.set(ResultNodeType.sca,scaResult);
-       resultMap.set(ResultNodeType.kics,kicsResult);
-       resultMap.set(ResultNodeType.unknown,unknownResult);
       };
       const results = packageJson.results
         ? Object.keys(packageJson.results).map(dep =>
           toResultTree(dep, packageJson.results[dep])
           )
         : [];
-
-        return resultMap;
+      return results;
     } else {
-      throw new Error("Results file not available");
+      return [];
     }
   }
 
@@ -477,8 +449,7 @@ class SastJsonResult {
     public severity: string,
     public status: string,
     public state: string,
-    public data: SastData,
-    public vulnerabilityDetails: VulnerabilityDetails
+    public data: SastData
   ) { }
 }
 
@@ -606,7 +577,8 @@ export class AstResult extends vscode.TreeItem {
     public readonly label: string,
     public readonly type: ResultNodeType,
     public readonly queryName: string,
-    public comments: string,
+    public comment: string,
+    public sourceNodeType:ResultNodeType,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);

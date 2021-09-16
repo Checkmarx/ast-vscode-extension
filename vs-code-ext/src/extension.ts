@@ -47,13 +47,17 @@ export function activate(context: vscode.ExtensionContext) {
 	/// Add tree node commands
 	//
 	let sastNodeCmd = vscode.commands.registerCommand('ast-results.viewSastResult', (item: AstResult) => {
-		// if(item.type === ResultNodeType.sast) {
-		// 	provider.refresh(item);
-		// }
-		provider.refresh(item);
+		if(item.type === ResultNodeType.sast) {
+			provider.refresh(item);
+		}
 	});
 	context.subscriptions.push(sastNodeCmd);
 	// The severity filter
+	let refreshTree = vscode.commands.registerCommand('ast-results.refreshTree', (item: AstResult) => {
+		astResultsProvider.refresh();
+	});
+	context.subscriptions.push(refreshTree);
+
 	let newCmd = vscode.commands.registerCommand('ast-results.filterSeverity', (item: AstResult) => {
 		astResultsProvider.issueFilter = ast.IssueFilter.severity;
 		astResultsProvider.refresh();

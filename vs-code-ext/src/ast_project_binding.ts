@@ -10,6 +10,7 @@ import { AstResultsProvider } from './ast_results_provider';
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'astProjectView';
 	private _view?: vscode.WebviewView;
+	private projectID: string = "";
 	private scanID: string = "";
 	private scanList: Array<any> = [];
 	
@@ -31,20 +32,34 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 
 	public getAstConfiguration() {
 		let baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
-		let clientID = vscode.workspace.getConfiguration("checkmarxAST").get("client-id") as string;
 		let tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
-		let clientSecret = vscode.workspace.getConfiguration("checkmarxAST").get("client-secret") as string;
+		let token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 		let config = new CxScanConfig.CxScanConfig();
-		config.clientId = clientID;
-		config.clientSecret = clientSecret;
+		config.apiKey = token;
 		config.baseUri = baseURI;
 		config.tenant = tenant;
 		return config;
 	}
 
+	public getProjectList() {
+		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
+		return cx.projectList();
+	}
+
 	public getScanList() {
 		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
 		return cx.scanList();
+	}
+
+	async loadResults(scanID: string) {
+		console.log(scanID);
+		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
+		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		const resultData = await cx.getResults(scanID,"json","ast-results",__dirname);
+		this.refresh(); // TODO: refresh tree view on loading results 
+		console.log(resultData);
+		vscode.commands.executeCommand("ast-results.refreshTree");
+
 	}
 
 	public resolveWebviewView(
@@ -62,6 +77,11 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		};
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
+				case 'pickedProject':
+					this.projectID = data.projectID;
+					this.scanID = "";
+					this.loadScanList();
+					break;
 				case 'pickedScan':
 					this.scanID = data.scanID;
 					break;
@@ -70,15 +90,10 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					vscode.window.showInformationMessage('Loading Results data for ID:', data.scanID);
 					this.scanID = data.scanID;
 					this.loadResults(this.scanID);
+					//vscode.commands.executeCommand("ast-results.refreshTree");
 					break;
 			}
 		});
-	}
-	async loadResults(scanID: string) {
-		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
-		const resultData = await cx.getResults(scanID,"json","ast-results",__dirname);
-		this.refresh(); // TODO: refresh tree view on loading results 
-		console.log(resultData);
 	}
 
 	async resultsExist(scanID: string) {
@@ -92,6 +107,14 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		return false;
 		}
 		
+		// Fetch the current project list
+		// this.getProjectList().then((projects) => {
+		// 	this.projectList = projects.scanObjectList;
+		// }).then(() => {
+		// 	webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+		// }).catch((res) => {
+		// 	vscode.window.showInformationMessage('Error communicating with AST server!');
+		// });		
 	}
 
 	private loadScanList() {
