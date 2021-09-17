@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'url';
 import * as vscode from 'vscode';
-import { AstResult } from "./ast_results_provider";
+import { AstResult, ResultNodeType } from "./ast_results_provider";
 
 export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'astDetailsView';
@@ -230,11 +230,16 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 					html += `<li><a href="#" onclick="showSastVuln('${fileName}', '${result.fullName}', ${lineNum}, ${result.column}, ${result.length}, '${this.astResult.comment}', '${this.astResult.queryName}');">${fileName}:${lineNum}</a> | [code snip]`;
 				}
 			}
-			else if ( this.astResult.contextValue === "scaNode" && this.astResult.scaNodes!== undefined &&this.astResult.scaNodes.packageData.length > 0) {
+			else if ( this.astResult.contextValue === "scaNode" && this.astResult.scaNodes!== undefined ) {
+				if(this.astResult.scaNodes.packageData !== undefined && this.astResult.scaNodes.packageData.length > 0) {
 				for (let result of this.astResult.scaNodes.packageData) {
 					let comment = result.comment;
 					html += `<li><a href="${comment}">${comment}</a>`;
 				}
+			}
+			else{
+				html += `<p>${this.astResult.description}</p>`;
+			}
 			}
 			else if (this.astResult.contextValue === "kicsNode" && this.astResult.kicsNodes !== undefined) {			
 					let comment = this.astResult.kicsNodes.queryName + "[" + this.astResult.kicsNodes.queryId + "]";
