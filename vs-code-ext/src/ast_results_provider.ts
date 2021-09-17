@@ -156,7 +156,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         }
             
     }
-
     return items;
   }
 
@@ -209,6 +208,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         }
       }      
     }
+    for(let indResult of this.sortList){
+      let count = indResult.label.split(" ").length;
+      indResult.label = indResult.label.trim() + "(" + count + ")";
+     }
     return this.sortList;
   }
 
@@ -232,6 +235,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             break;
         }
       }      
+    }
+    for(let indResult of this.sortList){
+     let count = indResult.label.split(" ").length;
+     indResult.label = indResult.label.trim() + "(" + count + ")";
     }
     return this.sortList;
   }
@@ -257,6 +264,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         }
       }      
     }
+    for(let indResult of this.sortList){
+      let count = indResult.label.split(" ").length;
+      indResult.label = indResult.label.trim() + "(" + count + ")";
+     }
     return this.sortList;
   }
  
@@ -290,6 +301,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     for (let fnr of this.sortList) {
       if (fnr.status === result.status && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
+        astResultItem.label = astResultItem.label + " ";
         break;
       }
     }
@@ -314,6 +326,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
     for (let fnr of this.sortList) {
       if (fnr.severity === result.severity && fnr.sourceNodeType === result.type) {
         astResultItem = fnr;
+        astResultItem.label = astResultItem.label + " ";
         break;
       }
     }
@@ -604,7 +617,7 @@ export class AstResult extends vscode.TreeItem {
   public status: string = "";
   public language: string = ""; 
   constructor(
-    public readonly label: string,
+    public label: string,
     public readonly type: ResultNodeType,
     public readonly queryName: string,
     public comment: string,
