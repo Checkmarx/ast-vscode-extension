@@ -25,6 +25,9 @@ export enum IssueFilter {
 export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   public issueFilter: IssueFilter = IssueFilter.severity;
   private sortList: AstResult[] = [];
+  private sastCount: number = 0;
+  private scaCount: number = 0;
+  private kicsCount:number = 0;
 
   private _onDidChangeTreeData: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
   readonly onDidChangeTreeData: vscode.Event<undefined> = this._onDidChangeTreeData.event;
@@ -40,6 +43,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   getChildren(element?: AstResult): Promise<AstResult[]> {
     console.log("TODO: tie the results in with the project chooser!");  
     let packageJsonPath = path.join(__dirname, '/ast-results.json');
+    this.sastCount=0;
+    this.scaCount=0;
+    this.kicsCount=0;
     let results: AstResult[] = [];
     if (this.pathExists(packageJsonPath)) {
       results = this.getAstResultsList(packageJsonPath);
@@ -69,31 +75,50 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   }
 
   getRootChildren(): AstResult[] {
-    const d1 = new AstResult(
-      "SAST",
+    let sastLabel = "SAST" + "(" + this.sastCount + ")";
+    let scaLabel = "SCA" + "(" + this.scaCount + ")";
+    let kicsLabel = "KICS" + "(" + this.kicsCount + ")";
+    let labelList:AstResult[] = [];
+    let d1:AstResult;
+    let d2:AstResult;
+    let d3: AstResult;
+    if(this.sastCount >0) {
+     d1 = new AstResult(
+      sastLabel,
       ResultNodeType.sast,
       "",
       "",
       ResultNodeType.sast,
       vscode.TreeItemCollapsibleState.Collapsed
     );
-    const d2 = new AstResult(
-      "KICS",
+    labelList.push(d1);
+    }
+    if(this.kicsCount > 0) {
+     d2 = new AstResult(
+      kicsLabel,
       ResultNodeType.kics,
       "",
       "",
       ResultNodeType.kics,
       vscode.TreeItemCollapsibleState.Collapsed
     );
-    const d3 = new AstResult(
-      "SCA",
+    labelList.push(d2);
+    }
+    if(this.scaCount > 0) {
+    d3 = new AstResult(
+      scaLabel,
       ResultNodeType.sca,
       "",
       "",
       ResultNodeType.sca,
       vscode.TreeItemCollapsibleState.Collapsed
     );
-    return [d1, d2, d3];    
+    labelList.push(d3);
+    }
+    if(labelList.length === 0) {    
+      vscode.window.showInformationMessage('No results found for the selected scan ID');
+  }
+  return labelList;    
   }
   
   //
@@ -131,6 +156,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         }
             
     }
+
     return items;
   }
 
@@ -344,8 +370,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
   private getAstResultsList(resultsJsonPath: string): AstResult[] {
     if(this.pathExists(resultsJsonPath)) {
       const packageJson = JSON.parse(fs.readFileSync(resultsJsonPath, 'utf-8'));
-      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult | KicsJsonResult): AstResult => {        
+      const toResultTree = (index: string, result: SastJsonResult | ScaJsonResult | KicsJsonResult): AstResult  => {        
         if (result.type === "sast") {
+          this.sastCount += 1;
           result = <SastJsonResult> result;
           let astResult: AstResult = new AstResult(
             result.data.queryName,
@@ -364,6 +391,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
           }
           return astResult;
         } else if(result.type === "dependency") {
+          this.scaCount +=1;
           result = <ScaJsonResult> result;
           let astResult: AstResult = new AstResult(
             result.id,
@@ -392,6 +420,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             vscode.TreeItemCollapsibleState.Collapsed
           );  
         } else if(result.type === "infrastructure") {
+          this.kicsCount += 1;
           result = <KicsJsonResult> result;
           let astResult: AstResult = new AstResult(
             result.data.queryName,
@@ -408,7 +437,8 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             astResult.kicsNodes =<KicsNode><unknown>result.data;
           }
           return astResult;
-        } else {
+        }
+        else {
           return new AstResult(
             "Unknown Vulnerability Type",
             ResultNodeType.vulnerability,
