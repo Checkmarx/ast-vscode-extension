@@ -138,9 +138,6 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		if(!this.scanID){
-			this.loadScanList();
-		}
 		console.log("GETTING HTML FOR VIEW");
 		return `
 			<!DOCTYPE html>
@@ -177,7 +174,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<!-- The Scan List -->
 				<div class="panel">
 					<div class="labelField">
-						Scans
+						Scan:
 					</div>
 					<div class="ctrlField">
 				 <input type="text" id="scanIDTest" value="${this.scanID}">Please enter scanID</input>

@@ -87,6 +87,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       sastLabel,
       ResultNodeType.sast,
       "",
+      false,
       "",
       ResultNodeType.sast,
       vscode.TreeItemCollapsibleState.Collapsed
@@ -98,6 +99,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       kicsLabel,
       ResultNodeType.kics,
       "",
+      false,
       "",
       ResultNodeType.kics,
       vscode.TreeItemCollapsibleState.Collapsed
@@ -109,15 +111,13 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
       scaLabel,
       ResultNodeType.sca,
       "",
+      false,
       "",
       ResultNodeType.sca,
       vscode.TreeItemCollapsibleState.Collapsed
     );
     labelList.push(d3);
     }
-    if(labelList.length === 0) {    
-      vscode.window.showInformationMessage('No results found for the selected scan ID');
-  }
   return labelList;    
   }
   
@@ -285,6 +285,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         result.language,
         ResultNodeType.language,
         "",
+        false,
         "",
         result.type,
         vscode.TreeItemCollapsibleState.Collapsed
@@ -310,6 +311,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         result.status,
         ResultNodeType.status,
         "",
+        false,
         "",
         result.type,
         vscode.TreeItemCollapsibleState.Collapsed
@@ -335,6 +337,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         "Severity",
         ResultNodeType.severity,
         "",
+        false,
         "",
         result.type,
         vscode.TreeItemCollapsibleState.Collapsed
@@ -369,6 +372,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
         "File Name",
         ResultNodeType.fileName,
         "",
+        false,
         "",
         result.type,
         vscode.TreeItemCollapsibleState.Collapsed
@@ -391,6 +395,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             result.data.queryName,
             ResultNodeType.sast,
             result.data.queryName,
+            true,
             result.comments,
             ResultNodeType.sast,
             vscode.TreeItemCollapsibleState.None
@@ -410,6 +415,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             result.id,
             ResultNodeType.sca,
             result.data.description,
+            true,
             result.comments,
             ResultNodeType.sca,
             vscode.TreeItemCollapsibleState.None
@@ -428,6 +434,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             result.type,
             ResultNodeType.sca,
             "",
+            true,
             result.comments,
             ResultNodeType.sca,
             vscode.TreeItemCollapsibleState.Collapsed
@@ -439,6 +446,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             result.data.queryName,
             ResultNodeType.kics,
             result.data.queryName,
+            true,
             result.comments,
             ResultNodeType.kics,
             vscode.TreeItemCollapsibleState.None
@@ -456,6 +464,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<AstResult> {
             "Unknown Vulnerability Type",
             ResultNodeType.vulnerability,
             "",
+            false,
             "",
             ResultNodeType.vulnerability,
             vscode.TreeItemCollapsibleState.None
@@ -620,6 +629,7 @@ export class AstResult extends vscode.TreeItem {
     public label: string,
     public readonly type: ResultNodeType,
     public readonly queryName: string,
+    public readonly showViewControl:boolean,
     public comment: string,
     public sourceNodeType:ResultNodeType,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState

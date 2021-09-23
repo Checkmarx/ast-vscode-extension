@@ -85,6 +85,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 			let absPath = folder.uri.path + data.sourceFile;
 			console.log(absPath);
 			let filePath = vscode.Uri.file(absPath);
+			//TODO check if the file is open. If open, show decorations. If not, open text editor in new tab
 			vscode.workspace.openTextDocument(filePath).then((a: vscode.TextDocument) => {
 				vscode.window.showTextDocument(a, 1, false).then(e => {
 					console.log("Document should be open now");
@@ -109,9 +110,16 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		//cxVulns.push(decoration);
 		let line = (data.line-1);
 		let column = 1;
+		if(data.column){
+			column = data.column;
+		}
 		const decoration2 = {range: new vscode.Range(line, column, line, (column + data.length)), hoverMessage: (data.queryName + ", Comment: " + data.comment)};
 		cxVulns.push(decoration2);
 		editor.setDecorations(this.vulnHighlightType, cxVulns);
+		let activeEditor:any = vscode.window.activeTextEditor;
+		let range = activeEditor.document.lineAt(line).range;
+		activeEditor.selection =  new vscode.Selection(range.start, range.end);
+		activeEditor.revealRange(range);
 	}
 
 	private showDecoratorsOLDVER(data: any) {
