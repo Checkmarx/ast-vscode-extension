@@ -1,0 +1,19 @@
+body {
+	background-color: transparent;
+}
+
+.ast-input {
+	display: block;
+	flex: 1;
+	width: 100%;
+	color: var(--vscode-input-foreground);
+	background-color: var(--vscode-input-background);
+	border: none;
+	padding: 0 0.6em;
+}
+
+.ast-search {
+	display: block;
+	border: none;
+	margin: 0 auto;
+}

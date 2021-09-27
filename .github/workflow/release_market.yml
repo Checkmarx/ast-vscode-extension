@@ -1,0 +1,29 @@
+name: Release to VSCode marketplace
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm install
+      - name: Install VSCE
+        run: npm install -g vsce
+      - name: Package .vsix file
+        run: vsce package
+      - name: Publish
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: env.MARKET_TOKEN != null
+        run: vsce publish -p ${{ secrets.MARKET_TOKEN }}
