@@ -175,7 +175,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.28",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.29",
     "lodash": "^4.17.21"
   }
 }

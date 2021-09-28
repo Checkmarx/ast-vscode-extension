@@ -2,7 +2,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { EventEmitter } from 'vscode';
-import { create } from 'lodash';
+import { AstResult, SastNode } from './results';
+import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
+import { getProperty } from './utils';
 
 export enum IssueFilter {
   fileName = "fileName",
@@ -16,20 +18,48 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
-
+  private scanId: string;
   private data: TreeItem[] | undefined;
 
-  constructor() {
-    this.data = this.generateTree().children;
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly output: vscode.OutputChannel,
+		private readonly statusBarItem: vscode.StatusBarItem,
+    private readonly diagnosticCollection: vscode.DiagnosticCollection) {
+      this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
+      this.refreshData();
   }
 
+  private showStatusBarItem() {
+		this.statusBarItem.text = "$(sync~spin) Loading Results";
+		this.statusBarItem.tooltip = "Checkmarx command is running";
+		this.statusBarItem.command = `${EXTENSION_NAME}.reload`;
+		this.statusBarItem.show();
+	}
+
+	private hideStatusBarItem() {
+		this.statusBarItem.text = EXTENSION_NAME;
+		this.statusBarItem.tooltip = undefined;
+		this.statusBarItem.command = undefined;
+		this.statusBarItem.hide();
+	}
+
   refresh(): void {
-    this.data = this.generateTree().children;
+    this.refreshData();
     this._onDidChangeTreeData.fire(undefined);
+  }
+
+  refreshData(): void {
+    this.showStatusBarItem();
+    this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
+    this.data = this.generateTree().children;
+    this.hideStatusBarItem();
   }
 
   generateTree(): TreeItem {
     const resultJsonPath = path.join(__dirname, 'ast-results.json');
+    if (!fs.existsSync(resultJsonPath)) {return new TreeItem("", undefined, []);} 
+
     const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, 'utf-8'));
 
     const groups = ['type', this.issueFilter];
@@ -37,37 +67,68 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   groupBy(list: Object[], groups: string[]): TreeItem {
-    const tree = new TreeItem("", undefined, []);
-    list.forEach(function (rawObj) {
-      const obj = createObj(rawObj);
-      if (!obj) {return;}
+    const folder = vscode.workspace.workspaceFolders?.[0];
+    const map = new Map<string, vscode.Diagnostic[]>();
+    const tree = new TreeItem(this.scanId, undefined, []);
 
-      const item = new TreeItem(obj.label, obj);
+    list.forEach(element => this.groupTree(element, folder, map, groups, tree));
 
-      const node = groups.reduce(function (previousValue: TreeItem, currentValue: string, index: number) {
-        const value = obj[currentValue];
-        if (!value) {return previousValue;}
-
-        const tree = previousValue.children ?
-          previousValue.children.find(item => (item.label === value)) : undefined;
-        
-        if (tree) {
-          previousValue.setDescription(); 
-          return tree; 
-        }
-
-        const newTree = new TreeItem(value, undefined, []);
-        previousValue.children?.push(newTree);
-        previousValue.setDescription();
-        return newTree;
-      }, tree);
-
-      node.children?.push(item);
-      node.setDescription();  
-    });
-
+    this.diagnosticCollection.clear();
+    map.forEach((value, key) => this.diagnosticCollection.set(vscode.Uri.parse(key), value));
+    
     return tree;
-  };
+  }
+
+  groupTree(rawObj: Object, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>, groups: string[], tree: TreeItem) {
+    const obj = new AstResult(rawObj);
+    if (!obj) { return; }
+
+    const item = new TreeItem(obj.label, obj);
+    if (obj.sastNodes.length > 0) {this.createDiagnostic(obj.label, obj.severity, obj.sastNodes[0], folder, map);}
+    //obj.sastNodes.forEach((node) => this.createDiagnostic(obj.label, obj.severity, node, folder, map));
+    
+    const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
+    node.children?.push(item);
+    node.setDescription();
+  }
+
+  createDiagnostic(label: string, severity: string, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
+    const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
+    const column = (node.column | 1) - 1;
+    const line =  (node.line | 1 ) - 1;
+    let length = column + node.length;
+    if (length < 0) {
+      console.log("file %s line %s column %s nodelenght %s definitions %s", filePath, line, column, node.length, node.definitions );
+      length = column;
+    }
+    const range = new vscode.Range(line, column, line, length);
+    const diagnosticSeverity = severity === "HIGH" ? vscode.DiagnosticSeverity.Error: vscode.DiagnosticSeverity.Warning;
+    
+    const diagnostic = new vscode.Diagnostic(range, label, diagnosticSeverity);
+    if (map.has(filePath)) {
+      map.get(filePath)?.push(diagnostic);
+    } else {
+      map.set(filePath, [diagnostic]);
+    }
+  }
+
+  reduceGroups(obj: Object, previousValue: TreeItem, currentValue: string) {
+    const value = getProperty(obj, currentValue);
+    if (!value) { return previousValue; }
+
+    const tree = previousValue.children ?
+      previousValue.children.find(item => (item.label === value)) : undefined;
+
+    if (tree) {
+      previousValue.setDescription();
+      return tree;
+    }
+
+    const newTree = new TreeItem(value, undefined, []);
+    previousValue.children?.push(newTree);
+    previousValue.setDescription();
+    return newTree;
+  }
 
   getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element;
@@ -81,97 +142,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 }
 
-export class AstResult {
-  label: string = "";
-  type: string = "";
-  fileName: string = "";
-  severity: string = "";
-  status: string = "";
-  language: string = ""; 
-  sastNodes: SastNode[] = [];
-  scaNode: ScaNode | undefined;
-  kicsNode: KicsNode | undefined;
-
-  getHtmlDetails() {
-    if (this.sastNodes && this.sastNodes.length > 0) {return this.sastDetails();}
-    if (this.scaNode) {return this.scaDetails();}
-    if (this.kicsNode ) {return this.kicsDetails();}
-    
-    return "";
-  }
-
-  private sastDetails() {
-    let html = `<h3><u>Attack Vector</u></h3>`;
-    this.sastNodes.forEach(node => {
-      html += `<li><a href="#" 
-      class="ast-node"
-      data-filename="${node.fileName}" data-line="${node.line}" data-column="${node.column}"
-      data-fullName="${node.fullName}">${node.fileName}:${node.line}</a> | [code snip] </li>`;
-    });
-    return html;
-  };
-
-  private scaDetails() {
-    let html = `<h3><u>Package Data</u></h3>`;
-    
-    this.scaNode?.packageData.forEach(node => {
-      html +=`<li><a href="${node.comment}">${node.comment}</a></li>`;
-    });
-    return html;
-  }
-
-  private kicsDetails() {
-    let html = `<h2><u>Description</u></h2>`;
-    html +=`<li>${this.kicsNode ? this.kicsNode.queryName + " [ " + this.kicsNode.queryId + " ]" : ""}</li>`;
-    return html;
-  }
-}
-
-class SastNode {  
-  constructor(
-    public id:number,
-    public column: number,
-    public fileName: string,
-    public fullName: string,
-    public length: number,
-    public line: number,
-    public methodLine: number,
-    public name: string,
-    public domType: string,
-    public method: string,
-    public nodeID: number,
-    public definitions:string,
-    public nodeSystemId: string,
-    public nodeHash: string
-  ) { }
-}
-
-class ScaNode {  
-  constructor(
-    public description:string,
-    public packageData: PackageData[],
-    public packageId: PackageData[]
-
-  ) { }
-}
-
-class PackageData {
-  constructor(
-    public comment: string,
-    public type: string,
-    public url: string
-  ){}
-}
-
-class KicsNode {  
-  constructor(
-    public queryId:string,
-    public queryName:string,
-    public group:string,
-    public description:string,
-
-  ) { }
-}
 
 export class TreeItem extends vscode.TreeItem {
   children: TreeItem[] | undefined;
@@ -192,46 +162,3 @@ export class TreeItem extends vscode.TreeItem {
   }
 }
 
-function createObj(result: Object): AstResult | undefined {
-  switch(result.type) {
-    case "sast":
-      return convertSast(result);
-    case "dependency":
-      return convertSca(result);
-    case "infrastructure":
-      return convertKics(result);
-  }
-  return undefined;
-}
-
-function convertSast(result: Object) {
-  const astResult = new AstResult();
-  astResult.type = result.type;
-  astResult.label = result.data.queryName;
-  astResult.severity = result.severity;
-  astResult.status = result.status;
-  astResult.sastNodes = result.data.nodes;
-  astResult.language = result.data.languageName;
-  astResult.fileName = astResult.sastNodes[0].fileName;
-  return astResult;
-}
-
-function convertSca(result: Object) {
-  const astResult = new AstResult();
-  astResult.label = result.id;
-  astResult.type = result.type;
-  astResult.severity = result.severity;
-  astResult.status = result.status;
-  astResult.scaNode = result.data;
-  return astResult;
-}
-
-function convertKics(result: Object) {
-  const astResult = new AstResult();
-  astResult.type = result.type;
-  astResult.label = result.data.queryName;
-  astResult.severity = result.severity;
-  astResult.status = result.status;
-  astResult.kicsNode = result.data;
-  return astResult;
-}

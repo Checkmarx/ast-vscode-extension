@@ -1,9 +1,10 @@
 import { pathToFileURL } from 'url';
 import * as vscode from 'vscode';
-import { TreeItem, AstResult } from './ast_results_provider';
+import { TreeItem } from './ast_results_provider';
+import { AstResult } from './results';
+import { getNonce } from './utils';
 
 export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
-	public static readonly viewType = 'astDetailsView';
 	private _view?: vscode.WebviewView;
 	private result: AstResult | undefined;
 	constructor(
@@ -35,78 +36,21 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
 				case 'showFile':
-					this.loadDecorations(data);
+					this.loadDecorations(data.path, data.line, data.column, data.length);
 					break;
 			}
 		});
 	}
 
-
-	private vulnHighlightType = vscode.window.createTextEditorDecorationType({
-		borderWidth: '3px',	
-		borderStyle: 'solid',
-		overviewRulerColor: 'blue',
-		overviewRulerLane: vscode.OverviewRulerLane.Right,
-		backgroundColor: 'gray',
-		light: {
-			// this color will be used in light color themes
-			borderColor: 'darkblue'
-		},
-		dark: {
-			// this color will be used in dark color themes
-			borderColor: 'lightblue'
-		}
-	});
-	
-	
-	//
-	/// TEST CODE: Shows decorations on highlighted file
-	//
-	private loadDecorations(data: any) {		
-		// TODO: This will get mad if you have more then one workspace.
-		// This entire section of code needs polish
-		console.log("Showing decorations");
-		const folder = vscode.workspace.workspaceFolders?.[0];				
-		if (folder) {	
-			//const pattern1 = new vscode.RelativePattern(folder, '*.ts');
-			let absPath = folder.uri.path + data.sourceFile;
-			console.log(absPath);
-			let filePath = vscode.Uri.file(absPath);
-			//TODO check if the file is open. If open, show decorations. If not, open text editor in new tab
-			vscode.workspace.openTextDocument(filePath).then((a: vscode.TextDocument) => {
-				vscode.window.showTextDocument(a, 1, false).then(e => {
-					console.log("Document should be open now");
-					this.showDecorators(e, data);
-				});
+	private loadDecorations(filePath: string, line: number, startColumn: number, length: number) {
+		const folder = vscode.workspace.workspaceFolders![0];
+		const path = vscode.Uri.joinPath(folder.uri, filePath);
+		vscode.workspace.openTextDocument(path).then(doc => {
+			vscode.window.showTextDocument(doc).then(editor => {
+				var range = new vscode.Range(new vscode.Position(line, startColumn), new vscode.Position(line, startColumn + length));
+				editor.revealRange(range);
 			});
-		}
-	}
-	
-	private showDecorators(editor: vscode.TextEditor, data: any) {		
-		//data.line
-		//data.column
-		//data.length
-		//data.comment
-		// TODO: this won'ot handle more the one decoration per file.
-		console.log("Trying to load decorations");		
-		console.log(data);
-		const cxVulns: vscode.DecorationOptions[] = [];
-		const startPos = editor.document.positionAt(214);
-		const endPos = editor.document.positionAt(236);
-		//const decoration = { range: new vscode.Range(startPos, endPos), hoverMessage: data.comment};		
-		//cxVulns.push(decoration);
-		let line = (data.line-1);
-		let column = 1;
-		if(data.column){
-			column = data.column;
-		}
-		const decoration2 = {range: new vscode.Range(line, column, line, (column + data.length)), hoverMessage: (data.queryName + ", Comment: " + data.comment)};
-		cxVulns.push(decoration2);
-		editor.setDecorations(this.vulnHighlightType, cxVulns);
-		let activeEditor:any = vscode.window.activeTextEditor;
-		let range = activeEditor.document.lineAt(line).range;
-		activeEditor.selection =  new vscode.Selection(range.start, range.end);
-		activeEditor.revealRange(range);
+		});
 	}
 
 	private _getHtmlForEmptyView(webview: vscode.Webview) {
@@ -125,7 +69,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		if (!this.result) {return this._getHtmlForEmptyView(webview);}
+		if (!this.result) { return this._getHtmlForEmptyView(webview); }
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'view.js'));
 
@@ -133,9 +77,9 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
 		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
-		
+
 		const nonce = getNonce();
-		
+
 		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
@@ -166,11 +110,3 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 	}
 }
 
-function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
-}
