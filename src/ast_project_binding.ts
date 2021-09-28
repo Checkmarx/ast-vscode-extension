@@ -1,17 +1,35 @@
 import * as vscode from 'vscode';
 import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
-import * as CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
+import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
+import { getNonce } from './utils';
 
 
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
-	public static readonly viewType = 'astProjectView';
 	private _view?: vscode.WebviewView;
 	private scanID: string = "";
 	
 	constructor(
-		private readonly _extensionUri: vscode.Uri
-	) { }
+		private readonly context: vscode.ExtensionContext,
+		private readonly _extensionUri: vscode.Uri,
+		private readonly statusBarItem: vscode.StatusBarItem
+	) { 
+		this.scanID = context.globalState.get(SCAN_ID_KEY, "");
+	}
+
+	private showStatusBarItem() {
+		this.statusBarItem.text = "$(sync~spin) Loading Results";
+		this.statusBarItem.tooltip = "Checkmarx command is running";
+		this.statusBarItem.command = `${EXTENSION_NAME}.showoutput`;
+		this.statusBarItem.show();
+	}
+
+	private hideStatusBarItem() {
+		this.statusBarItem.text = EXTENSION_NAME;
+		this.statusBarItem.tooltip = undefined;
+		this.statusBarItem.command = undefined;
+		this.statusBarItem.hide();
+	}
 
 	public getAstConfiguration() {
 		let baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
@@ -25,7 +43,9 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	async loadResults(scanID: string) {
-		let cx = new CxAuth.CxAuth(this.getAstConfiguration());
+		this.context.globalState.update(SCAN_ID_KEY, scanID);
+		
+		const cx = new CxAuth.CxAuth(this.getAstConfiguration());
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 		await cx.getResults(scanID,"json","ast-results", __dirname);
 		vscode.commands.executeCommand("ast-results.refreshTree");
@@ -51,10 +71,11 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					this.scanID = data.scanID;
 					break;
 				case 'loadASTResults':
-					console.log("scanID from submitted request: ",this.scanID);	
-					vscode.window.showInformationMessage('Loading Results data for ID:', data.scanID);
+					vscode.window.showInformationMessage(`Loading Results data for ID: ${this.scanID}`);
+					this.showStatusBarItem();
 					this.scanID = data.scanID;
 					this.loadResults(this.scanID);
+					this.hideStatusBarItem();
 					break;
 			}
 		});
@@ -101,13 +122,3 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			</html>`;
 	}
 }
-
-function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
-}
-

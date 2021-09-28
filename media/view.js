@@ -13,6 +13,7 @@
 			path: target.dataset.filename,
 			line: target.dataset.line,
 			column: target.dataset.column,
+			length: target.dataset.length,
 		});
 	});
 }());
