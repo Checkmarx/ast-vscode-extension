@@ -12,4 +12,9 @@
 			scanID: scanID
 		});
 	});
+	document.querySelector('.ast-settings').addEventListener('click', () => {
+		vscode.postMessage({
+			command: 'settings'
+		});
+	});
 }());

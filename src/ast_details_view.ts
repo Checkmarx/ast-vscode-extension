@@ -44,10 +44,18 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 
 	private loadDecorations(filePath: string, line: number, startColumn: number, length: number) {
 		const folder = vscode.workspace.workspaceFolders![0];
+		const position = new vscode.Position(+line, +startColumn);
 		const path = vscode.Uri.joinPath(folder.uri, filePath);
-		vscode.workspace.openTextDocument(path).then(doc => {
-			vscode.window.showTextDocument(doc).then(editor => {
-				var range = new vscode.Range(new vscode.Position(line, startColumn), new vscode.Position(line, startColumn + length));
+		
+		vscode.workspace.openTextDocument(path).then(doc => 
+		{
+			vscode.window.showTextDocument(doc).then(editor => 
+			{
+				// Line added - by having a selection at the same position twice, the cursor jumps there
+				editor.selections = [new vscode.Selection(position,position)]; 
+		
+				// And the visible range jumps there too
+				var range = new vscode.Range(position, position);
 				editor.revealRange(range);
 			});
 		});

@@ -33,6 +33,12 @@
         "icon": "$(eye)"
       },
       {
+        "command": "ast-results.viewSettings",
+        "category": "checkmarx-ast",
+        "title": "Settings",
+        "icon": "$(gear)"
+      },
+      {
         "command": "ast-results.groupBySeverity",
         "category": "checkmarx-ast",
         "title": "Group by: Severity"
@@ -74,13 +80,11 @@
           "command": "ast-results.groupByFile",
           "group": "@groupBy",
           "when": "view == astResults"
-        }
-      ],
-      "view/item/context": [
+        },
         {
-          "command": "ast-results.viewResult",
-          "group": "inline",
-          "when": "viewItem == view"
+          "command": "ast-results.viewSettings",
+          "group": "navigation",
+          "when": "view == astProjectView"
         }
       ]
     },
@@ -125,35 +129,15 @@
           "default": "",
           "description": "AST Server authentication server URI"
         },
-        "checkmarxAST.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "API KEY"
-        },
         "checkmarxAST.tenant": {
           "type": "string",
           "default": "",
           "description": "Tenant"
         },
-        "checkmarxAST.useProxy": {
-          "type": "boolean",
-          "default": false,
-          "description": "Use Proxy Server?"
-        },
-        "checkmarxAST.proxy": {
+        "checkmarxAST.apiKey": {
           "type": "string",
           "default": "",
-          "description": "Proxy server address"
-        },
-        "checkmarxAST.ntlmProxy": {
-          "type": "boolean",
-          "default": false,
-          "description": "Is proxy NTLM?"
-        },
-        "checkmarxAST.ntlmDomain": {
-          "type": "string",
-          "default": "",
-          "description": "NTLM domain"
+          "description": "API KEY"
         }
       }
     }
@@ -166,6 +150,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.174",
+    "@types/node": "^16.10.1",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^4.16.0",
     "@typescript-eslint/parser": "^4.16.0",

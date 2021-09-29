@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 export class AstResult {
 	label: string = "";
 	type: string = "";
@@ -10,7 +12,7 @@ export class AstResult {
 	kicsNode: KicsNode | undefined;
 	rawObject: Object;
 
-	constructor(result: Object) {
+	constructor(result: any) {
 		this.type = result.type;
 		this.label = result.data.queryName ? result.data.queryName : result.id;
 		this.severity = result.severity;
@@ -23,9 +25,37 @@ export class AstResult {
 			this.fileName = result.data.nodes[0].fileName;
 		}
 	
-		if (result.type === "sca") { this.scaNode = result.data; }
+		if (result.type === "dependency") { this.scaNode = result.data; }
 	
 		if (result.type === "infrastructure") { this.kicsNode = result.data; }
+	}
+
+	getIcon() {
+		switch(this.severity) {
+			case "HIGH":
+				return "error";
+			case "MEDIUM":
+				return "warning";
+			case "INFO":
+				return "info";
+			case "LOW":
+				return "info";	
+		}
+		return "";
+	}
+
+	getSeverityCode() {
+		switch(this.severity) {
+			case "HIGH":
+				return vscode.DiagnosticSeverity.Error;
+			case "MEDIUM":
+				return vscode.DiagnosticSeverity.Warning;
+			case "INFO":
+				return vscode.DiagnosticSeverity.Information;
+			case "LOW":
+				return vscode.DiagnosticSeverity.Information;	
+		}
+		return vscode.DiagnosticSeverity.Information;;
 	}
   
 	getHtmlDetails() {
@@ -39,10 +69,10 @@ export class AstResult {
 	private sastDetails() {
 	  let html = `<h3><u>Attack Vector</u></h3>`;
 	  this.sastNodes.forEach(node => {
-		html += `<p><a href="#" 
+		html += `<p>- <a href="#" 
 		class="ast-node"
 		data-filename="${node.fileName}" data-line="${node.line}" data-column="${node.column}"
-		data-fullName="${node.fullName}">${node.fileName}:${node.line}:${node.column}</a></p>`;
+		data-fullName="${node.fullName}" data-length="${node.length}">${node.fileName}:${node.line}:${node.column}</a></p>`;
 	  });
 	  return html;
 	};
@@ -51,14 +81,14 @@ export class AstResult {
 	  let html = `<h3><u>Package Data</u></h3>`;
 	  
 	  this.scaNode?.packageData.forEach(node => {
-		html +=`<li><a href="${node.comment}">${node.comment}</a></li>`;
+		html +=`<p>- <a href="${node.comment}">${node.comment}</a></p>`;
 	  });
 	  return html;
 	}
   
 	private kicsDetails() {
 	  let html = `<h2><u>Description</u></h2>`;
-	  html +=`<li>${this.kicsNode ? this.kicsNode.queryName + " [ " + this.kicsNode.queryId + " ]" : ""}</li>`;
+	  html +=`<p>- ${this.kicsNode ? this.kicsNode.queryName + " [ " + this.kicsNode.queryId + " ]" : ""}</p>`;
 	  return html;
 	}
   }

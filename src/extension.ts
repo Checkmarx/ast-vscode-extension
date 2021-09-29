@@ -28,10 +28,20 @@ export function activate(context: vscode.ExtensionContext) {
 	const viewProvider = vscode.window.registerWebviewViewProvider(`astDetailsView`, astDetailsViewProvider);
 	context.subscriptions.push(viewProvider);
 
+	const cleanTree = vscode.commands.registerCommand(`${EXTENSION_NAME}.cleanTree`, () => {
+		astResultsProvider.clean();
+	});
+	context.subscriptions.push(cleanTree);
+
 	const refreshTree = vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, () => {
 		astResultsProvider.refresh();
 	});
 	context.subscriptions.push(refreshTree);
+	
+	const viewSeetings = vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
+		vscode.commands.executeCommand('workbench.action.openSettings', `checkmarx`);
+	});
+	context.subscriptions.push(viewSeetings);
 
 	const viewResult = vscode.commands.registerCommand(`${EXTENSION_NAME}.viewResult`, (item: ast.TreeItem) => {
 		astDetailsViewProvider.refresh(item);

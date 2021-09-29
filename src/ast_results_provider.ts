@@ -24,16 +24,15 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly output: vscode.OutputChannel,
-		private readonly statusBarItem: vscode.StatusBarItem,
+    private readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection) {
       this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
       this.refreshData();
   }
 
   private showStatusBarItem() {
-		this.statusBarItem.text = "$(sync~spin) Loading Results";
+		this.statusBarItem.text = "$(sync~spin) Refreshing tree";
 		this.statusBarItem.tooltip = "Checkmarx command is running";
-		this.statusBarItem.command = `${EXTENSION_NAME}.reload`;
 		this.statusBarItem.show();
 	}
 
@@ -49,6 +48,16 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
   }
 
+  clean(): void {
+		const resultJsonPath = path.join(__dirname, 'ast-results.json');
+		if (fs.existsSync(resultJsonPath)) {
+			fs.unlinkSync(resultJsonPath);
+		}
+    
+    this.refreshData();
+    this._onDidChangeTreeData.fire(undefined);
+  }
+
   refreshData(): void {
     this.showStatusBarItem();
     this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
@@ -58,7 +67,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   generateTree(): TreeItem {
     const resultJsonPath = path.join(__dirname, 'ast-results.json');
-    if (!fs.existsSync(resultJsonPath)) {return new TreeItem("", undefined, []);} 
+    if (!fs.existsSync(resultJsonPath)) {
+      this.diagnosticCollection.clear();
+      return new TreeItem("", undefined, []);
+    } 
 
     const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, 'utf-8'));
 
@@ -84,7 +96,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (!obj) { return; }
 
     const item = new TreeItem(obj.label, obj);
-    if (obj.sastNodes.length > 0) {this.createDiagnostic(obj.label, obj.severity, obj.sastNodes[0], folder, map);}
+    if (obj.sastNodes.length > 0) {this.createDiagnostic(obj.label, obj.getSeverityCode(), obj.sastNodes[0], folder, map);}
     //obj.sastNodes.forEach((node) => this.createDiagnostic(obj.label, obj.severity, node, folder, map));
     
     const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
@@ -92,19 +104,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     node.setDescription();
   }
 
-  createDiagnostic(label: string, severity: string, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
+  createDiagnostic(label: string, severity: vscode.DiagnosticSeverity, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
     const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
     const column = (node.column | 1) - 1;
     const line =  (node.line | 1 ) - 1;
     let length = column + node.length;
-    if (length < 0) {
-      console.log("file %s line %s column %s nodelenght %s definitions %s", filePath, line, column, node.length, node.definitions );
-      length = column;
-    }
     const range = new vscode.Range(line, column, line, length);
-    const diagnosticSeverity = severity === "HIGH" ? vscode.DiagnosticSeverity.Error: vscode.DiagnosticSeverity.Warning;
     
-    const diagnostic = new vscode.Diagnostic(range, label, diagnosticSeverity);
+    const diagnostic = new vscode.Diagnostic(range, label, severity);
     if (map.has(filePath)) {
       map.get(filePath)?.push(diagnostic);
     } else {
@@ -142,7 +149,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 }
 
-
 export class TreeItem extends vscode.TreeItem {
   children: TreeItem[] | undefined;
   result: AstResult | undefined;
@@ -153,8 +159,10 @@ export class TreeItem extends vscode.TreeItem {
       children === undefined ? vscode.TreeItemCollapsibleState.None :
         vscode.TreeItemCollapsibleState.Expanded);
     this.result = result;
-    this.contextValue = result ? "view" : "";
     this.children = children;
+    if (result) {
+      this.iconPath =  new vscode.ThemeIcon(result.getIcon());
+    }
   };
 
   setDescription() {
