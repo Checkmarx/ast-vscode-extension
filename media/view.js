@@ -5,15 +5,17 @@
 (function () {
 	const vscode = acquireVsCodeApi();
 
-	document.querySelector('.ast-node').addEventListener('click', (e) => {
-		var target = e.target;
-		vscode.postMessage({
-			command: 'showFile',
-			sourceFile: target.dataset.filename,
-			path: target.dataset.filename,
-			line: target.dataset.line,
-			column: target.dataset.column,
-			length: target.dataset.length,
+	document.querySelectorAll('.ast-node').forEach(element => {
+		element.addEventListener('click', (e) => {
+			var target = e.target;
+			vscode.postMessage({
+				command: 'showFile',
+				sourceFile: target.dataset.filename,
+				path: target.dataset.filename,
+				line: target.dataset.line,
+				column: target.dataset.column,
+				length: target.dataset.length,
+			});
 		});
 	});
 }());

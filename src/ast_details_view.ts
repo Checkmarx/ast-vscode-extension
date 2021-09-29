@@ -44,7 +44,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 
 	private loadDecorations(filePath: string, line: number, startColumn: number, length: number) {
 		const folder = vscode.workspace.workspaceFolders![0];
-		const position = new vscode.Position(+line, +startColumn);
+		const position = new vscode.Position(+line + 1, +startColumn);
 		const path = vscode.Uri.joinPath(folder.uri, filePath);
 		
 		vscode.workspace.openTextDocument(path).then(doc => 
@@ -109,7 +109,7 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 			</head>
 			<body>
 				<h2>${this.result?.label}</h2>
-				<h3> ${this.result?.type} | ${this.result?.status} | ${this.result?.severity}</h3><br/>
+				<h3> ${this.result?.type} | ${this.result?.language} | ${this.result?.status} | ${this.result?.severity}</h3><br/>
 				${this.result?.getHtmlDetails()}
 
 				<script nonce="${nonce}" src="${scriptUri}"></script>
