@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
@@ -57,9 +55,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			return;
 		}
 		
-		vscode.window.showInformationMessage(`Loading Results data for ID: ${this.scanID}`);	
+		vscode.window.showInformationMessage(`Loading Results data for ID: ${scanID}`);	
 		vscode.commands.executeCommand("ast-results.cleanTree");
 		
+		this.scanID = scanID;
+		this.context.globalState.update(SCAN_ID_KEY, scanID);
+
 		this.showStatusBarItem();
 		const cx = new CxAuth.CxAuth(config);
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
