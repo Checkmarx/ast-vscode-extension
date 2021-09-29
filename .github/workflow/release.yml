@@ -1,0 +1,42 @@
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install VSCE
+        run: npm install -g vsce
+
+      - name: Package .vsix file
+        run: vsce package ${{ env.RELEASE_VERSION }}
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          files: ast-results-${{ env.RELEASE_VERSION }}.vsix
+  
+      - name: Publish
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: env.MARKET_TOKEN != null
+        run: vsce publish -p ${{ secrets.MARKET_TOKEN }}

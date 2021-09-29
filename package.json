@@ -1,0 +1,166 @@
+{
+  "name": "ast-results",
+  "publisher": "Checkmarx",
+  "displayName": "AST Results",
+  "description": "For managing AST scan results",
+  "version": "0.0.4",
+  "repository": "https://github.com/CheckmarxDev/ast-vscode-extension",
+  "engines": {
+    "vscode": "^1.56.2"
+  },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:astResults"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ast-results.refreshTree",
+        "category": "checkmarx-ast",
+        "title": "XXX"
+      },
+      {
+        "command": "ast-results.viewResult",
+        "category": "checkmarx-ast",
+        "title": "View",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "ast-results.viewSettings",
+        "category": "checkmarx-ast",
+        "title": "Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "ast-results.groupBySeverity",
+        "category": "checkmarx-ast",
+        "title": "Group by: Severity"
+      },
+      {
+        "command": "ast-results.groupByLanguage",
+        "category": "checkmarx-ast",
+        "title": "Group by: Language"
+      },
+      {
+        "command": "ast-results.groupByStatus",
+        "category": "checkmarx-ast",
+        "title": "Group by: Status"
+      },
+      {
+        "command": "ast-results.groupByFile",
+        "category": "checkmarx-ast",
+        "title": "Group by: File"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ast-results.groupBySeverity",
+          "group": "@groupBy",
+          "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.groupByStatus",
+          "group": "@groupBy",
+          "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.groupByLanguage",
+          "group": "@groupBy",
+          "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.groupByFile",
+          "group": "@groupBy",
+          "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.viewSettings",
+          "group": "navigation",
+          "when": "view == astProjectView"
+        }
+      ]
+    },
+    "views": {
+      "astView": [
+        {
+          "id": "astProjectView",
+          "type": "webview",
+          "name": "Projects"
+        },
+        {
+          "id": "astResults",
+          "type": "tree",
+          "name": "Results"
+        },
+        {
+          "id": "astDetailsView",
+          "type": "webview",
+          "name": "Details"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "astView",
+          "title": "Checkmarx AST",
+          "icon": "media/cx-icon.svg"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Checkmarx AST",
+      "properties": {
+        "checkmarxAST.base-uri": {
+          "type": "string",
+          "default": "",
+          "description": "AST Server URI"
+        },
+        "checkmarxAST.base-auth-uri": {
+          "type": "string",
+          "default": "",
+          "description": "AST Server authentication server URI"
+        },
+        "checkmarxAST.tenant": {
+          "type": "string",
+          "default": "",
+          "description": "Tenant"
+        },
+        "checkmarxAST.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API KEY"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint . --ext .ts,.tsx",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.174",
+    "@types/node": "^16.10.1",
+    "@types/vscode": "^1.50.0",
+    "@typescript-eslint/eslint-plugin": "^4.16.0",
+    "@typescript-eslint/parser": "^4.16.0",
+    "eslint": "^7.21.0",
+    "typescript": "^4.3.5",
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.29",
+    "lodash": "^4.17.21"
+  }
+}
