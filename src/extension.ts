@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const cleanTree = vscode.commands.registerCommand(`${EXTENSION_NAME}.cleanTree`, () => {
 		astResultsProvider.clean();
+		astDetailsViewProvider.clean();
 	});
 	context.subscriptions.push(cleanTree);
 

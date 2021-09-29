@@ -101,7 +101,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     
     const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
     node.children?.push(item);
-    node.setDescription();
   }
 
   createDiagnostic(label: string, severity: vscode.DiagnosticSeverity, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
@@ -123,17 +122,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const value = getProperty(obj, currentValue);
     if (!value) { return previousValue; }
 
-    const tree = previousValue.children ?
-      previousValue.children.find(item => (item.label === value)) : undefined;
-
+    const tree = previousValue.children ? previousValue.children.find(item => (item.label === value)) : undefined;
     if (tree) {
-      previousValue.setDescription();
+      tree.setDescription();
       return tree;
     }
 
     const newTree = new TreeItem(value, undefined, []);
     previousValue.children?.push(newTree);
-    previousValue.setDescription();
     return newTree;
   }
 
@@ -152,13 +148,15 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 export class TreeItem extends vscode.TreeItem {
   children: TreeItem[] | undefined;
   result: AstResult | undefined;
+  size: number;
 
   constructor(label: string, result?: AstResult, children?: TreeItem[]) {
     super(
       label,
       children === undefined ? vscode.TreeItemCollapsibleState.None :
-        vscode.TreeItemCollapsibleState.Expanded);
+        vscode.TreeItemCollapsibleState.Collapsed);
     this.result = result;
+    this.size = 1;
     this.children = children;
     if (result) {
       this.iconPath =  new vscode.ThemeIcon(result.getIcon());
@@ -166,7 +164,8 @@ export class TreeItem extends vscode.TreeItem {
   };
 
   setDescription() {
-    this.description = "" + this.children?.length;
+    +this.size++;
+    this.description = "" + this.size;
   }
 }
 

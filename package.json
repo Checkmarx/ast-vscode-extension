@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "AST Results",
   "description": "For managing AST scan results",
-  "version": "#{VERSION}#",
+  "version": "0.0.4",
   "repository": "https://github.com/CheckmarxDev/ast-vscode-extension",
   "engines": {
     "vscode": "^1.56.2"

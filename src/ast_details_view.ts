@@ -1,4 +1,3 @@
-import { pathToFileURL } from 'url';
 import * as vscode from 'vscode';
 import { TreeItem } from './ast_results_provider';
 import { AstResult } from './results';
@@ -15,6 +14,12 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		this.result = astResult.result;
 		if (this._view !== undefined) {
 			this._view.webview.html = this._getHtmlForWebview(this._view.webview);
+		}
+	}
+	public clean() {
+		this.result = undefined;
+		if (this._view !== undefined) {
+			this._view.webview.html = this._getHtmlForEmptyView(this._view?.webview);
 		}
 	}
 
@@ -51,10 +56,8 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 		{
 			vscode.window.showTextDocument(doc).then(editor => 
 			{
-				// Line added - by having a selection at the same position twice, the cursor jumps there
 				editor.selections = [new vscode.Selection(position,position)]; 
 		
-				// And the visible range jumps there too
 				var range = new vscode.Range(position, position);
 				editor.revealRange(range);
 			});
