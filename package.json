@@ -149,7 +149,6 @@
     "watch": "tsc -w -p ./"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.174",
     "@types/node": "^16.10.1",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^4.16.0",
@@ -160,8 +159,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.29",
-    "lodash": "^4.17.21"
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
