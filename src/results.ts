@@ -72,7 +72,7 @@ export class AstResult {
 		html += `<p>- <a href="#" 
 		class="ast-node"
 		data-filename="${node.fileName}" data-line="${node.line}" data-column="${node.column}"
-		data-fullName="${node.fullName}" data-length="${node.length}">${node.fileName}:${node.line}:${node.column}</a></p>`;
+		data-fullName="${node.fullName}" data-length="${node.length}">${node.fileName} [${node.line}:${node.column}]</a></p>`;
 	  });
 	  return html;
 	};
