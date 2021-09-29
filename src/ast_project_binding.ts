@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
@@ -18,24 +20,24 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	private showStatusBarItem() {
-		this.statusBarItem.text = "$(sync~spin) Loading Results";
+		this.statusBarItem.text = "$(sync~spin) AST Loading Results";
 		this.statusBarItem.tooltip = "Checkmarx command is running";
-		this.statusBarItem.command = `${EXTENSION_NAME}.showoutput`;
 		this.statusBarItem.show();
 	}
 
 	private hideStatusBarItem() {
 		this.statusBarItem.text = EXTENSION_NAME;
 		this.statusBarItem.tooltip = undefined;
-		this.statusBarItem.command = undefined;
 		this.statusBarItem.hide();
 	}
 
 	public getAstConfiguration() {
-		let baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
-		let tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
-		let token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
-		let config = new CxScanConfig.CxScanConfig();
+		const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
+		const tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
+		const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		if (!baseURI || !tenant || !token) {return undefined;}
+		
+		const config = new CxScanConfig.CxScanConfig();
 		config.apiKey = token;
 		config.baseUri = baseURI;
 		config.tenant = tenant;
@@ -43,11 +45,27 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	async loadResults(scanID: string) {
-		this.context.globalState.update(SCAN_ID_KEY, scanID);
+		const config = this.getAstConfiguration();
+
+		if (!scanID) {
+			vscode.window.showErrorMessage(`Please provide a scanId`);
+			return;
+		}
+
+		if (!config) {
+			vscode.window.showErrorMessage(`Please configure the plugin settings`);
+			return;
+		}
 		
-		const cx = new CxAuth.CxAuth(this.getAstConfiguration());
+		vscode.window.showInformationMessage(`Loading Results data for ID: ${this.scanID}`);	
+		vscode.commands.executeCommand("ast-results.cleanTree");
+		
+		this.showStatusBarItem();
+		const cx = new CxAuth.CxAuth(config);
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 		await cx.getResults(scanID,"json","ast-results", __dirname);
+		this.hideStatusBarItem();
+
 		vscode.commands.executeCommand("ast-results.refreshTree");
 	}
 
@@ -71,12 +89,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					this.scanID = data.scanID;
 					break;
 				case 'loadASTResults':
-					vscode.window.showInformationMessage(`Loading Results data for ID: ${this.scanID}`);
-					this.showStatusBarItem();
 					this.scanID = data.scanID;
 					this.loadResults(this.scanID);
-					this.hideStatusBarItem();
 					break;
+				case 'settings':
+					vscode.commands.executeCommand("ast-results.viewSettings");
+					break;				
 			}
 		});
 	}
@@ -116,9 +134,10 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
-
+				<button class="ast-settings">Settings</button>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
+	
 }

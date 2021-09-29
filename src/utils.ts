@@ -1,5 +1,5 @@
-export function getProperty(o: Object, propertyName: string): string {
-    return o[propertyName]; // o[propertyName] is of type T[K]
+export function getProperty(o: any, propertyName: string): string {
+    return o[propertyName];
 }
 
 export function getNonce() {
