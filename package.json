@@ -4,7 +4,15 @@
   "displayName": "AST Results",
   "description": "For managing AST scan results",
   "version": "0.0.4",
-  "repository": "https://github.com/CheckmarxDev/ast-vscode-extension",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
+  },
+  "homepage": "https://github.com/CheckmarxDev/ast-vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/CheckmarxDev/ast-vscode-extension/issues"
+  },
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.56.2"
   },
@@ -143,6 +151,11 @@
     }
   },
   "scripts": {
+        "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
