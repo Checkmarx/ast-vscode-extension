@@ -46,4 +46,4 @@ jobs:
         env:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null
-        run: vsce publish -p ${{ secrets.MARKET_TOKEN }}
+        run: vsce publish -p ${{ env.MARKET_TOKEN }}
