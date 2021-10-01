@@ -16,6 +16,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+          
+      - run: | 
+          git config user.name vscode-releases
+          git config user.email vscode-releases@github.com
 
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
