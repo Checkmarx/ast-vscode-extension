@@ -1,0 +1,5 @@
+{
+	"checkmarxAST.apiKey": "",
+	"checkmarxAST.base-uri": "https://ast-master.dev.cxast.net",
+	"checkmarxAST.tenant": "galactica"
+}

@@ -147,7 +147,7 @@
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./",
-    "test":"npm run compile && extest setup-and-run './out/test/**/*test.js' -i "
+    "test":"npm run compile && extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json"
   },
   "devDependencies": {
     "@types/node": "^16.10.1",

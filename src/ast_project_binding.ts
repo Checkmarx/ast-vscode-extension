@@ -132,7 +132,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Cat Colors</title>
 			</head>
 			<body>
-				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
+				<input type="text" id="scanID" title="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
 				<button class="ast-settings">Settings</button>
