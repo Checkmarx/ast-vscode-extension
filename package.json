@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "AST Results",
   "description": "For managing AST scan results",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "repository": "https://github.com/CheckmarxDev/ast-vscode-extension",
   "engines": {
     "vscode": "^1.56.2"
@@ -21,11 +21,6 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "ast-results.refreshTree",
-        "category": "checkmarx-ast",
-        "title": "XXX"
-      },
       {
         "command": "ast-results.viewResult",
         "category": "checkmarx-ast",
@@ -147,7 +142,7 @@
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./",
-    "test":"npm run compile && extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json"
+    "test":"npm run compile  && extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json "
   },
   "devDependencies": {
     "@types/node": "^16.10.1",
@@ -155,14 +150,16 @@
     "@typescript-eslint/eslint-plugin": "^4.16.0",
     "@typescript-eslint/parser": "^4.16.0",
     "eslint": "^7.21.0",
-    "typescript": "^4.3.5",
+    "typescript": "^4.4.4",
     "webpack": "^5.53.0",
     "webpack-cli": "^4.8.0",
-    "vscode-extension-tester": "4.2.0",
+    "vscode-extension-tester": "4.2.1",
     "@types/mocha": "9.0.0",
     "mocha": "9.1.2",
     "chai": "4.3.4",
-    "@types/chai": "4.2.22"
+    "@types/chai": "4.2.22",
+    "vsce": "^1.96.0",
+    "vscode-extension-tester-locators": "^1.59.0"
   },
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29"

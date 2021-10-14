@@ -29,13 +29,16 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(viewProvider);
 
 	const cleanTree = vscode.commands.registerCommand(`${EXTENSION_NAME}.cleanTree`, () => {
+		console.log("In extension- clean tree");
 		astResultsProvider.clean();
 		astDetailsViewProvider.clean();
 	});
 	context.subscriptions.push(cleanTree);
 
 	const refreshTree = vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, () => {
+		console.log("In extension- refresh tree");
 		astResultsProvider.refresh();
+
 	});
 	context.subscriptions.push(refreshTree);
 	
