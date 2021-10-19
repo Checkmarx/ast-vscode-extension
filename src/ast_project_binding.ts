@@ -109,7 +109,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				vscode.window.showInformationMessage("Results loaded successfully");
 			}
 			else {
-				this.logs.log("Info","No results available");
+				this.logs.log("Error","No results available");
 				vscode.window.showErrorMessage(`No results available for ID: ${scanID}`);
 			}			
 	 	}
