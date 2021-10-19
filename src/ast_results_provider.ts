@@ -5,6 +5,7 @@ import { EventEmitter } from 'vscode';
 import { AstResult, SastNode } from './results';
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getProperty } from './utils';
+import { Logs } from './logs';
 
 export enum IssueFilter {
   fileName = "fileName",
@@ -23,7 +24,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly output: vscode.OutputChannel,
+    private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection) {
       this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
@@ -67,6 +68,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   generateTree(): TreeItem {
     const resultJsonPath = path.join(__dirname, 'ast-results.json');
+    
     if (!fs.existsSync(resultJsonPath)) {
       this.diagnosticCollection.clear();
       return new TreeItem("", undefined, []);
