@@ -150,24 +150,25 @@
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./",
-    "test":"npm run compile  && extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json "
+    "gen-setting": "echo {\"checkmarxAST.apiKey\":\"%CX_API_KEY%\",\"checkmarxAST.base-uri\":\"%CX_BASE_URI%\",\"checkmarxAST.tenant\":\"galactica\"} > settings.json ",
+    "test": "npm run compile  && npm run gen-setting &&  extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json "
   },
   "devDependencies": {
+    "@types/chai": "4.2.22",
+    "@types/mocha": "9.0.0",
     "@types/node": "^16.10.1",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^4.16.0",
     "@typescript-eslint/parser": "^4.16.0",
-    "eslint": "^7.21.0",
-    "typescript": "^4.4.4",
-    "webpack": "^5.53.0",
-    "webpack-cli": "^4.8.0",
-    "vscode-extension-tester": "4.2.1",
-    "@types/mocha": "9.0.0",
-    "mocha": "9.1.2",
     "chai": "4.3.4",
-    "@types/chai": "4.2.22",
+    "eslint": "^7.21.0",
+    "mocha": "9.1.2",
+    "typescript": "^4.4.4",
     "vsce": "^1.96.0",
-    "vscode-extension-tester-locators": "^1.59.0"
+    "vscode-extension-tester": "4.2.1",
+    "vscode-extension-tester-locators": "^1.59.0",
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
   },
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29"

@@ -12,8 +12,10 @@ describe('Check configuration settings', async function () {
 	let activityBar: ActivityBar;
 	let scanConfig: CxScanConfig;
 	let editorView: EditorView;
+
     before( async () => {
 								this.timeout(100000);
+								//loadSettingsJson();
 								scanConfig = new CxScanConfig();
         bench = new Workbench();
 								webView = new WebView();
@@ -212,3 +214,13 @@ it('should select vulnerability and make sure detail view is populated', async f
 
 
 const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
+
+// function loadSettingsJson() {
+// 	const fs = require('fs');
+// 	let rawData = fs.readFileSync(path.resolve(__dirname, '../../src/settings.json'));
+// 	let setting = JSON.parse(rawData);
+// 	setting['checkmarxAST.apiKey'] = process.env.CX_API_KEY;
+//  fs.writeFileSync(path.resolve(__dirname, '../../src/setting.json'), JSON.stringify(setting));
+
+// 	//throw new Error('Function not implemented.');
+// }
