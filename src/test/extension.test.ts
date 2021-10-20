@@ -11,6 +11,7 @@ describe('Check configuration settings', async function () {
 	let settingsWizard:SettingsEditor;
 	let activityBar: ActivityBar;
 	let scanConfig: CxScanConfig;
+	let editorView: EditorView;
     before( async () => {
 								this.timeout(100000);
 								scanConfig = new CxScanConfig();
@@ -18,6 +19,7 @@ describe('Check configuration settings', async function () {
 								webView = new WebView();
 								driver = VSBrowser.instance.driver;
 								activityBar = new ActivityBar();
+								editorView = new EditorView();
     });
 
 				it('should only enable Checkmarx AST extension', async function () {
@@ -136,7 +138,7 @@ it('should check the individual nodes for ALL filters', async function () {
 	});
 	await delay(5000);
 	await bench.executeCommand("Checkmarx AST: Group By: Severity");
-	const resultArray = ["HIGHEST,LOWEST,MEDIUMEST"];
+	const resultArray = ["HIGH,LOW,MEDIUM"];
 		await results.getVisibleItems().then(async node => {
 			node.forEach(async indNode => {
 				await indNode.expand();
@@ -164,6 +166,7 @@ it('should open individual filter and underlying tree items', async function () 
 	const scaNodes = await results.getVisibleItems().then((async items => {
 		await items.forEach(async (item) => {
 			await item.expand();
+			expect(item).to.have.length.greaterThan(0);
 			await delay(2000);
 		});
 
@@ -189,7 +192,16 @@ it('should select vulnerability and make sure detail view is populated', async f
 	await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astdetailsview")));
 	await driver.wait(until.elementsLocated(By.id("active-frame")));
 	await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
- const scanElement = await driver.findElement(By.className("ast-node")).click();
+ const scanElement = await driver.findElement(By.className("ast-node"));
+	const valueOfText = await scanElement.getText();
+	await scanElement.click();
+	await delay(3000);
+	await driver.switchTo().defaultContent();
+	editorView = new EditorView();
+	const tab = await editorView.getTabByTitle(valueOfText.split(" ")[0].replace("/",""));
+	const tabval = await tab.getText();
+	expect(tabval).to.have.length.greaterThan(0);
+
 		});
 		await delay(10000);
 
