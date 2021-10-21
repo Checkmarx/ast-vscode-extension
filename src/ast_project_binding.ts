@@ -72,19 +72,6 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Info","Valid fields for settings");
 			vscode.window.showInformationMessage("Valid fields for settings");
 		}
-		// vscode.window.withProgress(
-		// 	{
-		// 	  location: vscode.ProgressLocation.Notification,
-		// 	  cancellable: false,
-		// 	},
-		// 	async (progress, token) => {
-		// 	 for (let i = 0; i < 10; i++) {
-		// 	  setTimeout(() => {
-		// 		progress.report({ increment: i*10, message: 'Finding ...' });
-		// 	  }, 10000);
-		// 	}
-		//    }
-		// );
 	}
 
 	async loadResults(scanID: string) {
