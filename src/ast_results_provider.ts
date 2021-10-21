@@ -54,8 +54,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		if (fs.existsSync(resultJsonPath)) {
 			fs.unlinkSync(resultJsonPath);
 		}
-    
     this.refreshData();
+    // let test = this.context.globalState.get(SCAN_ID_KEY, "");
+    // console.log("ID ATUAL",test);
+    // this.context.globalState.update(SCAN_ID_KEY,"");
     this._onDidChangeTreeData.fire(undefined);
   }
 

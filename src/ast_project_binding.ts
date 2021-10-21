@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
-import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
+import * as CxAuth from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxAuth";
+import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
@@ -31,6 +31,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		this.statusBarItem.tooltip = undefined;
 		this.statusBarItem.hide();
 	}
+
+	public getWebView() { return this._view;}
 
 	public getAstConfiguration() {
 		this.logs.log("Info","Loading configurations");
@@ -69,7 +71,20 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		if(valid) {
 			this.logs.log("Info","Valid fields for settings");
 			vscode.window.showInformationMessage("Valid fields for settings");
-		}	
+		}
+		// vscode.window.withProgress(
+		// 	{
+		// 	  location: vscode.ProgressLocation.Notification,
+		// 	  cancellable: false,
+		// 	},
+		// 	async (progress, token) => {
+		// 	 for (let i = 0; i < 10; i++) {
+		// 	  setTimeout(() => {
+		// 		progress.report({ increment: i*10, message: 'Finding ...' });
+		// 	  }, 10000);
+		// 	}
+		//    }
+		// );
 	}
 
 	async loadResults(scanID: string) {
@@ -129,7 +144,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		_token: vscode.CancellationToken,
 	) {
 		// Setup the WV callbacks
-		//this._view = webviewView;
+		this._view = webviewView;
 		webviewView.webview.options = {
 			enableScripts: true,
 			localResourceRoots: [
@@ -150,6 +165,11 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					this.validateAstConfiguration();
 					vscode.commands.executeCommand("ast-results.viewSettings");
 					break;				
+				case 'clear':
+					vscode.commands.executeCommand("ast-results.clear");
+					// send the message inside of the webview to clear the id
+					webviewView.webview.postMessage({instruction:"clear ID"});
+					break;			
 			}
 		});
 	}
@@ -181,13 +201,14 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
 
-				<title>Cat Colors</title>
+				<title>Checkmarx</title>
 			</head>
 			<body>
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
 				<button class="ast-settings">Settings</button>
+				<button class="ast-clear">Clear</button>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
