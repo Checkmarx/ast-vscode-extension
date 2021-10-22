@@ -76,7 +76,7 @@
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
         "title": "Clear",
-        "icon": "$(eye)"
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
