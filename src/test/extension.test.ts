@@ -60,7 +60,7 @@ it('should checkout the bodge it code', async function () {
 	const names = await terminalView.getChannelNames();
 	await terminalView.selectChannel('Git');
 	//await terminalView.executeCommand('cd /tmp');
-	const gitRepo = process.env.TEST_REPO? process.env.TEST_REPO : DEFAULT_TEST_REPO;
+	const gitRepo = process.env.CX_TEST_REPO? process.env.CX_TEST_REPO : DEFAULT_TEST_REPO;
 	console.log("Cloning test repo: " + gitRepo);
 	await terminalView.executeCommand('git clone ' + gitRepo);
 	await delay(15000);
@@ -102,7 +102,9 @@ it('should get scan ID and update the scanID label and load results', async func
 	await driver.wait(until.elementsLocated(By.id("active-frame")));
 	await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
 	// get scan_id from env variable and also load the code 
- const scanElement = await driver.findElement(By.id("scanID")).sendKeys(process.env.TEST_SCAN_ID?process.env.TEST_SCAN_ID: DEFAULT_SCAN_ID);
+	const testScanID = process.env.CX_TEST_SCAN_ID?process.env.CX_TEST_SCAN_ID: DEFAULT_SCAN_ID;
+	console.log("Test scan id: " + testScanID);
+ const scanElement = await driver.findElement(By.id("scanID")).sendKeys(testScanID);
 	driver.findElement(By.className("ast-search")).click();
 	await driver.switchTo().defaultContent();
 	await delay(10000);

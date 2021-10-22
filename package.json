@@ -150,7 +150,7 @@
     "compile": "tsc -p ./",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./",
-    "gen-setting": "echo {\"checkmarxAST.apiKey\":\"%CX_API_KEY%\",\"checkmarxAST.base-uri\":\"%CX_BASE_URI%\",\"checkmarxAST.tenant\":\"galactica\"} > settings.json ",
+    "gen-setting": "echo {\"checkmarxAST.apiKey\":\"%CX_API_KEY%\",\"checkmarxAST.base-uri\":\"%CX_BASE_URI%\",\"checkmarxAST.tenant\":\"%CX_TENANT%\"} > settings.json ",
     "test": "npm run compile  && npm run gen-setting &&  extest setup-and-run  './out/test/**/*test.js' -i -o ./settings.json "
   },
   "devDependencies": {
