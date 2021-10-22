@@ -195,18 +195,16 @@ it('should select vulnerability and make sure detail view is populated', async f
 	if(!await results.isExpanded()){
 			await results.expand();
 	}
-	const labels: string[] = [];
 	const sastNode =await results.getVisibleItems();
-			(sastNode.forEach(async (node) => {
+	sastNode.forEach(async (node) => {
 		//console.log(await node.getLabel());
 		if (await node.isExpandable() && !await node.isExpanded()) {
 			await node.expand();
 		}
 		const labelName = await node.getLabel();
-		labels.push(labelName);
 		//labelName.includes("_") ? testLabel = labelName : "";
 		expect(labelName).to.have.length.greaterThan(0);
-	}));
+	});
 
 	await sastNode[2].click();
 	//const val = await Promise.all(await (await results.getVisibleItems()).filter(async item => (await item.getLabel()).includes("_")));
@@ -221,11 +219,6 @@ it('should select vulnerability and make sure detail view is populated', async f
 	// while(await view?.getContent().getSection('Details') as ViewSection !== undefined) {
 	// 	await bench.sendKeys(Key.DOWN,Key.ENTER);
 	// }
-	
-
-
-
-
 	// const ele = await details.getEnclosingElement();
 	// console.log(await ele.getText());
 	const detailsView = await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
@@ -235,7 +228,7 @@ it('should select vulnerability and make sure detail view is populated', async f
  const scanElement = await driver.findElement(By.className("ast-node"));
 	const valueOfText = await scanElement.getText();
 	await scanElement.click();
-	await delay(3000);
+	await delay(8000);
 	await driver.switchTo().defaultContent();
 	editorView = new EditorView();
 	const tab = await editorView.getTabByTitle(valueOfText.split(" ")[0].replace("/",""));
