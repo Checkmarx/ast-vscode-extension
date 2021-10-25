@@ -8,7 +8,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [windows-latest]
       fail-fast: true
     runs-on: ${{ matrix.os }}
     steps:
