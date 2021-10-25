@@ -8,7 +8,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
       fail-fast: true
     runs-on: ${{ matrix.os }}
     steps:
@@ -25,6 +25,7 @@ jobs:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_BASE_URI: ${{ secrets.BASE_URI }}
           CX_TENANT: ${{ secrets.TENANT }}
+          CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
         run: npm install && npm test
       
   cx-scan:

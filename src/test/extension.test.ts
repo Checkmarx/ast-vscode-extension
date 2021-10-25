@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import path = require('path');
 import { Location, TextEdit } from 'vscode';
 import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem ,ComboSetting, LinkSetting, InputBox, SettingsEditor, Locators, By, WebView, Key, SideBarView, ActivityBar, ViewControl, WebElementPromise, WebElement, CustomTreeSection, CustomTreeItem, ViewItem, until, Locator, ViewSection, DefaultTreeSection, BottomBarPanel, TitleBar, EditorView, ModalDialog, ExtensionsViewSection} from 'vscode-extension-tester';
-describe('Check configuration settings', async function () {
+describe('Check basic test cases', async function () {
 	let bench: Workbench;
 	let driver: WebDriver;
 	let webView: WebView;
@@ -12,18 +12,13 @@ describe('Check configuration settings', async function () {
 	let activityBar: ActivityBar;
 	let scanConfig: CxScanConfig;
 	let editorView: EditorView;
-	const DEFAULT_TEST_REPO: string = "https://github.com/pedrompflopes/ast-github-tester.git";
-	const DEFAULT_SCAN_ID: string = "990d1803-3b82-467c-b03e-0a3e1924e024";
 
     before( async () => {
 								this.timeout(100000);
-								//loadSettingsJson();
 								scanConfig = new CxScanConfig();
         bench = new Workbench();
 								webView = new WebView();
 								driver = VSBrowser.instance.driver;
-								
-								//await VSBrowser.instance.openResources(tempPath);
 								activityBar = new ActivityBar();
 								editorView = new EditorView();
     });
@@ -32,14 +27,6 @@ describe('Check configuration settings', async function () {
 
 				it('should open the settings and validate the wrong Key', async function () {
 					this.timeout(80000);
-					// await bench.executeCommand("Extensions: Disable All Installed Extensions");
-					// await delay(5000);
-					// const ctrl = await new ActivityBar().getViewControl('Extensions');
-					// await ctrl?.openView();
-					// const section = await new SideBarView().getContent().getSection('Installed') as ExtensionsViewSection;
-					// const item = await section.findItem('Checkmarx AST Results');
-					// const menu = await (await item?.manage())?.getItem('Enable');
-					// await menu?.click();
 					settingsWizard = await bench.openSettings();
 					await delay(5000);
 					const setting = await settingsWizard.findSetting("API KEY","Checkmarx AST") as LinkSetting;
@@ -56,16 +43,20 @@ describe('Check configuration settings', async function () {
 			await baseUriVal.setValue(process.env.CX_BASE_URI+"");
 			const tenantVal = await (await settingsWizard.findSetting("Tenant","Checkmarx AST"));
 			await tenantVal.setValue(process.env.CX_TENANT+"");
+			await delay(5000);
 			const apiKey = await (await settingsWizard.findSetting("Api Key","Checkmarx AST")).getValue();
-			expect(apiKey).to.have.lengthOf.above(1);
+			expect(apiKey).to.equal(process.env.CX_API_KEY+"");
+			await delay(2000);
 			const baseURI = await settingsWizard.findSetting("Base-uri","Checkmarx AST");
-			expect(await baseURI.getValue()).to.have.lengthOf.above(1);
+			expect(await baseURI.getValue()).to.equal(process.env.CX_BASE_URI+"");
+			await delay(2000);
 			const tenant = await settingsWizard.findSetting("Tenant","Checkmarx AST");
-			expect(await tenant.getValue()).to.have.lengthOf.above(1);
+			expect(await tenant.getValue()).to.equal(process.env.CX_TENANT+"");
+			await delay(5000);
 });
 
 it("should open the test repo",async function(){
-	this.timeout(15000);
+	this.timeout(80000);
 	await new TitleBar().select('File', 'Open Folder...');
 	const input = await InputBox.create();
 	const tempPath = __dirname.replace("out\\test","") + "testProj";
@@ -74,12 +65,6 @@ it("should open the test repo",async function(){
 	await (await input).confirm();
 	expect(tempPath).to.have.lengthOf.above(1);
 	await delay(10000);
-	
-	// const controls = await activityBar.getViewControl('Explorer');
-	// await controls?.openView();
-	// const section = await new SideBarView().getContent().getSection('Files');
-	// const item = await section.findItem('testProj');
-	// expect(await item?.getText()).to.equal('testProj');
 
 });
 
@@ -131,9 +116,10 @@ it('should get scan ID and update the scanID label and load results', async func
 	await driver.wait(until.elementsLocated(By.id("active-frame")));
 	await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
 	// get scan_id from env variable and also load the code 
-	//const testScanID = process.env.CX_TEST_SCAN_ID?process.env.CX_TEST_SCAN_ID: DEFAULT_SCAN_ID;
-	const testScanID = DEFAULT_SCAN_ID;
+	const testScanID = process.env.CX_TEST_SCAN_ID?process.env.CX_TEST_SCAN_ID: "";
+	//const testScanID = DEFAULT_SCAN_ID;
 	console.log("Test scan id: " + testScanID);
+	expect(testScanID).to.have.length.greaterThan(0);
  const scanElement = await driver.findElement(By.id("scanID")).sendKeys(testScanID);
 	driver.findElement(By.className("ast-search")).click();
 	await driver.switchTo().defaultContent();
@@ -159,17 +145,13 @@ it('should open the loaded results and traverse the tree items', async function 
 });
 
 it('should check the individual nodes for ALL filters', async function () {
-	this.timeout(80000);
+	this.timeout(100000);
 	const ctrl: ViewControl| undefined= await new ActivityBar().getViewControl('Checkmarx AST');	
 	const view = await ctrl?.openView();
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
 	if(!await results.isExpanded()){
 			await results.expand();
 	}
-		// await val.forEach(async node => {
-		// 	const indNode = (await node.getLabel());
-		// 	expect(indNode).to.have.length.greaterThan(0);
-		// });
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
 	 const node = await results.getVisibleItems();
@@ -179,7 +161,6 @@ it('should check the individual nodes for ALL filters', async function () {
 			indResult.forEach(async ind => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
-				//expect(["NEW,RECURRENT"]).to.include(childLabel);
 			});
 		});
 
@@ -229,32 +210,16 @@ it('should select vulnerability and make sure detail view is populated', async f
 	}
 	const sastNode =await results.getVisibleItems();
 	sastNode.forEach(async (node) => {
-		//console.log(await node.getLabel());
 		if (await node.isExpandable() && !await node.isExpanded()) {
 			await node.expand();
 		}
 		const labelName = await node.getLabel();
-		//labelName.includes("_") ? testLabel = labelName : "";
 		expect(labelName).to.have.length.greaterThan(0);
 	});
 
 	
 	// TODO -> Need to click the correct vulnerability node
 	await sastNode[2].click();
-	//const val = await Promise.all(await (await results.getVisibleItems()).filter(async item => (await item.getLabel()).includes("_")));
-	//console.log(labels);
-	//await sastNode[1].click();
-	// const labelNodes = (await Promise.all((sastNode.filter(async item => (await item.getLabel()).length > 12))));
-	// labelNodes.forEach(async node => console.log(await node.getLabel()));
-
-	//const childLabels = await sastNode.filter(async node =>  (await node.getLabel()).includes("_"));
-	//console.log(await childLabels.getText());
-	// sastNode[sastNode.length-1].click();
-	// while(await view?.getContent().getSection('Details') as ViewSection !== undefined) {
-	// 	await bench.sendKeys(Key.DOWN,Key.ENTER);
-	// }
-	// const ele = await details.getEnclosingElement();
-	// console.log(await ele.getText());
 	const detailsView = await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
 	await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astdetailsview")));
 	await driver.wait(until.elementsLocated(By.id("active-frame")));
@@ -279,13 +244,3 @@ it('should select vulnerability and make sure detail view is populated', async f
 
 
 const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
-
-// function loadSettingsJson() {
-// 	const fs = require('fs');
-// 	let rawData = fs.readFileSync(path.resolve(__dirname, '../../src/settings.json'));
-// 	let setting = JSON.parse(rawData);
-// 	setting['checkmarxAST.apiKey'] = process.env.CX_API_KEY;
-//  fs.writeFileSync(path.resolve(__dirname, '../../src/setting.json'), JSON.stringify(setting));
-
-// 	//throw new Error('Function not implemented.');
-// }
