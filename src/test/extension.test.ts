@@ -57,7 +57,8 @@ describe('Check basic test cases', async function () {
 
 it("should open the test repo",async function(){
 	this.timeout(80000);
-	await new TitleBar().select('File', 'Open Folder...');
+	await bench.executeCommand("File: Open Folder...");
+	//await new TitleBar().select('File', 'Open Folder...');
 	const input = await InputBox.create();
 	console.log("OS: ") + process.platform;
 	const appender = process.platform === 'win32'	? '\\' : '/';
