@@ -1,4 +1,4 @@
-name: AST Vscode Extension CI
+name: AST Vscode Extension CI Linux Test cases
 
 on:
   push:
