@@ -152,16 +152,19 @@ it('should check the individual nodes for ALL filters', async function () {
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
 	if(!await results.isExpanded()){
 			await results.expand();
+			await delay(2000);
 	}
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
 	 const node = await results.getVisibleItems();
 		node.forEach(async indNode => {
 			await indNode.expand();
+			await delay(2000);
 			const indResult = await indNode.getChildren();
 			indResult.forEach(async ind => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
+				await delay(2000);
 			});
 		});
 
@@ -177,7 +180,7 @@ it('should check the individual nodes for ALL filters', async function () {
 					expect(childLabel).to.have.length.greaterThan(0);
 				});
 			});
-		await delay(5000);
+		await delay(10000);
 });
 
 it('should open individual filter and underlying tree items', async function () {
