@@ -1,0 +1,46 @@
+name: AST Vscode Extension CI
+
+on:
+  push:
+    branch: feature/integration-tests
+
+jobs:
+  integration-tests:
+    strategy:
+      matrix:
+        os: [windows-latest]
+      fail-fast: true
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc    
+      - name: Integration Tests
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY}}
+          CX_BASE_URI: ${{ secrets.BASE_URI }}
+          CX_TENANT: ${{ secrets.TENANT }}
+          CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
+        run: npm install && npm test
+      
+  cx-scan:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Checkmarx AST CLI Action
+        uses: checkmarxDev/ast-github-action@master
+        with:
+          project_name: ast-vscode-extension
+          branch: master
+          base_uri: ${{ secrets.BASE_URI }}
+          cx_tenant: ${{ secrets.TENANT }}
+          cx_client_id: ${{ secrets.CLIENT_ID }}
+          cx_client_secret: ${{ secrets.CLIENT_SECRET }}
+          additional_params: --tags galactica-team
+          

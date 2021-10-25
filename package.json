@@ -147,10 +147,11 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run copytestproject",
     "lint": "eslint . --ext .ts,.tsx",
-    "watch": "tsc -w -p ./",
-    "test": "npm run compile  &&  extest setup-and-run  './out/test/**/*test.js' -i"
+    "watch": "tsc -w -p ./ && npm run copytestproject",
+    "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E", 
+    "test": "npm run compile  && npm run copytestproject && extest setup-and-run  './out/test/**/*test.js' -i"
   },
   "devDependencies": {
     "@types/chai": "4.2.22",
@@ -170,6 +171,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29"
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29",
+    "copyfiles": "2.4.1"
   }
 }
