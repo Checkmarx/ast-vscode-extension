@@ -1,8 +1,6 @@
 name: AST Vscode Extension CI Mac Test cases
 
-on:
-  push:
-    branch: feature/integration-tests
+on: [pull_request]
 
 jobs:
   integration-tests:
