@@ -22,11 +22,15 @@ describe('Check configuration settings', async function () {
         bench = new Workbench();
 								webView = new WebView();
 								driver = VSBrowser.instance.driver;
+								
+								//await VSBrowser.instance.openResources(tempPath);
 								activityBar = new ActivityBar();
 								editorView = new EditorView();
     });
 
-				it('should only enable Checkmarx AST extension', async function () {
+				
+
+				it('should open the settings and validate the wrong Key', async function () {
 					this.timeout(80000);
 					// await bench.executeCommand("Extensions: Disable All Installed Extensions");
 					// await delay(5000);
@@ -44,8 +48,14 @@ describe('Check configuration settings', async function () {
 	});
 	
 
-	it('should check if basic configurations exist', async function () {
+	it('should set the settings and check if values populated', async function () {
 			this.timeout(80000);
+			const apiKeyVal = await (await settingsWizard.findSetting("Api Key","Checkmarx AST"));
+			await apiKeyVal.setValue(process.env.CX_API_KEY+"");
+			const baseUriVal = await (await settingsWizard.findSetting("Base-uri","Checkmarx AST"));
+			await baseUriVal.setValue(process.env.CX_BASE_URI+"");
+			const tenantVal = await (await settingsWizard.findSetting("Tenant","Checkmarx AST"));
+			await tenantVal.setValue(process.env.CX_TENANT+"");
 			const apiKey = await (await settingsWizard.findSetting("Api Key","Checkmarx AST")).getValue();
 			expect(apiKey).to.have.lengthOf.above(1);
 			const baseURI = await settingsWizard.findSetting("Base-uri","Checkmarx AST");
@@ -54,27 +64,46 @@ describe('Check configuration settings', async function () {
 			expect(await tenant.getValue()).to.have.lengthOf.above(1);
 });
 
-it('should checkout the bodge it code', async function () {
-	this.timeout(100000);
-	const terminalView = await new BottomBarPanel().openTerminalView();
-	const names = await terminalView.getChannelNames();
-	await terminalView.selectChannel('Git');
-	//await terminalView.executeCommand('cd /tmp');
-	const gitRepo = process.env.CX_TEST_REPO? process.env.CX_TEST_REPO : DEFAULT_TEST_REPO;
-	console.log("Cloning test repo: " + gitRepo);
-	await terminalView.executeCommand('git clone ' + gitRepo);
-	await delay(15000);
+it("should open the test repo",async function(){
+	this.timeout(15000);
 	await new TitleBar().select('File', 'Open Folder...');
-	const input = InputBox.create();
-	const path = await (await input).getText();
-	const repo = gitRepo.split("/");
-	await (await input).setText(path + repo[repo.length - 1].replace(".git",""));
+	const input = await InputBox.create();
+	const tempPath = __dirname.replace("out\\test","") + "testProj";
+	console.log(tempPath);
+	await (await input).setText(tempPath);
 	await (await input).confirm();
+	expect(tempPath).to.have.lengthOf.above(1);
 	await delay(10000);
-	// const dialog = new ModalDialog();
-	// await dialog.pushButton('Cancel');
-	// await delay(10000);
-		});
+	
+	// const controls = await activityBar.getViewControl('Explorer');
+	// await controls?.openView();
+	// const section = await new SideBarView().getContent().getSection('Files');
+	// const item = await section.findItem('testProj');
+	// expect(await item?.getText()).to.equal('testProj');
+
+});
+
+// it('should checkout the test repo code', async function () {
+// 	this.timeout(100000);
+// 	const terminalView = await new BottomBarPanel().openTerminalView();
+// 	const names = await terminalView.getChannelNames();
+// 	await terminalView.selectChannel('Git');
+// 	//await terminalView.executeCommand('cd /tmp');
+// 	const gitRepo = process.env.CX_TEST_REPO? process.env.CX_TEST_REPO : DEFAULT_TEST_REPO;
+// 	console.log("Cloning test repo: " + gitRepo);
+// 	await terminalView.executeCommand('git clone ' + gitRepo);
+// 	await delay(15000);
+// 	await new TitleBar().select('File', 'Open Folder...');
+// 	const input = InputBox.create();
+// 	const path = await (await input).getText();
+// 	const repo = gitRepo.split("/");
+// 	await (await input).setText(path + repo[repo.length - 1].replace(".git",""));
+// 	await (await input).confirm();
+// 	await delay(10000);
+// 	// const dialog = new ModalDialog();
+// 	// await dialog.pushButton('Cancel');
+// 	// await delay(10000);
+// 		});
 
 it('should open the checkmarx AST extension', async function () {
 	this.timeout(80000);
@@ -102,7 +131,8 @@ it('should get scan ID and update the scanID label and load results', async func
 	await driver.wait(until.elementsLocated(By.id("active-frame")));
 	await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
 	// get scan_id from env variable and also load the code 
-	const testScanID = process.env.CX_TEST_SCAN_ID?process.env.CX_TEST_SCAN_ID: DEFAULT_SCAN_ID;
+	//const testScanID = process.env.CX_TEST_SCAN_ID?process.env.CX_TEST_SCAN_ID: DEFAULT_SCAN_ID;
+	const testScanID = DEFAULT_SCAN_ID;
 	console.log("Test scan id: " + testScanID);
  const scanElement = await driver.findElement(By.id("scanID")).sendKeys(testScanID);
 	driver.findElement(By.className("ast-search")).click();
@@ -208,6 +238,8 @@ it('should select vulnerability and make sure detail view is populated', async f
 		expect(labelName).to.have.length.greaterThan(0);
 	});
 
+	
+	// TODO -> Need to click the correct vulnerability node
 	await sastNode[2].click();
 	//const val = await Promise.all(await (await results.getVisibleItems()).filter(async item => (await item.getLabel()).includes("_")));
 	//console.log(labels);

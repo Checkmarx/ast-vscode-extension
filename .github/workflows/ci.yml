@@ -25,8 +25,6 @@ jobs:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_BASE_URI: ${{ secrets.BASE_URI }}
           CX_TENANT: ${{ secrets.TENANT }}
-          CX_TEST_REPO: "https://github.com/CheckmarxDev/ast-cli-java-wrapper.git"
-          CX_TEST_SCAN_ID: "5dad0800-67f2-4209-a244-4494f104dcba"
         run: npm install && npm test
       
   cx-scan:
