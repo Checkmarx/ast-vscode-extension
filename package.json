@@ -47,6 +47,11 @@
         "icon": "$(gear)"
       },
       {
+        "command": "ast-results.clear",
+        "category": "checkmarx-ast",
+        "title": "Clear"
+      },
+      {
         "command": "ast-results.groupBySeverity",
         "category": "checkmarx-ast",
         "title": "Group by: Severity"
@@ -65,6 +70,13 @@
         "command": "ast-results.groupByFile",
         "category": "checkmarx-ast",
         "title": "Group by: File"
+      }
+      ,
+      {
+        "command": "ast-results.clear",
+        "category": "checkmarx-ast",
+        "title": "Clear",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -91,6 +103,11 @@
         },
         {
           "command": "ast-results.viewSettings",
+          "group": "navigation",
+          "when": "view == astProjectView"
+        },
+        {
+          "command": "ast-results.clear",
           "group": "navigation",
           "when": "view == astProjectView"
         }

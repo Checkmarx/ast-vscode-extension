@@ -54,7 +54,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		if (fs.existsSync(resultJsonPath)) {
 			fs.unlinkSync(resultJsonPath);
 		}
-    
     this.refreshData();
     this._onDidChangeTreeData.fire(undefined);
   }
