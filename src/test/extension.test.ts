@@ -152,21 +152,23 @@ it('should check the individual nodes for ALL filters', async function () {
 	const ctrl: ViewControl| undefined= await new ActivityBar().getViewControl('Checkmarx AST');	
 	const view = await ctrl?.openView();
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-	if(!await results.isExpanded()){
-			await results.expand();
-			await delay(2000);
-	}
+	// if(!await results.isExpanded()){
+	// 		await results.expand();
+	// 		await delay(3000);
+	// }
+	await results.expand();
+	await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
 	 const node = await results.getVisibleItems();
 		node.forEach(async indNode => {
 			await indNode.expand();
-			await delay(2000);
+			await delay(3000);
 			const indResult = await indNode.getChildren();
 			indResult.forEach(async ind => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
-				await delay(2000);
+				await delay(3000);
 			});
 		});
 
@@ -180,6 +182,7 @@ it('should check the individual nodes for ALL filters', async function () {
 				indResult.forEach(async ind => {
 					const childLabel = await ind.getLabel();
 					expect(childLabel).to.have.length.greaterThan(0);
+					await delay(3000);
 				});
 			});
 		await delay(10000);
