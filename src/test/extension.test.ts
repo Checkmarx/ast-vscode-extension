@@ -59,6 +59,7 @@ it("should open the test repo",async function(){
 	this.timeout(80000);
 	await new TitleBar().select('File', 'Open Folder...');
 	const input = await InputBox.create();
+	console.log("OS: ") + process.platform;
 	const appender = process.platform === 'win32'	? '\\' : '/';
 	const tempPath = __dirname + appender + "testProj";
 	console.log(tempPath);
