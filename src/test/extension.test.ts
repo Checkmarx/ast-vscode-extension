@@ -129,11 +129,13 @@ it('should check the individual nodes for ALL filters', async function () {
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
 	if(!await results.isExpanded()){
 			await results.expand();
-			await delay(3000);
+			await delay(5000);
 	}
+	expect(results).not.be.undefined;
 	//await results.expand();
 	await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
+		await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
 	 const node = await results.getVisibleItems();
 		node.forEach(async indNode => {
