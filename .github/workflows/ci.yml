@@ -26,7 +26,7 @@ jobs:
           CX_BASE_URI: ${{ secrets.BASE_URI }}
           CX_TENANT: ${{ secrets.TENANT }}
           CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
-        script:
+        run:
           - >
               if [[$matrix.os == "ubuntu-latest"]]; then
                 sudo apt-get install xvfb
