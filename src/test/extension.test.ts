@@ -7,17 +7,13 @@ import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem ,ComboSetting, Link
 describe('Check basic test cases', async function () {
 	let bench: Workbench;
 	let driver: WebDriver;
-	let webView: WebView;
 	let settingsWizard:SettingsEditor;
 	let activityBar: ActivityBar;
-	let scanConfig: CxScanConfig;
 	let editorView: EditorView;
 
     before( async () => {
 								this.timeout(100000);
-								scanConfig = new CxScanConfig();
         bench = new Workbench();
-								webView = new WebView();
 								driver = VSBrowser.instance.driver;
 								activityBar = new ActivityBar();
 								editorView = new EditorView();
@@ -71,27 +67,6 @@ it("should open the test repo",async function(){
 
 });
 
-// it('should checkout the test repo code', async function () {
-// 	this.timeout(100000);
-// 	const terminalView = await new BottomBarPanel().openTerminalView();
-// 	const names = await terminalView.getChannelNames();
-// 	await terminalView.selectChannel('Git');
-// 	//await terminalView.executeCommand('cd /tmp');
-// 	const gitRepo = process.env.CX_TEST_REPO? process.env.CX_TEST_REPO : DEFAULT_TEST_REPO;
-// 	console.log("Cloning test repo: " + gitRepo);
-// 	await terminalView.executeCommand('git clone ' + gitRepo);
-// 	await delay(15000);
-// 	await new TitleBar().select('File', 'Open Folder...');
-// 	const input = InputBox.create();
-// 	const path = await (await input).getText();
-// 	const repo = gitRepo.split("/");
-// 	await (await input).setText(path + repo[repo.length - 1].replace(".git",""));
-// 	await (await input).confirm();
-// 	await delay(10000);
-// 	// const dialog = new ModalDialog();
-// 	// await dialog.pushButton('Cancel');
-// 	// await delay(10000);
-// 		});
 
 it('should open the checkmarx AST extension', async function () {
 	this.timeout(80000);
@@ -152,11 +127,11 @@ it('should check the individual nodes for ALL filters', async function () {
 	const ctrl: ViewControl| undefined= await new ActivityBar().getViewControl('Checkmarx AST');	
 	const view = await ctrl?.openView();
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-	// if(!await results.isExpanded()){
-	// 		await results.expand();
-	// 		await delay(3000);
-	// }
-	await results.expand();
+	if(!await results.isExpanded()){
+			await results.expand();
+			await delay(3000);
+	}
+	//await results.expand();
 	await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
