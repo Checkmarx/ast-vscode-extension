@@ -26,15 +26,13 @@ jobs:
           CX_BASE_URI: ${{ secrets.BASE_URI }}
           CX_TENANT: ${{ secrets.TENANT }}
           CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
-        rules:
-          - if: matrix.os == "ubuntu-latest"  
-            run: |
-              sudo apt-get install xvfb
-              export DISPLAY=:99.0
-              Xvfb -ac :99 -screen 0 1920x1080x16 & 
-              npm install && npm test
-          - if: matrix.os == "windows-latest"
-            run: npm install && npm test
-          - if: matrix.os == "macos-latest"
-            run: npm install && npm test
-          
+        script:
+          - |-
+              if [[$matrix.os == "ubuntu-latest"]]; then
+                sudo apt-get install xvfb
+                export DISPLAY=:99.0
+                Xvfb -ac :99 -screen 0 1920x1080x16 & 
+                npm install && npm test
+              else
+                npm install && npm test
+              fi    
