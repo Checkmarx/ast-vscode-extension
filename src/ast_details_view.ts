@@ -49,7 +49,8 @@ export class AstDetailsViewProvider implements vscode.WebviewViewProvider {
 
 	private loadDecorations(filePath: string, line: number, startColumn: number, length: number) {
 		const folder = vscode.workspace.workspaceFolders![0];
-		const position = new vscode.Position(+line + 1, +startColumn);
+		// Needed because vscode uses zero based line number
+		const position = new vscode.Position(+line-1 , +startColumn-1 );
 		const path = vscode.Uri.joinPath(folder.uri, filePath);
 		
 		vscode.workspace.openTextDocument(path).then(doc => 

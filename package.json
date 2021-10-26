@@ -70,8 +70,7 @@
         "command": "ast-results.groupByFile",
         "category": "checkmarx-ast",
         "title": "Group by: File"
-      }
-      ,
+      },
       {
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
@@ -184,6 +183,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29"
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.29",
+    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../ast-cli-javascript-wrapper/package"
   }
 }
