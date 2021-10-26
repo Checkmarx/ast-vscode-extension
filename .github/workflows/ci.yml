@@ -1,0 +1,40 @@
+name: AST Vscode Extension CI Linux Test cases
+
+on:
+  push:
+    branch: feature/integration-tests
+
+jobs:
+  integration-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest,windows-latest,macos-latest]
+      fail-fast: true
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc    
+      - name: Integration Tests
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY}}
+          CX_BASE_URI: ${{ secrets.BASE_URI }}
+          CX_TENANT: ${{ secrets.TENANT }}
+          CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
+        rules:
+          - if matrix.os == "ubuntu-latest"  
+          run: |
+            sudo apt-get install xvfb
+            export DISPLAY=:99.0
+            Xvfb -ac :99 -screen 0 1920x1080x16 & 
+            npm install && npm test
+          - if matrix.os == "windows-latest"
+          run: npm install && npm test
+          - if matrix.os == "macos-latest"
+          run: npm install && npm test
+          
