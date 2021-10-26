@@ -127,7 +127,7 @@ it('should check the individual nodes for ALL filters', async function () {
 	const ctrl: ViewControl| undefined= await new ActivityBar().getViewControl('Checkmarx AST');	
 	const view = await ctrl?.openView();
 	const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-	if(!await results.isExpanded()){
+	if(await results.isDisplayed() && !await results.isExpanded()){
 			await results.expand();
 			await delay(5000);
 	}
@@ -137,6 +137,7 @@ it('should check the individual nodes for ALL filters', async function () {
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
+		await delay(5000);
 	 const node = await results.getVisibleItems();
 		node.forEach(async indNode => {
 			await indNode.expand();
@@ -202,7 +203,7 @@ it('should select vulnerability and make sure detail view is populated', async f
 		const labelName = await node.getLabel();
 		expect(labelName).to.have.length.greaterThan(0);
 	});
-
+	await delay(5000);
 	
 	// TODO -> Need to click the correct vulnerability node
 	await sastNode[2].click();
