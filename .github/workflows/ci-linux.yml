@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-      fail-fast: true
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -19,9 +18,9 @@ jobs:
         with:
           node-version: 12
       - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc    
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc   
       - name: Install dependencies
-        run: npm install -g
+        run: npm install
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
