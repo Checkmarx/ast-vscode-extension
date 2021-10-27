@@ -3,7 +3,7 @@ import { doesNotMatch } from 'assert';
 import { expect } from 'chai';
 import path = require('path');
 import { Location, TextEdit } from 'vscode';
-import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem, ComboSetting, LinkSetting, InputBox, SettingsEditor, Locators, By, WebView, Key, SideBarView, ActivityBar, ViewControl, WebElementPromise, WebElement, CustomTreeSection, CustomTreeItem, ViewItem, until, Locator, ViewSection, DefaultTreeSection, BottomBarPanel, TitleBar, EditorView, ModalDialog, ExtensionsViewSection } from 'vscode-extension-tester';
+import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem, ComboSetting, LinkSetting, InputBox, SettingsEditor, Locators, By, WebView, Key, SideBarView, ActivityBar, ViewControl, WebElementPromise, WebElement, CustomTreeSection, CustomTreeItem, ViewItem, until, Locator, ViewSection, DefaultTreeSection, BottomBarPanel, TitleBar, EditorView, ModalDialog, ExtensionsViewSection, MarkerType } from 'vscode-extension-tester';
 describe('Check basic test cases', async function () {
 	let bench: Workbench;
 	let driver: WebDriver;
@@ -114,7 +114,7 @@ describe('Check basic test cases', async function () {
 		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
 		const tree = await results.isExpanded();
 		const treeNodes = await results.getVisibleItems();
-		treeNodes.forEach(async (node) => {
+		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
 			const indNode = (await node.getLabel());
 			//expect(indNode).to.have.members(["sast","dependency","infrastructure"]);
 			expect(indNode).to.have.length.greaterThan(0);
@@ -141,11 +141,11 @@ describe('Check basic test cases', async function () {
 		await bench.executeCommand("Checkmarx AST: Group By: Status");
 		await delay(5000);
 		const node = await results.getVisibleItems();
-		node.forEach(async indNode => {
+		node.forEach(async (indNode: { expand: () => any; getChildren: () => any; }) => {
 			await indNode.expand();
 			await delay(3000);
 			const indResult = await indNode.getChildren();
-			indResult.forEach(async ind => {
+			indResult.forEach(async (ind: { getLabel: () => any; }) => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
 				await delay(3000);
@@ -186,7 +186,7 @@ describe('Check basic test cases', async function () {
 		if (!await results.isExpanded()) {
 			await results.expand();
 		}
-		const scaNodes = await results.getVisibleItems().then((async items => {
+		const scaNodes = await results.getVisibleItems().then((async (items: any[]) => {
 			await items.forEach(async (item) => {
 				await item.expand();
 				expect(item).to.have.length.greaterThan(0);
@@ -207,7 +207,7 @@ describe('Check basic test cases', async function () {
 			await results.expand();
 		}
 		const sastNode = await results.getVisibleItems();
-		sastNode.forEach(async (node) => {
+		sastNode.forEach(async (node: { isExpandable: () => any; isExpanded: () => any; expand: () => any; getLabel: () => any; }) => {
 			if (await node.isExpandable() && !await node.isExpanded()) {
 				await node.expand();
 			}
@@ -218,6 +218,20 @@ describe('Check basic test cases', async function () {
 
 		// TODO -> Need to click the correct vulnerability node
 		await sastNode[2].click();
+		await delay(5000);
+
+	});
+
+		it('should open the editor and make sure that the file is opened', async function () {
+			this.timeout(100000);
+			const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
+		const view = await ctrl?.openView();
+		const results: CustomTreeSection = await view?.getContent().getSection('Details') as CustomTreeSection;
+		expect(results).not.be.undefined;
+		if (!await results.isExpanded()) {
+			await results.expand();
+		}
+		await delay(5000);
 		const detailsView = await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
 		await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astdetailsview")));
 		await driver.wait(until.elementsLocated(By.id("active-frame")));
@@ -232,10 +246,18 @@ describe('Check basic test cases', async function () {
 		const tabval = await tab.getText();
 		expect(tabval).to.have.length.greaterThan(0);
 
-	});
+
 	await delay(10000);
+});
 
 
+	it('should check that the issues are indicated in problems tab', async function () {
+		this.timeout(80000);
+		const problemsView = await new BottomBarPanel().openProblemsView();
+		const issues = await problemsView.getAllMarkers(MarkerType.Any);
+		expect(issues).to.have.length.greaterThan(0);
+		await delay(10000);
+	});
 
 });
 
