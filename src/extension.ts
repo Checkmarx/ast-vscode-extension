@@ -91,15 +91,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const clearAll = vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, () => {
 		logs.log("Info","Clear all loaded information");
-		// clean results.json
+		// Clean results.json
 		astResultsProvider.clean();
-		// clean the results tree
+		// Clean the results tree
 		vscode.commands.executeCommand("ast-results.cleanTree");
-		// get the project web view
+		// Get the project web view
 		let project = projectView.getWebView();
-		// // send the clear id indication to the web view
+		// Send the clear id indication to the web view
 		project?.webview.postMessage({instruction:"clear ID"});
-		
 	});
 	context.subscriptions.push(clearAll);
 

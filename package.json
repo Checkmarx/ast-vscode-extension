@@ -70,8 +70,7 @@
         "command": "ast-results.groupByFile",
         "category": "checkmarx-ast",
         "title": "Group by: File"
-      }
-      ,
+      },
       {
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
