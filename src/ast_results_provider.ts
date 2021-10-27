@@ -5,6 +5,7 @@ import { EventEmitter } from 'vscode';
 import { AstResult, SastNode } from './results';
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getProperty } from './utils';
+import { Logs } from './logs';
 
 export enum IssueFilter {
   fileName = "fileName",
@@ -23,7 +24,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly output: vscode.OutputChannel,
+    private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection) {
       this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
@@ -53,7 +54,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		if (fs.existsSync(resultJsonPath)) {
 			fs.unlinkSync(resultJsonPath);
 		}
-    
     this.refreshData();
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -67,6 +67,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   generateTree(): TreeItem {
     const resultJsonPath = path.join(__dirname, 'ast-results.json');
+    
     if (!fs.existsSync(resultJsonPath)) {
       this.diagnosticCollection.clear();
       return new TreeItem("", undefined, []);
@@ -108,10 +109,13 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       return;
     }
     const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
-    const column = (node.column | 1) - 1;
-    const line =  (node.line | 1 ) - 1;
-    let length = column + node.length;
-    const range = new vscode.Range(line, column, line, length);
+    // Needed because vscode uses zero based line number
+    const column  = node.column > 0 ? +node.column - 1 : 1;
+    const line    = node.line > 0 ? +node.line  - 1 : 1;
+    let length    = column + node.length;
+    const startPosition = new vscode.Position(line , column);
+    const endPosition = new vscode.Position(line , length);
+    const range = new vscode.Range(startPosition,endPosition);
     
     const diagnostic = new vscode.Diagnostic(range, label, severity);
     if (map.has(filePath)) {
