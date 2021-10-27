@@ -107,7 +107,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   createDiagnostic(label: string, severity: vscode.DiagnosticSeverity, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
     const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
     // Needed because vscode uses zero based line number
-    const column  = node.column > 0 ? node.column - 1 : 1;
+    const column  = node.column > 0 ? +node.column - 1 : 1;
     const line    = node.line > 0 ? +node.line  - 1 : 1;
     let length    = column + node.length;
     const startPosition = new vscode.Position(line , column);
