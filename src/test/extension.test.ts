@@ -1,8 +1,5 @@
-import { CxScanConfig } from '@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig';
-import { doesNotMatch } from 'assert';
+
 import { expect } from 'chai';
-import path = require('path');
-import { Location, TextEdit } from 'vscode';
 import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem, ComboSetting, LinkSetting, InputBox, SettingsEditor, Locators, By, WebView, Key, SideBarView, ActivityBar, ViewControl, WebElementPromise, WebElement, CustomTreeSection, CustomTreeItem, ViewItem, until, Locator, ViewSection, DefaultTreeSection, BottomBarPanel, TitleBar, EditorView, ModalDialog, ExtensionsViewSection, MarkerType } from 'vscode-extension-tester';
 describe('Check basic test cases', async function () {
 	let bench: Workbench;

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as CxAuth from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxAuth";
-import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
+import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
+import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
