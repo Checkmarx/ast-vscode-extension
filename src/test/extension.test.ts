@@ -123,7 +123,7 @@ describe('Check basic test cases', async function () {
 		await delay(5000);
 	});
 
-	it('should check the individual nodes for ALL filters', async function () {
+	it('should check the individual nodes for status filters', async function () {
 		this.timeout(100000);
 		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		const view = await ctrl?.openView();
@@ -151,15 +151,24 @@ describe('Check basic test cases', async function () {
 				await delay(3000);
 			});
 		});
+		await delay(10000);
+	});
 
-		await delay(5000);
+	it("should filter the results based on severity",async function () {
+		this.timeout(80000);
 		await bench.executeCommand("Checkmarx AST: Group By: Severity");
+		await delay(5000);
+		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
+		const view = await ctrl?.openView();
+		await delay(5000);
+		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
+		await delay(5000);
 		const severityNode = await results.getVisibleItems();
-		severityNode.forEach(async indNode => {
+		severityNode.forEach(async (indNode: { expand: () => any; getChildren: () => any; getLabel: () => any; }) => {
 			await indNode.expand();
 			const indResult = await indNode.getChildren();
 			const label = await indNode.getLabel();
-			indResult.forEach(async ind => {
+			indResult.forEach(async (ind: { getLabel: () => any; }) => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
 				await delay(3000);
