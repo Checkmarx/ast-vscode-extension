@@ -128,6 +128,7 @@ describe('Check basic test cases', async function () {
 		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		const view = await ctrl?.openView();
 		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
+		await delay(5000);
 		if (await results.isDisplayed() && !await results.isExpanded()) {
 			await results.expand();
 			await delay(5000);
