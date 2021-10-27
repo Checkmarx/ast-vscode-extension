@@ -1,6 +1,8 @@
 name: AST Vscode Extension CI Linux Test cases
 
-on: [pull_request]
+on: 
+  push:
+    branch: feature/integration-tests
 
 jobs:
   integration-tests:

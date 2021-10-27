@@ -73,6 +73,7 @@ describe('Check basic test cases', async function () {
 		const control: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		if (control !== undefined) {
 			const view = await control.openView();
+			await delay(5000);
 			expect(view).is.not.undefined;
 			expect(await view?.isDisplayed()).is.true;
 		}
