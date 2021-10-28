@@ -1,18 +1,15 @@
-
 import { expect } from 'chai';
-import { VSBrowser, Workbench, WebDriver, ExtensionsViewItem, ComboSetting, LinkSetting, InputBox, SettingsEditor, Locators, By, WebView, Key, SideBarView, ActivityBar, ViewControl, WebElementPromise, WebElement, CustomTreeSection, CustomTreeItem, ViewItem, until, Locator, ViewSection, DefaultTreeSection, BottomBarPanel, TitleBar, EditorView, ModalDialog, ExtensionsViewSection, MarkerType } from 'vscode-extension-tester';
+import { VSBrowser, Workbench, WebDriver, LinkSetting, InputBox, SettingsEditor, By, ActivityBar, ViewControl, CustomTreeSection, until, ViewSection, BottomBarPanel, EditorView, MarkerType } from 'vscode-extension-tester';
 describe('Check basic test cases', async function () {
 	let bench: Workbench;
 	let driver: WebDriver;
 	let settingsWizard: SettingsEditor;
-	let activityBar: ActivityBar;
 	let editorView: EditorView;
 
 	before(async () => {
 		this.timeout(100000);
 		bench = new Workbench();
 		driver = VSBrowser.instance.driver;
-		activityBar = new ActivityBar();
 		editorView = new EditorView();
 	});
 
@@ -51,7 +48,6 @@ describe('Check basic test cases', async function () {
 	it("should open the test repo", async function () {
 		this.timeout(80000);
 		await bench.executeCommand("File: Open Folder...");
-		//await new TitleBar().select('File', 'Open Folder...');
 		const input = await InputBox.create();
 		const appender = process.platform === 'win32' ? '\\' : '/';
 		const tempPath = __dirname + appender + "testProj";
@@ -90,9 +86,7 @@ describe('Check basic test cases', async function () {
 			await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astprojectview")));
 			await driver.wait(until.elementsLocated(By.id("active-frame")));
 			await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
-			// get scan_id from env variable and also load the code 
 			const testScanID = process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "";
-			//const testScanID = DEFAULT_SCAN_ID;
 			console.log("Test scan id: " + testScanID);
 			expect(testScanID).to.have.length.greaterThan(0);
 			const scanElement = await driver.findElement(By.id("scanID")).sendKeys(testScanID);
@@ -112,7 +106,6 @@ describe('Check basic test cases', async function () {
 		const treeNodes = await results.getVisibleItems();
 		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
 			const indNode = (await node.getLabel());
-			//expect(indNode).to.have.members(["sast","dependency","infrastructure"]);
 			expect(indNode).to.have.length.greaterThan(0);
 			await node.expand();
 		});
@@ -130,7 +123,6 @@ describe('Check basic test cases', async function () {
 			await delay(5000);
 		}
 		expect(results).not.be.undefined;
-		//await results.expand();
 		await delay(5000);
 		await bench.executeCommand("Checkmarx AST: Focus on Results View");
 		await delay(5000);
@@ -150,7 +142,7 @@ describe('Check basic test cases', async function () {
 		await delay(10000);
 	});
 
-	it("should filter the results based on severity",async function () {
+	it("should filter the results based on severity", async function () {
 		this.timeout(80000);
 		await bench.executeCommand("Checkmarx AST: Group By: Severity");
 		await delay(5000);
@@ -218,9 +210,9 @@ describe('Check basic test cases', async function () {
 
 	});
 
-		it('should open the editor and make sure that the file is opened', async function () {
-			this.timeout(100000);
-			const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
+	it('should open the editor and make sure that the file is opened', async function () {
+		this.timeout(100000);
+		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		const view = await ctrl?.openView();
 		const results: CustomTreeSection = await view?.getContent().getSection('Details') as CustomTreeSection;
 		expect(results).not.be.undefined;
@@ -243,8 +235,8 @@ describe('Check basic test cases', async function () {
 		expect(tabval).to.have.length.greaterThan(0);
 
 
-	await delay(10000);
-});
+		await delay(10000);
+	});
 
 
 	it('should check that the issues are indicated in problems tab', async function () {
@@ -256,7 +248,5 @@ describe('Check basic test cases', async function () {
 	});
 
 });
-
-
 
 const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
