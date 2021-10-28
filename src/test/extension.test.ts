@@ -89,7 +89,7 @@ describe('Check basic test cases', async function () {
 			const testScanID = process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "";
 			console.log("Test scan id: " + testScanID);
 			expect(testScanID).to.have.length.greaterThan(0);
-			const scanElement = await driver.findElement(By.id("scanID")).sendKeys(testScanID);
+			await driver.findElement(By.id("scanID")).sendKeys(testScanID);
 			driver.findElement(By.className("ast-search")).click();
 			await driver.switchTo().defaultContent();
 			await delay(10000);
@@ -102,7 +102,7 @@ describe('Check basic test cases', async function () {
 		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		const view = await ctrl?.openView();
 		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		const tree = await results.isExpanded();
+		await results.isExpanded();
 		const treeNodes = await results.getVisibleItems();
 		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
 			const indNode = (await node.getLabel());
@@ -155,7 +155,7 @@ describe('Check basic test cases', async function () {
 		severityNode.forEach(async (indNode: { expand: () => any; getChildren: () => any; getLabel: () => any; }) => {
 			await indNode.expand();
 			const indResult = await indNode.getChildren();
-			const label = await indNode.getLabel();
+			await indNode.getLabel();
 			indResult.forEach(async (ind: { getLabel: () => any; }) => {
 				const childLabel = await ind.getLabel();
 				expect(childLabel).to.have.length.greaterThan(0);
@@ -174,7 +174,7 @@ describe('Check basic test cases', async function () {
 		if (!await results.isExpanded()) {
 			await results.expand();
 		}
-		const scaNodes = await results.getVisibleItems().then((async (items: any[]) => {
+		await results.getVisibleItems().then((async (items: any[]) => {
 			await items.forEach(async (item) => {
 				await item.expand();
 				expect(item).to.have.length.greaterThan(0);
@@ -220,7 +220,7 @@ describe('Check basic test cases', async function () {
 			await results.expand();
 		}
 		await delay(5000);
-		const detailsView = await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
+		await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
 		await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astdetailsview")));
 		await driver.wait(until.elementsLocated(By.id("active-frame")));
 		await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
