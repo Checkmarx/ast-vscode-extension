@@ -1,4 +1,4 @@
-name: AST Vscode Extension CI
+name: AST Vscode Extension CI Windows Test cases
 
 on: [pull_request]
 
@@ -6,7 +6,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [windows-latest]
       fail-fast: true
     runs-on: ${{ matrix.os }}
     steps:
@@ -18,8 +18,13 @@ jobs:
           node-version: 12
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc    
-      - name: Install dependencies
-        run: npm install
+      - name: Integration Tests
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY}}
+          CX_BASE_URI: ${{ secrets.BASE_URI }}
+          CX_TENANT: ${{ secrets.TENANT }}
+          CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
+        run: npm install && npm test
       
   cx-scan:
     runs-on: ubuntu-latest
@@ -36,3 +41,4 @@ jobs:
           cx_client_id: ${{ secrets.CLIENT_ID }}
           cx_client_secret: ${{ secrets.CLIENT_SECRET }}
           additional_params: --tags galactica-team
+          

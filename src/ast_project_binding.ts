@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as CxAuth from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxAuth";
-import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
+import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
+import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
@@ -191,7 +191,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
-				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
+				<input type="text" id="scanID" title="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
 				<button class="ast-settings">Settings</button>
