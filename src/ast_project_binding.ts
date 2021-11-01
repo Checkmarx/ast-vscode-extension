@@ -4,11 +4,13 @@ import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/mai
 import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
 
 
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
 	private scanID: string = "";
+	private projectList: CxScan[] = [];
 	
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -72,6 +74,49 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Info","Valid fields for settings");
 			vscode.window.showInformationMessage("Valid fields for settings");
 		}
+	}
+
+	public async loadProjectList(){
+		this.logs.log("Info","Loading project list");
+		//this.showStatusBarItem("Projects");
+		const config = this.getAstConfiguration();
+		if (!config) {
+			this.logs.log("Error","Please configure the plugin settings");
+			vscode.window.showErrorMessage(`Please configure the plugin settings`);
+			return [];
+		}
+		const sb = document.getElementById('projectID');
+		if (sb !== null) {
+		const cx = new CxAuth.CxAuth(config);
+		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		let projects = await cx.projectList();
+		Promise.all(projects.scanObjectList.map(async (project) => {
+			this.projectList.push(project);
+			sb.innerHTML !== undefined ? sb.innerHTML += `<option value="${project.ID}">${project.ID}</option>` : " ";
+		}));
+	}
+		//this.projectList = projects.scanObjectList;
+		// if (projects.scanObjectList.length === 0) {
+		// 	this.logs.log("Error","No projects found");
+		// 	vscode.window.showErrorMessage("No projects found");
+		// 	return[];
+		// }
+		// this.logs.log("Info","Projects loaded");
+		// return projects.scanObjectList;
+		 // return await cx.projectList().then(project => {
+			// 	Promise.resolve(project);
+			// });
+
+//		const sb = await document.querySelector('#projectID') as HTMLElement;
+// 		if(sb !== null){
+// 		projectList.scanObjectList.forEach(async project => {
+// 			const option = await document.createElement('option');
+// 			option.text = project.ID;
+// 			option.value = project.ID;
+// 			sb.appendChild(option);
+// 		}
+// );
+// 	}
 	}
 
 	async loadResults(scanID: string) {
@@ -138,6 +183,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				this._extensionUri
 			]
 		};
+		this.loadProjectList();
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
@@ -170,8 +216,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
 		
 		const nonce = getNonce();
-		
-		return `<!DOCTYPE html>
+		// let results = 	this.loadProjectList().then(projects => {
+		// 				return projects;
+		// }).catch(err => {
+		// 	console.log(err);
+		// });
+		let html = `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -191,6 +241,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
+				<select	id="projectID" class = "ast-project">`;
+				// for(let i = 0; i < this.projectList.length; i++) {
+				// 	html += `<option value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;
+				// }
+				// html += 	`<option value="">Select a project</option>
+				html += `</select>
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
@@ -199,6 +255,6 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
+		return html;
 	}
-	
 }

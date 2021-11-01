@@ -17,3 +17,13 @@ body {
 	border: none;
 	margin: 0 auto;
 }
+
+.ast-project {
+	display: block;
+	flex: 1;
+	width: 100%;
+	color: var(--vscode-input-foreground);
+	background-color: var(--vscode-input-background);
+	border: none;
+	padding: 0 0.6em;
+}
