@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as CxAuth from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
-import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
+import { EXTENSION_NAME, SCAN_ID_KEY, PROJECT_ID_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
@@ -10,7 +10,9 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
 	private scanID: string = "";
+	private projectID:string = "";
 	private projectList: CxScan[] = [];
+	private scanList: CxScan[] = [];
 	
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -32,6 +34,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		this.statusBarItem.text = EXTENSION_NAME;
 		this.statusBarItem.tooltip = undefined;
 		this.statusBarItem.hide();
+	}
+	public refresh() {
+		console.log("Refreshing view!");
+		if (this._view !== undefined) {
+			this._view.webview.html = this._getHtmlForWebview(this._view.webview);
+		}
 	}
 
 	public getWebView() { return this._view;}
@@ -76,47 +84,68 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		}
 	}
 
-	public async loadProjectList(){
+	public async  loadProjectList(){
 		this.logs.log("Info","Loading project list");
-		//this.showStatusBarItem("Projects");
+		//this.showStatusBarItem("Projects ");
 		const config = this.getAstConfiguration();
 		if (!config) {
 			this.logs.log("Error","Please configure the plugin settings");
 			vscode.window.showErrorMessage(`Please configure the plugin settings`);
 			return [];
 		}
-		const sb = document.getElementById('projectID');
-		if (sb !== null) {
+		//const sb =  await document.querySelector('#projectID') as HTMLElement;
+		
 		const cx = new CxAuth.CxAuth(config);
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
-		let projects = await cx.projectList();
-		Promise.all(projects.scanObjectList.map(async (project) => {
-			this.projectList.push(project);
-			sb.innerHTML !== undefined ? sb.innerHTML += `<option value="${project.ID}">${project.ID}</option>` : " ";
-		}));
+		let projects = await cx.projectList().then(project => {
+			project.scanObjectList.forEach(element => {
+				this.projectList.push(element);
+				
+			});
+			vscode.commands.executeCommand('ast-results.refreshProject');
+		}).catch(err => {	
+			this.logs.log("Error","Error loading project list");
+			vscode.window.showErrorMessage(`Error loading project list`);
+			this.logs.log("Error",err);
+			return [];
+		});
+		// Promise.all(projects.scanObjectList.map(async (project) => {
+		// 	this.projectList.push(project);
+		// //	sb.innerHTML !== undefined ? sb.innerHTML += `<option value="${project.ID}">${project.ID}</option>` : " ";
+		// }));
+		
+		if (this.projectList.length !== 0) {
+			this.hideStatusBarItem();
+		}
 	}
-		//this.projectList = projects.scanObjectList;
-		// if (projects.scanObjectList.length === 0) {
-		// 	this.logs.log("Error","No projects found");
-		// 	vscode.window.showErrorMessage("No projects found");
-		// 	return[];
-		// }
-		// this.logs.log("Info","Projects loaded");
-		// return projects.scanObjectList;
-		 // return await cx.projectList().then(project => {
-			// 	Promise.resolve(project);
-			// });
 
-//		const sb = await document.querySelector('#projectID') as HTMLElement;
-// 		if(sb !== null){
-// 		projectList.scanObjectList.forEach(async project => {
-// 			const option = await document.createElement('option');
-// 			option.text = project.ID;
-// 			option.value = project.ID;
-// 			sb.appendChild(option);
-// 		}
-// );
-// 	}
+	public async loadScanList(id:string) {
+		this.logs.log("Info","Loading Scan List");
+		const config = this.getAstConfiguration();
+		if (!config) {
+			this.logs.log("Error","Please configure the plugin settings");
+			vscode.window.showErrorMessage(`Please configure the plugin settings`);
+			return [];
+		}
+		const cx = new CxAuth.CxAuth(config);
+		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		this.scanList	= [];
+		//let val = await cx.scanShow(id);
+		// TO DELETE START
+		
+		await cx.scanList().then(scan => {
+			scan.scanObjectList.forEach(element => {
+				if(element.ProjectID === this.projectID) {
+					this.scanList.push(element);
+				}
+			});
+		}).catch(err => {	
+			this.logs.log("Error","Error loading scan list");
+			vscode.window.showErrorMessage(`Error loading scan list`);
+			this.logs.log("Error",err);
+		});
+		// TO DELETE END
+		this._view?.webview.postMessage({scans: this.scanList});
 	}
 
 	async loadResults(scanID: string) {
@@ -202,7 +231,19 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					vscode.commands.executeCommand("ast-results.clear");
 					// send the message inside of the webview to clear the id
 					webviewView.webview.postMessage({instruction:"clear ID"});
-					break;			
+					break;	
+				case 'projectSelected':
+						this.projectID = data.projectID;
+						this.context.globalState.update(PROJECT_ID_KEY, this.projectID);
+						this.loadScanList(this.projectID);
+						this.logs.log("Project ID received: ", data.projectID);
+						break;	
+				case 'scanSelected':
+						this.scanID = data.selectedScanID;
+						//this.loadBranches(this.projectID);
+						this.logs.log("Scan ID received: ", data.selectedScanID);
+						break;			
+						
 			}
 		});
 	}
@@ -241,12 +282,18 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
-				<select	id="projectID" class = "ast-project">`;
-				// for(let i = 0; i < this.projectList.length; i++) {
-				// 	html += `<option value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;
-				// }
-				// html += 	`<option value="">Select a project</option>
-				html += `</select>
+				<select	id="projectID" class = "ast-project" value="${this.projectID}">
+				<option value="none" selected disabled>
+          Select the project
+      </option>
+				`;
+				// const project = this.loadProjectList();
+				for(let i = 0; i < this.projectList.length; i++) {
+					html += `<option  value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;					
+				}
+				html += `</select>`;
+				html += `
+				<select	id="scans" class="ast-scans" ></select>
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>

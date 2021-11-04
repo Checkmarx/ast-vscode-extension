@@ -25,5 +25,16 @@ body {
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
-	padding: 0 0.6em;
+	padding: 6px 4px;
+}
+
+
+.ast-scans {
+	display: block;
+	flex: 1;
+	width: 100%;
+	color: var(--vscode-input-foreground);
+	background-color: var(--vscode-input-background);
+	border: none;
+	padding: 6px 4px;
 }
