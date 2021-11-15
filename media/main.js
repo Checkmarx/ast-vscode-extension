@@ -28,11 +28,13 @@
 
 	document.querySelector('.ast-scans').addEventListener('change', () => {
 		const selectedScanID = document.getElementById("scans").value;
+		const selectedScanName = document.getElementById("scans").options[document.getElementById("scans").selectedIndex].text;
 		const scanID = document.getElementById("scanID");
 		scanID.value = selectedScanID;
 		vscode.postMessage({
 			command: 'scanSelected',
 			selectedScanID: selectedScanID,
+			selectedScanName: selectedScanName
 		});
 	});
 
@@ -60,6 +62,7 @@
 				break;
 			case 'loadscanlist':
 				const scans = message.scans;
+				const workspaceScan = message.workspaceScan;
 				const selectElement = document.getElementById("scans");
 				selectElement.options.length = 0;
 				if (scans.length > 0) {
@@ -79,6 +82,9 @@
 						//option.setAttribute("value", scans.scans[scan].id);
 						option.setAttribute("value", scans[scan].ID);
 						selectElement.appendChild(option);
+						if(workspaceScan === scans[scan].CreatedAt) {
+							option.selected = true;
+						}
 					}
 				}
 				else {
@@ -105,6 +111,11 @@
 						if(option_element.value ===	selectedProjectID) {
 							option_element.selected = true;
 							projectSelected = true;
+							// vscode.postMessage(
+							// 	{
+							// 	command: 'projectSelected',
+							// 	projectID: selectedProjectID
+							// });
 						}
 					});				
 				if(!projectSelected){
@@ -119,21 +130,22 @@
 				const scanItem = message.scanList.filter(scan =>	scan.ID === message.selectedScanID);
 				console.log(scanItem);
 				if(scanItem.length > 0) {
-					const scanName = scanItem[0].Name;
-					const scanID = scanItem[0].ID;
-					scanElementSelected.value = scanID;
-					scanElementSelected.disabled = false;
-					scanElementSelected.selected = true;
-					scanSelected = true;
+					// const scanName = scanItem[0].Name;
+					// const scanID = scanItem[0].ID;
+					// scanElementSelected.value = scanID;
+					// scanElementSelected.disabled = false;
+					// scanElementSelected.selected = true;
+					// scanSelected = true;
+					Array.from(document.getElementById("scans").options).forEach(function(option_element) {
+						console.log("scan option: " + option_element.value + " selectd: " + scanElementSelected.value);
+						if(option_element.value ===	scanElementSelected.value) {
+							option_element.selected = true;
+							scanSelected = true;
+						}
+					});
 				}
 
-				// Array.from(document.getElementById("scans").options).forEach(function(option_element) {
-				// 	console.log("scan option: " + option_element.value + " selectd: " + scanElementSelected.value);
-				// 	if(option_element.value ===	scanElementSelected.value) {
-				// 		option_element.selected = true;
-				// 		scanSelected = true;
-				// 	}
-				// });
+				
 				if(!scanSelected){
 					const scanIDOption = document.createElement("option");
 					scanIDOption.text = "Selected scan not in list";
@@ -149,6 +161,7 @@
 				const workspaceElement = message.workspaceName;
 				const existingProjectID = message.existingProjectID;
 				const projectElement = document.getElementById("projectID");
+				const existingProjectName = projects.filter(project => project.ID === existingProjectID);
 				if (projects.length > 0) {
 					projectElement.disabled = false;
 					const defaultOption = document.createElement("option");
@@ -170,19 +183,22 @@
 						});
 					}
 
-					else if(existingProjectID !== '') {
-						const projectName = projects.filter(project => project.ID === existingProjectID);
-						defaultOption.text = projectName[0].Name;
-						defaultOption.value = existingProjectID;
-						defaultOption.disabled = false;
+					else if(existingProjectID !== '' &&	existingProjectName.length > 0) {
+						console.log("workspace project name " + existingProjectName[0].Name);
+						const projectIndex = projects.findIndex(project => project.ID === existingProjectID);
+						console.log("workspace project index " + projectIndex);
+						const projectoptionText = document.createTextNode(existingProjectName[0].Name);
+						defaultOption.appendChild(projectoptionText);
+						defaultOption.setAttribute("value", existingProjectID);
 						defaultOption.selected = true;
 						projectElement.appendChild(defaultOption);
+						projects = projects.filter(project => { return project.Name !== existingProjectName[0].Name; });
 						vscode.postMessage(
 							{
 							command: 'projectSelected',
 							projectID: existingProjectID,
 						});
-					}
+				}
 					else {
 						defaultOption.text = "Select a project";
 						defaultOption.value = "";

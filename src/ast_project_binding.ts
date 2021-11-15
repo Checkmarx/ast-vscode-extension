@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as CxAuth from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@CheckmarxDev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
-import { EXTENSION_NAME, SCAN_ID_KEY, PROJECT_ID_KEY } from './constants';
+import { EXTENSION_NAME, SCAN_ID_KEY, PROJECT_ID_KEY, SELECTED_SCAN_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
@@ -11,6 +11,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	private _view?: vscode.WebviewView;
 	private scanID: string = "";
 	private projectID:string = "";
+	private scanName:string = "";
 	private projectList: CxScan[] = [];
 	private scanList: CxScan[] = [];
 	
@@ -22,6 +23,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	) { 
 		this.scanID = context.globalState.get(SCAN_ID_KEY, "");
 		this.projectID = context.workspaceState.get(PROJECT_ID_KEY, "");
+		this.scanName = context.workspaceState.get(SELECTED_SCAN_KEY, "");
 		this.logs = logs;
 	}
 
@@ -147,7 +149,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Error",err);
 		});
 		// TO DELETE END
-		this._view?.webview.postMessage({scans: this.scanList, instruction:"loadscanlist"});
+		this._view?.webview.postMessage({scans: this.scanList, instruction:"loadscanlist",workspaceScan : this.scanName});
 	}
 
 	async loadResults(scanID: string) {
@@ -195,11 +197,13 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Error","Invalid Settings");
 			vscode.window.showErrorMessage("Invalid Settings, authentication failed");
 		}
-		await cx.scanShow(scanID).then(scan => {
+		await cx.scanShow(scanID).then(async scan => {
 			this.logs.log("Info","Project ID for selected scan is: " + scan.scanObjectList[0].ProjectID);
+			this.projectID = scan.scanObjectList[0].ProjectID;
 			this.context.workspaceState.update(PROJECT_ID_KEY, scan.scanObjectList[0].ProjectID);
+			this.context.workspaceState.update(SELECTED_SCAN_KEY, scan.scanObjectList[0].CreatedAt);
 			this.logs.log("Info","SCAN LIST FOR project ID: " + scan.scanObjectList[0].ProjectID + " is: " + this.scanList);
-		//	this.loadScanList(scan.scanObjectList[0].ProjectID);
+			await this.loadScanList(scan.scanObjectList[0].ProjectID);
 			this._view?.webview.postMessage({selectedProjectID: scan.scanObjectList[0].ProjectID, instruction:"loadedscan", projectlist: this.projectList, selectedScanID: scanID, scanList: this.scanList});
 		}
 		 ).catch(err => { this.logs.log("Error",err); });
@@ -250,8 +254,11 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 						break;	
 				case 'scanSelected':
 						this.scanID = data.selectedScanID;
+						this.scanName = data.selectedScanName;
+						this.context.workspaceState.update(SELECTED_SCAN_KEY, data.selectedScanName);
 						//this.loadBranches(this.projectID);
 						this.logs.log("Scan ID received: ", data.selectedScanID);
+						this.logs.log("Scan Name received: ", data.selectedScanName);
 						break;			
 						
 			}
