@@ -21,6 +21,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		private readonly logs: Logs,
 	) { 
 		this.scanID = context.globalState.get(SCAN_ID_KEY, "");
+		this.projectID = context.workspaceState.get(PROJECT_ID_KEY, "");
 		this.logs = logs;
 	}
 
@@ -97,29 +98,29 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		
 		const cx = new CxAuth.CxAuth(config);
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		let workspaceProject = vscode.workspace.workspaceFolders?.map(folder => {return folder.name});
 		let projects = await cx.projectList().then(project => {
 			project.scanObjectList.forEach(element => {
 				this.projectList.push(element);
 				
 			});
-			vscode.commands.executeCommand('ast-results.refreshProject');
+		//	vscode.commands.executeCommand('ast-results.refreshProject');
 		}).catch(err => {	
 			this.logs.log("Error","Error loading project list");
 			vscode.window.showErrorMessage(`Error loading project list`);
 			this.logs.log("Error",err);
 			return [];
 		});
-		// Promise.all(projects.scanObjectList.map(async (project) => {
-		// 	this.projectList.push(project);
-		// //	sb.innerHTML !== undefined ? sb.innerHTML += `<option value="${project.ID}">${project.ID}</option>` : " ";
-		// }));
-		
+
+		this._view?.webview.postMessage({projects: this.projectList,instruction:"loadprojectlist", workspaceName: workspaceProject, existingProjectID: this.projectID}); 
 		if (this.projectList.length !== 0) {
 			this.hideStatusBarItem();
 		}
+	//	vscode.commands.executeCommand('ast-results.refreshProject');
 	}
 
 	public async loadScanList(id:string) {
+
 		this.logs.log("Info","Loading Scan List");
 		const config = this.getAstConfiguration();
 		if (!config) {
@@ -140,12 +141,13 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				}
 			});
 		}).catch(err => {	
+
 			this.logs.log("Error","Error loading scan list");
 			vscode.window.showErrorMessage(`Error loading scan list`);
 			this.logs.log("Error",err);
 		});
 		// TO DELETE END
-		this._view?.webview.postMessage({scans: this.scanList});
+		this._view?.webview.postMessage({scans: this.scanList, instruction:"loadscanlist"});
 	}
 
 	async loadResults(scanID: string) {
@@ -193,6 +195,14 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Error","Invalid Settings");
 			vscode.window.showErrorMessage("Invalid Settings, authentication failed");
 		}
+		await cx.scanShow(scanID).then(scan => {
+			this.logs.log("Info","Project ID for selected scan is: " + scan.scanObjectList[0].ProjectID);
+			this.context.workspaceState.update(PROJECT_ID_KEY, scan.scanObjectList[0].ProjectID);
+			this.logs.log("Info","SCAN LIST FOR project ID: " + scan.scanObjectList[0].ProjectID + " is: " + this.scanList);
+		//	this.loadScanList(scan.scanObjectList[0].ProjectID);
+			this._view?.webview.postMessage({selectedProjectID: scan.scanObjectList[0].ProjectID, instruction:"loadedscan", projectlist: this.projectList, selectedScanID: scanID, scanList: this.scanList});
+		}
+		 ).catch(err => { this.logs.log("Error",err); });
 		
 		this.hideStatusBarItem();
 		this.logs.log("Info","Refreshing the results tree");
@@ -234,7 +244,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					break;	
 				case 'projectSelected':
 						this.projectID = data.projectID;
-						this.context.globalState.update(PROJECT_ID_KEY, this.projectID);
+						this.context.workspaceState.update(PROJECT_ID_KEY, this.projectID);
 						this.loadScanList(this.projectID);
 						this.logs.log("Project ID received: ", data.projectID);
 						break;	
@@ -282,23 +292,21 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
-				<select	id="projectID" class = "ast-project" value="${this.projectID}">
-				<option value="none" selected disabled>
-          Select the project
-      </option>
-				`;
+				<select	id="projectID" class = "ast-project" value="${this.projectID} placeholder="ProjectId">`;
+				// <option value="none" selected disabled>
+    //       Select the project
+    //   </option>
+				
 				// const project = this.loadProjectList();
-				for(let i = 0; i < this.projectList.length; i++) {
-					html += `<option  value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;					
-				}
+				// for(let i = 0; i < this.projectList.length; i++) {
+				// 	html += `<option  value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;					
+				// }
 				html += `</select>`;
 				html += `
 				<select	id="scans" class="ast-scans" ></select>
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
-				<button class="ast-settings">Settings</button>
-				<button class="ast-clear">Clear</button>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
