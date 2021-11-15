@@ -3,6 +3,6 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+test-resources
 .idea/
 .DS_Store
-test-resources
