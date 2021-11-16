@@ -153,6 +153,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 	}
 
 	async loadResults(scanID: string) {
+
+		this._view?.webview.postMessage({instruction:"disableSelection"});
 		const config = this.getAstConfiguration();
 
 		if (!scanID) {
@@ -201,7 +203,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Info","Project ID for selected scan is: " + scan.scanObjectList[0].ProjectID);
 			this.projectID = scan.scanObjectList[0].ProjectID;
 			this.context.workspaceState.update(PROJECT_ID_KEY, scan.scanObjectList[0].ProjectID);
-			this.context.workspaceState.update(SELECTED_SCAN_KEY, scan.scanObjectList[0].CreatedAt);
+			const scanDate = scan.scanObjectList[0].CreatedAt.split("T")[0] + " " + scan.scanObjectList[0].CreatedAt.split("T")[1].split(".")[0];
+			this.context.workspaceState.update(SELECTED_SCAN_KEY, scanDate);
 			this.logs.log("Info","SCAN LIST FOR project ID: " + scan.scanObjectList[0].ProjectID + " is: " + this.scanList);
 			await this.loadScanList(scan.scanObjectList[0].ProjectID);
 			this._view?.webview.postMessage({selectedProjectID: scan.scanObjectList[0].ProjectID, instruction:"loadedscan", projectlist: this.projectList, selectedScanID: scanID, scanList: this.scanList});
@@ -210,6 +213,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		
 		this.hideStatusBarItem();
 		this.logs.log("Info","Refreshing the results tree");
+		this._view?.webview.postMessage({instruction:"enableSelection"});
 		vscode.commands.executeCommand("ast-results.refreshTree");
 	}
 
