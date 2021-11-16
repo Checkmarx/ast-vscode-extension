@@ -24,6 +24,14 @@
 			command: 'clear'
 		});
 	});
+	document.querySelector('.ast-clear').addEventListener('click', () => {
+		const scanID = document.getElementById("scanID");
+		scanID.value = '';
+		vscode.postMessage({
+			command: 'clear'
+		});
+	});
+	
 	window.addEventListener('message', event => {
 
 		const message = event.data; // The JSON data our extension sent

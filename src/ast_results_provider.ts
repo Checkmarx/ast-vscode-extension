@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EventEmitter } from 'vscode';
 import { AstResult, SastNode } from './results';
-import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
+import { EXTENSION_NAME, SCAN_ID_KEY, HIGH_FILTER, MEDIUM_FILTER, LOW_FILTER, INFO_FILTER } from './constants';
 import { getProperty } from './utils';
 import { Logs } from './logs';
 
@@ -14,8 +14,17 @@ export enum IssueFilter {
   language = "language"
 }
 
+export enum IssueLevel {
+  high = "HIGH",
+  medium = "MEDIUM",
+  low = "LOW",
+  info = "INFO",
+  empty = ""
+}
+
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
+  public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
@@ -29,6 +38,13 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private readonly diagnosticCollection: vscode.DiagnosticCollection) {
       this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
       this.refreshData();
+      // Initialize global variables to be set in the context
+      this.initializeFilters();
+      // Add variables to the context, so that the icons change can ocurr
+      vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
+      vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
+      vscode.commands.executeCommand('setContext',LOW_FILTER,false);
+      vscode.commands.executeCommand('setContext',INFO_FILTER,false);
   }
 
   private showStatusBarItem() {
@@ -44,9 +60,36 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		this.statusBarItem.hide();
 	}
 
+  private initializeFilters() {
+    // Check if there is a value initialized in the workspace, if not set them to the default values
+    if(this.context.globalState.get(HIGH_FILTER) === undefined){
+      this.context.globalState.update(HIGH_FILTER,true);
+    }
+    if(this.context.globalState.get(MEDIUM_FILTER) === undefined){
+      this.context.globalState.update(MEDIUM_FILTER,true);
+    }
+    if(this.context.globalState.get(LOW_FILTER) === undefined){
+      this.context.globalState.update(LOW_FILTER,false);
+    }
+    if(this.context.globalState.get(INFO_FILTER) === undefined){
+      this.context.globalState.update(INFO_FILTER,false);
+    }
+  }
+
   refresh(): void {
     this.refreshData();
     this._onDidChangeTreeData.fire(undefined);
+  }
+
+  refreshFilters(type:string): void {
+    this.showStatusBarItem();
+    this.data = this.filterTree().children;
+    this._onDidChangeTreeData.fire(undefined);
+    // Change severity filter selection in the global state
+    this.context.globalState.update(type,!this.context.globalState.get(type));
+    // Change the severity filter selection value in the context
+    vscode.commands.executeCommand('setContext',type,this.context.globalState.get(type));
+    this.hideStatusBarItem();
   }
 
   clean(): void {
@@ -58,10 +101,18 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
   }
 
-  refreshData(): void {
+  async refreshData(typeFilter?:string): Promise<void> {
     this.showStatusBarItem();
-    this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
+    
+    // Used to check if the refresh is being called from a filter button
+    if(typeFilter){
+      await this.context.globalState.update(typeFilter,!this.context.globalState.get(typeFilter));
+      // Change the selection value in the context
+     await vscode.commands.executeCommand('setContext',typeFilter,this.context.globalState.get(typeFilter));
+    }
     this.data = this.generateTree().children;
+    this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
+    this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
 
@@ -79,6 +130,41 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     return this.groupBy(jsonResults.results, groups);
   }
 
+  filterTree(): TreeItem {
+    const resultJsonPath = path.join(__dirname, 'ast-results.json');
+    
+    if (!fs.existsSync(resultJsonPath)) {
+      this.diagnosticCollection.clear();
+      return new TreeItem("", undefined, []);
+    }
+    // If it has any severity filter to aply
+    if(this.issueLevel.length>0){
+      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, 'utf-8'));
+      return this.filterBy(jsonResults.results);
+    }
+    // If we need to generate the complete tree
+    else {
+      return this.generateTree();
+    }
+  }
+  
+  filterBy(jsonList: Object[]):TreeItem{
+    const groups = ['type', this.issueFilter];
+    const folder = vscode.workspace.workspaceFolders?.[0];
+    const tree = new TreeItem(this.scanId, undefined, []);
+    jsonList.map((element)=>{
+      const obj = new AstResult(element);
+      if (!obj) { return; }
+      if(this.issueLevel.includes(obj.getSeverity())){
+        // Build the tree again
+        const item = new TreeItem(obj.label, obj);
+        const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
+        node.children?.push(item);
+      }
+    });
+    return tree;
+  }
+
   groupBy(list: Object[], groups: string[]): TreeItem {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
@@ -94,14 +180,22 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   groupTree(rawObj: Object, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>, groups: string[], tree: TreeItem) {
     const obj = new AstResult(rawObj);
-    if (!obj) { return; }
-
+    if (!obj) { return; } 
     const item = new TreeItem(obj.label, obj);
-    if (obj.sastNodes.length > 0) {this.createDiagnostic(obj.label, obj.getSeverityCode(), obj.sastNodes[0], folder, map);}
-    //obj.sastNodes.forEach((node) => this.createDiagnostic(obj.label, obj.severity, node, folder, map));
+    // Verify the current severity fiters applied
+    if (this.issueLevel.length>0) {
+      // Filter only the results for the severity filters type
+      if(this.issueLevel.includes(obj.getSeverity())){
+        if (obj.sastNodes.length > 0) {this.createDiagnostic(obj.label, obj.getSeverityCode(), obj.sastNodes[0], folder, map);}
+        const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
+        node.children?.push(item);
+      }
+    }
+    // If there is no severity filter no information should be stored in the tree
+    else{
+      new TreeItem("");
+    }
     
-    const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
-    node.children?.push(item);
   }
 
   createDiagnostic(label: string, severity: vscode.DiagnosticSeverity, node: SastNode, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>) {
@@ -166,7 +260,7 @@ export class TreeItem extends vscode.TreeItem {
     this.size = 1;
     this.children = children;
     if (result) {
-      this.iconPath =  new vscode.ThemeIcon(result.getIcon());
+      this.iconPath =  result.getIcon();
     }
   };
 
