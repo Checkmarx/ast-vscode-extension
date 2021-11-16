@@ -36,15 +36,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection) {
+      this.initializeFilters();
       this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
       this.refreshData();
-      // Initialize global variables to be set in the context
-      this.initializeFilters();
-      // Add variables to the context, so that the icons change can ocurr
-      vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
-      vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
-      vscode.commands.executeCommand('setContext',LOW_FILTER,false);
-      vscode.commands.executeCommand('setContext',INFO_FILTER,false);
   }
 
   private showStatusBarItem() {
@@ -60,36 +54,16 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		this.statusBarItem.hide();
 	}
 
-  private initializeFilters() {
-    // Check if there is a value initialized in the workspace, if not set them to the default values
-    if(this.context.globalState.get(HIGH_FILTER) === undefined){
-      this.context.globalState.update(HIGH_FILTER,true);
-    }
-    if(this.context.globalState.get(MEDIUM_FILTER) === undefined){
-      this.context.globalState.update(MEDIUM_FILTER,true);
-    }
-    if(this.context.globalState.get(LOW_FILTER) === undefined){
-      this.context.globalState.update(LOW_FILTER,false);
-    }
-    if(this.context.globalState.get(INFO_FILTER) === undefined){
-      this.context.globalState.update(INFO_FILTER,false);
-    }
+  private async initializeFilters() {
+  await vscode.commands.executeCommand('setContext',INFO_FILTER,false);
+	await vscode.commands.executeCommand('setContext',LOW_FILTER,false);
+	await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
+	await vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
   }
 
   refresh(): void {
     this.refreshData();
     this._onDidChangeTreeData.fire(undefined);
-  }
-
-  refreshFilters(type:string): void {
-    this.showStatusBarItem();
-    this.data = this.filterTree().children;
-    this._onDidChangeTreeData.fire(undefined);
-    // Change severity filter selection in the global state
-    this.context.globalState.update(type,!this.context.globalState.get(type));
-    // Change the severity filter selection value in the context
-    vscode.commands.executeCommand('setContext',type,this.context.globalState.get(type));
-    this.hideStatusBarItem();
   }
 
   clean(): void {
@@ -106,9 +80,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     
     // Used to check if the refresh is being called from a filter button
     if(typeFilter){
-      await this.context.globalState.update(typeFilter,!this.context.globalState.get(typeFilter));
+      var context = await this.context.globalState.get(typeFilter);
       // Change the selection value in the context
-     await vscode.commands.executeCommand('setContext',typeFilter,this.context.globalState.get(typeFilter));
+      await this.context.globalState.update(typeFilter,!context);
+      await vscode.commands.executeCommand('setContext',typeFilter,!context);
     }
     this.data = this.generateTree().children;
     this.scanId = this.context.globalState.get(SCAN_ID_KEY, "");
@@ -128,41 +103,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     const groups = ['type', this.issueFilter];
     return this.groupBy(jsonResults.results, groups);
-  }
-
-  filterTree(): TreeItem {
-    const resultJsonPath = path.join(__dirname, 'ast-results.json');
-    
-    if (!fs.existsSync(resultJsonPath)) {
-      this.diagnosticCollection.clear();
-      return new TreeItem("", undefined, []);
-    }
-    // If it has any severity filter to aply
-    if(this.issueLevel.length>0){
-      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, 'utf-8'));
-      return this.filterBy(jsonResults.results);
-    }
-    // If we need to generate the complete tree
-    else {
-      return this.generateTree();
-    }
-  }
-  
-  filterBy(jsonList: Object[]):TreeItem{
-    const groups = ['type', this.issueFilter];
-    const folder = vscode.workspace.workspaceFolders?.[0];
-    const tree = new TreeItem(this.scanId, undefined, []);
-    jsonList.map((element)=>{
-      const obj = new AstResult(element);
-      if (!obj) { return; }
-      if(this.issueLevel.includes(obj.getSeverity())){
-        // Build the tree again
-        const item = new TreeItem(obj.label, obj);
-        const node = groups.reduce((previousValue: TreeItem, currentValue: string) => this.reduceGroups(obj, previousValue, currentValue), tree);
-        node.children?.push(item);
-      }
-    });
-    return tree;
   }
 
   groupBy(list: Object[], groups: string[]): TreeItem {

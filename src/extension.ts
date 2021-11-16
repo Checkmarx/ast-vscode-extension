@@ -25,11 +25,6 @@ export function activate(context: vscode.ExtensionContext) {
 			astDetailsViewProvider.refresh(item.selection[0]);
 		}
 	});
-	// // Por isto numa funcao de init
-	// vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
-    // vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
-    // vscode.commands.executeCommand('setContext',LOW_FILTER,false);
-    // vscode.commands.executeCommand('setContext',INFO_FILTER,false);
     // Show the user the ast logs channel
 	logs.show();
 	logs.log("Info","Checkmarx plugin is running");
