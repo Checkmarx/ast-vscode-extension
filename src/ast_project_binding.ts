@@ -134,8 +134,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 		this.scanList	= [];
 		//let val = await cx.scanShow(id);
-		// TO DELETE START
-		
+		// TO modify with new wrapper version start
 		await cx.scanList().then(scan => {
 			scan.scanObjectList.forEach(element => {
 				if(element.ProjectID === this.projectID) {
@@ -148,7 +147,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			vscode.window.showErrorMessage(`Error loading scan list`);
 			this.logs.log("Error",err);
 		});
-		// TO DELETE END
+		// TO modify with new wrapper version end
 		this._view?.webview.postMessage({scans: this.scanList, instruction:"loadscanlist",workspaceScan : this.scanName});
 	}
 
@@ -278,12 +277,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
 		
 		const nonce = getNonce();
-		// let results = 	this.loadProjectList().then(projects => {
-		// 				return projects;
-		// }).catch(err => {
-		// 	console.log(err);
-		// });
-		let html = `<!DOCTYPE html>
+	
+		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -303,17 +298,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
-				<select	id="projectID" class = "ast-project" value="${this.projectID} placeholder="ProjectId">`;
-				// <option value="none" selected disabled>
-    //       Select the project
-    //   </option>
-				
-				// const project = this.loadProjectList();
-				// for(let i = 0; i < this.projectList.length; i++) {
-				// 	html += `<option  value="${this.projectList[i].ID}">${this.projectList[i].ID}</option>`;					
-				// }
-				html += `</select>`;
-				html += `
+				<select	id="projectID" class = "ast-project" value="${this.projectID} placeholder="ProjectId"></select>
 				<select	id="scans" class="ast-scans" ></select>
 				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
@@ -321,6 +306,5 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
-		return html;
 	}
 }

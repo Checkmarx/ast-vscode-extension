@@ -12,15 +12,21 @@
 			scanID: scanID
 		});
 	});
-	// document.querySelector('.ast-settings').addEventListener('click', () => {
-	// 	vscode.postMessage({
-	// 		command: 'settings'
-	// 	});
-	// });
+
 
 	document.querySelector('.ast-project').addEventListener('change', () => {
 		const projectID = document.getElementById("projectID").value;
 		const scanID = document.getElementById("scanID");
+		const scans = document.getElementById("scans");
+		const scanIDOptions = scans.options;
+		scanIDOptions.length = 0;
+		const defaultOption = document.createElement("option");
+		defaultOption.text = "Loading scans";
+		defaultOption.value = "";
+		defaultOption.disabled = true;
+		defaultOption.selected = true;
+		scans.appendChild(defaultOption);
+		scans.disabled=true;
 		scanID.value = '';
 		vscode.postMessage({
 			command: 'projectSelected',
@@ -40,13 +46,23 @@
 		});
 	});
 
-	// document.querySelector('.ast-clear').addEventListener('click', () => {
-	// 	const scanID = document.getElementById("scanID");
-	// 	scanID.value = '';
-	// 	vscode.postMessage({
-	// 		command: 'clear'
-	// 	});
-	// });
+	function loadOption(text,value,disabled,selected){
+		const option = document.createElement("option");
+		option.text = text;
+		option.value = value;
+		option.disabled = disabled;
+		option.selected = selected;
+		return option;
+	}
+
+	function disableSelection(disable){
+		const projectID = document.getElementById("projectID");
+		const scans = document.getElementById("scans");
+		const scanID = document.getElementById("scanID");
+		projectID.disabled = disable;
+		scans.disabled = disable;
+		scanID.disabled = disable;
+	}
 
 	window.addEventListener('message', event => {
 
@@ -68,22 +84,12 @@
 				const selectElement = document.getElementById("scans");
 				selectElement.options.length = 0;
 				if (scans.length > 0) {
+					// if the obtained scan list is not empty, populate scan list dropdown
 					selectElement.disabled = false;
-					const defaultOption = document.createElement("option");
-					defaultOption.text = "Select a scan";
-					defaultOption.value = "";
-					defaultOption.disabled = true;
-					defaultOption.selected = true;
-					selectElement.add(defaultOption);
+					selectElement.add(loadOption('Select a scan', '', true, true));
 					for (var scan in scans) {
-						//append options
-						const option = document.createElement("option");
-						//const optionText = document.createTextNode(scans.scans[scan].name);
 						const scanDate = scans[scan].CreatedAt.split("T")[0] + " " + scans[scan].CreatedAt.split("T")[1].split(".")[0];
-						const optionText = document.createTextNode(scanDate);
-						option.appendChild(optionText);
-						//option.setAttribute("value", scans.scans[scan].id);
-						option.setAttribute("value", scans[scan].ID);
+						const option = loadOption(scanDate, scans[scan].ID, false, false);
 						selectElement.appendChild(option);
 						if (workspaceScan === scanDate) {
 							option.selected = true;
@@ -91,32 +97,17 @@
 					}
 				}
 				else {
-					const defaultOption = document.createElement("option");
-					defaultOption.text = "No scans found for project";
-					defaultOption.value = "";
-					defaultOption.disabled = true;
-					defaultOption.selected = true;
-					selectElement.add(defaultOption);
+					selectElement.add(loadOption("No scans found for project", "", true, true));
 					selectElement.disabled = true;
 					const scanID = document.getElementById("scanID");
 					scanID.value = '';
 				}
 				break;
 			case 'disableSelection':
-				const disableprojectID = document.getElementById("projectID");
-				const disableScans = document.getElementById("scans");
-				const disableScanID = document.getElementById("scanID");
-				disableprojectID.disabled = true;
-				disableScans.disabled = true;
-				disableScanID.disabled = true;
+				disableSelection(true);
 				break;
 			case 'enableSelection':
-				const enableprojectID = document.getElementById("projectID");
-				const enableScans = document.getElementById("scans");
-				const enableScanID = document.getElementById("scanID");
-				enableprojectID.disabled = false;
-				enableScans.disabled = false;
-				enableScanID.disabled = false;
+				disableSelection(false);
 				break;
 			case 'loadedscan':
 				const selectedProjectID = message.selectedProjectID;
@@ -125,36 +116,17 @@
 				const scansSelected = document.getElementById("scans");
 				let projectSelected = false;
 				let scanSelected = false;
-				//const projectName = message.projectList.find(project => project.ID === selectedProjectID).Name;
 				Array.from(document.getElementById("projectID").options).forEach(function (option_element) {
 					if (option_element.value === selectedProjectID) {
 						option_element.selected = true;
 						projectSelected = true;
-						// vscode.postMessage(
-						// 	{
-						// 	command: 'projectSelected',
-						// 	projectID: selectedProjectID
-						// });
 					}
 				});
 				if (!projectSelected) {
-					const projectIDOption = document.createElement("option");
-					projectIDOption.text = "Selected project not in list";
-					projectIDOption.value = "";
-					projectIDOption.disabled = true;
-					projectIDOption.selected = true;
-					projectElementSelected.appendChild(projectIDOption);
+					projectElementSelected.appendChild(loadOption("Selected project not in list", "", true, true));
 				}
-				console.log("scanList: " + message.scanList);
 				const scanItem = message.scanList.filter(scan => scan.ID === message.selectedScanID);
-				console.log(scanItem);
 				if (scanItem.length > 0) {
-					// const scanName = scanItem[0].Name;
-					// const scanID = scanItem[0].ID;
-					// scanElementSelected.value = scanID;
-					// scanElementSelected.disabled = false;
-					// scanElementSelected.selected = true;
-					// scanSelected = true;
 					Array.from(document.getElementById("scans").options).forEach(function (option_element) {
 						console.log("scan option: " + option_element.value + " selectd: " + scanElementSelected.value);
 						if (option_element.value === scanElementSelected.value) {
@@ -163,15 +135,8 @@
 						}
 					});
 				}
-
-
 				if (!scanSelected) {
-					const scanIDOption = document.createElement("option");
-					scanIDOption.text = "Selected scan not in list";
-					scanIDOption.value = "";
-					scanIDOption.selected = true;
-					scanIDOption.disabled = true;
-					scansSelected.appendChild(scanIDOption);
+					scansSelected.appendChild(loadOption("Selected scan not in list", "", true, true));
 				}
 				break;
 
@@ -183,17 +148,11 @@
 				const existingProjectName = projects.filter(project => project.ID === existingProjectID);
 				if (projects.length > 0) {
 					projectElement.disabled = false;
-					const defaultOption = document.createElement("option");
 					let workspaceProject = projects.filter(project => {
 						return workspaceElement !== undefined ? workspaceElement.includes(project.Name) : '';
 					});
 					if (workspaceProject.length > 0) {
-						const projectoptionText = document.createTextNode(workspaceProject[0].Name);
-						defaultOption.appendChild(projectoptionText);
-						defaultOption.setAttribute("value", workspaceProject[0].ID);
-						defaultOption.selected = true;
-						projectElement.appendChild(defaultOption);
-						console.log(projects);
+						projectElement.appendChild(loadOption(workspaceProject[0].Name, workspaceProject[0].ID, false, true));
 						projects = projects.filter(project => { return project.Name !== workspaceProject[0].Name; });
 						vscode.postMessage(
 							{
@@ -204,13 +163,7 @@
 
 					else if (existingProjectID !== '' && existingProjectName.length > 0) {
 						console.log("workspace project name " + existingProjectName[0].Name);
-						const projectIndex = projects.findIndex(project => project.ID === existingProjectID);
-						console.log("workspace project index " + projectIndex);
-						const projectoptionText = document.createTextNode(existingProjectName[0].Name);
-						defaultOption.appendChild(projectoptionText);
-						defaultOption.setAttribute("value", existingProjectID);
-						defaultOption.selected = true;
-						projectElement.appendChild(defaultOption);
+						projectElement.appendChild(loadOption(existingProjectName[0].Name, existingProjectID, false, true));
 						projects = projects.filter(project => { return project.Name !== existingProjectName[0].Name; });
 						vscode.postMessage(
 							{
@@ -219,24 +172,13 @@
 							});
 					}
 					else {
-						defaultOption.text = "Select a project";
-						defaultOption.value = "";
-						defaultOption.disabled = true;
-						defaultOption.selected = true;
-						projectElement.appendChild(defaultOption);
+						projectElement.appendChild(loadOption("Select a project", "", true, true));
 						const scanID = document.getElementById("scanID");
 						scanID.value = '';
 					}
 
 					for (var project in projects) {
-						//append options
-						const projectoption = document.createElement("option");
-						//const optionText = document.createTextNode(scans.scans[scan].name);
-						const projectoptionText = document.createTextNode(projects[project].Name);
-						projectoption.appendChild(projectoptionText);
-						//option.setAttribute("value", scans.scans[scan].id);
-						projectoption.setAttribute("value", projects[project].ID);
-						projectElement.appendChild(projectoption);
+						projectElement.appendChild(loadOption(projects[project].Name, projects[project].ID, false, false));
 					}
 				}
 				break;
