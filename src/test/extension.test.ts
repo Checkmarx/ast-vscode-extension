@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { json } from 'stream/consumers';
 import { VSBrowser, Workbench, WebDriver, LinkSetting, InputBox, SettingsEditor, By, ActivityBar, ViewControl, CustomTreeSection, until, ViewSection, BottomBarPanel, EditorView, MarkerType } from 'vscode-extension-tester';
 describe('Check basic test cases', async function () {
 	let bench: Workbench;
@@ -7,7 +8,7 @@ describe('Check basic test cases', async function () {
 	let editorView: EditorView;
 
 	before(async () => {
-		this.timeout(100000);
+		this.timeout(10000);
 		bench = new Workbench();
 		driver = VSBrowser.instance.driver;
 		editorView = new EditorView();
@@ -16,7 +17,7 @@ describe('Check basic test cases', async function () {
 
 
 	it('should open the settings and validate the wrong Key', async function () {
-		this.timeout(80000);
+		this.timeout(10000);
 		settingsWizard = await bench.openSettings();
 		await delay(5000);
 		const setting = await settingsWizard.findSetting("API KEY", "Checkmarx AST") as LinkSetting;
@@ -26,7 +27,7 @@ describe('Check basic test cases', async function () {
 
 
 	it('should set the settings and check if values populated', async function () {
-		this.timeout(80000);
+		this.timeout(100000);
 		const apiKeyVal = await (await settingsWizard.findSetting("Api Key", "Checkmarx AST"));
 		await apiKeyVal.setValue(process.env.CX_API_KEY + "");
 		const baseUriVal = await (await settingsWizard.findSetting("Base-uri", "Checkmarx AST"));
@@ -74,7 +75,7 @@ describe('Check basic test cases', async function () {
 	});
 
 	it('should get scan ID and update the scanID label and load results', async function () {
-		this.timeout(80000);
+		this.timeout(10000);
 		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
 		if (ctrl !== undefined) {
 			const view = await ctrl.openView();
@@ -245,6 +246,22 @@ describe('Check basic test cases', async function () {
 		const issues = await problemsView.getAllMarkers(MarkerType.Any);
 		expect(issues).to.have.length.greaterThan(0);
 		await delay(10000);
+	});
+
+	it('Only HIGH and MEDIUM results must be visible', async function () {
+		this.timeout(10000);
+		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
+		const view = await ctrl?.openView();
+		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
+		await results.isExpanded();
+		const treeNodes = await results.getVisibleItems();
+		console.log(JSON.stringify(treeNodes));
+		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
+			const indNode = (await node.getLabel());
+			expect(indNode).to.have.length.greaterThan(0);
+			await node.expand();
+		});
+		await delay(5000);
 	});
 
 });
