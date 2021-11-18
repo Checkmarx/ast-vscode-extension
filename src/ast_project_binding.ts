@@ -1,14 +1,19 @@
 import * as vscode from "vscode";
 import * as CxAuth from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxAuth";
 import * as CxScanConfig from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScanConfig";
-import { EXTENSION_NAME, SCAN_ID_KEY } from './constants';
+import { EXTENSION_NAME, SCAN_ID_KEY, PROJECT_ID_KEY, SELECTED_SCAN_KEY } from './constants';
 import { getNonce } from "./utils";
 import { Logs } from "./logs";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/CxScan";
 
 
 export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
 	private scanID: string = "";
+	private projectID:string = "";
+	private scanName:string = "";
+	private projectList: CxScan[] = [];
+	private scanList: CxScan[] = [];
 	
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -17,6 +22,8 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		private readonly logs: Logs,
 	) { 
 		this.scanID = context.globalState.get(SCAN_ID_KEY, "");
+		this.projectID = context.workspaceState.get(PROJECT_ID_KEY, "");
+		this.scanName = context.workspaceState.get(SELECTED_SCAN_KEY, "");
 		this.logs = logs;
 	}
 
@@ -30,6 +37,12 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		this.statusBarItem.text = EXTENSION_NAME;
 		this.statusBarItem.tooltip = undefined;
 		this.statusBarItem.hide();
+	}
+	public refresh() {
+		console.log("Refreshing view!");
+		if (this._view !== undefined) {
+			this._view.webview.html = this._getHtmlForWebview(this._view.webview);
+		}
 	}
 
 	public getWebView() { return this._view;}
@@ -74,7 +87,73 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		}
 	}
 
+	public async  loadProjectList(){
+		this.logs.log("Info","Loading project list");
+		//this.showStatusBarItem("Projects ");
+		const config = this.getAstConfiguration();
+		if (!config) {
+			this.logs.log("Error","Please configure the plugin settings");
+			vscode.window.showErrorMessage(`Please configure the plugin settings`);
+			return [];
+		}
+		//const sb =  await document.querySelector('#projectID') as HTMLElement;
+		
+		const cx = new CxAuth.CxAuth(config);
+		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		let workspaceProject = vscode.workspace.workspaceFolders?.map(folder => {return folder.name});
+		let projects = await cx.projectList().then(project => {
+			project.scanObjectList.forEach(element => {
+				this.projectList.push(element);
+				
+			});
+		//	vscode.commands.executeCommand('ast-results.refreshProject');
+		}).catch(err => {	
+			this.logs.log("Error","Error loading project list");
+			vscode.window.showErrorMessage(`Error loading project list`);
+			this.logs.log("Error",err);
+			return [];
+		});
+
+		this._view?.webview.postMessage({projects: this.projectList,instruction:"loadprojectlist", workspaceName: workspaceProject, existingProjectID: this.projectID}); 
+		if (this.projectList.length !== 0) {
+			this.hideStatusBarItem();
+		}
+	//	vscode.commands.executeCommand('ast-results.refreshProject');
+	}
+
+	public async loadScanList(id:string) {
+
+		this.logs.log("Info","Loading Scan List");
+		const config = this.getAstConfiguration();
+		if (!config) {
+			this.logs.log("Error","Please configure the plugin settings");
+			vscode.window.showErrorMessage(`Please configure the plugin settings`);
+			return [];
+		}
+		const cx = new CxAuth.CxAuth(config);
+		cx.apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+		this.scanList	= [];
+		//let val = await cx.scanShow(id);
+		// TO modify with new wrapper version start
+		await cx.scanList().then(scan => {
+			scan.scanObjectList.forEach(element => {
+				if(element.ProjectID === this.projectID) {
+					this.scanList.push(element);
+				}
+			});
+		}).catch(err => {	
+
+			this.logs.log("Error","Error loading scan list");
+			vscode.window.showErrorMessage(`Error loading scan list`);
+			this.logs.log("Error",err);
+		});
+		// TO modify with new wrapper version end
+		this._view?.webview.postMessage({scans: this.scanList, instruction:"loadscanlist",workspaceScan : this.scanName});
+	}
+
 	async loadResults(scanID: string) {
+
+		this._view?.webview.postMessage({instruction:"disableSelection"});
 		const config = this.getAstConfiguration();
 
 		if (!scanID) {
@@ -119,9 +198,21 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 			this.logs.log("Error","Invalid Settings");
 			vscode.window.showErrorMessage("Invalid Settings, authentication failed");
 		}
+		await cx.scanShow(scanID).then(async scan => {
+			this.logs.log("Info","Project ID for selected scan is: " + scan.scanObjectList[0].ProjectID);
+			this.projectID = scan.scanObjectList[0].ProjectID;
+			this.context.workspaceState.update(PROJECT_ID_KEY, scan.scanObjectList[0].ProjectID);
+			const scanDate = scan.scanObjectList[0].CreatedAt.split("T")[0] + " " + scan.scanObjectList[0].CreatedAt.split("T")[1].split(".")[0];
+			this.context.workspaceState.update(SELECTED_SCAN_KEY, scanDate);
+			this.logs.log("Info","SCAN LIST FOR project ID: " + scan.scanObjectList[0].ProjectID + " is: " + this.scanList);
+			await this.loadScanList(scan.scanObjectList[0].ProjectID);
+			this._view?.webview.postMessage({selectedProjectID: scan.scanObjectList[0].ProjectID, instruction:"loadedscan", projectlist: this.projectList, selectedScanID: scanID, scanList: this.scanList});
+		}
+		 ).catch(err => { this.logs.log("Error",err); });
 		
 		this.hideStatusBarItem();
 		this.logs.log("Info","Refreshing the results tree");
+		this._view?.webview.postMessage({instruction:"enableSelection"});
 		vscode.commands.executeCommand("ast-results.refreshTree");
 	}
 
@@ -138,6 +229,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				this._extensionUri
 			]
 		};
+		this.loadProjectList();
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.command) {
@@ -156,7 +248,22 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 					vscode.commands.executeCommand("ast-results.clear");
 					// send the message inside of the webview to clear the id
 					webviewView.webview.postMessage({instruction:"clear ID"});
-					break;			
+					break;	
+				case 'projectSelected':
+						this.projectID = data.projectID;
+						this.context.workspaceState.update(PROJECT_ID_KEY, this.projectID);
+						this.loadScanList(this.projectID);
+						this.logs.log("Project ID received: ", data.projectID);
+						break;	
+				case 'scanSelected':
+						this.scanID = data.selectedScanID;
+						this.scanName = data.selectedScanName;
+						this.context.workspaceState.update(SELECTED_SCAN_KEY, data.selectedScanName);
+						//this.loadBranches(this.projectID);
+						this.logs.log("Scan ID received: ", data.selectedScanID);
+						this.logs.log("Scan Name received: ", data.selectedScanName);
+						break;			
+						
 			}
 		});
 	}
@@ -170,7 +277,7 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
 		
 		const nonce = getNonce();
-		
+	
 		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
@@ -191,14 +298,13 @@ export class AstProjectBindingViewProvider implements vscode.WebviewViewProvider
 				<title>Checkmarx</title>
 			</head>
 			<body>
-				<input type="text" id="scanID" title="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
+				<select	id="projectID" class = "ast-project" value="${this.projectID} placeholder="ProjectId"></select>
+				<select	id="scans" class="ast-scans" ></select>
+				<input type="text" id="scanID" class="ast-input" value="${this.scanID}" placeholder="ScanId">
 
 				<button class="ast-search">Search</button>
-				<button class="ast-settings">Settings</button>
-				<button class="ast-clear">Clear</button>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
-	
 }
