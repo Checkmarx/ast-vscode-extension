@@ -92,6 +92,14 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(clearResults);
 
+
+	const refershProject = vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshProject`, () => {
+		logs.log("Info","Refresh project");
+		projectView.refresh();
+	});
+	context.subscriptions.push(refershProject);
+
+
 	const clearAll = vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, () => {
 		logs.log("Info","Clear all loaded information");
 		// Clean results.json
