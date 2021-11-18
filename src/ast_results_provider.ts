@@ -55,10 +55,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 	}
 
   private async initializeFilters() {
-  await vscode.commands.executeCommand('setContext',INFO_FILTER,false);
-	await vscode.commands.executeCommand('setContext',LOW_FILTER,false);
-	await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
-	await vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
+    await vscode.commands.executeCommand('setContext',INFO_FILTER,false);
+    await vscode.commands.executeCommand('setContext',LOW_FILTER,false);
+    await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
+    await vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
   }
 
   refresh(): void {
