@@ -248,22 +248,6 @@ describe('Check basic test cases', async function () {
 		await delay(10000);
 	});
 
-	it('Only HIGH and MEDIUM results must be visible', async function () {
-		this.timeout(10000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		await results.isExpanded();
-		const treeNodes = await results.getVisibleItems();
-		console.log(JSON.stringify(treeNodes));
-		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
-			const indNode = (await node.getLabel());
-			expect(indNode).to.have.length.greaterThan(0);
-			await node.expand();
-		});
-		await delay(5000);
-	});
-
 });
 
 const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
