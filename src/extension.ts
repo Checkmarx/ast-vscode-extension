@@ -120,17 +120,17 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(filterMediumuntoggle);
 
-	const filterLowtoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_toggle`, (item: ast.TreeItem) => {
+	const filterLowtoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_toggle`, async (item: ast.TreeItem) => {
 		logs.log("Info","Filtering low results");
-		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
-		astResultsProvider.refreshData(LOW_FILTER);
+		astResultsProvider.issueLevel = await astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
+		await astResultsProvider.refreshData(LOW_FILTER);
 	});
 	context.subscriptions.push(filterLowtoggle);
 	
-	const filterLowuntoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_untoggle`, (item: ast.TreeItem) => {
+	const filterLowuntoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_untoggle`, async (item: ast.TreeItem) => {
 		logs.log("Info","Filtering low results");
-		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
-		astResultsProvider.refreshData(LOW_FILTER);
+		astResultsProvider.issueLevel = await astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
+		await astResultsProvider.refreshData(LOW_FILTER);
 	});
 	context.subscriptions.push(filterLowuntoggle);
 

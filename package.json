@@ -256,7 +256,7 @@
     "watch": "tsc -w -p ./ && npm run copytestproject",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
-    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -i"
+    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -i "
   },
   "devDependencies": {
     "@types/chai": "4.2.22",
