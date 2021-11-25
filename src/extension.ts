@@ -4,7 +4,7 @@ import * as ast from "./ast_results_provider";
 import { AstDetailsViewProvider } from "./ast_details_view";
 import { AstResultsProvider, TreeItem } from "./ast_results_provider";
 import { AstProjectBindingViewProvider } from "./ast_project_binding";
-import { EXTENSION_NAME } from "./constants";
+import { EXTENSION_NAME, HIGH_FILTER, MEDIUM_FILTER, LOW_FILTER, INFO_FILTER  } from "./constants";
 import { Logs } from "./logs";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -19,16 +19,15 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	const astResultsProvider = new AstResultsProvider(context, logs, statusBarItem, diagnosticCollection);
 	vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);	
-	
 	const tree = vscode.window.createTreeView("astResults", {treeDataProvider: astResultsProvider, showCollapseAll: true });
     tree.onDidChangeSelection((item) => {
 		if (!item.selection[0].children) {
 			astDetailsViewProvider.refresh(item.selection[0]);
 		}
 	});
-
+    // Show the user the ast logs channel
 	logs.show();
-    logs.log("Info","Checkmarx plugin is running");
+	logs.log("Info","Checkmarx plugin is running");
 
 	const astDetailsViewProvider = new AstDetailsViewProvider(context.extensionUri);
 	const viewProvider = vscode.window.registerWebviewViewProvider(`astDetailsView`, astDetailsViewProvider);
@@ -92,6 +91,62 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(clearResults);
 
+	const filterHightoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_toggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering high results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.high)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.high;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.high]);
+		astResultsProvider.refreshData(HIGH_FILTER);
+	});
+	context.subscriptions.push(filterHightoggle);
+
+	const filterHighuntoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_untoggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering high results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.high)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.high;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.high]);
+		astResultsProvider.refreshData(HIGH_FILTER);
+	});
+	context.subscriptions.push(filterHighuntoggle);
+	
+
+	const filterMediumtoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterMedium_toggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering medium results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.medium)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.medium;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.medium]);
+		astResultsProvider.refreshData(MEDIUM_FILTER);
+	});
+	context.subscriptions.push(filterMediumtoggle);
+	
+	const filterMediumuntoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterMedium_untoggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering medium results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.medium)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.medium;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.medium]);
+		astResultsProvider.refreshData(MEDIUM_FILTER);
+	});
+	context.subscriptions.push(filterMediumuntoggle);
+
+	const filterLowtoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_toggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering low results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
+		astResultsProvider.refreshData(LOW_FILTER);
+	});
+	context.subscriptions.push(filterLowtoggle);
+	
+	const filterLowuntoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_untoggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering low results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.low)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.low;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
+		astResultsProvider.refreshData(LOW_FILTER);
+	});
+	context.subscriptions.push(filterLowuntoggle);
+
+	const filterInfotoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_toggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering info results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.info)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.info;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.info]);
+		astResultsProvider.refreshData(INFO_FILTER);
+	});
+	context.subscriptions.push(filterInfotoggle);
+	
+	const filterInfountoggle = vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_untoggle`, (item: ast.TreeItem) => {
+		logs.log("Info","Filtering info results");
+		astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(ast.IssueLevel.info)?astResultsProvider.issueLevel.filter((x)=>{ return x !== ast.IssueLevel.info;}) : astResultsProvider.issueLevel.concat([ast.IssueLevel.info]);
+		astResultsProvider.refreshData(INFO_FILTER);		
+	});
+	context.subscriptions.push(filterInfountoggle);
 
 	const refershProject = vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshProject`, () => {
 		logs.log("Info","Refresh project");

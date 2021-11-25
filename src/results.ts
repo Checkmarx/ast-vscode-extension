@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { IssueLevel } from './ast_results_provider';
+import * as fs from 'fs';
 
 export class AstResult {
 	label: string = "";
@@ -30,16 +32,16 @@ export class AstResult {
 		if (result.type === "infrastructure") { this.kicsNode = result.data; }
 	}
 
-	getIcon() {
+	 getIcon() {
 		switch(this.severity) {
 			case "HIGH":
-				return "error";
+				return __dirname + "/media/icons/high_untoggle.svg";
 			case "MEDIUM":
-				return "warning";
+				return __dirname + "/media/icons/medium_untoggle.svg";
 			case "INFO":
-				return "info";
+				return __dirname + "/media/icons/info_untoggle.svg";
 			case "LOW":
-				return "info";	
+				return __dirname + "/media/icons/low_untoggle.svg";
 		}
 		return "";
 	}
@@ -56,6 +58,20 @@ export class AstResult {
 				return vscode.DiagnosticSeverity.Information;	
 		}
 		return vscode.DiagnosticSeverity.Information;;
+	}
+	getSeverity() {
+		
+		switch(this.severity) {
+			case "HIGH":
+				return IssueLevel.high;
+			case "MEDIUM":
+				return IssueLevel.medium;
+			case "INFO":
+				return IssueLevel.info;
+			case "LOW":
+				return IssueLevel.low;
+		}
+		return IssueLevel.empty;
 	}
   
 	getHtmlDetails() {

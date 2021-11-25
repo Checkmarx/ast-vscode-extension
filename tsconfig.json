@@ -9,5 +9,5 @@
 		"rootDir": "src"
 	},
 	"exclude": ["node_modules", ".vscode-test"],
-	"include": ["src/resources/testProj/*.php","src/**/*"],
+	"include": ["src/resources/testProj/*.php","src/**/*"]
 }

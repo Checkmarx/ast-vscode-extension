@@ -71,10 +71,98 @@
         "category": "checkmarx-ast",
         "title": "Clear",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "ast-results.filterHigh_toggle",
+        "category": "checkmarx-ast",
+        "title": "HIGH",
+        "icon": "media/icons/high_toggle.svg"
+      },
+      {
+        "command": "ast-results.filterHigh_untoggle",
+        "category": "checkmarx-ast",
+        "title": "HIGH",
+        "icon": "media/icons/high_untoggle.svg"
+      },
+      {
+        "command": "ast-results.filterMedium_toggle",
+        "category": "checkmarx-ast",
+        "title": "MEDIUM",
+        "icon": "media/icons/medium_toggle.svg"
+      },
+      {
+        "command": "ast-results.filterMedium_untoggle",
+        "category": "checkmarx-ast",
+        "title": "MEDIUM",
+        "icon": "media/icons/medium_untoggle.svg"
+      },
+      {
+        "command": "ast-results.filterLow_toggle",
+        "category": "checkmarx-ast",
+        "title": "LOW",
+        "icon": "media/icons/low_toggle.svg"
+      },
+      {
+        "command": "ast-results.filterLow_untoggle",
+        "category": "checkmarx-ast",
+        "title": "LOW",
+        "icon": "media/icons/low_untoggle.svg"
+      },
+      {
+        "command": "ast-results.filterInfo_toggle",
+        "category": "checkmarx-ast",
+        "title": "INFO",
+        "icon": "media/icons/info_toggle.svg"
+      },
+      {
+        "command": "ast-results.filterInfo_untoggle",
+        "category": "checkmarx-ast",
+        "title": "INFO",
+        "icon": "media/icons/info_untoggle.svg"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "ast-results.filterHigh_untoggle",
+          "group": "navigation@1",
+          "when": "view == astResults && ast-results-high"
+        },
+        {
+          "command": "ast-results.filterHigh_toggle",
+          "group": "navigation@1",
+          "when": "view == astResults && !ast-results-high"
+        },
+        {
+          "command": "ast-results.filterMedium_untoggle",
+          "group": "navigation@2",
+          "when": "view == astResults && ast-results-medium"
+        },
+        {
+          "command": "ast-results.filterMedium_toggle",
+          "group": "navigation@2",
+          "when": "view == astResults && !ast-results-medium"
+        },
+        {
+          "command": "ast-results.filterLow_untoggle",
+          "group": "navigation@3",
+          "when": "view == astResults && ast-results-low"
+        },
+        {
+          "command": "ast-results.filterLow_toggle",
+          "group": "navigation@3",
+          "when": "view == astResults && !ast-results-low"
+        },
+        {
+          "command": "ast-results.filterInfo_untoggle",
+          "group": "navigation@4",
+          "when": "view == astResults && ast-results-info"
+        },
+        {
+          "command": "ast-results.filterInfo_toggle",
+          "group": "navigation@4",
+          "when": "view == astResults && !ast-results-info"
+        },
         {
           "command": "ast-results.groupBySeverity",
           "group": "@groupBy",
@@ -163,11 +251,12 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && npm run copytestproject",
+    "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./ && npm run copytestproject",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
-    "test": "npm run compile  && npm run copytestproject && extest setup-and-run  './out/test/**/*test.js' -i"
+    "copymedia": "copyfiles \"media/icons/*\" out/ -E",
+    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -i"
   },
   "devDependencies": {
     "@types/chai": "4.2.22",
