@@ -4,7 +4,7 @@ import * as path from 'path';
 import { EventEmitter } from 'vscode';
 import { AstResult, SastNode } from './results';
 import { EXTENSION_NAME, SCAN_ID_KEY, HIGH_FILTER, MEDIUM_FILTER, LOW_FILTER, INFO_FILTER } from './constants';
-import { getProperty } from './utils';
+import { getBranchId, getProjectId, getProperty, getScanId } from './utils';
 import { Logs } from './logs';
 
 export enum IssueFilter {
@@ -55,10 +55,45 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 	}
 
   private async initializeFilters() {
-    await vscode.commands.executeCommand('setContext',INFO_FILTER,false);
-    await vscode.commands.executeCommand('setContext',LOW_FILTER,false);
-    await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,true);
-    await vscode.commands.executeCommand('setContext',HIGH_FILTER,true);
+    // Get the saved state
+    var high = await this.context.globalState.get(HIGH_FILTER);
+    var medium = await this.context.globalState.get(MEDIUM_FILTER);
+    var low = await this.context.globalState.get(LOW_FILTER);
+    var info = await this.context.globalState.get(INFO_FILTER);
+    // Check if it there was anything stored in the state
+    if(!high){
+      high = true;
+    }
+    if(!medium){
+      medium = true;
+    }
+    if(!low){
+      low = false; 
+    }
+    if(!info){
+      info = false;
+    }
+    // Update the context, state and local array
+    // if(high===false){
+    //   this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.high;});
+    // }
+    await vscode.commands.executeCommand('setContext',HIGH_FILTER,high);
+    await this.context.globalState.update(HIGH_FILTER,high);
+    // if(medium===true){
+    //   this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.medium;});
+    // }
+    await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,medium);
+    await this.context.globalState.update(MEDIUM_FILTER,medium);
+    // if(info===true){
+    //   this.issueLevel = this.issueLevel.concat([IssueLevel.info]);
+    // }
+    await vscode.commands.executeCommand('setContext',INFO_FILTER,info);
+    await this.context.globalState.update(INFO_FILTER,info);
+    // if(low===true){
+    //   this.issueLevel = this.issueLevel.concat([IssueLevel.low]);
+    // }
+    await this.context.globalState.update(LOW_FILTER,low);
+    await vscode.commands.executeCommand('setContext',LOW_FILTER,low);
   }
 
   refresh(): void {
@@ -96,19 +131,24 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     
     if (!fs.existsSync(resultJsonPath)) {
       this.diagnosticCollection.clear();
-      return new TreeItem("", undefined, []);
+      return new TreeItem("", undefined, undefined, []);
     } 
 
     const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, 'utf-8'));
 
     const groups = ['type', this.issueFilter];
-    return this.groupBy(jsonResults.results, groups);
+    const treeItem = this.groupBy(jsonResults.results, groups);
+    const projectTreeItem = new TreeItem(getProjectId(this.context), "project", undefined, undefined);
+    const branchTreeItem = new TreeItem(getBranchId(this.context), "branch", undefined);
+    const scanTreeItem = new TreeItem(getScanId(this.context), "scanTree", undefined);
+
+    return new TreeItem("", undefined, undefined, [projectTreeItem, branchTreeItem, scanTreeItem, treeItem]);
   }
 
   groupBy(list: Object[], groups: string[]): TreeItem {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
-    const tree = new TreeItem(this.scanId, undefined, []);
+    const tree = new TreeItem(this.scanId, undefined, undefined, []);
 
     list.forEach(element => this.groupTree(element, folder, map, groups, tree));
 
@@ -121,7 +161,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   groupTree(rawObj: Object, folder: vscode.WorkspaceFolder | undefined, map: Map<string, vscode.Diagnostic[]>, groups: string[], tree: TreeItem) {
     const obj = new AstResult(rawObj);
     if (!obj) { return; } 
-    const item = new TreeItem(obj.label, obj);
+    const item = new TreeItem(obj.label, undefined, obj );
     // Verify the current severity fiters applied
     if (this.issueLevel.length>0) {
       // Filter only the results for the severity filters type
@@ -169,7 +209,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       return tree;
     }
 
-    const newTree = new TreeItem(value, undefined, []);
+    const newTree = new TreeItem(value, undefined, undefined, []);
     previousValue.children?.push(newTree);
     return newTree;
   }
@@ -191,16 +231,27 @@ export class TreeItem extends vscode.TreeItem {
   result: AstResult | undefined;
   size: number;
 
-  constructor(label: string, result?: AstResult, children?: TreeItem[]) {
+  constructor(label: string, type?: string, result?: AstResult, children?: TreeItem[]) {
     super(
       label,
       children === undefined ? vscode.TreeItemCollapsibleState.None :
         vscode.TreeItemCollapsibleState.Collapsed);
     this.result = result;
     this.size = 1;
+    this.contextValue = type;
     this.children = children;
+    if (type) {
+      this.iconPath = new vscode.ThemeIcon("shield");
+    }
+
+    if (type === "project") {
+      this.iconPath =  new vscode.ThemeIcon("project"); 
+    }
+    if (type === "branch") {
+      this.iconPath =  new vscode.ThemeIcon("repo"); 
+    }
     if (result) {
-      this.iconPath =  result.getIcon();
+      this.iconPath =  new vscode.ThemeIcon(result.getIcon());
     }
   };
 

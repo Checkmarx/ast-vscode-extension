@@ -30,6 +30,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "ast-results.newDetails",
+        "title": "New beatiful details"
+      },
+      {
         "command": "ast-results.viewResult",
         "category": "checkmarx-ast",
         "title": "View",
@@ -119,18 +123,56 @@
         "category": "checkmarx-ast",
         "title": "INFO",
         "icon": "media/icons/info_untoggle.svg"
+      },
+      {
+        "command": "ast-results.generalPick",
+        "category": "checkmarx-ast",
+        "title": "Wizard selection",
+        "icon": "$(wrench)"
+      },
+      {
+        "command": "ast-results.projectPick",
+        "category": "checkmarx-ast",
+        "title": "Project Selection"
+      },
+      {
+        "command": "ast-results.branchPick",
+        "category": "checkmarx-ast",
+        "title": "Select"
+      },
+      {
+        "command": "ast-results.scanPick",
+        "category": "checkmarx-ast",
+        "title": "Select"
       }
     ],
     "menus": {
+      "view/item/context": [
+        {
+					"command": "ast-results.projectPick",
+          "group": "inline",
+					"when": "viewItem == project"
+				},
+        {
+					"command": "ast-results.branchPick",
+          "group": "inline",
+					"when": "viewItem == branch"
+				},
+        {
+					"command": "ast-results.scanPick",
+          "group": "inline",
+					"when": "viewItem == scan"
+				}
+      ],
       "view/title": [
         {
           "command": "ast-results.filterHigh_untoggle",
-          "group": "navigation@1",
+          "group": "navigation@2",
           "when": "view == astResults && ast-results-high"
         },
         {
           "command": "ast-results.filterHigh_toggle",
-          "group": "navigation@1",
+          "group": "navigation@2",
           "when": "view == astResults && !ast-results-high"
         },
         {
@@ -192,6 +234,11 @@
           "command": "ast-results.clear",
           "group": "navigation",
           "when": "view == astProjectView"
+        },
+        {
+          "command": "ast-results.generalPick",
+          "group": "navigation@1",
+          "when": "view == astResults"
         }
       ]
     },

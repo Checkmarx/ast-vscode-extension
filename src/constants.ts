@@ -6,3 +6,4 @@ export const LOW_FILTER: string = "ast-results-low";
 export const INFO_FILTER: string = "ast-results-info";
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";
+export const BRANCH_ID_KEY: string = "ast-results-branch-id";

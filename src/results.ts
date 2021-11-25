@@ -45,6 +45,7 @@ export class AstResult {
 		}
 		return "";
 	}
+	
 
 	getSeverityCode() {
 		switch(this.severity) {
