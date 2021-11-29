@@ -21,21 +21,21 @@ export function updateProjectId(context: vscode.ExtensionContext, projectId: str
 	context.globalState.update(PROJECT_ID_KEY, projectId);
 }
 export function getProjectId(context: vscode.ExtensionContext): string {
-	return context.globalState.get(PROJECT_ID_KEY)!; //need to change
+	return context.globalState.get(PROJECT_ID_KEY)!; //need to add wrapper
 }
 
 export function updateBranchId(context: vscode.ExtensionContext, projectId: string) {
 	context.globalState.update(BRANCH_ID_KEY, projectId);
 }
 export function getBranchId(context: vscode.ExtensionContext): string{
-	return context.globalState.get(BRANCH_ID_KEY)!; //need to change
+	return context.globalState.get(BRANCH_ID_KEY)!; //need to add wrapper
 }
 
 export function updateScanId(context: vscode.ExtensionContext, projectId: string) {
 	context.globalState.update(SCAN_ID_KEY, projectId);
 }
 export function getScanId(context: vscode.ExtensionContext): string{
-	return context.globalState.get(SCAN_ID_KEY)!; //need to change
+	return context.globalState.get(SCAN_ID_KEY)!; //need to add wrapper
 }
 
 export async function getResults(scanId: string) {
