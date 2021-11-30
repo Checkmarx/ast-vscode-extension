@@ -14,7 +14,7 @@ import {
 } from "./constants";
 import { Logs } from "./logs";
 import * as path from "path";
-import { getBranches, getProjectId, getProjectList, getResults, updateBranchId, updateProjectId, updateScanId } from "./utils";
+import { getBranches, getProjectId, getProjectList, getResults, updateBranchId, updateProjectId, updateScanId, getScans } from "./utils";
 import { multiStepInput } from "./select_project";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -314,34 +314,67 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(refershProject);
 
+  var detailsPanel: vscode.WebviewPanel | undefined = undefined;
   const newDetails = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.newDetails`,
-    (result: AstResult) => {
+    async (result: AstResult) => {
       logs.log("Info", "View New details page");
-      const panel = vscode.window.createWebviewPanel(
-        "newDetails", // Identifies the type of the webview, internal id
-        "(" + result.severity + ") " + result.label.replaceAll("_", " "), // Title of the panel displayed to the user
-        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-        {
-          enableScripts: true,
-          localResourceRoots: [
-            vscode.Uri.file(path.join(context.extensionPath, "media")),
-          ],
+      // Need to check if the detailsPanel is positioned in the rigth place
+      if (detailsPanel?.viewColumn === 1 || !detailsPanel?.viewColumn) {
+        detailsPanel?.dispose();
+        detailsPanel = undefined;
+        await vscode.commands.executeCommand(
+          "workbench.action.splitEditorRight"
+        );
+        // Only keep the result details in the split
+        await vscode.commands.executeCommand(
+          "workbench.action.closeEditorsInGroup"
+        );
+      }
+      if (detailsPanel) {
+        detailsPanel.reveal(vscode.ViewColumn.Two);
+        detailsPanel.title =
+          "(" + result.severity + ") " + result.label.replaceAll("_", " ");
+      } else {
+        detailsPanel = vscode.window.createWebviewPanel(
+          "newDetails", // Identifies the type of the webview, internal id
+          "(" + result.severity + ") " + result.label.replaceAll("_", " "), // Title of the detailsPanel displayed to the user
+          vscode.ViewColumn.Two, // Show the results in a separated column
+          {
+            enableScripts: true,
+            localResourceRoots: [
+              vscode.Uri.file(path.join(context.extensionPath, "media")),
+            ],
+          }
+          );
         }
+        // Only allow one detail to be open
+      detailsPanel.onDidDispose(
+        () => {
+          detailsPanel = undefined;
+        },
+        null,
+        context.subscriptions
       );
-      panel.webview.options = {
+      // detailsPanel set options
+      detailsPanel.webview.options = {
         enableScripts: true,
         localResourceRoots: [
           vscode.Uri.file(path.join(context.extensionPath, "media/")),
         ],
       };
-      panel.webview.html = projectView.getDetailsWeviewContent(
-        panel.webview,
+      // detailsPanel set html content
+
+      detailsPanel.webview.html = projectView.getDetailsWeviewContent(
+        detailsPanel.webview,
         result.getIcon().replace(__dirname, ""),
         result
       );
-    }
-  );
+      }
+
+      );
+
+    
   context.subscriptions.push(newDetails);
 
   const clearAll = vscode.commands.registerCommand(
@@ -398,9 +431,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Quick pick scan
 	vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => {
-		const projectList = await getBranches(getProjectId(context));
+		const projectList = await getScans(getProjectId(context),"");
+    logs.log("cenas",JSON.stringify(projectList));
 		const projectListPickItem = projectList.map(label => ({ label }));
-		//adicionar o selectionado
+		// add selected
 		const quickPick = vscode.window.createQuickPick();
 		quickPick.items = projectListPickItem;
 		quickPick.onDidChangeSelection(([{label}]) => {
@@ -417,7 +451,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const quickPick = vscode.window.createQuickPick();
 		quickPick.items = options;
 		quickPick.onDidChangeSelection(([{label}]) => {
-		  vscode.window.showInformationMessage(label);
+		  //vscode.window.showInformationMessage(label);
 		  quickPick.hide();
 		});
 		quickPick.show();

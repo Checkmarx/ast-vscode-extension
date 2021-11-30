@@ -251,7 +251,7 @@ export class TreeItem extends vscode.TreeItem {
       this.iconPath =  new vscode.ThemeIcon("repo"); 
     }
     if (result) {
-      this.iconPath =  new vscode.ThemeIcon(result.getIcon());
+      this.iconPath =  result.getIcon();
     }
   };
 

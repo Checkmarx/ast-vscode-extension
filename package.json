@@ -161,7 +161,7 @@
         {
 					"command": "ast-results.scanPick",
           "group": "inline",
-					"when": "viewItem == scan"
+					"when": "viewItem == scanTree"
 				}
       ],
       "view/title": [
