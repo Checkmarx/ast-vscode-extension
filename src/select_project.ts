@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
 import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri } from 'vscode';
-import { getBranches, getProjectList, getResults, getScans, updateBranchId, updateProjectId, updateScanId } from './utils';
+import { getBranches, getProjectList, getResults, getScans, Item, updateBranchId, updateProjectId, updateScanId } from './utils';
 
 /**
  * A multi-step input using window.createQuickPick() and window.createInputBox().
@@ -46,9 +46,9 @@ export async function multiStepInput(context: ExtensionContext) {
 	}
 
 	async function pickBranch(input: MultiStepInput, state: Partial<State>) {
-		const projectId = state.project?.label;
+		const projectId = state.project?.id;
 		const branches = await getBranches(projectId);
-		const branchesPickList = branches.map(label => ({ label }));
+		const branchesPickList = branches.map(label => ({ label: label, id: label }));
 
 		state.branch = await input.showQuickPick({
 			title,
@@ -62,17 +62,17 @@ export async function multiStepInput(context: ExtensionContext) {
 	}
 
 	async function pickScan(input: MultiStepInput, state: Partial<State>) {
-		const projectId = state.project?.label;
-		const branchId = state.branch?.label;
+		const projectId = state.project?.id;
+		const branchId = state.branch?.id;
 		const scans = await getScans(projectId, branchId);
-		const branchesPickList = scans.map(label => ({ label }));
+		const scansPickList = scans.map((label) => ({label: label.CreatedAt, id:  label.ID }));
 
 		state.scanId = await input.showQuickPick({
 			title,
 			step: 2,
 			totalSteps: 3,
 			placeholder: 'Pick a project ID',
-			items: branchesPickList,
+			items: scansPickList,
 			shouldResume: shouldResume
 		});
 	}
@@ -85,9 +85,16 @@ export async function multiStepInput(context: ExtensionContext) {
 	}
 
 	const state = await collectInputs();
-	//updateProjectId(context, state.project.label);
-	//updateBranchId(context, state.branch.label);
-	//updateScanId(context, state.scanId.label);
+	var i = new Item();
+	i.id = state.project.id?state.project.id:"";
+	i.name = state.project.label?state.project.label:"";
+	updateProjectId(context, i);
+	i.id = state.branch.id?state.branch.id:"";
+	i.name = state.branch.label?state.branch.label:"";
+	updateBranchId(context, i);
+	i.id = state.scanId.id?state.scanId.id:"";
+	i.name = state.scanId.label?state.scanId.label:"";
+	updateScanId(context,i);
 	getResults(state.scanId.label);
 
 	// mandar para state 
