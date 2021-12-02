@@ -17,10 +17,9 @@ export async function multiStepInput(context: ExtensionContext) {
 		title: string;
 		step: number;
 		totalSteps: number;
-		project: QuickPickItem;
-		branch: QuickPickItem;
-		scanId: QuickPickItem;
-		runtime: QuickPickItem;
+		project: CxQuickPickItem;
+		branch: CxQuickPickItem;
+		scanId: CxQuickPickItem;
 	}
 
 	async function collectInputs() {
@@ -33,7 +32,7 @@ export async function multiStepInput(context: ExtensionContext) {
 
 	async function pickProject(input: MultiStepInput, state: Partial<State>) {
 		const projectList = await getProjectList();
-		const projectListPickItem = projectList.map(label => ({label:label.ID}));
+        const projectListPickItem = projectList.map((label) => ({label: label.Name, id:  label.ID }));
 
 		state.project = await input.showQuickPick({
 			title,
@@ -86,9 +85,9 @@ export async function multiStepInput(context: ExtensionContext) {
 	}
 
 	const state = await collectInputs();
-	updateProjectId(context, state.project.label);
-	updateBranchId(context, state.branch.label);
-	updateScanId(context, state.scanId.label);
+	//updateProjectId(context, state.project.label);
+	//updateBranchId(context, state.branch.label);
+	//updateScanId(context, state.scanId.label);
 	getResults(state.scanId.label);
 
 	// mandar para state 
@@ -122,6 +121,23 @@ interface QuickPickParameters<T extends QuickPickItem> {
 	shouldResume: () => Thenable<boolean>;
 }
 
+export class CxQuickPickItem implements vscode.QuickPickItem {
+
+    label!: string;
+
+    description?: string;
+
+    detail?: string;
+
+    picked?: boolean;
+
+    alwaysShow?: boolean;
+	
+	id?:string;
+
+
+}
+
 interface InputBoxParameters {
 	title: string;
 	step: number;
@@ -132,6 +148,7 @@ interface InputBoxParameters {
 	buttons?: QuickInputButton[];
 	shouldResume: () => Thenable<boolean>;
 }
+
 
 class MultiStepInput {
 
@@ -274,3 +291,5 @@ class MultiStepInput {
 		}
 	}
 }
+
+

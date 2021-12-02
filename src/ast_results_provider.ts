@@ -74,24 +74,24 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       info = false;
     }
     // Update the context, state and local array
-    // if(high===false){
-    //   this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.high;});
-    // }
+    if(high===false){
+      this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.high;});
+    }
     await vscode.commands.executeCommand('setContext',HIGH_FILTER,high);
     await this.context.globalState.update(HIGH_FILTER,high);
-    // if(medium===true){
-    //   this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.medium;});
-    // }
+    if(medium===false){
+      this.issueLevel = this.issueLevel.filter((x)=>{ return x !== IssueLevel.medium;});
+    }
     await vscode.commands.executeCommand('setContext',MEDIUM_FILTER,medium);
     await this.context.globalState.update(MEDIUM_FILTER,medium);
-    // if(info===true){
-    //   this.issueLevel = this.issueLevel.concat([IssueLevel.info]);
-    // }
+    if(info===true){
+      this.issueLevel = this.issueLevel.concat([IssueLevel.info]);
+    }
     await vscode.commands.executeCommand('setContext',INFO_FILTER,info);
     await this.context.globalState.update(INFO_FILTER,info);
-    // if(low===true){
-    //   this.issueLevel = this.issueLevel.concat([IssueLevel.low]);
-    // }
+    if(low===true){
+      this.issueLevel = this.issueLevel.concat([IssueLevel.low]);
+    }
     await this.context.globalState.update(LOW_FILTER,low);
     await vscode.commands.executeCommand('setContext',LOW_FILTER,low);
   }
@@ -138,9 +138,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     const groups = ['type', this.issueFilter];
     const treeItem = this.groupBy(jsonResults.results, groups);
-    const projectTreeItem = new TreeItem(getProjectId(this.context), "project", undefined, undefined);
-    const branchTreeItem = new TreeItem(getBranchId(this.context), "branch", undefined);
-    const scanTreeItem = new TreeItem(getScanId(this.context), "scanTree", undefined);
+    treeItem.label = getScanId(this.context).name;
+    const projectTreeItem = new TreeItem(getProjectId(this.context).name, "project", undefined, undefined);
+    const branchTreeItem = new TreeItem(getBranchId(this.context).name, "branch", undefined);
+    const scanTreeItem = new TreeItem(getScanId(this.context).name, "scanTree", undefined);
 
     return new TreeItem("", undefined, undefined, [projectTreeItem, branchTreeItem, scanTreeItem, treeItem]);
   }
