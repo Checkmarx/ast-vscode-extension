@@ -2,15 +2,15 @@ import * as vscode from "vscode";
 var fs = require("fs");
 import * as ast from "./ast_results_provider";
 import { AstResultsProvider, TreeItem } from "./ast_results_provider";
-import { AstResult } from "./results";
+import { AstResult } from "./results/results";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
   MEDIUM_FILTER,
   LOW_FILTER,
   INFO_FILTER,
-} from "./constants";
-import { Logs } from "./logs";
+} from "./common/constants";
+import { Logs } from "./common/logs";
 import * as path from "path";
 import { getBranches, getProjectId, getProjectList, getResults, updateBranchId, updateProjectId, updateScanId, getScans, Item, getBranchId } from "./utils";
 import { CxQuickPickItem, multiStepInput } from "./select_project";

@@ -4,7 +4,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject"
 
 import * as vscode from "vscode";
-import { BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY } from "./constants";
+import { BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY } from "./common/constants";
 
 export function getProperty(o: any, propertyName: string): string {
     return o[propertyName];
@@ -60,7 +60,7 @@ export async function getProjectList() {
 	//return projects.payload;
 	var project = new CxProject();
 	project.ID="56aed693-aa6b-494f-91d0-77350447b242";
-	project.Name="cenas";
+	project.Name="webgoat";
 	return [project];
 }
 

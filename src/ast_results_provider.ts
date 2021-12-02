@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { EventEmitter } from 'vscode';
-import { AstResult, SastNode } from './results';
-import { EXTENSION_NAME, SCAN_ID_KEY, HIGH_FILTER, MEDIUM_FILTER, LOW_FILTER, INFO_FILTER } from './constants';
+import { AstResult, SastNode } from './results/results';
+import { EXTENSION_NAME, SCAN_ID_KEY, HIGH_FILTER, MEDIUM_FILTER, LOW_FILTER, INFO_FILTER } from './common/constants';
 import { getBranchId, getProjectId, getProperty, getScanId } from './utils';
-import { Logs } from './logs';
+import { Logs } from './common/logs';
 
 export enum IssueFilter {
   fileName = "fileName",

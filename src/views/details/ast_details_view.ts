@@ -1,7 +1,7 @@
 import path = require("path");
 import * as vscode from "vscode";
-import { Logs } from "../../logs";
-import { AstResult } from "../../results";
+import { Logs } from "../../common/logs";
+import { AstResult } from "../../results/results";
 import { getNonce } from "../../utils";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
