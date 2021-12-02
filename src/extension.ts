@@ -14,6 +14,7 @@ import { Logs } from "./logs";
 import * as path from "path";
 import { getBranches, getProjectId, getProjectList, getResults, updateBranchId, updateProjectId, updateScanId, getScans, Item, getBranchId } from "./utils";
 import { CxQuickPickItem, multiStepInput } from "./select_project";
+import { AstDetailsDetached } from "./views/details/ast_details_view";
 
 export function activate(context: vscode.ExtensionContext) {
   const diagnosticCollection =
@@ -267,11 +268,15 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(filterInfountoggle);
 
+  // Webview detailsPanel needs to be global in order to check if there was one open or not
   var detailsPanel: vscode.WebviewPanel | undefined = undefined;
   const newDetails = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.newDetails`,
     async (result: AstResult) => {
-      logs.log("Info", "View New details page");
+      const detailsDetachedView = new AstDetailsDetached(
+        context.extensionUri,
+        result
+      );
       // Need to check if the detailsPanel is positioned in the rigth place
       if (detailsPanel?.viewColumn === 1 || !detailsPanel?.viewColumn) {
         detailsPanel?.dispose();
@@ -299,9 +304,9 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.Uri.file(path.join(context.extensionPath, "media")),
             ],
           }
-          );
-        }
-        // Only allow one detail to be open
+        );
+      }
+      // Only allow one detail to be open
       detailsPanel.onDidDispose(
         () => {
           detailsPanel = undefined;
@@ -318,17 +323,14 @@ export function activate(context: vscode.ExtensionContext) {
       };
       // detailsPanel set html content
 
-      // detailsPanel.webview.html = projectView.getDetailsWeviewContent(
-      //   detailsPanel.webview,
-      //   result.getIcon().replace(__dirname, ""),
-      //   result
-      // );
-      }
-
+      detailsPanel.webview.html = detailsDetachedView.getDetailsWeviewContent(
+        detailsPanel.webview,
+        result.getIcon().replace(__dirname, "")
       );
-
-    
+    }
+  );
   context.subscriptions.push(newDetails);
+
 
   const clearAll = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.clear`,
