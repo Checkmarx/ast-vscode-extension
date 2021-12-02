@@ -2,19 +2,30 @@ import * as vscode from "vscode";
 var fs = require("fs");
 import * as ast from "./ast_results_provider";
 import { AstResultsProvider, TreeItem } from "./ast_results_provider";
-import { AstResult } from "./results/results";
+import { AstResult } from "./results";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
   MEDIUM_FILTER,
   LOW_FILTER,
   INFO_FILTER,
-} from "./common/constants";
-import { Logs } from "./common/logs";
+} from "./constants";
+import { Logs } from "./logs";
 import * as path from "path";
-import { getBranches, getProjectId, getProjectList, getResults, updateBranchId, updateProjectId, updateScanId, getScans, Item, getBranchId } from "./utils";
-import { CxQuickPickItem, multiStepInput } from "./select_project";
-import { AstDetailsDetached } from "./views/details/ast_details_view";
+import {
+  getBranches,
+  getProjectId,
+  getProjectList,
+  getResults,
+  updateBranchId,
+  updateProjectId,
+  updateScanId,
+  getScans,
+  Item,
+  getBranchId,
+} from "./utils";
+import { CxQuickPickItem, multiStepInput } from "./ast_multi_step_input";
+import { AstDetailsDetached } from "./ast_details_view";
 
 export function activate(context: vscode.ExtensionContext) {
   const diagnosticCollection =
@@ -37,41 +48,36 @@ export function activate(context: vscode.ExtensionContext) {
     showCollapseAll: true,
   });
   tree.onDidChangeSelection((item) => {
-	  if(item.selection.length>0){
-		// Catch the new pickers actions
-		if(item.selection[0].contextValue){
-			switch (item.selection[0].contextValue) {
-				case "project":
-					logs.log("CxInfo","Selecting project");
-					break;
-				case "branch":
-					logs.log("CxInfo","Selecting branch");
-					break;
-				case "scanTree":
-					logs.log("CxInfo","Selecting scan id");
-					break;
-			}
-	  }
-	  // Catch the new page details action
-	  else{
-		if(!item.selection[0].children) {
-			// Open new details
-			vscode.commands.executeCommand(
-			  "ast-results.newDetails",
-			  item.selection[0].result
-			);
-		  }
-	} 
-	}
-	  
-    
+    if (item.selection.length > 0) {
+      // Catch the new pickers actions
+      if (item.selection[0].contextValue) {
+        switch (item.selection[0].contextValue) {
+          case "project":
+            logs.log("CxInfo", "Selecting project");
+            break;
+          case "branch":
+            logs.log("CxInfo", "Selecting branch");
+            break;
+          case "scanTree":
+            logs.log("CxInfo", "Selecting scan id");
+            break;
+        }
+      }
+      // Catch the new page details action
+      else {
+        if (!item.selection[0].children) {
+          // Open new details
+          vscode.commands.executeCommand(
+            "ast-results.newDetails",
+            item.selection[0].result
+          );
+        }
+      }
+    }
   });
   // Show the user the ast logs channel
   logs.show();
   logs.log("Info", "Checkmarx plugin is running");
-
-  
-
 
   const refreshTree = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.refreshTree`,
@@ -331,85 +337,90 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(newDetails);
 
-
   const clearAll = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.clear`,
     () => {
       logs.log("Info", "Clear all loaded information");
-      // Clean results.json
-      //astResultsProvider.clean();
-      // Clean the results tree
-      //vscode.commands.executeCommand("ast-results.cleanTree");
-      // Get the project web view
-      //let project = projectView.getWebView();
-      // Send the clear id indication to the web view
-      //project?.webview.postMessage({ instruction: "clear ID" });
+      astResultsProvider.clean();
     }
   );
   context.subscriptions.push(clearAll);
 
-  // New pickers 
+  // New pickers
 
-  vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => {multiStepInput(context);});
+  vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => {
+    multiStepInput(context);
+  });
 
-	// Quick pick project 
-	vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => {
-		const projectList = await getProjectList();
-    const projectListPickItem = projectList.map((label) => ({label: label.Name, id:  label.ID }));
-		const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-		quickPick.items = projectListPickItem;
-		quickPick.onDidChangeSelection(([label]) => {
+  // Quick pick project
+  vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => {
+    const projectList = await getProjectList();
+    const projectListPickItem = projectList.map((label) => ({
+      label: label.Name,
+      id: label.ID,
+    }));
+    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.items = projectListPickItem;
+    quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name =  label.label?label.label:"";
-      i.id = label.id?label.id:"";
-			updateProjectId(context, i);
-			updateBranchId(context, new Item());
-			updateScanId(context, new Item());
-		  astResultsProvider.refresh();
-		  	quickPick.hide();
-		});
-		quickPick.show();
-	});
+      i.name = label.label ? label.label : "";
+      i.id = label.id ? label.id : "";
+      updateProjectId(context, i);
+      updateBranchId(context, new Item());
+      updateScanId(context, new Item());
+      astResultsProvider.refresh();
+      quickPick.hide();
+    });
+    quickPick.show();
+  });
 
-	// Quick pick branch 
-	vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => {
-		let projectId = getProjectId(context).id;
+  // Quick pick branch
+  vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => {
+    let projectId = getProjectId(context).id;
     const branches = await getBranches(projectId);
-    const branchesPickList = branches.map(label => ({ label: label, id: label }));
-		//adicionar o selectionado
-		const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-		quickPick.items = branchesPickList;
-		quickPick.onDidChangeSelection(([label]) => {
+    const branchesPickList = branches.map((label) => ({
+      label: label,
+      id: label,
+    }));
+    //adicionar o selectionado
+    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.items = branchesPickList;
+    quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name =  label.label?label.label:"";
-      i.id = label.id?label.id:"";
-			updateBranchId(context, i);
-			updateScanId(context, new Item);
-			astResultsProvider.refresh();
-		  	quickPick.hide();
-		});
-		quickPick.show();
-	});
+      i.name = label.label ? label.label : "";
+      i.id = label.id ? label.id : "";
+      updateBranchId(context, i);
+      updateScanId(context, new Item());
+      astResultsProvider.refresh();
+      quickPick.hide();
+    });
+    quickPick.show();
+  });
 
-	// Quick pick scan
-	vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => {
-		const projectList = await getScans(getProjectId(context).id,getBranchId(context).name);
-		const projectListPickItem = projectList.map((label) => ({label: label.CreatedAt, id:  label.ID }));
-		// add selected
-		const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-		quickPick.items = projectListPickItem;
-		quickPick.onDidChangeSelection(([label]) => {
+  // Quick pick scan
+  vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => {
+    const projectList = await getScans(
+      getProjectId(context).id,
+      getBranchId(context).name
+    );
+    const projectListPickItem = projectList.map((label) => ({
+      label: label.CreatedAt,
+      id: label.ID,
+    }));
+    // add selected
+    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.items = projectListPickItem;
+    quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name =  label.label?label.label:"";
-      i.id = label.id?label.id:"";
-			updateScanId(context, i);
-			getResults(label.id?label.id:"");
-			astResultsProvider.refresh();
-		  quickPick.hide();
-		});
-		quickPick.show();
-	});
-	
+      i.name = label.label ? label.label : "";
+      i.id = label.id ? label.id : "";
+      updateScanId(context, i);
+      getResults(label.id ? label.id : "");
+      vscode.commands.executeCommand("ast-results.refreshTree");
+      quickPick.hide();
+    });
+    quickPick.show();
+  });
 }
 
 export function deactivate() {}

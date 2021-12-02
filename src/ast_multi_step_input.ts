@@ -89,17 +89,16 @@ export async function multiStepInput(context: ExtensionContext) {
 	i.id = state.project.id?state.project.id:"";
 	i.name = state.project.label?state.project.label:"";
 	updateProjectId(context, i);
+	var i = new Item();
 	i.id = state.branch.id?state.branch.id:"";
 	i.name = state.branch.label?state.branch.label:"";
 	updateBranchId(context, i);
+	var i = new Item();
 	i.id = state.scanId.id?state.scanId.id:"";
 	i.name = state.scanId.label?state.scanId.label:"";
 	updateScanId(context,i);
-	getResults(state.scanId.label);
+	getResults(state.scanId.id!);
 
-	// mandar para state 
-	// refresh da tree
-	window.showInformationMessage(`Creating Application Service '${state.project.label}'`);
 	vscode.commands.executeCommand("ast-results.refreshTree");
 }
 

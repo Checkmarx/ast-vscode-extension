@@ -1,10 +1,10 @@
 
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject"
+import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 
 import * as vscode from "vscode";
-import { BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY } from "./common/constants";
+import { BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY } from "./constants";
 
 export function getProperty(o: any, propertyName: string): string {
     return o[propertyName];

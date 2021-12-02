@@ -31,7 +31,7 @@
     "commands": [
       {
         "command": "ast-results.newDetails",
-        "title": "New beatiful details"
+        "title": "Details"
       },
       {
         "command": "ast-results.viewResult",
@@ -127,23 +127,23 @@
       {
         "command": "ast-results.generalPick",
         "category": "checkmarx-ast",
-        "title": "Wizard selection",
+        "title": "Wizard",
         "icon": "$(wrench)"
       },
       {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
-        "title": "Project Selection"
+        "title": "Select Project"
       },
       {
         "command": "ast-results.branchPick",
         "category": "checkmarx-ast",
-        "title": "Select"
+        "title": "Select Branch"
       },
       {
         "command": "ast-results.scanPick",
         "category": "checkmarx-ast",
-        "title": "Select"
+        "title": "Select Scan"
       }
     ],
     "menus": {
@@ -227,13 +227,13 @@
         },
         {
           "command": "ast-results.viewSettings",
-          "group": "navigation",
-          "when": "view == astProjectView"
+          "group": "navigation@5",
+          "when": "view == astResults"
         },
         {
           "command": "ast-results.clear",
-          "group": "navigation",
-          "when": "view == astProjectView"
+          "group": "navigation@6",
+          "when": "view == astResults"
         },
         {
           "command": "ast-results.generalPick",
@@ -245,19 +245,9 @@
     "views": {
       "astView": [
         {
-          "id": "astProjectView",
-          "type": "webview",
-          "name": "Projects"
-        },
-        {
           "id": "astResults",
           "type": "tree",
           "name": "Results"
-        },
-        {
-          "id": "astDetailsView",
-          "type": "webview",
-          "name": "Details"
         }
       ]
     },

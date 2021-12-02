@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IssueLevel } from '../ast_results_provider';
+import { IssueLevel } from './ast_results_provider';
 import * as fs from 'fs';
 
 export class AstResult {
