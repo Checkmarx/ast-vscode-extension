@@ -358,7 +358,21 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Quick pick project
   vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => {
-    const projectList = await getProjectList();
+    const projectList = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Checkmarx",
+        // cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          logs.log("Error", "CANCELED");
+        });
+        progress.report({ message: "Loading projects" });
+        const projectList = await getProjectList();
+        return projectList;
+      }
+    );
     const projectListPickItem = projectList.map((label) => ({
       label: label.Name,
       id: label.ID,
@@ -368,17 +382,17 @@ export function activate(context: vscode.ExtensionContext) {
     quickPick.items = projectListPickItem;
     quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name = label.label ? label.label : "";
+      i.name = label.label ? "project " + label.label : "";
       i.id = label.id ? label.id : "";
       vscode.commands.executeCommand("setContext", "scan_pick", false);
       vscode.commands.executeCommand("setContext", "branch_pick", true);
       updateProjectId(context, i);
       var branch = new Item();
-      branch.name="Pick a branch";
+      branch.name = "branch";
       updateBranchId(context, branch);
       var scan = new Item();
-      scan.name="scan ID";
-      scan.id="scan ID";
+      scan.name = "scan ID";
+      scan.id = "scan ID";
       updateScanId(context, scan);
       astResultsProvider.refresh();
       quickPick.hide();
@@ -388,8 +402,23 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Quick pick branch
   vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => {
-    let projectId = getProjectId(context).id;
-    const branches = await getBranches(projectId);
+    let projectId = getProjectId(context).id.replaceAll("project ", "");
+    const branches = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Checkmarx",
+        // cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          logs.log("Error", "CANCELED");
+        });
+        progress.report({ message: "Loading branches" });
+        const projectList = await getBranches(projectId);
+        return projectList;
+      }
+    );
+
     const branchesPickList = branches.map((label) => ({
       label: label,
       id: label,
@@ -400,15 +429,15 @@ export function activate(context: vscode.ExtensionContext) {
     quickPick.items = branchesPickList;
     quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name = label.label ? label.label : "";
+      i.name = label.label ? "branch " + label.label : "";
       i.id = label.id ? label.id : "";
       updateBranchId(context, i);
       var scan = new Item();
-      scan.name="scan ID";
-      scan.id="scan ID";
+      scan.name = "scan ID";
+      scan.id = "scan ID";
       vscode.commands.executeCommand("setContext", "scan_pick", true);
       vscode.commands.executeCommand("setContext", "branch_pick", true);
-      updateScanId(context,scan);
+      updateScanId(context, scan);
       astResultsProvider.refreshData();
       quickPick.hide();
     });
@@ -417,9 +446,23 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Quick pick scan
   vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => {
-    const projectList = await getScans(
-      getProjectId(context).id,
-      getBranchId(context).name
+    const projectList = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Checkmarx",
+        // cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          logs.log("Error", "CANCELED");
+        });
+        progress.report({ message: "Loading scans" });
+        const projectList = await await getScans(
+          getProjectId(context).id,
+          getBranchId(context).name.replace("branch ", "")
+        );
+        return projectList;
+      }
     );
     const projectListPickItem = projectList.map((label) => ({
       label: label.CreatedAt,
@@ -429,17 +472,14 @@ export function activate(context: vscode.ExtensionContext) {
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
     quickPick.placeholder = "Select scan";
     quickPick.items = projectListPickItem;
-    quickPick.onDidChangeSelection(([label]) => {
+    quickPick.onDidChangeSelection(async ([label]) => {
       var i = new Item();
-      i.name = label.label ? label.label : "scan ID";
-      i.id = label.id ? label.id : "scan ID";
-      getResults(label.id ? label.id : "");
+      i.name = label.label ? label.label : "Select a scan ID";
+      i.id = label.id ? label.id : "Select a scan ID";
+      await getResults(label.id ? label.id : "");
       updateScanId(context, i);
       astResultsProvider.refresh();
       quickPick.hide();
-    });
-    quickPick.onDidChangeSelection(()=>{
-      astResultsProvider.refresh();
     });
     quickPick.show();
   });

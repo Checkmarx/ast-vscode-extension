@@ -38,7 +38,7 @@ export async function multiStepInput(context: ExtensionContext) {
 			title,
 			step: 1,
 			totalSteps: 3,
-			placeholder: 'Pick a project',
+			placeholder: 'project',
 			items: projectListPickItem,
 			shouldResume: shouldResume
 		});
@@ -54,7 +54,7 @@ export async function multiStepInput(context: ExtensionContext) {
 			title,
 			step: 2,
 			totalSteps: 3,
-			placeholder: 'Pick a branch',
+			placeholder: 'branch',
 			items: branchesPickList,
 			shouldResume: shouldResume
 		});
@@ -71,7 +71,7 @@ export async function multiStepInput(context: ExtensionContext) {
 			title,
 			step: 2,
 			totalSteps: 3,
-			placeholder: 'Pick a project ID',
+			placeholder: 'project ID',
 			items: scansPickList,
 			shouldResume: shouldResume
 		});
@@ -86,20 +86,20 @@ export async function multiStepInput(context: ExtensionContext) {
 
 	const state = await collectInputs();
 	var i = new Item();
-	i.id = state.project.id?state.project.id:"Pick a project";
-	i.name = state.project.label?state.project.label:"Pick a project";
+	i.id = state.project.id?"project "+state.project.id:"project";
+	i.name = state.project.label?state.project.label:"project";
 	updateProjectId(context, i);
 	var i = new Item();
-	i.id = state.branch.id?state.branch.id:"Pick a branch";
-	i.name = state.branch.label?state.branch.label:"Pick a branch";
+	i.id = state.branch.id?"branch "+state.branch.id:"branch";
+	i.name = state.branch.label?state.branch.label:"branch";
 	updateBranchId(context, i);
 	var i = new Item();
 	i.id = state.scanId.id?state.scanId.id:"scan ID";
 	i.name = state.scanId.label?state.scanId.label:"scan ID";
 	updateScanId(context,i);
-	getResults(state.scanId.id!);
+	await getResults(state.scanId.id!);
 	vscode.commands.executeCommand("setContext", "scan_pick", true);
-  vscode.commands.executeCommand("setContext", "branch_pick", true);
+    vscode.commands.executeCommand("setContext", "branch_pick", true);
 	vscode.commands.executeCommand("ast-results.refreshTree");
 }
 

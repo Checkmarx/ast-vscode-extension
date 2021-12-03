@@ -132,13 +132,13 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     // Used to check if the refresh is being called from a filter button
     this.diagnosticCollection.clear();
     const projectTreeItem = new TreeItem(
-      "Pick a project",
+      "project",
       "project",
       undefined,
       undefined
     );
 
-    const branchTreeItem = new TreeItem("Pick a branch", "branch", undefined);
+    const branchTreeItem = new TreeItem("branch", "branch", undefined);
     const scanTreeItem = new TreeItem("scan ID", "scanTree", undefined);
     var tree = new TreeItem("", undefined, undefined, [
       projectTreeItem,
@@ -147,10 +147,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       new TreeItem("scan ID", undefined, undefined, [new TreeItem("", undefined, undefined, [])]),
     ]);
     var branch = new Item();
-    branch.name = "Pick a branch";
+    branch.name = "branch";
     var project = new Item();
-    project.name = "Pick a project";
-    project.id = "Pick a project";
+    project.name = "project";
+    project.id = "project";
     var scan = new Item();
     scan.name = "scan ID";
     scan.id = "scan ID";
@@ -186,7 +186,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       const projectTreeItem = new TreeItem(
         getProjectId(this.context).name
           ? getProjectId(this.context).name
-          : "Pick a project",
+          : "project",
         "project",
         undefined,
         undefined
@@ -194,7 +194,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       const branchTreeItem = new TreeItem(
         getBranchId(this.context).name
           ? getBranchId(this.context).name
-          : "Pick a branch",
+          : "branch",
         "branch",
         undefined
       );

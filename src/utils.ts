@@ -55,13 +55,12 @@ export async function getProjectList() {
 		return [];
 	}
 	const cx = new CxWrapper(config);
-	// Add auth validation and update tyo new wrapper so there is no limit
-	//const projects = await cx.projectList("limit=10000");
-	//return projects.payload;
-	var project = new CxProject();
-	project.ID="56aed693-aa6b-494f-91d0-77350447b242";
-	project.Name="webgoat";
-	return [project];
+	const projects = await cx.projectList("limit=10000");
+	return projects.payload;
+	// var project = new CxProject();
+	// project.ID="56aed693-aa6b-494f-91d0-77350447b242";
+	// project.Name="webgoat";
+	// return [project];
 }
 
 export async function getBranches(projectId: string | undefined) {
