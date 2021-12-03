@@ -144,7 +144,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       projectTreeItem,
       branchTreeItem,
       scanTreeItem,
-      new TreeItem("scan ID", undefined, undefined, [new TreeItem("", undefined, undefined, [])]),
+      new TreeItem("scan ID", undefined, undefined, [
+        new TreeItem("", undefined, undefined, []),
+      ]),
     ]);
     var branch = new Item();
     branch.name = "branch";
@@ -199,9 +201,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         undefined
       );
       const scanTreeItem = new TreeItem(
-        getScanId(this.context).name
-          ? getScanId(this.context).name
-          : "scan ID",
+        getScanId(this.context).name ? getScanId(this.context).name : "scan ID",
         "scanTree",
         undefined
       );
@@ -217,7 +217,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     const groups = ["type", this.issueFilter];
     const treeItem = this.groupBy(jsonResults.results, groups);
-    treeItem.label = "scan ID "+getScanId(this.context).name;
+    treeItem.label = "scan ID " + getScanId(this.context).name;
     const projectTreeItem = new TreeItem(
       getProjectId(this.context).name,
       "project",

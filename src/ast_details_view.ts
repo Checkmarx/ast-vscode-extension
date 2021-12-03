@@ -9,7 +9,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly result: AstResult,
+    private readonly result: AstResult
   ) {}
 
   public getWebView() {
@@ -29,8 +29,6 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     };
   }
 
-  
-
   private sastDetails(sastNodes: any[]) {
     let html = ``;
     sastNodes.forEach((node) => {
@@ -42,10 +40,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     return html;
   }
 
-  getDetailsWeviewContent(
-    webview: vscode.Webview,
-    inSeverityPath: string
-  ) {
+  getDetailsWeviewContent(webview: vscode.Webview, inSeverityPath: string) {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "main.js")

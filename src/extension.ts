@@ -361,7 +361,7 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        cancellable: true
+        cancellable: true,
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
@@ -406,7 +406,7 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        cancellable: true
+        cancellable: true,
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
@@ -417,12 +417,10 @@ export function activate(context: vscode.ExtensionContext) {
         return projectList;
       }
     );
-
     const branchesPickList = branches.map((label) => ({
       label: label,
       id: label,
     }));
-    //adicionar o selectionado
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
     quickPick.placeholder = "Select branch";
     quickPick.items = branchesPickList;
@@ -449,7 +447,7 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        cancellable: true
+        cancellable: true,
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
