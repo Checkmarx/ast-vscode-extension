@@ -86,19 +86,20 @@ export async function multiStepInput(context: ExtensionContext) {
 
 	const state = await collectInputs();
 	var i = new Item();
-	i.id = state.project.id?state.project.id:"";
-	i.name = state.project.label?state.project.label:"";
+	i.id = state.project.id?state.project.id:"Pick a project";
+	i.name = state.project.label?state.project.label:"Pick a project";
 	updateProjectId(context, i);
 	var i = new Item();
-	i.id = state.branch.id?state.branch.id:"";
-	i.name = state.branch.label?state.branch.label:"";
+	i.id = state.branch.id?state.branch.id:"Pick a branch";
+	i.name = state.branch.label?state.branch.label:"Pick a branch";
 	updateBranchId(context, i);
 	var i = new Item();
-	i.id = state.scanId.id?state.scanId.id:"";
-	i.name = state.scanId.label?state.scanId.label:"";
+	i.id = state.scanId.id?state.scanId.id:"scan ID";
+	i.name = state.scanId.label?state.scanId.label:"scan ID";
 	updateScanId(context,i);
 	getResults(state.scanId.id!);
-
+	vscode.commands.executeCommand("setContext", "scan_pick", true);
+  vscode.commands.executeCommand("setContext", "branch_pick", true);
 	vscode.commands.executeCommand("ast-results.refreshTree");
 }
 

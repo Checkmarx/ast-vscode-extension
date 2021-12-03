@@ -28,6 +28,8 @@ import { CxQuickPickItem, multiStepInput } from "./ast_multi_step_input";
 import { AstDetailsDetached } from "./ast_details_view";
 
 export function activate(context: vscode.ExtensionContext) {
+  vscode.commands.executeCommand("setContext", "scan_pick", false);
+  vscode.commands.executeCommand("setContext", "branch_pick", false);
   const diagnosticCollection =
     vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
@@ -341,6 +343,8 @@ export function activate(context: vscode.ExtensionContext) {
     `${EXTENSION_NAME}.clear`,
     () => {
       logs.log("Info", "Clear all loaded information");
+      vscode.commands.executeCommand("setContext", "scan_pick", false);
+      vscode.commands.executeCommand("setContext", "branch_pick", false);
       astResultsProvider.clean();
     }
   );
@@ -360,14 +364,22 @@ export function activate(context: vscode.ExtensionContext) {
       id: label.ID,
     }));
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.placeholder = "Select project";
     quickPick.items = projectListPickItem;
     quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
       i.name = label.label ? label.label : "";
       i.id = label.id ? label.id : "";
+      vscode.commands.executeCommand("setContext", "scan_pick", false);
+      vscode.commands.executeCommand("setContext", "branch_pick", true);
       updateProjectId(context, i);
-      updateBranchId(context, new Item());
-      updateScanId(context, new Item());
+      var branch = new Item();
+      branch.name="Pick a branch";
+      updateBranchId(context, branch);
+      var scan = new Item();
+      scan.name="scan ID";
+      scan.id="scan ID";
+      updateScanId(context, scan);
       astResultsProvider.refresh();
       quickPick.hide();
     });
@@ -384,14 +396,20 @@ export function activate(context: vscode.ExtensionContext) {
     }));
     //adicionar o selectionado
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.placeholder = "Select branch";
     quickPick.items = branchesPickList;
     quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
       i.name = label.label ? label.label : "";
       i.id = label.id ? label.id : "";
       updateBranchId(context, i);
-      updateScanId(context, new Item());
-      astResultsProvider.refresh();
+      var scan = new Item();
+      scan.name="scan ID";
+      scan.id="scan ID";
+      vscode.commands.executeCommand("setContext", "scan_pick", true);
+      vscode.commands.executeCommand("setContext", "branch_pick", true);
+      updateScanId(context,scan);
+      astResultsProvider.refreshData();
       quickPick.hide();
     });
     quickPick.show();
@@ -409,15 +427,19 @@ export function activate(context: vscode.ExtensionContext) {
     }));
     // add selected
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.placeholder = "Select scan";
     quickPick.items = projectListPickItem;
     quickPick.onDidChangeSelection(([label]) => {
       var i = new Item();
-      i.name = label.label ? label.label : "";
-      i.id = label.id ? label.id : "";
-      updateScanId(context, i);
+      i.name = label.label ? label.label : "scan ID";
+      i.id = label.id ? label.id : "scan ID";
       getResults(label.id ? label.id : "");
-      vscode.commands.executeCommand("ast-results.refreshTree");
+      updateScanId(context, i);
+      astResultsProvider.refresh();
       quickPick.hide();
+    });
+    quickPick.onDidChangeSelection(()=>{
+      astResultsProvider.refresh();
     });
     quickPick.show();
   });

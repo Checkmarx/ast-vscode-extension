@@ -138,12 +138,14 @@
       {
         "command": "ast-results.branchPick",
         "category": "checkmarx-ast",
-        "title": "Select Branch"
+        "title": "Select Branch",
+        "enablement": "branch_pick"
       },
       {
         "command": "ast-results.scanPick",
         "category": "checkmarx-ast",
-        "title": "Select Scan"
+        "title": "Select Scan",
+        "enablement": "scan_pick"
       }
     ],
     "menus": {

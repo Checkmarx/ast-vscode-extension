@@ -11,7 +11,16 @@ import {
   LOW_FILTER,
   INFO_FILTER,
 } from "./constants";
-import { getBranchId, getProjectId, getProperty, getScanId, Item, updateBranchId, updateProjectId, updateScanId } from "./utils";
+import {
+  getBranchId,
+  getProjectId,
+  getProperty,
+  getScanId,
+  Item,
+  updateBranchId,
+  updateProjectId,
+  updateScanId,
+} from "./utils";
 import { Logs } from "./logs";
 
 export enum IssueFilter {
@@ -122,32 +131,32 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     // Used to check if the refresh is being called from a filter button
     this.diagnosticCollection.clear();
-      const projectTreeItem = new TreeItem(
-        "Pick a project",
-        "project",
-        undefined,
-        undefined
-      );
-      
-      const branchTreeItem = new TreeItem(
-        "Pick a branch",
-        "branch",
-        undefined
-      );
-      const scanTreeItem = new TreeItem(
-        "Pick a scan ID",
-        "scanTree",
-        undefined
-      );
+    const projectTreeItem = new TreeItem(
+      "Pick a project",
+      "project",
+      undefined,
+      undefined
+    );
+
+    const branchTreeItem = new TreeItem("Pick a branch", "branch", undefined);
+    const scanTreeItem = new TreeItem("scan ID", "scanTree", undefined);
     var tree = new TreeItem("", undefined, undefined, [
       projectTreeItem,
       branchTreeItem,
       scanTreeItem,
-      new TreeItem(""),
+      new TreeItem("scan ID", undefined, undefined, [new TreeItem("", undefined, undefined, [])]),
     ]);
-    updateScanId(this.context, new Item());
-    updateBranchId(this.context, new Item());
-    updateProjectId(this.context, new Item());
+    var branch = new Item();
+    branch.name = "Pick a branch";
+    var project = new Item();
+    project.name = "Pick a project";
+    project.id = "Pick a project";
+    var scan = new Item();
+    scan.name = "scan ID";
+    scan.id = "scan ID";
+    updateScanId(this.context, scan);
+    updateBranchId(this.context, branch);
+    updateProjectId(this.context, project);
     this.data = tree.children;
     vscode.commands.executeCommand("ast-results.refreshTree");
     this._onDidChangeTreeData.fire(undefined);
@@ -163,8 +172,8 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       await this.context.globalState.update(typeFilter, !context);
       await vscode.commands.executeCommand("setContext", typeFilter, !context);
     }
-    this.data = this.generateTree().children;
     this.scanId = getScanId(this.context).id;
+    this.data = this.generateTree().children;
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
@@ -175,18 +184,24 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (!fs.existsSync(resultJsonPath)) {
       this.diagnosticCollection.clear();
       const projectTreeItem = new TreeItem(
-        getProjectId(this.context).name ? getProjectId(this.context).name : "Pick a project",
+        getProjectId(this.context).name
+          ? getProjectId(this.context).name
+          : "Pick a project",
         "project",
         undefined,
         undefined
       );
       const branchTreeItem = new TreeItem(
-        getBranchId(this.context).name ? getBranchId(this.context).name : "Pick a branch",
+        getBranchId(this.context).name
+          ? getBranchId(this.context).name
+          : "Pick a branch",
         "branch",
         undefined
       );
       const scanTreeItem = new TreeItem(
-        getScanId(this.context).name ? getScanId(this.context).name : "Pick a scan ID",
+        getScanId(this.context).name
+          ? getScanId(this.context).name
+          : "scan ID",
         "scanTree",
         undefined
       );
@@ -194,7 +209,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         projectTreeItem,
         branchTreeItem,
         scanTreeItem,
-        new TreeItem(""),
+        new TreeItem("scan ID"),
       ]);
     }
 
@@ -202,7 +217,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     const groups = ["type", this.issueFilter];
     const treeItem = this.groupBy(jsonResults.results, groups);
-    treeItem.label = getScanId(this.context).name;
+    treeItem.label = "scan ID "+getScanId(this.context).name;
     const projectTreeItem = new TreeItem(
       getProjectId(this.context).name,
       "project",
@@ -256,7 +271,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (!obj) {
       return;
     }
-    const item = new TreeItem(obj.label.replaceAll("_"," "), undefined, obj);
+    const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
     // Verify the current severity fiters applied
     if (this.issueLevel.length > 0) {
       // Filter only the results for the severity filters type
