@@ -31,7 +31,17 @@ export async function multiStepInput(context: ExtensionContext) {
 	const title = 'Wizard select';
 
 	async function pickProject(input: MultiStepInput, state: Partial<State>) {
-		const projectList = await getProjectList();
+		const projectList = await vscode.window.withProgress(
+			{
+			  location: vscode.ProgressLocation.Notification,
+			  title: "Checkmarx",
+			},
+			async (progress, token) => {
+			  progress.report({ message: "Loading projects" });
+			  const projectList = await getProjectList();
+			  return projectList;
+			}
+		  );
         const projectListPickItem = projectList.map((label) => ({label: label.Name, id:  label.ID }));
 
 		state.project = await input.showQuickPick({
@@ -47,7 +57,17 @@ export async function multiStepInput(context: ExtensionContext) {
 
 	async function pickBranch(input: MultiStepInput, state: Partial<State>) {
 		const projectId = state.project?.id;
-		const branches = await getBranches(projectId);
+		const branches = await vscode.window.withProgress(
+			{
+			  location: vscode.ProgressLocation.Notification,
+			  title: "Checkmarx"
+			},
+			async (progress, token) => {
+			  progress.report({ message: "Loading branches" });
+			  const projectList = await getBranches(projectId);
+			  return projectList;
+			}
+		  );
 		const branchesPickList = branches.map(label => ({ label: label, id: label }));
 
 		state.branch = await input.showQuickPick({
@@ -64,7 +84,20 @@ export async function multiStepInput(context: ExtensionContext) {
 	async function pickScan(input: MultiStepInput, state: Partial<State>) {
 		const projectId = state.project?.id;
 		const branchId = state.branch?.id;
-		const scans = await getScans(projectId, branchId);
+		const scans = await vscode.window.withProgress(
+			{
+			  location: vscode.ProgressLocation.Notification,
+			  title: "Checkmarx"
+			},
+			async (progress, token) => {
+			  progress.report({ message: "Loading scans" });
+			  const projectList = await await getScans(
+				projectId,
+				branchId?.replace("branch ", "")
+			  );
+			  return projectList;
+			}
+		  );
 		const scansPickList = scans.map((label) => ({label: label.CreatedAt, id:  label.ID }));
 
 		state.scanId = await input.showQuickPick({

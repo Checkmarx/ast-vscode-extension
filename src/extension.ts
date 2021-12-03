@@ -351,7 +351,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(clearAll);
 
   // New pickers
-
   vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => {
     multiStepInput(context);
   });
@@ -362,11 +361,11 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        // cancellable: true
+        cancellable: true
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
-          logs.log("Error", "CANCELED");
+          logs.log("Error", "Canceled loading");
         });
         progress.report({ message: "Loading projects" });
         const projectList = await getProjectList();
@@ -407,11 +406,11 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        // cancellable: true
+        cancellable: true
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
-          logs.log("Error", "CANCELED");
+          logs.log("Error", "Canceled loading");
         });
         progress.report({ message: "Loading branches" });
         const projectList = await getBranches(projectId);
@@ -450,11 +449,11 @@ export function activate(context: vscode.ExtensionContext) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "Checkmarx",
-        // cancellable: true
+        cancellable: true
       },
       async (progress, token) => {
         token.onCancellationRequested(() => {
-          logs.log("Error", "CANCELED");
+          logs.log("Error", "Canceled loading");
         });
         progress.report({ message: "Loading scans" });
         const projectList = await await getScans(
