@@ -18,6 +18,8 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import {filter, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
 import { getBranchListener } from "./utils/listeners";
+import { getAstConfiguration } from "./utils/ast";
+import { REFRESH_TREE } from "./utils/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
@@ -125,7 +127,14 @@ export async function activate(context: vscode.ExtensionContext) {
         );
       }
   ));
-  
+
+  // Listening to settings changes
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+  vscode.workspace.onDidChangeConfiguration(async () => {
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    await vscode.commands.executeCommand(REFRESH_TREE);
+  });
+
   // Refresh Tree
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
 

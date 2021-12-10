@@ -25,6 +25,7 @@ import {
 } from "./utils/utils";
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
+import { getAstConfiguration } from "./utils/ast";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
@@ -71,7 +72,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async refreshData(): Promise<void> {
     this.showStatusBarItem();
-    this.data = this.generateTree().children;
+    this.data = getAstConfiguration() ? this.generateTree().children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }

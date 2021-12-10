@@ -274,6 +274,13 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "astResults",
+        "contents": "In order to use Checkarmx AST, you need to setup your credetials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.atlassian.net/wiki/x/AwBwagE).",
+        "when": "!ast-results.isValidCredentials"
+      }
+    ],
     "configuration": {
       "title": "Checkmarx AST",
       "properties": {
