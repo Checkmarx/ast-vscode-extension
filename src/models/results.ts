@@ -1,6 +1,6 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { IssueLevel } from './utils/constants';
+import { IssueLevel } from '../utils/constants';
 
 export class AstResult {
 	label: string = "";

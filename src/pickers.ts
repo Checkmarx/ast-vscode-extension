@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "./models/logs";
-import { convertDate, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
+import { convertDate, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
 import { REFRESH_TREE } from "./utils/commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_PLACEHOLDER, PROJECT_ID_KEY, PROJECT_LABEL, PROJECT_PLACEHOLDER, SCAN_ID_KEY, SCAN_LABEL, SCAN_PLACEHOLDER } from "./utils/constants";
 import { get, update } from "./utils/globalState";
@@ -76,7 +76,7 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
   }
 
   update(context, PROJECT_ID_KEY, { id: project.ID, name: `${PROJECT_LABEL} ${project.Name}` });
-  update(context, BRANCH_ID_KEY, { id: scan.Branch, name: `${BRANCH_LABEL} ${scan.Branch}` });
+  update(context, BRANCH_ID_KEY, { id: getProperty(scan, 'Branch'), name: `${BRANCH_LABEL} ${getProperty(scan, 'Branch')}` }); //TODO: Hack while we don't have branch in the javasscript wrapper
   update(context, SCAN_ID_KEY, { id: scan.ID, name: `${SCAN_LABEL} ${convertDate(scan.CreatedAt)}` });
 
   await getResultsWithProgress(logs, scan.ID);

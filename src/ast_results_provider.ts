@@ -89,14 +89,22 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (fs.existsSync(resultJsonPath) && this.scan) {
      
       const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
-      treeItems = treeItems.concat(this.createSummaryItem(jsonResults.results));
+      const results = this.orderResults(jsonResults.results);
+     
+      treeItems = treeItems.concat(this.createSummaryItem(results));
+      
       const groups = ["type", this.issueFilter];
-      const treeItem = this.groupBy(jsonResults.results, groups);
+      const treeItem = this.groupBy(results, groups);
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItems = treeItems.concat(treeItem);
     }
 
     return new TreeItem("", undefined, undefined, treeItems);
+  }
+
+  orderResults(list: CxResult[]): CxResult[] {
+    const order = ['HIGH', 'MEDIUM', 'LOW', 'INFO'];
+    return list.sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
   }
 
   createSummaryItem(list: CxResult[]): TreeItem {
