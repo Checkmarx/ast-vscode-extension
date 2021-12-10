@@ -1,42 +1,33 @@
 import * as vscode from "vscode";
-var fs = require("fs");
-import * as ast from "./ast_results_provider";
-import { AstResultsProvider, TreeItem } from "./ast_results_provider";
-import { AstResult } from "./results";
+import { AstResultsProvider } from "./ast_results_provider";
+import { AstResult } from "./models/results";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
   MEDIUM_FILTER,
   LOW_FILTER,
   INFO_FILTER,
-} from "./constants";
-import { Logs } from "./logs";
+  IssueLevel,
+  IssueFilter,
+} from "./utils/constants";
+import { Logs } from "./models/logs";
 import * as path from "path";
-import {
-  getBranches,
-  getProjectId,
-  getProjectList,
-  getResults,
-  updateBranchId,
-  updateProjectId,
-  updateScanId,
-  getScans,
-  Item,
-  getBranchId,
-} from "./utils";
-import { CxQuickPickItem, multiStepInput } from "./ast_multi_step_input";
+import { multiStepInput } from "./ast_multi_step_input";
 import { AstDetailsDetached } from "./ast_details_view";
+import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
+import {filter, initializeFilters} from "./utils/filters";
+import { group } from "./utils/group";
+import { getBranchListener } from "./utils/listeners";
 
-export function activate(context: vscode.ExtensionContext) {
-  vscode.commands.executeCommand("setContext", "scan_pick", false);
-  vscode.commands.executeCommand("setContext", "branch_pick", false);
-  const diagnosticCollection =
-    vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
+export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
-  const statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left
-  );
   const logs = new Logs(output);
+  logs.show();
+  logs.log("Info", "Checkmarx plugin is running");
+
+  const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
+  
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 
   const astResultsProvider = new AstResultsProvider(
     context,
@@ -44,240 +35,25 @@ export function activate(context: vscode.ExtensionContext) {
     statusBarItem,
     diagnosticCollection
   );
+  astResultsProvider.refreshData().then(r => logs.info("Data refreshed"));
+  initializeFilters(logs, context, astResultsProvider).then(value => logs.info("Filters initialized"));
   vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
-  const tree = vscode.window.createTreeView("astResults", {
-    treeDataProvider: astResultsProvider,
-    showCollapseAll: true,
-  });
+  
+  const tree = vscode.window.createTreeView("astResults", {treeDataProvider: astResultsProvider});
   tree.onDidChangeSelection((item) => {
     if (item.selection.length > 0) {
-      // Catch the new pickers actions
-      if (item.selection[0].contextValue) {
-        switch (item.selection[0].contextValue) {
-          case "project":
-            logs.log("CxInfo", "Selecting project");
-            break;
-          case "branch":
-            logs.log("CxInfo", "Selecting branch");
-            break;
-          case "scanTree":
-            logs.log("CxInfo", "Selecting scan id");
-            break;
-        }
-      }
-      // Catch the new page details action
-      else {
-        if (!item.selection[0].children) {
+        if (!item.selection[0].contextValue && !item.selection[0].children) {
           // Open new details
           vscode.commands.executeCommand(
             "ast-results.newDetails",
             item.selection[0].result
           );
-        }
       }
     }
   });
-  // Show the user the ast logs channel
-  logs.show();
-  logs.log("Info", "Checkmarx plugin is running");
-
-  const refreshTree = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.refreshTree`,
-    () => {
-      console.log("In extension- refresh tree");
-      astResultsProvider.refresh();
-    }
-  );
-  context.subscriptions.push(refreshTree);
-
-  const viewSeetings = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.viewSettings`,
-    () => {
-      vscode.commands.executeCommand(
-        "workbench.action.openSettings",
-        `checkmarx`
-      );
-    }
-  );
-  context.subscriptions.push(viewSeetings);
-
-  const groupBySeverity = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.groupBySeverity`,
-    () => {
-      logs.log("Info", "Group by severity");
-      astResultsProvider.issueFilter = ast.IssueFilter.severity;
-      astResultsProvider.refresh();
-    }
-  );
-  context.subscriptions.push(groupBySeverity);
-
-  const groupByLanguage = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.groupByLanguage`,
-    () => {
-      logs.log("Info", "Group by language");
-      astResultsProvider.issueFilter = ast.IssueFilter.language;
-      astResultsProvider.refresh();
-    }
-  );
-  context.subscriptions.push(groupByLanguage);
-
-  const groupByStatus = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.groupByStatus`,
-    () => {
-      logs.log("Info", "Group by status");
-      astResultsProvider.issueFilter = ast.IssueFilter.status;
-      astResultsProvider.refresh();
-    }
-  );
-  context.subscriptions.push(groupByStatus);
-
-  const groupByFile = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.groupByFile`,
-    () => {
-      logs.log("Info", "Group by fileName");
-      astResultsProvider.issueFilter = ast.IssueFilter.fileName;
-      astResultsProvider.refresh();
-    }
-  );
-  context.subscriptions.push(groupByFile);
-
-  const clearResults = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.cleanResults`,
-    () => {
-      logs.log("Info", "Clear results");
-      diagnosticCollection.clear();
-    }
-  );
-  context.subscriptions.push(clearResults);
-
-  const filterHightoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterHigh_toggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering high results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.high
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.high;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.high]);
-      astResultsProvider.refreshData(HIGH_FILTER);
-    }
-  );
-  context.subscriptions.push(filterHightoggle);
-
-  const filterHighuntoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterHigh_untoggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering high results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.high
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.high;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.high]);
-      astResultsProvider.refreshData(HIGH_FILTER);
-    }
-  );
-  context.subscriptions.push(filterHighuntoggle);
-
-  const filterMediumtoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterMedium_toggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering medium results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.medium
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.medium;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.medium]);
-      astResultsProvider.refreshData(MEDIUM_FILTER);
-    }
-  );
-  context.subscriptions.push(filterMediumtoggle);
-
-  const filterMediumuntoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterMedium_untoggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering medium results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.medium
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.medium;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.medium]);
-      astResultsProvider.refreshData(MEDIUM_FILTER);
-    }
-  );
-  context.subscriptions.push(filterMediumuntoggle);
-
-  const filterLowtoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterLow_toggle`,
-    async (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering low results");
-      astResultsProvider.issueLevel =
-        (await astResultsProvider.issueLevel.includes(ast.IssueLevel.low))
-          ? astResultsProvider.issueLevel.filter((x) => {
-              return x !== ast.IssueLevel.low;
-            })
-          : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
-      await astResultsProvider.refreshData(LOW_FILTER);
-    }
-  );
-  context.subscriptions.push(filterLowtoggle);
-
-  const filterLowuntoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterLow_untoggle`,
-    async (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering low results");
-      astResultsProvider.issueLevel =
-        (await astResultsProvider.issueLevel.includes(ast.IssueLevel.low))
-          ? astResultsProvider.issueLevel.filter((x) => {
-              return x !== ast.IssueLevel.low;
-            })
-          : astResultsProvider.issueLevel.concat([ast.IssueLevel.low]);
-      await astResultsProvider.refreshData(LOW_FILTER);
-    }
-  );
-  context.subscriptions.push(filterLowuntoggle);
-
-  const filterInfotoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterInfo_toggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering info results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.info
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.info;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.info]);
-      astResultsProvider.refreshData(INFO_FILTER);
-    }
-  );
-  context.subscriptions.push(filterInfotoggle);
-
-  const filterInfountoggle = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.filterInfo_untoggle`,
-    (item: ast.TreeItem) => {
-      logs.log("Info", "Filtering info results");
-      astResultsProvider.issueLevel = astResultsProvider.issueLevel.includes(
-        ast.IssueLevel.info
-      )
-        ? astResultsProvider.issueLevel.filter((x) => {
-            return x !== ast.IssueLevel.info;
-          })
-        : astResultsProvider.issueLevel.concat([ast.IssueLevel.info]);
-      astResultsProvider.refreshData(INFO_FILTER);
-    }
-  );
-  context.subscriptions.push(filterInfountoggle);
 
   // Webview detailsPanel needs to be global in order to check if there was one open or not
-  var detailsPanel: vscode.WebviewPanel | undefined = undefined;
+  let detailsPanel: vscode.WebviewPanel | undefined = undefined;
   const newDetails = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.newDetails`,
     async (result: AstResult) => {
@@ -331,155 +107,53 @@ export function activate(context: vscode.ExtensionContext) {
       };
       // detailsPanel set html content
 
-      detailsPanel.webview.html = detailsDetachedView.getDetailsWeviewContent(
+      detailsPanel.webview.html = detailsDetachedView.getDetailsWebviewContent(
         detailsPanel.webview,
-        result.getIcon().replace(__dirname, "")
       );
     }
   );
   context.subscriptions.push(newDetails);
+  
+  // Branch Listener
+  context.subscriptions.push(await getBranchListener(context, logs));
 
-  const clearAll = vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.clear`,
-    () => {
-      logs.log("Info", "Clear all loaded information");
-      vscode.commands.executeCommand("setContext", "scan_pick", false);
-      vscode.commands.executeCommand("setContext", "branch_pick", false);
-      astResultsProvider.clean();
-    }
-  );
-  context.subscriptions.push(clearAll);
+  // Settings
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
+        vscode.commands.executeCommand(
+            "workbench.action.openSettings",
+            `checkmarx`
+        );
+      }
+  ));
+  
+  // Refresh Tree
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
+
+  // Clear
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () =>  await astResultsProvider.clean()));
+
+  // Group
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFile`, async () => await group(logs, astResultsProvider, IssueFilter.fileName)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguage`, async () => await group(logs, astResultsProvider, IssueFilter.language)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverity`, async () => await group(logs, astResultsProvider, IssueFilter.severity)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatus`, async () => await group(logs, astResultsProvider, IssueFilter.status)));
+
+  // Filters
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterMedium_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.medium, MEDIUM_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterMedium_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.medium, MEDIUM_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.low, LOW_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterLow_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.low, LOW_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
 
   // New pickers
-  vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => {
-    multiStepInput(context);
-  });
-
-  // Quick pick project
-  vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => {
-    const projectList = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: "Checkmarx",
-        cancellable: true,
-      },
-      async (progress, token) => {
-        token.onCancellationRequested(() => {
-          logs.log("Error", "Canceled loading");
-        });
-        progress.report({ message: "Loading projects" });
-        const projectList = await getProjectList();
-        return projectList;
-      }
-    );
-    const projectListPickItem = projectList.map((label) => ({
-      label: label.Name,
-      id: label.ID,
-    }));
-    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-    quickPick.placeholder = "Select project";
-    quickPick.items = projectListPickItem;
-    quickPick.onDidChangeSelection(([label]) => {
-      var i = new Item();
-      i.name = label.label ? "project " + label.label : "";
-      i.id = label.id ? label.id : "";
-      vscode.commands.executeCommand("setContext", "scan_pick", false);
-      vscode.commands.executeCommand("setContext", "branch_pick", true);
-      updateProjectId(context, i);
-      var branch = new Item();
-      branch.name = "branch";
-      updateBranchId(context, branch);
-      var scan = new Item();
-      scan.name = "scan ID";
-      scan.id = "scan ID";
-      updateScanId(context, scan);
-      astResultsProvider.refresh();
-      quickPick.hide();
-    });
-    quickPick.show();
-  });
-
-  // Quick pick branch
-  vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => {
-    let projectId = getProjectId(context).id.replaceAll("project ", "");
-    const branches = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: "Checkmarx",
-        cancellable: true,
-      },
-      async (progress, token) => {
-        token.onCancellationRequested(() => {
-          logs.log("Error", "Canceled loading");
-        });
-        progress.report({ message: "Loading branches" });
-        const projectList = await getBranches(projectId);
-        return projectList;
-      }
-    );
-    const branchesPickList = branches.map((label) => ({
-      label: label,
-      id: label,
-    }));
-    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-    quickPick.placeholder = "Select branch";
-    quickPick.items = branchesPickList;
-    quickPick.onDidChangeSelection(([label]) => {
-      var i = new Item();
-      i.name = label.label ? "branch " + label.label : "";
-      i.id = label.id ? label.id : "";
-      updateBranchId(context, i);
-      var scan = new Item();
-      scan.name = "scan ID";
-      scan.id = "scan ID";
-      vscode.commands.executeCommand("setContext", "scan_pick", true);
-      vscode.commands.executeCommand("setContext", "branch_pick", true);
-      updateScanId(context, scan);
-      astResultsProvider.refreshData();
-      quickPick.hide();
-    });
-    quickPick.show();
-  });
-
-  // Quick pick scan
-  vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => {
-    const projectList = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: "Checkmarx",
-        cancellable: true,
-      },
-      async (progress, token) => {
-        token.onCancellationRequested(() => {
-          logs.log("Error", "Canceled loading");
-        });
-        progress.report({ message: "Loading scans" });
-        const projectList = await await getScans(
-          getProjectId(context).id,
-          getBranchId(context).name.replace("branch ", "")
-        );
-        return projectList;
-      }
-    );
-    const projectListPickItem = projectList.map((label) => ({
-      label: label.CreatedAt,
-      id: label.ID,
-    }));
-    // add selected
-    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-    quickPick.placeholder = "Select scan";
-    quickPick.items = projectListPickItem;
-    quickPick.onDidChangeSelection(async ([label]) => {
-      var i = new Item();
-      i.name = label.label ? label.label : "Select a scan ID";
-      i.id = label.id ? label.id : "Select a scan ID";
-      await getResults(label.id ? label.id : "");
-      updateScanId(context, i);
-      astResultsProvider.refresh();
-      quickPick.hide();
-    });
-    quickPick.show();
-  });
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => { await multiStepInput(logs, context); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => { await projectPicker(context, logs); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => { await branchPicker(context, logs); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => { await scanPicker(context, logs); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanInput`, async () => { await scanInput(context, logs); }));
 }
 
-export function deactivate() {}
+export function deactivate() { }

@@ -1,64 +1,47 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
-import { AstResult, SastNode } from "./results";
+import { AstResult, SastNode } from "./models/results";
 import {
   EXTENSION_NAME,
+  IssueFilter,
+  IssueLevel,
   SCAN_ID_KEY,
-  HIGH_FILTER,
-  MEDIUM_FILTER,
-  LOW_FILTER,
-  INFO_FILTER,
-} from "./constants";
+  PROJECT_ID_KEY,
+  BRANCH_ID_KEY,
+  SCAN_LABEL,
+  PROJECT_LABEL,
+  BRANCH_LABEL,
+  PROJECT_ITEM,
+  BRANCH_ITEM,
+  SCAN_ITEM,
+  GRAPH_ITEM,
+} from "./utils/constants";
 import {
-  getBranchId,
-  getProjectId,
-  getProperty,
-  getScanId,
-  Item,
-  updateBranchId,
-  updateProjectId,
-  updateScanId,
-} from "./utils";
-import { Logs } from "./logs";
+  Counter,
+  getProperty, getResultsFilePath,
+} from "./utils/utils";
+import { Logs } from "./models/logs";
+import { get, update } from "./utils/globalState";
 
-export enum IssueFilter {
-  fileName = "fileName",
-  severity = "severity",
-  status = "status",
-  language = "language",
-}
-
-export enum IssueLevel {
-  high = "HIGH",
-  medium = "MEDIUM",
-  low = "LOW",
-  info = "INFO",
-  empty = "",
-}
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
 
-  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
-    new EventEmitter<TreeItem | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
-    this._onDidChangeTreeData.event;
-  private scanId: string;
+  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
+  private scan: string | undefined;
   private data: TreeItem[] | undefined;
 
   constructor(
-    private readonly context: vscode.ExtensionContext,
-    private readonly logs: Logs,
-    private readonly statusBarItem: vscode.StatusBarItem,
-    private readonly diagnosticCollection: vscode.DiagnosticCollection
-  ) {
-    this.initializeFilters();
-    this.scanId = getScanId(this.context).id;
-    this.refreshData();
-  }
+      private readonly context: vscode.ExtensionContext,
+      private readonly logs: Logs,
+      private readonly statusBarItem: vscode.StatusBarItem,
+      private readonly diagnosticCollection: vscode.DiagnosticCollection
+  ) {}
 
   private showStatusBarItem() {
     this.statusBarItem.text = "$(sync~spin) Refreshing tree";
@@ -73,180 +56,59 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this.statusBarItem.hide();
   }
 
-  private async initializeFilters() {
-    // Get the saved state
-    var high = await this.context.globalState.get(HIGH_FILTER);
-    var medium = await this.context.globalState.get(MEDIUM_FILTER);
-    var low = await this.context.globalState.get(LOW_FILTER);
-    var info = await this.context.globalState.get(INFO_FILTER);
-    // Check if it there was anything stored in the state
-    if (high === undefined) {
-      high = true;
-    }
-    if (medium === undefined) {
-      medium = true;
-    }
-    if (low === undefined) {
-      low = false;
-    }
-    if (info === undefined) {
-      info = false;
-    }
-    // Update the context, state and local array
-    if (high === false) {
-      this.issueLevel = this.issueLevel.filter((x) => {
-        return x !== IssueLevel.high;
-      });
-    }
-    await vscode.commands.executeCommand("setContext", HIGH_FILTER, high);
-    await this.context.globalState.update(HIGH_FILTER, high);
-    if (medium === false) {
-      this.issueLevel = this.issueLevel.filter((x) => {
-        return x !== IssueLevel.medium;
-      });
-    }
-    await vscode.commands.executeCommand("setContext", MEDIUM_FILTER, medium);
-    await this.context.globalState.update(MEDIUM_FILTER, medium);
-    if (info === true) {
-      this.issueLevel = this.issueLevel.concat([IssueLevel.info]);
-    }
-    await vscode.commands.executeCommand("setContext", INFO_FILTER, info);
-    await this.context.globalState.update(INFO_FILTER, info);
-    if (low === true) {
-      this.issueLevel = this.issueLevel.concat([IssueLevel.low]);
-    }
-    await this.context.globalState.update(LOW_FILTER, low);
-    await vscode.commands.executeCommand("setContext", LOW_FILTER, low);
-  }
-
-  refresh(): void {
-    this.refreshData();
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
-  clean(): void {
+  async clean(): Promise<void> {
+    this.logs.info("Clear all loaded information");
     const resultJsonPath = path.join(__dirname, "ast-results.json");
     if (fs.existsSync(resultJsonPath)) {
       fs.unlinkSync(resultJsonPath);
     }
-    // Used to check if the refresh is being called from a filter button
-    this.diagnosticCollection.clear();
-    const projectTreeItem = new TreeItem(
-      "project",
-      "project",
-      undefined,
-      undefined
-    );
 
-    const branchTreeItem = new TreeItem("branch", "branch", undefined);
-    const scanTreeItem = new TreeItem("scan ID", "scanTree", undefined);
-    var tree = new TreeItem("", undefined, undefined, [
-      projectTreeItem,
-      branchTreeItem,
-      scanTreeItem,
-      new TreeItem("scan ID", undefined, undefined, [
-        new TreeItem("", undefined, undefined, []),
-      ]),
-    ]);
-    var branch = new Item();
-    branch.name = "branch";
-    var project = new Item();
-    project.name = "project";
-    project.id = "project";
-    var scan = new Item();
-    scan.name = "scan ID";
-    scan.id = "scan ID";
-    updateScanId(this.context, scan);
-    updateBranchId(this.context, branch);
-    updateProjectId(this.context, project);
-    this.data = tree.children;
-    vscode.commands.executeCommand("ast-results.refreshTree");
-    this._onDidChangeTreeData.fire(undefined);
+    update(this.context, SCAN_ID_KEY, undefined);
+    update(this.context, PROJECT_ID_KEY, undefined);
+    update(this.context, BRANCH_ID_KEY, undefined);
+    await this.refreshData();
   }
 
-  async refreshData(typeFilter?: string): Promise<void> {
+  async refreshData(): Promise<void> {
     this.showStatusBarItem();
-
-    // Used to check if the refresh is being called from a filter button
-    if (typeFilter) {
-      var context = await this.context.globalState.get(typeFilter);
-      // Change the selection value in the context
-      await this.context.globalState.update(typeFilter, !context);
-      await vscode.commands.executeCommand("setContext", typeFilter, !context);
-    }
-    this.scanId = getScanId(this.context).id;
     this.data = this.generateTree().children;
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
 
   generateTree(): TreeItem {
-    const resultJsonPath = path.join(__dirname, "ast-results.json");
-    // Empty tree if there are no results loaded in disk
-    if (!fs.existsSync(resultJsonPath)) {
-      this.diagnosticCollection.clear();
-      const projectTreeItem = new TreeItem(
-        getProjectId(this.context).name
-          ? getProjectId(this.context).name
-          : "project",
-        "project",
-        undefined,
-        undefined
-      );
-      const branchTreeItem = new TreeItem(
-        getBranchId(this.context).name
-          ? getBranchId(this.context).name
-          : "branch",
-        "branch",
-        undefined
-      );
-      const scanTreeItem = new TreeItem(
-        getScanId(this.context).name ? getScanId(this.context).name : "scan ID",
-        "scanTree",
-        undefined
-      );
-      return new TreeItem("", undefined, undefined, [
-        projectTreeItem,
-        branchTreeItem,
-        scanTreeItem,
-        new TreeItem("scan ID"),
-      ]);
+    const resultJsonPath = getResultsFilePath();
+    this.diagnosticCollection.clear();
+
+    let treeItems = [
+      new TreeItem(get(this.context, PROJECT_ID_KEY)?.name ?? PROJECT_LABEL, PROJECT_ITEM),
+      new TreeItem(get(this.context, BRANCH_ID_KEY)?.name ?? BRANCH_LABEL, BRANCH_ITEM),
+      new TreeItem(get(this.context, SCAN_ID_KEY)?.name ?? SCAN_LABEL, SCAN_ITEM)];
+
+    this.scan = get(this.context, SCAN_ID_KEY)?.id;
+    if (fs.existsSync(resultJsonPath) && this.scan) {
+     
+      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
+      treeItems = treeItems.concat(this.createSummaryItem(jsonResults.results));
+      const groups = ["type", this.issueFilter];
+      const treeItem = this.groupBy(jsonResults.results, groups);
+      treeItem.label = `${SCAN_LABEL} ${this.scan}`;
+      treeItems = treeItems.concat(treeItem);
     }
 
-    const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
+    return new TreeItem("", undefined, undefined, treeItems);
+  }
 
-    const groups = ["type", this.issueFilter];
-    const treeItem = this.groupBy(jsonResults.results, groups);
-    treeItem.label = "scan ID " + getScanId(this.context).name;
-    const projectTreeItem = new TreeItem(
-      getProjectId(this.context).name,
-      "project",
-      undefined,
-      undefined
-    );
-    const branchTreeItem = new TreeItem(
-      getBranchId(this.context).name,
-      "branch",
-      undefined
-    );
-    const scanTreeItem = new TreeItem(
-      getScanId(this.context).name,
-      "scanTree",
-      undefined
-    );
-
-    return new TreeItem("", undefined, undefined, [
-      projectTreeItem,
-      branchTreeItem,
-      scanTreeItem,
-      treeItem,
-    ]);
+  createSummaryItem(list: CxResult[]): TreeItem {
+    const counter = new Counter(list, (p: CxResult) => p.severity);
+    const label = Array.from(counter.keys()).map(key =>  `${key}: ${counter.get(key)}`).join(' | ');
+    return new TreeItem(label, GRAPH_ITEM, undefined);
   }
 
   groupBy(list: Object[], groups: string[]): TreeItem {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
-    const tree = new TreeItem(this.scanId, undefined, undefined, []);
+    const tree = new TreeItem(this.scan ?? "", undefined, undefined, []);
 
     list.forEach((element) =>
       this.groupTree(element, folder, map, groups, tree)
@@ -292,10 +154,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         );
         node.children?.push(item);
       }
-    }
-    // If there is no severity filter no information should be stored in the tree
-    else {
-      new TreeItem("");
     }
   }
 
@@ -380,23 +238,34 @@ export class TreeItem extends vscode.TreeItem {
     this.size = 1;
     this.contextValue = type;
     this.children = children;
-    if (type) {
+    // TODO: Use a type enum
+     if (type) {
       this.iconPath = new vscode.ThemeIcon("shield");
     }
 
-    if (type === "project") {
+    if (type) {
+      this.iconPath = new vscode.ThemeIcon("shield");
+    }
+    if (type === GRAPH_ITEM) {
+      this.iconPath = new vscode.ThemeIcon("graph");
+    }
+    if (type === PROJECT_ITEM) {
       this.iconPath = new vscode.ThemeIcon("project");
     }
-    if (type === "branch") {
+    if (type === BRANCH_ITEM) {
       this.iconPath = new vscode.ThemeIcon("repo");
     }
     if (result) {
-      this.iconPath = result.getIcon();
+      this.iconPath = result.getTreeIcon();
     }
   }
 
   setDescription() {
     +this.size++;
     this.description = "" + this.size;
+  }
+
+  setDescriptionValue(description: string) {
+    this.description = description;
   }
 }

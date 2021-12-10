@@ -127,25 +127,32 @@
       {
         "command": "ast-results.generalPick",
         "category": "checkmarx-ast",
-        "title": "Wizard",
-        "icon": "$(wrench)"
+        "title": "Select Scan",
+        "icon": "$(search)"
       },
       {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
-        "title": "Select Project"
+        "title": "Select Project",
+        "icon": "$(edit)"
       },
       {
         "command": "ast-results.branchPick",
         "category": "checkmarx-ast",
         "title": "Select Branch",
-        "enablement": "branch_pick"
+        "icon": "$(edit)"
       },
       {
         "command": "ast-results.scanPick",
         "category": "checkmarx-ast",
         "title": "Select Scan",
-        "enablement": "scan_pick"
+        "icon": "$(edit)"
+      },
+      {
+        "command": "ast-results.scanInput",
+        "category": "checkmarx-ast",
+        "title": "Look for Scan",
+        "icon": "$(search)"
       }
     ],
     "menus": {
@@ -153,28 +160,33 @@
         {
 					"command": "ast-results.projectPick",
           "group": "inline",
-					"when": "viewItem == project"
+					"when": "viewItem == project-item"
 				},
         {
 					"command": "ast-results.branchPick",
           "group": "inline",
-					"when": "viewItem == branch"
+					"when": "viewItem == branch-item"
 				},
         {
 					"command": "ast-results.scanPick",
           "group": "inline",
-					"when": "viewItem == scanTree"
+					"when": "viewItem == scan-item"
+				},
+        {
+					"command": "ast-results.scanInput",
+          "group": "inline",
+					"when": "viewItem == scan-item"
 				}
       ],
       "view/title": [
         {
           "command": "ast-results.filterHigh_untoggle",
-          "group": "navigation@2",
+          "group": "navigation@1",
           "when": "view == astResults && ast-results-high"
         },
         {
           "command": "ast-results.filterHigh_toggle",
-          "group": "navigation@2",
+          "group": "navigation@1",
           "when": "view == astResults && !ast-results-high"
         },
         {
@@ -229,7 +241,7 @@
         },
         {
           "command": "ast-results.viewSettings",
-          "group": "navigation@5",
+          "group": "navigation@7",
           "when": "view == astResults"
         },
         {
@@ -239,7 +251,7 @@
         },
         {
           "command": "ast-results.generalPick",
-          "group": "navigation@1",
+          "group": "navigation@5",
           "when": "view == astResults"
         }
       ]
@@ -257,7 +269,7 @@
       "activitybar": [
         {
           "id": "astView",
-          "title": "Checkmarx AST",
+          "title": "CxAST",
           "icon": "media/cx-icon.svg"
         }
       ]
@@ -317,5 +329,6 @@
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.38",
     "copyfiles": "2.4.1"
-  }
+  },
+  "extensionDependencies": ["vscode.git"]
 }
