@@ -24,37 +24,42 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 			enableScripts: true,
 			localResourceRoots: [this._extensionUri],
 		};
+		webviewView.webview.html = this.getDetailsWebviewContent(webviewView.webview);
+
+	}
+
+	public loadDecorations(filePath: string, line: number, startColumn: number, length: number) {
+		const folder = vscode.workspace.workspaceFolders![0];
+		// Needed because vscode uses zero based line number
+		const position = new vscode.Position(line > 0 ? +line-1 : 1 ,startColumn > 0 ? +startColumn-1 : 1 );
+		const path = vscode.Uri.joinPath(folder.uri, filePath);
+		
+		vscode.workspace.openTextDocument(path).then(doc => 
+		{
+			vscode.window.showTextDocument(doc).then(editor => 
+			{
+				editor.selections = [new vscode.Selection(position,position)]; 
+		
+				var range = new vscode.Range(position, position);
+				editor.revealRange(range);
+			});
+		});
 	}
 
 	getDetailsWebviewContent(webview: vscode.Webview) {
-		// Do the same for the stylesheet.
-		const styleResetUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
-		);
-		const styleVSCodeUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
-		);
-		const styleMainUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
-		);
-		const styleDetails = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "details.css")
-		);
-		const severityPath = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getIcon())
-		);
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'view.js'));
+		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"));
+		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"));
+		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "main.css"));
+		const styleDetails = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "details.css"));
+		const severityPath = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, this.result.getIcon()));
 		const nonce = getNonce();
 
 		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<meta http-equiv="Content-Security-Policy" style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-
+			
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleResetUri}" rel="stylesheet">
 				<link href="${styleVSCodeUri}" rel="stylesheet">
@@ -129,38 +134,20 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 						${this.result.status}
 								</span>
 						</td>
-					</tr>			
-					<tr>
-						<td class="details_td">
-						<div class="tooltip">
-							<span class="details">
-								Severity
-								<span class="tooltiptext">
-									HIGH, MEDIUM, INFO or LOW
-								</span>
-							</span>
-							</div>
-								
-						</td>
-						<td class="name_td">
-								<span class="details">
-								${this.result.severity}
-										</span>
-						</td>
 					</tr>
 					<tr>
-						<td class="details_td">
+						<td>
 							<h3 class="subtitle_details"> 
 								<strong> 
-									Details
+									Description
 								</strong>
 							</h3>
 						</td>
 					</tr>	
 						<tr>
-						<td class="name_td">
+						<td>
 								<span class="details">
-									${this.result.description}
+									${this.result.description ? this.result.description : ''}
 								</span>
 						</td>
 						</tr>				
@@ -171,7 +158,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 					<tbody>
 					${this.result.getHtmlDetails()}			
 					</tbody>
-				</table>		
+				</table>	
+				<script nonce="${nonce}" src="${scriptUri}"></script>	
 			</body>
 			</html>`;
 	}

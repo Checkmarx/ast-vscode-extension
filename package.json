@@ -37,7 +37,8 @@
         "command": "ast-results.viewResult",
         "category": "checkmarx-ast",
         "title": "View",
-        "icon": "$(eye)"
+        "icon": "$(eye)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.viewSettings",
@@ -48,111 +49,130 @@
       {
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
-        "title": "Clear"
+        "title": "Clear",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupBySeverity",
         "category": "checkmarx-ast",
-        "title": "Group by: Severity"
+        "title": "Group by: Severity",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByLanguage",
         "category": "checkmarx-ast",
-        "title": "Group by: Language"
+        "title": "Group by: Language",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByStatus",
         "category": "checkmarx-ast",
-        "title": "Group by: Status"
+        "title": "Group by: Status",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByFile",
         "category": "checkmarx-ast",
-        "title": "Group by: File"
+        "title": "Group by: File",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
         "title": "Clear",
-        "icon": "$(refresh)"
+        "icon": "$(refresh)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterHigh_toggle",
         "category": "checkmarx-ast",
         "title": "HIGH",
-        "icon": "media/icons/high_toggle.svg"
+        "icon": "media/icons/high_toggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterHigh_untoggle",
         "category": "checkmarx-ast",
         "title": "HIGH",
-        "icon": "media/icons/high_untoggle.svg"
+        "icon": "media/icons/high_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterMedium_toggle",
         "category": "checkmarx-ast",
         "title": "MEDIUM",
-        "icon": "media/icons/medium_toggle.svg"
+        "icon": "media/icons/medium_toggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterMedium_untoggle",
         "category": "checkmarx-ast",
         "title": "MEDIUM",
-        "icon": "media/icons/medium_untoggle.svg"
+        "icon": "media/icons/medium_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterLow_toggle",
         "category": "checkmarx-ast",
         "title": "LOW",
-        "icon": "media/icons/low_toggle.svg"
+        "icon": "media/icons/low_toggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterLow_untoggle",
         "category": "checkmarx-ast",
         "title": "LOW",
-        "icon": "media/icons/low_untoggle.svg"
+        "icon": "media/icons/low_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterInfo_toggle",
         "category": "checkmarx-ast",
         "title": "INFO",
-        "icon": "media/icons/info_toggle.svg"
+        "icon": "media/icons/info_toggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterInfo_untoggle",
         "category": "checkmarx-ast",
         "title": "INFO",
-        "icon": "media/icons/info_untoggle.svg"
+        "icon": "media/icons/info_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.generalPick",
         "category": "checkmarx-ast",
         "title": "Select Scan",
-        "icon": "$(search)"
+        "icon": "$(search)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
         "title": "Select Project",
-        "icon": "$(edit)"
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.branchPick",
         "category": "checkmarx-ast",
         "title": "Select Branch",
-        "icon": "$(edit)"
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.scanPick",
         "category": "checkmarx-ast",
         "title": "Select Scan",
-        "icon": "$(edit)"
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.scanInput",
         "category": "checkmarx-ast",
         "title": "Look for Scan",
-        "icon": "$(search)"
+        "icon": "$(search)",
+        "enablement": "ast-results.isValidCredentials"
       }
     ],
     "menus": {
@@ -277,7 +297,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx AST, you need to setup your credetials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.atlassian.net/wiki/x/AwBwagE).",
+        "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.atlassian.net/wiki/x/AwBwagE).",
         "when": "!ast-results.isValidCredentials"
       }
     ],

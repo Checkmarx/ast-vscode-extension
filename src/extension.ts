@@ -25,7 +25,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
   const logs = new Logs(output);
   logs.show();
-  logs.log("Info", "Checkmarx plugin is running");
+  logs.info("Checkmarx plugin is running");
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   
@@ -112,6 +112,14 @@ export async function activate(context: vscode.ExtensionContext) {
       detailsPanel.webview.html = detailsDetachedView.getDetailsWebviewContent(
         detailsPanel.webview,
       );
+      detailsPanel.webview.onDidReceiveMessage(data => {
+        console.log(data);
+        switch (data.command) {
+          case 'showFile':
+            detailsDetachedView.loadDecorations(data.path, data.line, data.column, data.length);
+            break;
+        }
+      });
     }
   );
   context.subscriptions.push(newDetails);

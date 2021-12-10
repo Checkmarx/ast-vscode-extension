@@ -14,7 +14,7 @@ export async function getBranchListener(context: vscode.ExtensionContext, logs: 
 		return addRepositoryListener(context, logs, state);
 	} else {
 		return gitApi.onDidOpenRepository(async() => {
-			logs.info('Api change');
+			logs.info('GIT API - Open repository');
 			const repoState = gitApi.repositories[0].state;
 			return addRepositoryListener(context, logs, repoState);
 		});
