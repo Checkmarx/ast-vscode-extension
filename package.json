@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx AST Results",
   "description": "For managing AST scan results",
-  "version": "0.0.7",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -158,25 +158,25 @@
     "menus": {
       "view/item/context": [
         {
-					"command": "ast-results.projectPick",
+          "command": "ast-results.projectPick",
           "group": "inline",
-					"when": "viewItem == project-item"
-				},
+          "when": "viewItem == project-item"
+        },
         {
-					"command": "ast-results.branchPick",
+          "command": "ast-results.branchPick",
           "group": "inline",
-					"when": "viewItem == branch-item"
-				},
+          "when": "viewItem == branch-item"
+        },
         {
-					"command": "ast-results.scanPick",
+          "command": "ast-results.scanPick",
           "group": "inline",
-					"when": "viewItem == scan-item"
-				},
+          "when": "viewItem == scan-item"
+        },
         {
-					"command": "ast-results.scanInput",
+          "command": "ast-results.scanInput",
           "group": "inline",
-					"when": "viewItem == scan-item"
-				}
+          "when": "viewItem == scan-item"
+        }
       ],
       "view/title": [
         {
@@ -330,5 +330,7 @@
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.38",
     "copyfiles": "2.4.1"
   },
-  "extensionDependencies": ["vscode.git"]
+  "extensionDependencies": [
+    "vscode.git"
+  ]
 }
