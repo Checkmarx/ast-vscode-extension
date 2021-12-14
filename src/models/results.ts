@@ -1,6 +1,6 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { IssueLevel } from '../utils/constants';
+import { IssueLevel, RESULTS_FILE_EXTENSION } from '../utils/constants';
 
 export class AstResult {
 	label: string = "";
@@ -24,9 +24,12 @@ export class AstResult {
 		this.rawObject = result;
 		this.description = result.description;
 	
-		if (result.data.nodes) {
+		if (result.data.nodes && result.data.nodes[0]) {
 			this.sastNodes = result.data.nodes;
 			this.fileName = result.data.nodes[0].fileName;
+			
+			const shortFilename =  this.fileName ? this.fileName.slice(this.fileName.lastIndexOf('/')) : '';
+			this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
 		}
 	
 		if (result.type === "dependency") { this.scaNode = result.data; }
