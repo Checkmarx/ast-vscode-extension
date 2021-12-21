@@ -3,9 +3,8 @@
 	"extension": ["js", "cjs", "mjs"],
 	"package": "./package.json",
 	"reporter": "spec",
-	"slow": "75",
 	"timeout": "1000000",
-	"ui": "bdd",
 	"watch-files": ["lib/**/*.js", "test/**/*.js"],
-	"watch-ignore": ["lib/vendor"]
+	"watch-ignore": ["lib/vendor"],
+	"fullTrace":true
   }

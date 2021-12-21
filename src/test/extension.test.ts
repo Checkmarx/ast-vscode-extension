@@ -1,252 +1,347 @@
-import { expect } from 'chai';
-import { VSBrowser, Workbench, WebDriver, LinkSetting, InputBox, SettingsEditor, By, ActivityBar, ViewControl, CustomTreeSection, until, ViewSection, BottomBarPanel, EditorView, MarkerType } from 'vscode-extension-tester';
-describe('Check basic test cases', async function () {
-	let bench: Workbench;
-	let driver: WebDriver;
-	let settingsWizard: SettingsEditor;
-	let editorView: EditorView;
+import { expect } from "chai";
+import {
+  VSBrowser,
+  Workbench,
+  WebDriver,
+  LinkSetting,
+  InputBox,
+  SettingsEditor,
+  By,
+  ActivityBar,
+  ViewControl,
+  CustomTreeSection,
+  until,
+  ViewSection,
+  BottomBarPanel,
+  EditorView,
+  MarkerType,
+  SideBarView,
+  WelcomeContentSection,
+  WebView,
+} from "vscode-extension-tester";
+import { initialize, quickPickSelector, delay, getResults, validateSeverities } from "./utils";
+import {
+  ONE_HUNDRED_SECONDS,
+  THIRTY_SECONDS,
+  FIFTY_SECONDS,
+  FIVE_SECONDS,
+  THREE_SECONDS,
+  TWO_SECONDS,
+  CX_API_KEY_CAPS,
+  CX_API_KEY,
+  CX_TENANT,
+  CX_BASE_URI,
+  VS_CLOSE_EDITOR,
+  VS_OPEN_FOLDER,
+  CX_SELECT_PROJECT,
+  CX_SELECT_BRANCH,
+  CX_SELECT_SCAN,
+  CX_LOOK_SCAN,
+  CX_NAME,
+  CX_FILTER_INFO,
+  CX_FILTER_LOW,
+  CX_FILTER_MEDIUM,
+  CX_FILTER_HIGH,
+  CX_CLEAR,
+  CX_SELECT_ALL,
+} from "./constants";
 
-	before(async () => {
-		this.timeout(100000);
-		bench = new Workbench();
-		driver = VSBrowser.instance.driver;
-		editorView = new EditorView();
-	});
+describe("UI tests", async function () {
+  let bench: Workbench;
+  let driver: WebDriver;
+  before(async () => {
+    this.timeout(ONE_HUNDRED_SECONDS);
+    bench = new Workbench();
+    driver = VSBrowser.instance.driver;
+    await delay(THREE_SECONDS);
+  });
 
+  it('should open welcome view and validate it', async function () {
+  	let tree = await initialize();
+  	let welcome = await tree?.findWelcomeContent();
+  	expect(welcome).is.not.undefined;
 
+  });
 
-	it('should open the settings and validate the wrong Key', async function () {
-		this.timeout(80000);
-		settingsWizard = await bench.openSettings();
-		await delay(5000);
-		const setting = await settingsWizard.findSetting("API KEY", "Checkmarx AST") as LinkSetting;
-		expect(setting).to.be.undefined;
-		await delay(10000);
-	});
+  it("should open settings and validate the wrong Key", async function () {
+	await delay(THREE_SECONDS);
+    let settingsWizard = await bench.openSettings();
+    await delay(TWO_SECONDS);
+    const setting = (await settingsWizard.findSetting(
+      CX_API_KEY_CAPS,
+      CX_NAME
+    )) as LinkSetting;
+    await delay(THREE_SECONDS);
+    expect(setting).to.be.undefined;
+    await delay(THREE_SECONDS);
+  });
 
+  it("should set the settings and check if values are populated", async function () {
+    await delay(THREE_SECONDS);
+    let settingsWizard = await bench.openSettings();
+	await delay(TWO_SECONDS);
+    const apiKeyVal = await await settingsWizard.findSetting(
+      CX_API_KEY,
+      CX_NAME
+    );
+    await apiKeyVal.setValue(process.env.CX_API_KEY + "");
+    await delay(TWO_SECONDS);
+    const baseUriVal = await await settingsWizard.findSetting(
+      CX_BASE_URI,
+      CX_NAME
+    );
+    await baseUriVal.setValue(process.env.CX_BASE_URI + "");
+    await delay(TWO_SECONDS);
+    const tenantVal = await await settingsWizard.findSetting(
+      CX_TENANT,
+      CX_NAME
+    );
+    await tenantVal.setValue(process.env.CX_TENANT + "");
+    await delay(TWO_SECONDS);
+    const apiKey = await (
+      await settingsWizard.findSetting(CX_API_KEY, CX_NAME)
+    ).getValue();
+    expect(apiKey).to.equal(process.env.CX_API_KEY + "");
+    await delay(TWO_SECONDS);
+    const baseURI = await settingsWizard.findSetting(CX_BASE_URI, CX_NAME);
+    expect(await baseURI.getValue()).to.equal(process.env.CX_BASE_URI + "");
+    await delay(TWO_SECONDS);
+    const tenant = await settingsWizard.findSetting(CX_TENANT, CX_NAME);
+    expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
+    await delay(TWO_SECONDS);
+    await bench.executeCommand(VS_CLOSE_EDITOR);
+    await delay(THREE_SECONDS);
+  });
 
-	it('should set the settings and check if values populated', async function () {
-		this.timeout(80000);
-		const apiKeyVal = await (await settingsWizard.findSetting("Api Key", "Checkmarx AST"));
-		await apiKeyVal.setValue(process.env.CX_API_KEY + "");
-		const baseUriVal = await (await settingsWizard.findSetting("Base-uri", "Checkmarx AST"));
-		await baseUriVal.setValue(process.env.CX_BASE_URI + "");
-		const tenantVal = await (await settingsWizard.findSetting("Tenant", "Checkmarx AST"));
-		await tenantVal.setValue(process.env.CX_TENANT + "");
-		await delay(5000);
-		const apiKey = await (await settingsWizard.findSetting("Api Key", "Checkmarx AST")).getValue();
-		expect(apiKey).to.equal(process.env.CX_API_KEY + "");
-		await delay(2000);
-		const baseURI = await settingsWizard.findSetting("Base-uri", "Checkmarx AST");
-		expect(await baseURI.getValue()).to.equal(process.env.CX_BASE_URI + "");
-		await delay(2000);
-		const tenant = await settingsWizard.findSetting("Tenant", "Checkmarx AST");
-		expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
-		await delay(5000);
-	});
+  it("should open the test repo", async function () {
+  	await bench.executeCommand(VS_OPEN_FOLDER);
+  	let input = await InputBox.create();
+  	const appender = process.platform === 'win32' ? '\\' : '/';
+  	const tempPath = __dirname + appender + "testProj";
+  	console.log(tempPath);
+  	await (await input).setText(tempPath);
+  	await (await input).confirm();
+  	expect(tempPath).to.have.lengthOf.above(1);
+  	await delay(THREE_SECONDS);
+  });
 
-	it("should open the test repo", async function () {
-		this.timeout(80000);
-		await bench.executeCommand("File: Open Folder...");
-		const input = await InputBox.create();
-		const appender = process.platform === 'win32' ? '\\' : '/';
-		const tempPath = __dirname + appender + "testProj";
-		console.log(tempPath);
-		await (await input).setText(tempPath);
-		await (await input).confirm();
-		expect(tempPath).to.have.lengthOf.above(1);
-		await delay(10000);
+  it("should load results using wizard", async function () {
+	await delay(THREE_SECONDS);
+	let treeScans = await initialize();
+	// Project selection
+	await bench.executeCommand(CX_SELECT_ALL);
+	let input = await InputBox.create();
+	await delay(THREE_SECONDS);
+	let projectName = await quickPickSelector(input);
+	await input.setText(projectName);
+	await delay(THREE_SECONDS);
+	await input.confirm();
+	await delay(THIRTY_SECONDS);
+	// Branch selection
+	let inputBranch = await InputBox.create();
+	await delay(THREE_SECONDS);
+	let branchName = await quickPickSelector(inputBranch);
+	await inputBranch.setText(branchName);
+	await delay(THREE_SECONDS);
+	await inputBranch.confirm();
+	await delay(THIRTY_SECONDS);
+	// Scan selection
+	let inputScan = await InputBox.create();
+	await delay(THREE_SECONDS);
+	let scanDate = await quickPickSelector(inputScan);
+	await inputScan.setText(scanDate);
+	await delay(THREE_SECONDS);
+	await inputScan.confirm();
+	await delay(THIRTY_SECONDS);
+  });
 
-	});
+  it("should clear all loaded results", async function () {
+	await delay(THREE_SECONDS);
+	await bench.executeCommand(CX_CLEAR);
+	await delay(THREE_SECONDS);
+  });
 
+    it("should select project", async function () {
+      await delay(THREE_SECONDS);
+      let treeScans = await initialize();
+      await delay(THREE_SECONDS);
+      await bench.executeCommand(CX_SELECT_PROJECT);
+      await delay(THIRTY_SECONDS);
+      let input = await InputBox.create();
+      await delay(THREE_SECONDS);
+      let projectName = await quickPickSelector(input);
+      await input.setText(projectName);
+      await delay(THREE_SECONDS);
+      await input.confirm();
+      await delay(THREE_SECONDS);
+      let project = await treeScans?.findItem("Project:  " + projectName);
+      expect(project).is.not.undefined;
+      await delay(THREE_SECONDS);
+    });
 
-	it('should open the checkmarx AST extension', async function () {
-		this.timeout(80000);
-		const control: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		if (control !== undefined) {
-			const view = await control.openView();
-			await delay(5000);
-			expect(view).is.not.undefined;
-			expect(await view?.isDisplayed()).is.true;
-		}
-		await delay(10000);
+    it("should select branch", async function () {
+      await delay(THREE_SECONDS);
+      let treeScans = await initialize();
+      await delay(THREE_SECONDS);
+      await bench.executeCommand(CX_SELECT_BRANCH);
+      await delay(THIRTY_SECONDS);
+      let input = await InputBox.create();
+      await delay(THREE_SECONDS);
+      let branchName = await quickPickSelector(input);
+      await input.setText(branchName);
+      await delay(THREE_SECONDS);
+      await input.confirm();
+      await delay(FIFTY_SECONDS);
+      let branch = await treeScans?.findItem("Branch:  " + branchName);
+      expect(branch).is.not.undefined;
+      await delay(THREE_SECONDS);
+    });
 
-	});
+    it("should select scan", async function () {
+      await delay(THREE_SECONDS);
+      let treeScans = await initialize();
+      await delay(THREE_SECONDS);
+      await bench.executeCommand(CX_SELECT_SCAN);
+      await delay(THIRTY_SECONDS);
+      let input = await InputBox.create();
+      await delay(THREE_SECONDS);
+      let scanDate = await quickPickSelector(input);
+      await input.setText(scanDate);
+      await delay(THREE_SECONDS);
+      await input.confirm();
+      await delay(FIFTY_SECONDS);
+      let branch = await treeScans?.findItem("Scan:  " + scanDate);
+      expect(branch).is.not.undefined;
+      await delay(THREE_SECONDS);
+    });
 
-	it('should get scan ID and update the scanID label and load results', async function () {
-		this.timeout(80000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		if (ctrl !== undefined) {
-			const view = await ctrl.openView();
-			const extension: ViewSection = await view.getContent().getSection('Projects') as ViewSection;
-			expect(extension).is.not.undefined;
-			await extension.collapse();
-			await extension.expand();
-			await driver.wait(until.elementsLocated(By.name("webviewview-astprojectview")));
-			await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astprojectview")));
-			await driver.wait(until.elementsLocated(By.id("active-frame")));
-			await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
-			const testScanID = process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "";
-			console.log("Test scan id: " + testScanID);
-			expect(testScanID).to.have.length.greaterThan(0);
-			await driver.findElement(By.id("scanID")).sendKeys(testScanID);
-			driver.findElement(By.className("ast-search")).click();
-			await driver.switchTo().defaultContent();
-			await delay(10000);
-		}
+  it("should load results from scan ID", async function () {
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(FIVE_SECONDS);
+    await bench.executeCommand(CX_LOOK_SCAN);
+    await delay(FIVE_SECONDS);
+    let input = await InputBox.create();
+    await delay(FIVE_SECONDS);
+    await input.setText(process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "");
+    await delay(FIVE_SECONDS);
+    await input.confirm();
+    await delay(FIFTY_SECONDS);
+    driver.wait(
+      until.elementLocated(
+        By.className(
+          "monaco-tl-twistie codicon codicon-tree-item-expanded collapsible collapsed"
+        )
+      ),
+      FIFTY_SECONDS
+    );
+    let scan = await treeScans?.findItem(
+      "Scan:  "+process.env.CX_TEST_SCAN_ID
+    );
+	// Get results and open details page
+	let result = await getResults(scan);
+	await delay(FIVE_SECONDS);
+    await result[0].click();
+	await delay(FIVE_SECONDS);
+    let resultName = await result[0].getLabel();
+	await delay(FIVE_SECONDS);
+    // Validate details page content
+	driver.wait(
+		until.elementLocated(
+		  By.className(
+			"header_table"
+		  )
+		),
+		FIFTY_SECONDS
+	  );
+    let detailsView = new WebView();
+	await delay(FIVE_SECONDS);
+    await detailsView.switchToFrame();
+	await delay(FIVE_SECONDS);
+    let titleWebElement = await detailsView.findWebElement(
+      By.className("title_td")
+    );
+	await delay(FIVE_SECONDS);
+    let title = await titleWebElement.getText();
+	await delay(FIVE_SECONDS);
+    expect(title).to.equal(resultName);
+    await delay(THREE_SECONDS);
+  });
 
-	});
+  it("should click info filter", async function () {
+    await delay(THREE_SECONDS);
+	let treeScans = await initialize();
+    await bench.executeCommand(CX_FILTER_INFO);
+	await delay(THREE_SECONDS);
+	let scan = await treeScans?.findItem(
+		"Scan:  "+process.env.CX_TEST_SCAN_ID
+	  );
+	await delay(THREE_SECONDS);
+	let isValidated = await validateSeverities(scan,"INFO");
+	expect(isValidated).to.equal(true);
+	await bench.executeCommand(CX_FILTER_INFO);
+	await delay(THREE_SECONDS);
+  });
 
-	it('should open the loaded results and traverse the tree items', async function () {
-		this.timeout(80000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		await results.isExpanded();
-		const treeNodes = await results.getVisibleItems();
-		treeNodes.forEach(async (node: { getLabel: () => any; expand: () => any; }) => {
-			const indNode = (await node.getLabel());
-			expect(indNode).to.have.length.greaterThan(0);
-			await node.expand();
-		});
-		await delay(5000);
-	});
+  it("should click low filter", async function () {
+    await delay(THREE_SECONDS);
+	let treeScans = await initialize();
+    await bench.executeCommand(CX_FILTER_LOW);
+	await delay(THREE_SECONDS);
+	let scan = await treeScans?.findItem(
+		"Scan:  "+process.env.CX_TEST_SCAN_ID
+	  );
+	await delay(THREE_SECONDS);
+	let isValidated = await validateSeverities(scan,"LOW");
+	expect(isValidated).to.equal(true);
+	await bench.executeCommand(CX_FILTER_LOW);
+	await delay(THREE_SECONDS);
+  });
 
-	it('should check the individual nodes for status filters', async function () {
-		this.timeout(100000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		await delay(5000);
-		if (await results.isDisplayed() && !await results.isExpanded()) {
-			await results.expand();
-			await delay(5000);
-		}
-		expect(results).not.be.undefined;
-		await delay(5000);
-		await bench.executeCommand("Checkmarx AST: Focus on Results View");
-		await delay(5000);
-		await bench.executeCommand("Checkmarx AST: Group By: Status");
-		await delay(5000);
-		const node = await results.getVisibleItems();
-		node.forEach(async (indNode: { expand: () => any; getChildren: () => any; }) => {
-			await indNode.expand();
-			await delay(3000);
-			const indResult = await indNode.getChildren();
-			indResult.forEach(async (ind: { getLabel: () => any; }) => {
-				const childLabel = await ind.getLabel();
-				expect(childLabel).to.have.length.greaterThan(0);
-				await delay(3000);
-			});
-		});
-		await delay(10000);
-	});
+  it("should click medium filter", async function () {
+    await delay(THREE_SECONDS);
+	let treeScans = await initialize();
+    await bench.executeCommand(CX_FILTER_MEDIUM);
+	await delay(THREE_SECONDS);
+	let scan = await treeScans?.findItem(
+		"Scan:  "+process.env.CX_TEST_SCAN_ID
+	  );
+	await delay(THREE_SECONDS);
+	let isValidated = await validateSeverities(scan,"MEDIUM");
+	expect(isValidated).to.equal(true);
+	await bench.executeCommand(CX_FILTER_MEDIUM);
+	await delay(THREE_SECONDS);
+  });
 
-	it("should filter the results based on severity", async function () {
-		this.timeout(80000);
-		await bench.executeCommand("Checkmarx AST: Group By: Severity");
-		await delay(5000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		await delay(5000);
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		await delay(5000);
-		const severityNode = await results.getVisibleItems();
-		severityNode.forEach(async (indNode: { expand: () => any; getChildren: () => any; getLabel: () => any; }) => {
-			await indNode.expand();
-			const indResult = await indNode.getChildren();
-			await indNode.getLabel();
-			indResult.forEach(async (ind: { getLabel: () => any; }) => {
-				const childLabel = await ind.getLabel();
-				expect(childLabel).to.have.length.greaterThan(0);
-				await delay(3000);
-			});
-		});
-		await delay(10000);
-	});
+  it("should click high filter", async function () {
+    await delay(THREE_SECONDS);
+	let treeScans = await initialize();
+    await bench.executeCommand(CX_FILTER_HIGH);
+	await delay(THREE_SECONDS);
+	let scan = await treeScans?.findItem(
+		"Scan:  "+process.env.CX_TEST_SCAN_ID
+	  );
+	await delay(THREE_SECONDS);
+	let isValidated = await validateSeverities(scan,"HIGH");
+	expect(isValidated).to.equal(true);
+	await bench.executeCommand(CX_FILTER_HIGH);
+	await delay(THREE_SECONDS);
+  });
 
-	it('should open individual filter and underlying tree items', async function () {
-		this.timeout(80000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		expect(results).not.be.undefined;
-		if (!await results.isExpanded()) {
-			await results.expand();
-		}
-		await results.getVisibleItems().then((async (items: any[]) => {
-			await items.forEach(async (item) => {
-				await item.expand();
-				expect(item).to.have.length.greaterThan(0);
-				await delay(2000);
-			});
+  it("should click group by file", async function () {
+    await delay(THREE_SECONDS);
+  });
 
-			await delay(10000);
-		}));
-	});
+  it("should click group by language", async function () {
+    await delay(THREE_SECONDS);
+  });
 
-	it('should select vulnerability and make sure detail view is populated', async function () {
-		this.timeout(100000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Results') as CustomTreeSection;
-		expect(results).not.be.undefined;
-		if (!await results.isExpanded()) {
-			await results.expand();
-		}
-		const sastNode = await results.getVisibleItems();
-		sastNode.forEach(async (node: { isExpandable: () => any; isExpanded: () => any; expand: () => any; getLabel: () => any; }) => {
-			if (await node.isExpandable() && !await node.isExpanded()) {
-				await node.expand();
-			}
-			const labelName = await node.getLabel();
-			expect(labelName).to.have.length.greaterThan(0);
-		});
-		await delay(5000);
+  it("should click group by status", async function () {
+    await delay(THREE_SECONDS);
+  });
 
-		// TODO -> Need to click the correct vulnerability node
-		await sastNode[2].click();
-		await delay(5000);
-
-	});
-
-	it('should open the editor and make sure that the file is opened', async function () {
-		this.timeout(100000);
-		const ctrl: ViewControl | undefined = await new ActivityBar().getViewControl('Checkmarx AST');
-		const view = await ctrl?.openView();
-		const results: CustomTreeSection = await view?.getContent().getSection('Details') as CustomTreeSection;
-		expect(results).not.be.undefined;
-		if (!await results.isExpanded()) {
-			await results.expand();
-		}
-		await delay(5000);
-		await driver.wait(until.elementsLocated(By.name("webviewview-astdetailsview")));
-		await driver.switchTo().frame(await driver.findElement(By.name("webviewview-astdetailsview")));
-		await driver.wait(until.elementsLocated(By.id("active-frame")));
-		await driver.switchTo().frame(await driver.findElement(By.id("active-frame")));
-		const scanElement = await driver.findElement(By.className("ast-node"));
-		const valueOfText = await scanElement.getText();
-		await scanElement.click();
-		await delay(8000);
-		await driver.switchTo().defaultContent();
-		editorView = new EditorView();
-		const tab = await editorView.getTabByTitle(valueOfText.split(" ")[0].replace("/", ""));
-		const tabval = await tab.getText();
-		expect(tabval).to.have.length.greaterThan(0);
-
-
-		await delay(10000);
-	});
-
-
-	it('should check that the issues are indicated in problems tab', async function () {
-		this.timeout(80000);
-		const problemsView = await new BottomBarPanel().openProblemsView();
-		const issues = await problemsView.getAllMarkers(MarkerType.Any);
-		expect(issues).to.have.length.greaterThan(0);
-		await delay(10000);
-	});
+  it("should click group by severity", async function () {
+    await delay(THREE_SECONDS);
+  });
 
 });
-
-const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
