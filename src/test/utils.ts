@@ -18,7 +18,7 @@ export async function initialize(): Promise<CustomTreeSection | undefined> {
 	let control = await createControl();
 	let view;
 	if(control){
-		 view = await createView(control);
+		view = await createView(control);
 	}
 	return await createTree(view);
 }
