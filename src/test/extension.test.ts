@@ -132,8 +132,8 @@ describe("UI tests", async function () {
   });
 
   it("should load results using wizard", async function () {
-    let treeScans = await initialize();
     this.timeout(MAX_TIMEOUT);
+    let treeScans = await initialize();    
     await delay(THREE_SECONDS);   
     // Execute command to call wizard
     await bench.executeCommand(CX_SELECT_ALL);
