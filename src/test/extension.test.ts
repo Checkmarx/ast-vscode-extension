@@ -59,12 +59,14 @@ describe("UI tests", async function () {
   });
 
   it("should open welcome view and check if exists", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     let tree = await initialize();
     let welcome = await tree?.findWelcomeContent();
     expect(welcome).is.not.undefined;
   });
 
   it("should open settings and validate the wrong Key", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
@@ -78,6 +80,7 @@ describe("UI tests", async function () {
   });
 
   it("should set the settings and check if values are populated", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
 	// Set settings values
     let settingsWizard = await bench.openSettings();
@@ -117,6 +120,7 @@ describe("UI tests", async function () {
   });
 
   it("should open the test repo", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await bench.executeCommand(VS_OPEN_FOLDER);
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
@@ -128,6 +132,7 @@ describe("UI tests", async function () {
   });
 
   it("should load results using wizard", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     // Execute command to call wizard
@@ -166,12 +171,25 @@ describe("UI tests", async function () {
   });
 
   it("should clear all loaded results", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
+    let treeScans = await initialize();
     await bench.executeCommand(CX_CLEAR);
+    await delay(THREE_SECONDS);
+    // Project tree item validation
+    let project = await treeScans?.findItem("Project:  ");
+    expect(project).is.not.undefined;
+    // Branch tree item validation
+    let branch = await treeScans?.findItem("Branch:  ");
+    expect(branch).is.not.undefined;
+    // Scan tree item validation
+    let scan = await treeScans?.findItem("Scan:  " );
+    expect(scan).is.not.undefined;
     await delay(THREE_SECONDS);
   });
 
   it("should select project", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -190,6 +208,7 @@ describe("UI tests", async function () {
   });
 
   it("should select branch", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -208,6 +227,7 @@ describe("UI tests", async function () {
   });
 
   it("should select scan", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -226,6 +246,7 @@ describe("UI tests", async function () {
   });
 
   it("should load results from scan ID", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(FIVE_SECONDS);
@@ -281,6 +302,7 @@ describe("UI tests", async function () {
   });
 
   it("should click info filter", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_INFO);
@@ -297,6 +319,7 @@ describe("UI tests", async function () {
   });
 
   it("should click low filter", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_LOW);
@@ -313,6 +336,7 @@ describe("UI tests", async function () {
   });
 
   it("should click medium filter", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_MEDIUM);
@@ -329,6 +353,7 @@ describe("UI tests", async function () {
   });
 
   it("should click high filter", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_HIGH);
@@ -345,6 +370,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by file", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -360,6 +386,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by language", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -375,6 +402,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by status", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -390,6 +418,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by severity", async function () {
+    this.timeout(ONE_HUNDRED_SECONDS);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
