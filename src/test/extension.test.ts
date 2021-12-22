@@ -134,8 +134,6 @@ describe("UI tests", async function () {
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);   
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);    
     // Execute command to call wizard
     await bench.executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);
@@ -143,6 +141,7 @@ describe("UI tests", async function () {
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
+    console.log("projectName-should load results using wizard:"+projectName);
     await delay(THREE_SECONDS);
     await quickPickSelector(input);
     await delay(THIRTY_SECONDS);
@@ -150,6 +149,7 @@ describe("UI tests", async function () {
     let inputBranch = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(inputBranch);
+    console.log("projectName-should load results using wizard:"+branchName);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputBranch);
     await delay(THIRTY_SECONDS);
@@ -157,10 +157,14 @@ describe("UI tests", async function () {
     let inputScan = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(inputScan);
+    console.log("scanDate-should load results using wizard:"+branchName);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputScan);
     await delay(THIRTY_SECONDS);
     // Project tree item validation
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    console.log("treeScans-should load results using wizard:"+JSON.stringify(treeScans));
     let project = await treeScans?.findItem("Project:  " + projectName);
     await delay(THREE_SECONDS);   
     expect(project).is.not.undefined;
@@ -177,11 +181,13 @@ describe("UI tests", async function () {
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
     await bench.executeCommand(CX_CLEAR);
     await delay(THREE_SECONDS);
     // Project tree item validation
+    let treeScans = await initialize();
+    console.log("treeScans-should clear all loaded results:"+JSON.stringify(treeScans));
     let project = await treeScans?.findItem("Project: ");
+    console.log("project-should clear all loaded results:"+JSON.stringify(treeScans));
     await delay(THREE_SECONDS);   
     expect(project).is.not.undefined;
     // Branch tree item validation
