@@ -135,6 +135,7 @@ describe("UI tests", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);   
     // Execute command to call wizard
+    console.log("comando"+CX_SELECT_ALL);
     await bench.executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);
     // Project selection
