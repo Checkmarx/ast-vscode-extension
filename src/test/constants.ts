@@ -1,5 +1,5 @@
 export const ONE_HUNDRED_SECONDS: number = 100000;
-export const FIFTY_SECONDS: number = 100000;
+export const FIFTY_SECONDS: number = 50000;
 export const THIRTY_SECONDS: number = 30000;
 export const FIVE_SECONDS: number = 5000;
 export const THREE_SECONDS: number = 3000;
@@ -11,6 +11,7 @@ export const CX_TENANT: string = "Tenant";
 export const CX_BASE_URI: string = "Base-uri";
 
 export const VS_CLOSE_EDITOR: string = "Close Editor";
+export const VS_CLOSE_GROUP_EDITOR: string = "Close All Editors in Group";
 export const VS_OPEN_FOLDER: string = "File: Open Folder...";
 
 export const CX_NAME: string = "Checkmarx AST";
@@ -24,3 +25,7 @@ export const CX_FILTER_LOW: string = "Checkmarx AST: LOW";
 export const CX_FILTER_MEDIUM: string = "Checkmarx AST: MEDIUM";
 export const CX_FILTER_HIGH: string = "Checkmarx AST: HIGH";
 export const CX_CLEAR: string = "Checkmarx AST: Clear";
+export const CX_GROUP_FILE: string = "Checkmarx AST: Group by: File";
+export const CX_GROUP_SEVERITY: string = "Checkmarx AST: Group by: Severity";
+export const CX_GROUP_LANGUAGE: string = "Checkmarx AST: Group by: Language";
+export const CX_GROUP_STATUS: string = "Checkmarx AST: Group by: Status";

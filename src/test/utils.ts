@@ -1,4 +1,3 @@
-import { TreeItem } from 'vscode';
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem} from 'vscode-extension-tester';
 import { FIVE_SECONDS } from './constants';
 
@@ -24,7 +23,10 @@ export async function initialize(): Promise<CustomTreeSection | undefined> {
 	return await createTree(view);
 }
 
-export async function quickPickSelector(input:InputBox): Promise<string> {
+export async function quickPickSelector(input:InputBox){
+	await input.selectQuickPick(0);
+}
+export async function getQuickPickSelector(input:InputBox): Promise<string> {
 	let projectList = await input.getQuickPicks();
 	return await projectList[0].getText();
 }
@@ -35,8 +37,11 @@ export async function getResults(scan:any): Promise<any[]> {
     await delay(FIVE_SECONDS);
     // Expand the first results
     await children![0].expand();
+	await delay(FIVE_SECONDS);
     let type = await children![0].getChildren();
+	await delay(FIVE_SECONDS);
     await type[0].expand();
+	await delay(FIVE_SECONDS);
     return await type[0].getChildren();
 }
 
