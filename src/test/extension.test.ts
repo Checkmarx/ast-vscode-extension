@@ -19,7 +19,7 @@ import {
 } from "./utils";
 import {
   MAX_TIMEOUT,
-  FIFTEEN_SECONDS,
+  THIRTY_SECONDS,
   FIFTY_SECONDS,
   FIVE_SECONDS,
   THREE_SECONDS,
@@ -133,40 +133,44 @@ describe("UI tests", async function () {
 
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);   
     let treeScans = await initialize();
     await delay(THREE_SECONDS);    
     // Execute command to call wizard
     await bench.executeCommand(CX_SELECT_ALL);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
     await quickPickSelector(input);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     // Branch selection
     let inputBranch = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(inputBranch);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputBranch);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     // Scan selection
     let inputScan = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(inputScan);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputScan);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     // Project tree item validation
     let project = await treeScans?.findItem("Project:  " + projectName);
+    await delay(THREE_SECONDS);   
     expect(project).is.not.undefined;
     // Branch tree item validation
     let branch = await treeScans?.findItem("Branch:  " + branchName);
+    await delay(THREE_SECONDS);   
     expect(branch).is.not.undefined;
     // Scan tree item validation
     let scan = await treeScans?.findItem("Scan:  " + scanDate);
+    await delay(THREE_SECONDS);   
     expect(scan).is.not.undefined;
   });
 
@@ -178,9 +182,11 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Project tree item validation
     let project = await treeScans?.findItem("Project: ");
+    await delay(THREE_SECONDS);   
     expect(project).is.not.undefined;
     // Branch tree item validation
     let branch = await treeScans?.findItem("Branch: ");
+    await delay(THREE_SECONDS);   
     expect(branch).is.not.undefined;
     // Scan tree item validation
     let scan = await treeScans?.findItem("Scan: ");
@@ -194,7 +200,7 @@ describe("UI tests", async function () {
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_PROJECT);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
@@ -213,7 +219,7 @@ describe("UI tests", async function () {
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_BRANCH);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(input);
@@ -232,7 +238,7 @@ describe("UI tests", async function () {
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_SCAN);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(input);
@@ -275,7 +281,7 @@ describe("UI tests", async function () {
     await delay(FIVE_SECONDS);
     // Get results and open details page
     let result = await getResults(scan);
-    await delay(FIFTEEN_SECONDS);
+    await delay(THIRTY_SECONDS);
     let resultName = await result[0].getLabel();
     await delay(FIVE_SECONDS);
     await result[0].click();
