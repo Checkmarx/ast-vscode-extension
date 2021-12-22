@@ -18,8 +18,8 @@ import {
   quickPickSelector,
 } from "./utils";
 import {
-  ONE_HUNDRED_SECONDS,
-  THIRTY_SECONDS,
+  MAX_TIMEOUT,
+  FIFTEEN_SECONDS,
   FIFTY_SECONDS,
   FIVE_SECONDS,
   THREE_SECONDS,
@@ -52,21 +52,21 @@ describe("UI tests", async function () {
   let bench: Workbench;
   let driver: WebDriver;
   before(async () => {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await delay(THREE_SECONDS);
   });
 
   it("should open welcome view and check if exists", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     let tree = await initialize();
     let welcome = await tree?.findWelcomeContent();
     expect(welcome).is.not.undefined;
   });
 
   it("should open settings and validate the wrong Key", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
@@ -80,7 +80,7 @@ describe("UI tests", async function () {
   });
 
   it("should set the settings and check if values are populated", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
 	// Set settings values
     let settingsWizard = await bench.openSettings();
@@ -120,7 +120,7 @@ describe("UI tests", async function () {
   });
 
   it("should open the test repo", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await bench.executeCommand(VS_OPEN_FOLDER);
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
@@ -132,33 +132,33 @@ describe("UI tests", async function () {
   });
 
   it("should load results using wizard", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
-    await delay(THREE_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     let treeScans = await initialize();
+    await delay(THREE_SECONDS);    
     // Execute command to call wizard
     await bench.executeCommand(CX_SELECT_ALL);
-    await delay(FIFTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
     await quickPickSelector(input);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     // Branch selection
     let inputBranch = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(inputBranch);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputBranch);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     // Scan selection
     let inputScan = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(inputScan);
     await delay(THREE_SECONDS);
     await quickPickSelector(inputScan);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     // Project tree item validation
     let project = await treeScans?.findItem("Project:  " + projectName);
     expect(project).is.not.undefined;
@@ -171,30 +171,30 @@ describe("UI tests", async function () {
   });
 
   it("should clear all loaded results", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_CLEAR);
     await delay(THREE_SECONDS);
     // Project tree item validation
-    let project = await treeScans?.findItem("Project:  ");
+    let project = await treeScans?.findItem("Project: ");
     expect(project).is.not.undefined;
     // Branch tree item validation
-    let branch = await treeScans?.findItem("Branch:  ");
+    let branch = await treeScans?.findItem("Branch: ");
     expect(branch).is.not.undefined;
     // Scan tree item validation
-    let scan = await treeScans?.findItem("Scan:  " );
+    let scan = await treeScans?.findItem("Scan: ");
     expect(scan).is.not.undefined;
     await delay(THREE_SECONDS);
   });
 
   it("should select project", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_PROJECT);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
@@ -208,12 +208,12 @@ describe("UI tests", async function () {
   });
 
   it("should select branch", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_BRANCH);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(input);
@@ -227,12 +227,12 @@ describe("UI tests", async function () {
   });
 
   it("should select scan", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_SCAN);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(input);
@@ -246,7 +246,7 @@ describe("UI tests", async function () {
   });
 
   it("should load results from scan ID", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(FIVE_SECONDS);
@@ -275,7 +275,7 @@ describe("UI tests", async function () {
     await delay(FIVE_SECONDS);
     // Get results and open details page
     let result = await getResults(scan);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTEEN_SECONDS);
     let resultName = await result[0].getLabel();
     await delay(FIVE_SECONDS);
     await result[0].click();
@@ -302,7 +302,7 @@ describe("UI tests", async function () {
   });
 
   it("should click info filter", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_INFO);
@@ -319,7 +319,7 @@ describe("UI tests", async function () {
   });
 
   it("should click low filter", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_LOW);
@@ -336,7 +336,7 @@ describe("UI tests", async function () {
   });
 
   it("should click medium filter", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_MEDIUM);
@@ -353,7 +353,7 @@ describe("UI tests", async function () {
   });
 
   it("should click high filter", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await bench.executeCommand(CX_FILTER_HIGH);
@@ -370,7 +370,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by file", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -386,7 +386,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by language", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -402,7 +402,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by status", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -418,7 +418,7 @@ describe("UI tests", async function () {
   });
 
   it("should click group by severity", async function () {
-    this.timeout(ONE_HUNDRED_SECONDS);
+    this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);

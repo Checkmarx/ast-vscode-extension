@@ -1,6 +1,6 @@
-export const ONE_HUNDRED_SECONDS: number = 100000;
+export const MAX_TIMEOUT: number = 1000000;
 export const FIFTY_SECONDS: number = 50000;
-export const THIRTY_SECONDS: number = 30000;
+export const FIFTEEN_SECONDS: number = 15000;
 export const FIVE_SECONDS: number = 5000;
 export const THREE_SECONDS: number = 3000;
 export const TWO_SECONDS: number = 2000;
