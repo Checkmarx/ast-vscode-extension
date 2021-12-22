@@ -132,6 +132,7 @@ describe("UI tests", async function () {
   });
 
   it("should load results using wizard", async function () {
+    let treeScans = await initialize();
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);   
     // Execute command to call wizard
@@ -162,8 +163,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     await quickPickSelector(inputScan);
     await delay(THIRTY_SECONDS);
-    // Project tree item validation
-    let treeScans = await initialize();
+    // Project tree item validation    
     await delay(THREE_SECONDS);
     console.log("treeScans-should load results using wizard:"+JSON.stringify(treeScans));
     let project = await treeScans?.findItem("Project:  " + projectName);

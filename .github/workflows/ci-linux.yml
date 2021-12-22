@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 15
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc   
       - name: Install dependencies
@@ -26,6 +26,7 @@ jobs:
           CX_TENANT: ${{ secrets.TENANT }}
           CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
         run: |
+          sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 & 
           npm test
