@@ -132,6 +132,7 @@ describe("UI tests", async function () {
   });
 
   it("dry test", async function () {
+    await initialize();
     await bench.executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
