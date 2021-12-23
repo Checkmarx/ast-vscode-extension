@@ -56,26 +56,26 @@ describe("UI tests", function () {
     await delay(THREE_SECONDS);
   });
 
-  it("should open welcome view and check if exists", async function () {
-    this.timeout(MAX_TIMEOUT);
-    let tree = await initialize();
-    let welcome = await tree?.findWelcomeContent();
-    expect(welcome).is.not.undefined;
-  });
+  // it("should open welcome view and check if exists", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   let tree = await initialize();
+  //   let welcome = await tree?.findWelcomeContent();
+  //   expect(welcome).is.not.undefined;
+  // });
 
-  it("should open settings and validate the wrong Key", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let settingsWizard = await new Workbench().openSettings();
-    await delay(TWO_SECONDS);
-    const setting = (await settingsWizard.findSetting(
-      CX_API_KEY_CAPS,
-      CX_NAME
-    )) as LinkSetting;
-    await delay(THREE_SECONDS);
-    expect(setting).to.be.undefined;
-    await delay(THREE_SECONDS);
-  });
+  // it("should open settings and validate the wrong Key", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let settingsWizard = await new Workbench().openSettings();
+  //   await delay(TWO_SECONDS);
+  //   const setting = (await settingsWizard.findSetting(
+  //     CX_API_KEY_CAPS,
+  //     CX_NAME
+  //   )) as LinkSetting;
+  //   await delay(THREE_SECONDS);
+  //   expect(setting).to.be.undefined;
+  //   await delay(THREE_SECONDS);
+  // });
 
   it("should set the settings and check if values are populated", async function () {
     this.timeout(MAX_TIMEOUT);
@@ -114,6 +114,7 @@ describe("UI tests", function () {
     expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
     await new Workbench().executeCommand(VS_CLOSE_EDITOR);
+    console.log(baseURI,tenant,apiKey);
     await delay(THREE_SECONDS);
   });
 
@@ -129,20 +130,14 @@ describe("UI tests", function () {
     await delay(THIRTY_SECONDS);
   });
 
- it("should clear all loaded results", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_CLEAR);
-    await delay(THREE_SECONDS);
-  });
-
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
     let treeScans = await initialize();    
     await delay(THREE_SECONDS);   
     // Execute command to call wizard
     await new Workbench().executeCommand(CX_SELECT_ALL);
-    await delay(THIRTY_SECONDS);
+    await delay(FIFTY_SECONDS);
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
