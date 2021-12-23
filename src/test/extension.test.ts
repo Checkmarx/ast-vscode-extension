@@ -126,20 +126,22 @@ describe("UI tests", function () {
     await (await input).setText(tempPath);
     await (await input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
-    await delay(THREE_SECONDS);
+    await delay(THIRTY_SECONDS);
   });
 
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
+    let treeScans = await initialize();    
+    await delay(THREE_SECONDS);   
     // Execute command to call wizard
     await new Workbench().executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);
-    let treeScans = await initialize();    
-    await delay(THREE_SECONDS);   
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
+    console.log("Input "+JSON.stringify(input));
     let projectName = await getQuickPickSelector(input);
+    console.log("projectName "+projectName);
     await delay(THREE_SECONDS);
     await quickPickSelector(input);
     await delay(THIRTY_SECONDS);
@@ -172,268 +174,268 @@ describe("UI tests", function () {
     expect(scan).is.not.undefined;
   });
 
-  it("should clear all loaded results", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_CLEAR);
-    await delay(THREE_SECONDS);
-    // Project tree item validation
-    let treeScans = await initialize();
-    let project = await treeScans?.findItem("Project: ");
-    await delay(THREE_SECONDS);   
-    expect(project).is.not.undefined;
-    // Branch tree item validation
-    let branch = await treeScans?.findItem("Branch: ");
-    await delay(THREE_SECONDS);   
-    expect(branch).is.not.undefined;
-    // Scan tree item validation
-    let scan = await treeScans?.findItem("Scan: ");
-    expect(scan).is.not.undefined;
-    await delay(THREE_SECONDS);
-  });
+  // it("should clear all loaded results", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_CLEAR);
+  //   await delay(THREE_SECONDS);
+  //   // Project tree item validation
+  //   let treeScans = await initialize();
+  //   let project = await treeScans?.findItem("Project: ");
+  //   await delay(THREE_SECONDS);   
+  //   expect(project).is.not.undefined;
+  //   // Branch tree item validation
+  //   let branch = await treeScans?.findItem("Branch: ");
+  //   await delay(THREE_SECONDS);   
+  //   expect(branch).is.not.undefined;
+  //   // Scan tree item validation
+  //   let scan = await treeScans?.findItem("Scan: ");
+  //   expect(scan).is.not.undefined;
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should select project", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_SELECT_PROJECT);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await delay(THIRTY_SECONDS);
-    let input = await InputBox.create();
-    await delay(THREE_SECONDS);
-    let projectName = await getQuickPickSelector(input);
-    await input.setText(projectName);
-    await delay(THREE_SECONDS);
-    await input.confirm();
-    await delay(THREE_SECONDS);
-    let project = await treeScans?.findItem("Project:  " + projectName);
-    expect(project).is.not.undefined;
-    await delay(THREE_SECONDS);
-  });
+  // it("should select project", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_SELECT_PROJECT);
+  //   await delay(THIRTY_SECONDS);
+  //   let input = await InputBox.create();
+  //   await delay(THREE_SECONDS);
+  //   let projectName = await getQuickPickSelector(input);
+  //   await input.setText(projectName);
+  //   await delay(THREE_SECONDS);
+  //   await input.confirm();
+  //   await delay(THREE_SECONDS);
+  //   let project = await treeScans?.findItem("Project:  " + projectName);
+  //   expect(project).is.not.undefined;
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should select branch", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_SELECT_BRANCH);
-    await delay(THIRTY_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let input = await InputBox.create();
-    await delay(THREE_SECONDS);
-    let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await delay(THREE_SECONDS);
-    await input.confirm();
-    await delay(FIFTY_SECONDS);
-    let branch = await treeScans?.findItem("Branch:  " + branchName);
-    expect(branch).is.not.undefined;
-    await delay(THREE_SECONDS);
-  });
+  // it("should select branch", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_SELECT_BRANCH);
+  //   await delay(THIRTY_SECONDS);
+  //   let input = await InputBox.create();
+  //   await delay(THREE_SECONDS);
+  //   let branchName = await getQuickPickSelector(input);
+  //   await input.setText(branchName);
+  //   await delay(THREE_SECONDS);
+  //   await input.confirm();
+  //   await delay(FIFTY_SECONDS);
+  //   let branch = await treeScans?.findItem("Branch:  " + branchName);
+  //   expect(branch).is.not.undefined;
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should select scan", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_SELECT_SCAN);
-    await delay(THIRTY_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let input = await InputBox.create();
-    await delay(THREE_SECONDS);
-    let scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-    await delay(THREE_SECONDS);
-    await input.confirm();
-    await delay(FIFTY_SECONDS);
-    let branch = await treeScans?.findItem("Scan:  " + scanDate);
-    expect(branch).is.not.undefined;
-    await delay(THREE_SECONDS);
-  });
+  // it("should select scan", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_SELECT_SCAN);
+  //   await delay(THIRTY_SECONDS);
+  //   let input = await InputBox.create();
+  //   await delay(THREE_SECONDS);
+  //   let scanDate = await getQuickPickSelector(input);
+  //   await input.setText(scanDate);
+  //   await delay(THREE_SECONDS);
+  //   await input.confirm();
+  //   await delay(FIFTY_SECONDS);
+  //   let branch = await treeScans?.findItem("Scan:  " + scanDate);
+  //   expect(branch).is.not.undefined;
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should load results from scan ID", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_LOOK_SCAN);
-    await delay(FIVE_SECONDS);
-    let treeScans = await initialize();
-    await delay(FIVE_SECONDS);
-    let input = await InputBox.create();
-    await delay(FIVE_SECONDS);
-    await input.setText(
-      process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
-    );
-    await delay(FIVE_SECONDS);
-    await input.confirm();
-    await delay(FIFTY_SECONDS);
-    // Make sure that the results were loaded into the tree
-    driver.wait(
-      until.elementLocated(
-        By.className(
-          "monaco-tl-twistie codicon codicon-tree-item-expanded collapsible collapsed"
-        )
-      ),
-      FIFTY_SECONDS
-    );
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(FIVE_SECONDS);
-    // Get results and open details page
-    let result = await getResults(scan);
-    await delay(THIRTY_SECONDS);
-    let resultName = await result[0].getLabel();
-    await delay(FIVE_SECONDS);
-    await result[0].click();
-    await delay(FIVE_SECONDS);
-    // Close left view
-    let leftView = new WebView();
-    await leftView.click();
-    await new Workbench().executeCommand(VS_CLOSE_GROUP_EDITOR);
-    // Open details view
-    let detailsView = new WebView();
-    await delay(FIVE_SECONDS);
-    await detailsView.switchToFrame();
-    await delay(FIVE_SECONDS);
-    // Find details view title
-    let titleWebElement = await detailsView.findWebElement(
-      By.className("title_td")
-    );
-    await delay(FIVE_SECONDS);
-    let title = await titleWebElement.getText();
-    await delay(FIVE_SECONDS);
-    expect(title).to.equal(resultName);
-    await detailsView.switchBack();
-    await delay(THREE_SECONDS);
-  });
+  // it("should load results from scan ID", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(FIVE_SECONDS);
+  //   await new Workbench().executeCommand(CX_LOOK_SCAN);
+  //   await delay(FIVE_SECONDS);
+  //   let input = await InputBox.create();
+  //   await delay(FIVE_SECONDS);
+  //   await input.setText(
+  //     process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
+  //   );
+  //   await delay(FIVE_SECONDS);
+  //   await input.confirm();
+  //   await delay(FIFTY_SECONDS);
+  //   // Make sure that the results were loaded into the tree
+  //   driver.wait(
+  //     until.elementLocated(
+  //       By.className(
+  //         "monaco-tl-twistie codicon codicon-tree-item-expanded collapsible collapsed"
+  //       )
+  //     ),
+  //     FIFTY_SECONDS
+  //   );
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(FIVE_SECONDS);
+  //   // Get results and open details page
+  //   let result = await getResults(scan);
+  //   await delay(THIRTY_SECONDS);
+  //   let resultName = await result[0].getLabel();
+  //   await delay(FIVE_SECONDS);
+  //   await result[0].click();
+  //   await delay(FIVE_SECONDS);
+  //   // Close left view
+  //   let leftView = new WebView();
+  //   await leftView.click();
+  //   await new Workbench().executeCommand(VS_CLOSE_GROUP_EDITOR);
+  //   // Open details view
+  //   let detailsView = new WebView();
+  //   await delay(FIVE_SECONDS);
+  //   await detailsView.switchToFrame();
+  //   await delay(FIVE_SECONDS);
+  //   // Find details view title
+  //   let titleWebElement = await detailsView.findWebElement(
+  //     By.className("title_td")
+  //   );
+  //   await delay(FIVE_SECONDS);
+  //   let title = await titleWebElement.getText();
+  //   await delay(FIVE_SECONDS);
+  //   expect(title).to.equal(resultName);
+  //   await detailsView.switchBack();
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should click info filter", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await new Workbench().executeCommand(CX_FILTER_INFO);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "INFO");
-    expect(isValidated).to.equal(true);
-	// Reset filters
-    await new Workbench().executeCommand(CX_FILTER_INFO);
-    await delay(THREE_SECONDS);
-  });
+  // it("should click info filter", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await new Workbench().executeCommand(CX_FILTER_INFO);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let isValidated = await validateSeverities(scan, "INFO");
+  //   expect(isValidated).to.equal(true);
+	// // Reset filters
+  //   await new Workbench().executeCommand(CX_FILTER_INFO);
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should click low filter", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await new Workbench().executeCommand(CX_FILTER_LOW);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "LOW");
-    expect(isValidated).to.equal(true);
-	// Reset filters
-    await new Workbench().executeCommand(CX_FILTER_LOW);
-    await delay(THREE_SECONDS);
-  });
+  // it("should click low filter", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await new Workbench().executeCommand(CX_FILTER_LOW);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let isValidated = await validateSeverities(scan, "LOW");
+  //   expect(isValidated).to.equal(true);
+	// // Reset filters
+  //   await new Workbench().executeCommand(CX_FILTER_LOW);
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should click medium filter", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await new Workbench().executeCommand(CX_FILTER_MEDIUM);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "MEDIUM");
-    expect(isValidated).to.equal(true);
-	// Reset filters
-    await new Workbench().executeCommand(CX_FILTER_MEDIUM);
-    await delay(THREE_SECONDS);
-  });
+  // it("should click medium filter", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await new Workbench().executeCommand(CX_FILTER_MEDIUM);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let isValidated = await validateSeverities(scan, "MEDIUM");
+  //   expect(isValidated).to.equal(true);
+	// // Reset filters
+  //   await new Workbench().executeCommand(CX_FILTER_MEDIUM);
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should click high filter", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await new Workbench().executeCommand(CX_FILTER_HIGH);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "HIGH");
-    expect(isValidated).to.equal(true);
-	// Reset filters
-    await new Workbench().executeCommand(CX_FILTER_HIGH);
-    await delay(THREE_SECONDS);
-  });
+  // it("should click high filter", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await new Workbench().executeCommand(CX_FILTER_HIGH);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let isValidated = await validateSeverities(scan, "HIGH");
+  //   expect(isValidated).to.equal(true);
+	// // Reset filters
+  //   await new Workbench().executeCommand(CX_FILTER_HIGH);
+  //   await delay(THREE_SECONDS);
+  // });
 
-  it("should click group by file", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_GROUP_FILE);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
+  // it("should click group by file", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_GROUP_FILE);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let result = await getResults(scan);
+  //   expect(result).is.not.undefined;
+  //   await delay(FIVE_SECONDS);
+  // });
 
-  it("should click group by language", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_GROUP_LANGUAGE);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
+  // it("should click group by language", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_GROUP_LANGUAGE);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let result = await getResults(scan);
+  //   expect(result).is.not.undefined;
+  //   await delay(FIVE_SECONDS);
+  // });
 
-  it("should click group by status", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_GROUP_STATUS);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
+  // it("should click group by status", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_GROUP_STATUS);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let result = await getResults(scan);
+  //   expect(result).is.not.undefined;
+  //   await delay(FIVE_SECONDS);
+  // });
 
-  it("should click group by severity", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    await new Workbench().executeCommand(CX_GROUP_SEVERITY);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
+  // it("should click group by severity", async function () {
+  //   this.timeout(MAX_TIMEOUT);
+  //   await delay(THREE_SECONDS);
+  //   let treeScans = await initialize();
+  //   await delay(THREE_SECONDS);
+  //   await new Workbench().executeCommand(CX_GROUP_SEVERITY);
+  //   await delay(THREE_SECONDS);
+  //   let scan = await treeScans?.findItem(
+  //     "Scan:  " + process.env.CX_TEST_SCAN_ID
+  //   );
+  //   await delay(THREE_SECONDS);
+  //   let result = await getResults(scan);
+  //   expect(result).is.not.undefined;
+  //   await delay(FIVE_SECONDS);
+  // });
 });
