@@ -113,8 +113,8 @@ describe("UI tests", function () {
     const tenant = await settingsWizard.findSetting(CX_TENANT, CX_NAME);
     expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
+    await new Workbench().takeScreenshot();
     await new Workbench().executeCommand(VS_CLOSE_EDITOR);
-    console.log(baseURI,tenant,apiKey);
     await delay(THREE_SECONDS);
   });
 
@@ -125,6 +125,7 @@ describe("UI tests", function () {
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "testProj";
     await (await input).setText(tempPath);
+    await new Workbench().takeScreenshot();
     await (await input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
     await delay(THIRTY_SECONDS);
@@ -137,6 +138,7 @@ describe("UI tests", function () {
     await delay(THREE_SECONDS);   
     // Execute command to call wizard
     await new Workbench().executeCommand(CX_SELECT_ALL);
+    await new Workbench().takeScreenshot();
     await delay(FIFTY_SECONDS);
     // Project selection
     let input = await InputBox.create();
@@ -196,24 +198,25 @@ describe("UI tests", function () {
   //   await delay(THREE_SECONDS);
   // });
 
-  // it("should select project", async function () {
-  //   this.timeout(MAX_TIMEOUT);
-  //   await delay(THREE_SECONDS);
-  //   let treeScans = await initialize();
-  //   await delay(THREE_SECONDS);
-  //   await new Workbench().executeCommand(CX_SELECT_PROJECT);
-  //   await delay(THIRTY_SECONDS);
-  //   let input = await InputBox.create();
-  //   await delay(THREE_SECONDS);
-  //   let projectName = await getQuickPickSelector(input);
-  //   await input.setText(projectName);
-  //   await delay(THREE_SECONDS);
-  //   await input.confirm();
-  //   await delay(THREE_SECONDS);
-  //   let project = await treeScans?.findItem("Project:  " + projectName);
-  //   expect(project).is.not.undefined;
-  //   await delay(THREE_SECONDS);
-  // });
+  it("should select project", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await new Workbench().executeCommand(CX_SELECT_PROJECT);
+    await delay(THIRTY_SECONDS);
+    let input = await InputBox.create();
+    await delay(THREE_SECONDS);
+    let projectName = await getQuickPickSelector(input);
+    await input.setText(projectName);
+    await new Workbench().takeScreenshot();
+    await delay(THREE_SECONDS);
+    await input.confirm();
+    await delay(THREE_SECONDS);
+    let project = await treeScans?.findItem("Project:  " + projectName);
+    expect(project).is.not.undefined;
+    await delay(THREE_SECONDS);
+  });
 
   // it("should select branch", async function () {
   //   this.timeout(MAX_TIMEOUT);

@@ -41,4 +41,10 @@ jobs:
           cx_client_id: ${{ secrets.CLIENT_ID }}
           cx_client_secret: ${{ secrets.CLIENT_SECRET }}
           additional_params: --tags galactica-team
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with: 
+          name: screenshots
+          path: D:\a\ast-vscode-extension\ast-vscode-extension\test-resources\test-resources\screenshots\*.png
           
