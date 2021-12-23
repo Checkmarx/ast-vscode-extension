@@ -35,5 +35,5 @@ jobs:
         if: failure()
         with: 
           name: screenshots
-          path: ~/test/**/screenshots/*.png
+          path: ~/test-resources/screenshots/*.png
           
