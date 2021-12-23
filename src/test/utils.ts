@@ -28,7 +28,6 @@ export async function quickPickSelector(input:InputBox){
 }
 export async function getQuickPickSelector(input:InputBox): Promise<string> {
 	let projectList = await input.getQuickPicks();
-	console.log("getQuickPickSelector "+JSON.stringify(projectList));
 	await delay(FIVE_SECONDS);
 	return await projectList[0].getText();
 }
