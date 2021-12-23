@@ -48,12 +48,10 @@ import {
   VS_CLOSE_GROUP_EDITOR,
 } from "./constants";
 
-describe("UI tests", async function () {
-  let bench: Workbench;
+describe("UI tests", function () {
   let driver: WebDriver;
   before(async () => {
     this.timeout(MAX_TIMEOUT);
-    bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await delay(THREE_SECONDS);
   });
@@ -68,7 +66,7 @@ describe("UI tests", async function () {
   it("should open settings and validate the wrong Key", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let settingsWizard = await bench.openSettings();
+    let settingsWizard = await new Workbench().openSettings();
     await delay(TWO_SECONDS);
     const setting = (await settingsWizard.findSetting(
       CX_API_KEY_CAPS,
@@ -83,7 +81,7 @@ describe("UI tests", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
 	// Set settings values
-    let settingsWizard = await bench.openSettings();
+    let settingsWizard = await new Workbench().openSettings();
     await delay(TWO_SECONDS);
     const apiKeyVal = await await settingsWizard.findSetting(
       CX_API_KEY,
@@ -115,13 +113,13 @@ describe("UI tests", async function () {
     const tenant = await settingsWizard.findSetting(CX_TENANT, CX_NAME);
     expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
-    await bench.executeCommand(VS_CLOSE_EDITOR);
+    await new Workbench().executeCommand(VS_CLOSE_EDITOR);
     await delay(THREE_SECONDS);
   });
 
   it("should open the test repo", async function () {
     this.timeout(MAX_TIMEOUT);
-    await bench.executeCommand(VS_OPEN_FOLDER);
+    await new Workbench().executeCommand(VS_OPEN_FOLDER);
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "testProj";
@@ -133,11 +131,11 @@ describe("UI tests", async function () {
 
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
+    // Execute command to call wizard
+    await new Workbench().executeCommand(CX_SELECT_ALL);
+    await delay(THIRTY_SECONDS);
     let treeScans = await initialize();    
     await delay(THREE_SECONDS);   
-    // Execute command to call wizard
-    await bench.executeCommand(CX_SELECT_ALL);
-    await delay(THIRTY_SECONDS);
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
@@ -177,7 +175,7 @@ describe("UI tests", async function () {
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_CLEAR);
+    await new Workbench().executeCommand(CX_CLEAR);
     await delay(THREE_SECONDS);
     // Project tree item validation
     let treeScans = await initialize();
@@ -197,9 +195,9 @@ describe("UI tests", async function () {
   it("should select project", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
+    await new Workbench().executeCommand(CX_SELECT_PROJECT);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_SELECT_PROJECT);
     await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
@@ -216,10 +214,10 @@ describe("UI tests", async function () {
   it("should select branch", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
+    await new Workbench().executeCommand(CX_SELECT_BRANCH);
+    await delay(THIRTY_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_SELECT_BRANCH);
-    await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(input);
@@ -235,10 +233,10 @@ describe("UI tests", async function () {
   it("should select scan", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
+    await new Workbench().executeCommand(CX_SELECT_SCAN);
+    await delay(THIRTY_SECONDS);
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_SELECT_SCAN);
-    await delay(THIRTY_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let scanDate = await getQuickPickSelector(input);
@@ -254,9 +252,9 @@ describe("UI tests", async function () {
   it("should load results from scan ID", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    await new Workbench().executeCommand(CX_LOOK_SCAN);
     await delay(FIVE_SECONDS);
-    await bench.executeCommand(CX_LOOK_SCAN);
+    let treeScans = await initialize();
     await delay(FIVE_SECONDS);
     let input = await InputBox.create();
     await delay(FIVE_SECONDS);
@@ -289,7 +287,7 @@ describe("UI tests", async function () {
     // Close left view
     let leftView = new WebView();
     await leftView.click();
-    await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
+    await new Workbench().executeCommand(VS_CLOSE_GROUP_EDITOR);
     // Open details view
     let detailsView = new WebView();
     await delay(FIVE_SECONDS);
@@ -309,9 +307,9 @@ describe("UI tests", async function () {
 
   it("should click info filter", async function () {
     this.timeout(MAX_TIMEOUT);
+    await new Workbench().executeCommand(CX_FILTER_INFO);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_INFO);
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -320,15 +318,15 @@ describe("UI tests", async function () {
     let isValidated = await validateSeverities(scan, "INFO");
     expect(isValidated).to.equal(true);
 	// Reset filters
-    await bench.executeCommand(CX_FILTER_INFO);
+    await new Workbench().executeCommand(CX_FILTER_INFO);
     await delay(THREE_SECONDS);
   });
 
   it("should click low filter", async function () {
     this.timeout(MAX_TIMEOUT);
+    await new Workbench().executeCommand(CX_FILTER_LOW);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_LOW);
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -337,15 +335,15 @@ describe("UI tests", async function () {
     let isValidated = await validateSeverities(scan, "LOW");
     expect(isValidated).to.equal(true);
 	// Reset filters
-    await bench.executeCommand(CX_FILTER_LOW);
+    await new Workbench().executeCommand(CX_FILTER_LOW);
     await delay(THREE_SECONDS);
   });
 
   it("should click medium filter", async function () {
     this.timeout(MAX_TIMEOUT);
+    await new Workbench().executeCommand(CX_FILTER_MEDIUM);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_MEDIUM);
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -354,15 +352,15 @@ describe("UI tests", async function () {
     let isValidated = await validateSeverities(scan, "MEDIUM");
     expect(isValidated).to.equal(true);
 	// Reset filters
-    await bench.executeCommand(CX_FILTER_MEDIUM);
+    await new Workbench().executeCommand(CX_FILTER_MEDIUM);
     await delay(THREE_SECONDS);
   });
 
   it("should click high filter", async function () {
     this.timeout(MAX_TIMEOUT);
+    await new Workbench().executeCommand(CX_FILTER_HIGH);
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_HIGH);
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -371,16 +369,16 @@ describe("UI tests", async function () {
     let isValidated = await validateSeverities(scan, "HIGH");
     expect(isValidated).to.equal(true);
 	// Reset filters
-    await bench.executeCommand(CX_FILTER_HIGH);
+    await new Workbench().executeCommand(CX_FILTER_HIGH);
     await delay(THREE_SECONDS);
   });
 
   it("should click group by file", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    await new Workbench().executeCommand(CX_GROUP_FILE);
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_FILE);
+    let treeScans = await initialize();
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -394,9 +392,9 @@ describe("UI tests", async function () {
   it("should click group by language", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    await new Workbench().executeCommand(CX_GROUP_LANGUAGE);
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_LANGUAGE);
+    let treeScans = await initialize();
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -410,9 +408,9 @@ describe("UI tests", async function () {
   it("should click group by status", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    await new Workbench().executeCommand(CX_GROUP_STATUS);
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_STATUS);
+    let treeScans = await initialize();
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
@@ -426,9 +424,9 @@ describe("UI tests", async function () {
   it("should click group by severity", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    await new Workbench().executeCommand(CX_GROUP_SEVERITY);
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_SEVERITY);
+    let treeScans = await initialize();
     await delay(THREE_SECONDS);
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
