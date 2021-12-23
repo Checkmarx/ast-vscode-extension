@@ -148,7 +148,6 @@ describe("UI tests", async function () {
     // Project selection
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
-    console.log("Input " + JSON.stringify(input));
     let projectName = await getQuickPickSelector(input);
     console.log("projectName " + projectName);
     await delay(THREE_SECONDS);
