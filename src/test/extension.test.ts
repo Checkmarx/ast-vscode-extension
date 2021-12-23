@@ -129,6 +129,13 @@ describe("UI tests", function () {
     await delay(THIRTY_SECONDS);
   });
 
+ it("should clear all loaded results", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    await new Workbench().executeCommand(CX_CLEAR);
+    await delay(THREE_SECONDS);
+  });
+
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
     let treeScans = await initialize();    

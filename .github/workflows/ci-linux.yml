@@ -35,5 +35,5 @@ jobs:
         if: failure()
         with: 
           name: screenshots
-          path: ~/test-resources/screenshots/*.png
+          path: /home/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
           
