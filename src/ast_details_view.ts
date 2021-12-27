@@ -33,13 +33,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 		// Needed because vscode uses zero based line number
 		const position = new vscode.Position(line > 0 ? +line-1 : 1 ,startColumn > 0 ? +startColumn-1 : 1 );
 		const path = vscode.Uri.joinPath(folder.uri, filePath);
-		
 		vscode.workspace.openTextDocument(path).then(doc => 
 		{
-			vscode.window.showTextDocument(doc).then(editor => 
+			vscode.window.showTextDocument(doc,{
+				viewColumn: vscode.ViewColumn.One
+			}).then(editor => 
 			{
 				editor.selections = [new vscode.Selection(position,position)]; 
-		
 				var range = new vscode.Range(position, position);
 				editor.revealRange(range);
 			});

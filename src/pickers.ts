@@ -64,21 +64,21 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
   if (!input) {return;}
 
   const scan = await getScanWithProgress(logs, input);
-  if (!scan?.ID || !scan?.ProjectID) {
+  if (!scan?.id || !scan?.projectID) {
     vscode.window.showErrorMessage("ScanId not found");
     return;
   }
 
-  const project = await getProjectWithProgress(logs, scan.ProjectID);
-  if (!project?.ID) {
+  const project = await getProjectWithProgress(logs, scan.projectID);
+  if (!project?.id) {
     vscode.window.showErrorMessage("Project not found");
     return;
   }
 
-  update(context, PROJECT_ID_KEY, { id: project.ID, name: `${PROJECT_LABEL} ${project.Name}` });
-  update(context, BRANCH_ID_KEY, { id: getProperty(scan, 'Branch'), name: `${BRANCH_LABEL} ${getProperty(scan, 'Branch')}` }); //TODO: Hack while we don't have branch in the javasscript wrapper
-  update(context, SCAN_ID_KEY, { id: scan.ID, name: `${SCAN_LABEL} ${convertDate(scan.CreatedAt)}` });
+  update(context, PROJECT_ID_KEY, { id: project.id, name: `${PROJECT_LABEL} ${project.name}` });
+  update(context, BRANCH_ID_KEY, { id: getProperty(scan, 'branch'), name: `${BRANCH_LABEL} ${getProperty(scan, 'branch')}` });
+  update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${convertDate(scan.createdAt)}` });
 
-  await getResultsWithProgress(logs, scan.ID);
+  await getResultsWithProgress(logs, scan.id);
   await vscode.commands.executeCommand(REFRESH_TREE);
 }

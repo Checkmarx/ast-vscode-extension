@@ -39,8 +39,8 @@ export async function getProjectsPickItems(logs: Logs) {
 		  	progress.report({ message: "Loading projects" });
 		  	const projectList = await getProjectList();
 	  		return projectList ? projectList.map((label) => ({
-				label: label.Name,
-				id: label.ID,
+				label: label.name,
+				id: label.id,
 			})) : [];
 		}
 	  );
@@ -56,8 +56,8 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 				branchName
 			);
 	  		return scans ? scans.map((label) => ({
-				label: convertDate(label.CreatedAt),
-				id: label.ID,
+				label: convertDate(label.createdAt),
+				id: label.id,
 			})) : [];
 		}
 	  );

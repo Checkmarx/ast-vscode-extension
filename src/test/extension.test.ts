@@ -131,14 +131,6 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("dry test", async function () {
-    await initialize();
-    await bench.executeCommand(CX_SELECT_ALL);
-    await delay(THIRTY_SECONDS);
-    let input = await InputBox.create();
-    await delay(THREE_SECONDS);
-  });
-
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
     let treeScans = await initialize();
