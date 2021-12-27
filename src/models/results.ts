@@ -1,6 +1,6 @@
+import path = require('path');
 import * as vscode from 'vscode';
-import { IssueLevel } from './ast_results_provider';
-import * as fs from 'fs';
+import { IssueLevel, RESULTS_FILE_EXTENSION } from '../utils/constants';
 
 export class AstResult {
 	label: string = "";
@@ -8,7 +8,9 @@ export class AstResult {
 	fileName: string = "";
 	severity: string = "";
 	status: string = "";
-	language: string = ""; 
+	language: string = "";
+	description: string = "";
+	data:any;
 	sastNodes: SastNode[] = [];
 	scaNode: ScaNode | undefined;
 	kicsNode: KicsNode | undefined;
@@ -21,10 +23,15 @@ export class AstResult {
 		this.status = result.status;
 		this.language = result.data.languageName;
 		this.rawObject = result;
+		this.description = result.description;
+		this.data = result.data;
 	
-		if (result.data.nodes) {
+		if (result.data.nodes && result.data.nodes[0]) {
 			this.sastNodes = result.data.nodes;
 			this.fileName = result.data.nodes[0].fileName;
+			
+			const shortFilename =  this.fileName ? this.fileName.slice(this.fileName.lastIndexOf('/')) : '';
+			this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
 		}
 	
 		if (result.type === "dependency") { this.scaNode = result.data; }
@@ -32,19 +39,27 @@ export class AstResult {
 		if (result.type === "infrastructure") { this.kicsNode = result.data; }
 	}
 
-	 getIcon() {
+	getIcon() {
 		switch(this.severity) {
 			case "HIGH":
-				return __dirname + "/media/icons/high_untoggle.svg";
+				return path.join("media", "icons","high_untoggle.svg");
 			case "MEDIUM":
-				return __dirname + "/media/icons/medium_untoggle.svg";
+				return path.join("media", "icons","medium_untoggle.svg");
 			case "INFO":
-				return __dirname + "/media/icons/info_untoggle.svg";
+				return path.join("media", "icons","info_untoggle.svg");
 			case "LOW":
-				return __dirname + "/media/icons/low_untoggle.svg";
+				return path.join("media", "icons","low_untoggle.svg");
 		}
 		return "";
 	}
+
+	getTreeIcon() {
+		return {
+			light: path.join(__filename, '..', '..', this.getIcon()),
+			dark: path.join(__filename, '..', '..', this.getIcon())
+		};
+	}
+	
 
 	getSeverityCode() {
 		switch(this.severity) {
@@ -75,37 +90,53 @@ export class AstResult {
 	}
   
 	getHtmlDetails() {
-	  if (this.sastNodes && this.sastNodes.length > 0) {return this.sastDetails();}
+	  if (this.sastNodes && this.sastNodes.length > 0) {return this.getSastDetails();}
 	  if (this.scaNode) {return this.scaDetails();}
 	  if (this.kicsNode ) {return this.kicsDetails();}
 	  
 	  return "";
 	}
   
-	private sastDetails() {
-	  let html = `<h3><u>Attack Vector</u></h3>`;
-	  this.sastNodes.forEach(node => {
-		html += `<p>- <a href="#" 
-		class="ast-node"
-		data-filename="${node.fileName}" data-line="${node.line}" data-column="${node.column}"
-		data-fullName="${node.fullName}" data-length="${node.length}">${node.fileName} [${node.line}:${node.column}]</a></p>`;
-	  });
-	  return html;
+	getSastDetails() {
+		let html = this.htmlTitle("Attack Vector");
+	  	html += `<tr><td class="myrowlong"><ol>`;
+		this.sastNodes.forEach(node => {
+			html += `<li><a href="#" 
+			class="ast-node"
+			data-filename="${node.fileName}" data-line="${node.line}" data-column="${node.column}"
+			data-fullName="${node.fullName}" data-length="${node.length}">${node.fileName} [${node.line}:${node.column}]</a></li>`;
+		});
+
+	  	html += `</ol></td></tr>`;
+	  	return html;
 	};
   
 	private scaDetails() {
-	  let html = `<h3><u>Package Data</u></h3>`;
+		let html = this.htmlTitle("Package Data");
+	  	html += `<tr><td class="myrowlong"><ol>`;
 	  
-	  this.scaNode?.packageData.forEach(node => {
-		html +=`<p>- <a href="${node.comment}">${node.comment}</a></p>`;
-	  });
-	  return html;
+		this.scaNode?.packageData.forEach(node => {
+			html +=`<p><a href="${node.comment}">${node.comment}</a></p>`;
+		});
+	  	html += `</ol></td></tr>`;
+	  	
+		  return html;
 	}
   
 	private kicsDetails() {
-	  let html = `<h2><u>Description</u></h2>`;
-	  html +=`<p>- ${this.kicsNode ? this.kicsNode.queryName + " [ " + this.kicsNode.queryId + " ]" : ""}</p>`;
-	  return html;
+		return "";
+	}
+
+	private htmlTitle(title: string) {
+		return `<tr>
+					<td class="myrowlong">
+						<h3 class="subtitle"> 
+							<strong> 
+								${title}
+							</strong>
+						</h3>
+					</td>
+				</tr>`;
 	}
   }
 

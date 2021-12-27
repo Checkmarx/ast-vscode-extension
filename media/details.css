@@ -1,0 +1,84 @@
+.header_table{
+	width: 100%;
+	padding: 2%;
+	background-color: var(--vscode-editor-background);;
+}
+
+.subtitle{
+	margin-bottom: 10px;
+}
+
+.content_table{
+	width: 100%;
+	padding: 2%;
+	height: 100%;
+	background-color: var(--vscode-editor-background);;
+}
+
+.tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
+  }
+  
+  .tooltip .tooltiptext {
+	visibility: hidden;
+	width: 120px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	
+	/* Position the tooltip */
+	position: absolute;
+	z-index: 1;
+	bottom: 100%;
+	left: 50%;
+	margin-left: -60px;
+  }
+  
+  .tooltip:hover .tooltiptext {
+	visibility: visible;
+  }
+
+.logo_td{
+	width: 10%; 
+	height: 10%;
+}
+
+.details_td{
+	width: 70%;
+	height: 20%;
+}
+
+.details{
+	margin-left: 10px;
+}
+
+.name_td{
+	width: 30%; 
+	height: 20%;
+}
+
+.title_td{
+	width: 90%; 
+	height: 10%;
+}
+
+.division{
+	border-top: 1px solid var(--vscode-input-background);
+  	border-radius: 1px;
+}
+
+.logo{
+	margin-left: 10%;
+	width: 80%;
+	margin-right: auto;
+}
+
+.myrowlong{
+	width: 100%;
+	height: 18px; 
+	text-align: left;
+}

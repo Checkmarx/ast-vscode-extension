@@ -10,6 +10,9 @@ export class Logs {
 	public log(level:string, message:string){
 		this.output.appendLine("[Cx"+level+" - "+new Date().toLocaleTimeString()+"] "+ message);
 	}
+	public info(message:string){
+		this.output.appendLine("[CxINFO - "+new Date().toLocaleTimeString()+"] "+ message);
+	}
 
 	public show(){
 		this.output.show();
