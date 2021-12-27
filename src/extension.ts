@@ -75,11 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
           "workbench.action.closeEditorsInGroup"
         );
       }
-      if (detailsPanel) {
-        detailsPanel.reveal(vscode.ViewColumn.Two);
-        detailsPanel.title =
-          "(" + result.severity + ") " + result.label.replaceAll("_", " ");
-      } else {
+        detailsPanel?.dispose();
         detailsPanel = vscode.window.createWebviewPanel(
           "newDetails", // Identifies the type of the webview, internal id
           "(" + result.severity + ") " + result.label.replaceAll("_", " "), // Title of the detailsPanel displayed to the user
@@ -91,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
             ],
           }
         );
-      }
+      
       // Only allow one detail to be open
       detailsPanel.onDidDispose(
         () => {
