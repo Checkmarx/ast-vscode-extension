@@ -9,7 +9,8 @@ export class AstResult {
 	severity: string = "";
 	status: string = "";
 	language: string = "";
-	description: string = ""; 
+	description: string = "";
+	data:any;
 	sastNodes: SastNode[] = [];
 	scaNode: ScaNode | undefined;
 	kicsNode: KicsNode | undefined;
@@ -23,6 +24,7 @@ export class AstResult {
 		this.language = result.data.languageName;
 		this.rawObject = result;
 		this.description = result.description;
+		this.data = result.data;
 	
 		if (result.data.nodes && result.data.nodes[0]) {
 			this.sastNodes = result.data.nodes;

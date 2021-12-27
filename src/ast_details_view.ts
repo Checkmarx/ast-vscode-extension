@@ -32,6 +32,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 		const folder = vscode.workspace.workspaceFolders![0];
 		// Needed because vscode uses zero based line number
 		const position = new vscode.Position(line > 0 ? +line-1 : 1 ,startColumn > 0 ? +startColumn-1 : 1 );
+		const finalPosition = new vscode.Position(line > 0 ? +line-1 : 1 ,startColumn > 0 ? +(startColumn+length-1) : 1 );
 		const path = vscode.Uri.joinPath(folder.uri, filePath);
 		vscode.workspace.openTextDocument(path).then(doc => 
 		{
@@ -39,7 +40,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 				viewColumn: vscode.ViewColumn.One
 			}).then(editor => 
 			{
-				editor.selections = [new vscode.Selection(position,position)]; 
+				editor.selections = [new vscode.Selection(position,finalPosition)]; 
 				var range = new vscode.Range(position, position);
 				editor.revealRange(range);
 			});
@@ -147,7 +148,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 						<tr>
 						<td>
 								<span class="details">
-									${this.result.description ? this.result.description : ''}
+									${this.result.data.description ? this.result.data.description : 'No description available.'}
 								</span>
 						</td>
 						</tr>				
