@@ -23,19 +23,16 @@
   
   .tooltip .tooltiptext {
 	visibility: hidden;
-	width: 120px;
+	width: 100%;
 	background-color: black;
 	color: #fff;
-	text-align: center;
 	border-radius: 6px;
-	padding: 5px 0;
-	
+	padding: 10px;
+	word-wrap: break-word;
 	/* Position the tooltip */
 	position: absolute;
 	z-index: 1;
 	bottom: 100%;
-	left: 50%;
-	margin-left: -60px;
   }
   
   .tooltip:hover .tooltiptext {
@@ -47,18 +44,8 @@
 	height: 10%;
 }
 
-.details_td{
-	width: 70%;
-	height: 20%;
-}
-
 .details{
 	margin-left: 10px;
-}
-
-.name_td{
-	width: 30%; 
-	height: 20%;
 }
 
 .title_td{
@@ -77,8 +64,133 @@
 	margin-right: auto;
 }
 
+.title_image{
+	margin-right: 3px;
+}
+
 .myrowlong{
 	width: 100%;
 	height: 18px; 
 	text-align: left;
 }
+
+.details_table td {
+	padding-left: 3px;
+	padding-top:5px;
+	padding-bottom:5px;
+ }
+ 
+.details_table tr {
+   background-color: transparent;
+}
+
+.details_table tr:hover{
+    background-color: var(--vscode-input-background)
+}
+ 
+.details_table tr>td:first-child {
+    border-left: 2px solid transparent;
+}
+ 
+.details_table tr:hover >  td:first-child {
+    border-left: 2px solid var(--vscode-input-foreground);
+}
+
+.details_table {
+	border-spacing:0;
+}
+
+.select_high {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/high_untoggle.svg' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);;
+ }
+ .select_medium {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/medium_untoggle.svg' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);
+ }
+
+ .select_info {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/info_untoggle.svg' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);
+ }
+
+ .select_low {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/low_untoggle.svg' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);
+ }
+
+ .state {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/state.png' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);
+ }
+
+ .status {
+	margin: 0.4em;
+	border-color: transparent;
+	border-radius: 4px;
+	padding: 0.2em  0.5em 0.2em 1.5em;
+	background-color: var(--vscode-input-background);
+	background-image: url( './icons/status.png' );
+	background-repeat: no-repeat;
+	background-size: 0.8em auto;
+	background-position: 0.4em center;
+	color: var(--vscode-foreground);
+ }
+
+ .status:hover, .state:hover, .select_low:hover, .select_info:hover, .select_medium:hover,.select_high:hover,.submit:hover{
+	border-color: var(--vscode-button-hoverBackground);
+}
+
+ .submit, .submit:hover{
+	 border-color: transparent;
+	 width: auto;
+	 border-radius: 4px;
+	 background-color:transparent ;
+	 color:var(--vscode-foreground);
+	 margin: 0.4em;
+	padding: 1em;
+	background-image: url( './icons/submit.png' );
+	background-repeat: no-repeat;
+	background-size: 1.8em;
+	background-position: center;
+ }

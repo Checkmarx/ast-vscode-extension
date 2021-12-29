@@ -1,11 +1,26 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 	background-color: transparent;
+    justify-content: space-between;
+}
+
+.ast-triage {
+	flex-direction: row;
+	display: flex;
+	justify-content: flex-start;
 }
 
 .ast-input {
 	display: block;
 	flex: 1;
-	width: 100%;
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
@@ -21,7 +36,6 @@ body {
 .ast-project {
 	display: block;
 	flex: 1;
-	width: 100%;
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
@@ -37,4 +51,18 @@ body {
 	background-color: var(--vscode-input-background);
 	border: none;
 	padding: 6px 4px;
+}
+
+
+.ast-select {
+	flex: 1 1 auto;
+	color: var(--vscode-input-foreground);
+	background-color: var(--vscode-input-background);
+	border: none;
+	padding: 2px 2px;
+}
+
+p{
+	word-wrap: break-word;
+	padding: 0.2em;
 }

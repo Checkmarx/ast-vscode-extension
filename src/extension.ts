@@ -114,6 +114,9 @@ export async function activate(context: vscode.ExtensionContext) {
           case 'showFile':
             detailsDetachedView.loadDecorations(data.path, data.line, data.column, data.length);
             break;
+          case 'submit':
+            vscode.window.showInformationMessage('Feedback submited successfully!');
+            break;
         }
       });
     }
