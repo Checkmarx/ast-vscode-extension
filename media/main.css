@@ -50,7 +50,7 @@ body {
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
-	padding: 6px 4px;
+	padding: 0.4em 0.25em;
 }
 
 
@@ -59,7 +59,7 @@ body {
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
-	padding: 2px 2px;
+	padding: 0.2em 0.2em;
 }
 
 p{

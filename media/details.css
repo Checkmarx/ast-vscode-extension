@@ -27,7 +27,7 @@
 	background-color: black;
 	color: #fff;
 	border-radius: 6px;
-	padding: 10px;
+	padding: 0.625em;
 	word-wrap: break-word;
 	/* Position the tooltip */
 	position: absolute;
@@ -45,7 +45,7 @@
 }
 
 .details{
-	margin-left: 10px;
+	margin-left: 0.625px;
 }
 
 .title_td{
@@ -64,20 +64,10 @@
 	margin-right: auto;
 }
 
-.title_image{
-	margin-right: 3px;
-}
-
-.myrowlong{
-	width: 100%;
-	height: 18px; 
-	text-align: left;
-}
-
 .details_table td {
-	padding-left: 3px;
-	padding-top:5px;
-	padding-bottom:5px;
+	padding-left: 0.2em;
+	padding-top:0.5em;
+	padding-bottom:0.5em;
  }
  
 .details_table tr {
