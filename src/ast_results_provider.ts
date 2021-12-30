@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
-import { AstResult, SastNode } from "./models/results";
+import { AstResult } from "./models/results";
 import {
   EXTENSION_NAME,
   IssueFilter,
@@ -26,6 +26,7 @@ import {
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
 import { getAstConfiguration } from "./utils/ast";
+import { SastNode } from "./models/sastNode";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {

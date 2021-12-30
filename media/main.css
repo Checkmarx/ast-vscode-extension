@@ -1,68 +1,66 @@
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-	background-color: transparent;
-    justify-content: space-between;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  justify-content: space-between;
 }
 
 .ast-triage {
-	flex-direction: row;
-	display: flex;
-	justify-content: flex-start;
+  flex-direction: row;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .ast-input {
-	display: block;
-	flex: 1;
-	color: var(--vscode-input-foreground);
-	background-color: var(--vscode-input-background);
-	border: none;
-	padding: 0 0.6em;
+  display: block;
+  flex: 1;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: none;
+  padding: 0 0.6em;
 }
 
 .ast-search {
-	display: block;
-	border: none;
-	margin: 0 auto;
+  display: block;
+  border: none;
+  margin: 0 auto;
 }
 
 .ast-project {
-	display: block;
-	flex: 1;
-	color: var(--vscode-input-foreground);
-	background-color: var(--vscode-input-background);
-	border: none;
-	padding: 6px 4px;
+  display: block;
+  flex: 1;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: none;
+  padding: 6px 4px;
 }
-
 
 .ast-scans {
-	display: block;
-	flex: 1;
-	width: 100%;
-	color: var(--vscode-input-foreground);
-	background-color: var(--vscode-input-background);
-	border: none;
-	padding: 0.4em 0.25em;
+  display: block;
+  flex: 1;
+  width: 100%;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: none;
+  padding: 0.4em 0.25em;
 }
-
 
 .ast-select {
-	flex: 1 1 auto;
-	color: var(--vscode-input-foreground);
-	background-color: var(--vscode-input-background);
-	border: none;
-	padding: 0.2em 0.2em;
+  flex: 1 1 auto;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: none;
+  padding: 0.2em 0.2em;
 }
 
-p{
-	word-wrap: break-word;
-	padding: 0.2em;
+p {
+  word-wrap: break-word;
+  padding: 0.2em;
 }

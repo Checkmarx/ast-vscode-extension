@@ -5,6 +5,8 @@ export const MEDIUM_FILTER: string = "ast-results-medium";
 export const LOW_FILTER: string = "ast-results-low";
 export const INFO_FILTER: string = "ast-results-info";
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
+export const ERROR: string = "ast-results-error";
+export const ERROR_MESSAGE: string = "[CxERROR] ";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";
 export const BRANCH_ID_KEY: string = "ast-results-branch-id";
 export const BRANCH_TEMP_ID_KEY: string = "ast-results-temp-branch-id";
@@ -39,3 +41,6 @@ export enum IssueLevel {
 	info = "INFO",
 	empty = "",
 }
+
+export const STATUS = [{class:"select_high",value:"HIGH"},{class:"select_medium",value:"MEDIUM"},{class:"select_low",value:"LOW"},{class:"select_info",value:"INFO"}];
+export const STATE = [{tag:"TO_VERIFY",value:"To Verify"},{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"URGENT",value:"Urgent"}];

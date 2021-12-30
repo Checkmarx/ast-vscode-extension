@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./ast_results_provider";
 import { AstResult } from "./models/results";
+import { getError} from "./utils/globalState";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
@@ -9,6 +10,7 @@ import {
   INFO_FILTER,
   IssueLevel,
   IssueFilter,
+  ERROR,
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -164,12 +166,15 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
 
-  // New pickers
+  // Pickers
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => { await multiStepInput(logs, context); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => { await projectPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => { await branchPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => { await scanPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanInput`, async () => { await scanInput(context, logs); }));
+
+  // Wrapper errors
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
 }
 
 export function deactivate() { }
