@@ -73,10 +73,6 @@
 }
 
 .details_table tr {
-  background-color: transparent;
-}
-
-.details_table tr:hover {
   background-color: var(--vscode-input-background);
 }
 
@@ -89,7 +85,9 @@
 }
 
 .details_table {
-  border-spacing: 0;
+  border-spacing: 0 10px;
+  border-collapse: separate;
+  width: 100%;
 }
 
 .select_high {

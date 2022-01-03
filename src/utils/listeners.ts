@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { GitExtension, RepositoryState } from "../types/git";
-import { getBranchesWithProgress } from "./utils";
 import { REFRESH_TREE } from "./commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./constants";
 import { get, update } from "./globalState";
+import { getBranches } from "./ast";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
@@ -36,7 +36,7 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 		logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
 		
 		if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
-			getBranchesWithProgress(logs, projectItem.id).then((branches) => {
+			getBranches(projectItem.id).then((branches) => {
 				update(context, BRANCH_TEMP_ID_KEY, undefined);
 				if (branches?.includes(branchName)) {
 					update(context, BRANCH_ID_KEY, { id: branchName, name: `${BRANCH_LABEL} ${branchName}` });
