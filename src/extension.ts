@@ -140,7 +140,7 @@ export async function activate(context: vscode.ExtensionContext) {
                detailsPanel!.webview.html = detailsDetachedView.getDetailsWebviewContent(
                 detailsPanel!.webview,
               );
-            // Call wrapper triage command
+            // Call wrapper command
             
             // Change the results locally
             
