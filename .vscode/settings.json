@@ -1,3 +1,10 @@
 {
-    "editor.insertSpaces": false,    
+    "editor.insertSpaces": false,
+    "WhiteSource Advise.Diff.BaseBranch": "master",
+    "terminal.integrated.env.osx": {
+        "CX_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhZjQ2ODc2Ny0zYjU5LTQ2MGMtYWE2OS0yYTZkNWQ1NzNjYjAifQ.eyJpYXQiOjE2Mzc2Nzk1MjcsImp0aSI6ImI3MWExODJmLTdlNWMtNGVjOC1hZDYwLWU0OTU4MjUwNTZjNCIsImlzcyI6Imh0dHBzOi8vaWFtLW1hc3Rlci5kZXYuY3hhc3QubmV0L2F1dGgvcmVhbG1zL2dhbGFjdGljYSIsImF1ZCI6Imh0dHBzOi8vaWFtLW1hc3Rlci5kZXYuY3hhc3QubmV0L2F1dGgvcmVhbG1zL2dhbGFjdGljYSIsInN1YiI6IjQ0MDZmZjRlLWQ0NWUtNGFhNi1iODA1LWMyZjYwYzYzNWQyOSIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJhc3QtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjlkOWU4NmJiLWRiMWQtNDNlZS1iZjg1LTZiMjc5ZmUwMmZjNCIsInNjb3BlIjoiIG9mZmxpbmVfYWNjZXNzIiwic2lkIjoiOWQ5ZTg2YmItZGIxZC00M2VlLWJmODUtNmIyNzlmZTAyZmM0In0.3D4Xx-o_LG2rDTWhDX3WhNWGC-dGSCSDcf1jTUTq_Qk",
+        "CX_BASE_URI": "https://ast-master.dev.cxast.net/",
+        "CX_TENANT": "galactica",
+        "CX_TEST_SCAN_ID":"990d1803-3b82-467c-b03e-0a3e1924e024"
+      },
 }

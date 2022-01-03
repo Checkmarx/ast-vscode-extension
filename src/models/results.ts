@@ -1,6 +1,6 @@
 import path = require("path");
 import * as vscode from "vscode";
-import { IssueLevel, RESULTS_FILE_EXTENSION } from "../utils/constants";
+import { IssueLevel} from "../utils/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
@@ -20,6 +20,14 @@ export class AstResult {
   kicsNode: KicsNode | undefined;
   rawObject: Object;
 
+  setSeverity(severity:string){
+    this.severity=severity;
+  }
+
+  setState(state:string){
+    this.state=state;
+  }
+
   constructor(result: any) {
     this.type = result.type;
     this.label = result.data.queryName ? result.data.queryName : result.id;
@@ -34,17 +42,14 @@ export class AstResult {
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
-
       const shortFilename = this.fileName
         ? this.fileName.slice(this.fileName.lastIndexOf("/"))
         : "";
       this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
     }
-
     if (result.type === "dependency") {
       this.scaNode = result.data;
     }
-
     if (result.type === "infrastructure") {
       this.kicsNode = result;
     }
@@ -84,6 +89,7 @@ export class AstResult {
     }
     return vscode.DiagnosticSeverity.Information;
   }
+
   getSeverity() {
     switch (this.severity) {
       case "HIGH":
@@ -140,27 +146,30 @@ export class AstResult {
         html += `
 			<tr>
 			  <td>
-					<div class="tooltip">
-						  <span class="tooltiptext">
-							  ${node.fileName}
-						  </span>
-						  ${index + 1}. \"${node.name.replaceAll('"', "")}\"
-							  <a href="#" 
-								  class="ast-node"
-								  data-filename="${node.fileName}" 
-								  data-line="${node.line}" 
-								  data-column="${node.column}"
-								  data-fullName="${node.fullName}" 
-								  data-length="${node.length}"
-							  >
-								  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
-							  </a>
+        <div class="tooltip">
+        ${index + 1}. \"${node.name.replaceAll('"', "")}\"
+        <span class="tooltiptext">
+          ${node.fileName}
+            </span>
 					  </div>
-					  </td>
+						<a href="#" 
+						  class="ast-node"
+							data-filename="${node.fileName}" 
+							data-line="${node.line}" 
+							data-column="${node.column}"
+							data-fullName="${node.fullName}" 
+							data-length="${node.length}"
+						>
+						  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}] 
+						</a>
+					</td>
 			  </tr>`;
       });
     } else {
-      html += "<p>No attack vector information.</p>";
+      html += `
+        <p>
+          No attack vector information.
+        </p>`;
     }
     return html;
   }
@@ -174,33 +183,37 @@ export class AstResult {
   getTitle() {
     let r = "";
     if (this.sastNodes && this.sastNodes.length > 0) {
-      r = '<h3 class="subtitle">Attack Vector</h3><hr class="division"/>';
+      r = `<h3 class="subtitle">Attack Vector</h3><hr class="division"/>`;
     }
     if (this.scaNode) {
-      r = '<h3 class="subtitle">Package Data</h3><hr class="division"/>';
+      r = `<h3 class="subtitle">Package Data</h3><hr class="division"/>`;
     }
     if (this.kicsNode) {
-      r = '<h3 class="subtitle">Location</h3><hr class="division"/>';
+      r = `<h3 class="subtitle">Location</h3><hr class="division"/>`;
     }
-
     return r;
   }
+
   private scaDetails() {
     let html = "";
     // validar package data
     if (this.scaNode?.packageData) {
       this.scaNode?.packageData.forEach((node, index) => {
-        html += `<tr>
-			<td>
-								${index + 1}. 
-							  <a href="${node.comment}">
-								  ${node.comment}
-							  </a>
-						  </td>
-						  </tr>`;
+        html += `
+        <tr>
+			    <td>
+						${index + 1}. 
+						<a href="${node.comment}">
+							${node.comment}
+						</a>
+					</td>
+				</tr>`;
       });
     } else {
-      html += "<p>No package data information.</p>";
+      html += `
+        <p>
+          No package data information.
+        </p>`;
     }
     return html;
   }
@@ -209,26 +222,24 @@ export class AstResult {
     let html = "";
     html += `
         <tr>
-        <td>
-	  			<div class="tooltip">
-					<span class="tooltiptext">
-						${this.kicsNode?.data.filename}
-					</span>
-						1. 
-						<a href="#" 
-							class="ast-node"
-							data-filename="${this.kicsNode?.data.filename}" 
-							data-line="${this.kicsNode?.data.line}" 
-							data-column="${0}"
-							data-fullName="${this.kicsNode?.data.filename}" 
-							data-length="${1}"
-						>
-							${this.getShortFilename(this.kicsNode?.data.filename)} [${
-      this.kicsNode?.data.line
-    }:${0}]
-						</a>
-				</div>
-				</td>
+          <td>
+            <div class="tooltip">
+                1. 
+                <span class="tooltiptext">
+                ${this.kicsNode?.data.filename}
+                </span>
+            </div>
+            <a href="#" 
+              class="ast-node"
+              data-filename="${this.kicsNode?.data.filename}" 
+              data-line="${this.kicsNode?.data.line}" 
+              data-column="${0}"
+              data-fullName="${this.kicsNode?.data.filename}" 
+              data-length="${1}"
+            >
+              ${this.getShortFilename(this.kicsNode?.data.filename)} [${this.kicsNode?.data.line}:${0}]
+            </a>
+          </td>
         </tr>`;
     return html;
   }

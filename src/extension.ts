@@ -40,7 +40,7 @@ export async function activate(context: vscode.ExtensionContext) {
     diagnosticCollection
   );
   astResultsProvider.refreshData().then(r => logs.info("Data refreshed"));
-  initializeFilters(logs, context, astResultsProvider).then(value => logs.info("Filters initialized"));
+  initializeFilters(logs, context, astResultsProvider).then(() => logs.info("Filters initialized"));
   vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
   
   const tree = vscode.window.createTreeView("astResults", {treeDataProvider: astResultsProvider});
@@ -61,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const newDetails = vscode.commands.registerCommand(
     `${EXTENSION_NAME}.newDetails`,
     async (result: AstResult) => {
-      const detailsDetachedView = new AstDetailsDetached(
+      var detailsDetachedView = new AstDetailsDetached(
         context.extensionUri,
         result
       );
@@ -89,7 +89,6 @@ export async function activate(context: vscode.ExtensionContext) {
             ],
           }
         );
-      
       // Only allow one detail to be open
       detailsPanel.onDidDispose(
         () => {
@@ -106,18 +105,55 @@ export async function activate(context: vscode.ExtensionContext) {
         ],
       };
       // detailsPanel set html content
-
       detailsPanel.webview.html = detailsDetachedView.getDetailsWebviewContent(
         detailsPanel.webview,
       );
-      detailsPanel.webview.onDidReceiveMessage(data => {
-        console.log(data);
+      detailsPanel.webview.onDidReceiveMessage(async data => {
+        console.log(JSON.stringify(data));
         switch (data.command) {
+          // Catch open file message to open and view the result entry
           case 'showFile':
             detailsDetachedView.loadDecorations(data.path, data.line, data.column, data.length);
             break;
+          // Catch submit message to open and view the result entry
           case 'submit':
-            vscode.window.showInformationMessage('Feedback submited successfully!');
+            // Case there is feedback on the severity
+            if(data.severitySelection.length>0){
+              logs.log("INFO","Updating severity to " + data.severitySelection);              
+              // Update severity of the result
+              result.setSeverity(data.severitySelection);
+              // Update webview title
+              detailsPanel!.title="(" + result.severity + ") " + result.label.replaceAll("_", " ");
+            }
+            
+            // Case there is feedback on the state
+            if(data.stateSelection.length>0){
+              logs.log("INFO","Updating state to " + data.stateSelection);              
+              // Update severity of the result
+              result.setState(data.stateSelection.replace(" ","_").toUpperCase());
+            }
+
+            // Case there is any update to be performed in the webview
+            if(data.stateSelection.length>0 || data.severitySelection.length>0){
+              detailsDetachedView!.setResult(result);
+               // Update webview html
+               detailsPanel!.webview.html = detailsDetachedView.getDetailsWebviewContent(
+                detailsPanel!.webview,
+              );
+            // Call wrapper triage command
+            
+            // Change the results locally
+            
+            // Reload results tree to apply the changes
+            await vscode.commands.executeCommand(REFRESH_TREE);
+            // Information message
+            vscode.window.showInformationMessage('Feedback submited successfully! Results refreshed.');
+            }
+            
+            // Case the submit is sent without any change
+            else{
+              logs.log("ERROR","Make a change before submiting");
+            }
             break;
         }
       });
@@ -144,19 +180,19 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.commands.executeCommand(REFRESH_TREE);
   });
 
-  // Refresh Tree
+  // Refresh Tree Commmand
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
 
-  // Clear
+  // Clear Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () =>  await astResultsProvider.clean()));
 
-  // Group
+  // Group Commands 
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFile`, async () => await group(logs, astResultsProvider, IssueFilter.fileName)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguage`, async () => await group(logs, astResultsProvider, IssueFilter.language)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverity`, async () => await group(logs, astResultsProvider, IssueFilter.severity)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatus`, async () => await group(logs, astResultsProvider, IssueFilter.status)));
 
-  // Filters
+  // Filters Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterMedium_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.medium, MEDIUM_FILTER)));
@@ -166,14 +202,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_untoggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterInfo_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.info, INFO_FILTER)));
 
-  // Pickers
+  // Pickers command 
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => { await multiStepInput(logs, context); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.projectPick`, async () => { await projectPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => { await branchPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => { await scanPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanInput`, async () => { await scanInput(context, logs); }));
 
-  // Wrapper errors
+  // Visual feedback on wrapper errors
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
 }
 

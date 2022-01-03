@@ -18,7 +18,9 @@ export class Details {
 							<img class="logo" src="${severityPath}" alt="CxLogo"/>
 						</td>
 						<td class="title_td">
-							<h2> ${this.result.label.replaceAll("_", " ")}  </h2>
+							<h2> 
+								${this.result.label.replaceAll("_", " ")}  
+							</h2>
 						</td>
 					</tr>
 				</tbody>
@@ -34,29 +36,30 @@ export class Details {
 						${this.result.status}
 					</option>
 				</select>
-				<select onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
+				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className;" class=${selectClassname}>
 					${
 						STATUS.map((element)=>{
 							return(
-								`<option class="${element.class}" ${this.result.severity === element.value ? 'selected="selected"' : ""}>
+								`<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? 'selected' : ""}>
 									${element.value}	
 								</option>`
 							);
 						})
 					}
 				</select>
-				<select class="state">
+				<select id="select_state" class="state">
 					${
 						STATE.map((element)=>{
 							return(
-								`<option ${this.result.state === element.tag ? 'selected="selected"' : ""}>
+								`<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""}>
 									${element.value}	
 								</option>`
 							);
 						})
 					}
 				</select>
-				<!--<button class="submit"/>-->
+				<!-- -->
+				<button class="submit"/>
 			</div>
 			</br>
 			</br>`
@@ -116,7 +119,8 @@ export class Details {
 			`
 		);
 	}
-
+	
+	// Generic card for changes
 	userCardInfo(avatar:string,username:string,date:string,info:string){
 		return(
 			`<div class="history_container">

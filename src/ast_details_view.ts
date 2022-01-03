@@ -8,13 +8,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly result: AstResult
+    private result: AstResult
   ) {}
 
   public getWebView() {
     return this._view;
   }
 
+  public setResult(result:AstResult){
+    this.result=result;
+  }
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,

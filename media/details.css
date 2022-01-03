@@ -23,16 +23,15 @@
 
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 100%;
   background-color: black;
   color: #fff;
   border-radius: 6px;
   padding: 0.625em;
   word-wrap: break-word;
+  width: 20em;
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
-  bottom: 100%;
 }
 
 .tooltip:hover .tooltiptext {
@@ -201,7 +200,7 @@ input + label { display: inline-block }
 input ~ .tab { display: none }
 #tab1:checked ~ .tab.content1,
 #tab2:checked ~ .tab.content2,
-#tab3:checked ~ .tab.content3 
+#tab3:checked ~ .tab.content3
 { display: block; }
 
 input + label {
