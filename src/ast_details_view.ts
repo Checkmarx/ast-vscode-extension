@@ -35,20 +35,19 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
   public loadDecorations(
     filePath: string,
-    line: number,
+    startLine: number,
     startColumn: number,
-    length: number
+    fieldLength: number
   ) {
     const folder = vscode.workspace.workspaceFolders![0];
     // Needed because vscode uses zero based line number
-    const position = new vscode.Position(
-      line > 0 ? +line - 1 : 1,
-      startColumn > 0 ? +startColumn - 1 : 1
-    );
-    const finalPosition = new vscode.Position(
-      line > 0 ? +line - 1 : 1,
-      startColumn > 0 ? +(startColumn + length - 1) : 1
-    );
+    const column = startColumn > 0 ? +startColumn - 1 : 1;
+    const line = startLine > 0 ? +startLine - 1 : 1;
+    let length = column + +fieldLength;
+    const startPosition = new vscode.Position(line, column);
+    const endPosition = new vscode.Position(line, length);
+
+  
     const path = vscode.Uri.joinPath(folder.uri, filePath);
     vscode.workspace.openTextDocument(path).then((doc) => {
       vscode.window
@@ -56,8 +55,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           viewColumn: vscode.ViewColumn.One,
         })
         .then((editor) => {
-          editor.selections = [new vscode.Selection(position, finalPosition)];
-          var range = new vscode.Range(position, position);
+          editor.selections = [new vscode.Selection(startPosition, endPosition)];
+          var range = new vscode.Range(startPosition, endPosition);
           editor.revealRange(range);
         });
     });
@@ -103,7 +102,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           ${html.header(severityPath)}
           ${html.triage(selectClassname)}
           ${html.tab(html.generalTab(),html.changesTab(),html.detailsTab(),"General","Changes","Details")}
-        </div>
+          </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	
 			</html>`;

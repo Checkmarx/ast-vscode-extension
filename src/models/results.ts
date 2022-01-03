@@ -124,17 +124,17 @@ export class AstResult {
       this.kicsNode.data.value
         ? (r += `
 			<p>
-			Value: ${this.kicsNode?.data.value}
+			<b>Value:</b> ${this.kicsNode?.data.value}
 			</p>
 		`)
-        : (r += "No Value information");
+        : (r += "");
       this.kicsNode.data.expectedValue
         ? (r += `
 			<p>
-			Expected Value: ${this.kicsNode?.data.expectedValue}
+			<b>Expected Value:</b> ${this.kicsNode?.data.expectedValue}
 			</p>
 		`)
-        : (r += "No Expected Value information");
+        : (r += "");
     }
     return r;
   }
@@ -146,11 +146,18 @@ export class AstResult {
         html += `
 			<tr>
 			  <td>
-        <div class="tooltip">
-        ${index + 1}. \"${node.name.replaceAll('"', "")}\"
-        <span class="tooltiptext">
-          ${node.fileName}
-            </span>
+					<div>
+						  ${index + 1}. \"${node.name.replaceAll('"', "")}\"
+							  <a href="#" 
+								  class="ast-node"
+								  data-filename="${node.fileName}" 
+								  data-line="${node.line}" 
+								  data-column="${node.column}"
+								  data-fullName="${node.fullName}" 
+								  data-length="${node.length}"
+							  >
+								  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
+							  </a>
 					  </div>
 						<a href="#" 
 						  class="ast-node"

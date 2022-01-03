@@ -31,12 +31,7 @@ export class Details {
 	triage(selectClassname:string){
 		return(
 			`<div class="ast-triage">
-				<select class="status" disabled>
-					<option>
-						${this.result.status}
-					</option>
-				</select>
-				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className;" class=${selectClassname}>
+				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
 					${
 						STATUS.map((element)=>{
 							return(
@@ -61,7 +56,6 @@ export class Details {
 				<!-- -->
 				<button class="submit"/>
 			</div>
-			</br>
 			</br>`
 		);
 	}
@@ -77,7 +71,7 @@ export class Details {
 							this.result.data.description + 
 						"</p>"
 						: 
-						'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laboru. <a href="https://ast-master.dev.cxast.net/results/f00b4b40-3388-441b-8988-01933d1ec21c/59f567d6-f1f4-41bd-9a9f-e8b1abbd3012/sast/description/759/13248903817325187040">Read More</a>'
+						'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laboru.'
 					}
 					${this.result.data.value ? this.result.getKicsValues() : ""}
 				</span>
