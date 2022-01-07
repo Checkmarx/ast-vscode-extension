@@ -1,5 +1,7 @@
+import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import path = require("path");
 import * as vscode from "vscode";
+import { triageShow } from "../utils/ast";
 import { IssueLevel} from "../utils/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
@@ -13,15 +15,18 @@ export class AstResult {
   status: string = "";
   language: string = "";
   description: string = "";
+  similarityId:string = "";
   data: any;
   state: string = "";
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
   rawObject: Object;
-
   setSeverity(severity:string){
     this.severity=severity;
+    if(this.kicsNode){
+      this.kicsNode.severity = severity;
+    }
   }
 
   setState(state:string){
@@ -38,6 +43,7 @@ export class AstResult {
     this.description = result.description;
     this.data = result.data;
     this.state = result.state;
+    this.similarityId = result.similarityId;
 
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
@@ -159,16 +165,6 @@ export class AstResult {
 								  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
 							  </a>
 					  </div>
-						<a href="#" 
-						  class="ast-node"
-							data-filename="${node.fileName}" 
-							data-line="${node.line}" 
-							data-column="${node.column}"
-							data-fullName="${node.fullName}" 
-							data-length="${node.length}"
-						>
-						  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}] 
-						</a>
 					</td>
 			  </tr>`;
       });

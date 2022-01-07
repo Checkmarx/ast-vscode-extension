@@ -1,12 +1,16 @@
 import { AstResult } from "../models/results";
 import * as vscode from "vscode";
-import { STATE, STATUS } from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS,TYPES } from "./constants";
+import { triageShow } from "./ast";
+import { get } from "./globalState";
+import { convertDate } from "./utils";
 
 export class Details {
 	result:AstResult;
-
-	constructor(result: AstResult) {
+	context:vscode.ExtensionContext;
+	constructor(result: AstResult, context:vscode.ExtensionContext) {
 	  this.result = result;
+	  this.context = context;
 	}
 
 	header(severityPath:vscode.Uri){
@@ -54,8 +58,18 @@ export class Details {
 					}
 				</select>
 				<!-- -->
-				<button class="submit"/>
+				<button class="submit">
+					Update
+				</button>
 			</div>
+			<div class="comment_container">
+			<p id="show_comment" class="comment_placeholder"> 
+				<a id="comment_label">Show comment &#8615</a>
+			</p>
+		</div>
+					<div class="comment_container">
+						<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
+					</div>
 			</br>`
 		);
 	}
@@ -71,7 +85,7 @@ export class Details {
 							this.result.data.description + 
 						"</p>"
 						: 
-						'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laboru.'
+						''
 					}
 					${this.result.data.value ? this.result.getKicsValues() : ""}
 				</span>
@@ -85,43 +99,65 @@ export class Details {
 		);
 	}
 
-	changesTab(){
-		return(
-			`<body>
-				${this.userCardInfo("O","org_admin","29 December 2021 15:58","Changed severity from 'MEDIUM' to 'HIGH'")}
-				${this.userCardInfo("O","org_admin","29 December 2021 15:54","Changed severity to 'MEDIUM'")}
-			</body>`
-		);
+	async changesTab(){
+		let projectId = get(this.context,PROJECT_ID_KEY)?.id;
+		let changes:any[] |undefined = await triageShow(projectId!,this.result.similarityId,TYPES[this.result.type]);
+		let html = "<body>";
+		if(changes!.length>0){
+			// 
+			if(changes![0] !== ERROR_MESSAGE){
+				for (let change of changes!) {
+					html+=this.userCardInfo(change.CreatedBy,convertDate(change.CreatedAt),this.infoChanges(change));
+				}
+			}
+			else{
+				html+=
+				`
+				<p>
+					${changes![1]}
+				</p>
+				`;
+			}
+		}
+		else{
+			html+=
+				`
+				<p>
+					No changes to display. 
+				</p>
+				`;
+		}
+		html+="</body>";
+		return html;
 	}
 
+	infoChanges(change:any){
+		return(
+			`<p class="${change.Severity.length>0?"select_"+change.Severity.toLowerCase():""}">
+				${change.Severity.length>0?change.Severity:"No changes in severity."}
+			</p>
+			<p class="state">
+				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
+			</p>
+			<p class="comment">
+				${change.Comment.length>0?change.Comment:"No comment."}
+			</p>
+			`
+		);
+	}
 	detailsTab(){
 		return(
 			`<p>
-				Interesting Details
-			</p>
-			<p>
-				Interesting Details
-			</p>
-			<p>
-			</p>
-			<p>
-				Interesting Details
-			</p>
-			<p>
-				Interesting Details
 			</p>
 			`
 		);
 	}
 	
 	// Generic card for changes
-	userCardInfo(avatar:string,username:string,date:string,info:string){
+	userCardInfo(username:string,date:string,info:string){
 		return(
 			`<div class="history_container">
 				<div class="history_header">
-					<div class="avatar">
-						${avatar}
-					</div>
 				<div class="username">
 					${username}
 				</div>

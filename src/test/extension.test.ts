@@ -128,12 +128,13 @@ describe("UI tests", async function () {
     await (await input).setText(tempPath);
     await (await input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
-    await delay(THREE_SECONDS);
+    await delay(FIVE_SECONDS);
   });
 
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
     let treeScans = await initialize();
+    await delay(FIVE_SECONDS);
     // Execute command to call wizard
     await new Workbench().executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);

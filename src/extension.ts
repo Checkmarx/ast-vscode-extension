@@ -21,6 +21,7 @@ import {filter, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
 import { getBranchListener } from "./utils/listeners";
 import { getAstConfiguration } from "./utils/ast";
+import { updateResults } from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -63,7 +64,9 @@ export async function activate(context: vscode.ExtensionContext) {
     async (result: AstResult) => {
       var detailsDetachedView = new AstDetailsDetached(
         context.extensionUri,
-        result
+        result,
+        context,
+        false
       );
       // Need to check if the detailsPanel is positioned in the rigth place
       if (detailsPanel?.viewColumn === 1 || !detailsPanel?.viewColumn) {
@@ -105,11 +108,10 @@ export async function activate(context: vscode.ExtensionContext) {
         ],
       };
       // detailsPanel set html content
-      detailsPanel.webview.html = detailsDetachedView.getDetailsWebviewContent(
+      detailsPanel.webview.html = await detailsDetachedView.getDetailsWebviewContent(
         detailsPanel.webview,
       );
       detailsPanel.webview.onDidReceiveMessage(async data => {
-        console.log(JSON.stringify(data));
         switch (data.command) {
           // Catch open file message to open and view the result entry
           case 'showFile':
@@ -136,14 +138,13 @@ export async function activate(context: vscode.ExtensionContext) {
             // Case there is any update to be performed in the webview
             if(data.stateSelection.length>0 || data.severitySelection.length>0){
               detailsDetachedView!.setResult(result);
+              detailsDetachedView.setLoad(false);
                // Update webview html
-               detailsPanel!.webview.html = detailsDetachedView.getDetailsWebviewContent(
+               detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(
                 detailsPanel!.webview,
               );
-            // Call wrapper command
-            
             // Change the results locally
-            
+            updateResults(result,context,data.comment);
             // Reload results tree to apply the changes
             await vscode.commands.executeCommand(REFRESH_TREE);
             // Information message
@@ -153,6 +154,20 @@ export async function activate(context: vscode.ExtensionContext) {
             // Case the submit is sent without any change
             else{
               logs.log("ERROR","Make a change before submiting");
+            }
+            break;
+          // Catch load changes
+          case 'changes':
+            // Case there is feedback on the severity
+            if(detailsDetachedView.getLoad()!==true){
+              detailsDetachedView.setLoad(true);
+              // Update webview html
+              detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(
+               detailsPanel!.webview,
+             );
+             detailsPanel?.webview.postMessage({command:"changesLoaded"});
+            // Information message
+            vscode.window.showInformationMessage('Changes loaded successfully.');
             }
             break;
         }

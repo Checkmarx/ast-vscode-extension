@@ -354,7 +354,8 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.40",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.41",
+    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../git_repos/javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.41.tgz",
     "copyfiles": "2.4.1"
   },
   "extensionDependencies": [

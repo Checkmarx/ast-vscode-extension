@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
@@ -106,4 +107,39 @@ export function getAstConfiguration() {
 	config.baseUri = baseURI;
 	config.tenant = tenant;
 	return config;
+}
+
+export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
+	let r=[];
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	const cx = new CxWrapper(config);
+	const scans = await cx.triageShow(projectId,similarityId,scanType);
+	if(scans.payload && scans.exitCode===0){
+		r = scans.payload;
+	}
+	else{
+		r.push(ERROR_MESSAGE);
+		r.push(scans.status);
+	}
+	return r;
+}
+
+export async function triageUpdate(projectId: string,similarityId: string,scanType: string,state: string,comment: string,severity: string):Promise<number> {
+	let r:number = -1;
+	const config = getAstConfiguration();
+	if (!config) {
+		return r;
+	}
+	const cx = new CxWrapper(config);
+	const scans = await cx.triageUpdate(projectId,similarityId,scanType,state,comment,severity);
+	if(scans.exitCode===0){
+		r = scans.exitCode;
+	}
+	else{
+		r=-1;
+	}
+	return r;
 }

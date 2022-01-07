@@ -8,7 +8,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private result: AstResult
+    private result: AstResult,
+    private context:vscode.ExtensionContext,
+    private loadChanges:boolean,
   ) {}
 
   public getWebView() {
@@ -18,7 +20,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
   public setResult(result:AstResult){
     this.result=result;
   }
-  public resolveWebviewView(
+
+  public setLoad(loadChanges:boolean){
+    this.loadChanges=loadChanges;
+  }
+
+  public getLoad():boolean{
+    return this.loadChanges;
+  }
+
+  public async resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
@@ -28,7 +39,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
     };
-    webviewView.webview.html = this.getDetailsWebviewContent(
+    webviewView.webview.html = await this.getDetailsWebviewContent(
       webviewView.webview
     );
   }
@@ -62,7 +73,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     });
   }
 
-  getDetailsWebviewContent(webview: vscode.Webview) {
+  async getDetailsWebviewContent(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "view.js")
     );
@@ -83,8 +94,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     );
     const nonce = getNonce();
     const selectClassname = "select_"+this.result.severity.toLowerCase();
-    const html = new Details(this.result);
-
+    const html = new Details(this.result,this.context);
 	  return `<!DOCTYPE html>
 			<html lang="en">
         <head>
@@ -101,7 +111,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         <div>
           ${html.header(severityPath)}
           ${html.triage(selectClassname)}
-          ${html.tab(html.generalTab(),html.changesTab(),html.detailsTab(),"General","Changes","Details")}
+          ${html.tab(html.generalTab(),html.detailsTab(), this.loadChanges===true? await html.changesTab():"<center><p class=\"history_container_loader\">Loading changes</p><div class=\"loader\"></div></center>","General","Learn More","Changes")}
           </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	
