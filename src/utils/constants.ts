@@ -28,7 +28,7 @@ export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
 
 export const STATUS = [{class:"select_high",value:"HIGH"},{class:"select_medium",value:"MEDIUM"},{class:"select_low",value:"LOW"},{class:"select_info",value:"INFO"}];
-export const STATE = [{tag:"TO_VERIFY",value:"To Verify"},{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"URGENT",value:"Urgent"}];
+export const STATE = [{tag:"TO_VERIFY",value:"To Verify"},{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"URGENT",value:"Urgent"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true}];
 
 export const TYPES : {
 	[key: string]: string,

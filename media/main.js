@@ -128,7 +128,6 @@
 				const scanItem = message.scanList.filter(scan => scan.ID === message.selectedScanID);
 				if (scanItem.length > 0) {
 					Array.from(document.getElementById("scans").options).forEach(function (option_element) {
-						console.log("scan option: " + option_element.value + " selectd: " + scanElementSelected.value);
 						if (option_element.value === scanElementSelected.value) {
 							option_element.selected = true;
 							scanSelected = true;
@@ -162,7 +161,6 @@
 					}
 
 					else if (existingProjectID !== '' && existingProjectName.length > 0) {
-						console.log("workspace project name " + existingProjectName[0].Name);
 						projectElement.appendChild(loadOption(existingProjectName[0].Name, existingProjectID, false, true));
 						projects = projects.filter(project => { return project.Name !== existingProjectName[0].Name; });
 						vscode.postMessage(

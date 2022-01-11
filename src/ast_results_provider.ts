@@ -21,12 +21,13 @@ import {
 } from "./utils/constants";
 import {
   Counter,
-  getProperty, getResultsFilePath,
+  getProperty, getResultsFilePath, getResultsWithProgress,
 } from "./utils/utils";
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
 import { getAstConfiguration } from "./utils/ast";
 import { SastNode } from "./models/sastNode";
+import { REFRESH_TREE } from "./utils/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
@@ -77,6 +78,22 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
+
+  async openRefreshData(): Promise<void> {
+    this.showStatusBarItem();
+    let scanId = get(this.context, SCAN_ID_KEY)?.name!;
+    if(scanId){
+      if(scanId.length>0){
+        await getResultsWithProgress(this.logs, scanId);
+        await vscode.commands.executeCommand(REFRESH_TREE);
+      }
+      else{
+        this.refreshData();
+      }
+    }
+    this.hideStatusBarItem();
+  }
+  
 
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();

@@ -40,7 +40,7 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem,
     diagnosticCollection
   );
-  astResultsProvider.refreshData().then(r => logs.info("Data refreshed"));
+  astResultsProvider.openRefreshData().then(r => logs.info("Data refreshed and synced with AST platform"));
   initializeFilters(logs, context, astResultsProvider).then(() => logs.info("Filters initialized"));
   vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
   
@@ -119,6 +119,11 @@ export async function activate(context: vscode.ExtensionContext) {
             break;
           // Catch submit message to open and view the result entry
           case 'submit':
+            // Needed because dependency triage is still not working
+            if(result.type ==='dependency'){
+              vscode.window.showErrorMessage('Triage not available for dependency.');
+              break;
+            }
             // Case there is feedback on the severity
             if(data.severitySelection.length>0){
               logs.log("INFO","Updating severity to " + data.severitySelection);              
@@ -143,12 +148,17 @@ export async function activate(context: vscode.ExtensionContext) {
                detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(
                 detailsPanel!.webview,
               );
-            // Change the results locally
-            updateResults(result,context,data.comment);
-            // Reload results tree to apply the changes
-            await vscode.commands.executeCommand(REFRESH_TREE);
-            // Information message
-            vscode.window.showInformationMessage('Feedback submited successfully! Results refreshed.');
+              // Change the results locally
+              let r = await updateResults(result,context,data.comment);
+              if(r===true){
+                // Reload results tree to apply the changes
+                await vscode.commands.executeCommand(REFRESH_TREE);
+                // Information message
+                vscode.window.showInformationMessage('Feedback submited successfully! Results refreshed.');
+              }
+              else{
+                vscode.window.showErrorMessage('Triage Error.');
+              }
             }
             
             // Case the submit is sent without any change

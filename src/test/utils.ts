@@ -1,4 +1,4 @@
-import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem} from 'vscode-extension-tester';
+import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem, WebView} from 'vscode-extension-tester';
 import { FIVE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
@@ -58,4 +58,14 @@ export async function validateSeverities(scan:any, severity:string): Promise<boo
     return r;
 }
 
+export async function getDetailsView(): Promise<WebView> {
+	// Open details view
+	let detailsView = new WebView();
+	await delay(FIVE_SECONDS);
+	await detailsView.switchToFrame();
+	await delay(FIVE_SECONDS);
+	return detailsView;
+}
+
+ 
 export const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));

@@ -33,12 +33,20 @@ export class Details {
 	}
 
 	triage(selectClassname:string){
+		let state = STATE;
+		if(this.result.type === 'dependency'){
+			state = STATE.filter((element)=> {return (element.dependency===true);});
+		}
+		else{
+			state = STATE.filter((element)=> {return (element.dependency!==true);});
+		}
 		return(
 			`<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
 					${
 						STATUS.map((element)=>{
 							return(
+
 								`<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? 'selected' : ""}>
 									${element.value}	
 								</option>`
@@ -47,12 +55,13 @@ export class Details {
 					}
 				</select>
 				<select id="select_state" class="state">
-					${
-						STATE.map((element)=>{
+					${	
+						state.map((element)=>{
 							return(
 								`<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""}>
 									${element.value}	
 								</option>`
+								
 							);
 						})
 					}
@@ -63,13 +72,13 @@ export class Details {
 				</button>
 			</div>
 			<div class="comment_container">
-			<p id="show_comment" class="comment_placeholder"> 
-				<a id="comment_label">Show comment &#8615</a>
-			</p>
-		</div>
-					<div class="comment_container">
-						<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
-					</div>
+				<p id="show_comment" class="comment_placeholder"> 
+					<a id="comment_label">Show comment &#8615</a>
+				</p>
+			</div>
+			<div class="comment_container">
+				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
+			</div>
 			</br>`
 		);
 	}
@@ -122,16 +131,21 @@ export class Details {
 		else{
 			html+=
 				`
-				<p>
-					No changes to display. 
-				</p>
-				`;
+				<div class="history_container">
+					<p>
+						No changes to display. 
+					</p>
+				</div>`;
 		}
 		html+="</body>";
 		return html;
 	}
 
 	infoChanges(change:any){
+		let classname="";
+		if(change.Comment.length>0){
+			classname = "comment";
+		}
 		return(
 			`<p class="${change.Severity.length>0?"select_"+change.Severity.toLowerCase():""}">
 				${change.Severity.length>0?change.Severity:"No changes in severity."}
@@ -139,8 +153,8 @@ export class Details {
 			<p class="state">
 				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
 			</p>
-			<p class="comment">
-				${change.Comment.length>0?change.Comment:"No comment."}
+			<p class=${classname}>
+				${change.Comment.length>0?change.Comment:""}
 			</p>
 			`
 		);
@@ -176,15 +190,15 @@ export class Details {
 	tab(tab1Content:string,tab2Content:string,tab3Content:string,tab1Label:string,tab2Label:string,tab3Label:string){
 		return(
 			`<input type="radio" name="tabs" id="tab1" checked />
-			<label for="tab1">
+			<label for="tab1" id="tab1_label">
 				${tab1Label}
 			</label>
 			<input type="radio" name="tabs" id="tab2" />
-			<label for="tab2">
+			<label for="tab2" id="tab2_label">
 				${tab2Label}
 			</label>
 			<input type="radio" name="tabs" id="tab3" />
-			<label for="tab3">
+			<label for="tab3" id="tab3_label">
 				${tab3Label}
 			</label>
 			<div class="tab content1">
