@@ -392,6 +392,7 @@ describe("UI tests", async function () {
     );
     await submit.click();
     expect(submit).is.not.undefined;
+    await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });
 
