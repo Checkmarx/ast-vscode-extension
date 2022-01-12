@@ -66,7 +66,6 @@
 	});
 
 	// Display the comment text area
-
 	document.getElementById('show_comment').addEventListener('click', (e) => {
 		let commentBox = document.getElementById('comment_box');
 		let commentLabel = document.getElementById('comment_label');

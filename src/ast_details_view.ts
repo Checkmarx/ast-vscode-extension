@@ -111,8 +111,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         <div>
           ${html.header(severityPath)}
           ${html.triage(selectClassname)}
-          ${html.tab(html.generalTab(),html.detailsTab(), this.loadChanges===true? await html.changesTab():"<center><p class=\"history_container_loader\">Loading changes</p><div class=\"loader\"></div></center>","General","Learn More","Changes")}
-          </div>
+          ${html.tab(html.generalTab(),html.detailsTab(), this.loadChanges===true? await html.changesTab():html.loader(),"General","Learn More","Changes")}
+        </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	
 			</html>`;

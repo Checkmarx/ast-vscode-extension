@@ -32,6 +32,20 @@ export class Details {
 		);
 	}
 
+	loader():string{
+		return(
+			`
+			<center>
+				<p class=\"history_container_loader\">
+					Loading changes
+				</p>
+				<div class=\"loader\">
+				</div>
+			</center>
+			`
+		);
+	}
+
 	triage(selectClassname:string){
 		let state = STATE;
 		if(this.result.type === 'dependency'){
@@ -66,7 +80,6 @@ export class Details {
 						})
 					}
 				</select>
-				<!-- -->
 				<button class="submit">
 					Update
 				</button>
