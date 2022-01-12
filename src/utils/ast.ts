@@ -52,7 +52,7 @@ export async function getProjectList(): Promise<CxProject[] | undefined> {
 		r = projects.payload;
 	}
 	else{
-		r.push(projects.status); 
+		throw new Error(projects.status);		
 	}
 	return r;
 }
@@ -69,8 +69,7 @@ export async function getBranches(projectId: string | undefined) : Promise<strin
 		r = branches.payload;
 	}
 	else{
-		r.push(ERROR_MESSAGE);
-		r.push(branches.status);
+		throw new Error(branches.status);	
 	}
 	return r;
 }
@@ -88,7 +87,7 @@ export async function getScans(projectId: string | undefined, branch: string | u
 		r = scans.payload;
 	}
 	else{
-		r.push(scans.status);
+		throw new Error(scans.status);
 	}
 	return r;
 }

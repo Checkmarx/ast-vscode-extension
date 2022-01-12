@@ -25,22 +25,16 @@ export async function getBranchPickItems(logs: Logs, projectId: string, context:
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading branches" });
 			const branchList = await getBranches(projectId);
-			// Validate if there is any output from project list
-			if(branchList!.length>0){
-				// Validate if there are valid entries
-				if(branchList![0] === ERROR_MESSAGE){
-					updateError(context,ERROR_MESSAGE + branchList![1]);
-					vscode.commands.executeCommand(SHOW_ERROR);
-					return [];
-				}
-				else{
-					return branchList ? branchList.map((label) => ({
-						label: label,
-						id: label,
-					})) : [];
-				}
+			try {
+				return branchList ? branchList.map((label) => ({
+					label: label,
+					id: label,
+				})) : [];
+			} catch (error) {
+				updateError(context,ERROR_MESSAGE + error);
+				vscode.commands.executeCommand(SHOW_ERROR);
+				return [];
 			}
-			return [];
 		}
 	  );
 }
@@ -50,24 +44,17 @@ export async function getProjectsPickItems(logs: Logs,context:vscode.ExtensionCo
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 		  	progress.report({ message: "Loading projects" });
-		  	const projectList = await getProjectList();
-			// Validate if there is any output from project list
-			if(projectList!.length>0){
-				// Validate if there are valid entries
-				if(projectList![0].name){
-					return projectList ? projectList.map((label) => ({
-						label: label.name,
-						id: label.id,
-					})) : [];
-				}
-				// Validate if there are errors
-				else{
-					updateError(context,ERROR_MESSAGE + projectList![0] as unknown as string);
-					vscode.commands.executeCommand(SHOW_ERROR);
-					return [];
-				}
-			}
-			return [];
+			  try {
+				const projectList = await getProjectList();
+				return projectList ? projectList.map((label) => ({
+					label: label.name,
+					id: label.id,
+				})) : [];
+			  } catch (error) {
+				updateError(context,ERROR_MESSAGE + error);
+				vscode.commands.executeCommand(SHOW_ERROR);
+				return [];
+			  }
 		}
 		
 	  );
@@ -82,22 +69,16 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 				projectId,
 				branchName
 			);
-			// Validate if there is any output from project list
-			if(scanList!.length>0){
-				// Validate if there are valid entries
-				if(scanList![0].id){
-					return scanList ? scanList.map((label) => ({
-						label: convertDate(label.createdAt),
-						id: label.id,
-					})) : [];
-				}
-				else{
-					updateError(context,ERROR_MESSAGE + scanList![0]);
-					vscode.commands.executeCommand(SHOW_ERROR);
-					return [];
-				}
+			try {
+				return scanList ? scanList.map((label) => ({
+					label: convertDate(label.createdAt),
+					id: label.id,
+				})) : [];
+			} catch (error) {
+				updateError(context,ERROR_MESSAGE + error);
+				vscode.commands.executeCommand(SHOW_ERROR);
+				return [];
 			}
-			return [];
 		}
 	  );
 }

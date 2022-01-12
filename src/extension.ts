@@ -21,7 +21,7 @@ import {filter, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
 import { getBranchListener } from "./utils/listeners";
 import { getAstConfiguration } from "./utils/ast";
-import { updateResults } from "./utils/triage";
+import { triageChanges, triageSubmit, updateResults } from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -119,66 +119,11 @@ export async function activate(context: vscode.ExtensionContext) {
             break;
           // Catch submit message to open and view the result entry
           case 'submit':
-            // Needed because dependency triage is still not working
-            if(result.type ==='dependency'){
-              vscode.window.showErrorMessage('Triage not available for dependency.');
-              break;
-            }
-            // Case there is feedback on the severity
-            if(data.severitySelection.length>0){
-              logs.log("INFO","Updating severity to " + data.severitySelection);              
-              // Update severity of the result
-              result.setSeverity(data.severitySelection);
-              // Update webview title
-              detailsPanel!.title="(" + result.severity + ") " + result.label.replaceAll("_", " ");
-            }
-            
-            // Case there is feedback on the state
-            if(data.stateSelection.length>0){
-              logs.log("INFO","Updating state to " + data.stateSelection);              
-              // Update severity of the result
-              result.setState(data.stateSelection.replace(" ","_").toUpperCase());
-            }
-
-            // Case there is any update to be performed in the webview
-            if(data.stateSelection.length>0 || data.severitySelection.length>0){
-              detailsDetachedView!.setResult(result);
-              detailsDetachedView.setLoad(false);
-               // Update webview html
-               detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(
-                detailsPanel!.webview,
-              );
-              // Change the results locally
-              let r = await updateResults(result,context,data.comment);
-              if(r===true){
-                // Reload results tree to apply the changes
-                await vscode.commands.executeCommand(REFRESH_TREE);
-                // Information message
-                vscode.window.showInformationMessage('Feedback submited successfully! Results refreshed.');
-              }
-              else{
-                vscode.window.showErrorMessage('Triage Error.');
-              }
-            }
-            
-            // Case the submit is sent without any change
-            else{
-              logs.log("ERROR","Make a change before submiting");
-            }
+            await triageSubmit(result,context,data,logs,detailsPanel!,detailsDetachedView);
             break;
           // Catch load changes
           case 'changes':
-            // Case there is feedback on the severity
-            if(detailsDetachedView.getLoad()!==true){
-              detailsDetachedView.setLoad(true);
-              // Update webview html
-              detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(
-               detailsPanel!.webview,
-             );
-             detailsPanel?.webview.postMessage({command:"changesLoaded"});
-            // Information message
-            vscode.window.showInformationMessage('Changes loaded successfully.');
-            }
+            await triageChanges(detailsPanel!,detailsDetachedView);
             break;
         }
       });
