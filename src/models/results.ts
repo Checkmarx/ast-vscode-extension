@@ -1,7 +1,5 @@
-import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import path = require("path");
 import * as vscode from "vscode";
-import { triageShow } from "../utils/ast";
 import { IssueLevel, StateLevel} from "../utils/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
