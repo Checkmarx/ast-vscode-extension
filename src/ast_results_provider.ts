@@ -35,7 +35,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
-  public stateLevel: StateLevel[] = [StateLevel.confirmed, StateLevel.notExploitable,StateLevel.proposed,StateLevel.toVerify,StateLevel.urgent];
+  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent];
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
