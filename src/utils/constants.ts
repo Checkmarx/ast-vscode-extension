@@ -1,9 +1,17 @@
 export const EXTENSION_NAME: string = "ast-results";
 export const SCAN_ID_KEY: string = "ast-results-scan-id";
+
 export const HIGH_FILTER: string = "ast-results-high";
 export const MEDIUM_FILTER: string = "ast-results-medium";
 export const LOW_FILTER: string = "ast-results-low";
 export const INFO_FILTER: string = "ast-results-info";
+
+export const NOT_EXPLOITABLE_FILTER: string = "ast-results-NotExploitable";
+export const PROPOSED_FILTER: string = "ast-results-Proposed";
+export const CONFIRMED_FILTER: string = "ast-results-Confirmed";
+export const TO_VERIFY_FILTER: string = "ast-results-ToVerify";
+export const URGENT_FILTER: string = "ast-results-Urgent";
+
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
@@ -39,6 +47,7 @@ export enum IssueFilter {
 	severity = "severity",
 	status = "status",
 	language = "language",
+	state = "state"
   }
   
 export enum IssueLevel {
@@ -47,4 +56,13 @@ export enum IssueLevel {
 	low = "LOW",
 	info = "INFO",
 	empty = "",
+}
+
+export enum StateLevel {
+	urgent = "Urgent",
+	toVerify = "ToVerify",
+	confirmed = "Confirmed",
+	proposed = "Proposed",
+	notExploitable = "NotExploitable",
+	ignored = "NotIgnored"
 }

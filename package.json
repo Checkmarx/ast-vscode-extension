@@ -77,6 +77,12 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.groupByState",
+        "category": "checkmarx-ast",
+        "title": "Group by: State",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.clear",
         "category": "checkmarx-ast",
         "title": "Clear",
@@ -173,9 +179,152 @@
         "title": "Look for Scan",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterNotExploitableActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Not Exploitable",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterUrgentActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Urgent",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterProposedActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Proposed Not Exploitable",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterConfirmedActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Confirmed",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterToConfirmActive",
+        "category": "checkmarx-ast",
+        "title": "✓ To Vonfirm",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterToVerifyActive",
+        "category": "checkmarx-ast",
+        "title": "✓ To Verify",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterNotExploitable",
+        "category": "checkmarx-ast",
+        "title": "Not Exploitable",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterUrgent",
+        "category": "checkmarx-ast",
+        "title": "Urgent",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterProposed",
+        "category": "checkmarx-ast",
+        "title": "Proposed Not Exploitable",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterConfirmed",
+        "category": "checkmarx-ast",
+        "title": "Confirmed",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterToConfirm",
+        "category": "checkmarx-ast",
+        "title": "To Vonfirm",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterToVerify",
+        "category": "checkmarx-ast",
+        "title": "To Verify",
+        "enablement": "ast-results.isValidCredentials"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "ast-results.filterBy",
+        "label": "Filter",
+        "icon": "$(filter)"
+      },
+      {
+        "id": "ast-results.filterState",
+        "label": "Filter by: State",
+        "icon": "$(filter)"
       }
     ],
     "menus": {
+      "ast-results.filterBy": [
+        {
+          "submenu": "ast-results.filterState",
+          "group": "navigation",
+          "when": "view == astResults"
+        }
+      ],
+      "ast-results.filterState": [
+        {
+          "command": "ast-results.filterNotExploitableActive",
+          "group": "navigation@1",
+          "when": "ast-results-NotExploitable"
+        },
+        {
+          "command": "ast-results.filterProposedActive",
+          "group": "navigation@2",
+          "when": "ast-results-Proposed"
+        },
+        {
+          "command": "ast-results.filterConfirmedActive",
+          "group": "navigation@3",
+          "when": "ast-results-Confirmed"
+        },
+        {
+          "command": "ast-results.filterToVerifyActive",
+          "group": "navigation@4",
+          "when": "ast-results-ToVerify"
+        },
+        {
+          "command": "ast-results.filterUrgentActive",
+          "group": "navigation@5",
+          "when": "ast-results-Urgent"
+        },
+        {
+          "command": "ast-results.filterNotExploitable",
+          "group": "navigation@1",
+          "when": "!ast-results-NotExploitable"
+        },
+        {
+          "command": "ast-results.filterProposed",
+          "group": "navigation@2",
+          "when": "!ast-results-Proposed"
+        },
+        {
+          "command": "ast-results.filterConfirmed",
+          "group": "navigation@3",
+          "when": "!ast-results-Confirmed"
+        },
+        {
+          "command": "ast-results.filterToVerify",
+          "group": "navigation@4",
+          "when": "!ast-results-ToVerify"
+        },
+        {
+          "command": "ast-results.filterUrgent",
+          "group": "navigation@5",
+          "when": "!ast-results-Urgent"
+        }
+      ],
       "view/item/context": [
         {
           "command": "ast-results.projectPick",
@@ -260,17 +409,27 @@
           "when": "view == astResults"
         },
         {
+          "command": "ast-results.groupByState",
+          "group": "@groupBy",
+          "when": "view == astResults"
+        },
+        {
           "command": "ast-results.viewSettings",
-          "group": "navigation@7",
+          "group": "@settings",
           "when": "view == astResults"
         },
         {
           "command": "ast-results.clear",
-          "group": "navigation@6",
+          "group": "navigation@8",
           "when": "view == astResults"
         },
         {
           "command": "ast-results.generalPick",
+          "group": "navigation@6",
+          "when": "view == astResults"
+        },
+        {
+          "submenu": "ast-results.filterBy",
           "group": "navigation@5",
           "when": "view == astResults"
         }
