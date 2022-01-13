@@ -5,6 +5,8 @@ export const MEDIUM_FILTER: string = "ast-results-medium";
 export const LOW_FILTER: string = "ast-results-low";
 export const INFO_FILTER: string = "ast-results-info";
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
+export const ERROR: string = "ast-results-error";
+export const ERROR_MESSAGE: string = "[CxERROR] ";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";
 export const BRANCH_ID_KEY: string = "ast-results-branch-id";
 export const BRANCH_TEMP_ID_KEY: string = "ast-results-temp-branch-id";
@@ -24,6 +26,13 @@ export const GRAPH_ITEM: string = "graph-item";
 
 export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
+
+export const STATUS = [{class:"select_high",value:"HIGH"},{class:"select_medium",value:"MEDIUM"},{class:"select_low",value:"LOW"},{class:"select_info",value:"INFO"}];
+export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true}];
+
+export const TYPES : {
+	[key: string]: string,
+   } = {"infrastructure":"kics","dependency":"sca","sast":"sast"};
 
 export enum IssueFilter {
 	fileName = "fileName",

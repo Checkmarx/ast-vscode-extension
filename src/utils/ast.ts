@@ -2,8 +2,9 @@ import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
+import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
 
 export async function getResults(scanId: string| undefined) {
@@ -39,34 +40,56 @@ export async function getProject(projectId: string| undefined): Promise<CxProjec
 }
 
 export async function getProjectList(): Promise<CxProject[] | undefined> {
+	let r = [];
 	const config = getAstConfiguration();
 	if (!config) {
 		return [];
 	}
 	const cx = new CxWrapper(config);
 	const projects = await cx.projectList("limit=10000");
-	return projects.payload;
+	
+	if(projects.payload){
+		r = projects.payload;
+	}
+	else{
+		throw new Error(projects.status);		
+	}
+	return r;
 }
 
 export async function getBranches(projectId: string | undefined) : Promise<string[] | undefined> {
+	let r = [];
 	const config = getAstConfiguration();
 	if (!config) {
 		return [];
 	}
 	const cx = new CxWrapper(config);
 	const branches = await cx.projectBranches(projectId!, "");
-	return branches.payload;
+	if(branches.payload){
+		r = branches.payload;
+	}
+	else{
+		throw new Error(branches.status);	
+	}
+	return r;
 }
 
 export async function getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+	let r = [];
 	const config = getAstConfiguration();
 	if (!config) {
 		return [];
 	}
 	const filter = `project-id=${projectId},branch=${branch},limit=10000,statuses=Completed`;
 	const cx = new CxWrapper(config);
-	const branches = await cx.scanList(filter);
-	return branches.payload;
+	const scans = await cx.scanList(filter);
+	if(scans.payload){
+		r = scans.payload;
+	}
+	else{
+		throw new Error(scans.status);
+	}
+	return r;
 }
 
 export function getAstConfiguration() {
@@ -83,4 +106,39 @@ export function getAstConfiguration() {
 	config.baseUri = baseURI;
 	config.tenant = tenant;
 	return config;
+}
+
+export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
+	let r=[];
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	const cx = new CxWrapper(config);
+	const scans = await cx.triageShow(projectId,similarityId,scanType);
+	if(scans.payload && scans.exitCode===0){
+		r = scans.payload;
+	}
+	else{
+		r.push(ERROR_MESSAGE);
+		r.push(scans.status);
+	}
+	return r;
+}
+
+export async function triageUpdate(projectId: string,similarityId: string,scanType: string,state: string,comment: string,severity: string):Promise<number> {
+	let r:number = -1;
+	const config = getAstConfiguration();
+	if (!config) {
+		return r;
+	}
+	const cx = new CxWrapper(config);
+	const scans = await cx.triageUpdate(projectId,similarityId,scanType,state,comment,severity);
+	if(scans.exitCode===0){
+		r = scans.exitCode;
+	}
+	else{
+		r=-1;
+	}
+	return r;
 }

@@ -9,7 +9,7 @@ import { CxQuickPickItem } from "./utils/multiStepUtils";
 export async function projectPicker(context: vscode.ExtensionContext, logs: Logs) {
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = PROJECT_PLACEHOLDER;
-  quickPick.items = await getProjectsPickItems(logs);
+  quickPick.items = await getProjectsPickItems(logs,context);
   quickPick.onDidChangeSelection(async ([item]) => {
     update(context, PROJECT_ID_KEY, { id: item.id, name: `${PROJECT_LABEL} ${item.label}` });
     update(context, BRANCH_ID_KEY, { id: undefined, name: BRANCH_LABEL });
@@ -22,14 +22,14 @@ export async function projectPicker(context: vscode.ExtensionContext, logs: Logs
 
 export async function branchPicker(context: vscode.ExtensionContext, logs: Logs) {
   const projectItem = get(context, PROJECT_ID_KEY);
+  // Check if project is picked
   if (!projectItem || !projectItem.id) {
     vscode.window.showErrorMessage("Please select a project first");
     return;
   }
-
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = BRANCH_PLACEHOLDER;
-  quickPick.items = await getBranchPickItems(logs, projectItem.id);
+  quickPick.items = await getBranchPickItems(logs, projectItem.id, context);
   quickPick.onDidChangeSelection(async ([item]) => {
     update(context, BRANCH_ID_KEY, { id: item.id, name: `${BRANCH_LABEL} ${item.label}` });
     update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
@@ -49,7 +49,7 @@ export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
 
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = SCAN_PLACEHOLDER;
-  quickPick.items = await getScansPickItems(logs, projectItem.id, branchItem.id);
+  quickPick.items = await getScansPickItems(logs, projectItem.id, branchItem.id, context);
   quickPick.onDidChangeSelection(async ([item]) => {
     update(context, SCAN_ID_KEY, { id: item.id, name: `${SCAN_LABEL} ${item.label}` });
     await getResultsWithProgress(logs, item.id!); //TODO: Check

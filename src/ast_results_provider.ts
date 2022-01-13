@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
-import { AstResult, SastNode } from "./models/results";
+import { AstResult } from "./models/results";
 import {
   EXTENSION_NAME,
   IssueFilter,
@@ -21,11 +21,13 @@ import {
 } from "./utils/constants";
 import {
   Counter,
-  getProperty, getResultsFilePath,
+  getProperty, getResultsFilePath, getResultsWithProgress,
 } from "./utils/utils";
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
 import { getAstConfiguration } from "./utils/ast";
+import { SastNode } from "./models/sastNode";
+import { REFRESH_TREE } from "./utils/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
@@ -76,6 +78,22 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
+
+  async openRefreshData(): Promise<void> {
+    this.showStatusBarItem();
+    let scanId = get(this.context, SCAN_ID_KEY)?.name!;
+    if(scanId){
+      if(scanId.length>0){
+        await getResultsWithProgress(this.logs, scanId);
+        await vscode.commands.executeCommand(REFRESH_TREE);
+      }
+      else{
+        this.refreshData();
+      }
+    }
+    this.hideStatusBarItem();
+  }
+  
 
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();

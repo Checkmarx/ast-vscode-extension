@@ -37,7 +37,7 @@ export async function multiStepInput(logs: Logs, context: vscode.ExtensionContex
       step: 1,
       totalSteps: 3,
       placeholder: PROJECT_LABEL,
-      items: await getProjectsPickItems(logs),
+      items: await getProjectsPickItems(logs,context),
       shouldResume: shouldResume,
     });
     return (input: MultiStepInput) => pickBranch(input, state);
@@ -45,13 +45,12 @@ export async function multiStepInput(logs: Logs, context: vscode.ExtensionContex
 
   async function pickBranch(input: MultiStepInput, state: Partial<State>) {
     const projectId = state.project?.id!;
-
     state.branch = await input.showQuickPick({
       title: SCAN_PICKER_TITLE,
       step: 2,
       totalSteps: 3,
       placeholder: BRANCH_LABEL,
-      items: await getBranchPickItems(logs, projectId),
+      items: await getBranchPickItems(logs, projectId,context),
       shouldResume: shouldResume,
     });
     return (input: MultiStepInput) => pickScan(input, state);
@@ -66,7 +65,7 @@ export async function multiStepInput(logs: Logs, context: vscode.ExtensionContex
       step: 2,
       totalSteps: 3,
       placeholder: SCAN_LABEL,
-      items: await getScansPickItems(logs, projectId, branchId),
+      items: await getScansPickItems(logs, projectId, branchId,context),
       shouldResume: shouldResume,
     });
   }

@@ -16,6 +16,7 @@ import {
   getResults,
   validateSeverities,
   quickPickSelector,
+  getDetailsView,
 } from "./utils";
 import {
   MAX_TIMEOUT,
@@ -128,12 +129,13 @@ describe("UI tests", async function () {
     await (await input).setText(tempPath);
     await (await input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
-    await delay(THREE_SECONDS);
+    await delay(FIVE_SECONDS);
   });
 
   it("should load results using wizard", async function () {
     this.timeout(MAX_TIMEOUT);
     let treeScans = await initialize();
+    await delay(FIVE_SECONDS);
     // Execute command to call wizard
     await new Workbench().executeCommand(CX_SELECT_ALL);
     await delay(THIRTY_SECONDS);
@@ -284,16 +286,14 @@ describe("UI tests", async function () {
     let resultName = await result[0].getLabel();
     await delay(FIVE_SECONDS);
     await result[0].click();
-    await delay(FIVE_SECONDS);
+    await delay(THIRTY_SECONDS);
     // Close left view
     let leftView = new WebView();
+    await delay(THIRTY_SECONDS);
     await leftView.click();
     await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
     // Open details view
-    let detailsView = new WebView();
-    await delay(FIVE_SECONDS);
-    await detailsView.switchToFrame();
-    await delay(FIVE_SECONDS);
+    let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
       By.className("title_td")
@@ -306,22 +306,96 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("should click info filter", async function () {
+  it("Should click on show and hide comments", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_INFO);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Show comments
+    let showComments = await detailsView.findWebElement(
+      By.id("comment_label")
     );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "INFO");
-    expect(isValidated).to.equal(true);
-    // Reset filters
-    await bench.executeCommand(CX_FILTER_INFO);
+    await showComments.click();
+    expect(showComments).is.not.undefined;
+    // Find Hide comments
+    let hideComments = await detailsView.findWebElement(
+      By.id("comment_label")
+    );
+    await hideComments.click();
+    expect(hideComments).is.not.undefined;
+    await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });
+
+  it("Should click on details General tab", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find General Tab
+    let generalTab = await detailsView.findWebElement(
+      By.id("tab1_label")
+    );
+    await generalTab.click();
+    expect(generalTab).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on details Learn More tab", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Learn More Tab
+    let learnTab = await detailsView.findWebElement(
+      By.id("tab2_label")
+    );
+    await learnTab.click();
+    expect(learnTab).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on details Changes tab", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Changes Tab
+    let changesTab = await detailsView.findWebElement(
+      By.id("tab3_label")
+    );
+    await changesTab.click();
+    // Make sure that the changes tab is loaded
+    driver.wait(
+      until.elementLocated(
+        By.className(
+          "history_container_loader"
+        )
+      ),
+      FIFTY_SECONDS
+    );
+    expect(changesTab).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on submit", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Changes Tab
+    let submit = await detailsView.findWebElement(
+      By.className("submit")
+    );
+    await submit.click();
+    expect(submit).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
 
   it("should click low filter", async function () {
     this.timeout(MAX_TIMEOUT);
