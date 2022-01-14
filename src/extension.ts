@@ -17,6 +17,7 @@ import {
   CONFIRMED_FILTER,
   TO_VERIFY_FILTER,
   URGENT_FILTER,
+  IGNORED_FILTER,
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -190,6 +191,8 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterToVerifyActive`, async () => await filterState(logs, context, astResultsProvider, StateLevel.toVerify, TO_VERIFY_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterUrgent`, async () => await filterState(logs, context, astResultsProvider, StateLevel.urgent, URGENT_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterUrgentActive`, async () => await filterState(logs, context, astResultsProvider,  StateLevel.urgent, URGENT_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterIgnored`, async () => await filterState(logs, context, astResultsProvider, StateLevel.ignored, IGNORED_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterIgnoredActive`, async () => await filterState(logs, context, astResultsProvider,  StateLevel.ignored, IGNORED_FILTER)));
 
   // Pickers command 
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => { await multiStepInput(logs, context); }));

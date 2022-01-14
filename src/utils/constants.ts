@@ -11,6 +11,7 @@ export const PROPOSED_FILTER: string = "ast-results-Proposed";
 export const CONFIRMED_FILTER: string = "ast-results-Confirmed";
 export const TO_VERIFY_FILTER: string = "ast-results-ToVerify";
 export const URGENT_FILTER: string = "ast-results-Urgent";
+export const IGNORED_FILTER: string = "ast-results-Ignored";
 
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const ERROR: string = "ast-results-error";

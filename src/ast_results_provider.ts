@@ -35,7 +35,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
-  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent];
+  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent,StateLevel.ignored];
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
@@ -222,14 +222,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     const tree = previousValue.children
-      ? previousValue.children.find((item) => item.label === value)
+      ? previousValue.children.find((item) => item.label === value.replaceAll("_", " "))
       : undefined;
     if (tree) {
       tree.setDescription();
       return tree;
     }
 
-    const newTree = new TreeItem(value, undefined, undefined, []);
+    const newTree = new TreeItem(value.replaceAll("_", " "), undefined, undefined, []);
     previousValue.children?.push(newTree);
     return newTree;
   }
