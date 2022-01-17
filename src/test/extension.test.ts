@@ -530,8 +530,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 
@@ -546,8 +545,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 
@@ -562,8 +560,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 
@@ -578,8 +575,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 
@@ -594,8 +590,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 
@@ -610,8 +605,7 @@ describe("UI tests", async function () {
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
     await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 });
