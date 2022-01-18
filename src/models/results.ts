@@ -1,8 +1,6 @@
-import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import path = require("path");
 import * as vscode from "vscode";
-import { triageShow } from "../utils/ast";
-import { IssueLevel} from "../utils/constants";
+import { IssueLevel, SCA, KICS } from "../utils/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
@@ -53,10 +51,10 @@ export class AstResult {
         : "";
       this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
     }
-    if (result.type === "dependency") {
+    if (result.type === SCA) {
       this.scaNode = result.data;
     }
-    if (result.type === "infrastructure") {
+    if (result.type === KICS) {
       this.kicsNode = result;
     }
   }

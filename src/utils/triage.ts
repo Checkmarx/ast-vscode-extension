@@ -4,7 +4,7 @@ import { getResultsFilePath } from "./utils";
 import {triageUpdate} from "./ast";
 import { get } from "./globalState";
 import * as fs from "fs";
-import { PROJECT_ID_KEY, TYPES } from "./constants";
+import { PROJECT_ID_KEY, SAST, SCA, KICS } from "./constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../ast_details_view";
 import { REFRESH_TREE } from "./commands";
@@ -16,13 +16,13 @@ export async function updateResults(result: AstResult,context:vscode.ExtensionCo
   if (fs.existsSync(resultJsonPath) && result) {
     // Read local results from JSON file
     let jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
-    if (TYPES[result.type] === "sast") {
+    if (result.type === SAST) {
       resultHash = result.data.resultHash;
     }
-    if (TYPES[result.type] === "kics") {
+    if (result.type === KICS) {
       resultHash = result.kicsNode!.id;
     }
-    if (TYPES[result.type] === "sca") {
+    if (result.type === SCA) {
       resultHash = result.scaNode!.id;
     }
     // Search for the changed result in the result list
@@ -44,7 +44,7 @@ export async function updateResults(result: AstResult,context:vscode.ExtensionCo
     let update = await triageUpdate(
       projectId ? projectId : "",
       result.similarityId,
-      TYPES[result.type],
+      result.type,
       result.state,
       comment,
       result.severity
@@ -58,8 +58,8 @@ export async function updateResults(result: AstResult,context:vscode.ExtensionCo
 
 export async function triageSubmit(result:AstResult,context:vscode.ExtensionContext,data:any,logs:Logs,detailsPanel:vscode.WebviewPanel,detailsDetachedView:AstDetailsDetached){
   // Needed because dependency triage is still not working
-  if (result.type === "dependency") {
-    vscode.window.showErrorMessage("Triage not available for dependency.");
+  if (result.type === SCA) {
+    vscode.window.showErrorMessage("Triage not available for SCA.");
     return;
   }
   // Case there is feedback on the severity
@@ -88,7 +88,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
       await detailsDetachedView.getDetailsWebviewContent(detailsPanel!.webview);
     // Change the results locally
     let r = await updateResults(result, context, data.comment);
-    if (r === true) {
+    if (r) {
       // Reload results tree to apply the changes
       await vscode.commands.executeCommand(REFRESH_TREE);
       // Information message
@@ -108,7 +108,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
 
 export async function triageChanges(detailsPanel:vscode.WebviewPanel,detailsDetachedView:AstDetailsDetached){
   // Case there is feedback on the severity
-  if (detailsDetachedView.getLoad() !== true) {
+  if (!detailsDetachedView.getLoad()) {
     detailsDetachedView.setLoad(true);
     // Update webview html
     detailsPanel!.webview.html =
