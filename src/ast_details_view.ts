@@ -93,7 +93,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, this.result.getIcon())
     );
     const nonce = getNonce();
-    const selectClassname = "select_"+this.result.severity.toLowerCase();
+    const selectClassname = "select-"+this.result.severity.toLowerCase();
     const html = new Details(this.result,this.context);
 	  return `<!DOCTYPE html>
 			<html lang="en">
@@ -108,10 +108,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             Checkmarx
           </title>
         </head>
-        <div>
+        <div id="main_div">
           ${html.header(severityPath)}
           ${html.triage(selectClassname)}
-          ${html.tab(html.generalTab(),html.detailsTab(), this.loadChanges===true? await html.changesTab():html.loader(),"General","Learn More","Changes")}
+          ${html.tab(html.generalTab(),html.detailsTab(), html.loader(),"General","Learn More","Changes")}
         </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	

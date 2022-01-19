@@ -120,8 +120,7 @@ export async function triageShow(projectId: string,similarityId: string,scanType
 		r = scans.payload;
 	}
 	else{
-		r.push(ERROR_MESSAGE);
-		r.push(scans.status);
+		throw new Error(scans.status);
 	}
 	return r;
 }
@@ -138,7 +137,7 @@ export async function triageUpdate(projectId: string,similarityId: string,scanTy
 		r = scans.exitCode;
 	}
 	else{
-		r=-1;
+		throw new Error(scans.status);
 	}
 	return r;
 }

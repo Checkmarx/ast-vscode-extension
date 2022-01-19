@@ -11,12 +11,12 @@ import {
   IssueLevel,
   IssueFilter,
   StateLevel,
-  ERROR,
   NOT_EXPLOITABLE_FILTER,
   PROPOSED_FILTER,
   CONFIRMED_FILTER,
   TO_VERIFY_FILTER,
   URGENT_FILTER,
+  NOT_IGNORED_FILTER,
   IGNORED_FILTER,
 } from "./utils/constants";
 import { Logs } from "./models/logs";
@@ -27,9 +27,10 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import {filter, filterState, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
 import { getBranchListener } from "./utils/listeners";
-import { getAstConfiguration } from "./utils/ast";
-import { triageChanges, triageSubmit, updateResults } from "./utils/triage";
+import { getAstConfiguration, triageShow } from "./utils/ast";
+import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
+import { getChanges } from "./utils/utils";
 
 export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
@@ -118,6 +119,10 @@ export async function activate(context: vscode.ExtensionContext) {
       detailsPanel.webview.html = await detailsDetachedView.getDetailsWebviewContent(
         detailsPanel.webview,
       );
+
+      // Start to load the changes tab, get called everytime a new details webview is opened
+      getChanges(logs,context,result,detailsPanel);
+      // Comunication between webview and extension
       detailsPanel.webview.onDidReceiveMessage(async data => {
         switch (data.command) {
           // Catch open file message to open and view the result entry
@@ -126,11 +131,8 @@ export async function activate(context: vscode.ExtensionContext) {
             break;
           // Catch submit message to open and view the result entry
           case 'submit':
-            await triageSubmit(result,context,data,logs,detailsPanel!,detailsDetachedView);
-            break;
-          // Catch load changes
-          case 'changes':
-            await triageChanges(detailsPanel!,detailsDetachedView);
+            triageSubmit(result, context, data, logs, detailsPanel!, detailsDetachedView);
+            getChanges(logs,context,result,detailsPanel!);
             break;
         }
       });
@@ -197,6 +199,8 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterToVerifyActive`, async () => await filterState(logs, context, astResultsProvider, StateLevel.toVerify, TO_VERIFY_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterUrgent`, async () => await filterState(logs, context, astResultsProvider, StateLevel.urgent, URGENT_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterUrgentActive`, async () => await filterState(logs, context, astResultsProvider,  StateLevel.urgent, URGENT_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterNotIgnored`, async () => await filterState(logs, context, astResultsProvider, StateLevel.notIgnored, NOT_IGNORED_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterNotIgnoredActive`, async () => await filterState(logs, context, astResultsProvider,  StateLevel.notIgnored, NOT_IGNORED_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterIgnored`, async () => await filterState(logs, context, astResultsProvider, StateLevel.ignored, IGNORED_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterIgnoredActive`, async () => await filterState(logs, context, astResultsProvider,  StateLevel.ignored, IGNORED_FILTER)));
   
@@ -207,6 +211,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterToVerifies`, async () => await filterState(logs, context, astResultsProvider, StateLevel.toVerify, TO_VERIFY_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterUrgents`, async () => await filterState(logs, context, astResultsProvider, StateLevel.urgent, URGENT_FILTER)));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterIgnoreds`, async () => await filterState(logs, context, astResultsProvider, StateLevel.ignored, IGNORED_FILTER)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterNotIgnoreds`, async () => await filterState(logs, context, astResultsProvider, StateLevel.notIgnored, NOT_IGNORED_FILTER)));
   
   // Pickers command 
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.generalPick`, async () => { await multiStepInput(logs, context); }));

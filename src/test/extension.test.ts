@@ -303,7 +303,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
-      By.className("title_td")
+      By.className("title-td")
     );
     await delay(FIVE_SECONDS);
     let title = await titleWebElement.getText();
@@ -341,7 +341,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(
-      By.id("tab1_label")
+      By.id("general-label")
     );
     await generalTab.click();
     expect(generalTab).is.not.undefined;
@@ -356,7 +356,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find Learn More Tab
     let learnTab = await detailsView.findWebElement(
-      By.id("tab2_label")
+      By.id("learn-label")
     );
     await learnTab.click();
     expect(learnTab).is.not.undefined;
@@ -371,14 +371,14 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find Changes Tab
     let changesTab = await detailsView.findWebElement(
-      By.id("tab3_label")
+      By.id("changes-label")
     );
     await changesTab.click();
     // Make sure that the changes tab is loaded
     driver.wait(
       until.elementLocated(
         By.className(
-          "history_container_loader"
+          "history-container-loader"
         )
       ),
       FIFTY_SECONDS

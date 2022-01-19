@@ -1,18 +1,5 @@
-.header_table {
-  width: 100%;
-  padding: 2%;
-  background-color: var(--vscode-editor-background);
-}
-
 .subtitle {
   margin-top: 0.5em;
-}
-
-.content_table {
-  width: 100%;
-  padding: 2%;
-  height: 100%;
-  background-color: var(--vscode-editor-background);
 }
 
 .tooltip {
@@ -48,7 +35,7 @@
   margin-bottom: 0.5em;
 }
 
-.title_td {
+.title-td {
   width: 90%;
   height: 10%;
 }
@@ -65,31 +52,31 @@
   margin-right: auto;
 }
 
-.details_table td {
+.details-table td {
   padding-left: 0.2em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
 }
 
-.details_table tr {
+.details-table tr {
   background-color: var(--vscode-input-background);
 }
 
-.details_table tr > td:first-child {
+.details-table tr > td:first-child {
   border-left: 2px solid transparent;
 }
 
-.details_table tr:hover > td:first-child {
+.details-table tr:hover > td:first-child {
   border-left: 2px solid var(--vscode-input-foreground);
 }
 
-.details_table {
+.details-table {
   border-spacing: 0 10px;
   border-collapse: separate;
   width: 100%;
 }
 
-.select_high {
+.select-high {
   margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
@@ -102,7 +89,7 @@
   color: var(--vscode-foreground);
   cursor: pointer;
 }
-.select_medium {
+.select-medium {
   margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
@@ -116,7 +103,7 @@
   cursor: pointer;
 }
 
-.select_info {
+.select-info {
   margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
@@ -130,7 +117,7 @@
   cursor: pointer;
 }
 
-.select_low {
+.select-low {
   margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
@@ -173,10 +160,10 @@
 
 .status:hover,
 .state:hover,
-.select_low:hover,
-.select_info:hover,
-.select_medium:hover,
-.select_high:hover,
+.select-low:hover,
+.select-info:hover,
+.select-medium:hover,
+.select-high:hover,
 .comments:hover{
   border-color: var(--vscode-button-hoverBackground);
 }
@@ -213,9 +200,9 @@ input { display: none; }
 input + label { display: inline-block }
 
 input ~ .tab { display: none }
-#tab1:checked ~ .tab.content1,
-#tab2:checked ~ .tab.content2,
-#tab3:checked ~ .tab.content3
+#general-tab:checked ~ .tab.general,
+#learn-tab:checked ~ .tab.learn,
+#changes-tab:checked ~ .tab.changes
 { display: block; }
 
 input + label {
@@ -241,7 +228,7 @@ input ~ .tab {
   padding: 0.75em;
 }
 
-.comment_container{
+.comment-container{
   padding: 0.2em;
 }
 
@@ -257,27 +244,27 @@ input ~ .tab {
   display: none;
 }
 
-.comment_placeholder{
+.comment-placeholder{
   font-size: 0.9em;
   cursor: pointer;
 }
 
-.history_container{
+.history-container{
   margin-top: 1em;
   background-color:var(--vscode-input-background) ;
   padding: 0.5em;
 }
 
-.history_container:hover{
+.history-container:hover{
   border-left: 2px solid var(--vscode-input-foreground);
 }
 
-.history_container_loader{
+.history-container-loader{
   margin-top: 1em;
   padding: 0.5em;
 }
 
-.history_header{
+.history-header{
   display: inline-block;
 }
 
@@ -295,7 +282,7 @@ input ~ .tab {
   width:calc(100% - 2.5em) ;
 }
 
-.text_content{
+.text-content{
   margin-top: 0.5em;
 }
 

@@ -121,6 +121,8 @@ export class AstResult {
       case "URGENT":
         return StateLevel.urgent;
       case "NOT_IGNORED":
+        return StateLevel.notIgnored;
+       case "IGNORED":
         return StateLevel.ignored;
     }
   }

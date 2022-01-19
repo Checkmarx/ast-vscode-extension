@@ -1,9 +1,6 @@
 import { AstResult } from "../models/results";
 import * as vscode from "vscode";
-import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS,TYPES } from "./constants";
-import { triageShow } from "./ast";
-import { get } from "./globalState";
-import { convertDate } from "./utils";
+import { STATE, STATUS } from "./constants";
 
 export class Details {
 	result:AstResult;
@@ -15,13 +12,13 @@ export class Details {
 
 	header(severityPath:vscode.Uri){
 		return(
-			`<table class="header_table" >
+			`<table class="header-table" >
 				<tbody>
 					<tr>
 						<td class="logo_td">
-							<img class="logo" src="${severityPath}" alt="CxLogo"/>
+							<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img"/>
 						</td>
-						<td class="title_td">
+						<td class="title-td">
 							<h2> 
 								${this.result.label.replaceAll("_", " ")}  
 							</h2>
@@ -35,13 +32,15 @@ export class Details {
 	loader():string{
 		return(
 			`
-			<center>
-				<p class=\"history_container_loader\">
-					Loading changes
-				</p>
-				<div class=\"loader\">
-				</div>
-			</center>
+			<div id=\"history-container-loader\">
+				<center>
+					<p class=\"history-container-loader\">
+						Loading changes
+					</p>
+					<div class=\"loader\">
+					</div>
+				</center>
+			</div>
 			`
 		);
 	}
@@ -84,12 +83,12 @@ export class Details {
 					Update
 				</button>
 			</div>
-			<div class="comment_container">
-				<p id="show_comment" class="comment_placeholder"> 
+			<div class="comment-container">
+				<p id="show_comment" class="comment-placeholder"> 
 					<a id="comment_label">Show comment &#8615</a>
 				</p>
 			</div>
-			<div class="comment_container">
+			<div class="comment-container">
 				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
 			</div>
 			</br>`
@@ -112,7 +111,7 @@ export class Details {
 					${this.result.data.value ? this.result.getKicsValues() : ""}
 				</span>
 				${this.result.getTitle()}
-				<table class="details_table">
+				<table class="details-table">
 					<tbody>
 						${this.result.getHtmlDetails()}
 					</tbody>
@@ -121,57 +120,6 @@ export class Details {
 		);
 	}
 
-	async changesTab(){
-		let projectId = get(this.context,PROJECT_ID_KEY)?.id;
-		let changes:any[] |undefined = await triageShow(projectId!,this.result.similarityId,TYPES[this.result.type]);
-		let html = "<body>";
-		if(changes!.length>0){
-			// 
-			if(changes![0] !== ERROR_MESSAGE){
-				for (let change of changes!) {
-					html+=this.userCardInfo(change.CreatedBy,convertDate(change.CreatedAt),this.infoChanges(change));
-				}
-			}
-			else{
-				html+=
-				`
-				<p>
-					${changes![1]}
-				</p>
-				`;
-			}
-		}
-		else{
-			html+=
-				`
-				<div class="history_container">
-					<p>
-						No changes to display. 
-					</p>
-				</div>`;
-		}
-		html+="</body>";
-		return html;
-	}
-
-	infoChanges(change:any){
-		let classname="";
-		if(change.Comment.length>0){
-			classname = "comment";
-		}
-		return(
-			`<p class="${change.Severity.length>0?"select_"+change.Severity.toLowerCase():""}">
-				${change.Severity.length>0?change.Severity:"No changes in severity."}
-			</p>
-			<p class="state">
-				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
-			</p>
-			<p class=${classname}>
-				${change.Comment.length>0?change.Comment:""}
-			</p>
-			`
-		);
-	}
 	detailsTab(){
 		return(
 			`<p>
@@ -180,47 +128,28 @@ export class Details {
 		);
 	}
 	
-	// Generic card for changes
-	userCardInfo(username:string,date:string,info:string){
-		return(
-			`<div class="history_container">
-				<div class="history_header">
-				<div class="username">
-					${username}
-				</div>
-				<div class="date">
-					${date}
-				</div>
-				</div>
-				<div class="text_content">
-					${info}
-				</div>
-			</div>`
-		);
-	}
-
 	// Generic tab component
 	tab(tab1Content:string,tab2Content:string,tab3Content:string,tab1Label:string,tab2Label:string,tab3Label:string){
 		return(
-			`<input type="radio" name="tabs" id="tab1" checked />
-			<label for="tab1" id="tab1_label">
+			`<input type="radio" name="tabs" id="general-tab" checked />
+			<label for="general-tab" id="general-label">
 				${tab1Label}
 			</label>
-			<input type="radio" name="tabs" id="tab2" />
-			<label for="tab2" id="tab2_label">
+			<input type="radio" name="tabs" id="learn-tab" />
+			<label for="learn-tab" id="learn-label">
 				${tab2Label}
 			</label>
-			<input type="radio" name="tabs" id="tab3" />
-			<label for="tab3" id="tab3_label">
+			<input type="radio" name="tabs" id="changes-tab" />
+			<label for="changes-tab" id="changes-label">
 				${tab3Label}
 			</label>
-			<div class="tab content1">
+			<div class="tab general">
 				${tab1Content}
 			</div>
-			<div class="tab content2">
+			<div class="tab learn">
 				${tab2Content}
 			</div>
-			<div class="tab content3">
+			<div class="tab changes">
 				${tab3Content}
 			</div>`
 		);

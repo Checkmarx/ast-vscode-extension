@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "../ast_results_provider";
 import { Logs } from "../models/logs";
 import { REFRESH_TREE } from "./commands";
-import {CONFIRMED_FILTER, HIGH_FILTER, IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER} from "./constants";
+import {CONFIRMED_FILTER, HIGH_FILTER, NOT_IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER, IGNORED_FILTER} from "./constants";
 
 export async function initializeFilters(logs: Logs,
 	context: vscode.ExtensionContext,
@@ -45,6 +45,10 @@ export async function initializeFilters(logs: Logs,
 	const urgent = context.globalState.get<boolean>(URGENT_FILTER) ?? true;
 	updateResultsProviderState(astResultsProvider, StateLevel.urgent, urgent);
 	await updateFilter(context, URGENT_FILTER, urgent);
+
+	const notIgnored = context.globalState.get<boolean>(NOT_IGNORED_FILTER) ?? true;
+	updateResultsProviderState(astResultsProvider, StateLevel.notIgnored, notIgnored);
+	await updateFilter(context, NOT_IGNORED_FILTER, notIgnored);
 
 	const ignored = context.globalState.get<boolean>(IGNORED_FILTER) ?? true;
 	updateResultsProviderState(astResultsProvider, StateLevel.ignored, ignored);

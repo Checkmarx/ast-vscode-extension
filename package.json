@@ -245,9 +245,15 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterIgnoredActive",
+        "command": "ast-results.filterNotIgnoredActive",
         "category": "checkmarx-ast",
         "title": "✓ Filter by: Not Ignored",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.filterIgnoredActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Filter by: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
@@ -287,9 +293,15 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterIgnored",
+        "command": "ast-results.filterNotIgnored",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Filter by: Not Ignored",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.filterIgnored",
+        "category": "checkmarx-ast",
+        "title": "­­­ ­­ ­ ­ ­Filter by: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
@@ -331,79 +343,116 @@
       {
         "command": "ast-results.filterIgnoreds",
         "category": "checkmarx-ast",
+        "title": "Filter by: Ignored",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterNotIgnoreds",
+        "category": "checkmarx-ast",
         "title": "Filter by: Not Ignored",
         "enablement": "ast-results.isValidCredentials"
       }
     ],
-    "submenus": [
-      {
-        "id": "ast-results.filterBy",
-        "label": "Filter",
-        "icon": "$(filter)",
-        "enablement": "ast-results.isValidCredentials"
-      }
-    ],
+	  "submenus": [
+		{
+		  "id": "ast-results.filterBy",
+		  "label": "Filter",
+		  "icon": "$(filter)",
+		  "enablement": "ast-results.isValidCredentials"
+		}],
     "menus": {
       "ast-results.filterBy": [
         {
-          "command": "ast-results.filterNotExploitableActive",
-          "group": "navigation@1",
-          "when": "ast-results-NotExploitable"
+        "command": "ast-results.filterNotExploitableActive",
+        "group": "navigation@1",
+        "when": "ast-results-NotExploitable"
         },
         {
-          "command": "ast-results.filterProposedActive",
-          "group": "navigation@2",
-          "when": "ast-results-Proposed"
+        "command": "ast-results.filterProposedActive",
+        "group": "navigation@2",
+        "when": "ast-results-Proposed"
         },
         {
-          "command": "ast-results.filterConfirmedActive",
-          "group": "navigation@3",
-          "when": "ast-results-Confirmed"
+        "command": "ast-results.filterConfirmedActive",
+        "group": "navigation@3",
+        "when": "ast-results-Confirmed"
         },
         {
-          "command": "ast-results.filterToVerifyActive",
-          "group": "navigation@4",
-          "when": "ast-results-ToVerify"
+        "command": "ast-results.filterToVerifyActive",
+        "group": "navigation@4",
+        "when": "ast-results-ToVerify"
         },
         {
-          "command": "ast-results.filterUrgentActive",
-          "group": "navigation@5",
-          "when": "ast-results-Urgent"
+        "command": "ast-results.filterUrgentActive",
+        "group": "navigation@5",
+        "when": "ast-results-Urgent"
         },
         {
-          "command": "ast-results.filterIgnoredActive",
-          "group": "navigation@6",
-          "when": "ast-results-Ignored"
+        "command": "ast-results.filterNotIgnoredActive",
+        "group": "navigation@6",
+        "when": "ast-results-NotIgnored"
         },
         {
-          "command": "ast-results.filterNotExploitable",
-          "group": "navigation@1",
-          "when": "!ast-results-NotExploitable"
+        "command": "ast-results.filterIgnoredActive",
+        "group": "navigation@7",
+        "when": "ast-results-Ignored"
         },
         {
-          "command": "ast-results.filterProposed",
-          "group": "navigation@2",
-          "when": "!ast-results-Proposed"
+        "command": "ast-results.filterNotExploitable",
+        "group": "navigation@1",
+        "when": "!ast-results-NotExploitable"
         },
         {
-          "command": "ast-results.filterConfirmed",
-          "group": "navigation@3",
-          "when": "!ast-results-Confirmed"
+        "command": "ast-results.filterProposed",
+        "group": "navigation@2",
+        "when": "!ast-results-Proposed"
         },
         {
-          "command": "ast-results.filterToVerify",
-          "group": "navigation@4",
-          "when": "!ast-results-ToVerify"
+        "command": "ast-results.filterConfirmed",
+        "group": "navigation@3",
+        "when": "!ast-results-Confirmed"
         },
         {
-          "command": "ast-results.filterUrgent",
-          "group": "navigation@5",
-          "when": "!ast-results-Urgent"
+        "command": "ast-results.filterToVerify",
+        "group": "navigation@4",
+        "when": "!ast-results-ToVerify"
         },
         {
-          "command": "ast-results.filterIgnored",
-          "group": "navigation@6",
-          "when": "!ast-results-Ignored"
+        "command": "ast-results.filterUrgent",
+        "group": "navigation@5",
+        "when": "!ast-results-Urgent"
+        },
+        {
+        "command": "ast-results.filterNotIgnored",
+        "group": "navigation@6",
+        "when": "!ast-results-NotIgnored"
+        },
+        {
+        "command": "ast-results.filterIgnored",
+        "group": "navigation@7",
+        "when": "!ast-results-Ignored"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ast-results.projectPick",
+          "group": "inline",
+          "when": "viewItem == project-item"
+        },
+        {
+          "command": "ast-results.branchPick",
+          "group": "inline",
+          "when": "viewItem == branch-item"
+        },
+        {
+          "command": "ast-results.scanPick",
+          "group": "inline",
+          "when": "viewItem == scan-item"
+        },
+        {
+          "command": "ast-results.scanInput",
+          "group": "inline",
+          "when": "viewItem == scan-item"
         }
       ],
       "view/title": [
@@ -479,18 +528,18 @@
         },
         {
           "command": "ast-results.clear",
-          "group": "navigation@8",
-          "when": "view == astResults"
-        },
-        {
-          "command": "ast-results.generalPick",
           "group": "navigation@6",
           "when": "view == astResults"
         },
         {
-          "submenu": "ast-results.filterBy",
+          "command": "ast-results.generalPick",
           "group": "navigation@5",
           "when": "view == astResults"
+        },
+        {
+        "submenu": "ast-results.filterBy",
+        "group": "navigation@5",
+        "when": "view == astResults"
         }
       ]
     },
@@ -508,7 +557,7 @@
         {
           "id": "astView",
           "title": "CxAST",
-          "icon": "media/icon.png"
+          "icon": "media/cx-icon.svg"
         }
       ]
     },

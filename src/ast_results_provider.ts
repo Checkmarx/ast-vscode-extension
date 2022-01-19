@@ -35,7 +35,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
-  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent,StateLevel.ignored];
+  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored];
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
@@ -84,20 +84,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async openRefreshData(): Promise<void> {
     this.showStatusBarItem();
-    let scanId = get(this.context, SCAN_ID_KEY)?.name!;
-    if(scanId){
-      if(scanId.length>0){
-        await getResultsWithProgress(this.logs, scanId);
-        await vscode.commands.executeCommand(REFRESH_TREE);
-      }
-      else{
-        this.refreshData();
-      }
+    const scanId = get(this.context, SCAN_ID_KEY)?.name!;
+    if (scanId) {
+      await getResultsWithProgress(this.logs, scanId);
+      await vscode.commands.executeCommand(REFRESH_TREE);
+      this.hideStatusBarItem();
     }
-    this.hideStatusBarItem();
   }
   
-
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
