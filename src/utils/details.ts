@@ -1,6 +1,6 @@
 import { AstResult } from "../models/results";
 import * as vscode from "vscode";
-import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS,TYPES } from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS, SCA } from "./constants";
 import { triageShow } from "./ast";
 import { get } from "./globalState";
 import { convertDate } from "./utils";
@@ -46,14 +46,10 @@ export class Details {
 		);
 	}
 
-	triage(selectClassname:string){
-		let state = STATE;
-		if(this.result.type === 'dependency'){
-			state = STATE.filter((element)=> {return (element.dependency===true);});
-		}
-		else{
-			state = STATE.filter((element)=> {return (element.dependency!==true);});
-		}
+	triage(selectClassname: string) {
+		let state = STATE.filter((element) => {
+			return (!!element.dependency === (this.result.type === SCA));
+		});
 		return(
 			`<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
@@ -101,10 +97,10 @@ export class Details {
 			`<body>
 				<span class="details">
 					${
-					this.result.data.description
+					this.result.description
 						? 
 						"<p>" + 
-							this.result.data.description + 
+							this.result.description + 
 						"</p>"
 						: 
 						''
@@ -123,7 +119,7 @@ export class Details {
 
 	async changesTab(){
 		let projectId = get(this.context,PROJECT_ID_KEY)?.id;
-		let changes:any[] |undefined = await triageShow(projectId!,this.result.similarityId,TYPES[this.result.type]);
+		let changes: any[] | undefined = await triageShow(projectId!, this.result.similarityId, this.result.type);
 		let html = "<body>";
 		if(changes!.length>0){
 			// 
