@@ -41,7 +41,7 @@ export async function updateResults(result: AstResult,context:vscode.ExtensionCo
     }
     // Update the result in ast
     let projectId = get(context, PROJECT_ID_KEY)?.id;
-    await triageUpdate(
+    let update = await triageUpdate(
       projectId ? projectId : "",
       result.similarityId,
       result.type,
@@ -49,6 +49,9 @@ export async function updateResults(result: AstResult,context:vscode.ExtensionCo
       comment,
       result.severity
     );
+    if (update !== 0) {
+      r = false;
+    }
   }
   return r;
 }
@@ -81,7 +84,8 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
     detailsDetachedView!.setResult(result);
     detailsDetachedView.setLoad(false);
     // Update webview html
-    detailsPanel!.webview.html = await detailsDetachedView.getDetailsWebviewContent(detailsPanel!.webview);
+    detailsPanel!.webview.html =
+      await detailsDetachedView.getDetailsWebviewContent(detailsPanel!.webview);
     // Change the results locally
     let r = await updateResults(result, context, data.comment);
     if (r) {
@@ -99,18 +103,5 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
   // Case the submit is sent without any change
   else {
     logs.log("ERROR", "Make a change before submiting");
-  }
-}
-
-export async function triageChanges(detailsPanel:vscode.WebviewPanel,detailsDetachedView:AstDetailsDetached){
-  // Case there is feedback on the severity
-  if (!detailsDetachedView.getLoad()) {
-    detailsDetachedView.setLoad(true);
-    // Update webview html
-    detailsPanel!.webview.html =
-      await detailsDetachedView.getDetailsWebviewContent(detailsPanel!.webview);
-    detailsPanel?.webview.postMessage({ command: "changesLoaded" });
-    // Information message
-    vscode.window.showInformationMessage("Changes loaded successfully.");
   }
 }
