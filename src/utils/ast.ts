@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxPredicate from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/predicates/CxPredicate";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
@@ -94,6 +93,7 @@ export async function getScans(projectId: string | undefined, branch: string | u
 
 export function getAstConfiguration() {
 	const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
+	const baseAuthURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-auth-uri") as string;
 	const tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
 	const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 	
@@ -104,6 +104,7 @@ export function getAstConfiguration() {
 	const config = new CxConfig();
 	config.apiKey = token;
 	config.baseUri = baseURI;
+	config.baseAuthUri = baseAuthURI;
 	config.tenant = tenant;
 	return config;
 }

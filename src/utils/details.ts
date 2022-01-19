@@ -1,6 +1,6 @@
 import { AstResult } from "../models/results";
 import * as vscode from "vscode";
-import { STATE, STATUS } from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS, SCA } from "./constants";
 
 export class Details {
 	result:AstResult;
@@ -45,14 +45,10 @@ export class Details {
 		);
 	}
 
-	triage(selectClassname:string){
-		let state = STATE;
-		if(this.result.type === 'dependency'){
-			state = STATE.filter((element)=> {return (element.dependency===true);});
-		}
-		else{
-			state = STATE.filter((element)=> {return (element.dependency!==true);});
-		}
+	triage(selectClassname: string) {
+		let state = STATE.filter((element) => {
+			return (!!element.dependency === (this.result.type === SCA));
+		});
 		return(
 			`<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
@@ -100,10 +96,10 @@ export class Details {
 			`<body>
 				<span class="details">
 					${
-					this.result.data.description
+					this.result.description
 						? 
 						"<p>" + 
-							this.result.data.description + 
+							this.result.description + 
 						"</p>"
 						: 
 						''

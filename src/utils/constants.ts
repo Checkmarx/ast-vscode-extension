@@ -40,9 +40,9 @@ export const RESULTS_FILE_EXTENSION: string = "json";
 export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
 export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];
 
-export const TYPES : {
-	[key: string]: string,
-   } = {"infrastructure":"kics","dependency":"sca","sast":"sast"};
+export const SAST: string = "sast";
+export const KICS: string = "kics";
+export const SCA: string = "sca";
 
 export enum IssueFilter {
 	fileName = "fileName",

@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Checkmarx AST CLI Action
-        uses: checkmarxDev/ast-github-action@master
+        uses: checkmarx/ast-github-action@master
         with:
           project_name: ast-vscode-extension
           branch: master

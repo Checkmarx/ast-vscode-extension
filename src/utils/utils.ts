@@ -5,7 +5,7 @@ import { AstResult } from '../models/results';
 import { get, updateError} from "../utils/globalState";
 import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast";
 import { SHOW_ERROR } from './commands';
-import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, TYPES} from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME} from "./constants";
 
 export function getProperty(o: any, propertyName: string): string {
     return o[propertyName];
@@ -126,7 +126,7 @@ export async function getBranchesWithProgress(logs: Logs, projectId: string) {
 
 export async function getChanges(logs: Logs, context: vscode.ExtensionContext,result:AstResult,detailsPanel:vscode.WebviewPanel) {
 	let projectId = get(context,PROJECT_ID_KEY)?.id;
-	triageShow(projectId!,result.similarityId,TYPES[result.type]).then((changes) => {
+	triageShow(projectId!,result.similarityId,result.type).then((changes) => {
 	  detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
 	}).catch((err) => {
 	  logs.log("ERROR",err);
