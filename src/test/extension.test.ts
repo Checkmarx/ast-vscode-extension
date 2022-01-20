@@ -378,7 +378,7 @@ describe("UI tests", async function () {
     driver.wait(
       until.elementLocated(
         By.className(
-          "history-container-loader"
+          "history-container"
         )
       ),
       FIFTY_SECONDS
