@@ -1,9 +1,19 @@
 export const EXTENSION_NAME: string = "ast-results";
 export const SCAN_ID_KEY: string = "ast-results-scan-id";
+
 export const HIGH_FILTER: string = "ast-results-high";
 export const MEDIUM_FILTER: string = "ast-results-medium";
 export const LOW_FILTER: string = "ast-results-low";
 export const INFO_FILTER: string = "ast-results-info";
+
+export const NOT_EXPLOITABLE_FILTER: string = "ast-results-NotExploitable";
+export const PROPOSED_FILTER: string = "ast-results-Proposed";
+export const CONFIRMED_FILTER: string = "ast-results-Confirmed";
+export const TO_VERIFY_FILTER: string = "ast-results-ToVerify";
+export const URGENT_FILTER: string = "ast-results-Urgent";
+export const NOT_IGNORED_FILTER: string = "ast-results-NotIgnored";
+export const IGNORED_FILTER: string = "ast-results-Ignored";
+
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
@@ -27,8 +37,8 @@ export const GRAPH_ITEM: string = "graph-item";
 export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
 
-export const STATUS = [{class:"select_high",value:"HIGH"},{class:"select_medium",value:"MEDIUM"},{class:"select_low",value:"LOW"},{class:"select_info",value:"INFO"}];
-export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true}];
+export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
+export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];
 
 export const SAST: string = "sast";
 export const KICS: string = "kics";
@@ -39,6 +49,7 @@ export enum IssueFilter {
 	severity = "severity",
 	status = "status",
 	language = "language",
+	state = "state"
   }
   
 export enum IssueLevel {
@@ -47,4 +58,14 @@ export enum IssueLevel {
 	low = "LOW",
 	info = "INFO",
 	empty = "",
+}
+
+export enum StateLevel {
+	urgent = "Urgent",
+	toVerify = "ToVerify",
+	confirmed = "Confirmed",
+	proposed = "Proposed",
+	notExploitable = "NotExploitable",
+	notIgnored = "NotIgnored",
+	ignored = "Ignored"
 }

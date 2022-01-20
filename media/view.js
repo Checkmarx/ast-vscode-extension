@@ -1,7 +1,6 @@
 //@ts-check
 // This script will be run within the webview itself
 // It cannot access the main VS Code APIs directly.
-
 (function () {
 	var selectSeverity="";
 	var selectState="";
@@ -27,6 +26,7 @@
 		});
 	});
 
+	// Activated when clicked in triage update
 	document.querySelectorAll('.submit').forEach(element => {
 		element.addEventListener('click', () => {
 			vscode.postMessage({
@@ -48,23 +48,6 @@
 		selectState=e.target.value;
 		});
 	
-	// Trigered in order to load the changes
-	document.getElementById('tab3').addEventListener('click', (e) => {
-		vscode.postMessage({
-			command: 'changes'
-		});
-	});
-	
-	// Display the changes once loaded
-	window.addEventListener('message', event => {
-		const message = event.data; 
-		switch (message.command) {
-			case 'changesLoaded':
-				const tab = document.getElementById('tab3');
-				tab.click();
-		}
-	});
-
 	// Display the comment text area
 	document.getElementById('show_comment').addEventListener('click', (e) => {
 		let commentBox = document.getElementById('comment_box');
@@ -84,4 +67,98 @@
 		// @ts-ignore
 		comment = e.target.value;
 	});
+	
+	// Display the changes once loaded
+	window.addEventListener('message', event => {
+		const message = event.data; 
+		switch (message.command) {
+			case 'loadChanges':
+				let changes =  message.changes;
+				let loaderContainer = document.getElementById('history-container-loader');
+				loaderContainer.style.display = 'none';
+				loaderContainer.innerHTML = infoChangeContainer(changes);
+				loaderContainer.style.display = 'block';
+				break;
+			case 'loader':
+				// html do loader
+				loaderContainer = document.getElementById('history-container-loader');
+				loaderContainer.innerHTML = loader();
+				loaderContainer.style.display = 'block';
+		}
+	});
+
+	// Container arround the changes
+	function infoChangeContainer(changes){
+		let html = "<body>";
+		if(changes.length>0){
+			for (let change of changes) {
+				html+=userCardInfo(change.CreatedBy,new Date(change.CreatedAt).toLocaleString(),infoChanges(change));
+			}
+		}
+		else{
+			html+=
+				`
+				<div class="history-container">
+					<p>
+						No changes to display. 
+					</p>
+				</div>`;
+		}
+		html+="</body>";
+		return html;
+	}
+
+	// Individual changes
+	function infoChanges(change){		
+		return(
+			`<p class="${change.Severity.length>0?"select-"+change.Severity.toLowerCase():""}">
+				${change.Severity.length>0?change.Severity:"No changes in severity."}
+			</p>
+			<p class="state">
+				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
+			</p>
+			
+				${change.Comment.length>0?
+					`<p class="comment">
+						${change.Comment}
+					</p>`
+					:""}
+			`
+		);
+	}
+	
+	// Generic card for changes
+	function userCardInfo(username,date,info){
+		return(
+			`<div class="history-container">
+				<div class="history-header">
+				<div class="username">
+					${username}
+				</div>
+				<div class="date">
+					${date}
+				</div>
+				</div>
+				<div class="text-content">
+					${info}
+				</div>
+			</div>`
+		);
+	}
+	
+	function loader(){
+		return(
+			`
+			<div id=\"history-container-loader\">
+				<center>
+					<p class=\"history-container-loader\">
+						Loading changes
+					</p>
+					<div class=\"loader\">
+					</div>
+				</center>
+			</div>
+			`
+		);
+	}
 }());

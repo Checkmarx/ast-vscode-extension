@@ -47,7 +47,14 @@ import {
   CX_GROUP_STATUS,
   CX_GROUP_SEVERITY,
   VS_CLOSE_GROUP_EDITOR,
+  CX_FILTER_NOT_EXPLOITABLE,
+  CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
+  CX_FILTER_CONFIRMED,
+  CX_FILTER_TO_VERIFY,
+  CX_FILTER_URGENT,
+  CX_FILTER_NOT_IGNORED,
 } from "./constants";
+import { PROPOSED_FILTER } from "../utils/constants";
 
 describe("UI tests", async function () {
   let bench: Workbench;
@@ -296,7 +303,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
-      By.className("title_td")
+      By.className("title-td")
     );
     await delay(FIVE_SECONDS);
     let title = await titleWebElement.getText();
@@ -334,7 +341,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(
-      By.id("tab1_label")
+      By.id("general-label")
     );
     await generalTab.click();
     expect(generalTab).is.not.undefined;
@@ -349,7 +356,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find Learn More Tab
     let learnTab = await detailsView.findWebElement(
-      By.id("tab2_label")
+      By.id("learn-label")
     );
     await learnTab.click();
     expect(learnTab).is.not.undefined;
@@ -364,14 +371,14 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find Changes Tab
     let changesTab = await detailsView.findWebElement(
-      By.id("tab3_label")
+      By.id("changes-label")
     );
     await changesTab.click();
     // Make sure that the changes tab is loaded
     driver.wait(
       until.elementLocated(
         By.className(
-          "history_container_loader"
+          "history-container"
         )
       ),
       FIFTY_SECONDS
@@ -509,6 +516,96 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     let result = await getResults(scan);
     expect(result).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by Not Exploitable", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_NOT_EXPLOITABLE);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by Proposed Not Exploitable", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_PROPOSED_NOT_EXPLOITABLE);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by Confirmed", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_CONFIRMED);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by To Verify", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_TO_VERIFY);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by Urgent", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_URGENT);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should filter by Not Ignored", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_FILTER_NOT_IGNORED);
+    await delay(THREE_SECONDS);
+    let scan = await treeScans?.findItem(
+      "Scan:  " + process.env.CX_TEST_SCAN_ID
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
     await delay(FIVE_SECONDS);
   });
 });

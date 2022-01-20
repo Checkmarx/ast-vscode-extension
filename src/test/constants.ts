@@ -15,16 +15,27 @@ export const VS_CLOSE_GROUP_EDITOR: string = "Close All Editors in Group";
 export const VS_OPEN_FOLDER: string = "File: Open Folder...";
 
 export const CX_NAME: string = "Checkmarx AST";
+
 export const CX_SELECT_ALL: string = "checkmarx-ast: Select All";
 export const CX_SELECT_PROJECT: string = "checkmarx-ast: Select Project";
 export const CX_SELECT_BRANCH: string = "checkmarx-ast: Select Branch";
 export const CX_SELECT_SCAN: string = "checkmarx-ast: Select Scan";
 export const CX_LOOK_SCAN: string = "checkmarx-ast: Look for Scan";
-export const CX_FILTER_INFO: string = "checkmarx-ast: INFO";
-export const CX_FILTER_LOW: string = "checkmarx-ast: LOW";
-export const CX_FILTER_MEDIUM: string = "checkmarx-ast: MEDIUM";
-export const CX_FILTER_HIGH: string = "checkmarx-ast: HIGH";
+
+export const CX_FILTER_INFO: string = "checkmarx-ast: Filter by severity: Info";
+export const CX_FILTER_LOW: string = "checkmarx-ast: Filter by severity: Low";
+export const CX_FILTER_MEDIUM: string = "checkmarx-ast: Filter by severity: Medium";
+export const CX_FILTER_HIGH: string = "checkmarx-ast: Filter by severity: High";
+
+export const CX_FILTER_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter by: Not Exploitable";
+export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter by: Proposed Not Exploitable";
+export const CX_FILTER_CONFIRMED: string = "checkmarx-ast:Filter by: Confirmed";
+export const CX_FILTER_TO_VERIFY: string = "checkmarx-ast:Filter by: To Verify";
+export const CX_FILTER_URGENT: string = "checkmarx-ast:Filter by: Urgent";
+export const CX_FILTER_NOT_IGNORED: string = "checkmarx-ast:Filter by: Not Ignored";
+
 export const CX_CLEAR: string = "checkmarx-ast: Clear";
+
 export const CX_GROUP_FILE: string = "checkmarx-ast: Group by: File";
 export const CX_GROUP_SEVERITY: string = "checkmarx-ast: Group by: Severity";
 export const CX_GROUP_LANGUAGE: string = "checkmarx-ast: Group by: Language";

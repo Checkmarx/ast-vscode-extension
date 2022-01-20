@@ -105,16 +105,3 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
     logs.log("ERROR", "Make a change before submiting");
   }
 }
-
-export async function triageChanges(detailsPanel:vscode.WebviewPanel,detailsDetachedView:AstDetailsDetached){
-  // Case there is feedback on the severity
-  if (!detailsDetachedView.getLoad()) {
-    detailsDetachedView.setLoad(true);
-    // Update webview html
-    detailsPanel!.webview.html =
-      await detailsDetachedView.getDetailsWebviewContent(detailsPanel!.webview);
-    detailsPanel?.webview.postMessage({ command: "changesLoaded" });
-    // Information message
-    vscode.window.showInformationMessage("Changes loaded successfully.");
-  }
-}

@@ -1,6 +1,6 @@
 import path = require("path");
 import * as vscode from "vscode";
-import { IssueLevel, SCA, KICS } from "../utils/constants";
+import { StateLevel,IssueLevel, SCA, KICS } from "../utils/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
@@ -106,6 +106,25 @@ export class AstResult {
         return IssueLevel.low;
     }
     return IssueLevel.empty;
+  }
+
+  getState() {
+    switch (this.state) {
+      case "NOT_EXPLOITABLE":
+        return StateLevel.notExploitable;
+      case "PROPOSED_NOT_EXPLOITABLE":
+        return StateLevel.proposed;
+      case "CONFIRMED":
+        return StateLevel.confirmed;
+      case "TO_VERIFY":
+        return StateLevel.toVerify;
+      case "URGENT":
+        return StateLevel.urgent;
+      case "NOT_IGNORED":
+        return StateLevel.notIgnored;
+       case "IGNORED":
+        return StateLevel.ignored;
+    }
   }
 
   getHtmlDetails() {

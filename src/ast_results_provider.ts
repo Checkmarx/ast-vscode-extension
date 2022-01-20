@@ -8,6 +8,7 @@ import {
   EXTENSION_NAME,
   IssueFilter,
   IssueLevel,
+  StateLevel,
   SCAN_ID_KEY,
   PROJECT_ID_KEY,
   BRANCH_ID_KEY,
@@ -32,7 +33,9 @@ import { REFRESH_TREE } from "./utils/commands";
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter = IssueFilter.severity;
+  public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
+  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored];
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
@@ -81,20 +84,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async openRefreshData(): Promise<void> {
     this.showStatusBarItem();
-    let scanId = get(this.context, SCAN_ID_KEY)?.name!;
-    if(scanId){
-      if(scanId.length>0){
-        await getResultsWithProgress(this.logs, scanId);
-        await vscode.commands.executeCommand(REFRESH_TREE);
-      }
-      else{
-        this.refreshData();
-      }
+    const scanId = get(this.context, SCAN_ID_KEY)?.name!;
+    if (scanId) {
+      await getResultsWithProgress(this.logs, scanId);
+      await vscode.commands.executeCommand(REFRESH_TREE);
+      this.hideStatusBarItem();
     }
-    this.hideStatusBarItem();
   }
   
-
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
@@ -161,10 +158,11 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       return;
     }
     const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
-    // Verify the current severity fiters applied
+    let node;
+    // Verify the current severity filters applied
     if (this.issueLevel.length > 0) {
-      // Filter only the results for the severity filters type
-      if (this.issueLevel.includes(obj.getSeverity())) {
+      // Filter only the results for the severity and state filters type
+      if (this.issueLevel.includes(obj.getSeverity()) && this.stateLevel.includes(obj.getState()!)) {
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,
@@ -174,7 +172,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
             map
           );
         }
-        const node = groups.reduce(
+        node = groups.reduce(
           (previousValue: TreeItem, currentValue: string) =>
             this.reduceGroups(obj, previousValue, currentValue),
           tree
@@ -218,14 +216,14 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     const tree = previousValue.children
-      ? previousValue.children.find((item) => item.label === value)
+      ? previousValue.children.find((item) => item.label === value.replaceAll("_", " "))
       : undefined;
     if (tree) {
       tree.setDescription();
       return tree;
     }
 
-    const newTree = new TreeItem(value, undefined, undefined, []);
+    const newTree = new TreeItem(value.replaceAll("_", " "), undefined, undefined, []);
     previousValue.children?.push(newTree);
     return newTree;
   }
