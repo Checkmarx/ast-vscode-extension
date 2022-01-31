@@ -556,7 +556,7 @@
       "activitybar": [
         {
           "id": "astView",
-          "title": "CxAST",
+          "title": "Checkmarx",
           "icon": "media/cx-icon.svg"
         }
       ]

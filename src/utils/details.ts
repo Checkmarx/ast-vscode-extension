@@ -3,34 +3,26 @@ import * as vscode from "vscode";
 import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS, SCA } from "./constants";
 
 export class Details {
-	result:AstResult;
-	context:vscode.ExtensionContext;
-	constructor(result: AstResult, context:vscode.ExtensionContext) {
-	  this.result = result;
-	  this.context = context;
+	result: AstResult;
+	context: vscode.ExtensionContext;
+	constructor(result: AstResult, context: vscode.ExtensionContext) {
+		this.result = result;
+		this.context = context;
 	}
 
-	header(severityPath:vscode.Uri){
-		return(
-			`<table class="header-table" >
-				<tbody>
-					<tr>
-						<td class="logo_td">
-							<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img"/>
-						</td>
-						<td class="title-td">
-							<h2> 
-								${this.result.label.replaceAll("_", " ")}  
-							</h2>
-						</td>
-					</tr>
-				</tbody>
-			</table>`
+	header(severityPath: vscode.Uri) {
+		return (
+			`<h2> 
+				<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
+				<span id="cx_title">${this.result.label.replaceAll("_", " ")}<span>
+			</h2>
+			<hr class="division"/>
+			`
 		);
 	}
 
-	loader():string{
-		return(
+	loader(): string {
+		return (
 			`
 			<div id=\"history-container-loader\">
 				<center>
@@ -49,61 +41,53 @@ export class Details {
 		let state = STATE.filter((element) => {
 			return (!!element.dependency === (this.result.type === SCA));
 		});
-		return(
+		const updateButton = this.result.type !== SCA ? `<button class="submit">Update</button>` : ``;
+		const comment = this.result.type !== SCA ? 
+			`<div class="comment-container">
+				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
+			</div>` : ``;
+
+		return (
 			`<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
-					${
-						STATUS.map((element)=>{
-							return(
+					${STATUS.map((element) => {
+				return (
 
-								`<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? 'selected' : ""}>
+					`<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? 'selected' : ""}>
 									${element.value}	
 								</option>`
-							);
-						})
-					}
+				);
+			})
+			}
 				</select>
 				<select id="select_state" class="state">
-					${	
-						state.map((element)=>{
-							return(
-								`<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""}>
-									${element.value}	
-								</option>`
-								
-							);
+					${state.map((element) => {
+						return (
+							`<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""}>
+											${element.value}	
+										</option>`);
 						})
 					}
 				</select>
-				<button class="submit">
-					Update
-				</button>
+				${updateButton}
 			</div>
-			<div class="comment-container">
-				<p id="show_comment" class="comment-placeholder"> 
-					<a id="comment_label">Show comment &#8615</a>
-				</p>
-			</div>
-			<div class="comment-container">
-				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
-			</div>
+			${comment}
 			</br>`
 		);
 	}
 
-	generalTab(){
-		return(
+	generalTab() {
+		return (
 			`<body>
 				<span class="details">
-					${
-					this.result.description
-						? 
-						"<p>" + 
-							this.result.description + 
-						"</p>"
-						: 
-						''
-					}
+					${this.result.description
+				?
+				"<p>" +
+				this.result.description +
+				"</p>"
+				:
+				''
+			}
 					${this.result.data.value ? this.result.getKicsValues() : ""}
 				</span>
 				${this.result.getTitle()}
@@ -116,17 +100,17 @@ export class Details {
 		);
 	}
 
-	detailsTab(){
-		return(
+	detailsTab() {
+		return (
 			`<p>
 			</p>
 			`
 		);
 	}
-	
+
 	// Generic tab component
-	tab(tab1Content:string,tab2Content:string,tab3Content:string,tab1Label:string,tab2Label:string,tab3Label:string){
-		return(
+	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string) {
+		return (
 			`<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}

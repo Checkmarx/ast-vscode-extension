@@ -25,19 +25,10 @@
   visibility: visible;
 }
 
-.logo_td {
-  width: 10%;
-  height: 10%;
-}
 
 .details {
   margin-left: 0.04em;
   margin-bottom: 0.5em;
-}
-
-.title-td {
-  width: 90%;
-  height: 10%;
 }
 
 .division {
@@ -48,8 +39,9 @@
 }
 
 .logo {
-  width: 100%;
+  width: 2.5em;
   margin-right: auto;
+  vertical-align: middle;
 }
 
 .details-table td {
@@ -241,7 +233,6 @@ input ~ .tab {
   color:var(--vscode-editor-foreground);
   resize: none;
   font-family: inherit;
-  display: none;
 }
 
 .comment-placeholder{

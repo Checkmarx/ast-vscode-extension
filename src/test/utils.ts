@@ -2,7 +2,7 @@ import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, Cus
 import { FIVE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
-	var r = await new ActivityBar().getViewControl('CxAST');
+	var r = await new ActivityBar().getViewControl('Checkmarx');
 	return r;
 }
 

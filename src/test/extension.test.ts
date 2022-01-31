@@ -303,7 +303,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
-      By.className("title-td")
+      By.id("cx_title")
     );
     await delay(FIVE_SECONDS);
     let title = await titleWebElement.getText();
