@@ -318,18 +318,12 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Open details view
     let detailsView = await getDetailsView();
-    // Find Show comments
-    let showComments = await detailsView.findWebElement(
-      By.id("comment_label")
-    );
-    await showComments.click();
-    expect(showComments).is.not.undefined;
     // Find Hide comments
-    let hideComments = await detailsView.findWebElement(
-      By.id("comment_label")
+    let comments = await detailsView.findWebElement(
+      By.id("comment_box")
     );
-    await hideComments.click();
-    expect(hideComments).is.not.undefined;
+    await comments.click();
+    expect(comments).is.not.undefined;
     await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });
