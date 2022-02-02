@@ -48,19 +48,6 @@
 		selectState=e.target.value;
 		});
 	
-	// Display the comment text area
-	document.getElementById('show_comment').addEventListener('click', (e) => {
-		let commentBox = document.getElementById('comment_box');
-		let commentLabel = document.getElementById('comment_label');
-		if(commentBox.style.display==='none'){
-			commentBox.style.display = 'flex';
-			commentLabel.innerHTML = 'Hide comment &#8613';
-		}
-		else{
-			commentBox.style.display = 'none';
-			commentLabel.innerHTML = 'Show comment &#8615';
-		}
-	});
 	
 	// Get the content from the comment box
 	document.getElementById('comment_box').addEventListener('change', (e) => {

@@ -303,7 +303,7 @@ describe("UI tests", async function () {
     let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
-      By.className("title-td")
+      By.id("cx_title")
     );
     await delay(FIVE_SECONDS);
     let title = await titleWebElement.getText();
@@ -313,23 +313,17 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("Should click on show and hide comments", async function () {
+  it("Should click on comments", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     // Open details view
     let detailsView = await getDetailsView();
-    // Find Show comments
-    let showComments = await detailsView.findWebElement(
-      By.id("comment_label")
-    );
-    await showComments.click();
-    expect(showComments).is.not.undefined;
     // Find Hide comments
-    let hideComments = await detailsView.findWebElement(
-      By.id("comment_label")
+    let comments = await detailsView.findWebElement(
+      By.id("comment_box")
     );
-    await hideComments.click();
-    expect(hideComments).is.not.undefined;
+    await comments.click();
+    expect(comments).is.not.undefined;
     await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });

@@ -32,10 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Checkmarx AST CLI Action
-        uses: checkmarx/ast-github-action@master
+        uses: checkmarx/ast-github-action@main
         with:
           project_name: ast-vscode-extension
-          branch: master
+          branch: main
           base_uri: ${{ secrets.BASE_URI }}
           cx_tenant: ${{ secrets.TENANT }}
           cx_client_id: ${{ secrets.CLIENT_ID }}

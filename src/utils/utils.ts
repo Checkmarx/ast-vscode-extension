@@ -2,13 +2,13 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
-import { get, updateError} from "../utils/globalState";
+import { get, updateError } from "../utils/globalState";
 import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast";
 import { SHOW_ERROR } from './commands';
-import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME} from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 
 export function getProperty(o: any, propertyName: string): string {
-    return o[propertyName];
+	return o[propertyName];
 }
 
 export function getNonce() {
@@ -32,40 +32,40 @@ export async function getBranchPickItems(logs: Logs, projectId: string, context:
 					id: label,
 				})) : [];
 			} catch (error) {
-				updateError(context,ERROR_MESSAGE + error);
+				updateError(context, ERROR_MESSAGE + error);
 				vscode.commands.executeCommand(SHOW_ERROR);
 				return [];
 			}
 		}
-	  );
+	);
 }
 
-export async function getProjectsPickItems(logs: Logs,context:vscode.ExtensionContext) {
+export async function getProjectsPickItems(logs: Logs, context: vscode.ExtensionContext) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading projects" });
-			  try {
+			progress.report({ message: "Loading projects" });
+			try {
 				const projectList = await getProjectList();
 				return projectList ? projectList.map((label) => ({
 					label: label.name,
 					id: label.id,
 				})) : [];
-			  } catch (error) {
-				updateError(context,ERROR_MESSAGE + error);
+			} catch (error) {
+				updateError(context, ERROR_MESSAGE + error);
 				vscode.commands.executeCommand(SHOW_ERROR);
 				return [];
-			  }
+			}
 		}
-		
-	  );
+
+	);
 }
 
-export async function getScansPickItems(logs: Logs, projectId: string, branchName: string, context:vscode.ExtensionContext) {
+export async function getScansPickItems(logs: Logs, projectId: string, branchName: string, context: vscode.ExtensionContext) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading scans" });
+			progress.report({ message: "Loading scans" });
 			const scanList = await getScans(
 				projectId,
 				branchName
@@ -76,60 +76,61 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 					id: label.id,
 				})) : [];
 			} catch (error) {
-				updateError(context,ERROR_MESSAGE + error);
+				updateError(context, ERROR_MESSAGE + error);
 				vscode.commands.executeCommand(SHOW_ERROR);
 				return [];
 			}
 		}
-	  );
+	);
 }
 
 export async function getResultsWithProgress(logs: Logs, scanId: string) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
-		 	token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading results" });
-			await getResults(scanId );
+			token.onCancellationRequested(() => logs.info("Canceled loading"));
+			progress.report({ message: "Loading results" });
+			await getResults(scanId);
 		}
-	  );
+	);
 }
 
 export async function getScanWithProgress(logs: Logs, scanId: string) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
-		 	token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading scan" });
-			return await getScan(scanId );
+			token.onCancellationRequested(() => logs.info("Canceled loading"));
+			progress.report({ message: "Loading scan" });
+			return await getScan(scanId);
 		}
-	  );
+	);
 }
 
 export async function getProjectWithProgress(logs: Logs, projectId: string) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
-		 	token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading project" });
+			token.onCancellationRequested(() => logs.info("Canceled loading"));
+			progress.report({ message: "Loading project" });
 			return await getProject(projectId);
 		}
-	  );
+	);
 }
 
 export async function getBranchesWithProgress(logs: Logs, projectId: string) {
 	return vscode.window.withProgress(PROGRESS_HEADER,
 		async (progress, token) => {
-		 	token.onCancellationRequested(() => logs.info("Canceled loading"));
-		  	progress.report({ message: "Loading branches" });
+			token.onCancellationRequested(() => logs.info("Canceled loading"));
+			progress.report({ message: "Loading branches" });
 			return await getBranches(projectId);
 		}
-	  );
+	);
 }
 
-export async function getChanges(logs: Logs, context: vscode.ExtensionContext,result:AstResult,detailsPanel:vscode.WebviewPanel) {
-	let projectId = get(context,PROJECT_ID_KEY)?.id;
-	triageShow(projectId!,result.similarityId,result.type).then((changes) => {
-	  detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
+export async function getChanges(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
+	let projectId = get(context, PROJECT_ID_KEY)?.id;
+	triageShow(projectId!, result.similarityId, result.type).then((changes) => {
+		detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
 	}).catch((err) => {
-	  logs.log("ERROR",err);
+		detailsPanel?.webview.postMessage({ command: "loadChanges", changes: []});
+		logs.log("ERROR", err);
 	});
 }
 
@@ -140,7 +141,7 @@ export const PROGRESS_HEADER: vscode.ProgressOptions = {
 };
 
 export function convertDate(date: string | undefined) {
-	if (!date) {return "";}
+	if (!date) { return ""; }
 	return new Date(date).toLocaleString();
 }
 
@@ -155,23 +156,23 @@ export function getResultsFilePath() {
 type CounterKey = string | boolean | number;
 
 interface CounterKeyFunc<T> {
-    (item: T): CounterKey;
+	(item: T): CounterKey;
 }
 
 export class Counter<T> extends Map<CounterKey, number> {
-    key: CounterKeyFunc<T>;
+	key: CounterKeyFunc<T>;
 
-    constructor(items: Iterable<T>, key: CounterKeyFunc<T>) {
-        super();
-        this.key = key;
-        for (let it of items) {
-            this.add(it);
-        }
-    }
+	constructor(items: Iterable<T>, key: CounterKeyFunc<T>) {
+		super();
+		this.key = key;
+		for (let it of items) {
+			this.add(it);
+		}
+	}
 
-    add(it: T) {
-        let k = this.key(it);
-        this.set(k, (this.get(k) || 0) + 1);
-    }
+	add(it: T) {
+		let k = this.key(it);
+		this.set(k, (this.get(k) || 0) + 1);
+	}
 }
 
