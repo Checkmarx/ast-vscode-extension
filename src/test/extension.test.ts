@@ -313,7 +313,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("Should click on show and hide comments", async function () {
+  it("Should click on comments", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
     // Open details view
