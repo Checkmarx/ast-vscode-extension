@@ -109,7 +109,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
      
       treeItems = treeItems.concat(this.createSummaryItem(results));
       
-      const groups = ["type", this.issueFilter];
+      const groups = ["type", this.issueFilter]; // aqui que vou ter que adicionar as diferentes camadas, dependente do comprimento dos filtros
       const treeItem = this.groupBy(results, groups);
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItems = treeItems.concat(treeItem);

@@ -49,7 +49,8 @@ export enum IssueFilter {
 	severity = "severity",
 	status = "status",
 	language = "language",
-	state = "state"
+	state = "state",
+	queryName = "queryName"
   }
   
 export enum IssueLevel {

@@ -9,6 +9,7 @@ export class AstResult {
   label: string = "";
   type: string = "";
   fileName: string = "";
+  queryName: string = "";
   severity: string = "";
   status: string = "";
   language: string = "";
@@ -42,6 +43,7 @@ export class AstResult {
     this.data = result.data;
     this.state = result.state;
     this.similarityId = result.similarityId;
+    this.queryName = result.data.queryName;
 
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
