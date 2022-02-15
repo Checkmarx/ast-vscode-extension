@@ -23,7 +23,7 @@ jobs:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_BASE_URI: ${{ secrets.BASE_URI }}
           CX_TENANT: ${{ secrets.TENANT }}
-          CX_TEST_SCAN_ID: 990d1803-3b82-467c-b03e-0a3e1924e024
+          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: npm install && npm test
       
   cx-scan:
@@ -41,10 +41,5 @@ jobs:
           cx_client_id: ${{ secrets.CLIENT_ID }}
           cx_client_secret: ${{ secrets.CLIENT_SECRET }}
           additional_params: --tags galactica-team
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with: 
-          name: screenshots
-          path: D:\a\ast-vscode-extension\ast-vscode-extension\test-resources\test-resources\screenshots\*.png
+
           
