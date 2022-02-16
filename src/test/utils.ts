@@ -1,5 +1,6 @@
+import { TreeItem } from 'vscode';
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem, WebView} from 'vscode-extension-tester';
-import { FIVE_SECONDS } from './constants';
+import { FIVE_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
 	var r = await new ActivityBar().getViewControl('Checkmarx');
@@ -65,6 +66,29 @@ export async function getDetailsView(): Promise<WebView> {
 	await detailsView.switchToFrame();
 	await delay(FIVE_SECONDS);
 	return detailsView;
+}
+
+export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
+	let children = await engines![0].getChildren();
+	await delay(THREE_SECONDS);
+	// Recursive case, expand and get childrens from the node
+	if(children.length>0){
+		await children[0].expand();
+		await delay(THREE_SECONDS);
+		return validateNestedGroupBy(level+1,children);
+	}
+	// Stoppage case, when childrens list is empty
+	return level;
+}
+
+export async function validateRootNode(scan:any):Promise<[number,any]>{
+	await scan?.expand();
+	await delay(THREE_SECONDS);
+	// Validate engines type node
+	let engines = await scan?.getChildren();
+	await delay(THREE_SECONDS);
+	let size = engines?.length;
+	return [size,engines];
 }
 
  

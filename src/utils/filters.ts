@@ -2,13 +2,14 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "../ast_results_provider";
 import { Logs } from "../models/logs";
 import { REFRESH_TREE } from "./commands";
-import {CONFIRMED_FILTER, HIGH_FILTER, NOT_IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER, IGNORED_FILTER} from "./constants";
+import {CONFIRMED_FILTER, HIGH_FILTER, NOT_IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER, IGNORED_FILTER, IssueFilter, QUERY_NAME_GROUP, LANGUAGE_GROUP, SEVERITY_GROUP, STATUS_GROUP, STATE_GROUP, FILE_GROUP} from "./constants";
+import { updateResultsProviderGroup } from "./group";
 
 export async function initializeFilters(logs: Logs,
 	context: vscode.ExtensionContext,
 	astResultsProvider: AstResultsProvider) {
 
-	logs.info(`Initialize severity filters`);
+	logs.info(`Initializing severity filters`);
 	const high = context.globalState.get<boolean>(HIGH_FILTER) ?? true;
 	updateResultsProvider(astResultsProvider, IssueLevel.high, high);
 	await updateFilter(context, HIGH_FILTER, high);
@@ -25,7 +26,7 @@ export async function initializeFilters(logs: Logs,
 	updateResultsProvider(astResultsProvider, IssueLevel.info, info);
 	await updateFilter(context, INFO_FILTER, info);
 	
-	logs.info(`Initialize state filters`);
+	logs.info(`Initializing state filters`);
 	const notExploitable = context.globalState.get<boolean>(NOT_EXPLOITABLE_FILTER) ?? true;
 	updateResultsProviderState(astResultsProvider, StateLevel.notExploitable, notExploitable);
 	await updateFilter(context, NOT_EXPLOITABLE_FILTER, notExploitable);
@@ -53,7 +54,37 @@ export async function initializeFilters(logs: Logs,
 	const ignored = context.globalState.get<boolean>(IGNORED_FILTER) ?? true;
 	updateResultsProviderState(astResultsProvider, StateLevel.ignored, ignored);
 	await updateFilter(context, IGNORED_FILTER, ignored);
+	
+	logs.info(`Initializing group by selections`);
+	const groupQueryName = context.globalState.get<boolean>(QUERY_NAME_GROUP) ?? false;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.queryName, groupQueryName);
+	await updateFilter(context, QUERY_NAME_GROUP, groupQueryName);
+	await vscode.commands.executeCommand(REFRESH_TREE);
 
+	const groupLanguage = context.globalState.get<boolean>(LANGUAGE_GROUP) ?? false;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.language, groupLanguage);
+	await updateFilter(context, LANGUAGE_GROUP, groupLanguage);
+	await vscode.commands.executeCommand(REFRESH_TREE);
+	
+	// By default only get results grouped by severity 
+	const groupBySeverity = context.globalState.get<boolean>(SEVERITY_GROUP) ?? true;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.severity, groupBySeverity);
+	await updateFilter(context, SEVERITY_GROUP, groupBySeverity);
+	await vscode.commands.executeCommand(REFRESH_TREE);
+
+	const groupByStatus = context.globalState.get<boolean>(STATUS_GROUP) ?? false;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.status, groupByStatus);
+	await updateFilter(context, STATUS_GROUP, groupByStatus);
+	await vscode.commands.executeCommand(REFRESH_TREE);
+
+	const groupByState = context.globalState.get<boolean>(STATE_GROUP) ?? false;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.state, groupByState);
+	await updateFilter(context, STATE_GROUP, groupByState);
+	await vscode.commands.executeCommand(REFRESH_TREE);
+
+	const groupByFileName = context.globalState.get<boolean>(FILE_GROUP) ?? false;
+	updateResultsProviderGroup(astResultsProvider, IssueFilter.fileName, groupByFileName);
+	await updateFilter(context, FILE_GROUP, groupByFileName);
 	await vscode.commands.executeCommand(REFRESH_TREE);
 }
 
@@ -86,7 +117,7 @@ export async function filterState(logs: Logs,
 	await vscode.commands.executeCommand(REFRESH_TREE);
 }
 
-async function updateFilter(context: vscode.ExtensionContext, filter: string, value: boolean) {
+export async function updateFilter(context: vscode.ExtensionContext, filter: string, value: boolean) {
 	await context.globalState.update(filter, value);
 	await vscode.commands.executeCommand("setContext", filter, value);
 }
@@ -114,3 +145,4 @@ function updateResultsProviderState(astResultsProvider: AstResultsProvider, stat
 		});
 	}
 }
+
