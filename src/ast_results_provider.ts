@@ -32,21 +32,28 @@ import { REFRESH_TREE } from "./utils/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter = IssueFilter.severity;
+  public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
-  public stateLevel: StateLevel[] = [StateLevel.confirmed,StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored];
+  public stateLevel: StateLevel[] = [
+    StateLevel.confirmed,
+    StateLevel.toVerify,
+    StateLevel.urgent,
+    StateLevel.notIgnored,
+  ];
 
-  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<TreeItem | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
+    new EventEmitter<TreeItem | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
+    this._onDidChangeTreeData.event;
   private scan: string | undefined;
   private data: TreeItem[] | undefined;
 
   constructor(
-      private readonly context: vscode.ExtensionContext,
-      private readonly logs: Logs,
-      private readonly statusBarItem: vscode.StatusBarItem,
-      private readonly diagnosticCollection: vscode.DiagnosticCollection
+    private readonly context: vscode.ExtensionContext,
+    private readonly logs: Logs,
+    private readonly statusBarItem: vscode.StatusBarItem,
+    private readonly diagnosticCollection: vscode.DiagnosticCollection
   ) {}
 
   private showStatusBarItem() {
@@ -91,26 +98,34 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       this.hideStatusBarItem();
     }
   }
-  
+
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
 
     let treeItems = [
-      new TreeItem(get(this.context, PROJECT_ID_KEY)?.name ?? PROJECT_LABEL, PROJECT_ITEM),
-      new TreeItem(get(this.context, BRANCH_ID_KEY)?.name ?? BRANCH_LABEL, BRANCH_ITEM),
-      new TreeItem(get(this.context, SCAN_ID_KEY)?.name ?? SCAN_LABEL, SCAN_ITEM)];
+      new TreeItem(
+        get(this.context, PROJECT_ID_KEY)?.name ?? PROJECT_LABEL,
+        PROJECT_ITEM
+      ),
+      new TreeItem(
+        get(this.context, BRANCH_ID_KEY)?.name ?? BRANCH_LABEL,
+        BRANCH_ITEM
+      ),
+      new TreeItem(
+        get(this.context, SCAN_ID_KEY)?.name ?? SCAN_LABEL,
+        SCAN_ITEM
+      ),
+    ];
 
     this.scan = get(this.context, SCAN_ID_KEY)?.id;
     if (fs.existsSync(resultJsonPath) && this.scan) {
-     
       const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
       const results = this.orderResults(jsonResults.results);
-     
+
       treeItems = treeItems.concat(this.createSummaryItem(results));
-      
-      const groups = ["type", this.issueFilter];
-      const treeItem = this.groupBy(results, groups);
+
+      const treeItem = this.groupBy(results, this.issueFilter);
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItems = treeItems.concat(treeItem);
     }
@@ -119,13 +134,17 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   orderResults(list: CxResult[]): CxResult[] {
-    const order = ['HIGH', 'MEDIUM', 'LOW', 'INFO'];
-    return list.sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
+    const order = ["HIGH", "MEDIUM", "LOW", "INFO"];
+    return list.sort(
+      (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
+    );
   }
 
   createSummaryItem(list: CxResult[]): TreeItem {
     const counter = new Counter(list, (p: CxResult) => p.severity);
-    const label = Array.from(counter.keys()).map(key =>  `${key}: ${counter.get(key)}`).join(' | ');
+    const label = Array.from(counter.keys())
+      .map((key) => `${key}: ${counter.get(key)}`)
+      .join(" | ");
     return new TreeItem(label, GRAPH_ITEM, undefined);
   }
 
@@ -133,7 +152,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
     const tree = new TreeItem(this.scan ?? "", undefined, undefined, []);
-
     list.forEach((element) =>
       this.groupTree(element, folder, map, groups, tree)
     );
@@ -162,7 +180,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     // Verify the current severity filters applied
     if (this.issueLevel.length > 0) {
       // Filter only the results for the severity and state filters type
-      if (this.issueLevel.includes(obj.getSeverity()) && this.stateLevel.includes(obj.getState()!)) {
+      if (
+        this.issueLevel.includes(obj.getSeverity()) &&
+        this.stateLevel.includes(obj.getState()!)
+      ) {
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,
@@ -209,27 +230,49 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
   }
 
-  reduceGroups(obj: Object, previousValue: TreeItem, currentValue: string) {
-    const value = getProperty(obj, currentValue);
+  reduceGroups(obj: any, previousValue: TreeItem, currentValue: string) {
+    var value = getProperty(obj, currentValue);
+    
+    // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
+    if (currentValue === IssueFilter.fileName && value.length === 0) {
+      value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
+    }
+    
     if (!value) {
       return previousValue;
     }
 
     const tree = previousValue.children
-      ? previousValue.children.find((item) => item.label === value.replaceAll("_", " "))
+      ? previousValue.children.find(
+          (item) => item.label === value.replaceAll("_", " ")
+        )
       : undefined;
     if (tree) {
       tree.setDescription();
       return tree;
     }
 
-    const newTree = new TreeItem(value.replaceAll("_", " "), undefined, undefined, []);
+    const newTree = new TreeItem(
+      value.replaceAll("_", " "),
+      undefined,
+      undefined,
+      []
+    );
     previousValue.children?.push(newTree);
     return newTree;
   }
 
   getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element;
+  }
+
+  kicsLocationGroup(obj: any, value: string): string {
+    // In case nothing is found then its a kics result
+    if (value.length === 0) {
+      // Kics filename is inside data.filename
+      value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
+    }
+    return value;
   }
 
   getChildren(

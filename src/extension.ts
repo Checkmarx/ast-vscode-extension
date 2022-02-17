@@ -18,6 +18,12 @@ import {
   URGENT_FILTER,
   NOT_IGNORED_FILTER,
   IGNORED_FILTER,
+  FILE_GROUP,
+  LANGUAGE_GROUP,
+  SEVERITY_GROUP,
+  STATUS_GROUP,
+  STATE_GROUP,
+  QUERY_NAME_GROUP,
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -165,12 +171,27 @@ export async function activate(context: vscode.ExtensionContext) {
   // Clear Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () =>  await astResultsProvider.clean()));
 
-  // Group Commands 
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFile`, async () => await group(logs, astResultsProvider, IssueFilter.fileName)));
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguage`, async () => await group(logs, astResultsProvider, IssueFilter.language)));
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverity`, async () => await group(logs, astResultsProvider, IssueFilter.severity)));
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatus`, async () => await group(logs, astResultsProvider, IssueFilter.status)));
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByState`, async () => await group(logs, astResultsProvider, IssueFilter.state)));
+  // Group Commands for UI
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFile`, async () => await group(logs, context, astResultsProvider, IssueFilter.fileName, FILE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguage`, async () => await group(logs, context, astResultsProvider, IssueFilter.language, LANGUAGE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverity`, async () => await group(logs, context, astResultsProvider, IssueFilter.severity, SEVERITY_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatus`, async () => await group(logs, context, astResultsProvider, IssueFilter.status, STATUS_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByState`, async () => await group(logs, context, astResultsProvider, IssueFilter.state, STATE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByQueryName`, async () => await group(logs, context, astResultsProvider, IssueFilter.queryName, QUERY_NAME_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFileActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.fileName, FILE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguageActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.language, LANGUAGE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverityActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.severity, SEVERITY_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatusActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.status, STATUS_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStateActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.state, STATE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByQueryNameActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.queryName, QUERY_NAME_GROUP)));
+
+  // Group Commands for command list
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFiles`, async () => await group(logs, context, astResultsProvider, IssueFilter.fileName, FILE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByLanguages`, async () => await  group(logs, context, astResultsProvider, IssueFilter.language, LANGUAGE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupBySeverities`, async () => await group(logs, context, astResultsProvider, IssueFilter.severity, SEVERITY_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatuses`, async () => await group(logs, context, astResultsProvider, IssueFilter.status, STATUS_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStates`, async () => await group(logs, context, astResultsProvider, IssueFilter.state, STATE_GROUP)));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByQueryNames`, async () => await group(logs, context, astResultsProvider, IssueFilter.queryName, QUERY_NAME_GROUP)));
 
   // Severity Filters Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
