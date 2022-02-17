@@ -1,5 +1,3 @@
-// Para o teste local remover 
-const fs = require('fs');
 import { expect } from "chai";
 import {
   VSBrowser,
@@ -59,10 +57,9 @@ import {
   CX_GROUP_STATE,
   CX_GROUP_QUERY_NAME,
 } from "./constants";
-import { PROPOSED_FILTER } from "../utils/constants";
-import { TreeItem } from "vscode";
 
 describe("UI tests", async function () {
+  this.timeout(MAX_TIMEOUT);
   let bench: Workbench;
   let driver: WebDriver;
   before(async () => {
