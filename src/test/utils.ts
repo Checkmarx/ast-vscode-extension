@@ -1,6 +1,6 @@
 import { TreeItem } from 'vscode';
-import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem, WebView} from 'vscode-extension-tester';
-import { FIVE_SECONDS, THREE_SECONDS } from './constants';
+import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, CustomTreeItem, WebView, Workbench} from 'vscode-extension-tester';
+import { CX_FILTER_CONFIRMED, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, FIVE_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
 	var r = await new ActivityBar().getViewControl('Checkmarx');
@@ -69,13 +69,13 @@ export async function getDetailsView(): Promise<WebView> {
 }
 
 export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
-	let children = await engines![0].getChildren();
+	let children = await engines.getChildren();
 	await delay(THREE_SECONDS);
 	// Recursive case, expand and get childrens from the node
 	if(children.length>0){
 		await children[0].expand();
 		await delay(THREE_SECONDS);
-		return validateNestedGroupBy(level+1,children);
+		return validateNestedGroupBy(level+1,children[0]);
 	}
 	// Stoppage case, when childrens list is empty
 	return level;
@@ -91,5 +91,14 @@ export async function validateRootNode(scan:any):Promise<[number,any]>{
 	return [size,engines];
 }
 
+export async function resetTree(bench:Workbench) {
+	const commands = [CX_FILTER_NOT_EXPLOITABLE,CX_FILTER_PROPOSED_NOT_EXPLOITABLE,CX_FILTER_CONFIRMED,CX_FILTER_TO_VERIFY,CX_FILTER_URGENT,CX_FILTER_NOT_IGNORED];	
+	for (var index in commands) {
+		    await bench.executeCommand(commands[index]);
+	}
+	for (var index in commands) {
+		await bench.executeCommand(commands[index]);
+}	
+}
  
 export const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));

@@ -413,6 +413,7 @@ describe("UI tests", async function () {
       );
       await delay(THREE_SECONDS);
       let isValidated = await validateSeverities(scan, commands[index].text);
+      await delay(THREE_SECONDS);
       expect(isValidated).to.equal(true);
       // Reset filters
       await bench.executeCommand(commands[index].command);
@@ -432,6 +433,9 @@ describe("UI tests", async function () {
     );
     // Expand and validate scan node to obtain engine nodes
     let tuple = await validateRootNode(scan);
+    let level = 0;
+    // Get the sast results node, because it is the only one affected by all the group by commands
+    let sastNode = await scan?.findChildItem("sast");
     // Validate for all commands the nested tree elements
     for (var index in commands) {
       await delay(THREE_SECONDS);
@@ -439,8 +443,10 @@ describe("UI tests", async function () {
       await bench.executeCommand(commands[index]);
       await delay(THREE_SECONDS);
       // Validate the nested nodes
-      let level = await validateNestedGroupBy(0,tuple[1]);
-      expect(level).to.equal(parseInt(index)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
+      level = await validateNestedGroupBy(parseInt(index),sastNode);
+      await delay(THREE_SECONDS);
+      // level = (index * 2) + 3 is the cicle invariant, so it must be assured for all apllied filters
+        expect(level).to.equal((parseInt(index)*2)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
     };
     // Size must not be bigger than 3 because there are at most 3 engines in the first node
     expect(tuple[0]).to.be.at.most(3);
