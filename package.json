@@ -737,7 +737,7 @@
     "vscode-extension-tester": "4.2.3",
     "vscode-extension-tester-locators": "^1.59.0",
     "webpack": "^5.53.0",
-    "webpack-cli": "^4.8.0"
+    "webpack-cli": "^4.9.2"
   },
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.44",
