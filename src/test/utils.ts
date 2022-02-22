@@ -41,10 +41,11 @@ export async function getResults(scan:any): Promise<any[]> {
     await children![0].expand();
 	await delay(FIVE_SECONDS);
     let type = await children![0].getChildren();
-	await delay(FIVE_SECONDS);
-    await type[0].expand();
-	await delay(FIVE_SECONDS);
-    return await type[0].getChildren();
+	return type;
+	// await delay(FIVE_SECONDS);
+    // await type[0].expand();
+	// await delay(FIVE_SECONDS);
+    // return await type[0].getChildren();
 }
 
 export async function validateSeverities(scan:any, severity:string): Promise<boolean> {
