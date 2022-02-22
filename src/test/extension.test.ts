@@ -17,6 +17,8 @@ import {
   validateSeverities,
   quickPickSelector,
   getDetailsView,
+  validateNestedGroupBy,
+  validateRootNode,
 } from "./utils";
 import {
   MAX_TIMEOUT,
@@ -45,7 +47,6 @@ import {
   CX_GROUP_FILE,
   CX_GROUP_LANGUAGE,
   CX_GROUP_STATUS,
-  CX_GROUP_SEVERITY,
   VS_CLOSE_GROUP_EDITOR,
   CX_FILTER_NOT_EXPLOITABLE,
   CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
@@ -53,10 +54,12 @@ import {
   CX_FILTER_TO_VERIFY,
   CX_FILTER_URGENT,
   CX_FILTER_NOT_IGNORED,
+  CX_GROUP_STATE,
+  CX_GROUP_QUERY_NAME,
 } from "./constants";
-import { PROPOSED_FILTER } from "../utils/constants";
 
 describe("UI tests", async function () {
+  this.timeout(MAX_TIMEOUT);
   let bench: Workbench;
   let driver: WebDriver;
   before(async () => {
@@ -396,210 +399,73 @@ describe("UI tests", async function () {
     await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });
-
-
-  it("should click low filter", async function () {
+  
+  it("should click on all filter by severity", async function () {
     this.timeout(MAX_TIMEOUT);
+    const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
     await delay(THREE_SECONDS);
     let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_LOW);
+    for (var index in commands) {
+      await bench.executeCommand(commands[index].command);
+      await delay(THREE_SECONDS);
+      let scan = await treeScans?.findItem(
+        "Scan:  " + process.env.CX_TEST_SCAN_ID
+      );
+      await delay(THREE_SECONDS);
+      let isValidated = await validateSeverities(scan, commands[index].text);
+      await delay(THREE_SECONDS);
+      expect(isValidated).to.equal(true);
+      // Reset filters
+      await bench.executeCommand(commands[index].command);
+      await delay(THREE_SECONDS);
+    }
+    
+  });
+  
+  it("should click on all group by", async function () {
+    this.timeout(MAX_TIMEOUT);
+    const commands = [CX_GROUP_FILE,CX_GROUP_LANGUAGE,CX_GROUP_STATUS,CX_GROUP_STATE,CX_GROUP_QUERY_NAME];
+    // Get scan node
+    const treeScans = await initialize();
     await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
+    let scan =  await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "LOW");
-    expect(isValidated).to.equal(true);
-    // Reset filters
-    await bench.executeCommand(CX_FILTER_LOW);
-    await delay(THREE_SECONDS);
+    // Expand and validate scan node to obtain engine nodes
+    let tuple = await validateRootNode(scan);
+    let level = 0;
+    // Get the sast results node, because it is the only one affected by all the group by commands
+    let sastNode = await scan?.findChildItem("sast");
+    // Validate for all commands the nested tree elements
+    for (var index in commands) {
+      await delay(THREE_SECONDS);
+      // Execute the group by command for each command
+      await bench.executeCommand(commands[index]);
+      await delay(THREE_SECONDS);
+      // Validate the nested nodes
+      level = await validateNestedGroupBy(parseInt(index),sastNode);
+      await delay(THREE_SECONDS);
+      // level = (index * 2) + 3 is the cicle invariant, so it must be assured for all apllied filters
+        expect(level).to.equal((parseInt(index)*2)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
+    };
+    // Size must not be bigger than 3 because there are at most 3 engines in the first node
+    expect(tuple[0]).to.be.at.most(3);
   });
 
-  it("should click medium filter", async function () {
+  it("should click on all filter by state", async function () {
     this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_MEDIUM);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "MEDIUM");
-    expect(isValidated).to.equal(true);
-    // Reset filters
-    await bench.executeCommand(CX_FILTER_MEDIUM);
-    await delay(THREE_SECONDS);
-  });
-
-  it("should click high filter", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await bench.executeCommand(CX_FILTER_HIGH);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let isValidated = await validateSeverities(scan, "HIGH");
-    expect(isValidated).to.equal(true);
-    // Reset filters
-    await bench.executeCommand(CX_FILTER_HIGH);
-    await delay(THREE_SECONDS);
-  });
-
-  it("should click group by file", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
+    const commands = [CX_FILTER_NOT_EXPLOITABLE,CX_FILTER_PROPOSED_NOT_EXPLOITABLE,CX_FILTER_CONFIRMED,CX_FILTER_TO_VERIFY,CX_FILTER_URGENT,CX_FILTER_NOT_IGNORED];
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_FILE);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should click group by language", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_LANGUAGE);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should click group by status", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_STATUS);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should click group by severity", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_GROUP_SEVERITY);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    let result = await getResults(scan);
-    expect(result).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by Not Exploitable", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_NOT_EXPLOITABLE);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by Proposed Not Exploitable", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_PROPOSED_NOT_EXPLOITABLE);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by Confirmed", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_CONFIRMED);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by To Verify", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_TO_VERIFY);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by Urgent", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_URGENT);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
-  });
-
-  it("should filter by Not Ignored", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    let treeScans = await initialize();
-    await delay(THREE_SECONDS);
-    await bench.executeCommand(CX_FILTER_NOT_IGNORED);
-    await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-    await delay(FIVE_SECONDS);
+    for (var index in commands) {
+      await bench.executeCommand(commands[index]);
+      await delay(THREE_SECONDS);
+      let scan = await treeScans?.findItem(
+        "Scan:  " + process.env.CX_TEST_SCAN_ID
+      );
+      await delay(THREE_SECONDS);
+      expect(scan).is.not.undefined;
+      await delay(FIVE_SECONDS);
+    }
   });
 });

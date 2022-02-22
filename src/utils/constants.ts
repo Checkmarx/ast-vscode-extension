@@ -14,6 +14,13 @@ export const URGENT_FILTER: string = "ast-results-Urgent";
 export const NOT_IGNORED_FILTER: string = "ast-results-NotIgnored";
 export const IGNORED_FILTER: string = "ast-results-Ignored";
 
+export const QUERY_NAME_GROUP: string = "ast-results-groupByQueryName";
+export const LANGUAGE_GROUP: string = "ast-results-groupByLanguage";
+export const SEVERITY_GROUP: string = "ast-results-groupBySeverity";
+export const STATUS_GROUP: string = "ast-results-groupByStatus";
+export const STATE_GROUP: string = "ast-results-groupByState";
+export const FILE_GROUP: string = "ast-results-groupByFile";
+
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
@@ -46,10 +53,13 @@ export const SCA: string = "sca";
 
 export enum IssueFilter {
 	fileName = "fileName",
+	location = "kicsNode?.data.filename",
 	severity = "severity",
 	status = "status",
 	language = "language",
-	state = "state"
+	state = "state",
+	type="type",
+	queryName = "queryName"
   }
   
 export enum IssueLevel {
