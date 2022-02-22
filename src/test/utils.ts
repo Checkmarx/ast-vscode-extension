@@ -91,14 +91,5 @@ export async function validateRootNode(scan:any):Promise<[number,any]>{
 	return [size,engines];
 }
 
-export async function resetTree(bench:Workbench) {
-	const commands = [CX_FILTER_NOT_EXPLOITABLE,CX_FILTER_PROPOSED_NOT_EXPLOITABLE,CX_FILTER_CONFIRMED,CX_FILTER_TO_VERIFY,CX_FILTER_URGENT,CX_FILTER_NOT_IGNORED];	
-	for (var index in commands) {
-		    await bench.executeCommand(commands[index]);
-	}
-	for (var index in commands) {
-		await bench.executeCommand(commands[index]);
-}	
-}
  
 export const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
