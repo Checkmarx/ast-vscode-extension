@@ -261,7 +261,27 @@ describe("UI tests", async function () {
     expect(branch).is.not.undefined;
     await delay(THREE_SECONDS);
   });
-
+  
+  it("should clear all loaded results", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_CLEAR);
+    await delay(THREE_SECONDS);
+    // Project tree item validation
+    let treeScans = await initialize();
+    let project = await treeScans?.findItem("Project: ");
+    await delay(THREE_SECONDS);
+    expect(project).is.not.undefined;
+    // Branch tree item validation
+    let branch = await treeScans?.findItem("Branch: ");
+    await delay(THREE_SECONDS);
+    expect(branch).is.not.undefined;
+    // Scan tree item validation
+    let scan = await treeScans?.findItem("Scan: ");
+    expect(scan).is.not.undefined;
+    await delay(THREE_SECONDS);
+  });
+  
   it("should load results from scan ID", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
