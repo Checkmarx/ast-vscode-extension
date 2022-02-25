@@ -96,7 +96,7 @@ Checkmarx - AST Integrations Team
 Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github.com/Checkmarx/ast-vscode-extension)
 
 
-© 2021 Checkmarx Ltd. All Rights Reserved.
+© 2022 Checkmarx Ltd. All Rights Reserved.
 
 [contributors-shield]: https://img.shields.io/github/contributors/Checkmarx/ast-vscode-extension.svg?style=flat-square
 [contributors-url]: https://github.com/Checkmarx/ast-vscode-extension/graphs/contributors
