@@ -421,7 +421,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
   
-  it("should click on all filter by severity", async function () {
+  it("should click on all filter severity", async function () {
     this.timeout(MAX_TIMEOUT);
     const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
     await delay(THREE_SECONDS);
@@ -445,7 +445,7 @@ describe("UI tests", async function () {
   
   it("should click on all group by", async function () {
     this.timeout(MAX_TIMEOUT);
-    const commands = [CX_GROUP_FILE,CX_GROUP_LANGUAGE,CX_GROUP_STATUS,CX_GROUP_STATE,CX_GROUP_QUERY_NAME];
+    const commands = [CX_GROUP_LANGUAGE,CX_GROUP_STATUS,CX_GROUP_STATE,CX_GROUP_QUERY_NAME,CX_GROUP_FILE];
     // Get scan node
     const treeScans = await initialize();
     await delay(THREE_SECONDS);
@@ -464,16 +464,16 @@ describe("UI tests", async function () {
       await bench.executeCommand(commands[index]);
       await delay(THREE_SECONDS);
       // Validate the nested nodes
-      level = await validateNestedGroupBy(parseInt(index),sastNode);
+      level = await validateNestedGroupBy(0,sastNode);
       await delay(THREE_SECONDS);
       // level = (index * 2) + 3 is the cicle invariant, so it must be assured for all apllied filters
-        expect(level).to.equal((parseInt(index)*2)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
+      expect(level).to.equal(parseInt(index)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
     };
     // Size must not be bigger than 3 because there are at most 3 engines in the first node
     expect(tuple[0]).to.be.at.most(3);
   });
 
-  it("should click on all filter by state", async function () {
+  it("should click on all filter state", async function () {
     this.timeout(MAX_TIMEOUT);
     const commands = [CX_FILTER_NOT_EXPLOITABLE,CX_FILTER_PROPOSED_NOT_EXPLOITABLE,CX_FILTER_CONFIRMED,CX_FILTER_TO_VERIFY,CX_FILTER_URGENT,CX_FILTER_NOT_IGNORED];
     let treeScans = await initialize();
