@@ -1,9 +1,16 @@
 version: 2
+registries:
+  npm-pkg-checkmarx:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
 updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
+    registries:
+      - npm-pkg-checkmarx
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
