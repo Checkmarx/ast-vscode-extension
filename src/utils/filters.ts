@@ -27,11 +27,11 @@ export async function initializeFilters(logs: Logs,
 	await updateFilter(context, INFO_FILTER, info);
 	
 	logs.info(`Initializing state filters`);
-	const notExploitable = context.globalState.get<boolean>(NOT_EXPLOITABLE_FILTER) ?? true;
+	const notExploitable = context.globalState.get<boolean>(NOT_EXPLOITABLE_FILTER) ?? false;
 	updateResultsProviderState(astResultsProvider, StateLevel.notExploitable, notExploitable);
 	await updateFilter(context, NOT_EXPLOITABLE_FILTER, notExploitable);
 	
-	const proposed = context.globalState.get<boolean>(PROPOSED_FILTER) ?? true;
+	const proposed = context.globalState.get<boolean>(PROPOSED_FILTER) ?? false;
 	updateResultsProviderState(astResultsProvider, StateLevel.proposed, proposed);
 	await updateFilter(context, PROPOSED_FILTER, proposed);
 

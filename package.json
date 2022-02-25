@@ -232,28 +232,28 @@
       {
         "command": "ast-results.filterHigh",
         "category": "checkmarx-ast",
-        "title": "Filter by severity: High",
+        "title": "Filter severity: High",
         "icon": "media/icons/high_untoggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterMedium",
         "category": "checkmarx-ast",
-        "title": "Filter by severity: Medium",
+        "title": "Filter severity: Medium",
         "icon": "media/icons/medium_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterLow",
         "category": "checkmarx-ast",
-        "title": "Filter by severity: Low",
+        "title": "Filter severity: Low",
         "icon": "media/icons/low_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterInfo",
         "category": "checkmarx-ast",
-        "title": "Filter by severity: Info",
+        "title": "Filter severity: Info",
         "icon": "media/icons/info_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
@@ -295,145 +295,145 @@
       {
         "command": "ast-results.filterNotExploitableActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Not Exploitable",
+        "title": "✓ Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterUrgentActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Urgent",
+        "title": "✓ Filter: Urgent",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterProposedActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Proposed Not Exploitable",
+        "title": "✓ Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterConfirmedActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Confirmed",
+        "title": "✓ Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToConfirmActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: To Vonfirm",
+        "title": "✓ Filter: To Vonfirm",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToVerifyActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: To Verify",
+        "title": "✓ Filter: To Verify",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotIgnoredActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Not Ignored",
+        "title": "✓ Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterIgnoredActive",
         "category": "checkmarx-ast",
-        "title": "✓ Filter by: Ignored",
+        "title": "✓ Filter: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotExploitable",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Not Exploitable",
+        "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterUrgent",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Urgent",
+        "title": "­­­ ­­ ­ ­ ­Filter: Urgent",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterProposed",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Proposed Not Exploitable",
+        "title": "­­­ ­­ ­ ­ ­Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterConfirmed",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Confirmed",
+        "title": "­­­ ­­ ­ ­ ­Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToConfirm",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: To Confirm",
+        "title": "­­­ ­­ ­ ­ ­Filter: To Confirm",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToVerify",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: To Verify",
+        "title": "­­­ ­­ ­ ­ ­Filter: To Verify",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotIgnored",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Not Ignored",
+        "title": "­­­ ­­ ­ ­ ­Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterIgnored",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Filter by: Ignored",
+        "title": "­­­ ­­ ­ ­ ­Filter: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotExploitables",
         "category": "checkmarx-ast",
-        "title": "Filter by: Not Exploitable",
+        "title": "Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterUrgents",
         "category": "checkmarx-ast",
-        "title": "Filter by: Urgent",
+        "title": "Filter: Urgent",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterProposeds",
         "category": "checkmarx-ast",
-        "title": "Filter by: Proposed Not Exploitable",
+        "title": "Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterConfirmeds",
         "category": "checkmarx-ast",
-        "title": "Filter by: Confirmed",
+        "title": "Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterToConfirms",
         "category": "checkmarx-ast",
-        "title": "Filter by: To Confirm",
+        "title": "Filter: To Confirm",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterToVerifies",
         "category": "checkmarx-ast",
-        "title": "Filter by: To Verify",
+        "title": "Filter: To Verify",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterIgnoreds",
         "category": "checkmarx-ast",
-        "title": "Filter by: Ignored",
+        "title": "Filter: Ignored",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterNotIgnoreds",
         "category": "checkmarx-ast",
-        "title": "Filter by: Not Ignored",
+        "title": "Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials"
       }
     ],

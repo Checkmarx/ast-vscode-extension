@@ -22,17 +22,17 @@ export const CX_SELECT_BRANCH: string = "checkmarx-ast: Select Branch";
 export const CX_SELECT_SCAN: string = "checkmarx-ast: Select Scan";
 export const CX_LOOK_SCAN: string = "checkmarx-ast: Look for Scan";
 
-export const CX_FILTER_INFO: string = "checkmarx-ast: Filter by severity: Info";
-export const CX_FILTER_LOW: string = "checkmarx-ast: Filter by severity: Low";
-export const CX_FILTER_MEDIUM: string = "checkmarx-ast: Filter by severity: Medium";
-export const CX_FILTER_HIGH: string = "checkmarx-ast: Filter by severity: High";
+export const CX_FILTER_INFO: string = "checkmarx-ast: Filter severity: Info";
+export const CX_FILTER_LOW: string = "checkmarx-ast: Filter severity: Low";
+export const CX_FILTER_MEDIUM: string = "checkmarx-ast: Filter severity: Medium";
+export const CX_FILTER_HIGH: string = "checkmarx-ast: Filter severity: High";
 
-export const CX_FILTER_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter by: Not Exploitable";
-export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter by: Proposed Not Exploitable";
-export const CX_FILTER_CONFIRMED: string = "checkmarx-ast:Filter by: Confirmed";
-export const CX_FILTER_TO_VERIFY: string = "checkmarx-ast:Filter by: To Verify";
-export const CX_FILTER_URGENT: string = "checkmarx-ast:Filter by: Urgent";
-export const CX_FILTER_NOT_IGNORED: string = "checkmarx-ast:Filter by: Not Ignored";
+export const CX_FILTER_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter: Not Exploitable";
+export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE: string = "checkmarx-ast:Filter: Proposed Not Exploitable";
+export const CX_FILTER_CONFIRMED: string = "checkmarx-ast:Filter: Confirmed";
+export const CX_FILTER_TO_VERIFY: string = "checkmarx-ast:Filter: To Verify";
+export const CX_FILTER_URGENT: string = "checkmarx-ast:Filter: Urgent";
+export const CX_FILTER_NOT_IGNORED: string = "checkmarx-ast:Filter: Not Ignored";
 
 export const CX_CLEAR: string = "checkmarx-ast: Clear";
 
