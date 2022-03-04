@@ -79,3 +79,5 @@ export enum StateLevel {
 	notIgnored = "NotIgnored",
 	ignored = "Ignored"
 }
+
+export const ERROR_REGEX = /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i;

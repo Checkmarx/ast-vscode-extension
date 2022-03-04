@@ -55,6 +55,13 @@
 		comment = e.target.value;
 	});
 	
+	document.getElementById('cx_codebashing').addEventListener('click', () => {
+		// @ts-ignore
+		vscode.postMessage({
+			command: 'codebashing',
+		});
+	});
+
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
 		const message = event.data; 

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
@@ -141,4 +142,22 @@ export async function triageUpdate(projectId: string,similarityId: string,scanTy
 		throw new Error(scans.status);
 	}
 	return r;
+}
+
+export async function getCodeBashing(cweId: string, language:string, queryName:string): Promise<CxCodeBashing | undefined> {
+	const config = getAstConfiguration();
+	if (!config) {
+		throw new Error("Configuration error");
+	}
+	if (!cweId || !language || !queryName) {
+		throw new Error("Missing mandatory parameters, cweId, language or queryName ");
+	}
+	const cx = new CxWrapper(config);
+	const codebashing = await cx.codeBashingList(cweId.toString(),language,queryName.replaceAll("_"," "));
+	if(codebashing.exitCode === 0){
+		return codebashing.payload[0];
+	}
+	else{
+		throw new Error(codebashing.status);
+	}
 }

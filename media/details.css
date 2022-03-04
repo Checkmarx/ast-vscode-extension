@@ -287,6 +287,46 @@ input ~ .tab {
   margin-top: 1em;
 }
 
+@media only screen and (max-width: 650px) {
+  .header-container{
+    display: block;
+  }
+}
+@media only screen and (min-width: 651px) {
+  .header-container{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.header-item-title{
+  flex: 70%;
+}
+
+.header-item-codebashing{
+  flex: 30%;
+}
+
+.codebashing-link{
+  margin:0.4em;
+  font-size: 0.9em;
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.orange-color{
+  color:#f36a22;
+}
+
+.codebashing-link-value{
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.codebashing-link-value:hover{
+  color: var(--vscode-inputOption-activeForeground);
+  cursor: pointer;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

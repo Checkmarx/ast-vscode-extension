@@ -23,7 +23,7 @@ import {
   SEVERITY_GROUP,
   STATUS_GROUP,
   STATE_GROUP,
-  QUERY_NAME_GROUP,
+  QUERY_NAME_GROUP
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -33,7 +33,8 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import {filter, filterState, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
 import { getBranchListener } from "./utils/listeners";
-import { getAstConfiguration, triageShow } from "./utils/ast";
+import { getAstConfiguration, triageShow} from "./utils/ast";
+import {getCodebashingLink} from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
@@ -139,6 +140,9 @@ export async function activate(context: vscode.ExtensionContext) {
           case 'submit':
             triageSubmit(result, context, data, logs, detailsPanel!, detailsDetachedView);
             getChanges(logs,context,result,detailsPanel!);
+            break;
+          case 'codebashing':
+            getCodebashingLink(result.cweId!,result.language,result.queryName,logs);
             break;
         }
       });

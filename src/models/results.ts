@@ -21,6 +21,7 @@ export class AstResult {
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
   rawObject: Object;
+  cweId: string| undefined;
   setSeverity(severity:string){
     this.severity=severity;
     if(this.kicsNode){
@@ -52,6 +53,7 @@ export class AstResult {
         ? this.fileName.slice(this.fileName.lastIndexOf("/"))
         : "";
       this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
+      this.cweId = result.vulnerabilityDetails.cweId;
     }
     if (result.type === SCA) {
       this.scaNode = result.data;
