@@ -6,6 +6,7 @@ import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/co
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
+import { SastNode } from "../models/sastNode";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -161,3 +162,29 @@ export async function getCodeBashing(cweId: string, language:string, queryName:s
 		throw new Error(codebashing.status);
 	}
 }
+
+export async function getResultsBfl(scanId:string, queryId:string,resultNodes:SastNode[]){
+	const config = getAstConfiguration();
+	if (!config) {
+		throw new Error("Configuration error");
+	}
+	if (!scanId || !queryId || !resultNodes) {
+		throw new Error("Missing mandatory parameters, scanId, queryId or resultNodes ");
+	}
+	const cx = new CxWrapper(config);
+	const bfl = -1;
+	// const bfl = await cx.getResultsBfl(scanId,queryId,resultNodes);
+	// if(bfl.exitCode === 0){
+	// 	return bfl.payload[0];
+	// }
+	// else{
+	// 	throw new Error(bfl.status);
+	// }
+	await delay(5000);
+	return bfl;
+}
+
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+

@@ -78,6 +78,31 @@
 				loaderContainer = document.getElementById('history-container-loader');
 				loaderContainer.innerHTML = loader();
 				loaderContainer.style.display = 'block';
+			case 'loadBfl':
+				console.log("loadedBFl");
+				let index =  message.index.index;
+				// Case there is a best fix location
+				if(index>0){
+					let bflContainer = document.getElementById('bfl-container-'+index);
+					bflContainer.style.display = 'block';
+					// Hide loading message
+					let bfltip = document.getElementById('bfl-tip-loading');
+					bfltip.style.display = 'none';
+					let loader = document.getElementById('loader');
+					loader.style.display = 'none';
+					// Show tooltip message
+					let bflLoaded = document.getElementById('bfl-tip-loaded');
+					bflLoaded.style.display = 'block';
+				}
+				// Case there is not best fix location
+				else{
+					// Hide the loading
+					let bfltip = document.getElementById('bfl-tip-loading');
+					bfltip.style.display = 'none';
+					let loader = document.getElementById('loader');
+					loader.style.display = 'none';
+				}
+				break;
 		}
 	});
 
@@ -111,12 +136,12 @@
 			<p class="state">
 				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
 			</p>
-			
 				${change.Comment.length>0?
 					`<p class="comment">
 						${change.Comment}
 					</p>`
-					:""}
+					:""
+				}
 			`
 		);
 	}

@@ -9,8 +9,8 @@ export async function getCodebashingLink(cweId: string, language:string, queryNa
 	const codeBashingArray = await getCodeBashing(cweId,language,queryName);
 	vscode.env.openExternal(vscode.Uri.parse(codeBashingArray!.path));
  } catch (err) {
-	const error = String(err).replace(ERROR_REGEX,"");
-	vscode.window.showWarningMessage("WARNING",error);
+	const error = String(err).replace(ERROR_REGEX,"").replaceAll("\n","");
+	vscode.window.showWarningMessage(error);
 	logs.log("WARNING",error);
  } 
 }

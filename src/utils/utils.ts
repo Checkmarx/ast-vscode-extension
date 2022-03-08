@@ -4,8 +4,9 @@ import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
 import { get, updateError } from "../utils/globalState";
 import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast";
+import { getBfl } from './bfl';
 import { SHOW_ERROR } from './commands';
-import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./constants";
 
 export function getProperty(o: any, propertyName: string): string {
 	return o[propertyName];
@@ -131,6 +132,16 @@ export async function getChanges(logs: Logs, context: vscode.ExtensionContext, r
 	}).catch((err) => {
 		detailsPanel?.webview.postMessage({ command: "loadChanges", changes: []});
 		logs.log("ERROR", err);
+	});
+}
+
+export async function getResultsBfl(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
+	let scanId = get(context, SCAN_ID_KEY)?.id;
+	const cxPath = vscode.Uri.joinPath(context.extensionUri,  path.join("media", "icon.png"));
+	getBfl(scanId!, result.queryId, result.sastNodes,logs).then((index) => {
+		detailsPanel?.webview.postMessage({ command: "loadBfl", index: {index:index,logo:cxPath} });
+	}).catch(() => {
+		detailsPanel?.webview.postMessage({ command: "loadBfl", index:{index:-1,logo:cxPath} });
 	});
 }
 

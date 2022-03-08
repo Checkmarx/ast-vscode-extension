@@ -37,7 +37,7 @@ import { getAstConfiguration, triageShow} from "./utils/ast";
 import {getCodebashingLink} from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
-import { getChanges } from "./utils/utils";
+import { getChanges, getResultsBfl } from "./utils/utils";
 
 export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
@@ -103,7 +103,8 @@ export async function activate(context: vscode.ExtensionContext) {
           {
             enableScripts: true,
             localResourceRoots: [
-              vscode.Uri.file(path.join(context.extensionPath, "media")),
+              vscode.Uri.file(path.join(context.extensionPath, "media")
+              )
             ],
           }
         );
@@ -127,8 +128,10 @@ export async function activate(context: vscode.ExtensionContext) {
         detailsPanel.webview,
       );
 
-      // Start to load the changes tab, get called everytime a new details webview is opened
+      // Start to load the changes tab, gets called everytime a new details webview is opened
       getChanges(logs,context,result,detailsPanel);
+      // Start to load the bfl, gets called everytime a new details webview is opened
+      result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
       // Comunication between webview and extension
       detailsPanel.webview.onDidReceiveMessage(async data => {
         switch (data.command) {

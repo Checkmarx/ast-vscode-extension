@@ -54,11 +54,11 @@
   background-color: var(--vscode-input-background);
 }
 
-.details-table tr > td:first-child {
+.details-table tr > td:nth-child(2) {
   border-left: 2px solid transparent;
 }
 
-.details-table tr:hover > td:first-child {
+.details-table tr:hover > td:nth-child(2) {
   border-left: 2px solid var(--vscode-input-foreground);
 }
 
@@ -281,10 +281,10 @@ input ~ .tab {
   border: 2px solid var(--vscode-button-foreground);
   border-radius: 50%;
   border-top: 2px solid var(--vscode-button-background);
-  width: 3em;
-  height: 3em;
+  width: 1em;
+  height: 1em;
   animation: spin 2s linear infinite;
-  margin-top: 1em;
+  display: flex;
 }
 
 @media only screen and (max-width: 650px) {
@@ -325,6 +325,35 @@ input ~ .tab {
 .codebashing-link-value:hover{
   color: var(--vscode-inputOption-activeForeground);
   cursor: pointer;
+}
+
+.bfl-tip-loaded{
+  font-size: 0.8em;
+  display: none;
+}
+
+.bfl-tip-loading{
+  float: left;
+  margin-right: 1em;
+  font-size: 0.8em;
+}
+
+.bfl-tip-empty{
+  font-size: 0.8em;
+  display: none;
+}
+
+.bfl-container{
+  display: none;
+  margin-left: -20px;
+}
+
+.bfl-td{
+  background: var(--vscode-inputValidation-infoBackground);
+}
+
+.bfl-logo{
+  width: 1rem;
 }
 
 @keyframes spin {
