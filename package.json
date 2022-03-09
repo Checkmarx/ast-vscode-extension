@@ -63,73 +63,73 @@
         "category": "checkmarx-ast",
         "title": "✓ Group by: Severity",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByLanguageActive",
         "category": "checkmarx-ast",
         "title": "✓ Group by: Language",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByStatusActive",
         "category": "checkmarx-ast",
         "title": "✓ Group by: Status",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByFileActive",
         "category": "checkmarx-ast",
         "title": "✓ Group by: File",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByStateActive",
         "category": "checkmarx-ast",
         "title": "✓ Group by: State",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByQueryNameActive",
         "category": "checkmarx-ast",
         "title": "✓ Group by: Query Name",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupBySeverity",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Severity",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByLanguage",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Language",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByStatus",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Status",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByFile",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: File",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByState",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: State",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
-        {
+      },
+      {
         "command": "ast-results.groupByQueryName",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Query Name",
         "enablement": "ast-results.isValidCredentials && view == astResults"
-        },
+      },
       {
         "command": "ast-results.groupBySeverities",
         "category": "checkmarx-ast",
@@ -437,84 +437,85 @@
         "enablement": "ast-results.isValidCredentials"
       }
     ],
-	  "submenus": [
-		{
-		  "id": "ast-results.filterBy",
-		  "label": "Filter",
-		  "icon": "$(filter)",
-		  "enablement": "ast-results.isValidCredentials"
-		}],
+    "submenus": [
+      {
+        "id": "ast-results.filterBy",
+        "label": "Filter",
+        "icon": "$(filter)",
+        "enablement": "ast-results.isValidCredentials"
+      }
+    ],
     "menus": {
       "ast-results.filterBy": [
         {
-        "command": "ast-results.filterNotExploitableActive",
-        "group": "navigation@3",
-        "when": "ast-results-NotExploitable"
+          "command": "ast-results.filterNotExploitableActive",
+          "group": "navigation@3",
+          "when": "ast-results-NotExploitable"
         },
         {
-        "command": "ast-results.filterProposedActive",
-        "group": "navigation@5",
-        "when": "ast-results-Proposed"
+          "command": "ast-results.filterProposedActive",
+          "group": "navigation@5",
+          "when": "ast-results-Proposed"
         },
         {
-        "command": "ast-results.filterConfirmedActive",
-        "group": "navigation@1",
-        "when": "ast-results-Confirmed"
+          "command": "ast-results.filterConfirmedActive",
+          "group": "navigation@1",
+          "when": "ast-results-Confirmed"
         },
         {
-        "command": "ast-results.filterToVerifyActive",
-        "group": "navigation@6",
-        "when": "ast-results-ToVerify"
+          "command": "ast-results.filterToVerifyActive",
+          "group": "navigation@6",
+          "when": "ast-results-ToVerify"
         },
         {
-        "command": "ast-results.filterUrgentActive",
-        "group": "navigation@7",
-        "when": "ast-results-Urgent"
+          "command": "ast-results.filterUrgentActive",
+          "group": "navigation@7",
+          "when": "ast-results-Urgent"
         },
         {
-        "command": "ast-results.filterNotIgnoredActive",
-        "group": "navigation@4",
-        "when": "ast-results-NotIgnored"
+          "command": "ast-results.filterNotIgnoredActive",
+          "group": "navigation@4",
+          "when": "ast-results-NotIgnored"
         },
         {
-        "command": "ast-results.filterIgnoredActive",
-        "group": "navigation@2",
-        "when": "ast-results-Ignored"
+          "command": "ast-results.filterIgnoredActive",
+          "group": "navigation@2",
+          "when": "ast-results-Ignored"
         },
         {
-        "command": "ast-results.filterNotExploitable",
-        "group": "navigation@3",
-        "when": "!ast-results-NotExploitable"
+          "command": "ast-results.filterNotExploitable",
+          "group": "navigation@3",
+          "when": "!ast-results-NotExploitable"
         },
         {
-        "command": "ast-results.filterProposed",
-        "group": "navigation@5",
-        "when": "!ast-results-Proposed"
+          "command": "ast-results.filterProposed",
+          "group": "navigation@5",
+          "when": "!ast-results-Proposed"
         },
         {
-        "command": "ast-results.filterConfirmed",
-        "group": "navigation@1",
-        "when": "!ast-results-Confirmed"
+          "command": "ast-results.filterConfirmed",
+          "group": "navigation@1",
+          "when": "!ast-results-Confirmed"
         },
         {
-        "command": "ast-results.filterToVerify",
-        "group": "navigation@6",
-        "when": "!ast-results-ToVerify"
+          "command": "ast-results.filterToVerify",
+          "group": "navigation@6",
+          "when": "!ast-results-ToVerify"
         },
         {
-        "command": "ast-results.filterUrgent",
-        "group": "navigation@7",
-        "when": "!ast-results-Urgent"
+          "command": "ast-results.filterUrgent",
+          "group": "navigation@7",
+          "when": "!ast-results-Urgent"
         },
         {
-        "command": "ast-results.filterNotIgnored",
-        "group": "navigation@4",
-        "when": "!ast-results-NotIgnored"
+          "command": "ast-results.filterNotIgnored",
+          "group": "navigation@4",
+          "when": "!ast-results-NotIgnored"
         },
         {
-        "command": "ast-results.filterIgnored",
-        "group": "navigation@2",
-        "when": "!ast-results-Ignored"
+          "command": "ast-results.filterIgnored",
+          "group": "navigation@2",
+          "when": "!ast-results-Ignored"
         }
       ],
       "view/item/context": [
@@ -656,9 +657,9 @@
           "when": "view == astResults"
         },
         {
-        "submenu": "ast-results.filterBy",
-        "group": "navigation@5",
-        "when": "view == astResults"
+          "submenu": "ast-results.filterBy",
+          "group": "navigation@5",
+          "when": "view == astResults"
         }
       ]
     },
@@ -740,8 +741,7 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.48",
-    "copyfiles": "2.4.1"
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.49"
   },
   "extensionDependencies": [
     "vscode.git"

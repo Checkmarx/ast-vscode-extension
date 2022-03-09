@@ -213,13 +213,14 @@ export class AstResult {
 
   getBflTips(cxPath: vscode.Uri){
     return (`
+            <div class="loader" id="loader">
+            </div>
             <p class="bfl-tip-loaded" id="bfl-tip-loaded">
               <img class="bfl-logo" src="${cxPath}" alt="CxLogo"/> points to the best fix location in the code - Make remediation much quicker!
             </p> 
             <p class="bfl-tip-loading" id="bfl-tip-loading">
               Loading best fix location 
             </p>
-            <div class="loader" id="loader"/>
     `
     );
   }

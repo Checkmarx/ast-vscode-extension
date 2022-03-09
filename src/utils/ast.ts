@@ -172,19 +172,12 @@ export async function getResultsBfl(scanId:string, queryId:string,resultNodes:Sa
 		throw new Error("Missing mandatory parameters, scanId, queryId or resultNodes ");
 	}
 	const cx = new CxWrapper(config);
-	const bfl = -1;
-	// const bfl = await cx.getResultsBfl(scanId,queryId,resultNodes);
-	// if(bfl.exitCode === 0){
-	// 	return bfl.payload[0];
-	// }
-	// else{
-	// 	throw new Error(bfl.status);
-	// }
-	await delay(5000);
-	return bfl;
-}
-
-function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+	const bfl = await cx.getResultsBfl(scanId.toString(),queryId.toString(),resultNodes);
+	if(bfl.exitCode === 0){
+		return bfl.payload[0];
+	}
+	else{
+		throw new Error(bfl.status);
+	}
 }
 

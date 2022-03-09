@@ -82,25 +82,19 @@
 				console.log("loadedBFl");
 				let index =  message.index.index;
 				// Case there is a best fix location
-				if(index>0){
-					let bflContainer = document.getElementById('bfl-container-'+index);
-					bflContainer.style.display = 'block';
+				if(index>=0){
+					updateDisplay('bfl-container-'+index,'block');
 					// Hide loading message
-					let bfltip = document.getElementById('bfl-tip-loading');
-					bfltip.style.display = 'none';
-					let loader = document.getElementById('loader');
-					loader.style.display = 'none';
+					updateDisplay('bfl-tip-loading','none');
+					updateDisplay('loader','none');
 					// Show tooltip message
-					let bflLoaded = document.getElementById('bfl-tip-loaded');
-					bflLoaded.style.display = 'block';
+					updateDisplay('bfl-tip-loaded','block');
 				}
 				// Case there is not best fix location
 				else{
 					// Hide the loading
-					let bfltip = document.getElementById('bfl-tip-loading');
-					bfltip.style.display = 'none';
-					let loader = document.getElementById('loader');
-					loader.style.display = 'none';
+					updateDisplay('bfl-tip-loading','none');
+					updateDisplay('loader','none');
 				}
 				break;
 		}
@@ -179,5 +173,10 @@
 			</div>
 			`
 		);
+	}
+
+	function updateDisplay(id,display){
+		let element = document.getElementById(id);
+		element.style.display = display;
 	}
 }());

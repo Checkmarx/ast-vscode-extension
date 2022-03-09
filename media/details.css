@@ -285,6 +285,8 @@ input ~ .tab {
   height: 1em;
   animation: spin 2s linear infinite;
   display: flex;
+  float: left;
+  margin-right: 0.5em;
 }
 
 @media only screen and (max-width: 650px) {
@@ -333,8 +335,6 @@ input ~ .tab {
 }
 
 .bfl-tip-loading{
-  float: left;
-  margin-right: 1em;
   font-size: 0.8em;
 }
 

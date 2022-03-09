@@ -40,6 +40,7 @@ import { REFRESH_TREE } from "./utils/commands";
 import { getChanges, getResultsBfl } from "./utils/utils";
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(EXTENSION_NAME);
   const logs = new Logs(output);
   logs.show();
@@ -55,10 +56,15 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem,
     diagnosticCollection
   );
-  astResultsProvider.openRefreshData().then(r => logs.info("Data refreshed and synced with AST platform"));
-  initializeFilters(logs, context, astResultsProvider).then(() => logs.info("Filters initialized"));
-  vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
   
+  // Syncing with AST everytime the extension gets opened
+  astResultsProvider.openRefreshData().then(r => logs.info("Data refreshed and synced with AST platform"));
+  
+  // Initialize filters state
+  initializeFilters(logs, context, astResultsProvider).then(() => logs.info("Filters initialized"));
+  
+  // Results side tree creation
+  vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
   const tree = vscode.window.createTreeView("astResults", {treeDataProvider: astResultsProvider});
   tree.onDidChangeSelection((item) => {
     if (item.selection.length > 0) {
@@ -130,7 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Start to load the changes tab, gets called everytime a new details webview is opened
       getChanges(logs,context,result,detailsPanel);
-      // Start to load the bfl, gets called everytime a new details webview is opened
+      // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
       result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
       // Comunication between webview and extension
       detailsPanel.webview.onDidReceiveMessage(async data => {
@@ -144,6 +150,7 @@ export async function activate(context: vscode.ExtensionContext) {
             triageSubmit(result, context, data, logs, detailsPanel!, detailsDetachedView);
             getChanges(logs,context,result,detailsPanel!);
             break;
+          // Catch get codebashing link and open a browser page
           case 'codebashing':
             getCodebashingLink(result.cweId!,result.language,result.queryName,logs);
             break;
