@@ -333,6 +333,13 @@ describe("UI tests", async function () {
     let title = await titleWebElement.getText();
     await delay(FIVE_SECONDS);
     expect(title).to.equal(resultName);
+    let codebashingWebElement = await detailsView.findWebElement(
+      By.id("cx_header_codebashing")
+    );
+    await delay(FIVE_SECONDS);
+    let codebashing = await codebashingWebElement.getText();
+    await delay(FIVE_SECONDS);
+    expect(codebashing).is.not.undefined;
     await detailsView.switchBack();
     await delay(THREE_SECONDS);
   });

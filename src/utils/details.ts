@@ -12,10 +12,25 @@ export class Details {
 
 	header(severityPath: vscode.Uri) {
 		return (
-			`<h2> 
-				<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
-				<span id="cx_title">${this.result.label.replaceAll("_", " ")}<span>
-			</h2>
+			`
+			<div class="header-container">
+				<div class="header-item-title">
+					<h2 id="cx_title">
+						<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
+						${this.result.label.replaceAll("_", " ")}
+					</h2>
+				</div>
+				${this.result.sastNodes.length>0 ?
+					`
+					<div class="header-item-codebashing" id="cx_header_codebashing">
+						<span class="codebashing-link">
+							Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value">codebashing</span>
+						<span>
+					</div>`
+					:
+					""
+				}
+			</div>
 			<hr class="division"/>
 			`
 		);
@@ -76,7 +91,7 @@ export class Details {
 		);
 	}
 
-	generalTab() {
+	generalTab(cxPath: vscode.Uri) {
 		return (
 			`<body>
 				<span class="details">
@@ -93,7 +108,7 @@ export class Details {
 				${this.result.getTitle()}
 				<table class="details-table">
 					<tbody>
-						${this.result.getHtmlDetails()}
+						${this.result.getHtmlDetails(cxPath)}
 					</tbody>
 				</table>	
 			</body>`

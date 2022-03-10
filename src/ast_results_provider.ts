@@ -120,7 +120,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     this.scan = get(this.context, SCAN_ID_KEY)?.id;
     if (fs.existsSync(resultJsonPath) && this.scan) {
-      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
+      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8").replace(/:([0-9]{15,}),/g, ':"$1",'));
       const results = this.orderResults(jsonResults.results);
 
       treeItems = treeItems.concat(this.createSummaryItem(results));

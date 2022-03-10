@@ -17,10 +17,12 @@ export class AstResult {
   similarityId:string = "";
   data: any;
   state: string = "";
+  queryId: string = "";
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
   rawObject: Object;
+  cweId: string| undefined;
   setSeverity(severity:string){
     this.severity=severity;
     if(this.kicsNode){
@@ -44,6 +46,7 @@ export class AstResult {
     this.state = result.state;
     this.similarityId = result.similarityId;
     this.queryName = result.data.queryName;
+    this.queryId = result.data.queryId;
 
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
@@ -52,6 +55,7 @@ export class AstResult {
         ? this.fileName.slice(this.fileName.lastIndexOf("/"))
         : "";
       this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
+      this.cweId = result.vulnerabilityDetails.cweId;
     }
     if (result.type === SCA) {
       this.scaNode = result.data;
@@ -73,6 +77,10 @@ export class AstResult {
         return path.join("media", "icons", "low_untoggle.svg");
     }
     return "";
+  }
+
+  getCxIcon() {
+    return path.join("media", "icon.png");
   }
 
   getTreeIcon() {
@@ -129,9 +137,9 @@ export class AstResult {
     }
   }
 
-  getHtmlDetails() {
+  getHtmlDetails(cxPath: vscode.Uri) {
     if (this.sastNodes && this.sastNodes.length > 0) {
-      return this.getSastDetails();
+      return this.getSastDetails(cxPath);
     }
     if (this.scaNode) {
       return this.scaDetails();
@@ -164,28 +172,35 @@ export class AstResult {
     return r;
   }
 
-  getSastDetails() {
-    let html = "";
+  getSastDetails(cxPath: vscode.Uri) {
+    let html = this.getBflTips(cxPath);
     if (this.sastNodes) {
       this.sastNodes.forEach((node, index) => {
         html += `
-			<tr>
-			  <td>
-					<div>
-						  ${index + 1}. \"${node.name.replaceAll('"', "")}\"
-							  <a href="#" 
-								  class="ast-node"
-								  data-filename="${node.fileName}" 
-								  data-line="${node.line}" 
-								  data-column="${node.column}"
-								  data-fullName="${node.fullName}" 
-								  data-length="${node.length}"
-							  >
-								  ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
-							  </a>
-					  </div>
-					</td>
-			  </tr>`;
+          <tr>
+          <td style="background:var(--vscode-editor-background)">
+            <div class="bfl-container" id=bfl-container-${index}>
+              <img class="bfl-logo" src="${cxPath}" alt="CxLogo"/>
+            </div>
+          <td>
+              <div>
+                    <div style="display: inline-block">
+                      ${index + 1}. \"${node.name.replaceAll('"', "")}\"
+                      <a href="#" 
+                        class="ast-node"
+                        id=${index}
+                        data-filename="${node.fileName}" 
+                        data-line="${node.line}" 
+                        data-column="${node.column}"
+                        data-fullName="${node.fullName}" 
+                        data-length="${node.length}"
+                      >
+                        ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
+                      </a>
+                    </div>
+                </div>
+              </td>
+            </tr>`;
       });
     } else {
       html += `
@@ -196,6 +211,19 @@ export class AstResult {
     return html;
   }
 
+  getBflTips(cxPath: vscode.Uri){
+    return (`
+            <div class="loader" id="loader">
+            </div>
+            <p class="bfl-tip-loaded" id="bfl-tip-loaded">
+              <img class="bfl-logo" src="${cxPath}" alt="CxLogo"/> points to the best fix location in the code - Make remediation much quicker!
+            </p> 
+            <p class="bfl-tip-loading" id="bfl-tip-loading">
+              Loading best fix location 
+            </p>
+    `
+    );
+  }
   getShortFilename(filename: string) {
     let r;
     filename.length > 50 ? (r = "..." + filename.slice(-50)) : (r = filename);

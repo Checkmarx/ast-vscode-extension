@@ -55,6 +55,13 @@
 		comment = e.target.value;
 	});
 	
+	document.getElementById('cx_codebashing').addEventListener('click', () => {
+		// @ts-ignore
+		vscode.postMessage({
+			command: 'codebashing',
+		});
+	});
+
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
 		const message = event.data; 
@@ -71,6 +78,25 @@
 				loaderContainer = document.getElementById('history-container-loader');
 				loaderContainer.innerHTML = loader();
 				loaderContainer.style.display = 'block';
+			case 'loadBfl':
+				console.log("loadedBFl");
+				let index =  message.index.index;
+				// Case there is a best fix location
+				if(index>=0){
+					updateDisplay('bfl-container-'+index,'block');
+					// Hide loading message
+					updateDisplay('bfl-tip-loading','none');
+					updateDisplay('loader','none');
+					// Show tooltip message
+					updateDisplay('bfl-tip-loaded','block');
+				}
+				// Case there is not best fix location
+				else{
+					// Hide the loading
+					updateDisplay('bfl-tip-loading','none');
+					updateDisplay('loader','none');
+				}
+				break;
 		}
 	});
 
@@ -104,12 +130,12 @@
 			<p class="state">
 				${change.State.length>0?change.State.replaceAll("_"," "):"No changes in state."}
 			</p>
-			
 				${change.Comment.length>0?
 					`<p class="comment">
 						${change.Comment}
 					</p>`
-					:""}
+					:""
+				}
 			`
 		);
 	}
@@ -147,5 +173,10 @@
 			</div>
 			`
 		);
+	}
+
+	function updateDisplay(id,display){
+		let element = document.getElementById(id);
+		element.style.display = display;
 	}
 }());

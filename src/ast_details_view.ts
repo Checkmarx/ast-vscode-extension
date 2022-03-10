@@ -92,6 +92,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const severityPath = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getIcon())
     );
+    const cxPath = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri,  this.result.getCxIcon())
+    );
     const nonce = getNonce();
     const selectClassname = "select-"+this.result.severity.toLowerCase();
     const html = new Details(this.result,this.context);
@@ -111,7 +114,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         <div id="main_div">
           ${html.header(severityPath)}
           ${html.triage(selectClassname)}
-          ${html.tab(html.generalTab(),html.detailsTab(), html.loader(),"General","Learn More","Changes")}
+          ${html.tab(html.generalTab(cxPath),html.detailsTab(), html.loader(),"General","Learn More","Changes")}
         </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	

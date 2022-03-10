@@ -54,11 +54,11 @@
   background-color: var(--vscode-input-background);
 }
 
-.details-table tr > td:first-child {
+.details-table tr > td:nth-child(2) {
   border-left: 2px solid transparent;
 }
 
-.details-table tr:hover > td:first-child {
+.details-table tr:hover > td:nth-child(2) {
   border-left: 2px solid var(--vscode-input-foreground);
 }
 
@@ -281,10 +281,79 @@ input ~ .tab {
   border: 2px solid var(--vscode-button-foreground);
   border-radius: 50%;
   border-top: 2px solid var(--vscode-button-background);
-  width: 3em;
-  height: 3em;
+  width: 1em;
+  height: 1em;
   animation: spin 2s linear infinite;
-  margin-top: 1em;
+  display: flex;
+  float: left;
+  margin-right: 0.5em;
+}
+
+@media only screen and (max-width: 650px) {
+  .header-container{
+    display: block;
+  }
+}
+@media only screen and (min-width: 651px) {
+  .header-container{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.header-item-title{
+  flex: 70%;
+}
+
+.header-item-codebashing{
+  flex: 30%;
+}
+
+.codebashing-link{
+  margin:0.4em;
+  font-size: 0.9em;
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.orange-color{
+  color:#f36a22;
+}
+
+.codebashing-link-value{
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.codebashing-link-value:hover{
+  color: var(--vscode-inputOption-activeForeground);
+  cursor: pointer;
+}
+
+.bfl-tip-loaded{
+  font-size: 0.8em;
+  display: none;
+}
+
+.bfl-tip-loading{
+  font-size: 0.8em;
+}
+
+.bfl-tip-empty{
+  font-size: 0.8em;
+  display: none;
+}
+
+.bfl-container{
+  display: none;
+  margin-left: -20px;
+}
+
+.bfl-td{
+  background: var(--vscode-inputValidation-infoBackground);
+}
+
+.bfl-logo{
+  width: 1rem;
 }
 
 @keyframes spin {

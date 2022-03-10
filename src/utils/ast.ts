@@ -2,9 +2,11 @@ import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
+import { SastNode } from "../models/sastNode";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -142,3 +144,40 @@ export async function triageUpdate(projectId: string,similarityId: string,scanTy
 	}
 	return r;
 }
+
+export async function getCodeBashing(cweId: string, language:string, queryName:string): Promise<CxCodeBashing | undefined> {
+	const config = getAstConfiguration();
+	if (!config) {
+		throw new Error("Configuration error");
+	}
+	if (!cweId || !language || !queryName) {
+		throw new Error("Missing mandatory parameters, cweId, language or queryName ");
+	}
+	const cx = new CxWrapper(config);
+	const codebashing = await cx.codeBashingList(cweId.toString(),language,queryName.replaceAll("_"," "));
+	if(codebashing.exitCode === 0){
+		return codebashing.payload[0];
+	}
+	else{
+		throw new Error(codebashing.status);
+	}
+}
+
+export async function getResultsBfl(scanId:string, queryId:string,resultNodes:SastNode[]){
+	const config = getAstConfiguration();
+	if (!config) {
+		throw new Error("Configuration error");
+	}
+	if (!scanId || !queryId || !resultNodes) {
+		throw new Error("Missing mandatory parameters, scanId, queryId or resultNodes ");
+	}
+	const cx = new CxWrapper(config);
+	const bfl = await cx.getResultsBfl(scanId.toString(),queryId.toString(),resultNodes);
+	if(bfl.exitCode === 0){
+		return bfl.payload[0];
+	}
+	else{
+		throw new Error(bfl.status);
+	}
+}
+
