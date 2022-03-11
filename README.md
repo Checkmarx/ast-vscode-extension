@@ -69,11 +69,10 @@ The CxAST Visual Studio Code plugin (extension) enables you to import results fr
 ### Demo
 <br />
 
-<iframe width="100%" height="315"
-src="https://www.youtube.com/embed/CGghdn5cozs" 
-frameborder="0" 
-allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-allowfullscreen></iframe>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=CGghdn5cozs
+" target="_blank"><img src="http://img.youtube.com/vi/CGghdn5cozs/maxresdefault.jpg" 
+alt="IMAGE ALT TEXT HERE" width="100%" height="500"/></a>
+
 
 <br />
 
