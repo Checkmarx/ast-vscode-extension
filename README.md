@@ -93,10 +93,10 @@ Checkout ohter plugins and integrations that we offer in the links below.
 <table style="padding:10px">
   <tr>
     <td>
-      <a href="https://github.com/Checkmarx/ast-cli">
+      <a href="https://github.com/Checkmarx/ast-cli/#gh-light-mode-only">
         <img src="docs/logo.png"/>
       </a>
-      <a href="https://github.com/Checkmarx/ast-cli">
+      <a href="https://github.com/Checkmarx/ast-cli/#gh-dark-mode-only">
         <img src="docs/logo.png" />
       </a>
     </td>
