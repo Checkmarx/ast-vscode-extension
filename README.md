@@ -68,8 +68,9 @@ The CxAST Visual Studio Code plugin (extension) enables you to import results fr
 
 ### Demo
 <br />
+
 <iframe width="100%" height="315"
-src="https://api.media.atlassian.com/file/86443a44-ce95-4f34-b951-b40abd5288c0/artifact/video_1280.mp4/binary?client=66fb7ccd-d3db-4e74-b540-d96cad7e85f4&collection=contentId-6080692227&max-age=2592000&token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiI2NmZiN2NjZC1kM2RiLTRlNzQtYjU0MC1kOTZjYWQ3ZTg1ZjQiLCJhY2Nlc3MiOnsidXJuOmZpbGVzdG9yZTpjb2xsZWN0aW9uOmNvbnRlbnRJZC02MDgwNjkyMjI3IjpbInJlYWQiXX0sImV4cCI6MTY0NzAwMzA5MywibmJmIjoxNjQ3MDAwMTUzfQ.7uACgKc82RbvwAAHPYU4kll9sIN0T1iZgyJ2vgUUGN4" 
+src="https://www.youtube.com/embed/CGghdn5cozs" 
 frameborder="0" 
 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
 allowfullscreen></iframe>
