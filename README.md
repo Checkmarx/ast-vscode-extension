@@ -86,6 +86,31 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 - [Checkmarx contribution guidelines](docs/contributing.md)
 - [Checkmarx Code of Conduct](docs/code_of_conduct.md)
 
+## Other integrations 
+
+Checkout ohter plugins and integrations that we offer in the links below. 
+
+<table style="padding:10px">
+  <tr>
+    <td>
+      <a href="https://github.com/Checkmarx/ast-cli">
+        <img src="docs/logo.png"/>
+      </a>
+      <a href="https://github.com/Checkmarx/ast-cli">
+        <img src="docs/logo.png" />
+      </a>
+    </td>
+    <td><img src="docs/logo.png" alt="2"/></td>
+    <td><img src="docs/logo.png" alt="3"/></td>
+    <td><img src="docs/logo.png" alt="3"/></td>
+  </tr>
+  <tr>
+    <td><img src="docs/logo.png" alt="1"></td>
+    <td><img src="docs/logo.png" alt="2"></td>
+    <td><img src="docs/logo.png" alt="3"></td>
+    <td><img src="docs/logo.png" alt="4"></td>
+  </tr>
+</table>
 
 <!-- LICENSE -->
 ## License
