@@ -12,7 +12,6 @@
 
 </div>
 
-<!-- PROJECT LOGO -->
 <br />
 <p align="center">
   <a href="">
@@ -30,7 +29,6 @@
 
 
 
-<!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
@@ -53,7 +51,6 @@
 
 
 
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
 The CxAST Visual Studio Code plugin (extension) enables you to import results from a CxAST scan directly into your VS Code console. You can view the vulnerabilities that were identified in your source code and navigate directly to the vulnerable code in the editor. 
@@ -82,7 +79,6 @@ alt="IMAGE ALT TEXT HERE" width="100%" height="500"/></a>
 All our documentation on how to get started with our extension can be found [here](https://checkmarx.atlassian.net/wiki/spaces/AST/pages/6080167957/Installing+the+CxAST+Visual+Studio+Code+Extension).
 
 
-<!-- CONTRIBUTING -->
 ## Contributing
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
@@ -107,7 +103,7 @@ Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github
 
 [contributors-shield]: https://img.shields.io/github/contributors/Checkmarx/ast-vscode-extension.svg
 [contributors-url]: https://github.com/Checkmarx/ast-vscode-extension/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Checkmarx/ast-vscode-extensioni.svg
+[forks-shield]: https://img.shields.io/github/forks/Checkmarx/ast-vscode-extension.svg
 [forks-url]: https://github.com/Checkmarx/ast-vscode-extension/network/members
 [stars-shield]: https://img.shields.io/github/stars/Checkmarx/ast-vscode-extension.svg
 [stars-url]: https://github.com/Checkmarx/ast-vscode-extension/stargazers
