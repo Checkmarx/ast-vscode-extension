@@ -1,5 +1,4 @@
-
-<img src="docs/banner.png">
+<img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/banner.png">
 <br />
 <div align="center">
 
@@ -14,8 +13,8 @@
 
 <br />
 <p align="center">
-  <a href="">
-    <img src="docs/logo.png" alt="Logo" width="80" height="80">
+   <a href="https://github.com/Checkmarx/ast-vscode-extension">
+    <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/logo.png" alt="Logo" width="80" height="80" />
   </a>
 
   <h3 align="center">AST-VSCODE-PLUGIN</h3>
@@ -63,15 +62,6 @@ The CxAST Visual Studio Code plugin (extension) enables you to import results fr
 - Vulnerable code is highlighted in the editor
 
 
-### Demo
-<br />
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=CGghdn5cozs
-" target="_blank"><img src="http://img.youtube.com/vi/CGghdn5cozs/maxresdefault.jpg" 
-alt="IMAGE ALT TEXT HERE" width="100%" height="500"/></a>
-
-
-<br />
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -86,31 +76,6 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 - [Checkmarx contribution guidelines](docs/contributing.md)
 - [Checkmarx Code of Conduct](docs/code_of_conduct.md)
 
-## Other integrations 
-
-Checkout ohter plugins and integrations that we offer in the links below. 
-
-<table style="padding:10px">
-  <tr>
-    <td>
-      <a href="https://github.com/Checkmarx/ast-cli/#gh-light-mode-only">
-        <img src="docs/logo.png"/>
-      </a>
-      <a href="https://github.com/Checkmarx/ast-cli/#gh-dark-mode-only">
-        <img src="docs/logo.png" />
-      </a>
-    </td>
-    <td><img src="docs/logo.png" alt="2"/></td>
-    <td><img src="docs/logo.png" alt="3"/></td>
-    <td><img src="docs/logo.png" alt="3"/></td>
-  </tr>
-  <tr>
-    <td><img src="docs/logo.png" alt="1"></td>
-    <td><img src="docs/logo.png" alt="2"></td>
-    <td><img src="docs/logo.png" alt="3"></td>
-    <td><img src="docs/logo.png" alt="4"></td>
-  </tr>
-</table>
 
 <!-- LICENSE -->
 ## License
@@ -123,6 +88,8 @@ Distributed under the [Apache 2.0](LICENSE). See `LICENSE` for more information.
 Checkmarx - AST Integrations Team
 
 Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github.com/Checkmarx/ast-vscode-extension)
+
+Find more integrations from our team [here](https://github.com/Checkmarx/ci-cd-integrations#checkmarx-ast-integrations)
 
 © 2022 Checkmarx Ltd. All Rights Reserved.
 
