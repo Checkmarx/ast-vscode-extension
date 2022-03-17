@@ -21,25 +21,9 @@ jobs:
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
-          CX_BASE_URI: ${{ secrets.BASE_URI }}
-          CX_TENANT: ${{ secrets.TENANT }}
+          CX_BASE_URI: ${{ secrets.CX_BASE_URI }}
+          CX_TENANT: ${{ secrets.CX_TENANT }}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: npm install && npm test
-      
-  cx-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Checkmarx AST CLI Action
-        uses: checkmarx/ast-github-action@main
-        with:
-          project_name: ast-vscode-extension
-          branch: main
-          base_uri: ${{ secrets.BASE_URI }}
-          cx_tenant: ${{ secrets.TENANT }}
-          cx_client_id: ${{ secrets.CLIENT_ID }}
-          cx_client_secret: ${{ secrets.CLIENT_SECRET }}
-          additional_params: --tags galactica-team
 
           
