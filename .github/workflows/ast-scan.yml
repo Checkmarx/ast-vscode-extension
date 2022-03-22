@@ -1,0 +1,18 @@
+name: Checkmarx AST Scan
+
+on: [ pull_request, workflow_dispatch ]
+
+jobs:
+  cx-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkmarx AST CLI Action
+        uses: checkmarx/ast-github-action@main
+        with:
+          base_uri: ${{ secrets.BASE_URI }}
+          cx_tenant: ${{ secrets.TENANT }}
+          cx_client_id: ${{ secrets.CLIENT_ID }}
+          cx_client_secret: ${{ secrets.CLIENT_SECRET }}
+          additional_params: --tags galactica-team --threshold "sast-high=1"
