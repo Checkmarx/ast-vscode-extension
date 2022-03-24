@@ -7,6 +7,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
+import AstError from "../exceptions/AstError";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -135,12 +136,12 @@ export async function triageUpdate(projectId: string,similarityId: string,scanTy
 		return r;
 	}
 	const cx = new CxWrapper(config);
-	const scans = await cx.triageUpdate(projectId,similarityId,scanType,state,comment,severity);
-	if(scans.exitCode===0){
-		r = scans.exitCode;
+	const triage = await cx.triageUpdate(projectId,similarityId,scanType,state,comment,severity);
+	if(triage.exitCode===0){
+		r = triage.exitCode;
 	}
 	else{
-		throw new Error(scans.status);
+		throw new Error(triage.status); //New to return exit code
 	}
 	return r;
 }
@@ -159,7 +160,7 @@ export async function getCodeBashing(cweId: string, language:string, queryName:s
 		return codebashing.payload[0];
 	}
 	else{
-		throw new Error(codebashing.status);
+		throw new AstError(codebashing.exitCode, codebashing.status);
 	}
 }
 
@@ -176,8 +177,8 @@ export async function getResultsBfl(scanId:string, queryId:string,resultNodes:Sa
 	if(bfl.exitCode === 0){
 		return bfl.payload[0];
 	}
-	else{
-		throw new Error(bfl.status);
+	else {
+		throw new Error(bfl.status); //Need to return exit code
 	}
 }
 

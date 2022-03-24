@@ -81,3 +81,6 @@ export enum StateLevel {
 }
 
 export const ERROR_REGEX = /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i;
+
+export const AST_ERROR_CODEBASHING_NO_LICENSE: number = 4;
+export const AST_ERROR_CODEBASHING_NO_LESSON: number = 3;
