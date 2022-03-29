@@ -91,7 +91,7 @@
       {
         "command": "ast-results.groupByQueryNameActive",
         "category": "checkmarx-ast",
-        "title": "✓ Group by: Query Name",
+        "title": "✓ Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
@@ -127,7 +127,7 @@
       {
         "command": "ast-results.groupByQueryName",
         "category": "checkmarx-ast",
-        "title": "­­­ ­­ ­ ­ ­Group by: Query Name",
+        "title": "­­­ ­­ ­ ­ ­Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
@@ -163,7 +163,7 @@
       {
         "command": "ast-results.groupByQueryNames",
         "category": "checkmarx-ast",
-        "title": "Group by: Query Name",
+        "title": "Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials"
       },
       {
