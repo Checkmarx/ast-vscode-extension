@@ -477,7 +477,7 @@ describe("UI tests", async function () {
       expect(level).to.equal(parseInt(index)+3); // plus three because by default the tree always has, engine + severity and we must go into the last node with the actual result to confitm it does not have childrens
     };
     // Size must not be bigger than 3 because there are at most 3 engines in the first node
-    expect(tuple[0]).to.be.at.most(3);
+    expect(tuple[0]).to.be.at.most(4);
   });
 
   it("should click on all filter state", async function () {
