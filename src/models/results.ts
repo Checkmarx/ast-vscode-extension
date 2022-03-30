@@ -173,7 +173,7 @@ export class AstResult {
   }
 
   getSastDetails(cxPath: vscode.Uri) {
-    let html = this.getBflTips(cxPath);
+    let html = ""; //this.getBflTips(cxPath);
     if (this.sastNodes) {
       this.sastNodes.forEach((node, index) => {
         html += `

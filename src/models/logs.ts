@@ -13,6 +13,9 @@ export class Logs {
 	public info(message:string){
 		this.output.appendLine("[CxINFO - "+new Date().toLocaleTimeString()+"] "+ message);
 	}
+	public error(message:string){
+		this.output.appendLine("[CxERROR - "+new Date().toLocaleTimeString()+"] "+ message);
+	}
 
 	public show(){
 		this.output.show();
