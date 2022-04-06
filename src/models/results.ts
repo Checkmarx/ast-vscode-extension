@@ -55,7 +55,10 @@ export class AstResult {
         ? this.fileName.slice(this.fileName.lastIndexOf("/"))
         : "";
       this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
-      this.cweId = result.vulnerabilityDetails.cweId;
+      this.cweId = result.cweId;
+      if (!this.cweId) {
+        this.cweId = this.cweId = result.vulnerabilityDetails?.cweId;
+      }
     }
     if (result.type === SCA) {
       this.scaNode = result.data;
