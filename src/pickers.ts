@@ -32,7 +32,18 @@ export async function branchPicker(context: vscode.ExtensionContext, logs: Logs)
   quickPick.items = await getBranchPickItems(logs, projectItem.id, context);
   quickPick.onDidChangeSelection(async ([item]) => {
     update(context, BRANCH_ID_KEY, { id: item.id, name: `${BRANCH_LABEL} ${item.label}` });
-    update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
+    if(projectItem.id && item.id) {
+      var scanList = await getScansPickItems(logs, projectItem.id, item.id, context);
+      if(scanList.length > 0) {
+        update(context, SCAN_ID_KEY, { id: scanList[0].id, name: `${SCAN_LABEL} ${scanList[0].label}` });
+        await getResultsWithProgress(logs, scanList[0].id); 
+      }
+      else {
+        update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
+      }     
+    } else {
+      vscode.window.showErrorMessage("Please select a branch and project first");
+    }
     await vscode.commands.executeCommand(REFRESH_TREE);
     quickPick.hide();
   });

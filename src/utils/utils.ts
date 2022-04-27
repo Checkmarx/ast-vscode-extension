@@ -73,7 +73,7 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 			);
 			try {
 				return scanList ? scanList.map((label) => ({
-					label: convertDate(label.createdAt),
+					label: label === scanList[0] ? convertDate(label.createdAt) + " (latest)" : convertDate(label.createdAt),
 					id: label.id,
 				})) : [];
 			} catch (error) {
