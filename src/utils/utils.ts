@@ -73,7 +73,7 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 			);
 			try {
 				return scanList ? scanList.map((label) => ({
-					label: label === scanList[0] ? convertDate(label.createdAt) + " (latest)" : convertDate(label.createdAt),
+					label: label === scanList[0] ? getScanLabel(label.createdAt,label.id) + " (latest)" : getScanLabel(label.createdAt,label.id),
 					id: label.id,
 				})) : [];
 			} catch (error) {
@@ -151,11 +151,6 @@ export const PROGRESS_HEADER: vscode.ProgressOptions = {
 	cancellable: true,
 };
 
-export function convertDate(date: string | undefined) {
-	if (!date) { return ""; }
-	return new Date(date).toLocaleString();
-}
-
 export function getFilePath() {
 	return __dirname;
 }
@@ -185,5 +180,11 @@ export class Counter<T> extends Map<CounterKey, number> {
 		let k = this.key(it);
 		this.set(k, (this.get(k) || 0) + 1);
 	}
+}
+
+function getScanLabel(createdAt: string, id: string) {
+	var date = new Date(createdAt).toLocaleString();
+	var label = date.split(",");
+	return label[0] + " " + id + " " + label[1];
 }
 
