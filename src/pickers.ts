@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "./models/logs";
-import { getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
+import { getScanLabel, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
 import { REFRESH_TREE } from "./utils/commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_PLACEHOLDER, PROJECT_ID_KEY, PROJECT_LABEL, PROJECT_PLACEHOLDER, SCAN_ID_KEY, SCAN_LABEL, SCAN_PLACEHOLDER } from "./utils/constants";
 import { get, update } from "./utils/globalState";
@@ -88,7 +88,7 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
 
   update(context, PROJECT_ID_KEY, { id: project.id, name: `${PROJECT_LABEL} ${project.name}` });
   update(context, BRANCH_ID_KEY, { id: getProperty(scan, 'branch'), name: `${BRANCH_LABEL} ${getProperty(scan, 'branch')}` });
-  update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${convertDate(scan.createdAt)}` });
+  update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
 
   await getResultsWithProgress(logs, scan.id);
   await vscode.commands.executeCommand(REFRESH_TREE);

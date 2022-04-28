@@ -182,7 +182,7 @@ export class Counter<T> extends Map<CounterKey, number> {
 	}
 }
 
-function getScanLabel(createdAt: string, id: string) {
+export function getScanLabel(createdAt: string, id: string) {
 	var date = new Date(createdAt).toLocaleString();
 	var label = date.split(",");
 	return label[0] + " " + id + " " + label[1];
