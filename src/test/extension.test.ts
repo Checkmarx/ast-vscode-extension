@@ -211,7 +211,7 @@ describe("UI tests", async function () {
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_PROJECT);
-    await delay(THIRTY_SECONDS);
+    await delay(FIVE_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
@@ -230,40 +230,37 @@ describe("UI tests", async function () {
     let treeScans = await initialize();
     await delay(THREE_SECONDS);
     await bench.executeCommand(CX_SELECT_BRANCH);
-    await delay(THIRTY_SECONDS);
+    await delay(FIVE_SECONDS);
     let input = await InputBox.create();
     await delay(THREE_SECONDS);
     let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
     await delay(THREE_SECONDS);
     await input.confirm();
-    await delay(FIFTY_SECONDS);
+    await delay(THIRTY_SECONDS);
     let branch = await treeScans?.findItem("Branch:  " + branchName);
     expect(branch).is.not.undefined;
     await delay(THREE_SECONDS);
-    let scan = await treeScans?.findItem("Scan: " );
-    expect(scan).is.not.undefined;
-    await delay(THREE_SECONDS);
   });
 
-  // it("should select scan", async function () {
-  //   this.timeout(MAX_TIMEOUT);
-  //   await delay(THREE_SECONDS);
-  //   let treeScans = await initialize();
-  //   await delay(THREE_SECONDS);
-  //   await bench.executeCommand(CX_SELECT_SCAN);
-  //   await delay(THIRTY_SECONDS);
-  //   let input = await InputBox.create();
-  //   await delay(THREE_SECONDS);
-  //   let scanDate = await getQuickPickSelector(input);
-  //   await input.setText(scanDate);
-  //   await delay(THREE_SECONDS);
-  //   await input.confirm();
-  //   await delay(FIFTY_SECONDS);
-  //   let branch = await treeScans?.findItem("Scan:  " + scanDate);
-  //   expect(branch).is.not.undefined;
-  //   await delay(THREE_SECONDS);
-  // });
+  it("should select scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let treeScans = await initialize();
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(CX_SELECT_SCAN);
+    await delay(FIVE_SECONDS);
+    let input = await InputBox.create();
+    await delay(THREE_SECONDS);
+    let scanDate = await getQuickPickSelector(input);
+    await input.setText(scanDate);
+    await delay(THREE_SECONDS);
+    await input.cancel();
+    await delay(FIVE_SECONDS);
+    let branch = await treeScans?.findItem("Scan:  " + scanDate);
+    expect(branch).is.not.undefined;
+    await delay(THREE_SECONDS);
+  });
   
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
