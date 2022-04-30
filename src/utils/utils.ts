@@ -183,8 +183,15 @@ export class Counter<T> extends Map<CounterKey, number> {
 }
 
 export function getScanLabel(createdAt: string, id: string) {
-	var date = new Date(createdAt).toLocaleString();
-	var label = date.split(",");
-	return label[0] + " " + id + " " + label[1];
+	// convert date to yyyy/mm/dd HH:mm:ss
+	const date = new Date(createdAt);
+	const year = date.getFullYear();
+	const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
+	const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
+	const hours = date.getHours() <	10 ? "0" + date.getHours() : date.getHours();
+	const minutes = date.getMinutes()	< 10 ? "0" + date.getMinutes() : date.getMinutes();
+	const seconds = date.getSeconds()	< 10 ? "0" + date.getSeconds() : date.getSeconds();
+	var dateString = year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
+	return dateString + " " + id;
 }
 
