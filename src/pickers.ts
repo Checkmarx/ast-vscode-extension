@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "./models/logs";
-import { convertDate, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
+import { getScanLabel, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
 import { REFRESH_TREE } from "./utils/commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_PLACEHOLDER, PROJECT_ID_KEY, PROJECT_LABEL, PROJECT_PLACEHOLDER, SCAN_ID_KEY, SCAN_LABEL, SCAN_PLACEHOLDER } from "./utils/constants";
 import { get, update } from "./utils/globalState";
@@ -32,7 +32,18 @@ export async function branchPicker(context: vscode.ExtensionContext, logs: Logs)
   quickPick.items = await getBranchPickItems(logs, projectItem.id, context);
   quickPick.onDidChangeSelection(async ([item]) => {
     update(context, BRANCH_ID_KEY, { id: item.id, name: `${BRANCH_LABEL} ${item.label}` });
-    update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
+    if(projectItem.id && item.id) {
+      var scanList = await getScansPickItems(logs, projectItem.id, item.id, context);
+      if(scanList.length > 0) {
+        update(context, SCAN_ID_KEY, { id: scanList[0].id, name: `${SCAN_LABEL} ${scanList[0].label}` });
+        await getResultsWithProgress(logs, scanList[0].id); 
+      }
+      else {
+        update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
+      }     
+    } else {
+      vscode.window.showErrorMessage("Please select a branch and project first");
+    }
     await vscode.commands.executeCommand(REFRESH_TREE);
     quickPick.hide();
   });
@@ -77,7 +88,7 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
 
   update(context, PROJECT_ID_KEY, { id: project.id, name: `${PROJECT_LABEL} ${project.name}` });
   update(context, BRANCH_ID_KEY, { id: getProperty(scan, 'branch'), name: `${BRANCH_LABEL} ${getProperty(scan, 'branch')}` });
-  update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${convertDate(scan.createdAt)}` });
+  update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
 
   await getResultsWithProgress(logs, scan.id);
   await vscode.commands.executeCommand(REFRESH_TREE);

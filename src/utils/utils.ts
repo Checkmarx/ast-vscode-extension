@@ -73,7 +73,7 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 			);
 			try {
 				return scanList ? scanList.map((label) => ({
-					label: convertDate(label.createdAt),
+					label: label === scanList[0] ? getScanLabel(label.createdAt,label.id) + " (latest)" : getScanLabel(label.createdAt,label.id),
 					id: label.id,
 				})) : [];
 			} catch (error) {
@@ -151,11 +151,6 @@ export const PROGRESS_HEADER: vscode.ProgressOptions = {
 	cancellable: true,
 };
 
-export function convertDate(date: string | undefined) {
-	if (!date) { return ""; }
-	return new Date(date).toLocaleString();
-}
-
 export function getFilePath() {
 	return __dirname;
 }
@@ -185,5 +180,18 @@ export class Counter<T> extends Map<CounterKey, number> {
 		let k = this.key(it);
 		this.set(k, (this.get(k) || 0) + 1);
 	}
+}
+
+export function getScanLabel(createdAt: string, id: string) {
+	// convert date to yyyy/mm/dd HH:mm:ss
+	const date = new Date(createdAt);
+	const year = date.getFullYear();
+	const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
+	const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
+	const hours = date.getHours() <	10 ? "0" + date.getHours() : date.getHours();
+	const minutes = date.getMinutes()	< 10 ? "0" + date.getMinutes() : date.getMinutes();
+	const seconds = date.getSeconds()	< 10 ? "0" + date.getSeconds() : date.getSeconds();
+	var dateString = year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
+	return dateString + " " + id;
 }
 
