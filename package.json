@@ -1,8 +1,8 @@
 {
   "name": "ast-results",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx AST Results",
-  "description": "For managing AST scan results",
+  "displayName": "Checkmarx",
+  "description": "Beat vulnerabilities with more-secure code.Checkmarx",
   "version": "2.0.2",
   "repository": {
     "type": "git",
@@ -50,6 +50,12 @@
         "command": "ast-results.refreshTree",
         "category": "checkmarx-ast",
         "title": "Refresh tree",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.kicsRealtime",
+        "category": "checkmarx-ast",
+        "title": "Run kics realtime scan",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -688,31 +694,70 @@
         "when": "!ast-results.isValidCredentials"
       }
     ],
-    "configuration": {
-      "title": "Checkmarx AST",
-      "properties": {
-        "checkmarxAST.base-uri": {
-          "type": "string",
-          "default": "",
-          "description": "AST Server URI"
-        },
-        "checkmarxAST.base-auth-uri": {
-          "type": "string",
-          "default": "",
-          "description": "AST Server authentication server URI"
-        },
-        "checkmarxAST.tenant": {
-          "type": "string",
-          "default": "",
-          "description": "Tenant"
-        },
-        "checkmarxAST.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "API KEY"
+    "configuration": [
+      {
+        "title": "Checkmarx AST results",
+        "id": "checkmarx-ast",
+        "order": 2,
+        "properties": {
+          "checkmarxAST.base-uri": {
+            "order": 2,
+            "type": "string",
+            "properties": {
+              "type": "string",
+              "default": "",
+              "description": "AST Server URI"
+            }
+          },
+          "checkmarxAST.base-auth-uri": {
+            "order": 3,
+            "type": "string",
+            "properties": {
+              "type": "string",
+              "default": "",
+              "description": "AST Server authentication server URI"
+            }
+          },
+          "checkmarxAST.tenant": {
+            "type": "string",
+            "order": 4,
+            "properties": {
+              "type": "string",
+              "default": "",
+              "description": "Tenant"
+            }
+          },
+          "checkmarxAST.apiKey": {
+            "type": "string",
+            "order": 5,
+            "properties": {
+              "type": "string",
+              "default": "",
+              "description": "API KEY"
+            }
+          }
+        }
+      },
+      {
+        "title": "Checkmarx KICS Auto Scanning",
+        "id": "kics-ast",
+        "order": 1,
+        "properties": {
+          "Checkmarx KICS: Activate KICS Auto Scanning": {
+            "type": "boolean",
+            "order": 3,
+            "default": true,
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. No Checkmarx credentials required. [Read more](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
+          },
+          "Checkmarx KICS: Additional Parameters": {
+            "type": "string",
+            "order": 4,
+            "default": "",
+            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
+          }
         }
       }
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -741,8 +786,11 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.51",
-    "copyfiles": "2.4.1"
+    "@checkmarxdev/ast-cli-javascript-wrapper": "file:../ast-cli-javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.51.tgz",
+    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../ast-cli-javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.51.tgz",
+    "child_process": "^1.0.2",
+    "copyfiles": "2.4.1",
+    "tree-kill": "^1.2.2"
   },
   "extensionDependencies": [
     "vscode.git"

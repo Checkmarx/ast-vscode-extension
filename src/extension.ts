@@ -32,7 +32,7 @@ import { AstDetailsDetached } from "./ast_details_view";
 import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import {filter, filterState, initializeFilters} from "./utils/filters";
 import { group } from "./utils/group";
-import { getBranchListener } from "./utils/listeners";
+import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
 import { getAstConfiguration, triageShow} from "./utils/ast";
 import {getCodebashingLink} from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
@@ -47,7 +47,8 @@ export async function activate(context: vscode.ExtensionContext) {
   logs.info("Checkmarx plugin is running");
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
-  
+  // Create listener for file saves for real time feedback
+  addRealTimeSaveListener(context,logs,diagnosticCollection);
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 
   const astResultsProvider = new AstResultsProvider(
@@ -66,6 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Results side tree creation
   vscode.window.registerTreeDataProvider(`astResults`, astResultsProvider);
   const tree = vscode.window.createTreeView("astResults", {treeDataProvider: astResultsProvider});
+  
   tree.onDidChangeSelection((item) => {
     if (item.selection.length > 0) {
         if (!item.selection[0].contextValue && !item.selection[0].children) {
@@ -181,6 +183,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Refresh Tree Commmand
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
+
+  // kics real time command
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await astResultsProvider.showStatusBarKics()));
 
   // Clear Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () =>  await astResultsProvider.clean()));

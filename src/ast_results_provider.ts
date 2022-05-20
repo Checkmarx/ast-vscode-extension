@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
+import * as kill from 'tree-kill';
 import * as fs from "fs";
 import * as path from "path";
+import { spawn } from 'child_process';
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
 import { AstResult } from "./models/results";
@@ -19,6 +21,7 @@ import {
   BRANCH_ITEM,
   SCAN_ITEM,
   GRAPH_ITEM,
+  KICS_REALTIME_FILE,
 } from "./utils/constants";
 import {
   Counter,
@@ -26,11 +29,16 @@ import {
 } from "./utils/utils";
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
-import { getAstConfiguration } from "./utils/ast";
+import { cancelProcess, getAstConfiguration, getResultsRealtime } from "./utils/ast";
 import { SastNode } from "./models/sastNode";
 import { REFRESH_TREE } from "./utils/commands";
+import { createKicsScan, updateKicsDiagnostic } from "./utils/realtime";
+import { getCurrentFile } from "./utils/realtime";
+import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
+import { join } from "path";
+import { Worker,isMainThread, parentPort } from 'worker_threads';
 
-
+const worker = new Worker(join(__dirname, 'utils/kicsWorker.js'));
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity];
   public stateFilter: IssueFilter = IssueFilter.state;
@@ -41,6 +49,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
+  public process:Worker;
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
@@ -69,6 +78,44 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this.statusBarItem.hide();
   }
 
+   async showStatusBarKics() {
+    this.statusBarItem.text = "$(sync~spin) Checkmarx kics realtime";
+    this.statusBarItem.tooltip = "Checkmarx kics is running";
+    this.statusBarItem.show();
+    // Get current file, either from global state or from the current open file
+    let file = await getCurrentFile(this.context,this.logs);
+    let savedProcess = get(this.context,"PROCESS_OBJECT");
+    if(file){
+        if(savedProcess.id){
+          kill(savedProcess.id.pid);
+          this.logs.info("kics real-time canceled");
+          update(this.context, "PROCESS_OBJECT", {id: undefined, name: "cli-process"});
+        }
+          let kicsResults= new CxKicsRealTime();
+          let [createObject,process] = await createKicsScan(file.file);
+          createObject.then((cxOutput)=>{
+              if(cxOutput.exitCode === 0){
+                    kicsResults = cxOutput.payload[0];
+                    updateKicsDiagnostic(kicsResults,this.diagnosticCollection,file.editor!,this.context);
+                    this.logs.info("kics real-time results updated");
+                    this.logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+                    update(this.context, KICS_REALTIME_FILE, { id: undefined, name: undefined });
+                    this.statusBarItem.hide();
+                  }
+                  else {
+                    throw new Error(cxOutput.status);
+                  }
+          });
+          kicsResults = createObject;
+          this.process = process;
+          update(this.context, "PROCESS_OBJECT", {id: this.process, name: "cli-process"});
+    }
+    else{
+      this.statusBarItem.hide();
+      this.logs.error("Real-time kics scan failed.");
+    }
+   }
+
   async clean(): Promise<void> {
     this.logs.info("Clear all loaded information");
     const resultJsonPath = path.join(__dirname, "ast-results.json");
@@ -88,6 +135,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
+
 
   async openRefreshData(): Promise<void> {
     this.showStatusBarItem();

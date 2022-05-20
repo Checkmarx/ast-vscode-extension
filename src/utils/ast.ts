@@ -3,11 +3,13 @@ import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
+import CxKicsRealTime  from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -182,3 +184,23 @@ export async function getResultsBfl(scanId:string, queryId:string,resultNodes:Sa
 	}
 }
 
+export async function getResultsRealtime(fileSources:string, additionalParams:string) :Promise <any>{
+	
+	if (!fileSources) {
+		throw new Error("Missing mandatory parameters, fileSources");
+	}
+	const cx = new CxWrapper(new CxConfig());
+	let [kics,process]=[undefined,undefined];
+	try{
+		[kics,process] = await cx.kicsRealtimeScan(fileSources,additionalParams);
+	}catch(e){
+		throw new Error("Error running kics scan");
+	}
+	return [kics,process];
+
+}
+
+export async function cancelProcess(process:any) :Promise<CxCommandOutput>{
+	const cx = new CxWrapper(new CxConfig());
+	return cx.cancelProcess(process);
+}
