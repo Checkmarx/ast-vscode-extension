@@ -1,19 +1,20 @@
-import * as fs from "fs";
-import * as path from "path";
 import * as vscode from "vscode";
 
 import { KICS_REALTIME_FILE } from "./constants";
 import { Logs } from "../models/logs";
-
 import { get } from "./globalState";
 import { getResultsRealtime } from "./ast";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 
+export function summaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
+	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+}
 
 export async function createKicsScan(file: string | undefined){
 	let results :any;
 	try {
-		results = await getResultsRealtime(file!,"");
+		const additionalParams = vscode.workspace.getConfiguration("CheckmarxKICS").get("Additional Parameters") as string;
+		results = await getResultsRealtime(file!,additionalParams);
 	  } catch (err : any){
 		throw new Error(err.message);	
 	  }
@@ -75,7 +76,7 @@ export function updateKicsDiagnostic(kicsResults :  CxKicsRealTime, diagnosticCo
 }
 
 export async function getCurrentFile(context:vscode.ExtensionContext, logs : Logs):Promise<{ file: string | undefined; editor: vscode.TextEditor; }> {
-	// Call kics scanner
+	// Cleanup markdown from files
 	await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
 	await vscode.commands.executeCommand("workbench.action.reopenClosedEditor");
 	let file = get(context,KICS_REALTIME_FILE)?.id;

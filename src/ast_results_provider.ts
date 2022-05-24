@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import * as kill from 'tree-kill';
 import * as fs from "fs";
 import * as path from "path";
-import { spawn } from 'child_process';
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
 import { AstResult } from "./models/results";
@@ -22,6 +21,8 @@ import {
   SCAN_ITEM,
   GRAPH_ITEM,
   KICS_REALTIME_FILE,
+  PROCESS_OBJECT,
+  PROCESS_OBJECT_KEY,
 } from "./utils/constants";
 import {
   Counter,
@@ -29,16 +30,15 @@ import {
 } from "./utils/utils";
 import { Logs } from "./models/logs";
 import { get, update } from "./utils/globalState";
-import { cancelProcess, getAstConfiguration, getResultsRealtime } from "./utils/ast";
+import { getAstConfiguration } from "./utils/ast";
 import { SastNode } from "./models/sastNode";
 import { REFRESH_TREE } from "./utils/commands";
-import { createKicsScan, updateKicsDiagnostic } from "./utils/realtime";
+import { createKicsScan, summaryLogs, updateKicsDiagnostic } from "./utils/realtime";
 import { getCurrentFile } from "./utils/realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { join } from "path";
-import { Worker,isMainThread, parentPort } from 'worker_threads';
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 
-const worker = new Worker(join(__dirname, 'utils/kicsWorker.js'));
+
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity];
   public stateFilter: IssueFilter = IssueFilter.state;
@@ -49,7 +49,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
-  public process:Worker;
+  public process:any;
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
@@ -78,43 +78,53 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this.statusBarItem.hide();
   }
 
-   async showStatusBarKics() {
+  async showStatusBarKics() {
     this.statusBarItem.text = "$(sync~spin) Checkmarx kics realtime";
     this.statusBarItem.tooltip = "Checkmarx kics is running";
     this.statusBarItem.show();
     // Get current file, either from global state or from the current open file
     let file = await getCurrentFile(this.context,this.logs);
-    let savedProcess = get(this.context,"PROCESS_OBJECT");
+    // Get the last process from global state
+    let savedProcess = get(this.context,PROCESS_OBJECT);
     if(file){
+        // If there is a saved process then we try to kill it
         if(savedProcess.id){
           kill(savedProcess.id.pid);
-          this.logs.info("kics real-time canceled");
-          update(this.context, "PROCESS_OBJECT", {id: undefined, name: "cli-process"});
+          update(this.context, PROCESS_OBJECT, {id: undefined, name: PROCESS_OBJECT_KEY});
         }
-          let kicsResults= new CxKicsRealTime();
-          let [createObject,process] = await createKicsScan(file.file);
-          createObject.then((cxOutput)=>{
+        // Create a new auto scan
+        let kicsResults= new CxKicsRealTime();
+        // Retrieve the process running the cli and the promise to get the results
+        let [createObject,process] = await createKicsScan(file.file);
+        // Let the process run and only deal with the output once is over
+        createObject.then((cxOutput:CxCommandOutput)=>{
               if(cxOutput.exitCode === 0){
-                    kicsResults = cxOutput.payload[0];
-                    updateKicsDiagnostic(kicsResults,this.diagnosticCollection,file.editor!,this.context);
-                    this.logs.info("kics real-time results updated");
-                    this.logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
-                    update(this.context, KICS_REALTIME_FILE, { id: undefined, name: undefined });
-                    this.statusBarItem.hide();
-                  }
-                  else {
-                    throw new Error(cxOutput.status);
-                  }
-          });
-          kicsResults = createObject;
-          this.process = process;
-          update(this.context, "PROCESS_OBJECT", {id: this.process, name: "cli-process"});
+                  kicsResults = cxOutput.payload[0];
+                  updateKicsDiagnostic(kicsResults,this.diagnosticCollection,file.editor!,this.context);
+                  this.logs.info("kics real-time results updated");
+                  summaryLogs(kicsResults,this.logs);
+                  update(this.context, KICS_REALTIME_FILE, { id: undefined, name: undefined });
+                  this.statusBarItem.hide();
+              }
+              else {
+                this.statusBarItem.hide();
+                if(cxOutput.status.length>0){
+                  this.logs.error(cxOutput.status.replace("\n",""));
+                }
+              }
+            }).catch((err: string)=>{
+              this.statusBarItem.hide();
+              this.logs.error(err.replace("\n",""));
+        });
+        // Update the global state process to be handled on the next save call
+        this.process = process;
+        update(this.context, PROCESS_OBJECT, {id: this.process, name: PROCESS_OBJECT_KEY});
     }
     else{
       this.statusBarItem.hide();
       this.logs.error("Real-time kics scan failed.");
     }
-   }
+  }
 
   async clean(): Promise<void> {
     this.logs.info("Clear all loaded information");
@@ -122,7 +132,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (fs.existsSync(resultJsonPath)) {
       fs.unlinkSync(resultJsonPath);
     }
-
     update(this.context, SCAN_ID_KEY, undefined);
     update(this.context, PROJECT_ID_KEY, undefined);
     update(this.context, BRANCH_ID_KEY, undefined);

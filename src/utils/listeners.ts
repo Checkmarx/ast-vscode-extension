@@ -4,7 +4,7 @@ import { GitExtension, RepositoryState } from "../types/git";
 import { REFRESH_TREE } from "./commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./constants";
 import { get, update } from "./globalState";
-import { cancelProcess, getBranches } from "./ast";
+import { getBranches } from "./ast";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
@@ -58,25 +58,17 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 
 export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: Logs, diagnosticCollection: vscode.DiagnosticCollection) {
 	
-	// vscode.workspace.onWillSaveTextDocument(async (e) => {
-	// 	// Check if saved file is within the project
-	// 	switch (e.reason) {
-	// 		case 1:
-	// 			logs.info("Manual save");
-	// 			break;
-	// 		case 2:
-	// 			logs.info("Auto save");
-	// 		default:
-	// 			break;
-	// 	}
-	// });
 	vscode.workspace.onDidSaveTextDocument(async (e) => {
-		// Check if saved file is within the project
-		logs.info("File saved updating kics results");
-		// Send the current file to the global state, to be used in the command
-		update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
-		await vscode.commands.executeCommand(
-            "ast-results.kicsRealtime"
-          );
+		// Check if on save setting is enabled
+		const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+		if(onSave){
+			// Check if saved file is within the project
+			logs.info("File saved updating kics results");
+			// Send the current file to the global state, to be used in the command
+			update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
+			await vscode.commands.executeCommand(
+				"ast-results.kicsRealtime"
+			);
+		}
 	});
 }

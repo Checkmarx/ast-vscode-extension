@@ -192,15 +192,10 @@ export async function getResultsRealtime(fileSources:string, additionalParams:st
 	const cx = new CxWrapper(new CxConfig());
 	let [kics,process]=[undefined,undefined];
 	try{
-		[kics,process] = await cx.kicsRealtimeScan(fileSources,additionalParams);
+		[kics,process] = await cx.kicsRealtimeScan(fileSources,"docker",additionalParams);
 	}catch(e){
 		throw new Error("Error running kics scan");
 	}
 	return [kics,process];
 
-}
-
-export async function cancelProcess(process:any) :Promise<CxCommandOutput>{
-	const cx = new CxWrapper(new CxConfig());
-	return cx.cancelProcess(process);
 }

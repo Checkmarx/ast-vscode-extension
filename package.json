@@ -743,13 +743,13 @@
         "id": "kics-ast",
         "order": 1,
         "properties": {
-          "Checkmarx KICS: Activate KICS Auto Scanning": {
+          "CheckmarxKICS.Activate KICS Auto Scanning": {
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. No Checkmarx credentials required. [Read more](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
           },
-          "Checkmarx KICS: Additional Parameters": {
+          "CheckmarxKICS.Additional Parameters": {
             "type": "string",
             "order": 4,
             "default": "",

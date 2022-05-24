@@ -86,3 +86,5 @@ export const AST_ERROR_CODEBASHING_NO_LICENSE: number = 3;
 export const AST_ERROR_CODEBASHING_NO_LESSON: number = 4;
 
 export const KICS_REALTIME_FILE = "CURRENT_KICS_FILE";
+export const PROCESS_OBJECT = "PROCESS_OBJECT";
+export const PROCESS_OBJECT_KEY = "cli-process";
