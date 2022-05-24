@@ -23,38 +23,45 @@ import {
   SEVERITY_GROUP,
   STATUS_GROUP,
   STATE_GROUP,
-  QUERY_NAME_GROUP
+  QUERY_NAME_GROUP,
+  EXTENSION_FULL_NAME
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
 import { multiStepInput } from "./ast_multi_step_input";
 import { AstDetailsDetached } from "./ast_details_view";
 import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
-import {filter, filterState, initializeFilters} from "./utils/filters";
+import { filter, filterState, initializeFilters } from "./utils/filters";
 import { group } from "./utils/group";
 import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
-import { getAstConfiguration, triageShow} from "./utils/ast";
-import {getCodebashingLink} from "./utils/codebashing";
+import { getAstConfiguration } from "./utils/ast";
+import { getCodebashingLink } from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
-import { getChanges, getResultsBfl } from "./utils/utils";
+import { getChanges } from "./utils/utils";
+import { CodelensProvider } from "./CodelensProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
-  const output = vscode.window.createOutputChannel(EXTENSION_NAME);
+  const output = vscode.window.createOutputChannel(EXTENSION_FULL_NAME);
   const logs = new Logs(output);
   logs.show();
   logs.info("Checkmarx plugin is running");
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
-  // Create listener for file saves for real time feedback
-  addRealTimeSaveListener(context,logs,diagnosticCollection);
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  
+  
+
+  // Create listener for file saves for real time feedback
+  addRealTimeSaveListener(context,logs,kicsStatusBarItem);
 
   const astResultsProvider = new AstResultsProvider(
     context,
     logs,
     statusBarItem,
+    kicsStatusBarItem,
     diagnosticCollection
   );
   
@@ -169,15 +176,25 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
         vscode.commands.executeCommand(
             "workbench.action.openSettings",
-            `checkmarx`
+            `@ext:checkmarx.ast-results`
         );
       }
   ));
 
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewKicsSaveSettings`, () => {
+    vscode.commands.executeCommand(
+        "workbench.action.openSettings",
+        `checkmarx.kicsAuto`,
+      );
+    }
+  ));
+
   // Listening to settings changes
   vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
-  vscode.workspace.onDidChangeConfiguration(async () => {
+  vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+    kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
     await vscode.commands.executeCommand(REFRESH_TREE);
   });
 

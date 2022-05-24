@@ -56,19 +56,21 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 	});
 }
 
-export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: Logs, diagnosticCollection: vscode.DiagnosticCollection) {
+export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: Logs, kicsStatusBarItem:vscode.StatusBarItem) {
 	
 	vscode.workspace.onDidSaveTextDocument(async (e) => {
 		// Check if on save setting is enabled
-		const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
-		if(onSave){
-			// Check if saved file is within the project
-			logs.info("File saved updating kics results");
-			// Send the current file to the global state, to be used in the command
-			update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
-			await vscode.commands.executeCommand(
-				"ast-results.kicsRealtime"
-			);
+		if(!e.fileName.includes("settings.json")){
+			const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+			if(onSave){
+				// Check if saved file is within the project
+				logs.info("File saved updating kics results");
+				// Send the current file to the global state, to be used in the command
+				update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
+				await vscode.commands.executeCommand(
+					"ast-results.kicsRealtime"
+				);
+			}
 		}
 	});
 }

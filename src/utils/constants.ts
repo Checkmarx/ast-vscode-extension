@@ -1,4 +1,5 @@
 export const EXTENSION_NAME: string = "ast-results";
+export const EXTENSION_FULL_NAME: string = "Checkmarx";
 export const SCAN_ID_KEY: string = "ast-results-scan-id";
 
 export const HIGH_FILTER: string = "ast-results-high";

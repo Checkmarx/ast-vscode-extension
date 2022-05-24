@@ -8,7 +8,7 @@ export const TWO_SECONDS: number = 2000;
 export const CX_API_KEY_CAPS: string = "API KEY";
 export const CX_API_KEY: string = "Api Key";
 export const CX_TENANT: string = "Tenant";
-export const CX_BASE_URI: string = "Base-uri";
+export const CX_BASE_URI: string = "baseUri";
 
 export const VS_CLOSE_EDITOR: string = "Close Editor";
 export const VS_CLOSE_GROUP_EDITOR: string = "Close All Editors in Group";

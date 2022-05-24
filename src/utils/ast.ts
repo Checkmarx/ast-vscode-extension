@@ -97,8 +97,8 @@ export async function getScans(projectId: string | undefined, branch: string | u
 }
 
 export function getAstConfiguration() {
-	const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-uri") as string;
-	const baseAuthURI = vscode.workspace.getConfiguration("checkmarxAST").get("base-auth-uri") as string;
+	const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseUri") as string;
+	const baseAuthURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseAuthUri") as string;
 	const tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
 	const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 	
@@ -192,7 +192,7 @@ export async function getResultsRealtime(fileSources:string, additionalParams:st
 	const cx = new CxWrapper(new CxConfig());
 	let [kics,process]=[undefined,undefined];
 	try{
-		[kics,process] = await cx.kicsRealtimeScan(fileSources,"docker",additionalParams);
+		[kics,process] = await cx.kicsRealtimeScan(fileSources,"",additionalParams);
 	}catch(e){
 		throw new Error("Error running kics scan");
 	}

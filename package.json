@@ -47,6 +47,12 @@
         "icon": "$(gear)"
       },
       {
+        "command": "ast-results.viewKicsSaveSettings",
+        "category": "checkmarx-ast",
+        "title": "Kics save settings",
+        "icon": "$(gear)"
+      },
+      {
         "command": "ast-results.refreshTree",
         "category": "checkmarx-ast",
         "title": "Refresh tree",
@@ -700,40 +706,40 @@
         "id": "checkmarx-ast",
         "order": 2,
         "properties": {
-          "checkmarxAST.base-uri": {
+          "checkmarxAST.baseUri": {
             "order": 2,
             "type": "string",
+            "description": "AST Server URI",
             "properties": {
               "type": "string",
-              "default": "",
-              "description": "AST Server URI"
+              "default": ""
             }
           },
-          "checkmarxAST.base-auth-uri": {
+          "checkmarxAST.baseAuthUri": {
             "order": 3,
             "type": "string",
+            "description": "AST Server authentication server URI",
             "properties": {
               "type": "string",
-              "default": "",
-              "description": "AST Server authentication server URI"
+              "default": ""
             }
           },
           "checkmarxAST.tenant": {
             "type": "string",
             "order": 4,
+            "description": "AST Tenant for authentication",
             "properties": {
               "type": "string",
-              "default": "",
-              "description": "Tenant"
+              "default": ""
             }
           },
           "checkmarxAST.apiKey": {
             "type": "string",
             "order": 5,
+            "description": "AST API KEY for authentication",
             "properties": {
               "type": "string",
-              "default": "",
-              "description": "API KEY"
+              "default": ""
             }
           }
         }

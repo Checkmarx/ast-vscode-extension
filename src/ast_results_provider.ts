@@ -37,6 +37,7 @@ import { createKicsScan, summaryLogs, updateKicsDiagnostic } from "./utils/realt
 import { getCurrentFile } from "./utils/realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { CodelensProvider } from "./CodelensProvider";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
@@ -62,8 +63,15 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
+    private readonly kicsStatusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection
-  ) {}
+  ) {
+    const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+    this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
+    this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
+    this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
+    this.kicsStatusBarItem.show();
+  }
 
   private showStatusBarItem() {
     this.statusBarItem.text = "$(sync~spin) Refreshing tree";
@@ -79,15 +87,16 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   async showStatusBarKics() {
-    this.statusBarItem.text = "$(sync~spin) Checkmarx kics realtime";
-    this.statusBarItem.tooltip = "Checkmarx kics is running";
-    this.statusBarItem.show();
+    this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx kics: Running Auto Scan";
+    this.kicsStatusBarItem.tooltip = "Checkmarx kics is running";
+    this.kicsStatusBarItem.show();
     // Get current file, either from global state or from the current open file
     let file = await getCurrentFile(this.context,this.logs);
     // Get the last process from global state
     let savedProcess = get(this.context,PROCESS_OBJECT);
     if(file){
         // If there is a saved process then we try to kill it
+        
         if(savedProcess.id){
           kill(savedProcess.id.pid);
           update(this.context, PROCESS_OBJECT, {id: undefined, name: PROCESS_OBJECT_KEY});
@@ -99,21 +108,34 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         // Let the process run and only deal with the output once is over
         createObject.then((cxOutput:CxCommandOutput)=>{
               if(cxOutput.exitCode === 0){
+                  // remove last codelens
+                  let codelensObject = get(this.context,"codelens");
+                  if(codelensObject!==undefined){
+                    if(codelensObject.id.dispose){
+                      codelensObject.id.dispose();
+                    }   
+                  }
                   kicsResults = cxOutput.payload[0];
                   updateKicsDiagnostic(kicsResults,this.diagnosticCollection,file.editor!,this.context);
                   this.logs.info("kics real-time results updated");
                   summaryLogs(kicsResults,this.logs);
                   update(this.context, KICS_REALTIME_FILE, { id: undefined, name: undefined });
-                  this.statusBarItem.hide();
+                  this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
+                  // codelens provider
+                  const codelensProvider = new CodelensProvider(kicsResults);
+                  let codelensObjectAux = vscode.languages.registerCodeLensProvider({pattern:file.file},codelensProvider);
+                  update(this.context, "codelens", {id: codelensObjectAux, name: "codelens"});
               }
               else {
-                this.statusBarItem.hide();
+                this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
+                this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
                 if(cxOutput.status.length>0){
                   this.logs.error(cxOutput.status.replace("\n",""));
                 }
               }
             }).catch((err: string)=>{
-              this.statusBarItem.hide();
+              this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
+              this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
               this.logs.error(err.replace("\n",""));
         });
         // Update the global state process to be handled on the next save call
@@ -121,7 +143,8 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         update(this.context, PROCESS_OBJECT, {id: this.process, name: PROCESS_OBJECT_KEY});
     }
     else{
-      this.statusBarItem.hide();
+      this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
+      this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
       this.logs.error("Real-time kics scan failed.");
     }
   }
