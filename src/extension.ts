@@ -39,7 +39,7 @@ import { getCodebashingLink } from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
-import { CodelensProvider } from "./CodelensProvider";
+import { KicsProvider } from "./kics_provider";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -48,9 +48,17 @@ export async function activate(context: vscode.ExtensionContext) {
   logs.show();
   logs.info("Checkmarx plugin is running");
 
+  
+  const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
+  const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  
+  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
+   // kics real time command
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
+
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+ 
   
   
 
@@ -201,8 +209,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // Refresh Tree Commmand
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
 
-  // kics real time command
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await astResultsProvider.showStatusBarKics()));
 
   // Clear Command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () =>  await astResultsProvider.clean()));

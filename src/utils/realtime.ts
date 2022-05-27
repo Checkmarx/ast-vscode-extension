@@ -6,6 +6,7 @@ import { get } from "./globalState";
 import { getResultsRealtime } from "./ast";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 
+
 export function summaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
 	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
 }
@@ -20,6 +21,86 @@ export async function createKicsScan(file: string | undefined){
 	  }
 	return results;
 }
+
+export function applyKicsDiagnostic(kicsResults : CxKicsRealTime, uri: vscode.Uri, diagnosticCollection: vscode.DiagnosticCollection) {
+	diagnosticCollection.clear();
+
+	const kicsDiagnotic: vscode.Diagnostic[] = [];
+
+	for (const kicsResult of kicsResults.results) {
+		const file = kicsResult.files[0];
+
+		const startPosition = new vscode.Position(file.line-1, 0);
+		const endPosition = new vscode.Position(file.line-1, 999);
+
+		kicsDiagnotic.push({
+            message: `(${kicsResult.severity}) ${kicsResult.query_name}\n${kicsResult.description}\n\nValue: ${kicsResult.query_name}\nRecomended fix: ${file.expected_value}\n`,
+            range: new vscode.Range(startPosition, endPosition),
+            severity: vscode.DiagnosticSeverity.Error,
+            source: 'KICS ',
+			code: {value: `${kicsResult.query_name}`, target: vscode.Uri.parse(kicsResult.query_url)}
+        });
+	}
+	
+	diagnosticCollection.set(uri, kicsDiagnotic);
+}
+
+export function applyKicsCodeLensProvider(file: vscode.DocumentSelector, kicsResults : CxKicsRealTime) : vscode.Disposable {
+	const codelens =  vscode.languages.registerCodeLensProvider(file, {
+		provideCodeLenses(document, token) {
+			return getKicsCodeLensProvider(kicsResults);
+		}
+	});
+
+	return codelens;
+}
+
+export function getKicsCodeLensProvider(kicsResults : CxKicsRealTime) : vscode.CodeLens[] | Thenable<vscode.CodeLens[]>{
+	type Summary = { HIGH: number; MEDIUM: number; LOW: number , INFO: number};
+	const resultsmap: Map<number, Summary> = new Map<number, Summary>();
+	for (const kicsResult of kicsResults.results) {
+		const file = kicsResult.files[0];
+		const line = file.line - 1;
+		
+		if (!resultsmap.has(line)) {
+			resultsmap.set(line, {'HIGH':0,'MEDIUM':0,'LOW':0,'INFO':0});
+		}
+
+		let summary = resultsmap.get(line);
+		summary[kicsResult.severity] += 1;
+	}
+
+	const codeLensResults: vscode.CodeLens[] = [];
+	for (const result of resultsmap.entries()) {
+		const line = result[0];
+		const count = result[1];
+		let message = "KICS:";
+		if(count["HIGH"]>0){
+			message+=" HIGH: " + count["HIGH"] + " | ";
+		}
+		if(count["MEDIUM"]>0){
+			message+=" MEDIUM: " + count["MEDIUM"] + " | ";
+		}
+		if(count["LOW"]>0){
+			message+=" LOW: " + count["LOW"] + " | ";
+		}
+		if(count["INFO"]>0){
+			message+=" INFO: " + count["INFO"] + " | ";
+		}
+
+		codeLensResults.push(new vscode.CodeLens(new vscode.Range(new vscode.Position(line, 0),new vscode.Position(line, 999)), {
+			title: message.slice(0, -2),
+			tooltip: "",
+			command: "",
+			arguments: []
+		}));
+	}
+
+
+	return codeLensResults;
+}
+
+
 
 
 export function updateKicsDiagnostic(kicsResults :  CxKicsRealTime, diagnosticCollection: vscode.DiagnosticCollection, editor: vscode.TextEditor,context:vscode.ExtensionContext){
@@ -77,8 +158,8 @@ export function updateKicsDiagnostic(kicsResults :  CxKicsRealTime, diagnosticCo
 
 export async function getCurrentFile(context:vscode.ExtensionContext, logs : Logs):Promise<{ file: string | undefined; editor: vscode.TextEditor; }> {
 	// Cleanup markdown from files
-	await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
-	await vscode.commands.executeCommand("workbench.action.reopenClosedEditor");
+	//await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+	//await vscode.commands.executeCommand("workbench.action.reopenClosedEditor");
 	let file = get(context,KICS_REALTIME_FILE)?.id;
 	let opened = vscode.window.activeTextEditor;
 	if(!file){
