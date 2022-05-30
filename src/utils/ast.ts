@@ -3,13 +3,11 @@ import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import CxKicsRealTime  from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { ERROR_MESSAGE, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
+import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();

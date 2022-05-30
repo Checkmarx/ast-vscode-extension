@@ -53,14 +53,11 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   
   const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
-   // kics real time command
+   // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
- 
-  
-  
 
   // Create listener for file saves for real time feedback
   addRealTimeSaveListener(context,logs,kicsStatusBarItem);

@@ -33,34 +33,38 @@ export class KicsProvider {
 		const file = await getCurrentFile(this.context,this.logs);
 		if (!file) {return;}
 		
-		// Get the last process from global state
+		// Get the last process from global state, if present we try to kill it to avoid process spawn spam
 		const savedProcess = get(this.context, PROCESS_OBJECT);
 		if (savedProcess && savedProcess.id) {
 			kill(savedProcess.id.pid);
 			update(this.context, PROCESS_OBJECT, {id: undefined, name: PROCESS_OBJECT_KEY});
 		}
 		
-		// Clear
+		// Clear the kics diagnostics
 		applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, this.diagnosticCollection);
 		if (this.codeLensDisposable) {this.codeLensDisposable.dispose();}
 		
-
+		// Create the kics scan
 		const [createObject,process] = await createKicsScan(file.file);
 		
+		// update the current cli spawned process returned by the wrapper
 		this.process = process;
 		update(this.context, PROCESS_OBJECT, {id: this.process, name: PROCESS_OBJECT_KEY});
 
+		// asyncly wait for the kics scan to end to create the diagnostics and print the summary
 		createObject
 		.then((cxOutput:CxCommandOutput) => {
 			if(cxOutput.exitCode !== 0) {
 				
 				throw new Error(cxOutput.status);
 			}
-
+			// Get the results
 			const kicsResults = cxOutput.payload[0];
-			
+			// Logs the results summary to the output
 			summaryLogs(kicsResults, this.logs);
+			// Get the results into the problems
 			applyKicsDiagnostic(kicsResults, file.editor.document.uri, this.diagnosticCollection);
+			// Get the results into codelens 
 			this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
 			this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
 
