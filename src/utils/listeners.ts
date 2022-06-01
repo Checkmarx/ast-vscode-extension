@@ -39,7 +39,7 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 		
 		const projectItem = get(context, PROJECT_ID_KEY);
 		const currentBranch = get(context, BRANCH_ID_KEY);
-		logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
+		//logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
 		
 		if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
 			getBranches(projectItem.id).then((branches) => {

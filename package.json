@@ -2,7 +2,7 @@
   "name": "ast-results",
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
-  "description": "Beat vulnerabilities with more-secure code.Checkmarx",
+  "description": "Beat vulnerabilities with more-secure code",
   "version": "2.0.2",
   "repository": {
     "type": "git",
@@ -61,8 +61,7 @@
       {
         "command": "ast-results.kicsRealtime",
         "category": "checkmarx-ast",
-        "title": "Run kics realtime scan",
-        "enablement": "ast-results.isValidCredentials"
+        "title": "Run kics realtime scan"
       },
       {
         "command": "ast-results.clear",

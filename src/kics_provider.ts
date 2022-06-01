@@ -54,26 +54,27 @@ export class KicsProvider {
 		// asyncly wait for the kics scan to end to create the diagnostics and print the summary
 		createObject
 		.then((cxOutput:CxCommandOutput) => {
-			if(cxOutput.exitCode !== 0) {
-				
+			if(cxOutput.exitCode!== 0) {
 				throw new Error(cxOutput.status);
 			}
 			// Get the results
-			const kicsResults = cxOutput.payload[0];
-			// Logs the results summary to the output
-			summaryLogs(kicsResults, this.logs);
-			// Get the results into the problems
-			applyKicsDiagnostic(kicsResults, file.editor.document.uri, this.diagnosticCollection);
-			// Get the results into codelens 
-			this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
-			this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
-
+			if(cxOutput.payload){
+				const kicsResults = cxOutput.payload[0];
+				// Logs the results summary to the output
+				summaryLogs(kicsResults, this.logs);
+				// Get the results into the problems
+				applyKicsDiagnostic(kicsResults, file.editor.document.uri, this.diagnosticCollection);
+				// Get the results into codelens 
+				this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
+				this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
+			}
 		})
 		.catch( error =>{
-			this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
 			this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-			this.logs.error(error);
+			if(error.message && error.message.length>0){
+				this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
+				this.logs.error(error);
+			}
 		});
-		
 	  }
 }

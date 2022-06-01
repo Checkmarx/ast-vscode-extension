@@ -5,16 +5,18 @@ export const FIVE_SECONDS: number = 5000;
 export const THREE_SECONDS: number = 3000;
 export const TWO_SECONDS: number = 2000;
 
-export const CX_API_KEY_CAPS: string = "API KEY";
 export const CX_API_KEY: string = "Api Key";
 export const CX_TENANT: string = "Tenant";
-export const CX_BASE_URI: string = "baseUri";
+export const CX_BASE_URI: string = "Base Uri";
+export const CX_KICS_VALUE: string = "kics";
 
 export const VS_CLOSE_EDITOR: string = "Close Editor";
 export const VS_CLOSE_GROUP_EDITOR: string = "Close All Editors in Group";
 export const VS_OPEN_FOLDER: string = "File: Open Folder...";
 
 export const CX_NAME: string = "Checkmarx AST";
+export const CX_KICS: string = "Checkmarx KICS";
+export const CX_KICS_NAME: string = "Activate KICS Auto Scanning";
 
 export const CX_SELECT_ALL: string = "checkmarx-ast: Select All";
 export const CX_SELECT_PROJECT: string = "checkmarx-ast: Select Project";

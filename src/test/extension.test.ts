@@ -8,6 +8,8 @@ import {
   By,
   until,
   WebView,
+  BottomBarPanel,
+  TextEditor
 } from "vscode-extension-tester";
 import {
   initialize,
@@ -27,7 +29,6 @@ import {
   FIVE_SECONDS,
   THREE_SECONDS,
   TWO_SECONDS,
-  CX_API_KEY_CAPS,
   CX_API_KEY,
   CX_TENANT,
   CX_BASE_URI,
@@ -56,6 +57,9 @@ import {
   CX_FILTER_NOT_IGNORED,
   CX_GROUP_STATE,
   CX_GROUP_QUERY_NAME,
+  CX_KICS_NAME,
+  CX_KICS,
+  CX_KICS_VALUE,
 } from "./constants";
 
 describe("UI tests", async function () {
@@ -68,6 +72,82 @@ describe("UI tests", async function () {
     driver = VSBrowser.instance.driver;
     await delay(THREE_SECONDS);
   });
+  
+  it("should check kics auto scan enablement on settings", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let settingsWizard = await bench.openSettings();
+    await delay(THREE_SECONDS);
+    const setting = (await settingsWizard.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+    const enablement = await setting.getValue();
+    expect(enablement).to.equal(true);
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should run kics auto scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(FIVE_SECONDS);
+
+    // Open file
+    const appender = process.platform === "win32" ? "\\" : "/";
+    let tempPath = __dirname + appender + "testProj";
+    tempPath += appender+"insecure.php";
+    VSBrowser.instance.openResources(tempPath);
+    await delay(FIVE_SECONDS);
+    
+    // Check if scan is running or ran
+    const bottomBar = new BottomBarPanel();
+    await bottomBar.toggle(true);
+    const problemsView = await bottomBar.openOutputView();
+    await problemsView.clearText(); 
+    await delay(FIVE_SECONDS);
+
+    // Save the file
+    const editor = new TextEditor();
+    await delay(FIVE_SECONDS);
+    await editor.save();
+    await delay(FIVE_SECONDS);
+    const problemsText = await problemsView.getText();
+     
+    // Check scan did ran
+    expect(problemsText).to.contain(CX_KICS_VALUE);
+
+  });
+
+  it("should fail to run kics auto scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(FIVE_SECONDS);
+    
+    // Disable settings
+    let settingsWizard = await bench.openSettings();
+    await delay(THREE_SECONDS);
+    const setting = (await settingsWizard.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+    setting.setValue(false);
+
+    // Clear the output 
+    const bottomBar = new BottomBarPanel();
+    await bottomBar.toggle(true);
+    const problemsView = await bottomBar.openOutputView();
+    await problemsView.clearText(); 
+    await delay(FIVE_SECONDS);
+    
+    // Save the file
+    const editor = new TextEditor();
+    await delay(FIVE_SECONDS);
+    await editor.save();
+    
+    // Check scan did not ran
+    await delay(FIVE_SECONDS);
+    const problemsText = await problemsView.getText(); 
+    expect(problemsText).to.not.contain(CX_KICS_VALUE);
+  });
+
 
   it("should open welcome view and check if exists", async function () {
     this.timeout(MAX_TIMEOUT);
@@ -82,7 +162,7 @@ describe("UI tests", async function () {
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
     const setting = (await settingsWizard.findSetting(
-      CX_API_KEY_CAPS,
+      CX_API_KEY,
       CX_NAME
     )) as LinkSetting;
     await delay(THREE_SECONDS);
