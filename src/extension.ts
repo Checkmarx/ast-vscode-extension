@@ -189,7 +189,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewKicsSaveSettings`, () => {
     vscode.commands.executeCommand(
         "workbench.action.openSettings",
-        `checkmarx.kicsAuto`,
+        `Checkmarx KICS`,
       );
     }
   ));

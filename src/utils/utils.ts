@@ -145,6 +145,14 @@ export async function getResultsBfl(logs: Logs, context: vscode.ExtensionContext
 	});
 }
 
+export function isKicsFile(fileName: string): boolean {
+	let r = true;
+	if (!(fileName.endsWith('.tf') || fileName.endsWith('.yml') || fileName.endsWith('.yaml') || fileName.endsWith('.json') || fileName.match('Dockerfile') || fileName.endsWith('.auto.tfvars') || fileName.endsWith('.terraform.tfvars') || fileName.endsWith('.proto') || fileName.endsWith('.dockerfile'))) {
+		r = false;
+	}
+	return r;
+};
+
 export const PROGRESS_HEADER: vscode.ProgressOptions = {
 	location: vscode.ProgressLocation.Notification,
 	title: "Checkmarx",

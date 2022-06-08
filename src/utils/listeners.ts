@@ -5,6 +5,7 @@ import { REFRESH_TREE } from "./commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./constants";
 import { get, update } from "./globalState";
 import { getBranches } from "./ast";
+import { isKicsFile } from "./utils";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
@@ -60,7 +61,8 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: L
 	
 	vscode.workspace.onDidSaveTextDocument(async (e) => {
 		// Check if on save setting is enabled
-		if(!e.fileName.includes("settings.json")){
+		let isValidKicsFile = isKicsFile(e.fileName);
+		if(!e.fileName.includes("settings.json") && isValidKicsFile){
 			const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
 			if(onSave){
 				// Check if saved file is within the project

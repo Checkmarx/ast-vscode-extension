@@ -73,6 +73,7 @@ export class KicsProvider {
 			this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
 			if(error.message && error.message.length>0){
 				this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
+				this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
 				this.logs.error(error);
 			}
 		});
