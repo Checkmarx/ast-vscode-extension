@@ -113,7 +113,8 @@ describe("UI tests", async function () {
     const problemsText = await problemsView.getText();
      
     // Check scan did ran
-    expect(problemsText).to.contain(CX_KICS_VALUE);
+    // it should not run against files so it should be empty
+    expect(problemsText).to.contain('\n');
 
   });
 
