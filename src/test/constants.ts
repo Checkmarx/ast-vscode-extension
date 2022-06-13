@@ -44,3 +44,7 @@ export const CX_GROUP_LANGUAGE: string = "checkmarx-ast: Group by: Language";
 export const CX_GROUP_STATUS: string = "checkmarx-ast: Group by: Status";
 export const CX_GROUP_STATE: string = "checkmarx-ast: Group by: State";
 export const CX_GROUP_QUERY_NAME: string = "checkmarx-ast: Group by: Vulnerability Type";
+
+export const CX_BASE_URI_SETTINGS = "checkmarxAST.baseURI";
+export const CX_TENANT_SETTINGS = "checkmarxAST.tenant";
+export const CX_API_KEY_SETTINGS = "checkmarxAST.apiKey";
