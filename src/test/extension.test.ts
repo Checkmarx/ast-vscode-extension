@@ -163,8 +163,7 @@ describe("UI tests", async function () {
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
     const setting = (await settingsWizard.findSetting(
-      CX_API_KEY,
-      CX_NAME
+      CX_API_KEY + " "+ CX_NAME
     )) as LinkSetting;
     await delay(THREE_SECONDS);
     expect(setting).to.be.undefined;
@@ -177,19 +176,19 @@ describe("UI tests", async function () {
     // Set settings values
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
-    const apiKeyVal = await await settingsWizard.findSetting(
+    const apiKeyVal = await settingsWizard.findSetting(
       CX_API_KEY,
       CX_NAME
     );
     await apiKeyVal.setValue(process.env.CX_API_KEY + "");
     await delay(TWO_SECONDS);
-    const baseUriVal = await await settingsWizard.findSetting(
+    const baseUriVal = await settingsWizard.findSetting(
       CX_BASE_URI,
       CX_NAME
     );
     await baseUriVal.setValue(process.env.CX_BASE_URI + "");
     await delay(TWO_SECONDS);
-    const tenantVal = await await settingsWizard.findSetting(
+    const tenantVal = await settingsWizard.findSetting(
       CX_TENANT,
       CX_NAME
     );
@@ -217,8 +216,8 @@ describe("UI tests", async function () {
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "testProj";
-    await (await input).setText(tempPath);
-    await (await input).confirm();
+    await (input).setText(tempPath);
+    await (input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
     await delay(FIVE_SECONDS);
   });
