@@ -91,7 +91,7 @@ describe("UI tests", async function () {
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
     const setting = (await settingsWizard.findSetting(
-      CX_API_KEY_SETTINGS, CX_CATETORY
+      CX_API_KEY_SETTINGS
     )) as LinkSetting;
     await delay(THREE_SECONDS);
     expect(setting).to.be.undefined;
