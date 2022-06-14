@@ -752,13 +752,13 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.atlassian.net/wiki/spaces/AST/pages/6415286273/KICS+Auto+Scanning+Extension+for+Visual+Studio+Code)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
             "order": 4,
             "default": "",
-            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens)."
+            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
           }
         }
       }
