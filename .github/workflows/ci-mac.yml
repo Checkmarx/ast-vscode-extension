@@ -18,6 +18,8 @@ jobs:
           node-version: 14
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc    
+      - name: Code Linting
+        run: npm run lint  
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
