@@ -9,3 +9,13 @@ export class KicsNode {
 	  public data:any
 	) {}
   }
+
+export class KicsSummary { 
+	constructor(
+		public HIGH: number,
+		public MEDIUM: number,
+		public LOW: number,
+		public INFO: number,
+	  ) {}
+
+};

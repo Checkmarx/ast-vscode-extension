@@ -5,8 +5,8 @@
 		"lib": ["ES2021"],
 		"outDir": "out",
 		"sourceMap": true,
-		"strict": true,
-		"rootDir": "src"
+		"strict": false,
+		"rootDir": "src",
 	},
 	"exclude": ["node_modules", ".vscode-test"],
 	"include": ["src/resources/testProj/*.php","src/**/*", "media"]

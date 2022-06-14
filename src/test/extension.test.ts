@@ -8,6 +8,8 @@ import {
   By,
   until,
   WebView,
+  BottomBarPanel,
+  TextEditor
 } from "vscode-extension-tester";
 import {
   initialize,
@@ -27,7 +29,6 @@ import {
   FIVE_SECONDS,
   THREE_SECONDS,
   TWO_SECONDS,
-  CX_API_KEY_CAPS,
   CX_API_KEY,
   CX_TENANT,
   CX_BASE_URI,
@@ -56,6 +57,13 @@ import {
   CX_FILTER_NOT_IGNORED,
   CX_GROUP_STATE,
   CX_GROUP_QUERY_NAME,
+  CX_KICS_NAME,
+  CX_KICS,
+  CX_KICS_VALUE,
+  CX_API_KEY_SETTINGS,
+  CX_BASE_URI_SETTINGS,
+  CX_TENANT_SETTINGS,
+  CX_CATETORY,
 } from "./constants";
 
 describe("UI tests", async function () {
@@ -68,6 +76,7 @@ describe("UI tests", async function () {
     driver = VSBrowser.instance.driver;
     await delay(THREE_SECONDS);
   });
+  
 
   it("should open welcome view and check if exists", async function () {
     this.timeout(MAX_TIMEOUT);
@@ -82,11 +91,12 @@ describe("UI tests", async function () {
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
     const setting = (await settingsWizard.findSetting(
-      CX_API_KEY_CAPS,
-      CX_NAME
+      CX_API_KEY_SETTINGS
     )) as LinkSetting;
     await delay(THREE_SECONDS);
     expect(setting).to.be.undefined;
+    await delay(THREE_SECONDS);
+    await bench.executeCommand(VS_CLOSE_EDITOR);
     await delay(THREE_SECONDS);
   });
 
@@ -96,34 +106,29 @@ describe("UI tests", async function () {
     // Set settings values
     let settingsWizard = await bench.openSettings();
     await delay(TWO_SECONDS);
-    const apiKeyVal = await await settingsWizard.findSetting(
-      CX_API_KEY,
-      CX_NAME
+    const apiKeyVal = await settingsWizard.findSetting(
+      CX_API_KEY_SETTINGS, CX_CATETORY
     );
     await apiKeyVal.setValue(process.env.CX_API_KEY + "");
     await delay(TWO_SECONDS);
-    const baseUriVal = await await settingsWizard.findSetting(
-      CX_BASE_URI,
-      CX_NAME
+    const baseUriVal = await settingsWizard.findSetting(
+      CX_BASE_URI_SETTINGS, CX_CATETORY
     );
     await baseUriVal.setValue(process.env.CX_BASE_URI + "");
     await delay(TWO_SECONDS);
-    const tenantVal = await await settingsWizard.findSetting(
-      CX_TENANT,
-      CX_NAME
+    const tenantVal = await settingsWizard.findSetting(
+      CX_TENANT_SETTINGS, CX_CATETORY
     );
     await tenantVal.setValue(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
     // Validate settings
-    const apiKey = await (
-      await settingsWizard.findSetting(CX_API_KEY, CX_NAME)
-    ).getValue();
+    const apiKey = await ( await settingsWizard.findSetting(CX_API_KEY_SETTINGS, CX_CATETORY)).getValue();
     expect(apiKey).to.equal(process.env.CX_API_KEY + "");
     await delay(TWO_SECONDS);
-    const baseURI = await settingsWizard.findSetting(CX_BASE_URI, CX_NAME);
+    const baseURI = await settingsWizard.findSetting(CX_BASE_URI_SETTINGS, CX_CATETORY);
     expect(await baseURI.getValue()).to.equal(process.env.CX_BASE_URI + "");
     await delay(TWO_SECONDS);
-    const tenant = await settingsWizard.findSetting(CX_TENANT, CX_NAME);
+    const tenant = await settingsWizard.findSetting(CX_TENANT_SETTINGS, CX_CATETORY);
     expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
     await bench.executeCommand(VS_CLOSE_EDITOR);
@@ -136,8 +141,8 @@ describe("UI tests", async function () {
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "testProj";
-    await (await input).setText(tempPath);
-    await (await input).confirm();
+    await (input).setText(tempPath);
+    await (input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
     await delay(FIVE_SECONDS);
   });
@@ -496,4 +501,81 @@ describe("UI tests", async function () {
       await delay(FIVE_SECONDS);
     }
   });
+
+  it("should check kics auto scan enablement on settings", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    let settingsWizard = await bench.openSettings();
+    await delay(THREE_SECONDS);
+    const setting = (await settingsWizard.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+    const enablement = await setting.getValue();
+    expect(enablement).to.equal(true);
+    await delay(FIVE_SECONDS);
+  });
+
+  it("should run kics auto scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(FIVE_SECONDS);
+
+    // Open file
+    const appender = process.platform === "win32" ? "\\" : "/";
+    let tempPath = __dirname + appender + "testProj";
+    tempPath += appender+"insecure.php";
+    VSBrowser.instance.openResources(tempPath);
+    await delay(FIVE_SECONDS);
+    
+    // Check if scan is running or ran
+    const bottomBar = new BottomBarPanel();
+    await bottomBar.toggle(true);
+    const problemsView = await bottomBar.openOutputView();
+    await problemsView.clearText(); 
+    await delay(FIVE_SECONDS);
+
+    // Save the file
+    const editor = new TextEditor();
+    await delay(FIVE_SECONDS);
+    await editor.save();
+    await delay(FIVE_SECONDS);
+    const problemsText = await problemsView.getText();
+     
+    // Check scan did ran
+    // it should not run against files so it should be empty
+    expect(problemsText).to.contain('\n');
+
+  });
+
+  it("should fail to run kics auto scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(FIVE_SECONDS);
+    
+    // Disable settings
+    let settingsWizard = await bench.openSettings();
+    await delay(THREE_SECONDS);
+    const setting = (await settingsWizard.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+    setting.setValue(false);
+
+    // Clear the output 
+    const bottomBar = new BottomBarPanel();
+    await bottomBar.toggle(true);
+    const problemsView = await bottomBar.openOutputView();
+    await problemsView.clearText(); 
+    await delay(FIVE_SECONDS);
+    
+    // Save the file
+    const editor = new TextEditor();
+    await delay(FIVE_SECONDS);
+    await editor.save();
+    
+    // Check scan did not ran
+    await delay(FIVE_SECONDS);
+    const problemsText = await problemsView.getText(); 
+    expect(problemsText).to.not.contain(CX_KICS_VALUE);
+  });
+
 });

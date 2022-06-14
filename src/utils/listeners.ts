@@ -2,9 +2,10 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { GitExtension, RepositoryState } from "../types/git";
 import { REFRESH_TREE } from "./commands";
-import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./constants";
+import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./constants";
 import { get, update } from "./globalState";
 import { getBranches } from "./ast";
+import { isKicsFile } from "./utils";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
@@ -39,7 +40,7 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 		
 		const projectItem = get(context, PROJECT_ID_KEY);
 		const currentBranch = get(context, BRANCH_ID_KEY);
-		logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
+		//logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
 		
 		if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
 			getBranches(projectItem.id).then((branches) => {
@@ -52,6 +53,26 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 			});
 		} else {
 			update(context, BRANCH_TEMP_ID_KEY, undefined);
+		}
+	});
+}
+
+export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: Logs, kicsStatusBarItem:vscode.StatusBarItem) {
+	
+	vscode.workspace.onDidSaveTextDocument(async (e) => {
+		// Check if on save setting is enabled
+		let isValidKicsFile = isKicsFile(e.fileName);
+		if(!e.fileName.includes("settings.json") && isValidKicsFile){
+			const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+			if(onSave){
+				// Check if saved file is within the project
+				logs.info("File saved updating kics results");
+				// Send the current file to the global state, to be used in the command
+				update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
+				await vscode.commands.executeCommand(
+					"ast-results.kicsRealtime"
+				);
+			}
 		}
 	});
 }

@@ -16,6 +16,6 @@ export function updateError(context: vscode.ExtensionContext, item: string){
 	return context.workspaceState.update(ERROR,item);
 }
 export class Item {
-	id: string| undefined;
+	id: string| any | undefined;
     name: string | undefined;
 }

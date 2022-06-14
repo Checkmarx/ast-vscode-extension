@@ -1,4 +1,5 @@
 export const EXTENSION_NAME: string = "ast-results";
+export const EXTENSION_FULL_NAME: string = "Checkmarx";
 export const SCAN_ID_KEY: string = "ast-results-scan-id";
 
 export const HIGH_FILTER: string = "ast-results-high";
@@ -84,3 +85,7 @@ export const ERROR_REGEX = /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2
 
 export const AST_ERROR_CODEBASHING_NO_LICENSE: number = 3;
 export const AST_ERROR_CODEBASHING_NO_LESSON: number = 4;
+
+export const KICS_REALTIME_FILE = "CURRENT_KICS_FILE";
+export const PROCESS_OBJECT = "PROCESS_OBJECT";
+export const PROCESS_OBJECT_KEY = "cli-process";

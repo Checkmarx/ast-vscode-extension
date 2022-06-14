@@ -41,6 +41,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
+  public process:any;
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
@@ -53,8 +54,15 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
+    private readonly kicsStatusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection
-  ) {}
+  ) {
+    const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
+    this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
+    this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
+    this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
+    this.kicsStatusBarItem.show();
+  }
 
   private showStatusBarItem() {
     this.statusBarItem.text = "$(sync~spin) Refreshing tree";
@@ -75,7 +83,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (fs.existsSync(resultJsonPath)) {
       fs.unlinkSync(resultJsonPath);
     }
-
     update(this.context, SCAN_ID_KEY, undefined);
     update(this.context, PROJECT_ID_KEY, undefined);
     update(this.context, BRANCH_ID_KEY, undefined);
