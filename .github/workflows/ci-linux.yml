@@ -19,6 +19,8 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc   
       - name: Install dependencies
         run: npm install
+      - name: Code Linting
+        run: npm run lint  
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
