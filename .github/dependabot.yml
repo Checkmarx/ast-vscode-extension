@@ -9,9 +9,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "Checkmarx/ast-galactica-team"
     registries:
       - npm-pkg-checkmarx
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"  
+      interval: "daily"
+    reviewers:
+      - "Checkmarx/ast-galactica-team"
