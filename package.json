@@ -784,7 +784,7 @@
     "eslint": "^8.18.0",
     "mocha": "10.0.0",
     "typescript": "^4.7.4",
-    "vsce": "^2.9.1",
+    "vsce": "^2.9.2",
     "vscode-extension-tester": "4.2.5",
     "vscode-extension-tester-locators": "^1.62.2",
     "webpack": "^5.73.0",
