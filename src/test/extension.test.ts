@@ -156,6 +156,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Project selection
     let input = await InputBox.create();
+    input.sendKeys("webgoat");
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
