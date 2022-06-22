@@ -1,5 +1,5 @@
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, WebView} from 'vscode-extension-tester';
-import { FIVE_SECONDS, TEN_SECONDS, THREE_SECONDS } from './constants';
+import { FIVE_SECONDS, TEN_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
 	var r = await new ActivityBar().getViewControl('Checkmarx');
@@ -27,8 +27,9 @@ export async function quickPickSelector(input:InputBox){
 	await input.selectQuickPick(0);
 }
 export async function getQuickPickSelector(input:InputBox): Promise<string> {
+	await delay(FIVE_SECONDS);
 	let projectList = await input.getQuickPicks();
-	await delay(TEN_SECONDS);
+	await delay(THIRTY_SECONDS);
 	return await projectList[0].getText();
 }
 
