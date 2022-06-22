@@ -219,6 +219,7 @@ describe("UI tests", async function () {
     await bench.executeCommand(CX_SELECT_PROJECT);
     await delay(FIVE_SECONDS);
     let input = await InputBox.create();
+    await input.setText("webgoat");
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await input.setText(projectName);
