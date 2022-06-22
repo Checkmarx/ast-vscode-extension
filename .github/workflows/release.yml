@@ -63,7 +63,7 @@ jobs:
           echo "::set-output name=body_release::$body_release"
       - name: Converts Markdown to HTML
         id: convert
-        uses: lifepal/markdown-to-html@v1.1
+        uses: lifepal/markdown-to-html@v1.2
         with:
           text: "${{ steps.release.outputs.body_release }}"
 
