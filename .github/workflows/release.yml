@@ -40,6 +40,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
+          generate_release_notes: true
           files: ast-results-${{ env.RELEASE_VERSION }}.vsix
   
       - name: Publish
@@ -47,3 +48,34 @@ jobs:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null
         run: vsce publish -p ${{ env.MARKET_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Get latest relase notes
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          body_release="$(gh api -H "Accept: application/vnd.github.v3+json" /repos/Checkmarx/ast-vscode-extension/releases/latest | jq -r '.body' )"
+          body_release="${body_release//$'\n'/'%0A'}"
+          echo "::set-output name=body_release::$body_release"
+      - name: Converts Markdown to HTML
+        id: convert
+        uses: lifepal/markdown-to-html@v1.1
+        with:
+          text: "${{ steps.release.outputs.body_release }}"
+
+      - name: Clean html
+        id: clean
+        run: |
+          clean="$(echo "${{ steps.convert.outputs.html }}" | awk '{gsub(/id=.[a-z]+/,"");print}' | tr -d '\n')"
+          echo "$clean"
+          echo "::set-output name=clean::$clean"
+      - name: Send a Notification
+        id: notify
+        uses: thechetantalwar/teams-notify@v2
+        with:
+          teams_webhook_url: ${{ secrets.TEAMS_WEBHOOK_URI }}
+          message: "${{ steps.clean.outputs.clean }}"
