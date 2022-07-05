@@ -1,3 +1,4 @@
+import CxVulnerabilityDetails from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
 import path = require("path");
 import * as vscode from "vscode";
 import { StateLevel,IssueLevel, SCA, KICS } from "../utils/constants";
@@ -23,6 +24,8 @@ export class AstResult {
   kicsNode: KicsNode | undefined;
   rawObject: Object;
   cweId: string| undefined;
+	packageIdentifier: string;
+  vulnerabilityDetails :CxVulnerabilityDetails;
   setSeverity(severity:string){
     this.severity=severity;
     if(this.kicsNode){
@@ -47,7 +50,7 @@ export class AstResult {
     this.similarityId = result.similarityId;
     this.queryName = result.data.queryName;
     this.queryId = result.data.queryId;
-
+    this.vulnerabilityDetails = result.vulnerabilityDetails;
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
@@ -85,6 +88,32 @@ export class AstResult {
   getCxIcon() {
     return path.join("media", "icon.png");
   }
+
+  getCxScaAtackVector(){
+    return path.join("media","icons", "attackVector.png");
+  }
+  getCxScaComplexity(){
+    return path.join("media","icons", "complexity.png");
+  }
+  getCxAuthentication(){
+    return path.join("media","icons", "authentication.png");
+  }
+  getCxConfidentiality(){
+    return path.join("media","icons", "confidentiality.png");
+  }
+  getCxIntegrity(){
+    return path.join("media","icons", "integrity.png");
+  }
+  getCxAvailability(){
+    return path.join("media","icons", "availability.png");
+  }
+  getCxUpgrade(){
+    return path.join("media","icons", "upgrade.png");
+  }
+  getCxUrl(){
+    return path.join("media","icons", "url.png");
+  }
+  
 
   getTreeIcon() {
     return {
@@ -187,7 +216,7 @@ export class AstResult {
             </div>
           <td>
               <div>
-                    <div style="display: inline-block">
+                    <div style="display: inline-block;">
                       ${index + 1}. \"${node.name.replaceAll('"', "")}\"
                       <a href="#" 
                         class="ast-node"
@@ -264,13 +293,133 @@ export class AstResult {
       });
     } else {
       html += `
-        <p>
+        <p style="font-size:0.9em">
           No package data information.
         </p>`;
     }
     return html;
   }
 
+  public scaLocations(){
+    let html = "";
+    this.scaNode.scaPackageData.dependencyPaths.forEach((pathArray: any,indexDependency: number)=>{
+      if(indexDependency===0){
+        html +=` <div class="card-content" style="max-height:134px;overflow:scroll" id="locations-table-${indexDependency+1}">
+        <table class="details-table" style="margin-left:25px;margin-top:15px;width:100%">
+          <tbody>`;
+      }
+      else{
+        html +=` <div class="card-content" style="display:none;max-height:134px;overflow:scroll" id="locations-table-${indexDependency+1}">
+        <table class="details-table" style="margin-left:25px;" >
+          <tbody>`;
+      }
+      html +=`
+                <div>
+                    <div style="display: inline-block;margin-left:25px">
+                     Package ${pathArray[0].name} is present in :
+                    </div>
+                </div>
+                <div style="margin-left:25px;margin-top:15px;">
+               `;
+      pathArray.forEach((path: any,index: number)=>{
+        if(index===0){
+          if(path.locations){
+            path.locations.forEach((location: any,index: number)=>{
+              
+              html +=`
+                    <a href="#" 
+                      class="ast-node"
+                      id="${index}"
+                      data-filename="${location}" 
+                      data-line="${0}" 
+                      data-column="${0}"
+                      data-fullName="${location}" 
+                      data-length="${1}"
+                    >
+                      ${location}
+                    </a>
+                    ${index+1<path.locations.length?"&nbsp;|&nbsp;":""}
+                `;
+        }); 
+          }
+          else{
+            html +=`<tr>
+            <td style="background:var(--vscode-editor-background)">
+            <td>
+              <div>
+                  <div style="display: inline-block">
+                  &#9702 package ${path.name} is not known
+                  <a href="#"
+                    class="ast-node"
+                    id="${index}"
+                  >
+                  </a>
+                  </div>
+                </div>
+              </td>
+              </tr>`;
+          }
+        }
+    });
+    html +=`      </div>
+                </tbody>
+              </table>	
+            </div>`;
+  });
+    return html;
+  }
+
+  public scaReferences(){
+    let html = "";
+    if(this.scaNode.packageData){
+      this.scaNode.packageData.forEach((data: any)=>{
+        html +=
+          `<a class="references" id="${data.url}">${data.type}</a>`;
+      });
+    }
+    else{
+      html +=
+          `<p style="margin:25px;font-size:0.9em">No references available </p>`;
+    }
+    return html;
+  }
+
+  public scaPackages(){
+    let html = "";
+    html+=this.scaLocations();
+    this.scaNode.scaPackageData.dependencyPaths.forEach((dependencyArray: any,index:number)=>{
+      if(index===0){
+        html +=
+        `<div class="card-content">
+            <table class="package-table" id="package-table-${index+1}">
+              <tbody>`;
+      }
+      else{
+        html +=
+        `<div class="card-content">
+            <table class="package-table" style="display: none;" id="package-table-${index+1}">
+              <tbody>`;
+      }
+      dependencyArray.forEach((dependency:any,indeDependency:number)=>{
+        html+=`<tr>
+                <td>
+                  <div>
+                    <div style="display: inline-block">
+                    ${dependency.name}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+                ${indeDependency+1<dependencyArray.length?'<tr style="background-color:transparent"><td style="border:0;text-align:center">&nbsp;|&nbsp;</td></tr>':""}
+               `;
+        });                
+      html +=  `
+                </tbody>
+                  </table>
+                    </div>`;
+    });
+    return html;
+  }
   private kicsDetails() {
     let html = "";
     html += `
@@ -293,7 +442,8 @@ export class AstResult {
               ${this.getShortFilename(this.kicsNode?.data.filename)} [${this.kicsNode?.data.line}:${0}]
             </a>
           </td>
-        </tr>`;
+        </tr>
+        `;
     return html;
   }
 }

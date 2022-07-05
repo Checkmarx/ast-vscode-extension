@@ -68,6 +68,9 @@ export class KicsProvider {
 				this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
 				this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
 			}
+			// if(!cxOutput.payload){
+			// 	this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
+			// }
 		})
 		.catch( error =>{
 			this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
