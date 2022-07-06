@@ -304,22 +304,22 @@ export class AstResult {
     let html = "";
     this.scaNode.scaPackageData.dependencyPaths.forEach((pathArray: any,indexDependency: number)=>{
       if(indexDependency===0){
-        html +=` <div class="card-content" style="max-height:134px;overflow:scroll" id="locations-table-${indexDependency+1}">
-        <table class="details-table" style="margin-left:25px;margin-top:15px;width:100%">
+        html +=` <div class="card-content" style="max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency+1}">
+        <table class="details-table" style="margin-left:28px;margin-top:15px;width:100%">
           <tbody>`;
       }
       else{
-        html +=` <div class="card-content" style="display:none;max-height:134px;overflow:scroll" id="locations-table-${indexDependency+1}">
-        <table class="details-table" style="margin-left:25px;" >
+        html +=` <div class="card-content" style="display:none;max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency+1}">
+        <table class="details-table" style="margin-left:28px;" >
           <tbody>`;
       }
       html +=`
                 <div>
-                    <div style="display: inline-block;margin-left:25px">
-                     Package ${pathArray[0].name} is present in :
+                    <div style="display: inline-block;margin-left:28px">
+                     Package ${pathArray[0].name} is located in:
                     </div>
                 </div>
-                <div style="margin-left:25px;margin-top:15px;">
+                <div style="margin-left:28px;margin-top:15px;">
                `;
       pathArray.forEach((path: any,index: number)=>{
         if(index===0){
@@ -374,7 +374,7 @@ export class AstResult {
     if(this.scaNode.packageData){
       this.scaNode.packageData.forEach((data: any)=>{
         html +=
-          `<a class="references" id="${data.url}">${data.type}</a>`;
+          `<a class="references" id="${data.url}">${data.type}</a>&nbsp&nbsp`;
       });
     }
     else{
@@ -385,8 +385,7 @@ export class AstResult {
   }
 
   public scaPackages(){
-    let html = "";
-    html+=this.scaLocations();
+    let html = this.scaLocations();
     this.scaNode.scaPackageData.dependencyPaths.forEach((dependencyArray: any,index:number)=>{
       if(index===0){
         html +=
@@ -410,7 +409,6 @@ export class AstResult {
                   </div>
                 </td>
               </tr>
-                ${indeDependency+1<dependencyArray.length?'<tr style="background-color:transparent"><td style="border:0;text-align:center">&nbsp;|&nbsp;</td></tr>':""}
                `;
         });                
       html +=  `

@@ -6,13 +6,14 @@
 	align-items: center;
 	justify-content: center;
 	box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.15);
+	margin-bottom: 0.5em;
 }
 
 .header-content {
 	margin-left: 10px;
 	margin-top: 0;
 	padding-top: 25px;
-	font-size: 1.17em;
+	font-size: 1.3em;
 }
 
 .header-severity {
@@ -72,7 +73,6 @@
 .left-content .description {
 	color: white;
 	margin: 25px;
-	font-size: 0.9em;
 	margin-bottom: 20px;
 }
 
@@ -488,6 +488,10 @@
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
+	position: relative;
+	float: right;
+	padding-top: 20px;
+
 }
 
 .package-counter-numbers{
@@ -496,7 +500,5 @@
 }
 
 .references{
-	margin:26px;
-	width:2rem;
 	cursor:pointer
 }

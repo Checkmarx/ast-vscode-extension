@@ -181,9 +181,11 @@ export class Details {
 						</div>
 					</div>
 					<div class="card">
-							<p class="header-content">
-								Vulnerable Package Paths
-							</p>
+							<div style="display: inline-block;position: relative;">
+								<p class="header-content">
+									Vulnerable Package Paths
+								</p>
+							</div>
 							${this.result.scaNode.scaPackageData.dependencyPaths?
 								`
 								<div class="package-buttons-container">
@@ -225,7 +227,7 @@ export class Details {
 						<p class="header-content">
 							References
 						</p>
-						<div class="card-content">
+						<div class="card-content" style="margin:15px 15px 15px 28px">
 							${this.result.scaReferences()}
 						</div>
 					</div>
@@ -233,10 +235,8 @@ export class Details {
 						`
 					:`
 					<div class="card" style="border:0">
-						<p class="header-content">
-							<p style="margin:25px;font-size:0.9em"> 
-								No more information available
-							</p>
+						<p style="margin:25px;font-size:0.9em"> 
+							No more information available
 						</p>
 					</div>
 				</div>

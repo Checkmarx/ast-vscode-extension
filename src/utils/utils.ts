@@ -8,8 +8,16 @@ import { getBfl } from './bfl';
 import { SHOW_ERROR } from './commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./constants";
 
-export function getProperty(o: any, propertyName: string): string {
-	return o[propertyName];
+export function getProperty(o: any, propertyName: string): any {
+	const properties = propertyName.split(".");
+	let finalObject = o;
+	properties.forEach(property=>{
+		if(!finalObject){
+			return;
+		}
+		finalObject = finalObject?.hasOwnProperty(property)?finalObject[property]:undefined;
+	});
+	return finalObject;
 }
 
 export function getNonce() {
