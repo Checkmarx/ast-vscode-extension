@@ -343,21 +343,16 @@ export class AstResult {
         }); 
           }
           else{
-            html +=`<tr>
-            <td style="background:var(--vscode-editor-background)">
-            <td>
-              <div>
+            html +=`
                   <div style="display: inline-block">
-                  &#9702 package ${path.name} is not known
+                  ${path.name} is unresolved
                   <a href="#"
                     class="ast-node"
                     id="${index}"
                   >
                   </a>
                   </div>
-                </div>
-              </td>
-              </tr>`;
+                `;
           }
         }
     });
