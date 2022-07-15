@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { AstResult } from "./models/results";
 import { Details } from "./utils/details";
 import { getNonce } from "./utils/utils";
@@ -44,12 +46,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     );
   }
 
-  public loadDecorations(
+  public async loadDecorations(
     filePath: string,
     startLine: number,
     startColumn: number,
     fieldLength: number
   ) {
+    let fileOpened = false;
     const folder = vscode.workspace.workspaceFolders![0];
     // Needed because vscode uses zero based line number
     const column = startColumn > 0 ? +startColumn - 1 : 1;
@@ -58,18 +61,36 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const startPosition = new vscode.Position(line, column);
     const endPosition = new vscode.Position(line, length);
 
-  
-    const path = vscode.Uri.joinPath(folder.uri, filePath);
-    vscode.workspace.openTextDocument(path).then((doc) => {
+    if(isFilePresentInRoot(filePath, folder.uri.fsPath)) {
+      const decorationPath = vscode.Uri.joinPath(folder.uri,filePath);
+      this.openAndDecorateFile(decorationPath,startPosition,endPosition);
+      fileOpened = true;
+  } else {
+    const directoryFiles: Array<string> = await getDirectoryFiles(folder.uri.fsPath);
+    for (const file of directoryFiles) {
+      const decorationPath = vscode.Uri.file(file);
+      if (decorationPath.path.endsWith(filePath)) {
+        this.openAndDecorateFile(decorationPath,startPosition,endPosition);
+        fileOpened = true;
+      }
+    }
+  }
+  if(!fileOpened) {
+      vscode.window.showErrorMessage(`File ${filePath} not found in workspace`);
+  }
+  }
+
+  private openAndDecorateFile(decorationFilePath: vscode.Uri, startPosition: vscode.Position, endPosition: vscode.Position) {
+    vscode.workspace.openTextDocument(decorationFilePath).then((doc) => {
       vscode.window
-        .showTextDocument(doc, {
-          viewColumn: vscode.ViewColumn.One,
-        })
-        .then((editor) => {
-          editor.selections = [new vscode.Selection(startPosition, endPosition)];
-          var range = new vscode.Range(startPosition, endPosition);
-          editor.revealRange(range);
-        });
+          .showTextDocument(doc, {
+            viewColumn: vscode.ViewColumn.One,
+          })
+          .then((editor) => {
+            editor.selections = [new vscode.Selection(startPosition, endPosition)];
+            var range = new vscode.Range(startPosition, endPosition);
+            editor.revealRange(range);
+          });
     });
   }
 
@@ -120,4 +141,27 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </script>	
 			</html>`;
   }
+}
+function getDirectoryFiles(directoryPath: string): Promise<string []> {
+  return new Promise((resolve, reject) => {
+    fs.readdir(directoryPath, async (err, items) => {
+      if (err) {
+        reject(err);
+      } else {
+        let files = [];
+        for (const item of items) {
+          if (fs.lstatSync(path.join(directoryPath, item)).isDirectory()) {
+            files = [...files, ...(await getDirectoryFiles(path.join(directoryPath, item)))];
+          } else {
+            files.push(path.join(directoryPath, item));
+          }
+        }
+        resolve(files);
+      }
+    });
+  });
+}
+
+function isFilePresentInRoot(filePath: string, fsPath: string) {
+  return fs.existsSync(path.join(fsPath, filePath));
 }
