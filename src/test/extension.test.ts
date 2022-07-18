@@ -9,7 +9,8 @@ import {
   until,
   WebView,
   BottomBarPanel,
-  TextEditor
+  TextEditor,
+  EditorView
 } from "vscode-extension-tester";
 import {
   initialize,
@@ -140,7 +141,7 @@ describe("UI tests", async function () {
     await bench.executeCommand(VS_OPEN_FOLDER);
     let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
-    const tempPath = __dirname + appender + "testProj";
+    const tempPath = __dirname + appender + "TestZip";
     await (input).setText(tempPath);
     await (input).confirm();
     expect(tempPath).to.have.lengthOf.above(1);
@@ -378,6 +379,24 @@ describe("UI tests", async function () {
     await generalTab.click();
     expect(generalTab).is.not.undefined;
     await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on details tab and select vulnerability to open file", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    const editorView = new EditorView();
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Vulnerabilities Tab
+    let vulnerabilitiesTab = await detailsView.findWebElement(
+        By.className("ast-node"));
+    await vulnerabilitiesTab.click();
+    expect(vulnerabilitiesTab).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+    const currentActiveTab = await editorView.getActiveTab()
+    expect(currentActiveTab.getTitle).is.not.undefined;
     await delay(THREE_SECONDS);
   });
 
