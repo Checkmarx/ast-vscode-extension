@@ -40,6 +40,8 @@ import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
+import { applyKicsCodeLensProvider, applyKicsDiagnostic } from "./utils/realtime";
+import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -282,6 +284,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Visual feedback on wrapper errors
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
+
+  // Kics remediation command
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (kicsResult,kicsResults,file,diagnosticCollection) => { 
+   await kicsProvider.kicsRemediation(kicsResult,kicsResults,file,diagnosticCollection,logs);
+   }));
 }
 
 export function deactivate() { }

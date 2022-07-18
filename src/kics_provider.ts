@@ -6,10 +6,12 @@ import { get, update } from "./utils/globalState";
 import { applyKicsCodeLensProvider, applyKicsDiagnostic, createKicsScan, getCurrentFile, summaryLogs} from "./utils/realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { KicsCodeActionProvider } from "./utils/KicsCodeActions";
 
 export class KicsProvider {
 	public process:any;
 	public codeLensDisposable:vscode.Disposable;
+	public codeActionDisposable:vscode.Disposable;
 	constructor(
 	  private readonly context: vscode.ExtensionContext,
 	  private readonly logs: Logs,
@@ -43,6 +45,7 @@ export class KicsProvider {
 		// Clear the kics diagnostics
 		applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, this.diagnosticCollection);
 		if (this.codeLensDisposable) {this.codeLensDisposable.dispose();}
+		if(this.codeActionDisposable){this.codeActionDisposable.dispose();}
 		
 		// Create the kics scan
 		const [createObject,process] = await createKicsScan(file.file);
@@ -67,6 +70,8 @@ export class KicsProvider {
 				// Get the results into codelens 
 				this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
 				this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
+				this.codeActionDisposable = vscode.languages.registerCodeActionsProvider(file.editor.document.uri,new KicsCodeActionProvider(kicsResults,file,this.diagnosticCollection));
+
 			}
 		})
 		.catch( error =>{
@@ -78,4 +83,23 @@ export class KicsProvider {
 			}
 		});
 	  }
+
+	async kicsRemediation (kicsResult,kicsResults,file,diagnosticCollection,logs){
+		// Call kics remediation
+
+		// Remove the specific kicsResult from the list of kicsResults
+		const filteredkicsResults = kicsResults.results.filter(result=>{
+			return JSON.stringify(result) !== JSON.stringify(kicsResult);
+		});
+		kicsResults.results = filteredkicsResults;
+		// Remove codelens, previous diagnostics and actions
+		applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, diagnosticCollection);
+		this.codeLensDisposable.dispose();
+		// Update codelens, diagnostics with new list of results
+		applyKicsDiagnostic(kicsResults, file.editor.document.uri, diagnosticCollection);
+		this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
+		// Information messages
+		vscode.window.showInformationMessage("Fix applied to "+kicsResult.query_name);
+		logs.info("Fix applied to "+kicsResult.query_name);
+	}
 }
