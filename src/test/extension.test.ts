@@ -392,10 +392,11 @@ describe("UI tests", async function () {
     let vulnerabilitiesTab = await detailsView.findWebElement(
         By.className("ast-node"));
     await vulnerabilitiesTab.click();
+    await delay(THREE_SECONDS);
     expect(vulnerabilitiesTab).is.not.undefined;
     const currentActiveTab = await editorView.getActiveTab();
     expect(currentActiveTab.getTitle).is.not.undefined;
-    await detailsView.switchBack();
+    await editorView.closeEditor(await currentActiveTab.getTitle());
     await delay(THREE_SECONDS);
   });
 
