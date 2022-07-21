@@ -38,6 +38,113 @@
 		});
 	});
 
+	// Open external link for more info
+	document.querySelectorAll('.remediation-links-text').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			vscode.postMessage({
+				command: 'references',
+				// @ts-ignore
+				link:e.target.id
+			});
+		});
+	});
+	
+	// Open external link for referencess
+	document.querySelectorAll('.references').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			vscode.postMessage({
+				command: 'references',
+				// @ts-ignore
+				link:e.target.id
+			});
+		});
+	});
+	
+	// Activated when clicked in package next
+	document.querySelectorAll('.package-next').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			// @ts-ignore
+			var current =  target.dataset.current;
+			// @ts-ignore
+			var total = target.dataset.total;
+			var next = parseInt(current, 10)+1;
+			if(next+1 > parseInt(total, 10)){
+				// @ts-ignore
+				e.target.disabled=true;
+			}
+			// Change the displayed tables for packages
+			let currentPage = document.getElementById('package-table-'+current);
+			currentPage.style.display = 'none';
+			let nextPage = document.getElementById('package-table-'+next);
+			nextPage.style.display = '';
+			// Change the displayed tables for locations
+			let currentPageLocations = document.getElementById('locations-table-'+current);
+			currentPageLocations.style.display = 'none';
+			let nextPageLocations = document.getElementById('locations-table-'+next);
+			nextPageLocations.style.display = '';
+			// Update in the next button
+			// @ts-ignore
+			target.dataset.current = next;
+			let backButton = document.getElementById('package-back');
+			// @ts-ignore
+			backButton.disabled=false;
+			// @ts-ignore
+			backButton.dataset.current=next;
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// Update the counter
+			let counter = document.getElementById('package-counter');
+			counter.innerHTML = "<p>"+(parseInt(current, 10)+1)+"/"+total+"</p>";
+		});
+	});
+	
+	// Activated when clicked in package back
+	document.querySelectorAll('.package-back').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			// @ts-ignore
+			var current =  target.dataset.current;
+			// @ts-ignore
+			var total = target.dataset.total;
+			var next = parseInt(current, 10)-1;
+			// @ts-ignore
+			let nextButton = document.getElementById('package-next');
+			// @ts-ignore
+			nextButton.disabled=false;
+			if(parseInt(current, 10)-2 === 0){
+				// @ts-ignore
+				e.target.disabled=true;
+			}
+			// Change the displayed tables for packages
+			let currentPage = document.getElementById('package-table-'+current);
+			currentPage.style.display = 'none';
+			let nextPage = document.getElementById('package-table-'+next);
+			nextPage.style.display = '';
+			// Change the displayed tables for locations
+			let currentPageLocation = document.getElementById('locations-table-'+current);
+			currentPageLocation.style.display = 'none';
+			let nextPageLocation = document.getElementById('locations-table-'+next);
+			nextPageLocation.style.display = '';
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// @ts-ignore
+			nextButton.dataset.current=next;
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// Update the counter
+			let counter = document.getElementById('package-counter');
+			counter.innerHTML = "<p>"+(parseInt(current, 10)-1)+"/"+total+"</p>";
+		});
+	});
+
 	document.getElementById('select_severity').addEventListener('change', (e) => {
 		// @ts-ignore
 		selectSeverity=e.target.value;

@@ -168,6 +168,9 @@ export async function activate(context: vscode.ExtensionContext) {
           case 'codebashing':
             getCodebashingLink(result.cweId!,result.language,result.queryName,logs);
             break;
+          case 'references':
+            vscode.env.openExternal(vscode.Uri.parse(data.link));
+            break;
         }
       });
     }
