@@ -65,6 +65,7 @@ import {
   CX_BASE_URI_SETTINGS,
   CX_TENANT_SETTINGS,
   CX_CATETORY,
+  TEN_SECONDS,
 } from "./constants";
 
 describe("UI tests", async function () {
@@ -367,38 +368,6 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("Should click on details General tab", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    // Open details view
-    let detailsView = await getDetailsView();
-    // Find General Tab
-    let generalTab = await detailsView.findWebElement(
-      By.id("general-label")
-    );
-    await generalTab.click();
-    expect(generalTab).is.not.undefined;
-    await detailsView.switchBack();
-    await delay(THREE_SECONDS);
-  });
-
-  it("Should click on details tab and select vulnerability to open file", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
-    const editorView = new EditorView();
-    // Open details view
-    let detailsView = await getDetailsView();
-    // Find Vulnerabilities Tab
-    let vulnerabilitiesTab = await detailsView.findWebElement(
-        By.className("ast-node"));
-    await vulnerabilitiesTab.click();
-    await delay(THREE_SECONDS);
-    expect(vulnerabilitiesTab).is.not.undefined;
-    const currentActiveTab = await editorView.getActiveTab();
-    expect(currentActiveTab.getTitle).is.not.undefined;
-    await editorView.closeEditor(await currentActiveTab.getTitle());
-    await delay(THREE_SECONDS);
-  });
 
   it("Should click on details Learn More tab", async function () {
     this.timeout(MAX_TIMEOUT);
@@ -417,7 +386,7 @@ describe("UI tests", async function () {
 
   it("Should click on details Changes tab", async function () {
     this.timeout(MAX_TIMEOUT);
-    await delay(THREE_SECONDS);
+    await delay(TEN_SECONDS);
     // Open details view
     let detailsView = await getDetailsView();
     // Find Changes Tab
@@ -451,6 +420,39 @@ describe("UI tests", async function () {
     await submit.click();
     expect(submit).is.not.undefined;
     await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on details General tab", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find General Tab
+    let generalTab = await detailsView.findWebElement(
+      By.id("general-label")
+    );
+    await generalTab.click();
+    expect(generalTab).is.not.undefined;
+    await detailsView.switchBack();
+    await delay(THREE_SECONDS);
+  });
+
+  it("Should click on details tab and select vulnerability to open file", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THREE_SECONDS);
+    const editorView = new EditorView();
+    // Open details view
+    let detailsView = await getDetailsView();
+    // Find Vulnerabilities Tab
+    let vulnerabilitiesTab = await detailsView.findWebElement(
+        By.className("ast-node"));
+    await vulnerabilitiesTab.click();
+    await delay(THREE_SECONDS);
+    expect(vulnerabilitiesTab).is.not.undefined;
+    const currentActiveTab = await editorView.getActiveTab();
+    expect(currentActiveTab.getTitle).is.not.undefined;
+    await editorView.closeEditor(await currentActiveTab.getTitle());
     await delay(THREE_SECONDS);
   });
   
