@@ -54,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   
-  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
+  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection,[]);
    // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
 
@@ -286,8 +286,8 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
 
   // Kics remediation command
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (kicsResult,kicsResults,file,diagnosticCollection) => { 
-   await kicsProvider.kicsRemediation(kicsResult,kicsResults,file,diagnosticCollection,logs);
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (fixedResults,kicsResults,file,diagnosticCollection,fixAll) => { 
+   await kicsProvider.kicsRemediation(fixedResults,kicsResults,file,diagnosticCollection,fixAll,logs);
    }));
 }
 

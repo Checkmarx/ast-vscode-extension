@@ -1,12 +1,17 @@
 import * as vscode from "vscode";
 import * as kill from 'tree-kill';
+import * as path from "path";
 import { Logs } from "./models/logs";
-import { PROCESS_OBJECT, PROCESS_OBJECT_KEY } from "./utils/constants";
+import { KICS_COUNT, KICS_QUERIES, KICS_RESULTS, KICS_RESULTS_FILE, KICS_TOTAL_COUNTER, PROCESS_OBJECT, PROCESS_OBJECT_KEY } from "./utils/constants";
 import { get, update } from "./utils/globalState";
 import { applyKicsCodeLensProvider, applyKicsDiagnostic, createKicsScan, getCurrentFile, summaryLogs} from "./utils/realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { KicsCodeActionProvider } from "./utils/KicsCodeActions";
+import { kicsRemediation } from "./utils/ast";
+import { writeFileSync } from "fs";
+import { join } from "path";
+import { KicsDiagnostic } from "./utils/kicsDiagnostic";
 
 export class KicsProvider {
 	public process:any;
@@ -16,19 +21,21 @@ export class KicsProvider {
 	  private readonly context: vscode.ExtensionContext,
 	  private readonly logs: Logs,
 	  private readonly kicsStatusBarItem: vscode.StatusBarItem,
-	  private readonly diagnosticCollection: vscode.DiagnosticCollection
+	  private readonly diagnosticCollection: vscode.DiagnosticCollection,
+	  private fixableResults : any
 	) {
 	  const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
-	  this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
-	  this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
+	  this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx KICS":"$(debug-disconnect) Checkmarx KICS";
+	  this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
 	  this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
 	  this.kicsStatusBarItem.show();
+	  this.fixableResults = [];
 	}
 
 
 	async runKics() {
-		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx kics: Running Auto Scan";
-		this.kicsStatusBarItem.tooltip = "Checkmarx kics is running";
+		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx KICS: Running KICS Auto Scan";
+		this.kicsStatusBarItem.tooltip = "Checkmarx KICS is running";
 		this.kicsStatusBarItem.show();
 		
 		// Get current file, either from global state or from the current open file
@@ -42,19 +49,19 @@ export class KicsProvider {
 			update(this.context, PROCESS_OBJECT, {id: undefined, name: PROCESS_OBJECT_KEY});
 		}
 		
-		// Clear the kics diagnostics
+		// Clear the KICS diagnostics
 		applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, this.diagnosticCollection);
 		if (this.codeLensDisposable) {this.codeLensDisposable.dispose();}
 		if(this.codeActionDisposable){this.codeActionDisposable.dispose();}
 		
-		// Create the kics scan
+		// Create the KICS scan
 		const [createObject,process] = await createKicsScan(file.file);
 		
 		// update the current cli spawned process returned by the wrapper
 		this.process = process;
 		update(this.context, PROCESS_OBJECT, {id: this.process, name: PROCESS_OBJECT_KEY});
 
-		// asyncly wait for the kics scan to end to create the diagnostics and print the summary
+		// asyncly wait for the KICS scan to end to create the diagnostics and print the summary
 		createObject
 		.then((cxOutput:CxCommandOutput) => {
 			if(cxOutput.exitCode!== 0) {
@@ -69,37 +76,97 @@ export class KicsProvider {
 				applyKicsDiagnostic(kicsResults, file.editor.document.uri, this.diagnosticCollection);
 				// Get the results into codelens 
 				this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
-				this.kicsStatusBarItem.text = "$(check) Checkmarx kics";
-				this.codeActionDisposable = vscode.languages.registerCodeActionsProvider(file.editor.document.uri,new KicsCodeActionProvider(kicsResults,file,this.diagnosticCollection));
-
+				this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
+				this.codeActionDisposable = vscode.languages.registerCodeActionsProvider(file.editor.document.uri,new KicsCodeActionProvider(kicsResults,file,this.diagnosticCollection,this.fixableResults));
 			}
 		})
 		.catch( error =>{
-			this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
+			this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
 			if(error.message && error.message.length>0){
-				this.kicsStatusBarItem.text = "$(error) Checkmarx kics";
-				this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
+				this.kicsStatusBarItem.text = "$(error) Checkmarx KICS";
+				this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
 				this.logs.error(error);
 			}
 		});
 	  }
 
-	async kicsRemediation (kicsResult,kicsResults,file,diagnosticCollection,logs){
-		// Call kics remediation
+	async kicsRemediation (fixedResults,kicsResults,file,diagnosticCollection:vscode.DiagnosticCollection,fixAll,logs){
+		// Call KICS remediation
+		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx KICS: Running KICS Fix";
+		const kicsFile = path.dirname(file.file);
+		const resultsFile = await this.createKicsResultsFile(kicsResults);
+		let similarityIdFilter = "";
+		if(!fixAll){
+			fixedResults[0].files.forEach(element => similarityIdFilter+=element.similarity_id+",");
+			similarityIdFilter.slice(0, -1);
+		}
+		// Update the list of fixable results for the quick fix all
+		this.updateKicsFixableResults(diagnosticCollection);
+		const [createObject,_] = await kicsRemediation(resultsFile,kicsFile,"",similarityIdFilter);
+		createObject
+			.then(async (cxOutput:CxCommandOutput) => {
+				if(cxOutput.exitCode===0){
+					// Remove the specific kicsResult from the list of kicsResults
+					const filteredkicsResults = kicsResults.results.filter(totalResultsElement => {
+						return !fixedResults.includes(totalResultsElement);
+					});
+					kicsResults.results = filteredkicsResults;
+					// Remove codelens, previous diagnostics and actions
+					applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, diagnosticCollection,);
+					this.codeLensDisposable.dispose();
+					// Update codelens, diagnostics with new list of results
+					applyKicsDiagnostic(kicsResults, file.editor.document.uri, diagnosticCollection);
+					this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
+					// Information messages
+					let message = !fixAll?fixedResults[0].query_name:"the entire file";
+					vscode.window.showInformationMessage("Fix applied to "+message);
+					logs.info("Fixes applied to "+message+".\nRemediation summary: "+JSON.stringify(cxOutput.payload, null, 2).replaceAll("{","").replaceAll("}",""));
+					this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
+				}
+				else{
+					logs.error("Error applying fix: "+ JSON.stringify(cxOutput.payload));
+				}
+			}).catch(err=>{
+				logs.error("Error applying fix: "+ err);
+			});
+	}
 
-		// Remove the specific kicsResult from the list of kicsResults
-		const filteredkicsResults = kicsResults.results.filter(result=>{
-			return JSON.stringify(result) !== JSON.stringify(kicsResult);
+	createKicsResultsFile(kicsResults):string{
+		let fullPath =  join(__dirname, KICS_RESULTS_FILE);
+		try {
+			// this was needed to match our structure with the original KICS results field names
+			kicsResults[KICS_QUERIES] = kicsResults[KICS_RESULTS];
+			kicsResults[KICS_TOTAL_COUNTER] = kicsResults[KICS_COUNT];
+			delete kicsResults[KICS_RESULTS];
+			delete kicsResults[KICS_COUNT];
+			// results to string, to be written to the file
+			const data = JSON.stringify(kicsResults);
+			// revert changes in the results object
+			kicsResults[KICS_RESULTS] = kicsResults[KICS_QUERIES];
+			kicsResults[KICS_COUNT] = kicsResults[KICS_TOTAL_COUNTER];
+			delete kicsResults[KICS_QUERIES];
+			delete kicsResults[KICS_TOTAL_COUNTER];
+			writeFileSync(fullPath, data, {
+				flag: 'w',
+		  	});
+		} catch (error) {
+			return "";
+		}
+		return fullPath;		
+	}
+
+	updateKicsFixableResults(diagnosticCollection:vscode.DiagnosticCollection){
+		diagnosticCollection.forEach((_,diagnostics)=>{
+			diagnostics
+			.forEach((diagnostic:KicsDiagnostic) => {
+				// Check if the diagnostic has a fix
+				let fixable = KicsCodeActionProvider.filterFixableResults(diagnostic);
+				if(fixable){
+					// Add the result to the fix all list
+					this.fixableResults.push(diagnostic.kicsResult);
+				}
+				return fixable;
+			});
 		});
-		kicsResults.results = filteredkicsResults;
-		// Remove codelens, previous diagnostics and actions
-		applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, diagnosticCollection);
-		this.codeLensDisposable.dispose();
-		// Update codelens, diagnostics with new list of results
-		applyKicsDiagnostic(kicsResults, file.editor.document.uri, diagnosticCollection);
-		this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
-		// Information messages
-		vscode.window.showInformationMessage("Fix applied to "+kicsResult.query_name);
-		logs.info("Fix applied to "+kicsResult.query_name);
 	}
 }

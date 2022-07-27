@@ -197,3 +197,22 @@ export async function getResultsRealtime(fileSources:string, additionalParams:st
 	return [kics,process];
 
 }
+
+export async function kicsRemediation(resultsFile:string, kicsFile:string,engine:string,similarityIds?:string ) :Promise <any>{
+	
+	if (!resultsFile) {
+		throw new Error("Missing mandatory parameters, resultsFile");
+	}
+	if (!kicsFile) {
+		throw new Error("Missing mandatory parameters, kicsFile");
+	}
+	const cx = new CxWrapper(new CxConfig());
+	let [kics,process]=[undefined,undefined];
+	try{
+		[kics,process] = await cx.kicsRemediation(resultsFile,kicsFile,engine,similarityIds);
+	}catch(e){
+		throw new Error("Error running kics remediation");
+	}
+	return [kics,process];
+
+}
