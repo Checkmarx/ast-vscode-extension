@@ -5,15 +5,17 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 	private file :{ file: string; editor: vscode.TextEditor; };
 	private diagnosticCollection :vscode.DiagnosticCollection;
 	private fixableResults :[];
+	private fixableResultsByLine:[];
 	public static readonly providedCodeActionKinds = [
 		vscode.CodeActionKind.QuickFix
 	];
 
-	constructor(kicsResults: any,file:{ file: string; editor: vscode.TextEditor;},diagnosticCollection :vscode.DiagnosticCollection,fixableResults:[]) {
+	constructor(kicsResults: any,file:{ file: string; editor: vscode.TextEditor;},diagnosticCollection :vscode.DiagnosticCollection,fixableResults:[],fixableResultsByLine:[]) {
 		this.kicsResults = kicsResults;
 		this.file = file;
 		this.diagnosticCollection = diagnosticCollection;
 		this.fixableResults = fixableResults;
+		this.fixableResultsByLine = fixableResultsByLine;
 	}
 
 	provideCodeActions(document: vscode.TextDocument, range: vscode.Range | vscode.Selection, context: vscode.CodeActionContext, token: vscode.CancellationToken): vscode.CodeAction[] {
@@ -31,7 +33,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 			})
 			.map(diagnostic => this.createCommandCodeAction(diagnostic))
 			.concat(fixAllResults.length>0?this.createFixFileCodeAction(new vscode.Diagnostic(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),"Quick Fix"),this.fixableResults):[]); // Add the fix all action if there is more than one fix in the file
-			// Add the grouped by line fix
+			// Add the grouped by line fix -> usar o this.fixableResultsByLine construir diagnostico para o grupo com o mesmo range e o this.fixableResultsByLine numa funcao como a createFixGroupCodeAction
 	}
 
 	// Create individual quick fix
@@ -59,7 +61,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 
 	public static filterFixableResults(diagnostic:KicsDiagnostic):boolean{
 		let fixable = false;
-		diagnostic.kicsResult.files.forEach(file=>{
+		diagnostic.kicsResult.files.forEach(file => {
 				if(file.remediation!==''){ // filter only results that have remediation
 					fixable = true;
 				}

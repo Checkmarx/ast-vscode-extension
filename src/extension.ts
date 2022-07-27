@@ -54,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   
-  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection,[]);
+  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection,[],[]);
    // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
 

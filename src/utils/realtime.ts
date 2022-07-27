@@ -8,8 +8,12 @@ import { KicsSummary } from "../models/kicsNode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 
 // Logs the output of kics autoscan summary
-export function summaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
+export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
 	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+}
+
+export function remediationSummaryLogs(remediation:any,logs:Logs){
+	logs.info("Remediation summary:"+ JSON.stringify(remediation, null, 2).replaceAll("{","").replaceAll("}",""));
 }
 
 // Create the auto kics scan
