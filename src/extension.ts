@@ -180,7 +180,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (gitExtension.enabled) {
     context.subscriptions.push(await getBranchListener(context, logs));
   } else {
-    logs.info("Could not find active git extension in workspace");
+    logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
   }
 
   // Settings
