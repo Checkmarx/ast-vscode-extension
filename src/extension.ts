@@ -40,6 +40,7 @@ import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
+import { GitExtension } from "./types/git";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -175,7 +176,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(newDetails);
   
   // Branch Listener
-  context.subscriptions.push(await getBranchListener(context, logs));
+  const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
+  if (gitExtension.enabled) {
+    context.subscriptions.push(await getBranchListener(context, logs));
+  } else {
+    logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
+  }
 
   // Settings
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
