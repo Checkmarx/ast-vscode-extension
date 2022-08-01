@@ -8,13 +8,13 @@ export class Logs {
 	}
 
 	public log(level:string, message:string){
-		this.output.appendLine("[Cx"+level+" - "+new Date().toLocaleTimeString()+"] "+ message);
+		this.output.appendLine(level+" - "+new Date().toLocaleTimeString()+"] "+ message);
 	}
 	public info(message:string){
-		this.output.appendLine("[CxINFO - "+new Date().toLocaleTimeString()+"] "+ message);
+		this.output.appendLine("[INFO - "+new Date().toLocaleTimeString()+"] "+ message);
 	}
 	public error(message:string){
-		this.output.appendLine("[CxERROR - "+new Date().toLocaleTimeString()+"] "+ message);
+		this.output.appendLine("[ERROR - "+new Date().toLocaleTimeString()+"] "+ message);
 	}
 
 	public show(){

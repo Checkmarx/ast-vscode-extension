@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { Logs } from "./models/logs";
 import { getScanLabel, getBranchPickItems, getProjectsPickItems, getProjectWithProgress, getProperty, getResultsWithProgress, getScansPickItems, getScanWithProgress } from "./utils/utils";
-import { REFRESH_TREE } from "./utils/commands";
-import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_PLACEHOLDER, PROJECT_ID_KEY, PROJECT_LABEL, PROJECT_PLACEHOLDER, SCAN_ID_KEY, SCAN_LABEL, SCAN_PLACEHOLDER } from "./utils/constants";
-import { get, update } from "./utils/globalState";
+import { REFRESH_TREE } from "./utils/common/commands";
+import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_PLACEHOLDER, PROJECT_ID_KEY, PROJECT_LABEL, PROJECT_PLACEHOLDER, SCAN_ID_KEY, SCAN_LABEL, SCAN_PLACEHOLDER } from "./utils/common/constants";
+import { get, update } from "./utils/common/globalState";
 import { CxQuickPickItem } from "./utils/multiStepUtils";
 
 export async function projectPicker(context: vscode.ExtensionContext, logs: Logs) {

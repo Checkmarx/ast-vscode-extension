@@ -32,8 +32,8 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 				return fixable;
 			})
 			.map(diagnostic => this.createCommandCodeAction(diagnostic))
+			.concat(this.fixableResultsByLine.length>0 && fixAllResults.length>1?this.createFixGroupCodeAction(this.fixableResultsByLine,fixAllResults):[])// Add the grouped by line fix -> usar o this.fixableResultsByLine construir diagnostico para o grupo com o mesmo range e o this.fixableResultsByLine numa funcao como a createFixGroupCodeAction
 			.concat(fixAllResults.length>0?this.createFixFileCodeAction(new vscode.Diagnostic(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),"Quick Fix"),this.fixableResults):[]); // Add the fix all action if there is more than one fix in the file
-			// Add the grouped by line fix -> usar o this.fixableResultsByLine construir diagnostico para o grupo com o mesmo range e o this.fixableResultsByLine numa funcao como a createFixGroupCodeAction
 	}
 
 	// Create individual quick fix
@@ -43,7 +43,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 		// used to be able to use kicsDiagnostic typ without changing the context implementation
 		let kicsDiagnostic:any = diagnostic;
 		const action = new vscode.CodeAction('Apply fix to '+queryName, vscode.CodeActionKind.QuickFix);
-		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[[kicsDiagnostic.kicsResult],this.kicsResults,this.file,this.diagnosticCollection,false] };
+		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[[kicsDiagnostic.kicsResult],this.kicsResults,this.file,this.diagnosticCollection,false,false] };
 		action.diagnostics = [diagnostic];
 		action.isPreferred = true;
 		return action;
@@ -53,10 +53,39 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 	private createFixFileCodeAction(diagnostic: vscode.Diagnostic,fixableResults): vscode.CodeAction[] {
 		// used to be able to use kicsDiagnostic typ without changing the context implementation
 		const action = new vscode.CodeAction('File : Apply all available fixes', vscode.CodeActionKind.QuickFix);
-		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixableResults,this.kicsResults,this.file,this.diagnosticCollection,true] };
+		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixableResults,this.kicsResults,this.file,this.diagnosticCollection,true,false] };
 		action.diagnostics = [diagnostic];
 		action.isPreferred = true;
 		return [action];
+	}
+
+	// Create quick fix for the group
+	private createFixGroupCodeAction(fixableResultsByLine,fixAllResults): vscode.CodeAction[] {
+		// used to be able to use kicsDiagnostic typ without changing the context implementation
+	let actions:vscode.CodeAction[] = [];
+	fixableResultsByLine.forEach((objectResult,index) => {
+		let lines = Object.keys(objectResult);
+		let values = Object.values(objectResult);
+		if(values.length>0){
+			values.forEach((results:[]) => {
+				// Check if it should be added to this specific line, by going throw the lines results and compare them
+				const contains = fixAllResults.every((element:never) => {
+					return results.includes(element);
+				  });
+				if(contains){
+					let vscodeRange :vscode.Range = new vscode.Range(new vscode.Position(parseInt(lines[index]), 0), new vscode.Position(parseInt(lines[index]), 999));
+					console.log(vscodeRange.start);
+					let diagnostic = new vscode.Diagnostic(vscodeRange,"Quick Fix");
+					let action = new vscode.CodeAction('Line : Apply all available fixes', vscode.CodeActionKind.QuickFix);
+					action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixAllResults,this.kicsResults,this.file,this.diagnosticCollection,false,true] };
+					action.diagnostics = [diagnostic];
+					action.isPreferred = true;
+					actions.push(action);
+				}
+			});
+		}
+	});
+	return actions;
 	}
 
 	public static filterFixableResults(diagnostic:KicsDiagnostic):boolean{

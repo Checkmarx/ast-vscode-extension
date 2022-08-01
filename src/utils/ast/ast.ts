@@ -4,10 +4,10 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
-import { getFilePath } from "./utils";
-import { SastNode } from "../models/sastNode";
-import AstError from "../exceptions/AstError";
+import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "../common/constants";
+import { getFilePath } from "../utils";
+import { SastNode } from "../../models/sastNode";
+import AstError from "../../exceptions/AstError";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();

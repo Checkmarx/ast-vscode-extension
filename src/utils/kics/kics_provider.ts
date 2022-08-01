@@ -1,17 +1,18 @@
 import * as vscode from "vscode";
 import * as kill from 'tree-kill';
 import * as path from "path";
-import { Logs } from "./models/logs";
-import { KICS_COUNT, KICS_QUERIES, KICS_RESULTS, KICS_RESULTS_FILE, KICS_TOTAL_COUNTER, PROCESS_OBJECT, PROCESS_OBJECT_KEY } from "./utils/constants";
-import { get, update } from "./utils/globalState";
-import { applyKicsCodeLensProvider, applyKicsDiagnostic, createKicsScan, getCurrentFile, resultsSummaryLogs,remediationSummaryLogs} from "./utils/realtime";
+import { Logs } from "../../models/logs";
+import { KICS_COUNT, KICS_QUERIES, KICS_RESULTS, KICS_RESULTS_FILE, KICS_TOTAL_COUNTER, PROCESS_OBJECT, PROCESS_OBJECT_KEY } from "../common/constants";
+import { get, update } from "../common/globalState";
+import { applyKicsCodeLensProvider, applyKicsDiagnostic, createKicsScan, getCurrentFile, resultsSummaryLogs,remediationSummaryLogs} from "./realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
-import { KicsCodeActionProvider } from "./utils/KicsCodeActions";
-import { kicsRemediation } from "./utils/ast";
+import { KicsCodeActionProvider } from "./kicsCodeActions";
+import { kicsRemediation } from "../ast/ast";
 import { writeFileSync } from "fs";
 import { join } from "path";
-import { KicsDiagnostic } from "./utils/kicsDiagnostic";
+import { KicsDiagnostic } from "./kicsDiagnostic";
+import { KICS_REALTIME } from "../common/commands";
 
 export class KicsProvider {
 	public process:any;
@@ -38,7 +39,6 @@ export class KicsProvider {
 		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx KICS: Running KICS Auto Scan";
 		this.kicsStatusBarItem.tooltip = "Checkmarx KICS is running";
 		this.kicsStatusBarItem.show();
-		
 		// Get current file, either from global state or from the current open file
 		const file = await getCurrentFile(this.context,this.logs);
 		if (!file) {return;}
@@ -75,9 +75,12 @@ export class KicsProvider {
 				resultsSummaryLogs(kicsResults, this.logs);
 				// Get the results into the problems
 				applyKicsDiagnostic(kicsResults, file.editor.document.uri, this.diagnosticCollection);
-				// Get the results into codelens 
+				// Get the results into codelens
+				if (this.codeLensDisposable) {this.codeLensDisposable.dispose();}
+				if(this.codeActionDisposable){this.codeActionDisposable.dispose();}
 				this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
 				this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
+				this.updateKicsFixableResults(this.diagnosticCollection);
 				this.codeActionDisposable = vscode.languages.registerCodeActionsProvider(file.editor.document.uri,new KicsCodeActionProvider(kicsResults,file,this.diagnosticCollection,this.fixableResults,this.fixableResultsByLine));
 			}
 		})
@@ -87,27 +90,33 @@ export class KicsProvider {
 				this.kicsStatusBarItem.text = "$(error) Checkmarx KICS";
 				this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
 				this.logs.error(error);
+				update(this.context, PROCESS_OBJECT, {id: undefined, name: PROCESS_OBJECT_KEY});
 			}
 		});
 	  }
 
-	async kicsRemediation (fixedResults,kicsResults,file,diagnosticCollection:vscode.DiagnosticCollection,fixAll,logs){
+	async kicsRemediation (fixedResults,kicsResults,file,diagnosticCollection:vscode.DiagnosticCollection,fixAll,fixLine,logs){
 		// Call KICS remediation
 		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx KICS: Running KICS Fix";
 		const kicsFile = path.dirname(file.file);
 		const resultsFile = await this.createKicsResultsFile(kicsResults);
 		let similarityIdFilter = "";
-		if(!fixAll){
+		if(fixAll===false && fixLine===false){
 			fixedResults[0].files.forEach(element => similarityIdFilter+=element.similarity_id+",");
-			similarityIdFilter.slice(0, -1);
+			similarityIdFilter = similarityIdFilter.slice(0, -1);
 		}
-		// Update the list of fixable results for the quick fix all
-		this.updateKicsFixableResults(diagnosticCollection);
+		if(fixLine){
+			fixedResults.forEach(result => {
+				result.files.forEach(element => similarityIdFilter+=element.similarity_id+",");	
+			});
+			similarityIdFilter=similarityIdFilter.slice(0, -1);
+		}
 		const [createObject,_] = await kicsRemediation(resultsFile,kicsFile,"",similarityIdFilter);
 		createObject
 			.then(async (cxOutput:CxCommandOutput) => {
 				if(cxOutput.exitCode===0){
 					// Remove the specific kicsResult from the list of kicsResults
+					// Update the list of fixable results for the quick fix all
 					const filteredkicsResults = kicsResults.results.filter(totalResultsElement => {
 						return !fixedResults.includes(totalResultsElement);
 					});
@@ -124,7 +133,8 @@ export class KicsProvider {
 					remediationSummaryLogs(cxOutput.payload, this.logs);
 					logs.info("Fixes applied to "+message);
 					this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
-					vscode.commands.executeCommand("ast-results.kicsRealtime");
+					this.updateKicsFixableResults(diagnosticCollection);
+					vscode.commands.executeCommand(KICS_REALTIME);
 				}
 				else{
 					logs.error("Error applying fix: "+ JSON.stringify(cxOutput.payload));
@@ -167,7 +177,7 @@ export class KicsProvider {
 				if(fixable){
 					// Add the result to the fix all list
 					this.fixableResults.push(diagnostic.kicsResult);
-					const key = JSON.stringify(diagnostic.range);
+					const key = diagnostic.range.start.line;
 					const index = this.findObjectIndexInList(this.fixableResultsByLine,key);
 					if(index >= 0) {
 						let testIndex = this.fixableResultsByLine[index];

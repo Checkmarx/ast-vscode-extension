@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { KICS_REALTIME_FILE } from "./constants";
-import { Logs } from "../models/logs";
-import { get } from "./globalState";
-import { getResultsRealtime } from "./ast";
+import { KICS_REALTIME_FILE } from "../common/constants";
+import { Logs } from "../../models/logs";
+import { get } from "../common/globalState";
+import { getResultsRealtime } from "../ast/ast";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { KicsSummary } from "../models/kicsNode";
+import { KicsSummary } from "../../models/kicsNode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 
 // Logs the output of kics autoscan summary
