@@ -124,9 +124,6 @@ export class KicsProvider {
 					// Remove codelens, previous diagnostics and actions
 					applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, diagnosticCollection,);
 					this.codeLensDisposable.dispose();
-					// Update codelens, diagnostics with new list of results
-					// applyKicsDiagnostic(kicsResults, file.editor.document.uri, diagnosticCollection);
-					// this.codeLensDisposable = applyKicsCodeLensProvider({pattern: file.file}, kicsResults);
 					// Information messages
 					let message = !fixAll?fixedResults[0].query_name:"the entire file";
 					vscode.window.showInformationMessage("Fix applied to "+message);
