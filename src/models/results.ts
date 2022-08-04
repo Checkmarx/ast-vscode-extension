@@ -186,20 +186,20 @@ export class AstResult {
   getKicsValues() {
     let r = "";
     if (this.kicsNode?.data) {
-      this.kicsNode.data.value
-        ? (r += `
-			<p>
-			<b>Value:</b> ${this.kicsNode?.data.value}
-			</p>
-		`)
-        : (r += "");
-      this.kicsNode.data.expectedValue
-        ? (r += `
-			<p>
-			<b>Expected Value:</b> ${this.kicsNode?.data.expectedValue}
-			</p>
-		`)
-        : (r += "");
+      this.kicsNode.data.value? 
+      (r += `
+			  <p>
+			    <b>Value:</b> ${this.kicsNode?.data.value}
+			  </p>
+		  `)
+      : (r += "");
+      this.kicsNode.data.expectedValue? 
+      (r += `
+			  <p>
+			    <b>Expected Value:</b> ${this.kicsNode?.data.expectedValue}
+			  </p>
+		  `)
+      : (r += "");
     }
     return r;
   }
@@ -256,6 +256,7 @@ export class AstResult {
     `
     );
   }
+
   getShortFilename(filename: string) {
     let r;
     filename.length > 50 ? (r = "..." + filename.slice(-50)) : (r = filename);
@@ -278,7 +279,6 @@ export class AstResult {
 
   private scaDetails() {
     let html = "";
-    // validar package data
     if (this.scaNode?.packageData) {
       this.scaNode?.packageData.forEach((node, index) => {
         html += `
@@ -325,7 +325,6 @@ export class AstResult {
         if(index===0){
           if(path.locations){
             path.locations.forEach((location: any,index: number)=>{
-              
               html +=`
                     <a href="#" 
                       class="ast-node"
@@ -758,7 +757,7 @@ export class AstResult {
             <div class="tooltip">
                 1. 
                 <span class="tooltiptext">
-                ${this.kicsNode?.data.filename}
+                  ${this.kicsNode?.data.filename}
                 </span>
             </div>
             <a href="#" 

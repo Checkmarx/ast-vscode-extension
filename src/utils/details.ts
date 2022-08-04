@@ -131,7 +131,8 @@ export class Details {
 			<div class="content">
 				${this.result.scaContent(this.result,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability)}
 			</div>
-		</body>			`
+		</body>			
+		`
 		);
 	}
 
