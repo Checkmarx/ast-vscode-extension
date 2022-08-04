@@ -319,7 +319,7 @@ export class AstResult {
                      Package ${pathArray[0].name} is located in:
                     </div>
                 </div>
-                <div style="margin-left:28px;margin-top:15px;">
+                <div style="margin-left:28px">
                `;
       pathArray.forEach((path: any,index: number)=>{
         if(index===0){
@@ -345,12 +345,12 @@ export class AstResult {
           else{
             html +=`
                   <div style="display: inline-block">
-                  ${path.name} is unresolved
-                  <a href="#"
-                    class="ast-node"
-                    id="${index}"
-                  >
-                  </a>
+                    ${path.name} is unresolved
+                    <a href="#"
+                      class="ast-node"
+                      id="${index}"
+                    >
+                    </a>
                   </div>
                 `;
           }
@@ -369,12 +369,16 @@ export class AstResult {
     if(this.scaNode.packageData){
       this.scaNode.packageData.forEach((data: any)=>{
         html +=
-          `<a class="references" id="${data.url}">${data.type}</a>&nbsp&nbsp`;
+          `<a class="references" id="${data.url}">
+            ${data.type}
+            </a>&nbsp&nbsp`;
       });
     }
     else{
       html +=
-          `<p style="margin:25px;font-size:0.9em">No references available </p>`;
+          `<p style="margin:25px;font-size:0.9em">
+            No references available 
+          </p>`;
     }
     return html;
   }
@@ -394,25 +398,358 @@ export class AstResult {
             <table class="package-table" style="display: none;" id="package-table-${index+1}">
               <tbody>`;
       }
-      dependencyArray.forEach((dependency:any,indeDependency:number)=>{
-        html+=`<tr>
-                <td>
-                  <div>
-                    <div style="display: inline-block">
-                    ${dependency.name}
+      dependencyArray.forEach((dependency:any,_:number)=>{
+        html+=  `<tr>
+                  <td>
+                    <div>
+                      <div style="display: inline-block">
+                        ${dependency.name}
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                </tr>
                `;
         });                
       html +=  `
-                </tbody>
-                  </table>
-                    </div>`;
+              </tbody>
+                </table>
+                  </div>`;
     });
     return html;
   }
+
+  public scaContent(result:AstResult,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability){
+    return `
+    <div class="left-content">
+      <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
+        <p class="header-content">
+          Description
+        </p>
+        <p class="description">
+          ${result.description}
+        </p>
+      </div>
+      ${result.scaNode.scaPackageData?
+      `
+      <div class="card">
+        <p class="header-content">
+          Remediation
+        </p>
+      <div class="card-content">
+        <div class="remediation-container">
+          ${result.scaRemediation(result,scaUpgrade,scaUrl)}	
+        </div>
+      </div>
+    </div>
+    <div class="card">
+        <div style="display: inline-block;position: relative;">
+          <p class="header-content">
+            Vulnerable Package Paths
+          </p>
+        </div>
+        ${result.scaNode.scaPackageData.dependencyPaths?
+          `
+        <div class="package-buttons-container">
+          <button 
+            class="package-back"
+            id="package-back"
+            data-current="1" 
+            data-total="${result.scaNode.scaPackageData.dependencyPaths.length}" 
+            data-previous="null"
+            disabled
+          >
+          </button>
+          <p id="package-counter" class="package-counter-numbers">1/${result.scaNode.scaPackageData.dependencyPaths.length}</p>
+          <button 
+            class="package-next"
+            data-current="1" 
+            ${result.scaNode.scaPackageData.dependencyPaths.length===1?
+              "disabled":
+              ""
+            }
+            data-total="${result.scaNode.scaPackageData.dependencyPaths.length}"
+            id="package-next"
+            data-previous="null"
+          >  
+          </button>
+        </div>
+      ${result.scaPackages()}	
+    </div>`
+          :
+      `
+        <div class="card-content">
+          <p style="margin:25px;font-size:0.9em">
+            No package path information available
+          </p>
+        </div>
+    </div>
+          `
+        }
+    <div class="card" style="border:0">
+      <p class="header-content">
+        References
+      </p>
+      <div class="card-content" style="margin:15px 15px 15px 28px">
+        ${result.scaReferences()}
+      </div>
+    </div>
+  </div>
+      `
+    :`
+    <div class="card" style="border:0">
+      <p style="margin:25px;font-size:0.9em"> 
+        No more information available
+      </p>
+    </div>
+  </div>
+    `
+    }
+  <div class="right-content">
+    ${result.vulnerabilityDetails.cvss.version?
+      `
+      <div class="content">
+        <div ${parseInt(result.vulnerabilityDetails.cvss.version)===2?
+          'class="header-content-selected"':
+          'class="header-content-not-selected"'
+        } >
+          <button ${parseInt(result.vulnerabilityDetails.cvss.version)===2?
+            'class="cvss-button-selected"':
+            'class="cvss-button-not-selected"'
+          }>
+            CVSS 2
+          </button>
+        </div>
+        <div ${parseInt(result.vulnerabilityDetails.cvss.version)===3?
+          'class="header-content-selected"':
+          'class="header-content-not-selected"'
+        }>
+          <button ${parseInt(result.vulnerabilityDetails.cvss.version)===3?
+            'class="cvss-button-selected"'
+            :'class="cvss-button-not-selected"'
+          }>
+            CVSS 3
+          </button>
+        </div>
+      </div>
+    `
+    :
+    ''}
+    <div class="sca-details" style="border-bottom: 1px;border-bottom-style: solid;border-color: rgb(128, 128, 128,0.5);">
+      <div class="score-card" style="${
+          result.severity==="HIGH"?
+              "border: 1px solid #D94B48":
+            result.severity==="MEDIUM"?
+              "border: 1px solid #F9AE4D":
+            result.severity==="LOW"?
+              "border: 1px solid #029302":
+              "border: 1px solid #87bed1"
+     }">
+        <div class="left-${result.severity}">
+          <p class="header-text">
+            Score
+          </p>
+          <p>
+            ${result.vulnerabilityDetails.cvssScore.toFixed(1)}
+          </p>
+        </div>
+        <div class="right-${result.severity}">
+          <p class="header-text-${result.severity}">
+            ${result.severity}
+          </p>
+          <div class="severity-inner-${result.severity}">
+            <div class="severity-bar-${result.severity}">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sca-details">
+      <div class="info-cards">
+        <div class="info-cards-text">
+          <p class="info-cards-description">
+            Attack Vector
+          </p>
+          <p class="info-cards-value">
+            ${result.vulnerabilityDetails.cvss.attackVector?
+              result.vulnerabilityDetails.cvss.attackVector:
+              "No information"
+            }
+          </p>
+        </div>
+        <div class="info-cards-icon">
+          <img alt="icon" class="info-cards-icons" src="${scaAtackVector}" />
+        </div>
+      </div>
+    </div>
+    <div class="sca-details">
+      <div class="info-cards">
+        <div class="info-cards-text">
+          <p class="info-cards-description">
+            Attack Complexity
+          </p>
+          <p class="info-cards-value">
+            ${result.vulnerabilityDetails.cvss.attackComplexity?
+              result.vulnerabilityDetails.cvss.attackComplexity:
+              "No information"
+            }
+          </p>
+        </div>
+        <div class="info-cards-icon">
+          <img alt="icon" class="info-cards-icons" src="${scaComplexity}" />
+        </div>
+      </div>
+    </div>
+    ${result.vulnerabilityDetails.cvss.privilegesRequired?
+      `
+      <div class="sca-details">
+      <div class="info-cards">
+        <div class="info-cards-text">
+          <p class="info-cards-description">
+            Privileges Required
+          </p>
+          <p class="info-cards-value">
+            ${result.vulnerabilityDetails.cvss.privilegesRequired?
+              result.vulnerabilityDetails.cvss.privilegesRequired:
+              "No information"
+            }
+          </p>
+        </div>
+        <div class="info-cards-icon">
+          <img alt="icon" class="info-cards-icons" src="${scaAuthentication}" />
+        </div>
+      </div>
+    </div>`
+    :
+      ``
+    }
+    <div class="sca-details">
+      <div class="info-cards">
+        <div class="info-cards-text">
+          <p class="info-cards-description">
+            Confidentiality Impact
+          </p>
+          <p class="info-cards-value">
+            ${result.vulnerabilityDetails.cvss.confidentiality?
+              result.vulnerabilityDetails.cvss.confidentiality:
+              "No information"
+            }
+          </p>
+        </div>
+        <div class="info-cards-icon">
+          <img alt="icon" class="info-cards-icons" src="${scaConfidentiality}" />
+        </div>
+      </div>
+    </div>
+    ${result.vulnerabilityDetails.cvss.integrityImpact?
+      `
+      <div class="sca-details">
+        <div class="info-cards">
+          <div class="info-cards-text">
+            <p class="info-cards-description">
+              Integrity Impact
+            </p>
+            <p class="info-cards-value">
+              ${result.vulnerabilityDetails.cvss.integrityImpact?
+                result.vulnerabilityDetails.cvss.integrityImpact:
+                "No information"
+              }
+            </p>
+          </div>
+          <div class="info-cards-icon">
+            <img alt="icon" class="info-cards-icons" src="${scaIntegrity}" />
+          </div>
+        </div>
+      </div>`:``
+    }
+    <div class="sca-details">
+      <div class="info-cards">
+        <div class="info-cards-text">
+          <p class="info-cards-description">
+            Availability Impact
+          </p>
+          <p class="info-cards-value">
+            ${result.vulnerabilityDetails.cvss.availability?
+              result.vulnerabilityDetails.cvss.availability:
+              "No information"
+            }
+          </p>
+        </div>
+        <div class="info-cards-icon">
+          <img alt="icon" class="info-cards-icons" src="${scaAvailability}" />
+        </div>
+      </div>
+    </div>
+  </div>`;
+  }
+
+  private scaRemediation(result,scaUpgrade,scaUrl){
+      return `<div 
+              class=${result.scaNode.recommendedVersion?
+                "remediation-icon":
+                "remediation-icon-disabled"
+              }
+              data-version="${result.scaNode.recommendedVersion?
+                result.scaNode.recommendedVersion:
+                ""
+              }" 
+              data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                result.scaNode.scaPackageData.dependencyPaths[0][0].name:
+                ""
+              }" 
+              data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+                result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
+                ""
+              }"
+              >
+                <img 
+                  data-version="${result.scaNode.recommendedVersion?
+                    result.scaNode.recommendedVersion:
+                    ""
+                  }" 
+                  data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                    result.scaNode.scaPackageData.dependencyPaths[0][0].name:
+                    ""
+                  }" 
+                  data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+                    result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
+                    ""
+                  }" 
+                  alt="icon" src="${scaUpgrade}" 
+                  class="remediation-upgrade" />
+              </div>
+            <div class="remediation-version">
+              <div class="remediation-version-container">
+                <p class="remediation-description">
+                  Upgrade To Version
+                </p>
+                <p>
+                  ${result.scaNode.recommendedVersion?
+                    result.scaNode.recommendedVersion:
+                    "Not available"
+                  }
+                </p>
+              </div>
+            </div>
+            <div class="remediation-links-container">
+              <div class="remediation-links-about">
+                <div class="remediation-links-rows">
+                  <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
+                  <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
+                    About this vulnerability
+                  </p>
+                </div>
+              </div>
+              <div class="remediation-links-package">
+                <div class="remediation-links-rows">
+                  <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
+                  <p class="remediation-links-text">
+                    Find best package version
+                  </p>
+                </div>
+              </div>
+            </div>`;
+  }
+
   private kicsDetails() {
     let html = "";
     html += `
