@@ -40,6 +40,7 @@ import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
+import { applyScaFix } from "./utils/scaFix";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -171,6 +172,8 @@ export async function activate(context: vscode.ExtensionContext) {
           case 'references':
             vscode.env.openExternal(vscode.Uri.parse(data.link));
             break;
+          case 'scaFix':
+            applyScaFix(data.package,data.file,data.version,logs);
         }
       });
     }

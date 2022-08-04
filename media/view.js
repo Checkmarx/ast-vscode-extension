@@ -49,6 +49,24 @@
 			});
 		});
 	});
+
+	// Open external link for more info
+	document.querySelectorAll('.remediation-icon').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			console.log(target);
+			vscode.postMessage({
+				command: 'scaFix',
+				// @ts-ignore
+				package:target.dataset.package,
+				// @ts-ignore
+				file:target.dataset.file,
+				// @ts-ignore
+				version:target.dataset.version
+			});
+		});
+	});
 	
 	// Open external link for referencess
 	document.querySelectorAll('.references').forEach(element => {

@@ -1,11 +1,10 @@
 .header {
 	display: flex;
 	/* background-color: var(--vscode-minimapSlider-hoverBackground); */
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	min-height: 40px;
 	align-items: center;
 	justify-content: center;
-	box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.15);
 	margin-bottom: 0.5em;
 }
 
@@ -66,18 +65,18 @@
 }
 
 .left-content .header-content {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	margin-left: 25px;
 }
 
 .left-content .description {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	margin: 25px;
 	margin-bottom: 20px;
 }
 
 .right-content {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	border-left: 1px solid;
 	border-color: rgb(128, 128, 128,0.5);
 	border-bottom: 1px solid;
@@ -85,18 +84,18 @@
 }
 
 .right-content .header-content-selected {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	flex: 50rem;
 	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .right-content .header-content-not-selected {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	flex: 50rem;
 }
 
 .right-content .header-content-right {
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 	margin-left: 25px;
 	flex: 50rem;
 	display: flex;
@@ -113,7 +112,7 @@
 .card-content {
 	display: flex;
 	flex-wrap: wrap;
-	color: white;
+	color: var(--vscode-inputOption-activeForeground);
 }
 
 .cvss-selected {
@@ -283,13 +282,14 @@
 }
 
 .info-cards .info-cards-description {
-	color: rgba(149, 147, 155, 1);
+	color: white;
 	font-size: 0.9em;
 	margin-left: 1rem;
 }
 
 .info-cards .info-cards-value {
 	margin-left: 1rem;
+	color: white;
 }
 
 .cvss-selected {
@@ -344,6 +344,14 @@
 	width: 6rem;
 	height: 100%;
 	background: #F9AE4D;
+	cursor:pointer;
+}
+
+.remediation-icon-disabled {
+	width: 6rem;
+	height: 100%;
+	background: #303035;
+	cursor:not-allowed;
 }
 
 .remediation-version {
@@ -360,7 +368,7 @@
 
 .remediation-description {
 	font-size: 0.9em;
-	color: rgba(249, 174, 77, 0.9)
+	color: rgba(249, 174, 77, 0.9);	
 }
 
 .remediation-links-container {
