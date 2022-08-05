@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { AstResult } from "../models/results";
-import { getResultsFilePath } from "./utils";
+import { getChanges, getResultsFilePath } from "./utils";
 import {triageUpdate} from "./ast";
 import { get } from "./globalState";
 import * as fs from "fs";
@@ -91,6 +91,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
     if (r) {
       // Reload results tree to apply the changes
       await vscode.commands.executeCommand(REFRESH_TREE);
+      getChanges(logs,context,result,detailsPanel);
       // Information message
       vscode.window.showInformationMessage(
         "Feedback submited successfully! Results refreshed."
