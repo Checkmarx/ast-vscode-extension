@@ -80,7 +80,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
   }
 
   // Case there is any update to be performed in the webview
-  if (data.stateSelection.length > 0 || data.severitySelection.length > 0) {
+  if (data.stateSelection.length > 0 || data.severitySelection.length > 0 || data.comment.length > 0 ) {
     detailsDetachedView!.setResult(result);
     detailsDetachedView.setLoad(false);
     // Update webview html
