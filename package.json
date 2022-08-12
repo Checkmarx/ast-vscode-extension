@@ -776,7 +776,7 @@
   "devDependencies": {
     "@types/chai": "4.3.1",
     "@types/mocha": "9.1.1",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.7.2",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.30.7",
@@ -791,7 +791,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.55",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.56",
     "copyfiles": "2.4.1",
     "tree-kill": "^1.2.2"
   },
