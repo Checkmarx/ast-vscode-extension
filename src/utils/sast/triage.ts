@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
-import { AstResult } from "../models/results";
-import { getResultsFilePath } from "./utils";
-import {triageUpdate} from "./ast";
-import { get } from "./globalState";
+import { AstResult } from "../../models/results";
+import { getResultsFilePath } from "../utils";
+import {triageUpdate} from "../ast/ast";
+import { get } from "../common/globalState";
 import * as fs from "fs";
-import { PROJECT_ID_KEY, SAST, SCA, KICS } from "./constants";
-import { Logs } from "../models/logs";
-import { AstDetailsDetached } from "../ast_details_view";
-import { REFRESH_TREE } from "./commands";
+import { PROJECT_ID_KEY, SAST, SCA, KICS } from "../common/constants";
+import { Logs } from "../../models/logs";
+import { AstDetailsDetached } from "../../ast_details_view";
+import { REFRESH_TREE } from "../common/commands";
 
 export async function updateResults(result: AstResult,context:vscode.ExtensionContext, comment:string):Promise<boolean> {
   let r = true;

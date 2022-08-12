@@ -1,6 +1,6 @@
 import path = require("path");
 import * as vscode from "vscode";
-import { StateLevel,IssueLevel, SCA, KICS } from "../utils/constants";
+import { StateLevel,IssueLevel, SCA, KICS } from "../utils/common/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./ast_results_provider";
 import { AstResult } from "./models/results";
-import { getError} from "./utils/globalState";
+import { getError} from "./utils/common/globalState";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
@@ -25,7 +25,7 @@ import {
   STATE_GROUP,
   QUERY_NAME_GROUP,
   EXTENSION_FULL_NAME
-} from "./utils/constants";
+} from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
 import { multiStepInput } from "./ast_multi_step_input";
@@ -34,12 +34,12 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import { filter, filterState, initializeFilters } from "./utils/filters";
 import { group } from "./utils/group";
 import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
-import { getAstConfiguration } from "./utils/ast";
-import { getCodebashingLink } from "./utils/codebashing";
-import { triageSubmit} from "./utils/triage";
-import { REFRESH_TREE } from "./utils/commands";
+import { getAstConfiguration } from "./utils/ast/ast";
+import { getCodebashingLink } from "./utils/codebashing/codebashing";
+import { triageSubmit} from "./utils/sast/triage";
+import { REFRESH_TREE } from "./utils/common/commands";
 import { getChanges } from "./utils/utils";
-import { KicsProvider } from "./kics_provider";
+import { KicsProvider } from "./utils/kics/kics_provider";
 import { GitExtension } from "./types/git";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -53,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   
-  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
+  const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection,[],[]);
    // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
 
@@ -288,6 +288,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Visual feedback on wrapper errors
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
+
+  // Kics remediation command
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (fixedResults,kicsResults,file,diagnosticCollection,fixAll,fixLine) => {
+   await kicsProvider.kicsRemediation(fixedResults,kicsResults,file,diagnosticCollection,fixAll,fixLine,logs);
+   }));
 }
 
 export function deactivate() { }
