@@ -9,22 +9,16 @@ import { isKicsFile } from "./utils";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
-
-	if(gitExtension.enabled){
-		const gitApi = gitExtension.getAPI(1);
-		const state = gitApi.repositories[0]?.state;
-		if (state) {
-			return addRepositoryListener(context, logs, state);
-		} else {
-			return gitApi.onDidOpenRepository(async() => {
-				logs.info('GIT API - Open repository');
-				const repoState = gitApi.repositories[0].state;
-				return addRepositoryListener(context, logs, repoState);
-			});
-		}
+	const gitApi = gitExtension.getAPI(1);
+	const state = gitApi.repositories[0]?.state;
+	if (state) {
+		return addRepositoryListener(context, logs, state);
 	} else {
-		logs.error("Could not find active git extension in workspace");
-		return Promise.reject();
+		return gitApi.onDidOpenRepository(async () => {
+			logs.info('GIT API - Open repository');
+			const repoState = gitApi.repositories[0].state;
+			return addRepositoryListener(context, logs, repoState);
+		});
 	}
 }
 

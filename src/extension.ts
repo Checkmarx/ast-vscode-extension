@@ -40,6 +40,7 @@ import { triageSubmit} from "./utils/sast/triage";
 import { REFRESH_TREE } from "./utils/common/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
+import { GitExtension } from "./types/git";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -175,7 +176,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(newDetails);
   
   // Branch Listener
-  context.subscriptions.push(await getBranchListener(context, logs));
+  const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
+  if (gitExtension.enabled) {
+    context.subscriptions.push(await getBranchListener(context, logs));
+  } else {
+    logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
+  }
 
   // Settings
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
@@ -284,7 +290,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
 
   // Kics remediation command
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (fixedResults,kicsResults,file,diagnosticCollection,fixAll,fixLine) => { 
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (fixedResults,kicsResults,file,diagnosticCollection,fixAll,fixLine) => {
    await kicsProvider.kicsRemediation(fixedResults,kicsResults,file,diagnosticCollection,fixAll,fixLine,logs);
    }));
 }
