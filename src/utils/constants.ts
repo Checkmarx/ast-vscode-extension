@@ -23,6 +23,8 @@ export const STATE_GROUP: string = "ast-results-groupByState";
 export const FILE_GROUP: string = "ast-results-groupByFile";
 
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
+export const SCAN_CREATE_ID_KEY: string = "ast-results-scan-create-id";
+export const SCAN_RUNNING: string = "ast-results-is-scan-running";
 export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";

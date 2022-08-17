@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
 import { get, updateError } from "../utils/globalState";
-import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast";
+import { getBranches, getProject, getProjectList, getResults, getScan, getScans, scanCreate, triageShow } from "./ast";
 import { getBfl } from './bfl';
 import { SHOW_ERROR } from './commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./constants";
@@ -123,6 +123,15 @@ export async function getBranchesWithProgress(logs: Logs, projectId: string) {
 			return await getBranches(projectId);
 		}
 	);
+}
+
+export async function createScanWithProgress(logs: Logs, projectName: string, branchName: string, sourcePath: string){
+	return vscode.window.withProgress(PROGRESS_HEADER,	
+		async (progress) => {
+			progress.report({	message: "Creating scan"})
+			logs.info("Scan create request preparation")
+			return await scanCreate(projectName,branchName,sourcePath)
+		});
 }
 
 export async function getChanges(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {

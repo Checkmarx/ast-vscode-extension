@@ -4,10 +4,33 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
+import {RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME} from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+
+export async function scanCreate(projectName: string, branchName: string, sourcePath: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!projectName){
+		return;
+	}
+	if(!branchName){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	let params = new Map<CxParamType,string>();
+	params.set(CxParamType.S,sourcePath);
+	params.set(CxParamType.BRANCH,branchName);
+	params.set(CxParamType.PROJECT_NAME,projectName);
+	params.set(CxParamType.ADDITIONAL_PARAMETERS,"--async");
+	const scan = await cx.scanCreate(params);
+	return scan.payload[0];
+}
+
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();

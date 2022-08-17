@@ -276,6 +276,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command":"ast-results.createScan",
+        "category" : "checkmarx-ast",
+        "title": "Create Scan",
+        "icon":"$(notebook-execute)",
+        "enablement": "ast-results.isScanRunning == false && ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
         "title": "Select Project",
@@ -530,6 +537,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "ast-results.createScan",
+          "group":"inline",
+          "when" : "viewItem == project-item"
+        },
         {
           "command": "ast-results.projectPick",
           "group": "inline",

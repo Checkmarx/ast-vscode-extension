@@ -41,6 +41,7 @@ import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
 import { GitExtension } from "./types/git";
+import {createScan} from "./create-scan-provider";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -285,6 +286,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => { await branchPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => { await scanPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanInput`, async () => { await scanInput(context, logs); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs); }));
 
   // Visual feedback on wrapper errors
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));
