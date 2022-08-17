@@ -89,3 +89,9 @@ export const AST_ERROR_CODEBASHING_NO_LESSON: number = 4;
 export const KICS_REALTIME_FILE = "CURRENT_KICS_FILE";
 export const PROCESS_OBJECT = "PROCESS_OBJECT";
 export const PROCESS_OBJECT_KEY = "cli-process";
+
+export const KICS_QUERIES = "queries";
+export const KICS_RESULTS = "results";
+export const KICS_TOTAL_COUNTER = "total_counter";
+export const KICS_COUNT = "count";
+export const KICS_RESULTS_FILE = "kics-results.json";

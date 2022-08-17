@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "../ast_results_provider";
 import { Logs } from "../models/logs";
-import { REFRESH_TREE } from "./commands";
-import {CONFIRMED_FILTER, HIGH_FILTER, NOT_IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER, IGNORED_FILTER, IssueFilter, QUERY_NAME_GROUP, LANGUAGE_GROUP, SEVERITY_GROUP, STATUS_GROUP, STATE_GROUP, FILE_GROUP} from "./constants";
+import { REFRESH_TREE } from "./common/commands";
+import {CONFIRMED_FILTER, HIGH_FILTER, NOT_IGNORED_FILTER, INFO_FILTER, IssueLevel, LOW_FILTER, MEDIUM_FILTER, NOT_EXPLOITABLE_FILTER, PROPOSED_FILTER, StateLevel, TO_VERIFY_FILTER, URGENT_FILTER, IGNORED_FILTER, IssueFilter, QUERY_NAME_GROUP, LANGUAGE_GROUP, SEVERITY_GROUP, STATUS_GROUP, STATE_GROUP, FILE_GROUP} from "./common/constants";
 import { updateResultsProviderGroup } from "./group";
 
 export async function initializeFilters(logs: Logs,

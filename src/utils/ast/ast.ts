@@ -4,10 +4,10 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "./constants";
-import { getFilePath } from "./utils";
-import { SastNode } from "../models/sastNode";
-import AstError from "../exceptions/AstError";
+import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "../common/constants";
+import { getFilePath } from "../utils";
+import { SastNode } from "../../models/sastNode";
+import AstError from "../../exceptions/AstError";
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -211,4 +211,23 @@ export async function scaRemediation(packageFile: string, packages:string, packa
 	else {
 		throw new Error(scaFix.status.replaceAll("\n","")); //Need to return exit code
 	}
+}
+
+export async function kicsRemediation(resultsFile:string, kicsFile:string,engine:string,similarityIds?:string ) :Promise <any>{
+	
+	if (!resultsFile) {
+		throw new Error("Missing mandatory parameters, resultsFile");
+	}
+	if (!kicsFile) {
+		throw new Error("Missing mandatory parameters, kicsFile");
+	}
+	const cx = new CxWrapper(new CxConfig());
+	let [kics,process]=[undefined,undefined];
+	try{
+		[kics,process] = await cx.kicsRemediation(resultsFile,kicsFile,engine,similarityIds);
+	}catch(e){
+		throw new Error("Error running kics remediation");
+	}
+	return [kics,process];
+
 }

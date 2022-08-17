@@ -19,16 +19,16 @@ import {
   BRANCH_ITEM,
   SCAN_ITEM,
   GRAPH_ITEM,
-} from "./utils/constants";
+} from "./utils/common/constants";
 import {
   Counter,
   getProperty, getResultsFilePath, getResultsWithProgress,
 } from "./utils/utils";
 import { Logs } from "./models/logs";
-import { get, update } from "./utils/globalState";
-import { getAstConfiguration } from "./utils/ast";
+import { get, update } from "./utils/common/globalState";
+import { getAstConfiguration } from "./utils/ast/ast";
 import { SastNode } from "./models/sastNode";
-import { REFRESH_TREE } from "./utils/commands";
+import { REFRESH_TREE } from "./utils/common/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {

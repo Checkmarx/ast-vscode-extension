@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { getCodeBashing } from "./ast";
-import { Logs } from "../models/logs";
-import { AST_ERROR_CODEBASHING_NO_LESSON, AST_ERROR_CODEBASHING_NO_LICENSE, ERROR_REGEX } from "./constants";
-import AstError from "../exceptions/AstError";
+import { getCodeBashing } from "../ast/ast";
+import { Logs } from "../../models/logs";
+import { AST_ERROR_CODEBASHING_NO_LESSON, AST_ERROR_CODEBASHING_NO_LICENSE, ERROR_REGEX } from "../common/constants";
+import AstError from "../../exceptions/AstError";
 
 const CODEBASHING_NO_LICENSE: string = "You don't have a license for Codebashing. Please Contact your Admin for the full version implementation. Meanwhile, you can use the link below.";
 const CODEBASHING_NO_LESSON: string = "Currently, this vulnerability has no lesson";

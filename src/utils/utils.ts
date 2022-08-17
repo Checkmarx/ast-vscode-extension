@@ -2,11 +2,11 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
-import { get, updateError } from "../utils/globalState";
-import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast";
-import { getBfl } from './bfl';
-import { SHOW_ERROR } from './commands';
-import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./constants";
+import { get, updateError } from "./common/globalState";
+import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast/ast";
+import { getBfl } from './sast/bfl';
+import { SHOW_ERROR } from './common/commands';
+import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
 
 export function getProperty(o: any, propertyName: string): any {
 	const properties = propertyName.split(".");

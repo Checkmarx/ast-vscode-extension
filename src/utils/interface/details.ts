@@ -1,6 +1,6 @@
-import { AstResult } from "../models/results";
+import { AstResult } from "../../models/results";
 import * as vscode from "vscode";
-import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS, SCA } from "./constants";
+import { ERROR_MESSAGE, PROJECT_ID_KEY, STATE, STATUS, SCA } from "../common/constants";
 
 export class Details {
 	result: AstResult;
