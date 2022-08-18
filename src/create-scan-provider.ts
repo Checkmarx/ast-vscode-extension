@@ -19,8 +19,9 @@ function getBranchFromWorkspace() {
     return state.HEAD?.name;
 }
 
-function updateScanRunningStatus(context: vscode.ExtensionContext, status: string) {
+async function updateScanRunningStatus(context: vscode.ExtensionContext, status: string) {
   update(context, SCAN_RUNNING, { id: SCAN_RUNNING, name: status });
+  await vscode.commands.executeCommand("ast-results.isScanRunning", status.toLowerCase() === "true"? true: false);
 }
 
 function updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem){
@@ -28,20 +29,22 @@ function updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.
   show? statusBarItem.show() : statusBarItem.hide();
 }
 
-async function createScanForProject(context: vscode.ExtensionContext, logs: Logs, branch: string) {
+async function createScanForProject(context: vscode.ExtensionContext, logs: Logs, branch: string, statusBarItem: vscode.StatusBarItem) {
   let projectForScan:any = context.workspaceState.get(PROJECT_ID_KEY);
   let projectName = projectForScan.name.split(":")[1].trim();
   let workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info("Initiating scan for workspace Folder: " +	workspaceFolder.uri.fsPath);
   const scanCreateResponse = await scanCreate(projectName, branch,workspaceFolder.uri.fsPath);
   logs.info("Scan created successfully. ID: " + scanCreateResponse.id);
+  updateScanRunningStatus(context,"false");
+  updateStatusBarItem(SCAN_CREATED,false,statusBarItem);
   update(context, SCAN_CREATE_ID_KEY, { id: scanCreateResponse.id, name: scanCreateResponse.id });
 }
 
 
 export async function createScan(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
   // step 1 -> check if the files in results are there in the current workspaceFolders
-  updateScanRunningStatus(context,"true");
+  await updateScanRunningStatus(context,"true");
   updateStatusBarItem(SCAN_STARTED,true,createScanStatusBarItem);
   await vscode.commands.executeCommand("ast-results.isScanRunning", true);
   let filesExistInResults =  await findFilesInWorkspaceAndResults();
@@ -50,10 +53,7 @@ export async function createScan(context: vscode.ExtensionContext, logs: Logs, c
       let branchInWorkspace = getBranchFromWorkspace();
       let branchInCxView:any = context.workspaceState.get(BRANCH_ID_KEY);
       if(branchInWorkspace === branchInCxView.id) {
-          createScanForProject(context,logs,branchInCxView.id);
-          updateScanRunningStatus(context,"false");
-          updateStatusBarItem(SCAN_CREATED,false,createScanStatusBarItem);
-          await vscode.commands.executeCommand("ast-results.isScanRunning", false);
+          createScanForProject(context,logs,branchInCxView.id,createScanStatusBarItem);       
       } else {
           logs.info("Branch in workspace and plugin view do not match");
           await vscode.window.showInformationMessage("Failed creating scan: Branch in workspace doesnt match the branch in scan");
@@ -62,7 +62,6 @@ export async function createScan(context: vscode.ExtensionContext, logs: Logs, c
   } else{
       await vscode.window.showInformationMessage("Failed creating scan: Files in workspace dont match the files in scan");
   }
-  await vscode.commands.executeCommand("ast-results.isScanRunning", false);
 }
 
 
@@ -78,7 +77,6 @@ async function findFilesInWorkspaceAndResults(){
 }
 
 async function doFilesExistInWorkspace(resultFileNames: any[]) {
-  const filesInWorkspace = [];
   for (const fileName of resultFileNames) {
     const fileExists = await vscode.workspace.findFiles("**/*" + fileName);
     if (fileExists.length > 0) {
