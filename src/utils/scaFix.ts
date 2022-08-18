@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { scaRemediation } from "./ast";
+import { scaRemediation } from "./ast/ast";
 import * as path from "path";
 
 // Applying sca Fix to a specific package
