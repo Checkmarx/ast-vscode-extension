@@ -507,26 +507,9 @@ export class AstResult {
     ${result.vulnerabilityDetails.cvss.version?
       `
       <div class="content">
-        <div ${parseInt(result.vulnerabilityDetails.cvss.version)===2?
-          'class="header-content-selected"':
-          'class="header-content-not-selected"'
-        } >
-          <button ${parseInt(result.vulnerabilityDetails.cvss.version)===2?
-            'class="cvss-button-selected"':
-            'class="cvss-button-not-selected"'
-          }>
-            CVSS 2
-          </button>
-        </div>
-        <div ${parseInt(result.vulnerabilityDetails.cvss.version)===3?
-          'class="header-content-selected"':
-          'class="header-content-not-selected"'
-        }>
-          <button ${parseInt(result.vulnerabilityDetails.cvss.version)===3?
-            'class="cvss-button-selected"'
-            :'class="cvss-button-not-selected"'
-          }>
-            CVSS 3
+        <div class="header-content-selected">
+          <button class="cvss-button-selected" disabled>
+            CVSS ${parseInt(result.vulnerabilityDetails.cvss.version)}
           </button>
         </div>
       </div>
@@ -735,14 +718,6 @@ export class AstResult {
                   <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
                   <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
                     About this vulnerability
-                  </p>
-                </div>
-              </div>
-              <div class="remediation-links-package">
-                <div class="remediation-links-rows">
-                  <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
-                  <p class="remediation-links-text">
-                    Find best package version
                   </p>
                 </div>
               </div>

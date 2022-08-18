@@ -163,29 +163,39 @@
 		});
 	});
 
-	document.getElementById('select_severity').addEventListener('change', (e) => {
-		// @ts-ignore
-		selectSeverity=e.target.value;
+	let severityElement = document.getElementById('select_severity');
+	if (severityElement) { 
+		severityElement.addEventListener('change', (e) => {
+			// @ts-ignore
+			selectSeverity=e.target.value;
 		});
-
-	document.getElementById('select_state').addEventListener('change', (e) => {
-		// @ts-ignore
-		selectState=e.target.value;
+	}
+	
+	let selectElement = document.getElementById('select_state');
+	if (selectElement) {
+		selectElement.addEventListener('change', (e) => {
+			// @ts-ignore
+			selectState=e.target.value;
 		});
+	}
 	
-	
-	// Get the content from the comment box
-	document.getElementById('comment_box').addEventListener('change', (e) => {
-		// @ts-ignore
-		comment = e.target.value;
-	});
-	
-	document.getElementById('cx_codebashing').addEventListener('click', () => {
-		// @ts-ignore
-		vscode.postMessage({
-			command: 'codebashing',
+	let commentElement = document.getElementById('comment_box');
+	if (commentElement) {
+		document.getElementById('comment_box').addEventListener('change', (e) => {
+			// @ts-ignore
+			comment = e.target.value;
 		});
-	});
+	}
+	
+	let codebashingElement = document.getElementById('cx_codebashing');
+	if (codebashingElement) {
+		codebashingElement.addEventListener('click', () => {
+		// @ts-ignore
+			vscode.postMessage({
+				command: 'codebashing',
+			});
+		});
+	}
 
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
@@ -194,15 +204,19 @@
 			case 'loadChanges':
 				let changes =  message.changes;
 				let loaderContainer = document.getElementById('history-container-loader');
-				loaderContainer.style.display = 'none';
-				loaderContainer.innerHTML = infoChangeContainer(changes);
-				loaderContainer.style.display = 'block';
+				if (loaderContainer) {
+					loaderContainer.style.display = 'none';
+					loaderContainer.innerHTML = infoChangeContainer(changes);
+					loaderContainer.style.display = 'block';
+				}
 				break;
 			case 'loader':
 				// html do loader
 				loaderContainer = document.getElementById('history-container-loader');
-				loaderContainer.innerHTML = loader();
-				loaderContainer.style.display = 'block';
+				if (loaderContainer) {
+					loaderContainer.innerHTML = loader();
+					loaderContainer.style.display = 'block';
+				}
 				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
@@ -301,8 +315,8 @@
 		);
 	}
 
-	function updateDisplay(id,display){
+	function updateDisplay( id, display){
 		let element = document.getElementById(id);
 		element.style.display = display;
 	}
-}());
+})();
