@@ -34,7 +34,7 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import { filter, filterState, initializeFilters } from "./utils/filters";
 import { group } from "./utils/group";
 import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
-import { getAstConfiguration } from "./utils/ast";
+import { getAstConfiguration, getScanRunningStatus } from "./utils/ast";
 import { getCodebashingLink } from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
@@ -53,7 +53,13 @@ export async function activate(context: vscode.ExtensionContext) {
   
   const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  const createScanStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs,createScanStatusBarItem); }));
   
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async() =>{ getScanRunningStatus(context)}));
+  // vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, getScanRunningStatus(context) ? true : false);
+
+
   const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
    // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
@@ -286,7 +292,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.branchPick`, async () => { await branchPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanPick`, async () => { await scanPicker(context, logs); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.scanInput`, async () => { await scanInput(context, logs); }));
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs); }));
+  //context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs); }));
 
   // Visual feedback on wrapper errors
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.showError`, () => { vscode.window.showErrorMessage(getError(context)!);}));

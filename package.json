@@ -280,7 +280,7 @@
         "category" : "checkmarx-ast",
         "title": "Create Scan",
         "icon":"$(notebook-execute)",
-        "enablement": "ast-results.isScanRunning == false && ast-results.isValidCredentials"
+        "enablement": "!ast-results.isScanRunning"
       },
       {
         "command": "ast-results.projectPick",

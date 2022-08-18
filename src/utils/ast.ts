@@ -4,7 +4,7 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import {RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME} from "./constants";
+import {EXTENSION_NAME, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_RUNNING} from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
@@ -133,6 +133,15 @@ export function getAstConfiguration() {
 	config.baseAuthUri = baseAuthURI;
 	config.tenant = tenant;
 	return config;
+}
+
+export function getScanRunningStatus(context : vscode.ExtensionContext) {
+	const isScanRunning: any = context.workspaceState.get(SCAN_RUNNING);
+    if(isScanRunning && isScanRunning.name.toLowerCase() === "true"){
+						vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, true);
+    } else {
+						vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, false);
+    }
 }
 
 export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
