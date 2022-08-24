@@ -338,7 +338,7 @@
 }
 
 .remediation-container {
-	width: 35rem;
+	width: 28rem;
 	display: flex;
 	margin: 25px;
 	justify-content: center;
@@ -348,9 +348,12 @@
 }
 
 .remediation-icon {
-	width: 6rem;
+	width: 2rem;
 	height: 100%;
-	background: #F9AE4D;
+	background: rgba(249, 174, 77, 0.25);
+	border-bottom: 1px solid rgba(249, 174, 77, 0.4);
+	border-left: 1px solid rgba(249, 174, 77, 0.4);
+	border-top: 1px solid rgba(249, 174, 77, 0.4);
 	cursor:pointer;
 }
 
@@ -373,8 +376,11 @@
 	width: 14rem;
 	box-sizing: border-box;
 	height: 100%;
+	cursor: pointer;
 	background: rgba(249, 174, 77, 0.25);
-	border: 1px solid rgba(249, 174, 77, 0.4);
+	border-bottom: 1px solid rgba(249, 174, 77, 0.4);
+	border-right: 1px solid rgba(249, 174, 77, 0.4);
+	border-top: 1px solid rgba(249, 174, 77, 0.4);
 }
 
 .remediation-version-container {

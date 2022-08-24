@@ -682,7 +682,8 @@ export class AstResult {
   }
 
   private scaRemediation(result,scaUpgrade,scaUrl){
-      return `<div 
+      return `
+            <div 
               class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
                 "remediation-icon":
                 "remediation-icon-disabled"
@@ -717,7 +718,21 @@ export class AstResult {
                   class="remediation-upgrade" />
               </div>
             <div 
-            class="remediation-version">
+            class="remediation-version"
+            data-version="${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix===true ?
+              result.scaNode.recommendedVersion:
+              ""
+            }" 
+            data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+              result.scaNode.scaPackageData.dependencyPaths[0][0].name:
+              ""
+            }" 
+            data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+              result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
+              ""
+            }"
+            >
+            
               <div class="remediation-version-container">
                 <p class="remediation-description">
                   Upgrade To Version

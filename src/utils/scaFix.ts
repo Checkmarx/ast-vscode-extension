@@ -14,8 +14,8 @@ export async function applyScaFix(packages:string,packageFile:string,version:str
 			const filePackageObjectList =  vscode.workspace.workspaceFolders;
 			if(filePackageObjectList.length>0) {
 				await scaRemediation(path.join(filePackageObjectList[0].uri.fsPath,packageFile),packages,version);
-				logs.info("Package "+ packages + " successfully upgraded");
-				vscode.window.showInformationMessage("Package "+ packages + " successfully upgraded");
+				logs.info("Package "+ packages + " successfully upgraded to version " + version);
+				vscode.window.showInformationMessage("Package "+ packages + " successfully upgraded to version " + version);
 			}
 			else {
 				logs.error("No folder is opened. Please open the folder for the current project.");
