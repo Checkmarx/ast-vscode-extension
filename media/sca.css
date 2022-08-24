@@ -309,6 +309,7 @@
 	color: var(--vscode-foreground);
 	border-bottom: 1px solid;
 	border-bottom-color: rgba(64, 166, 255, 0.4);
+	cursor: default !important;
 }
 
 .cvss-button-not-selected {
@@ -328,6 +329,12 @@
 
 .info-cards-icons {
 	width: 1.5rem;
+}
+
+.upgrade-small-icon {
+	width: 0.7rem;
+	margin-left: 0.4rem;
+	cursor: pointer;
 }
 
 .remediation-container {
@@ -351,6 +358,14 @@
 	width: 6rem;
 	height: 100%;
 	background: #303035;
+	cursor:not-allowed;
+}
+
+.version{
+	cursor: pointer;
+}
+
+.version-disabled{
 	cursor:not-allowed;
 }
 

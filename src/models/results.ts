@@ -300,7 +300,7 @@ export class AstResult {
     return html;
   }
 
-  public scaLocations(){
+  public scaLocations(scaUpgrade){
     let html = "";
     this.scaNode.scaPackageData.dependencyPaths.forEach((pathArray: any,indexDependency: number)=>{
       if(indexDependency===0){
@@ -337,7 +337,24 @@ export class AstResult {
                     >
                       ${location}
                     </a>
-                    ${index+1<path.locations.length?"&nbsp;|&nbsp;":""}
+                    ${ this.scaNode.recommendedVersion && this.scaNode.scaPackageData.supportsQuickFix===true && this.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                      ` <img 
+                          alt="icon" 
+                          class="upgrade-small-icon" 
+                          src="${scaUpgrade}"
+                          data-version="${this.scaNode.recommendedVersion}" 
+                          data-package="${this.scaNode.scaPackageData.dependencyPaths[0][0].name}" 
+                          data-file="${location}"
+                        />`
+                      :""
+
+                    }
+                    ${index+1<path.locations.length?
+                      
+                      `&nbsp;| &nbsp;`
+                      :
+                      ""
+                    }
                 `;
         }); 
           }
@@ -382,8 +399,8 @@ export class AstResult {
     return html;
   }
 
-  public scaPackages(){
-    let html = this.scaLocations();
+  public scaPackages(scaUpgrade){
+    let html = this.scaLocations(scaUpgrade);
     this.scaNode.scaPackageData.dependencyPaths.forEach((dependencyArray: any,index:number)=>{
       if(index===0){
         html +=
@@ -472,7 +489,7 @@ export class AstResult {
           >  
           </button>
         </div>
-      ${result.scaPackages()}	
+      ${result.scaPackages(scaUpgrade)}	
     </div>`
           :
       `
@@ -666,11 +683,11 @@ export class AstResult {
 
   private scaRemediation(result,scaUpgrade,scaUrl){
       return `<div 
-              class=${result.scaNode.recommendedVersion?
+              class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
                 "remediation-icon":
                 "remediation-icon-disabled"
               }
-              data-version="${result.scaNode.recommendedVersion?
+              data-version="${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix===true ?
                 result.scaNode.recommendedVersion:
                 ""
               }" 
@@ -699,13 +716,30 @@ export class AstResult {
                   alt="icon" src="${scaUpgrade}" 
                   class="remediation-upgrade" />
               </div>
-            <div class="remediation-version">
+            <div 
+            class="remediation-version">
               <div class="remediation-version-container">
                 <p class="remediation-description">
                   Upgrade To Version
                 </p>
-                <p>
-                  ${result.scaNode.recommendedVersion?
+                <p
+                  class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
+                    "version":
+                    "version-disabled"
+                  }
+                  data-version="${result.scaNode.recommendedVersion?
+                  result.scaNode.recommendedVersion:
+                  ""
+                }" 
+                data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].name:
+                  ""
+                }" 
+                data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
+                  ""
+                }">
+                  ${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true?
                     result.scaNode.recommendedVersion:
                     "Not available"
                   }

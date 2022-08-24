@@ -11,14 +11,15 @@ export async function applyScaFix(packages:string,packageFile:string,version:str
 	else{
 		logs.info("Upgrading " + packages + " to version " + version);
 		try {
-
 			const filePackageObjectList =  vscode.workspace.workspaceFolders;
 			if(filePackageObjectList.length>0) {
 				await scaRemediation(path.join(filePackageObjectList[0].uri.fsPath,packageFile),packages,version);
 				logs.info("Package "+ packages + " successfully upgraded");
+				vscode.window.showInformationMessage("Package "+ packages + " successfully upgraded");
 			}
 			else {
 				logs.error("No folder is opened. Please open the folder for the current project.");
+				vscode.window.showErrorMessage("No folder is opened. Please open the folder for the current project.");
 			}
 		} catch (error) {
 			logs.error(error);
