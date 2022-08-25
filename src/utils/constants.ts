@@ -24,7 +24,6 @@ export const FILE_GROUP: string = "ast-results-groupByFile";
 
 export const PROJECT_ID_KEY: string = "ast-results-project-id";
 export const SCAN_CREATE_ID_KEY: string = "ast-results-scan-create-id";
-export const SCAN_RUNNING: string = "ast-results-is-scan-running";
 export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";
@@ -46,6 +45,8 @@ export const GRAPH_ITEM: string = "graph-item";
 
 export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
+
+export const SCAN_POLL_TIMEOUT = 30000 // MILLISECONDS
 
 export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
 export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];

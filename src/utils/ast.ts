@@ -4,11 +4,20 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import {EXTENSION_NAME, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_RUNNING} from "./constants";
+import {
+	BRANCH_ID_KEY,
+	EXTENSION_NAME,
+	RESULTS_FILE_EXTENSION,
+	RESULTS_FILE_NAME,
+	SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT
+} from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import {Logs} from "../models/logs";
+import {pollForScanResult} from "../create-scan-provider";
+import {Item} from "./globalState";
 
 export async function scanCreate(projectName: string, branchName: string, sourcePath: string) {
 	const config = getAstConfiguration();
@@ -26,7 +35,7 @@ export async function scanCreate(projectName: string, branchName: string, source
 	params.set(CxParamType.S,sourcePath);
 	params.set(CxParamType.BRANCH,branchName);
 	params.set(CxParamType.PROJECT_NAME,projectName);
-	params.set(CxParamType.ADDITIONAL_PARAMETERS,"--async");
+	params.set(CxParamType.ADDITIONAL_PARAMETERS,"--async --sast-incremental");
 	const scan = await cx.scanCreate(params);
 	return scan.payload[0];
 }
@@ -50,7 +59,7 @@ export async function getScan(scanId: string| undefined): Promise<CxScan | undef
 	if (!scanId) {return;}
 	const cx = new CxWrapper(config);
 	const scan = await cx.scanShow(scanId);
-	return scan.payload[0];
+	return scan.exitCode === 1 ? undefined: scan.payload[0];
 }
 
 export async function getProject(projectId: string| undefined): Promise<CxProject | undefined> {
@@ -135,13 +144,29 @@ export function getAstConfiguration() {
 	return config;
 }
 
-export function getScanRunningStatus(context : vscode.ExtensionContext) {
-	const isScanRunning: any = context.workspaceState.get(SCAN_RUNNING);
-    if(isScanRunning && isScanRunning.name.toLowerCase() === "true"){
-						vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, true);
-    } else {
-						vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, false);
-    }
+// export async function getScanRunningStatus(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
+// 	const scanId: Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+// 	if (scanId) {
+// 		vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, true);
+// 		await pollForScanResult(context,logs, createScanStatusBarItem);
+// 	} else {
+// 		vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, false);
+// 	}
+// }
+
+export async function getScanRunningStatus(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
+	
+	return new Promise<void>((resolve) => {
+		let i = setInterval(async () => {
+		const scanId: Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+			if (scanId.id ) {
+				await pollForScanResult(context,scanId.id,logs, createScanStatusBarItem);
+				resolve();
+			} else{
+				clearInterval(i);
+			}
+		},SCAN_POLL_TIMEOUT);
+	});
 }
 
 export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./ast_results_provider";
 import { AstResult } from "./models/results";
-import { getError} from "./utils/globalState";
+import { getError, Item} from "./utils/globalState";
 import {
   EXTENSION_NAME,
   HIGH_FILTER,
@@ -24,7 +24,8 @@ import {
   STATUS_GROUP,
   STATE_GROUP,
   QUERY_NAME_GROUP,
-  EXTENSION_FULL_NAME
+  EXTENSION_FULL_NAME,
+  SCAN_CREATE_ID_KEY
 } from "./utils/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -34,14 +35,16 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import { filter, filterState, initializeFilters } from "./utils/filters";
 import { group } from "./utils/group";
 import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
-import { getAstConfiguration, getScanRunningStatus } from "./utils/ast";
+import {getAstConfiguration, getScanRunningStatus} from "./utils/ast";
 import { getCodebashingLink } from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
 import { GitExtension } from "./types/git";
-import {createScan} from "./create-scan-provider";
+import {createScan, pollForScanResult} from "./create-scan-provider";
+import {StatusBarItem} from "vscode";
+
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -55,9 +58,12 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const createScanStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs,createScanStatusBarItem); }));
-  
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async() =>{ getScanRunningStatus(context)}));
-  // vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, getScanRunningStatus(context) ? true : false);
+
+    // register command to poll for scan result
+  // context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async () => { await pollForScanResult(context, logs,createScanStatusBarItem); }));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async () => { await getScanRunningStatus(context, logs,createScanStatusBarItem); }));
+    // execute the isScanRunning command to check if scan is running or not during startup
+  vscode.commands.executeCommand(`${EXTENSION_NAME}.isScanRunning`);
 
 
   const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
