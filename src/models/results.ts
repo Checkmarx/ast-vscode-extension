@@ -718,7 +718,10 @@ export class AstResult {
                   class="remediation-upgrade" />
               </div>
             <div 
-            class="remediation-version"
+            class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
+              "remediation-version":
+              "remediation-version-disabled"
+            }
             data-version="${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix===true ?
               result.scaNode.recommendedVersion:
               ""
@@ -754,7 +757,7 @@ export class AstResult {
                   result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
                   ""
                 }">
-                  ${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true?
+                  ${result.scaNode.recommendedVersion?
                     result.scaNode.recommendedVersion:
                     "Not available"
                   }

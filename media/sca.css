@@ -358,10 +358,14 @@
 }
 
 .remediation-icon-disabled {
-	width: 6rem;
+	width: 2rem;
+	z-index: 999999;
 	height: 100%;
 	background: #303035;
 	cursor:not-allowed;
+	border-bottom: 1px solid rgba(249, 174, 77, 0.4);
+	border-left: 1px solid rgba(249, 174, 77, 0.4);
+	border-top: 1px solid rgba(249, 174, 77, 0.4);
 }
 
 .version{
@@ -378,6 +382,17 @@
 	height: 100%;
 	cursor: pointer;
 	background: rgba(249, 174, 77, 0.25);
+	border-bottom: 1px solid rgba(249, 174, 77, 0.4);
+	border-right: 1px solid rgba(249, 174, 77, 0.4);
+	border-top: 1px solid rgba(249, 174, 77, 0.4);
+}
+
+.remediation-version-disabled {
+	width: 14rem;
+	box-sizing: border-box;
+	height: 100%;
+	cursor: not-allowed;
+	background: #303035;
 	border-bottom: 1px solid rgba(249, 174, 77, 0.4);
 	border-right: 1px solid rgba(249, 174, 77, 0.4);
 	border-top: 1px solid rgba(249, 174, 77, 0.4);

@@ -53,6 +53,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         startColumn: number,
         fieldLength: number
     ) {
+      // Needed because vscode.workspace.workspaceFolders migth be undefined if no workspace is opened
+      try {
         let fileOpened = false;
         const folder = vscode.workspace.workspaceFolders![0];
         // Needed because vscode uses zero based line number
@@ -77,6 +79,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         if (!fileOpened) {
             vscode.window.showErrorMessage(`File ${filePath} not found in workspace`);
         }
+      } catch (error) {
+        vscode.window.showErrorMessage(`File ${filePath} not found in workspace`);
+      }
+       
     }
 
     private openAndDecorateFile(decorationFilePath: vscode.Uri, startPosition: vscode.Position, endPosition: vscode.Position) {

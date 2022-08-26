@@ -87,24 +87,6 @@
 	});
 
 	// Apply the sca fix for a vulnerability
-	document.querySelectorAll('.version').forEach(element => {
-		element.addEventListener('click', (e) => {
-			console.log(target);
-			// @ts-ignore
-			var target = e.target;
-			vscode.postMessage({
-				command: 'scaFix',
-				// @ts-ignore
-				package:target.dataset.package,
-				// @ts-ignore
-				file:target.dataset.file,
-				// @ts-ignore
-				version:target.dataset.version
-			});
-		});
-	});
-
-	// Apply the sca fix for a vulnerability
 	document.querySelectorAll('.upgrade-small-icon').forEach(element => {
 		element.addEventListener('click', (e) => {
 			// @ts-ignore

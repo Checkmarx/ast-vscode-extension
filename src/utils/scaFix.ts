@@ -9,8 +9,8 @@ export async function applyScaFix(packages:string,packageFile:string,version:str
 		logs.info("No available upgrade for package " + packages);
 	}
 	else{
-		logs.info("Upgrading " + packages + " to version " + version);
 		try {
+			logs.info("Upgrading " + packages + " to version " + version);
 			const filePackageObjectList =  vscode.workspace.workspaceFolders;
 			if(filePackageObjectList.length>0) {
 				await scaRemediation(path.join(filePackageObjectList[0].uri.fsPath,packageFile),packages,version);
