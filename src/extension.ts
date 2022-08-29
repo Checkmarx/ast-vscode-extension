@@ -42,7 +42,7 @@ import { REFRESH_TREE } from "./utils/commands";
 import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
 import { GitExtension } from "./types/git";
-import {createScan, pollForScanResult} from "./create-scan-provider";
+import {cancelScan, createScan, pollForScanResult} from "./create-scan-provider";
 import {StatusBarItem} from "vscode";
 
 
@@ -59,8 +59,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const createScanStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { await createScan(context, logs,createScanStatusBarItem); }));
 
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.cancelScan`, async () => { await cancelScan(context, logs,createScanStatusBarItem); }));
+
     // register command to poll for scan result
-  // context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async () => { await pollForScanResult(context, logs,createScanStatusBarItem); }));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async () => { await getScanRunningStatus(context, logs,createScanStatusBarItem); }));
     // execute the isScanRunning command to check if scan is running or not during startup
   vscode.commands.executeCommand(`${EXTENSION_NAME}.isScanRunning`);

@@ -283,6 +283,13 @@
         "enablement": "!ast-results.isScanRunning"
       },
       {
+        "command":"ast-results.cancelScan",
+        "category" : "checkmarx-ast",
+        "title": "Cancel Scan",
+        "icon":"$(diff-review-close)",
+        "enablement": "ast-results.isScanRunning"
+      },
+      {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
         "title": "Select Project",
@@ -539,6 +546,11 @@
       "view/item/context": [
         {
           "command": "ast-results.createScan",
+          "group":"inline",
+          "when" : "viewItem == project-item"
+        },
+        {
+          "command": "ast-results.cancelScan",
           "group":"inline",
           "when" : "viewItem == project-item"
         },
