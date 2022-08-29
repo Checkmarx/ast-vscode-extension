@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "../ast_results_provider";
 import { Logs } from "../models/logs";
-import { REFRESH_TREE } from "./commands";
-import { IssueFilter } from "./constants";
+import { REFRESH_TREE } from "./common/commands";
+import { IssueFilter } from "./common/constants";
 import { updateFilter } from "./filters";
 
 

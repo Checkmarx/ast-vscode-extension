@@ -1,14 +1,19 @@
 import * as vscode from "vscode";
-import { KICS_REALTIME_FILE } from "./constants";
-import { Logs } from "../models/logs";
-import { get } from "./globalState";
-import { getResultsRealtime } from "./ast";
+import { KICS_REALTIME_FILE } from "../common/constants";
+import { Logs } from "../../models/logs";
+import { get } from "../common/globalState";
+import { getResultsRealtime } from "../ast/ast";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { KicsSummary } from "../models/kicsNode";
+import { KicsSummary } from "../../models/kicsNode";
+import { KicsDiagnostic } from "./kicsDiagnostic";
 
 // Logs the output of kics autoscan summary
-export function summaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
+export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
 	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+}
+
+export function remediationSummaryLogs(remediation:any,logs:Logs){
+	logs.info("Remediation summary:"+ JSON.stringify(remediation, null, 2).replaceAll("{","").replaceAll("}",""));
 }
 
 // Create the auto kics scan
@@ -27,30 +32,28 @@ export async function createKicsScan(file: string | undefined){
 export function applyKicsDiagnostic(kicsResults : CxKicsRealTime, uri: vscode.Uri, diagnosticCollection: vscode.DiagnosticCollection) {
 	diagnosticCollection.clear();
 
-	const kicsDiagnotic: vscode.Diagnostic[] = [];
-
+	const kicsDiagnostic: KicsDiagnostic[] = [];
 	for (const kicsResult of kicsResults.results) {
 		const file = kicsResult.files[0];
-
 		const startPosition = new vscode.Position(file.line-1, 0);
 		const endPosition = new vscode.Position(file.line-1, 999);
-
-		kicsDiagnotic.push({
-            message: `${kicsResult.query_name} (${kicsResult.severity.charAt(0) + kicsResult.severity.slice(1).toLowerCase()})
- "${kicsResult.description}"
+	   	kicsDiagnostic.push({
+			message: `${kicsResult.query_name} (${kicsResult.severity.charAt(0) + kicsResult.severity.slice(1).toLowerCase()})
+"${kicsResult.description}"
 Value: 
  ${kicsResult.query_name}
 Recomended fix: 
  ${file.expected_value}
-`			,
-			range: new vscode.Range(startPosition, endPosition),
-			severity: getSeverityCode(kicsResult.severity) ,
+	   `			,
+			kicsResult: kicsResult,
+			range:new vscode.Range(startPosition, endPosition),
+			severity:getSeverityCode(kicsResult.severity),
 			source: 'KICS ',
 			code: {value: `${kicsResult.query_name}`, target: vscode.Uri.parse(kicsResult.query_url)}
-        });
+	   });
 	}
 	
-	diagnosticCollection.set(uri, kicsDiagnotic);
+	diagnosticCollection.set(uri, kicsDiagnostic);
 }
 
 // Get the correct Diagnostic to apply in problems
