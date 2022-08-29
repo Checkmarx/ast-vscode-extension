@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
 import { get, updateError } from "./common/globalState";
-import { getBranches, getProject, getProjectList, getResults, getScan, getScans, triageShow } from "./ast/ast";
+import { getBranches, getProject, getProjectList, getResults, getScan, getScans, learnMore, triageShow } from "./ast/ast";
 import { getBfl } from './sast/bfl';
 import { SHOW_ERROR } from './common/commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
@@ -131,7 +131,16 @@ export async function getChanges(logs: Logs, context: vscode.ExtensionContext, r
 		detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
 	}).catch((err) => {
 		detailsPanel?.webview.postMessage({ command: "loadChanges", changes: []});
-		logs.log("ERROR", err);
+		logs.error(err);
+	});
+}
+
+export async function getLearnMore(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
+	learnMore(result.queryId).then((learn) => {
+		detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn });
+	}).catch((err) => {
+		detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn: []});
+		logs.error( err);
 	});
 }
 

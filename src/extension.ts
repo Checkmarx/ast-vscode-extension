@@ -38,7 +38,7 @@ import { getAstConfiguration } from "./utils/ast/ast";
 import { getCodebashingLink } from "./utils/codebashing/codebashing";
 import { triageSubmit} from "./utils/sast/triage";
 import { REFRESH_TREE } from "./utils/common/commands";
-import { getChanges } from "./utils/utils";
+import { getChanges, getLearnMore } from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { GitExtension } from "./types/git";
 
@@ -151,6 +151,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Start to load the changes tab, gets called everytime a new details webview is opened
       getChanges(logs,context,result,detailsPanel);
+      getLearnMore(logs,context,result,detailsPanel);
       // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
       //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
       // Comunication between webview and extension

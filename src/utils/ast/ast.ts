@@ -216,3 +216,20 @@ export async function kicsRemediation(resultsFile:string, kicsFile:string,engine
 	return [kics,process];
 
 }
+
+export async function learnMore(queryID: string) : Promise<any[] | undefined>{
+	let r=[];
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	const cx = new CxWrapper(config);
+	const scans = await cx.learnMore(queryID);
+	if(scans.payload && scans.exitCode===0){
+		r = scans.payload;
+	}
+	else{
+		throw new Error(scans.status);
+	}
+	return r;
+}

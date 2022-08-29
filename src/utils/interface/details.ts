@@ -117,8 +117,18 @@ export class Details {
 
 	detailsTab() {
 		return (
-			`<p>
-			</p>
+			`
+			<div>
+				<div id="learn-container-loader">
+					<center>
+						<p class="history-container-loader">
+							Loading changes
+						</p>
+						<div class="loader">
+						</div>
+					</center>
+				</div>
+			</div>
 			`
 		);
 	}

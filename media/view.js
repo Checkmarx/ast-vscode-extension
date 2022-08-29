@@ -79,6 +79,14 @@
 				loaderContainer.innerHTML = loader();
 				loaderContainer.style.display = 'block';
 				break;
+			case 'loadLearnMore':
+				let learn =  message.learn;
+				console.log(learn);
+				let learnLoaderContainer = document.getElementById('learn-container-loader');
+				learnLoaderContainer.style.display = 'none';
+				learnLoaderContainer.innerHTML = infoLearnContainer(learn);
+				learnLoaderContainer.style.display = 'block';
+				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
 			// 	let index =  message.index.index;
@@ -121,6 +129,42 @@
 		html+="</body>";
 		return html;
 	}
+
+	// Learn more content
+	function infoLearnContainer(learnArray){
+		let html = "<div>";
+		if(learnArray.length>0){
+			for (let learn of learnArray) {
+				html+=riskSection(learn.risk);
+				html+=causeSection(learn.cause);
+				html+=recommendationSection(learn.generalRecommendations);
+			}
+		}
+		else{
+			html+=
+				`
+				<div class="history-container">
+					<p>
+						No information available to display. 
+					</p>
+				</div>`;
+		}
+		html += "</div>";
+		return html;
+	}
+
+	function riskSection(risk){
+		return `<div class="learn-section"><p class="learn-header">Risk</p><p>${risk}</p></div>`;
+	}
+
+	function causeSection(cause){
+		return `<div class="learn-section"><p class="learn-header">Cause</p><p>${cause}</p></div>`;
+	}
+
+	function recommendationSection(recommendations){
+		return `<div class="learn-section"><p class="learn-header">General Recommendations</p><p>&nbsp${recommendations.replaceAll(/\r\n/g, '<br /> &nbsp')}</p></div>`;
+	}
+
 
 	// Individual changes
 	function infoChanges(change){		
