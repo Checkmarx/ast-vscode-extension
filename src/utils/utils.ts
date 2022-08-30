@@ -135,15 +135,6 @@ export async function getChanges(logs: Logs, context: vscode.ExtensionContext, r
 	});
 }
 
-export async function getLearnMore(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
-	learnMore(result.queryId).then((learn) => {
-		detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn });
-	}).catch((err) => {
-		detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn: []});
-		logs.error( err);
-	});
-}
-
 export async function getResultsBfl(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
 	let scanId = get(context, SCAN_ID_KEY)?.id;
 	const cxPath = vscode.Uri.joinPath(context.extensionUri,  path.join("media", "icon.png"));

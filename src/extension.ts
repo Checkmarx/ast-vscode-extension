@@ -34,13 +34,14 @@ import { branchPicker, projectPicker, scanInput, scanPicker } from "./pickers";
 import { filter, filterState, initializeFilters } from "./utils/filters";
 import { group } from "./utils/group";
 import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
-import { getAstConfiguration } from "./utils/ast/ast";
 import { getCodebashingLink } from "./utils/codebashing/codebashing";
 import { triageSubmit} from "./utils/sast/triage";
 import { REFRESH_TREE } from "./utils/common/commands";
-import { getChanges, getLearnMore } from "./utils/utils";
+import { getChanges} from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { GitExtension } from "./types/git";
+import { getLearnMore } from "./utils/sast/learnMore";
+import { getAstConfiguration } from "./utils/ast/ast";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible

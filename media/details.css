@@ -194,6 +194,7 @@ input + label { display: inline-block }
 input ~ .tab { display: none }
 #general-tab:checked ~ .tab.general,
 #learn-tab:checked ~ .tab.learn,
+#code-tab:checked ~ .tab.code,
 #changes-tab:checked ~ .tab.changes
 { display: block; }
 
@@ -367,4 +368,10 @@ input ~ .tab {
 
 .learn-section{
   margin-bottom: 10px;
+}
+
+.pre-code{
+  white-space:pre-wrap;
+  background:var(--vscode-input-background);
+  padding: 0.1rem;
 }

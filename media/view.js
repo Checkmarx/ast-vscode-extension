@@ -81,11 +81,14 @@
 				break;
 			case 'loadLearnMore':
 				let learn =  message.learn;
-				console.log(learn);
 				let learnLoaderContainer = document.getElementById('learn-container-loader');
 				learnLoaderContainer.style.display = 'none';
 				learnLoaderContainer.innerHTML = infoLearnContainer(learn);
 				learnLoaderContainer.style.display = 'block';
+				let codeLoaderContainer = document.getElementById('tab-code');
+				codeLoaderContainer.style.display = 'none';
+				codeLoaderContainer.innerHTML = infoCodeContainer(learn);
+				codeLoaderContainer.style.display = 'block';
 				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
@@ -127,6 +130,39 @@
 				</div>`;
 		}
 		html+="</body>";
+		return html;
+	}
+
+	// Code samples content
+	function infoCodeContainer(learnArray){
+		let html = "<div>";
+		if(learnArray.length>0){
+				
+					for (let learn of learnArray) {
+						for (let code of learn.samples) {
+							html+=`
+							<div class="learn-section">
+								<p>${code.title} using ${code.progLanguage}</p>
+								<pre class="pre-code">
+									<code id="code">
+									${code.code.replaceAll("<","&lt;").replaceAll(">","&gt")}
+									</code>
+								</pre>
+							</div>
+							`;
+							
+						}
+					}
+		}
+		else{
+			html+=
+				`
+					<p>
+						No code samples available to display. 
+					</p>
+				`;
+		}
+		html += "</div>";
 		return html;
 	}
 
