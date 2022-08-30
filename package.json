@@ -546,17 +546,17 @@
       "view/item/context": [
         {
           "command": "ast-results.createScan",
-          "group":"inline",
+          "group":"inline@1",
           "when" : "viewItem == project-item"
         },
         {
           "command": "ast-results.cancelScan",
-          "group":"inline",
+          "group":"inline@2",
           "when" : "viewItem == project-item"
         },
         {
           "command": "ast-results.projectPick",
-          "group": "inline",
+          "group": "inline@3",
           "when": "viewItem == project-item"
         },
         {

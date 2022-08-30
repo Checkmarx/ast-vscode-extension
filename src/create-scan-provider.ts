@@ -1,12 +1,14 @@
 import { Logs } from "./models/logs";
 import * as vscode from "vscode";
 import * as fs from "fs";
-import {getResultsFilePath} from "./utils/utils";
-import {BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_CREATE_ID_KEY} from "./utils/constants";
+import {getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
+import {BRANCH_ID_KEY, PROJECT_ID_KEY, SCAN_CREATE_ID_KEY, SCAN_ID_KEY, SCAN_LABEL} from "./utils/constants";
 import { Item, update } from "./utils/globalState";
 import { AstResult } from "./models/results";
-import {getScan, scanCreate} from "./utils/ast";
+import {getScan, scanCancel, scanCreate} from "./utils/ast";
 import {GitExtension} from "./types/git";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import { REFRESH_TREE } from "./utils/commands";
 
 const SCAN_WAITING = "$(sync~spin) Checkmarx - waiting for scan to complete";
 const SCAN_CREATED = "$(check) Checkmarx Scan";
@@ -38,6 +40,7 @@ export async function pollForScanResult(context: vscode.ExtensionContext,scanId:
             await vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, false);
             update(context, SCAN_CREATE_ID_KEY, {id:undefined,name:""});
             updateStatusBarItem(SCAN_CREATED, false, statusBarItem);
+            await loadLatestResults(context,scanResult,logs);
         }
 }
 
@@ -48,21 +51,25 @@ async function createScanForProject(context: vscode.ExtensionContext, logs: Logs
   let workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info("Initiating scan for workspace Folder: " +	workspaceFolder.uri.fsPath);
   const scanCreateResponse = await scanCreate(projectName, branch,workspaceFolder.uri.fsPath);
-  logs.info("Scan created successfully. ID: " + scanCreateResponse.id);
+  logs.info("Scan created with ID: " + scanCreateResponse.id);
   update(context, SCAN_CREATE_ID_KEY, { id: scanCreateResponse.id, name: scanCreateResponse.id });
   await vscode.commands.executeCommand(`ast-results.isScanRunning`);
 }
 
 export async function cancelScan(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
   logs.info("Triggering the cancel scan flow");
+  let scan:Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+  if(scan && scan.id){
+    const response = await scanCancel(scan.id);
+    logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response)
+    await vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, false);
+  }
 }
-
 
 
 
 export async function createScan(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
   // step 1 -> check if the files in results are there in the current workspaceFolders
-  await vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, true);
   let filesExistInResults =  await findFilesInWorkspaceAndResults();
   let shouldCreateScan: boolean = false
     let branchInWorkspace = getBranchFromWorkspace();
@@ -132,3 +139,12 @@ const filenames = [];
    });
    return filenames;
 }
+async function loadLatestResults(context: vscode.ExtensionContext,scan: CxScan,logs: Logs) {
+  if(scan.status.toLowerCase() === "completed"){
+    update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
+    await getResultsWithProgress(logs, scan.id);
+    await vscode.commands.executeCommand(REFRESH_TREE);
+  }
+}
+
+

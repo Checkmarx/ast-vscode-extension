@@ -40,6 +40,19 @@ export async function scanCreate(projectName: string, branchName: string, source
 	return scan.payload[0];
 }
 
+export async function scanCancel(scanId: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!scanId){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	const scan = await cx.scanCancel(scanId);
+	return scan.exitCode === 0 ;
+}
+
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -144,15 +157,6 @@ export function getAstConfiguration() {
 	return config;
 }
 
-// export async function getScanRunningStatus(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
-// 	const scanId: Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
-// 	if (scanId) {
-// 		vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, true);
-// 		await pollForScanResult(context,logs, createScanStatusBarItem);
-// 	} else {
-// 		vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanRunning`, false);
-// 	}
-// }
 
 export async function getScanRunningStatus(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
 	
