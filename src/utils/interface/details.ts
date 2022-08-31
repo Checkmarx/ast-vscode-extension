@@ -167,12 +167,14 @@ export class Details {
 			<div class="tab changes">
 				${tab3Content}
 			</div>
-			<div class="tab code" id="tab-code">
-			<pre class="pre-code">
-				<code id="code">
-					No code sample
-				</code>
-			</pre>
+			<div class="tab code">
+				<div id="tab-code">
+					<pre class="pre-code">
+						<code id="code">
+							No code sample
+						</code>
+					</pre>
+				</div>
 			</div>`
 		);
 	}
