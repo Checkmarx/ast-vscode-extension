@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { AstResult } from "../../models/results";
-import { getResultsFilePath } from "../utils";
+import { getResultsFilePath,getChanges } from "../utils";
 import {triageUpdate} from "../ast/ast";
 import { get } from "../common/globalState";
 import * as fs from "fs";
@@ -80,7 +80,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
   }
 
   // Case there is any update to be performed in the webview
-  if (data.stateSelection.length > 0 || data.severitySelection.length > 0) {
+  if (data.stateSelection.length > 0 || data.severitySelection.length > 0 || data.comment.length > 0 ) {
     detailsDetachedView!.setResult(result);
     detailsDetachedView.setLoad(false);
     // Update webview html
@@ -91,6 +91,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
     if (r) {
       // Reload results tree to apply the changes
       await vscode.commands.executeCommand(REFRESH_TREE);
+      getChanges(logs,context,result,detailsPanel);
       // Information message
       vscode.window.showInformationMessage(
         "Feedback submited successfully! Results refreshed."
