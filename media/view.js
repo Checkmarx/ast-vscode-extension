@@ -135,31 +135,30 @@
 
 	// Code samples content
 	function infoCodeContainer(learnArray){
-		let html = '<div >';
+		let html = '<div>';
 		if(learnArray.length>0){
-				
-					for (let learn of learnArray) {
-						for (let code of learn.samples) {
-							html+=`
+			for (let learn of learnArray) {
+				for (let code of learn.samples) {
+					html+=`
 							<div class="learn-section">
 								<p>${code.title} using ${code.progLanguage}</p>
 								<pre class="pre-code">
 									<code id="code">
-									${code.code.replaceAll("<","&lt;").replaceAll(">","&gt")}
+										${code.code.replaceAll("<","&lt;").replaceAll(">","&gt")}
 									</code>
 								</pre>
 							</div>
 							`;
 							
-						}
-					}
+				}
+			}
 		}
 		else{
 			html+=
 				`
-					<p>
-						No code samples available to display. 
-					</p>
+				<p>
+					No code samples available to display. 
+				</p>
 				`;
 		}
 		html += "</div>";
