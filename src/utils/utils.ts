@@ -155,14 +155,14 @@ export async function getResultsBfl(logs: Logs, context: vscode.ExtensionContext
 
 export function isKicsFile(e: vscode.TextDocument): boolean {
 	let r = true;
-	if (!(e.fileName.endsWith('.tf') || e.fileName.endsWith('.yml') || e.fileName.endsWith('.yaml') || e.fileName.endsWith('.json') || e.fileName.match('Dockerfile') || e.fileName.endsWith('.auto.tfvars') || e.fileName.endsWith('.terraform.tfvars') || e.fileName.endsWith('.proto') || e.fileName.endsWith('.dockerfile') || e.fileName.includes("settings.json"))) {
+	if (!(e.fileName.endsWith('.tf') || e.fileName.endsWith('.yml') || e.fileName.endsWith('.yaml') || e.fileName.endsWith('.json') || e.fileName.match('Dockerfile') || e.fileName.endsWith('.auto.tfvars') || e.fileName.endsWith('.terraform.tfvars') || e.fileName.endsWith('.proto') || e.fileName.endsWith('.dockerfile'))) {
 		r = false;
 	}
 	return r;
 };
 
 export function isSystemFile(e: vscode.TextDocument): boolean {
-	return (e.uri.scheme.toString() !== "git" && !e.fileName.includes("package.json"));
+	return (e.uri.scheme.toString() !== "git" && !e.fileName.includes("package.json") && !e.fileName.includes("settings.json"));
 };
 
 
