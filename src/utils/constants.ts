@@ -46,7 +46,7 @@ export const GRAPH_ITEM: string = "graph-item";
 export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
 
-export const SCAN_POLL_TIMEOUT = 30000 // MILLISECONDS
+export const SCAN_POLL_TIMEOUT = 15000 // MILLISECONDS
 
 export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
 export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];
@@ -92,3 +92,7 @@ export const AST_ERROR_CODEBASHING_NO_LESSON: number = 4;
 export const KICS_REALTIME_FILE = "CURRENT_KICS_FILE";
 export const PROCESS_OBJECT = "PROCESS_OBJECT";
 export const PROCESS_OBJECT_KEY = "cli-process";
+
+export const SCAN_CREATE = "$(sync~spin) Scan running...";
+export const SCAN_WAITING = "$(sync~spin) Waiting for scan to complete";
+export const SCAN_CANCEL = "$(sync~spin) Canceling Scan";

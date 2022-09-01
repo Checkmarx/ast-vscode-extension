@@ -5,11 +5,8 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import {
-	BRANCH_ID_KEY,
-	EXTENSION_NAME,
 	RESULTS_FILE_EXTENSION,
-	RESULTS_FILE_NAME,
-	SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT
+	RESULTS_FILE_NAME, SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT, SCAN_WAITING
 } from "./constants";
 import { getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
@@ -157,20 +154,38 @@ export function getAstConfiguration() {
 	return config;
 }
 
+export function isScanRunning(context: vscode.ExtensionContext, createScanStatusBarItem: vscode.StatusBarItem) {
+	const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+	if(scanId && scanId.id){
+		vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, true);
+		updateStatusBarItem(SCAN_WAITING, true, createScanStatusBarItem);
+		return true;
+	} else {
+		vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, false);
+		updateStatusBarItem(SCAN_WAITING, false, createScanStatusBarItem);
+		return false;
+	}
+}
 
-export async function getScanRunningStatus(context: vscode.ExtensionContext, logs: Logs, createScanStatusBarItem: vscode.StatusBarItem) {
-	
+export async function pollForScan(context: vscode.ExtensionContext,logs: Logs, createScanStatusBarItem: vscode.StatusBarItem){
 	return new Promise<void>((resolve) => {
 		let i = setInterval(async () => {
-		const scanId: Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
-			if (scanId.id ) {
-				await pollForScanResult(context,scanId.id,logs, createScanStatusBarItem);
+			let scanRunning = isScanRunning(context, createScanStatusBarItem);
+			if (scanRunning) {
+				const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+				await pollForScanResult(context,scanId.id,logs);
 				resolve();
 			} else{
 				clearInterval(i);
 			}
 		},SCAN_POLL_TIMEOUT);
 	});
+}
+
+
+export  function updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem){
+	statusBarItem.text = text;
+	show? statusBarItem.show() : statusBarItem.hide();
 }
 
 export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
