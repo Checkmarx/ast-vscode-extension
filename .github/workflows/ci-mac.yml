@@ -30,7 +30,7 @@ jobs:
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run:  npm install && npm test
       - name: Upload screenshots
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with: 
           name: screenshots

@@ -34,7 +34,7 @@ jobs:
           npm test
       - name: Upload test artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with: 
           name: artifacts-${{ matrix.os }}
           path: |
