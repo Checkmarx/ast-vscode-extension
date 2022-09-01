@@ -32,4 +32,11 @@ jobs:
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 & 
           npm test
-          
+      - name: Upload test artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with: 
+          name: artifacts-${{ matrix.os }}
+          path: |
+            test-resources/screenshots/*.png
+          retention-days: 2
