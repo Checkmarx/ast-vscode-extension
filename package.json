@@ -783,7 +783,7 @@
     "chai": "4.3.6",
     "eslint": "^8.23.0",
     "mocha": "10.0.0",
-    "typescript": "^4.7.4",
+    "typescript": "^4.8.2",
     "vsce": "^2.11.0",
     "vscode-extension-tester": "4.4.1",
     "vscode-extension-tester-locators": "^2.0.0",
