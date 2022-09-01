@@ -115,6 +115,27 @@ export class Details {
 		);
 	}
 
+	scaView(severityPath,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,scaUpgrade,scaUrl: vscode.Uri) {
+		return (
+			`
+			<body class="body-sca">
+			<div class="header">
+				<img alt="icon" class="header-severity" src="${severityPath}" />
+				<p class="header-title">
+					${this.result.label}
+				</p>
+				<p class="header-name">
+					${this.result.scaNode.packageIdentifier?this.result.scaNode.packageIdentifier:""}
+				</p>
+			</div>
+			<div class="content">
+				${this.result.scaContent(this.result,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability)}
+			</div>
+		</body>			
+		`
+		);
+	}
+
 	detailsTab() {
 		return (
 			`<p>

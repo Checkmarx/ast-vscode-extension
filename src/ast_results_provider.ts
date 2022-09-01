@@ -32,7 +32,7 @@ import { REFRESH_TREE } from "./utils/common/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity];
+  public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity,IssueFilter.packageIdentifier];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
   public stateLevel: StateLevel[] = [
@@ -160,8 +160,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
     const tree = new TreeItem(this.scan ?? "", undefined, undefined, []);
-    list.forEach((element) =>
-      this.groupTree(element, folder, map, groups, tree)
+    list.forEach((element:any) =>{
+      this.groupTree(element, folder, map, groups, tree);
+    }
     );
 
     this.diagnosticCollection.clear();
@@ -192,6 +193,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         this.issueLevel.includes(obj.getSeverity()) &&
         this.stateLevel.includes(obj.getState()!)
       ) {
+        if(obj.type==="kics"){
+          console.log("debug");
+        }
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,

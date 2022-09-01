@@ -38,29 +38,200 @@
 		});
 	});
 
-	document.getElementById('select_severity').addEventListener('change', (e) => {
-		// @ts-ignore
-		selectSeverity=e.target.value;
+	// Open external link for more info
+	document.querySelectorAll('.remediation-links-text').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			vscode.postMessage({
+				command: 'references',
+				// @ts-ignore
+				link:e.target.id
+			});
 		});
+	});
 
-	document.getElementById('select_state').addEventListener('change', (e) => {
-		// @ts-ignore
-		selectState=e.target.value;
+	// Apply the sca fix for a vulnerability
+	document.querySelectorAll('.remediation-icon').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			console.log(target);
+			vscode.postMessage({
+				command: 'scaFix',
+				// @ts-ignore
+				package:target.dataset.package,
+				// @ts-ignore
+				file:target.dataset.file,
+				// @ts-ignore
+				version:target.dataset.version
+			});
 		});
-	
-	
-	// Get the content from the comment box
-	document.getElementById('comment_box').addEventListener('change', (e) => {
-		// @ts-ignore
-		comment = e.target.value;
+	});
+
+	// Apply the sca fix for a vulnerability
+	document.querySelectorAll('.remediation-version').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			console.log(target);
+			vscode.postMessage({
+				command: 'scaFix',
+				// @ts-ignore
+				package:target.dataset.package,
+				// @ts-ignore
+				file:target.dataset.file,
+				// @ts-ignore
+				version:target.dataset.version
+			});
+		});
+	});
+
+	// Apply the sca fix for a vulnerability
+	document.querySelectorAll('.upgrade-small-icon').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			console.log(target);
+			vscode.postMessage({
+				command: 'scaFix',
+				// @ts-ignore
+				package:target.dataset.package,
+				// @ts-ignore
+				file:target.dataset.file,
+				// @ts-ignore
+				version:target.dataset.version
+			});
+		});
 	});
 	
-	document.getElementById('cx_codebashing').addEventListener('click', () => {
-		// @ts-ignore
-		vscode.postMessage({
-			command: 'codebashing',
+	// Open external link for referencess
+	document.querySelectorAll('.references').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			vscode.postMessage({
+				command: 'references',
+				// @ts-ignore
+				link:e.target.id
+			});
 		});
 	});
+	
+	// Activated when clicked in package next
+	document.querySelectorAll('.package-next').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			// @ts-ignore
+			var current =  target.dataset.current;
+			// @ts-ignore
+			var total = target.dataset.total;
+			var next = parseInt(current, 10)+1;
+			if(next+1 > parseInt(total, 10)){
+				// @ts-ignore
+				e.target.disabled=true;
+			}
+			// Change the displayed tables for packages
+			let currentPage = document.getElementById('package-table-'+current);
+			currentPage.style.display = 'none';
+			let nextPage = document.getElementById('package-table-'+next);
+			nextPage.style.display = '';
+			// Change the displayed tables for locations
+			let currentPageLocations = document.getElementById('locations-table-'+current);
+			currentPageLocations.style.display = 'none';
+			let nextPageLocations = document.getElementById('locations-table-'+next);
+			nextPageLocations.style.display = '';
+			// Update in the next button
+			// @ts-ignore
+			target.dataset.current = next;
+			let backButton = document.getElementById('package-back');
+			// @ts-ignore
+			backButton.disabled=false;
+			// @ts-ignore
+			backButton.dataset.current=next;
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// Update the counter
+			let counter = document.getElementById('package-counter');
+			counter.innerHTML = "<p>"+(parseInt(current, 10)+1)+"/"+total+"</p>";
+		});
+	});
+	
+	// Activated when clicked in package back
+	document.querySelectorAll('.package-back').forEach(element => {
+		element.addEventListener('click', (e) => {
+			// @ts-ignore
+			var target = e.target;
+			// @ts-ignore
+			var current =  target.dataset.current;
+			// @ts-ignore
+			var total = target.dataset.total;
+			var next = parseInt(current, 10)-1;
+			// @ts-ignore
+			let nextButton = document.getElementById('package-next');
+			// @ts-ignore
+			nextButton.disabled=false;
+			if(parseInt(current, 10)-2 === 0){
+				// @ts-ignore
+				e.target.disabled=true;
+			}
+			// Change the displayed tables for packages
+			let currentPage = document.getElementById('package-table-'+current);
+			currentPage.style.display = 'none';
+			let nextPage = document.getElementById('package-table-'+next);
+			nextPage.style.display = '';
+			// Change the displayed tables for locations
+			let currentPageLocation = document.getElementById('locations-table-'+current);
+			currentPageLocation.style.display = 'none';
+			let nextPageLocation = document.getElementById('locations-table-'+next);
+			nextPageLocation.style.display = '';
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// @ts-ignore
+			nextButton.dataset.current=next;
+			// Update in the back button
+			// @ts-ignore
+			target.dataset.current = next;
+			// Update the counter
+			let counter = document.getElementById('package-counter');
+			counter.innerHTML = "<p>"+(parseInt(current, 10)-1)+"/"+total+"</p>";
+		});
+	});
+
+	let severityElement = document.getElementById('select_severity');
+	if (severityElement) { 
+		severityElement.addEventListener('change', (e) => {
+			// @ts-ignore
+			selectSeverity=e.target.value;
+		});
+	}
+	
+	let selectElement = document.getElementById('select_state');
+	if (selectElement) {
+		selectElement.addEventListener('change', (e) => {
+			// @ts-ignore
+			selectState=e.target.value;
+		});
+	}
+	
+	let commentElement = document.getElementById('comment_box');
+	if (commentElement) {
+		document.getElementById('comment_box').addEventListener('change', (e) => {
+			// @ts-ignore
+			comment = e.target.value;
+		});
+	}
+	
+	let codebashingElement = document.getElementById('cx_codebashing');
+	if (codebashingElement) {
+		codebashingElement.addEventListener('click', () => {
+		// @ts-ignore
+			vscode.postMessage({
+				command: 'codebashing',
+			});
+		});
+	}
 
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
@@ -69,15 +240,19 @@
 			case 'loadChanges':
 				let changes =  message.changes;
 				let loaderContainer = document.getElementById('history-container-loader');
-				loaderContainer.style.display = 'none';
-				loaderContainer.innerHTML = infoChangeContainer(changes);
-				loaderContainer.style.display = 'block';
+				if (loaderContainer) {
+					loaderContainer.style.display = 'none';
+					loaderContainer.innerHTML = infoChangeContainer(changes);
+					loaderContainer.style.display = 'block';
+				}
 				break;
 			case 'loader':
 				// html do loader
 				loaderContainer = document.getElementById('history-container-loader');
-				loaderContainer.innerHTML = loader();
-				loaderContainer.style.display = 'block';
+				if (loaderContainer) {
+					loaderContainer.innerHTML = loader();
+					loaderContainer.style.display = 'block';
+				}
 				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
@@ -176,8 +351,8 @@
 		);
 	}
 
-	function updateDisplay(id,display){
+	function updateDisplay( id, display){
 		let element = document.getElementById(id);
 		element.style.display = display;
 	}
-}());
+})();

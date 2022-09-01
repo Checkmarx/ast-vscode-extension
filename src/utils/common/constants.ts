@@ -54,13 +54,13 @@ export const SCA: string = "sca";
 
 export enum IssueFilter {
 	fileName = "fileName",
-	location = "kicsNode?.data.filename",
 	severity = "severity",
 	status = "status",
 	language = "language",
 	state = "state",
-	type="type",
-	queryName = "queryName"
+	type = "type",
+	queryName = "queryName",
+	packageIdentifier = "scaNode.packageIdentifier"
   }
   
 export enum IssueLevel {
