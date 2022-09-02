@@ -197,7 +197,7 @@
 	}
 
 	function recommendationSection(recommendations){
-		return `<div class="learn-section"><p class="learn-header">General Recommendations</p><p>&nbsp${recommendations.replaceAll(/\r\n/g, '<br /> &nbsp')}</p></div>`;
+		return `<div class="learn-section"><p class="learn-header">General Recommendations</p><span class="code-sample">${recommendations}</span></div>`;
 	}
 
 

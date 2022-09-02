@@ -122,7 +122,7 @@ export class Details {
 				<div id="learn-container-loader">
 					<center>
 						<p class="history-container-loader">
-							Loading changes
+							Loading more details
 						</p>
 						<div class="loader">
 						</div>
