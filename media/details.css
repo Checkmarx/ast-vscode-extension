@@ -194,6 +194,7 @@ input + label { display: inline-block }
 input ~ .tab { display: none }
 #general-tab:checked ~ .tab.general,
 #learn-tab:checked ~ .tab.learn,
+#code-tab:checked ~ .tab.code,
 #changes-tab:checked ~ .tab.changes
 { display: block; }
 
@@ -359,4 +360,22 @@ input ~ .tab {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.learn-header{
+  font-weight: bold;
+}
+
+.learn-section{
+  margin-bottom: 10px;
+}
+
+.pre-code{
+  white-space:pre-wrap;
+  background:var(--vscode-input-background);
+  padding: 0.1rem;
+}
+
+.code-sample{
+  white-space: pre-wrap;
 }

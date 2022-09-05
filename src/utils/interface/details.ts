@@ -138,14 +138,24 @@ export class Details {
 
 	detailsTab() {
 		return (
-			`<p>
-			</p>
+			`
+			<div>
+				<div id="learn-container-loader">
+					<center>
+						<p class="history-container-loader">
+							Loading more details
+						</p>
+						<div class="loader">
+						</div>
+					</center>
+				</div>
+			</div>
 			`
 		);
 	}
 
 	// Generic tab component
-	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string) {
+	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string,tab4Label: string,tab5Content:string) {
 		return (
 			`<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
@@ -154,6 +164,10 @@ export class Details {
 			<input type="radio" name="tabs" id="learn-tab" />
 			<label for="learn-tab" id="learn-label">
 				${tab2Label}
+			</label>
+			<input type="radio" name="tabs" id="code-tab" />
+			<label for="code-tab" id="code-label">
+				${tab4Label}
 			</label>
 			<input type="radio" name="tabs" id="changes-tab" />
 			<label for="changes-tab" id="changes-label">
@@ -167,6 +181,15 @@ export class Details {
 			</div>
 			<div class="tab changes">
 				${tab3Content}
+			</div>
+			<div class="tab code">
+				<div id="tab-code">
+					<pre class="pre-code">
+						<code id="code">
+							${tab5Content}
+						</code>
+					</pre>
+				</div>
 			</div>`
 		);
 	}
