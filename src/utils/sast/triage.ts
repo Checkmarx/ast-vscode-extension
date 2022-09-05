@@ -8,6 +8,7 @@ import { PROJECT_ID_KEY, SAST, SCA, KICS } from "../common/constants";
 import { Logs } from "../../models/logs";
 import { AstDetailsDetached } from "../../ast_details_view";
 import { REFRESH_TREE } from "../common/commands";
+import { getLearnMore } from "./learnMore";
 
 export async function updateResults(result: AstResult,context:vscode.ExtensionContext, comment:string):Promise<boolean> {
   let r = true;
@@ -92,6 +93,7 @@ export async function triageSubmit(result:AstResult,context:vscode.ExtensionCont
       // Reload results tree to apply the changes
       await vscode.commands.executeCommand(REFRESH_TREE);
       getChanges(logs,context,result,detailsPanel);
+      getLearnMore(logs,context,result,detailsPanel);
       // Information message
       vscode.window.showInformationMessage(
         "Feedback submited successfully! Results refreshed."

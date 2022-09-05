@@ -155,13 +155,7 @@ export class Details {
 	}
 
 	// Generic tab component
-	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string) {
-		let html = `function Panel(element, canClose, closeHandler) {
-			this.element = element;
-			this.canClose = canClose;
-			this.closeHandler = function () { if (closeHandler) closeHandler() };
-			console.log(<h1>cenas</h1>)
-		  }`.replaceAll("<","&lt;").replaceAll(">","&gt");
+	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string,tab4Label: string,tab5Content:string) {
 		return (
 			`<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
@@ -173,7 +167,7 @@ export class Details {
 			</label>
 			<input type="radio" name="tabs" id="code-tab" />
 			<label for="code-tab" id="code-label">
-				Code Samples
+				${tab4Label}
 			</label>
 			<input type="radio" name="tabs" id="changes-tab" />
 			<label for="changes-tab" id="changes-label">
@@ -192,7 +186,7 @@ export class Details {
 				<div id="tab-code">
 					<pre class="pre-code">
 						<code id="code">
-							No code sample
+							${tab5Content}
 						</code>
 					</pre>
 				</div>
