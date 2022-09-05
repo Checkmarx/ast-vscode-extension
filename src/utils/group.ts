@@ -17,6 +17,7 @@ export async function group(logs: Logs, context:vscode.ExtensionContext, astResu
 
 export function updateResultsProviderGroup(astResultsProvider: AstResultsProvider, issueFilter: IssueFilter, include: boolean) {
 	const currentIncluded = astResultsProvider.issueFilter.includes(issueFilter);
+	astResultsProvider.issueFilter.pop();
 	if (include && !currentIncluded) {
 		astResultsProvider.issueFilter = astResultsProvider.issueFilter.concat([issueFilter]);
 	}
@@ -25,4 +26,5 @@ export function updateResultsProviderGroup(astResultsProvider: AstResultsProvide
 			return x !== issueFilter;
 		});
 	}
+	astResultsProvider.issueFilter = astResultsProvider.issueFilter.concat([IssueFilter.packageIdentifier]);
 }

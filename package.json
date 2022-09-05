@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -695,7 +695,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.atlassian.net/wiki/x/AwBwagE).",
+        "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -752,7 +752,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.atlassian.net/wiki/spaces/AST/pages/6415286273/KICS+Auto+Scanning+Extension+for+Visual+Studio+Code)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
@@ -774,24 +774,24 @@
     "test": "npm run compile && extest setup-and-run './out/test/**/*test.js'"
   },
   "devDependencies": {
-    "@types/chai": "4.3.1",
+    "@types/chai": "4.3.3",
     "@types/mocha": "9.1.1",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.7.14",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.30.7",
+    "@typescript-eslint/eslint-plugin": "^5.36.1",
+    "@typescript-eslint/parser": "^5.36.1",
     "chai": "4.3.6",
-    "eslint": "^8.20.0",
+    "eslint": "^8.23.0",
     "mocha": "10.0.0",
     "typescript": "^4.7.4",
-    "vsce": "^2.10.0",
-    "vscode-extension-tester": "4.2.5",
+    "vsce": "^2.11.0",
+    "vscode-extension-tester": "4.4.1",
     "vscode-extension-tester-locators": "^2.0.0",
-    "webpack": "^5.73.0",
+    "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.57",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.58",
     "copyfiles": "2.4.1",
     "tree-kill": "^1.2.2"
   },

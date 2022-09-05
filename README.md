@@ -20,7 +20,7 @@
   <h3 align="center">AST-VSCODE-PLUGIN</h3>
 
   <p align="center">
-    <a href="https://checkmarx.atlassian.net/wiki/spaces/AST/pages/6080692227"><strong>Explore the docs »</strong></a>
+    <a href="https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html"><strong>Explore the docs »</strong></a>
     <br />
     <a href="https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results"><strong>Marketplace »</strong></a>
   </p>
@@ -66,7 +66,7 @@ The CxAST Visual Studio Code plugin (extension) enables you to import results fr
 <!-- GETTING STARTED -->
 ## Getting Started
 
-All our documentation on how to get started with our extension can be found [here](https://checkmarx.atlassian.net/wiki/spaces/AST/pages/6080167957/Installing+the+CxAST+Visual+Studio+Code+Extension).
+All our documentation on how to get started with our extension can be found [here](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).
 
 
 ## Contributing

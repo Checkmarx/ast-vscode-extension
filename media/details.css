@@ -354,7 +354,7 @@ input ~ .tab {
 }
 
 .bfl-logo{
-  width: 1rem;
+  height: 65px;
 }
 
 @keyframes spin {

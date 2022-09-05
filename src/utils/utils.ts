@@ -8,8 +8,16 @@ import { getBfl } from './sast/bfl';
 import { SHOW_ERROR } from './common/commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
 
-export function getProperty(o: any, propertyName: string): string {
-	return o[propertyName];
+export function getProperty(o: any, propertyName: string): any {
+	const properties = propertyName.split(".");
+	let finalObject = o;
+	properties.forEach(property=>{
+		if(!finalObject){
+			return;
+		}
+		finalObject = finalObject?.hasOwnProperty(property)?finalObject[property]:undefined;
+	});
+	return finalObject;
 }
 
 export function getNonce() {
@@ -145,13 +153,18 @@ export async function getResultsBfl(logs: Logs, context: vscode.ExtensionContext
 	});
 }
 
-export function isKicsFile(fileName: string): boolean {
+export function isKicsFile(e: vscode.TextDocument): boolean {
 	let r = true;
-	if (!(fileName.endsWith('.tf') || fileName.endsWith('.yml') || fileName.endsWith('.yaml') || fileName.endsWith('.json') || fileName.match('Dockerfile') || fileName.endsWith('.auto.tfvars') || fileName.endsWith('.terraform.tfvars') || fileName.endsWith('.proto') || fileName.endsWith('.dockerfile'))) {
+	if (!(e.fileName.endsWith('.tf') || e.fileName.endsWith('.yml') || e.fileName.endsWith('.yaml') || e.fileName.endsWith('.json') || e.fileName.match('Dockerfile') || e.fileName.endsWith('.auto.tfvars') || e.fileName.endsWith('.terraform.tfvars') || e.fileName.endsWith('.proto') || e.fileName.endsWith('.dockerfile'))) {
 		r = false;
 	}
 	return r;
 };
+
+export function isSystemFile(e: vscode.TextDocument): boolean {
+	return (e.uri.scheme.toString() !== "git" && !e.fileName.includes("package.json") && !e.fileName.includes("settings.json"));
+};
+
 
 export const PROGRESS_HEADER: vscode.ProgressOptions = {
 	location: vscode.ProgressLocation.Notification,

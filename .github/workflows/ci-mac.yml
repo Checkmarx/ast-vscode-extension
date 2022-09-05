@@ -29,5 +29,11 @@ jobs:
           CX_TENANT: ${{ secrets.CX_TENANT }}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run:  npm install && npm test
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with: 
+          name: screenshots
+          path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
       
           

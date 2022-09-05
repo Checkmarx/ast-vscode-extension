@@ -198,6 +198,21 @@ export async function getResultsRealtime(fileSources:string, additionalParams:st
 
 }
 
+export async function scaRemediation(packageFile: string, packages:string, packageVersion:string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		throw new Error("Configuration error");
+	}
+	const cx = new CxWrapper(config);
+	const scaFix = await cx.scaRemediation(packageFile,packages,packageVersion);
+	if(scaFix.exitCode === 0){
+		return scaFix.exitCode;
+	}
+	else {
+		throw new Error(scaFix.status.replaceAll("\n","")); //Need to return exit code
+	}
+}
+
 export async function kicsRemediation(resultsFile:string, kicsFile:string,engine:string,similarityIds?:string ) :Promise <any>{
 	
 	if (!resultsFile) {

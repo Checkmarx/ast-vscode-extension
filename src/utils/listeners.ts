@@ -5,7 +5,7 @@ import { REFRESH_TREE } from "./common/commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
 import { get, update } from "./common/globalState";
 import { getBranches } from "./ast/ast";
-import { isKicsFile } from "./utils";
+import { isKicsFile, isSystemFile} from "./utils";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
@@ -56,8 +56,9 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: L
 	// Listen to save action in a KICS file
 	vscode.workspace.onDidSaveTextDocument(async (e) => {
 		// Check if on save setting is enabled
-		let isValidKicsFile = isKicsFile(e.fileName);
-		if(!e.fileName.includes("settings.json") && isValidKicsFile){
+		let isValidKicsFile = isKicsFile(e);
+		let isSystemFiles = isSystemFile(e);
+		if(isValidKicsFile  && isSystemFiles ){
 			const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
 			if(onSave){
 				// Check if saved file is within the project
@@ -72,10 +73,11 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext,logs: L
 	});
 	
 	// Listen to open action in a KICS file
-	vscode.workspace.onDidOpenTextDocument(async (e) => {
+	vscode.workspace.onDidOpenTextDocument(async (e:vscode.TextDocument) => {
 		// Check if on save setting is enabled
-		let isValidKicsFile = isKicsFile(e.fileName);
-		if(!e.fileName.includes("settings.json") && isValidKicsFile){
+		let isValidKicsFile = isKicsFile(e);
+		let isSystemFiles = isSystemFile(e);
+		if(isValidKicsFile && isSystemFiles){
 			logs.info("Opened a supported file by KICS. Starting KICS scan");
 			// Mandatory in order to have the document appearing as displayed for VSCode
 			await vscode.window.showTextDocument(e,1,false);

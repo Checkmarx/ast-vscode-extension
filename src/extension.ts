@@ -39,6 +39,7 @@ import { triageSubmit} from "./utils/sast/triage";
 import { REFRESH_TREE } from "./utils/common/commands";
 import { getChanges} from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
+import { applyScaFix } from "./utils/scaFix";
 import { GitExtension } from "./types/git";
 import { getLearnMore } from "./utils/sast/learnMore";
 import { getAstConfiguration } from "./utils/ast/ast";
@@ -171,6 +172,11 @@ export async function activate(context: vscode.ExtensionContext) {
           case 'codebashing':
             getCodebashingLink(result.cweId!,result.language,result.queryName,logs);
             break;
+          case 'references':
+            vscode.env.openExternal(vscode.Uri.parse(data.link));
+            break;
+          case 'scaFix':
+            applyScaFix(data.package,data.file,data.version,logs);
         }
       });
     }
