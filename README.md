@@ -69,6 +69,22 @@ The CxAST Visual Studio Code plugin (extension) enables you to import results fr
 All our documentation on how to get started with our extension can be found [here](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).
 
 
+<!-- PREREQUISITES -->
+## Prerequisites
+
+- You have a Checkmarx One account and can run Checkmarx One scans on your source code.
+- You have an API key for your Checkmarx One account.
+- You must have Docker installed and running in your environment (For KICS auto scanning only)
+
+
+## Usage
+
+# Kics Auto Scan
+![](./media/kics_autoscan.gif)
+
+# Quick Fix
+![](./media/kics_quickfix.gif)
+
 ## Contributing
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
