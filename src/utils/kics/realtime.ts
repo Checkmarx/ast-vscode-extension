@@ -12,7 +12,7 @@ export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
 	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
 	// Decide wether or not to print the quick fix available information 
 	if(checkIfAnyFixable(kicsResults)){
-		logs.info("Check out Auto-remediation: place the marker of the result line and use ⌘. or ctrl.");
+		logs.info("Check out KICS Auto-remediation: hover the mouse over the result line and use ⌘. or ctrl.");
 	}
 }
 
