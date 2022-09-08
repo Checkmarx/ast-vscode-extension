@@ -151,9 +151,11 @@ export async function activate(context: vscode.ExtensionContext) {
         detailsPanel.webview,
       );
 
-      // Start to load the changes tab, gets called everytime a new details webview is opened
-      getChanges(logs,context,result,detailsPanel);
-      getLearnMore(logs,context,result,detailsPanel);
+      // Start to load the changes tab, gets called everytime a new sast details webview is opened
+      if(result.type === "sast") {
+        getChanges(logs,context,result,detailsPanel);
+        getLearnMore(logs,context,result,detailsPanel);
+      }
       // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
       //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
       // Comunication between webview and extension

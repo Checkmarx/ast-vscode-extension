@@ -445,6 +445,12 @@
 	cursor: pointer;
 }
 
+.remediation-links-text-disabled {
+	font-size: 0.8em;
+	color: #F9AE4D;
+	cursor:not-allowed;
+}
+
 .remediation-links-rows-container {
 	margin: 0.5rem;
 }

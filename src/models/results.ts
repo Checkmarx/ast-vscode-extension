@@ -768,9 +768,18 @@ export class AstResult {
               <div class="remediation-links-about">
                 <div class="remediation-links-rows">
                   <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
+                  ${result.scaNode.scaPackageData.fixLink && result.scaNode.scaPackageData.fixLink!==""?
+                  `
                   <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
                     About this vulnerability
                   </p>
+                `
+                  :
+                  ` <p class="remediation-links-text-disabled" id="${result.scaNode.scaPackageData.fixLink}">
+                      About this vulnerability
+                    </p>`
+                  }
+                 
                 </div>
               </div>
             </div>`;
