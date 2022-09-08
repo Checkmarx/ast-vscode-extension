@@ -49,20 +49,6 @@
 </details>
 
 
-
-## About The Project
-
-The CxAST Visual Studio Code plugin (extension) enables you to import results from a CxAST scan directly into your VS Code console. You can view the vulnerabilities that were identified in your source code and navigate directly to the vulnerable code in the editor. 
-
-### Main Features
-- Import CxAST scan results
-- Show results from all scan types (CxSAST, CxSCA, and KICS)
-- Group results by file, language, severity, and status
-- Navigate from results directly to the vulnerable code in the editor
-- Vulnerable code is highlighted in the editor
-
-
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -72,12 +58,17 @@ All our documentation on how to get started with our extension can be found [her
 <!-- PREREQUISITES -->
 ## Prerequisites
 
+Checkmarx One:
 - You have a Checkmarx One account and can run Checkmarx One scans on your source code.
 - You have an API key for your Checkmarx One account.
+
+Kics Auto Scanning:
 - You must have Docker installed and running in your environment (For KICS auto scanning only)
 
 
 ## Usage
+For detailed information about the usage of Kics Auto Scanning feature, you can check this
+[video](https://www.youtube.com/watch?v=sFD-9CQXfs0)
 
 # Kics Auto Scan
 ![](./media/kics_autoscan.gif)
