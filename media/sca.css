@@ -370,10 +370,12 @@
 
 .version{
 	cursor: pointer;
+	max-height: 20px;
 }
 
 .version-disabled{
 	cursor:not-allowed;
+	max-height: 20px;
 }
 
 .remediation-version {
@@ -400,6 +402,7 @@
 
 .remediation-version-container {
 	margin: 1rem;
+	overflow: auto;
 }
 
 .remediation-description {
@@ -440,6 +443,12 @@
 	font-size: 0.8em;
 	color: #F9AE4D;
 	cursor: pointer;
+}
+
+.remediation-links-text-disabled {
+	font-size: 0.8em;
+	color: #F9AE4D;
+	cursor:not-allowed;
 }
 
 .remediation-links-rows-container {

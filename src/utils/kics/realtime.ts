@@ -10,6 +10,22 @@ import { KicsDiagnostic } from "./kicsDiagnostic";
 // Logs the output of kics autoscan summary
 export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
 	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+	// Decide wether or not to print the quick fix available information 
+	if(checkIfAnyFixable(kicsResults)){
+		logs.info("Check out KICS Auto-remediation: hover the mouse over the result line and use ⌘. or ctrl.");
+	}
+}
+
+// Function that checks if there is any KICS fixable result
+function checkIfAnyFixable(kicsResults:CxKicsRealTime):boolean{
+	let r = false;
+	for (var result of kicsResults.results) {
+		if(result.files[0].remediation!=='') {
+			r=true;
+			break;
+		}
+	}
+	return r;
 }
 
 export function remediationSummaryLogs(remediation:any,logs:Logs){

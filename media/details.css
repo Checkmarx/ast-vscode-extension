@@ -373,7 +373,7 @@ input ~ .tab {
 .pre-code{
   white-space:pre-wrap;
   background:var(--vscode-input-background);
-  padding: 0.1rem;
+  padding: 0.4rem;
 }
 
 .code-sample{
