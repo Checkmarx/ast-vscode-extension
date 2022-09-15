@@ -4,10 +4,55 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "../common/constants";
-import { getFilePath } from "../utils";
+import {
+	EXTENSION_NAME,
+	RESULTS_FILE_EXTENSION,
+	RESULTS_FILE_NAME,
+	SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT,
+	SCAN_WAITING
+} from "../common/constants";
+import {disableButton, enableButton, getFilePath} from "../utils";
 import { SastNode } from "../../models/sastNode";
 import AstError from "../../exceptions/AstError";
+import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import {Item} from "../common/globalState";
+import {Logs} from "../../models/logs";
+import {pollForScanResult} from "../../create_scan_provider";
+
+
+export async function scanCreate(projectName: string, branchName: string, sourcePath: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!projectName){
+		return;
+	}
+	if(!branchName){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	let params = new Map<CxParamType,string>();
+	params.set(CxParamType.S,sourcePath);
+	params.set(CxParamType.BRANCH,branchName);
+	params.set(CxParamType.PROJECT_NAME,projectName);
+	params.set(CxParamType.ADDITIONAL_PARAMETERS,"--async --sast-incremental");
+	const scan = await cx.scanCreate(params);
+	return scan.payload[0];
+}
+
+export async function scanCancel(scanId: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!scanId){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	const scan = await cx.scanCancel(scanId);
+	return scan.exitCode === 0 ;
+}
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -247,4 +292,40 @@ export async function learnMore(queryID: string) : Promise<any[] | undefined>{
 		throw new Error(scans.status);
 	}
 	return r;
+}
+
+export async function isScanRunning(context: vscode.ExtensionContext, createScanStatusBarItem: vscode.StatusBarItem) {
+	const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+	if(scanId && scanId.id){
+		await disableButton(`${EXTENSION_NAME}.createScanButton`);
+		await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
+		updateStatusBarItem(SCAN_WAITING, true, createScanStatusBarItem);
+		return true;
+	} else {
+		await disableButton(`${EXTENSION_NAME}.cancelScanButton`);
+		await enableButton(`${EXTENSION_NAME}.createScanButton`);
+		updateStatusBarItem(SCAN_WAITING, false, createScanStatusBarItem);
+		return false;
+	}
+}
+
+export async function pollForScan(context: vscode.ExtensionContext,logs: Logs, createScanStatusBarItem: vscode.StatusBarItem){
+	return new Promise<void>((resolve) => {
+		let i = setInterval(async () => {
+			let scanRunning = await isScanRunning(context, createScanStatusBarItem);
+			if (scanRunning) {
+				const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+				await pollForScanResult(context,scanId.id,logs);
+				resolve();
+			} else{
+				clearInterval(i);
+			}
+		},SCAN_POLL_TIMEOUT);
+	});
+}
+
+
+export  function updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem){
+	statusBarItem.text = text;
+	show? statusBarItem.show() : statusBarItem.hide();
 }

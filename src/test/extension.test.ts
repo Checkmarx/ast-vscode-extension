@@ -10,7 +10,7 @@ import {
   WebView,
   BottomBarPanel,
   TextEditor,
-  EditorView
+  EditorView, ActivityBar, ViewControl
 } from "vscode-extension-tester";
 import {
   initialize,
@@ -65,7 +65,7 @@ import {
   CX_BASE_URI_SETTINGS,
   CX_TENANT_SETTINGS,
   CX_CATETORY,
-  TEN_SECONDS,
+  TEN_SECONDS, UUID_REGEX_VALIDATION,
 } from "./constants";
 
 describe("UI tests", async function () {
@@ -158,7 +158,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Project selection
     let input = await InputBox.create();
-    input.sendKeys("webgoat");
+    input.sendKeys("JayTestZip");
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
@@ -211,6 +211,72 @@ describe("UI tests", async function () {
     let scan = await treeScans?.findItem("Scan: ");
     expect(scan).is.not.undefined;
     await delay(THREE_SECONDS);
+  });
+
+  it("should create scan with success case, branch confirmation", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button(or initiate scan with command)
+    await new Workbench().executeCommand("ast-results.createScan");
+    // SINCE WE ARE OPENING ZIP - BRANCH DOES NOT EXIST
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branchNotifications = await new Workbench().getNotifications();
+    const branchNotification = branchNotifications[0];
+    await branchNotification.takeAction('Yes');
+    await delay(FIFTY_SECONDS);
+    await delay(FIVE_SECONDS);
+    const resultsNotifications = await new Workbench().getNotifications();
+    const firstNotification = resultsNotifications[0];
+    const title = await firstNotification.getMessage();
+    const index = title.search(UUID_REGEX_VALIDATION)
+    expect(index).to.be.greaterThan(0);
+    const scanId = title.substring(index,index+36);
+    expect(scanId).to.not.be.undefined;
+    expect(scanId.length).to.be.greaterThan(0);
+    // wait for the user input to load the results
+    await firstNotification.takeAction('Yes');
+    await delay(FIVE_SECONDS);
+    // get the scan id from the notification
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+    );
+    await delay(FIVE_SECONDS);
+    expect(scan).is.not.undefined;
+  });
+
+  it("should cancel scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button
+    await new Workbench().executeCommand("ast-results.createScan");
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branchNotifications = await new Workbench().getNotifications();
+    const branchNotification = branchNotifications[0];
+    await branchNotification.takeAction('Yes');
+    await delay(TEN_SECONDS);
+    await new Workbench().executeCommand("ast-results.cancelScan");
+    await delay(TEN_SECONDS);
+    await delay(TEN_SECONDS);
+    const resultsNotifications = await new Workbench().getNotifications();
+    const resultNotification = resultsNotifications[0];
+    const title = await resultNotification.getMessage();
+    expect(title).to.not.be.undefined;
+    const index = title.search(UUID_REGEX_VALIDATION)
+    expect(index).to.be.greaterThan(0);
+    const scanId = title.substring(index,index+36);
+    expect(scanId).to.not.be.undefined;
+    await resultNotification.takeAction('Yes');
+    await delay(FIVE_SECONDS);
+    // get latest results
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
   });
 
   it("should select project", async function () {
@@ -270,7 +336,7 @@ describe("UI tests", async function () {
     expect(branch).is.not.undefined;
     await delay(THREE_SECONDS);
   });
-  
+
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
@@ -290,7 +356,7 @@ describe("UI tests", async function () {
     expect(scan).is.not.undefined;
     await delay(THREE_SECONDS);
   });
-  
+
   it("should load results from scan ID", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
@@ -455,7 +521,7 @@ describe("UI tests", async function () {
     await editorView.closeEditor(await currentActiveTab.getTitle());
     await delay(THREE_SECONDS);
   });
-  
+
   it("should click on all filter severity", async function () {
     this.timeout(MAX_TIMEOUT);
     const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
@@ -475,9 +541,9 @@ describe("UI tests", async function () {
       await bench.executeCommand(commands[index].command);
       await delay(THREE_SECONDS);
     }
-    
+
   });
-  
+
   it("should click on all group by", async function () {
     this.timeout(MAX_TIMEOUT);
     const commands = [CX_GROUP_LANGUAGE,CX_GROUP_STATUS,CX_GROUP_STATE,CX_GROUP_QUERY_NAME,CX_GROUP_FILE];
@@ -549,12 +615,12 @@ describe("UI tests", async function () {
     tempPath += appender+"insecure.php";
     VSBrowser.instance.openResources(tempPath);
     await delay(FIVE_SECONDS);
-    
+
     // Check if scan is running or ran
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(true);
     const problemsView = await bottomBar.openOutputView();
-    await problemsView.clearText(); 
+    await problemsView.clearText();
     await delay(FIVE_SECONDS);
 
     // Save the file
@@ -563,7 +629,7 @@ describe("UI tests", async function () {
     await editor.save();
     await delay(FIVE_SECONDS);
     const problemsText = await problemsView.getText();
-     
+
     // Check scan did ran
     // it should not run against files so it should be empty
     expect(problemsText).to.contain('\n');
@@ -573,7 +639,7 @@ describe("UI tests", async function () {
   it("should fail to run kics auto scan", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(FIVE_SECONDS);
-    
+
     // Disable settings
     let settingsWizard = await bench.openSettings();
     await delay(THREE_SECONDS);
@@ -583,21 +649,21 @@ describe("UI tests", async function () {
     )) as LinkSetting;
     setting.setValue(false);
 
-    // Clear the output 
+    // Clear the output
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(true);
     const problemsView = await bottomBar.openOutputView();
-    await problemsView.clearText(); 
+    await problemsView.clearText();
     await delay(FIVE_SECONDS);
-    
+
     // Save the file
     const editor = new TextEditor();
     await delay(FIVE_SECONDS);
     await editor.save();
-    
+
     // Check scan did not ran
     await delay(FIVE_SECONDS);
-    const problemsText = await problemsView.getText(); 
+    const problemsText = await problemsView.getText();
     expect(problemsText).to.not.contain(CX_KICS_VALUE);
   });
 

@@ -1,6 +1,7 @@
 export const EXTENSION_NAME: string = "ast-results";
 export const EXTENSION_FULL_NAME: string = "Checkmarx";
 export const SCAN_ID_KEY: string = "ast-results-scan-id";
+export const SCAN_CREATE_ID_KEY: string = "ast-results-scan-create-id";
 
 export const HIGH_FILTER: string = "ast-results-high";
 export const MEDIUM_FILTER: string = "ast-results-medium";
@@ -95,3 +96,9 @@ export const KICS_RESULTS = "results";
 export const KICS_TOTAL_COUNTER = "total_counter";
 export const KICS_COUNT = "count";
 export const KICS_RESULTS_FILE = "kics-results.json";
+
+
+export const SCAN_CREATE = "$(sync~spin) Scan running...";
+export const SCAN_WAITING = "$(sync~spin) Waiting for scan to complete";
+export const SCAN_CANCEL = "$(sync~spin) Canceling Scan";
+export const SCAN_POLL_TIMEOUT = 15000 // MILLISECONDS
