@@ -40,10 +40,10 @@ import {getAstConfiguration, isScanRunning, pollForScan, updateStatusBarItem} fr
 import { getCodebashingLink } from "./utils/codebashing";
 import { triageSubmit} from "./utils/triage";
 import { REFRESH_TREE } from "./utils/commands";
-import { getChanges } from "./utils/utils";
+import { disableButton, enableButton, getChanges } from "./utils/utils";
 import { KicsProvider } from "./kics_provider";
 import { GitExtension } from "./types/git";
-import {cancelScan, createScan, pollForScanResult} from "./create-scan-provider";
+import {cancelScan, createScan} from "./create-scan-provider";
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -58,23 +58,34 @@ export async function activate(context: vscode.ExtensionContext) {
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const createScanStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => { 
-    updateStatusBarItem(SCAN_CREATE, true, createScanStatusBarItem);
-    await createScan(context, logs);
-    updateStatusBarItem(SCAN_CREATE, false, createScanStatusBarItem);
+    const scanRunning = await isScanRunning(context, createScanStatusBarItem);
+    if(!scanRunning) {
+      updateStatusBarItem(SCAN_CREATE, true, createScanStatusBarItem);
+      await disableButton(`${EXTENSION_NAME}.createScanButton`);
+      await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
+      await createScan(context, logs);
+      updateStatusBarItem(SCAN_CREATE, false, createScanStatusBarItem);
+    }
+    await vscode.commands.executeCommand(`ast-results.pollForScan`);
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.cancelScan`, async () => { 
-    updateStatusBarItem(SCAN_CANCEL, true, createScanStatusBarItem);
-
-    await cancelScan(context, logs);
-    updateStatusBarItem(SCAN_CANCEL, false, createScanStatusBarItem); 
+    const scanRunning = await isScanRunning(context, createScanStatusBarItem);
+    if(scanRunning) {
+      updateStatusBarItem(SCAN_CANCEL, true, createScanStatusBarItem);
+      await disableButton(`${EXTENSION_NAME}.cancelScanButton`);
+      await enableButton(`${EXTENSION_NAME}.createScanButton`);
+      await cancelScan(context, logs);
+      updateStatusBarItem(SCAN_CANCEL, false, createScanStatusBarItem); 
+    }
+    await vscode.commands.executeCommand(`ast-results.pollForScan`);
   }));
 
     // register command to poll for scan result
-  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.isScanRunning`, async () => { await isScanRunning(context,createScanStatusBarItem); }));
-    // execute the isScanRunning command to check if scan is running or not during startup
-  // vscode.commands.executeCommand(`${EXTENSION_NAME}.isScanRunning`);
+  
 
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, await isScanRunning(context,createScanStatusBarItem) ? false : true);
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.cancelScanButton`, await isScanRunning(context,createScanStatusBarItem) ? true : false);
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.pollForScan`, async () => { await pollForScan(context,logs,createScanStatusBarItem) }));
   vscode.commands.executeCommand(`${EXTENSION_NAME}.pollForScan`);
   const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);

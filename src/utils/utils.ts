@@ -212,3 +212,10 @@ export function getScanLabel(createdAt: string, id: string) {
 	return dateString + " " + id;
 }
 
+export async function enableButton(button: string){
+	await vscode.commands.executeCommand("setContext", button, true);
+}
+
+export async function disableButton(button: string){
+	await vscode.commands.executeCommand("setContext", button, false);
+}

@@ -65,7 +65,7 @@ import {
   CX_BASE_URI_SETTINGS,
   CX_TENANT_SETTINGS,
   CX_CATETORY,
-  TEN_SECONDS,
+  TEN_SECONDS, UUID_REGEX_VALIDATION,
 } from "./constants";
 
 describe("UI tests", async function () {
@@ -158,7 +158,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Project selection
     let input = await InputBox.create();
-    input.sendKeys("webgoat");
+    input.sendKeys("JayTestZip");
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
@@ -192,6 +192,73 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     expect(scan).is.not.undefined;
   });
+
+  it("should create scan with success case, branch confirmation", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button(or initiate scan with command)
+    await new Workbench().executeCommand("ast-results.createScan");
+    // SINCE WE ARE OPENING ZIP - BRANCH DOES NOT EXIST
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branch_notifications = await new Workbench().getNotifications();
+    const branch_notification = branch_notifications[0];
+    await branch_notification.takeAction('Yes');
+    await delay(FIFTY_SECONDS);
+    await delay(FIVE_SECONDS);
+    const results_notifications = await new Workbench().getNotifications();
+    const result_notification = results_notifications[0];
+    const title = await result_notification.getMessage();
+    const index = title.search(UUID_REGEX_VALIDATION)
+    expect(index).to.be.greaterThan(0);
+    const scanId = title.substring(index,index+36);
+    expect(scanId).to.not.be.undefined;
+    expect(scanId.length).to.be.greaterThan(0);
+    // wait for the user input to load the results
+    await result_notification.takeAction('Yes');
+    await delay(FIVE_SECONDS);
+    // get the scan id from the notification
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+      );
+    await delay(FIVE_SECONDS);
+    expect(scan).is.not.undefined;
+  });
+
+  it("should cancel scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button
+    await new Workbench().executeCommand("ast-results.createScan");
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branch_notifications = await new Workbench().getNotifications();
+    const branch_notification = branch_notifications[0];
+    await branch_notification.takeAction('Yes');
+    await delay(TEN_SECONDS);
+    await new Workbench().executeCommand("ast-results.cancelScan");
+    await delay(TEN_SECONDS);
+    await delay(TEN_SECONDS);
+    const results_notifications = await new Workbench().getNotifications();
+    const result_notification = results_notifications[0];
+    const title = await result_notification.getMessage();
+    expect(title).to.not.be.undefined;
+    const index = title.search(UUID_REGEX_VALIDATION)
+    expect(index).to.be.greaterThan(0);
+    const scanId = title.substring(index,index+36);
+    expect(scanId).to.not.be.undefined;
+    await result_notification.takeAction('Yes');
+    await delay(FIVE_SECONDS);
+    // get latest results
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+  });
+
 
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);

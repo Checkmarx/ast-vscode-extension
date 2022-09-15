@@ -5,10 +5,11 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import {
+	EXTENSION_NAME,
 	RESULTS_FILE_EXTENSION,
 	RESULTS_FILE_NAME, SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT, SCAN_WAITING
 } from "./constants";
-import { getFilePath } from "./utils";
+import { disableButton, enableButton, getFilePath } from "./utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
@@ -154,14 +155,18 @@ export function getAstConfiguration() {
 	return config;
 }
 
-export function isScanRunning(context: vscode.ExtensionContext, createScanStatusBarItem: vscode.StatusBarItem) {
+
+
+export async function isScanRunning(context: vscode.ExtensionContext, createScanStatusBarItem: vscode.StatusBarItem) {
 	const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
 	if(scanId && scanId.id){
-		vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, true);
+		await disableButton(`${EXTENSION_NAME}.createScanButton`);
+		await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
 		updateStatusBarItem(SCAN_WAITING, true, createScanStatusBarItem);
 		return true;
 	} else {
-		vscode.commands.executeCommand('setContext', `ast-results.isScanRunning`, false);
+		await disableButton(`${EXTENSION_NAME}.cancelScanButton`);
+		await enableButton(`${EXTENSION_NAME}.createScanButton`);
 		updateStatusBarItem(SCAN_WAITING, false, createScanStatusBarItem);
 		return false;
 	}
@@ -170,7 +175,7 @@ export function isScanRunning(context: vscode.ExtensionContext, createScanStatus
 export async function pollForScan(context: vscode.ExtensionContext,logs: Logs, createScanStatusBarItem: vscode.StatusBarItem){
 	return new Promise<void>((resolve) => {
 		let i = setInterval(async () => {
-			let scanRunning = isScanRunning(context, createScanStatusBarItem);
+			let scanRunning = await isScanRunning(context, createScanStatusBarItem);
 			if (scanRunning) {
 				const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
 				await pollForScanResult(context,scanId.id,logs);

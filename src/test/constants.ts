@@ -50,3 +50,5 @@ export const CX_CATETORY = "Checkmarx AST";
 export const CX_BASE_URI_SETTINGS = "Base Uri";
 export const CX_TENANT_SETTINGS = "Tenant";
 export const CX_API_KEY_SETTINGS = "Api Key";
+
+export const UUID_REGEX_VALIDATION = /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
