@@ -102,3 +102,15 @@ export const SCAN_CREATE = "$(sync~spin) Scan running...";
 export const SCAN_WAITING = "$(sync~spin) Waiting for scan to complete";
 export const SCAN_CANCEL = "$(sync~spin) Canceling Scan";
 export const SCAN_POLL_TIMEOUT = 15000 // MILLISECONDS
+
+// USER INPUT BUTTONS
+export const YES = "Yes";
+export const NO = "No";
+
+// SCAN STATUS
+export const SCAN_STATUS_COMPLETE = "completed"
+export const SCAN_STATUS_PARTIAL = "partial"
+export const SCAN_STATUS_RUNNING = "running"
+
+// CREATE SCAN ADDITIONAL ARGUMENTS
+export const SCAN_CREATE_ADDITIONAL_PARAMETERS = "--async --sast-incremental";

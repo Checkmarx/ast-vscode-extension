@@ -7,7 +7,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import {
 	EXTENSION_NAME,
 	RESULTS_FILE_EXTENSION,
-	RESULTS_FILE_NAME,
+	RESULTS_FILE_NAME, SCAN_CREATE_ADDITIONAL_PARAMETERS,
 	SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT,
 	SCAN_WAITING
 } from "../common/constants";
@@ -36,7 +36,7 @@ export async function scanCreate(projectName: string, branchName: string, source
 	params.set(CxParamType.S,sourcePath);
 	params.set(CxParamType.BRANCH,branchName);
 	params.set(CxParamType.PROJECT_NAME,projectName);
-	params.set(CxParamType.ADDITIONAL_PARAMETERS,"--async --sast-incremental");
+	params.set(CxParamType.ADDITIONAL_PARAMETERS,SCAN_CREATE_ADDITIONAL_PARAMETERS);
 	const scan = await cx.scanCreate(params);
 	return scan.payload[0];
 }

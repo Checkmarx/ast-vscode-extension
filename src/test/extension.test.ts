@@ -65,8 +65,9 @@ import {
   CX_BASE_URI_SETTINGS,
   CX_TENANT_SETTINGS,
   CX_CATETORY,
-  TEN_SECONDS, UUID_REGEX_VALIDATION,
+  TEN_SECONDS, UUID_REGEX_VALIDATION, CX_TEST_SCAN_PROJECT_NAME,
 } from "./constants";
+import {YES} from "../utils/common/constants";
 
 describe("UI tests", async function () {
   this.timeout(MAX_TIMEOUT);
@@ -158,7 +159,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     // Project selection
     let input = await InputBox.create();
-    input.sendKeys("JayTestZip");
+    input.sendKeys(CX_TEST_SCAN_PROJECT_NAME);
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await delay(THREE_SECONDS);
@@ -223,19 +224,17 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     const branchNotifications = await new Workbench().getNotifications();
     const branchNotification = branchNotifications[0];
-    await branchNotification.takeAction('Yes');
+    await branchNotification.takeAction(YES);
     await delay(FIFTY_SECONDS);
     await delay(FIVE_SECONDS);
     const resultsNotifications = await new Workbench().getNotifications();
     const firstNotification = resultsNotifications[0];
     const title = await firstNotification.getMessage();
-    const index = title.search(UUID_REGEX_VALIDATION)
-    expect(index).to.be.greaterThan(0);
-    const scanId = title.substring(index,index+36);
+    const scanId = title.match(UUID_REGEX_VALIDATION);
     expect(scanId).to.not.be.undefined;
     expect(scanId.length).to.be.greaterThan(0);
     // wait for the user input to load the results
-    await firstNotification.takeAction('Yes');
+    await firstNotification.takeAction(YES);
     await delay(FIVE_SECONDS);
     // get the scan id from the notification
     let treeScans = await initialize();
@@ -255,7 +254,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
     const branchNotifications = await new Workbench().getNotifications();
     const branchNotification = branchNotifications[0];
-    await branchNotification.takeAction('Yes');
+    await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
     await new Workbench().executeCommand("ast-results.cancelScan");
     await delay(TEN_SECONDS);
@@ -264,9 +263,7 @@ describe("UI tests", async function () {
     const resultNotification = resultsNotifications[0];
     const title = await resultNotification.getMessage();
     expect(title).to.not.be.undefined;
-    const index = title.search(UUID_REGEX_VALIDATION)
-    expect(index).to.be.greaterThan(0);
-    const scanId = title.substring(index,index+36);
+    const scanId = title.match(UUID_REGEX_VALIDATION);
     expect(scanId).to.not.be.undefined;
     await resultNotification.takeAction('Yes');
     await delay(FIVE_SECONDS);
@@ -287,7 +284,7 @@ describe("UI tests", async function () {
     await bench.executeCommand(CX_SELECT_PROJECT);
     await delay(FIVE_SECONDS);
     let input = await InputBox.create();
-    await input.setText("webgoat");
+    await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     await delay(THREE_SECONDS);
     let projectName = await getQuickPickSelector(input);
     await input.setText(projectName);

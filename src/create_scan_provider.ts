@@ -7,11 +7,11 @@ import {Logs} from "./models/logs";
 import {Item, update} from "./utils/common/globalState";
 import {
     BRANCH_ID_KEY,
-    EXTENSION_NAME,
-    PROJECT_ID_KEY,
+    EXTENSION_NAME, NO,
+    PROJECT_ID_KEY, SCAN_STATUS_COMPLETE,
     SCAN_CREATE_ID_KEY,
     SCAN_ID_KEY,
-    SCAN_LABEL
+    SCAN_LABEL, SCAN_STATUS_PARTIAL, YES, SCAN_STATUS_RUNNING
 } from "./utils/common/constants";
 import {disableButton, enableButton, getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
@@ -27,7 +27,7 @@ function getBranchFromWorkspace() {
 
 export async function pollForScanResult(context: vscode.ExtensionContext,scanId: string,logs: Logs) {
     let scanResult = await getScan(scanId);
-    if (scanResult.status.toLowerCase() === "running") {
+    if (scanResult.status.toLowerCase() === SCAN_STATUS_RUNNING) {
         return;
     } else {
         logs.info("Scan finished for scan ID: " + scanId + " with status: " + scanResult.status);
@@ -93,8 +93,8 @@ export async function createScan(context: vscode.ExtensionContext, logs: Logs) {
 async function getUserInput(msg: string): Promise<boolean> {
     // create a promise and wait for it to resolve
     const value = new Promise<boolean>(async (resolve, reject) => {
-        await vscode.window.showInformationMessage(msg, "Yes", "No").then(async (val) => {
-            if (val && val === "Yes") {
+        await vscode.window.showInformationMessage(msg, YES, NO).then(async (val) => {
+            if (val && val === YES) {
                 await disableButton(`${EXTENSION_NAME}.createScanButton`);
                 await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
                 resolve(true);
@@ -142,7 +142,7 @@ function extractFileNamesFromResults(results: any) {
 async function loadLatestResults(context: vscode.ExtensionContext,scan: CxScan,logs: Logs) {
     const userConfirmMessage = "Do you want to load the latest results for scan id: " + scan.id + " with status: " + scan.status + " ?";;
     const loadResult: boolean = await getUserInput(userConfirmMessage) ;
-    if( loadResult && (scan.status.toLowerCase() === "completed" || scan.status.toLowerCase() === "partial")){
+    if( loadResult && (scan.status.toLowerCase() === SCAN_STATUS_COMPLETE || scan.status.toLowerCase() === SCAN_STATUS_PARTIAL)){
         update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
         await getResultsWithProgress(logs, scan.id);
         await vscode.commands.executeCommand(REFRESH_TREE);
