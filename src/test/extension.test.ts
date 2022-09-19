@@ -280,9 +280,9 @@ describe("UI tests", async function () {
     // SINCE WE ARE OPENING ZIP - BRANCH DOES NOT EXIST
     // should check the notification and select yes
     await delay(THREE_SECONDS);
-    const branchNotifications = await new Workbench().getNotifications();
-    const branchNotification = branchNotifications[0];
-    await branchNotification.takeAction(YES);
+    // const branchNotifications = await new Workbench().getNotifications();
+    // const branchNotification = branchNotifications[0];
+    // await branchNotification.takeAction(YES);
     await delay(FIFTY_SECONDS);
     await delay(FIVE_SECONDS);
     const resultsNotifications = await new Workbench().getNotifications();
@@ -310,9 +310,9 @@ describe("UI tests", async function () {
     await new Workbench().executeCommand("ast-results.createScan");
     // should check the notification and select yes
     await delay(THREE_SECONDS);
-    const branchNotifications = await new Workbench().getNotifications();
-    const branchNotification = branchNotifications[0];
-    await branchNotification.takeAction(YES);
+    // const branchNotifications = await new Workbench().getNotifications();
+    // const branchNotification = branchNotifications[0];
+    // await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
     await new Workbench().executeCommand("ast-results.cancelScan");
     await delay(TEN_SECONDS);
