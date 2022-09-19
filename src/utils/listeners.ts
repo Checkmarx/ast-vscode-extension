@@ -5,11 +5,10 @@ import { REFRESH_TREE } from "./common/commands";
 import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
 import { get, update } from "./common/globalState";
 import { getBranches } from "./ast/ast";
-import { isKicsFile, isSystemFile} from "./utils";
+import { getGitAPIRepository, isKicsFile, isSystemFile} from "./utils";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
-	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
-	const gitApi = gitExtension.getAPI(1);
+	const gitApi = await getGitAPIRepository();
 	const state = gitApi.repositories[0]?.state;
 	if (state) {
 		return addRepositoryListener(context, logs, state);

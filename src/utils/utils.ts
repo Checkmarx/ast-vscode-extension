@@ -15,6 +15,7 @@ import {
 import { getBfl } from './sast/bfl';
 import { SHOW_ERROR } from './common/commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
+import { GitExtension } from '../types/git';
 
 export function getProperty(o: any, propertyName: string): any {
 	const properties = propertyName.split(".");
@@ -230,5 +231,10 @@ export async function enableButton(button: string){
 
 export async function disableButton(button: string){
 	await vscode.commands.executeCommand("setContext", button, false);
+}
+
+export async function getGitAPIRepository() {
+	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
+	return gitExtension.getAPI(1);
 }
 

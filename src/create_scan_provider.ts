@@ -13,13 +13,12 @@ import {
     SCAN_ID_KEY,
     SCAN_LABEL, SCAN_STATUS_PARTIAL, YES, SCAN_STATUS_RUNNING
 } from "./utils/common/constants";
-import {disableButton, enableButton, getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
+import {disableButton, enableButton, getGitAPIRepository, getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import {REFRESH_TREE} from "./utils/common/commands";
 
-function getBranchFromWorkspace() {
-    const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
-    const gitApi = gitExtension.getAPI(1);
+async function getBranchFromWorkspace() {
+    const gitApi = await getGitAPIRepository();
     const state = gitApi.repositories[0]?.state;
     return state? state.HEAD?.name : undefined;
 }
