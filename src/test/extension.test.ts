@@ -194,6 +194,79 @@ describe("UI tests", async function () {
     expect(scan).is.not.undefined;
   });
 
+  it("should create scan with success case, branch confirmation", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button(or initiate scan with command)
+    await new Workbench().executeCommand("ast-results.createScan");
+    // SINCE WE ARE OPENING ZIP - BRANCH DOES NOT EXIST
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branchNotifications = await new Workbench().getNotifications();
+    const branchNotification = branchNotifications[0];
+    await branchNotification.takeAction(YES);
+    await delay(TEN_SECONDS);
+    await delay(FIVE_SECONDS);
+    const fileWorkspaceNotifications = await new Workbench().getNotifications();
+    const fileWorkspaceNotification = fileWorkspaceNotifications[0];
+    await fileWorkspaceNotification.takeAction(YES);
+    await delay(FIFTY_SECONDS);
+    await delay(THIRTY_SECONDS);
+    await delay(FIVE_SECONDS);
+    const resultsNotifications = await new Workbench().getNotifications();
+    const firstNotification = resultsNotifications[0];
+    const title = await firstNotification.getMessage();
+    const scanId = title.match(UUID_REGEX_VALIDATION);
+    expect(scanId).to.not.be.undefined;
+    expect(scanId.length).to.be.greaterThan(0);
+    // wait for the user input to load the results
+    await firstNotification.takeAction(YES);
+    await delay(FIVE_SECONDS);
+    // get the scan id from the notification
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+    );
+    await delay(TEN_SECONDS);
+    expect(scan).is.not.undefined;
+  });
+
+  it("should cancel scan", async function () {
+    this.timeout(MAX_TIMEOUT);
+    await delay(THIRTY_SECONDS);
+    // click play button
+    await new Workbench().executeCommand("ast-results.createScan");
+    // should check the notification and select yes
+    await delay(THREE_SECONDS);
+    const branchNotifications = await new Workbench().getNotifications();
+    const branchNotification = branchNotifications[0];
+    await branchNotification.takeAction(YES);
+    await delay(TEN_SECONDS);
+    await delay(FIVE_SECONDS);
+    const fileWorkspaceNotifications = await new Workbench().getNotifications();
+    const fileWorkspaceNotification = fileWorkspaceNotifications[0];
+    await fileWorkspaceNotification.takeAction(YES);
+    await delay(TEN_SECONDS);
+    await new Workbench().executeCommand("ast-results.cancelScan");
+    await delay(TEN_SECONDS);
+    await delay(TEN_SECONDS);
+    const resultsNotifications = await new Workbench().getNotifications();
+    const resultNotification = resultsNotifications[0];
+    const title = await resultNotification.getMessage();
+    expect(title).to.not.be.undefined;
+    const scanId = title.match(UUID_REGEX_VALIDATION);
+    expect(scanId).to.not.be.undefined;
+    await resultNotification.takeAction('Yes');
+    await delay(FIVE_SECONDS);
+    // get latest results
+    let treeScans = await initialize();
+    let scan =  await treeScans?.findItem(
+        "Scan:  " + scanId
+    );
+    await delay(THREE_SECONDS);
+    expect(scan).is.not.undefined;
+  });
+
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
     await delay(THREE_SECONDS);
@@ -272,69 +345,7 @@ describe("UI tests", async function () {
     await delay(THREE_SECONDS);
   });
 
-  it("should create scan with success case, branch confirmation", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THIRTY_SECONDS);
-    // click play button(or initiate scan with command)
-    await new Workbench().executeCommand("ast-results.createScan");
-    // SINCE WE ARE OPENING ZIP - BRANCH DOES NOT EXIST
-    // should check the notification and select yes
-    await delay(THREE_SECONDS);
-    // const branchNotifications = await new Workbench().getNotifications();
-    // const branchNotification = branchNotifications[0];
-    // await branchNotification.takeAction(YES);
-    await delay(FIFTY_SECONDS);
-    await delay(FIFTY_SECONDS);
-    await delay(FIVE_SECONDS);
-    const resultsNotifications = await new Workbench().getNotifications();
-    const firstNotification = resultsNotifications[0];
-    const title = await firstNotification.getMessage();
-    const scanId = title.match(UUID_REGEX_VALIDATION);
-    expect(scanId).to.not.be.undefined;
-    expect(scanId.length).to.be.greaterThan(0);
-    // wait for the user input to load the results
-    await firstNotification.takeAction(YES);
-    await delay(FIVE_SECONDS);
-    // get the scan id from the notification
-    let treeScans = await initialize();
-    let scan =  await treeScans?.findItem(
-        "Scan:  " + scanId
-    );
-    await delay(FIVE_SECONDS);
-    expect(scan).is.not.undefined;
-  });
-
-  it("should cancel scan", async function () {
-    this.timeout(MAX_TIMEOUT);
-    await delay(THIRTY_SECONDS);
-    // click play button
-    await new Workbench().executeCommand("ast-results.createScan");
-    // should check the notification and select yes
-    await delay(THREE_SECONDS);
-    // const branchNotifications = await new Workbench().getNotifications();
-    // const branchNotification = branchNotifications[0];
-    // await branchNotification.takeAction(YES);
-    await delay(TEN_SECONDS);
-    await delay(TEN_SECONDS);
-    await new Workbench().executeCommand("ast-results.cancelScan");
-    await delay(TEN_SECONDS);
-    await delay(TEN_SECONDS);
-    const resultsNotifications = await new Workbench().getNotifications();
-    const resultNotification = resultsNotifications[0];
-    const title = await resultNotification.getMessage();
-    expect(title).to.not.be.undefined;
-    const scanId = title.match(UUID_REGEX_VALIDATION);
-    expect(scanId).to.not.be.undefined;
-    await resultNotification.takeAction('Yes');
-    await delay(FIVE_SECONDS);
-    // get latest results
-    let treeScans = await initialize();
-    let scan =  await treeScans?.findItem(
-        "Scan:  " + scanId
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
-  });
+  
 
   it("should clear all loaded results", async function () {
     this.timeout(MAX_TIMEOUT);
