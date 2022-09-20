@@ -94,8 +94,6 @@ async function getUserInput(msg: string): Promise<boolean> {
     const value = new Promise<boolean>(async (resolve, reject) => {
         await vscode.window.showInformationMessage(msg, YES, NO).then(async (val) => {
             if (val && val === YES) {
-                await disableButton(`${EXTENSION_NAME}.createScanButton`);
-                await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
                 resolve(true);
             } else {
                 await disableButton(`${EXTENSION_NAME}.cancelScanButton`);

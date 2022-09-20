@@ -206,13 +206,13 @@ describe("UI tests", async function () {
     const branchNotification = branchNotifications[0];
     await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
-    await delay(FIVE_SECONDS);
+    await delay(TEN_SECONDS);
     const fileWorkspaceNotifications = await new Workbench().getNotifications();
     const fileWorkspaceNotification = fileWorkspaceNotifications[0];
     await fileWorkspaceNotification.takeAction(YES);
     await delay(FIFTY_SECONDS);
-    await delay(THIRTY_SECONDS);
-    await delay(FIVE_SECONDS);
+    await delay(FIFTY_SECONDS);
+    //await delay(FIVE_SECONDS);
     const resultsNotifications = await new Workbench().getNotifications();
     const firstNotification = resultsNotifications[0];
     const title = await firstNotification.getMessage();
@@ -228,6 +228,7 @@ describe("UI tests", async function () {
         "Scan:  " + scanId
     );
     await delay(TEN_SECONDS);
+    await delay(TEN_SECONDS);
     expect(scan).is.not.undefined;
   });
 
@@ -242,7 +243,7 @@ describe("UI tests", async function () {
     const branchNotification = branchNotifications[0];
     await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
-    await delay(FIVE_SECONDS);
+    await delay(TEN_SECONDS);
     const fileWorkspaceNotifications = await new Workbench().getNotifications();
     const fileWorkspaceNotification = fileWorkspaceNotifications[0];
     await fileWorkspaceNotification.takeAction(YES);
