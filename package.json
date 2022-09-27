@@ -280,14 +280,14 @@
         "category": "checkmarx-ast",
         "title": "Create Scan",
         "icon": "$(notebook-execute)",
-        "enablement": "ast-results.createScanButton"
+        "enablement": "ast-results.isCreateScanEligible && ast-results.createScanButton"
       },
       {
         "command": "ast-results.cancelScan",
         "category": "checkmarx-ast",
         "title": "Cancel Scan",
         "icon": "$(diff-review-close)",
-        "enablement": "ast-results.cancelScanButton"
+        "enablement": "ast-results.isCreateScanEligible && ast-results.cancelScanButton"
       },
       {
         "command": "ast-results.projectPick",

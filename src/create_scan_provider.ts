@@ -62,7 +62,7 @@ async function doesFilesMatch(logs: Logs){
         return true;
     } else{
         logs.info("Files in workspace dont match files in results");
-        return await getUserInput("Files in workspace dont match files in results. Do you want to continue?");
+        return await getUserInput("Project in workspace doesn't match the selected Checkmarx project. Do you want to scan anyway?");
     }
 }
 
@@ -73,7 +73,7 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs){
         logs.info("Branch match the view branch. Initiating scan...")
         return true;
     } else{
-        return await getUserInput("Branch in workspace doesnt match branch in results. Do you want to continue?");
+        return await getUserInput("Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?");
     }
 }
 
@@ -137,7 +137,7 @@ function extractFileNamesFromResults(results: any) {
 }
 
 async function loadLatestResults(context: vscode.ExtensionContext,scan: CxScan,logs: Logs) {
-    const userConfirmMessage = "Do you want to load the latest results for scan id: " + scan.id + " with status: " + scan.status + " ?";;
+    const userConfirmMessage = " Scan finished with status: " + scan.status + ". Do you want to load results?";;
     const loadResult: boolean = await getUserInput(userConfirmMessage) ;
     if( loadResult && (scan.status.toLowerCase() === SCAN_STATUS_COMPLETE || scan.status.toLowerCase() === SCAN_STATUS_PARTIAL)){
         update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });

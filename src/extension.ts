@@ -42,7 +42,7 @@ import { KicsProvider } from "./utils/kics/kics_provider";
 import { applyScaFix } from "./utils/scaFix";
 import { GitExtension } from "./types/git";
 import { getLearnMore } from "./utils/sast/learnMore";
-import {getAstConfiguration, isScanRunning, pollForScan, updateStatusBarItem} from "./utils/ast/ast";
+import {getAstConfiguration, isCreateScanEligible, isScanRunning, pollForScan, updateStatusBarItem} from "./utils/ast/ast";
 import {cancelScan, createScan} from "./create_scan_provider";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -81,6 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.commands.executeCommand(`ast-results.pollForScan`);
   }));
 
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isCreateScanEligible`, await isCreateScanEligible(logs));
   vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, !await isScanRunning(context, createScanStatusBarItem));
   vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.cancelScanButton`, await isScanRunning(context, createScanStatusBarItem));
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.pollForScan`, async () => { await pollForScan(context,logs,createScanStatusBarItem) }));
@@ -245,6 +246,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
   vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isCreateScanEligible`, await isCreateScanEligible(logs));
     const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
     kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
     await vscode.commands.executeCommand(REFRESH_TREE);
