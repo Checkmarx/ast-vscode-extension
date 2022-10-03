@@ -140,20 +140,14 @@ export async function getScans(projectId: string | undefined, branch: string | u
 }
 
 export function getAstConfiguration() {
-	const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseUri") as string;
-	const baseAuthURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseAuthUri") as string;
-	const tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
 	const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
 	
-	if (!baseURI || !tenant || !token) {
+	if (!token) {
 		return undefined;
 	}
 	
 	const config = new CxConfig();
 	config.apiKey = token;
-	config.baseUri = baseURI;
-	config.baseAuthUri = baseAuthURI;
-	config.tenant = tenant;
 	return config;
 }
 

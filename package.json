@@ -729,33 +729,6 @@
         "id": "checkmarx-ast",
         "order": 2,
         "properties": {
-          "checkmarxAST.baseUri": {
-            "order": 2,
-            "type": "string",
-            "description": "AST Server URI",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          "checkmarxAST.baseAuthUri": {
-            "order": 3,
-            "type": "string",
-            "description": "AST Server authentication server URI",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          "checkmarxAST.tenant": {
-            "type": "string",
-            "order": 4,
-            "description": "AST Tenant for authentication",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
           "checkmarxAST.apiKey": {
             "type": "string",
             "order": 5,

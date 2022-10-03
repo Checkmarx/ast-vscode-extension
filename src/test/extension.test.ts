@@ -31,8 +31,6 @@ import {
   THREE_SECONDS,
   TWO_SECONDS,
   CX_API_KEY,
-  CX_TENANT,
-  CX_BASE_URI,
   VS_CLOSE_EDITOR,
   VS_OPEN_FOLDER,
   CX_SELECT_PROJECT,
@@ -62,8 +60,6 @@ import {
   CX_KICS,
   CX_KICS_VALUE,
   CX_API_KEY_SETTINGS,
-  CX_BASE_URI_SETTINGS,
-  CX_TENANT_SETTINGS,
   CX_CATETORY,
   TEN_SECONDS, UUID_REGEX_VALIDATION, CX_TEST_SCAN_PROJECT_NAME,
 } from "./constants";
@@ -114,25 +110,9 @@ describe("UI tests", async function () {
     );
     await apiKeyVal.setValue(process.env.CX_API_KEY + "");
     await delay(TWO_SECONDS);
-    const baseUriVal = await settingsWizard.findSetting(
-      CX_BASE_URI_SETTINGS, CX_CATETORY
-    );
-    await baseUriVal.setValue(process.env.CX_BASE_URI + "");
-    await delay(TWO_SECONDS);
-    const tenantVal = await settingsWizard.findSetting(
-      CX_TENANT_SETTINGS, CX_CATETORY
-    );
-    await tenantVal.setValue(process.env.CX_TENANT + "");
-    await delay(TWO_SECONDS);
     // Validate settings
     const apiKey = await ( await settingsWizard.findSetting(CX_API_KEY_SETTINGS, CX_CATETORY)).getValue();
     expect(apiKey).to.equal(process.env.CX_API_KEY + "");
-    await delay(TWO_SECONDS);
-    const baseURI = await settingsWizard.findSetting(CX_BASE_URI_SETTINGS, CX_CATETORY);
-    expect(await baseURI.getValue()).to.equal(process.env.CX_BASE_URI + "");
-    await delay(TWO_SECONDS);
-    const tenant = await settingsWizard.findSetting(CX_TENANT_SETTINGS, CX_CATETORY);
-    expect(await tenant.getValue()).to.equal(process.env.CX_TENANT + "");
     await delay(TWO_SECONDS);
     await bench.executeCommand(VS_CLOSE_EDITOR);
     await delay(THREE_SECONDS);
