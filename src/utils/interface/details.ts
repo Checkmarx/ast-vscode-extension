@@ -157,40 +157,42 @@ export class Details {
 	// Generic tab component
 	tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string,tab4Label: string,tab5Content:string) {
 		return (
-			`<input type="radio" name="tabs" id="general-tab" checked />
+			`${tab1Label!==""?`<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}
-			</label>
-			<input type="radio" name="tabs" id="learn-tab" />
+			</label>`:""}
+			${tab2Label!==""?`<input type="radio" name="tabs" id="learn-tab" />
 			<label for="learn-tab" id="learn-label">
 				${tab2Label}
-			</label>
-			<input type="radio" name="tabs" id="code-tab" />
+			</label>`:""}
+			${tab4Label!==""?`<input type="radio" name="tabs" id="code-tab" />
 			<label for="code-tab" id="code-label">
 				${tab4Label}
-			</label>
-			<input type="radio" name="tabs" id="changes-tab" />
+			</label>`:""}
+			${tab3Label!==""?`<input type="radio" name="tabs" id="changes-tab" />
 			<label for="changes-tab" id="changes-label">
 				${tab3Label}
-			</label>
-			<div class="tab general">
-				${tab1Content}
-			</div>
-			<div class="tab learn">
-				${tab2Content}
-			</div>
-			<div class="tab changes">
-				${tab3Content}
-			</div>
-			<div class="tab code">
-				<div id="tab-code">
-					<pre class="pre-code">
-						<code id="code">
-							${tab5Content}
-						</code>
-					</pre>
-				</div>
-			</div>`
+			</label>`:""}
+			${tab1Content!==""?`<div class="tab general">
+			${tab1Content}
+			</div>`:""}
+			${tab2Content!==""?`<div class="tab learn">
+			${tab2Content}
+			</div>`:""}
+			${tab3Content!==""?`<div class="tab changes">
+			${tab3Content}
+		</div>`:""}
+		${tab5Content!==""?`<div class="tab code">
+		<div id="tab-code">
+			<pre class="pre-code">
+				<code id="code">
+					${tab5Content}
+				</code>
+			</pre>
+		</div>
+	</div>`:""}
+			
+			`
 		);
 	}
 }
