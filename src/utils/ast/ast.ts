@@ -151,6 +151,26 @@ export function getAstConfiguration() {
 	return config;
 }
 
+export async function isScanEnabled(logs:Logs) :Promise<boolean>{
+	let enabled = false;
+	const apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+	if (!apiKey) {
+		return enabled;
+	}
+	const config = new CxConfig();
+	config.apiKey = apiKey;
+	const cx = new CxWrapper(config);
+	try {
+		enabled = await cx.ideScansEnabled();
+		let mesage=enabled?"Scans enabled from IDE":"Scans from IDE are not enabled for you tenant";
+		logs.info(mesage);
+	} catch (error) {
+		logs.error(error);
+		return enabled;
+	}
+	return enabled;
+}
+
 export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
 	let r=[];
 	const config = getAstConfiguration();
