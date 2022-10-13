@@ -141,13 +141,14 @@ export async function getScans(projectId: string | undefined, branch: string | u
 
 export function getAstConfiguration() {
 	const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+	const additionalParams = vscode.workspace.getConfiguration("checkmarxAST").get("additionalParams") as string;
 	
 	if (!token) {
 		return undefined;
 	}
-	
 	const config = new CxConfig();
 	config.apiKey = token;
+	config.additionalParameters = additionalParams;
 	return config;
 }
 
