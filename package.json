@@ -547,12 +547,12 @@
         {
           "command": "ast-results.createScan",
           "group": "inline@1",
-          "when": "viewItem == project-item"
+          "when": "viewItem == project-item && ast-results.isScanEnabled"
         },
         {
           "command": "ast-results.cancelScan",
           "group": "inline@2",
-          "when": "viewItem == project-item"
+          "when": "viewItem == project-item && ast-results.isScanEnabled"
         },
         {
           "command": "ast-results.projectPick",
@@ -798,7 +798,7 @@
   },
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.58",
-    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../ast-cli-javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.60.tgz",
+
     "copyfiles": "2.4.1",
     "tree-kill": "^1.2.2"
   },
