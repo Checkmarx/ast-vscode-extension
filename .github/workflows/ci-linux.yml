@@ -40,8 +40,8 @@ jobs:
           path: |
             test-resources/screenshots/*.png
           retention-days: 2
-            - name: Upload screenshots
-      - uses: actions/upload-artifact@v3
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v3
         if: failure() && runner.os == 'macOS'
         with: 
           name: screenshots
