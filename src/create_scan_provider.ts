@@ -51,14 +51,14 @@ export async function cancelScan(context: vscode.ExtensionContext, logs: Logs) {
     let scan:Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
     if(scan && scan.id){
         const response = await scanCancel(scan.id);
-        logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response)
+        logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response);
     }
 }
 
 async function doesFilesMatch(logs: Logs){
     let filesExistInResults =  await findFilesInWorkspaceAndResults();
     if(filesExistInResults){
-        logs.info("Files match workspace")
+        logs.info("Files match workspace");
         return true;
     } else{
         logs.info("Files in workspace dont match files in results");
@@ -70,7 +70,7 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs){
     const workspaceBranch = getBranchFromWorkspace();
     const scanBranch: Item = context.workspaceState.get(BRANCH_ID_KEY);
     if(workspaceBranch && workspaceBranch === scanBranch.id){
-        logs.info("Branch match the view branch. Initiating scan...")
+        logs.info("Branch match the view branch. Initiating scan...");
         return true;
     } else{
         return await getUserInput("Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?");

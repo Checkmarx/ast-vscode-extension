@@ -324,14 +324,6 @@ export async function isScanRunning(context: vscode.ExtensionContext, createScan
 	}
 }
 
-export async function isCreateScanEligible(logs:Logs){
-// call wrapper to get the information about the flag.
-// returning false to mock the button
-// Must save the value in workspace state and check when settings are saved as well
-logs.info("Checking if scan is eligible")
-return true;
-}
-
 export async function pollForScan(context: vscode.ExtensionContext,logs: Logs, createScanStatusBarItem: vscode.StatusBarItem){
 	return new Promise<void>((resolve) => {
 		let i = setInterval(async () => {
