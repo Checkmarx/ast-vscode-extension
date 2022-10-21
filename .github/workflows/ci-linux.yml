@@ -23,16 +23,19 @@ jobs:
       - name: Code Linting
         run: npm run lint 
       - name: Set screen for Linux 
+        if: runner.os != 'Linux'
+        run: |
+          npm test 
+      - name: Integration 
         if: runner.os == 'Linux'
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY}}
+          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 & 
-      - name: Integration Tests
-        env:
-          CX_API_KEY: ${{ secrets.API_KEY}}
-          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
-        run:  npm test
+          npm test
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
