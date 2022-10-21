@@ -6,7 +6,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest,windows-latest,macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -20,18 +20,20 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Code Linting
-        run: npm run lint  
+        run: npm run lint 
+      - name: Set screen for Linux 
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install xvfb
+          export DISPLAY=:99.0
+          Xvfb -ac :99 -screen 0 1920x1080x16 & 
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_BASE_URI: ${{ secrets.CX_BASE_URI }}
           CX_TENANT: ${{ secrets.CX_TENANT }}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
-        run: |
-          sudo apt-get install xvfb
-          export DISPLAY=:99.0
-          Xvfb -ac :99 -screen 0 1920x1080x16 & 
-          npm test
+        run:  npm install && npm test
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
@@ -40,3 +42,9 @@ jobs:
           path: |
             test-resources/screenshots/*.png
           retention-days: 2
+            - name: Upload screenshots
+      - uses: actions/upload-artifact@v3
+        if: failure() && runner.os == 'macOS'
+        with: 
+          name: screenshots
+          path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
