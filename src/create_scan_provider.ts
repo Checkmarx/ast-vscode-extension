@@ -1,7 +1,6 @@
 import {AstResult} from "./models/results";
 import * as vscode from "vscode";
 import * as fs from "fs";
-import {GitExtension} from "./types/git";
 import {getScan, scanCancel, scanCreate} from "./utils/ast/ast";
 import {Logs} from "./models/logs";
 import {Item, update} from "./utils/common/globalState";
@@ -137,7 +136,7 @@ function extractFileNamesFromResults(results: any) {
 }
 
 async function loadLatestResults(context: vscode.ExtensionContext,scan: CxScan,logs: Logs) {
-    const userConfirmMessage = " Scan finished with status: " + scan.status + ". Do you want to load results?";;
+    const userConfirmMessage = " Scan finished with status: " + scan.status + ". Do you want to load results? Scan Id: " + scan.id;
     const loadResult: boolean = await getUserInput(userConfirmMessage) ;
     if( loadResult && (scan.status.toLowerCase() === SCAN_STATUS_COMPLETE || scan.status.toLowerCase() === SCAN_STATUS_PARTIAL)){
         update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
