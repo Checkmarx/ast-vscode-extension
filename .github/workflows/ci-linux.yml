@@ -32,7 +32,7 @@ jobs:
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
-        run:  npm install && npm test
+        run:  npm test
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
