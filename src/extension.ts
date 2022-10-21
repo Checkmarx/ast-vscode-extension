@@ -24,7 +24,7 @@ import {
   STATUS_GROUP,
   STATE_GROUP,
   QUERY_NAME_GROUP,
-  EXTENSION_FULL_NAME
+  EXTENSION_FULL_NAME, SCAN_CREATE, SCAN_CANCEL
 } from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import * as path from "path";
@@ -37,12 +37,13 @@ import { addRealTimeSaveListener, getBranchListener } from "./utils/listeners";
 import { getCodebashingLink } from "./utils/codebashing/codebashing";
 import { triageSubmit} from "./utils/sast/triage";
 import { REFRESH_TREE } from "./utils/common/commands";
-import { getChanges} from "./utils/utils";
+import {disableButton, enableButton, getChanges} from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { applyScaFix } from "./utils/scaFix";
 import { GitExtension } from "./types/git";
 import { getLearnMore } from "./utils/sast/learnMore";
-import { getAstConfiguration } from "./utils/ast/ast";
+import {getAstConfiguration, isCreateScanEligible, isScanRunning, pollForScan, updateStatusBarItem,isScanEnabled} from "./utils/ast/ast";
+import {cancelScan, createScan} from "./create_scan_provider";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -54,7 +55,38 @@ export async function activate(context: vscode.ExtensionContext) {
   
   const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  
+
+  const createScanStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => {
+    const scanRunning = await isScanRunning(context, createScanStatusBarItem);
+    if(!scanRunning) {
+      updateStatusBarItem(SCAN_CREATE, true, createScanStatusBarItem);
+      await disableButton(`${EXTENSION_NAME}.createScanButton`);
+      await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
+      await createScan(context, logs);
+      updateStatusBarItem(SCAN_CREATE, false, createScanStatusBarItem);
+    }
+    await vscode.commands.executeCommand(`ast-results.pollForScan`);
+  }));
+
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.cancelScan`, async () => {
+    const scanRunning = await isScanRunning(context, createScanStatusBarItem);
+    if(scanRunning) {
+      updateStatusBarItem(SCAN_CANCEL, true, createScanStatusBarItem);
+      await disableButton(`${EXTENSION_NAME}.cancelScanButton`);
+      await enableButton(`${EXTENSION_NAME}.createScanButton`);
+      await cancelScan(context, logs);
+      updateStatusBarItem(SCAN_CANCEL, false, createScanStatusBarItem);
+    }
+    await vscode.commands.executeCommand(`ast-results.pollForScan`);
+  }));
+
+  //vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isCreateScanEligible`, await isCreateScanEligible(logs));
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, !await isScanRunning(context, createScanStatusBarItem));
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.cancelScanButton`, await isScanRunning(context, createScanStatusBarItem));
+  context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.pollForScan`, async () => { await pollForScan(context,logs,createScanStatusBarItem) }));
+  vscode.commands.executeCommand(`${EXTENSION_NAME}.pollForScan`);
+
   const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection,[],[]);
    // kics auto scan  command
   context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRealtime`, async () => await kicsProvider.runKics()));
@@ -212,8 +244,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Listening to settings changes
   vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+  vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
   vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    //vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isCreateScanEligible`, await isCreateScanEligible(logs));
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
     const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
     kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
     await vscode.commands.executeCommand(REFRESH_TREE);

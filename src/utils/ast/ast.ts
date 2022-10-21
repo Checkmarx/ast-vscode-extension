@@ -4,10 +4,55 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import { RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME } from "../common/constants";
-import { getFilePath } from "../utils";
+import {
+	EXTENSION_NAME,
+	RESULTS_FILE_EXTENSION,
+	RESULTS_FILE_NAME, SCAN_CREATE_ADDITIONAL_PARAMETERS,
+	SCAN_CREATE_ID_KEY, SCAN_POLL_TIMEOUT,
+	SCAN_WAITING
+} from "../common/constants";
+import {disableButton, enableButton, getFilePath} from "../utils";
 import { SastNode } from "../../models/sastNode";
 import AstError from "../../exceptions/AstError";
+import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import {Item} from "../common/globalState";
+import {Logs} from "../../models/logs";
+import {pollForScanResult} from "../../create_scan_provider";
+
+
+export async function scanCreate(projectName: string, branchName: string, sourcePath: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!projectName){
+		return;
+	}
+	if(!branchName){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	let params = new Map<CxParamType,string>();
+	params.set(CxParamType.S,sourcePath);
+	params.set(CxParamType.BRANCH,branchName);
+	params.set(CxParamType.PROJECT_NAME,projectName);
+	params.set(CxParamType.ADDITIONAL_PARAMETERS,SCAN_CREATE_ADDITIONAL_PARAMETERS);
+	const scan = await cx.scanCreate(params);
+	return scan.payload[0];
+}
+
+export async function scanCancel(scanId: string) {
+	const config = getAstConfiguration();
+	if (!config) {
+		return [];
+	}
+	if(!scanId){
+		return;
+	}
+	const cx = new CxWrapper(config);
+	const scan = await cx.scanCancel(scanId);
+	return scan.exitCode === 0 ;
+}
 
 export async function getResults(scanId: string| undefined) {
 	const config = getAstConfiguration();
@@ -95,21 +140,36 @@ export async function getScans(projectId: string | undefined, branch: string | u
 }
 
 export function getAstConfiguration() {
-	const baseURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseUri") as string;
-	const baseAuthURI = vscode.workspace.getConfiguration("checkmarxAST").get("baseAuthUri") as string;
-	const tenant = vscode.workspace.getConfiguration("checkmarxAST").get("tenant") as string;
 	const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+	const additionalParams = vscode.workspace.getConfiguration("checkmarxAST").get("additionalParams") as string;
 	
-	if (!baseURI || !tenant || !token) {
+	if (!token) {
 		return undefined;
 	}
-	
 	const config = new CxConfig();
 	config.apiKey = token;
-	config.baseUri = baseURI;
-	config.baseAuthUri = baseAuthURI;
-	config.tenant = tenant;
+	config.additionalParameters = additionalParams;
 	return config;
+}
+
+export async function isScanEnabled(logs:Logs) :Promise<boolean>{
+	let enabled = false;
+	const apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+	if (!apiKey) {
+		return enabled;
+	}
+	const config = new CxConfig();
+	config.apiKey = apiKey;
+	const cx = new CxWrapper(config);
+	try {
+		enabled = await cx.ideScansEnabled();
+		let mesage=enabled?"Scans from IDE are enabled":"Scans from IDE are not enabled for you tenant";
+		logs.info(mesage);
+	} catch (error) {
+		logs.error(error);
+		return enabled;
+	}
+	return enabled;
 }
 
 export async function triageShow(projectId: string,similarityId: string,scanType: string) : Promise<any[] | undefined>{
@@ -247,4 +307,48 @@ export async function learnMore(queryID: string) : Promise<any[] | undefined>{
 		throw new Error(scans.status);
 	}
 	return r;
+}
+
+export async function isScanRunning(context: vscode.ExtensionContext, createScanStatusBarItem: vscode.StatusBarItem) {
+	const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+	if(scanId && scanId.id){
+		await disableButton(`${EXTENSION_NAME}.createScanButton`);
+		await enableButton(`${EXTENSION_NAME}.cancelScanButton`);
+		updateStatusBarItem(SCAN_WAITING, true, createScanStatusBarItem);
+		return true;
+	} else {
+		await disableButton(`${EXTENSION_NAME}.cancelScanButton`);
+		await enableButton(`${EXTENSION_NAME}.createScanButton`);
+		updateStatusBarItem(SCAN_WAITING, false, createScanStatusBarItem);
+		return false;
+	}
+}
+
+export async function isCreateScanEligible(logs:Logs){
+// call wrapper to get the information about the flag.
+// returning false to mock the button
+// Must save the value in workspace state and check when settings are saved as well
+logs.info("Checking if scan is eligible")
+return true;
+}
+
+export async function pollForScan(context: vscode.ExtensionContext,logs: Logs, createScanStatusBarItem: vscode.StatusBarItem){
+	return new Promise<void>((resolve) => {
+		let i = setInterval(async () => {
+			let scanRunning = await isScanRunning(context, createScanStatusBarItem);
+			if (scanRunning) {
+				const scanId : Item = context.workspaceState.get(SCAN_CREATE_ID_KEY);
+				await pollForScanResult(context,scanId.id,logs);
+				resolve();
+			} else{
+				clearInterval(i);
+			}
+		},SCAN_POLL_TIMEOUT);
+	});
+}
+
+
+export  function updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem){
+	statusBarItem.text = text;
+	show? statusBarItem.show() : statusBarItem.hide();
 }

@@ -7,8 +7,6 @@ export const THREE_SECONDS: number = 3000;
 export const TWO_SECONDS: number = 2000;
 
 export const CX_API_KEY: string = "Api Key";
-export const CX_TENANT: string = "Tenant";
-export const CX_BASE_URI: string = "Base Uri";
 export const CX_KICS_VALUE: string = "kics";
 
 export const VS_CLOSE_EDITOR: string = "Close Editor";
@@ -47,6 +45,8 @@ export const CX_GROUP_STATE: string = "checkmarx-ast: Group by: State";
 export const CX_GROUP_QUERY_NAME: string = "checkmarx-ast: Group by: Vulnerability Type";
 
 export const CX_CATETORY = "Checkmarx AST";
-export const CX_BASE_URI_SETTINGS = "Base Uri";
-export const CX_TENANT_SETTINGS = "Tenant";
 export const CX_API_KEY_SETTINGS = "Api Key";
+
+export const UUID_REGEX_VALIDATION = /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
+
+export const CX_TEST_SCAN_PROJECT_NAME = process.env.CX_TEST_PROJECT_NAME ? process.env.CX_TEST_PROJECT_NAME : "webgoat";

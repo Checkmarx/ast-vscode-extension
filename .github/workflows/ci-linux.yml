@@ -30,8 +30,6 @@ jobs:
       - name: Integration Tests
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
-          CX_BASE_URI: ${{ secrets.CX_BASE_URI }}
-          CX_TENANT: ${{ secrets.CX_TENANT }}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run:  npm install && npm test
       - name: Upload test artifacts
