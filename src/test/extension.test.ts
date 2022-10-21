@@ -187,12 +187,13 @@ describe("UI tests", async function () {
     await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
     await delay(TEN_SECONDS);
+    await delay(FIFTY_SECONDS);
     const fileWorkspaceNotifications = await new Workbench().getNotifications();
     const fileWorkspaceNotification = fileWorkspaceNotifications[0];
     await fileWorkspaceNotification.takeAction(YES);
     await delay(FIFTY_SECONDS);
     await delay(FIFTY_SECONDS);
-    //await delay(FIVE_SECONDS);
+    await delay(FIFTY_SECONDS);
     const resultsNotifications = await new Workbench().getNotifications();
     const firstNotification = resultsNotifications[0];
     const title = await firstNotification.getMessage();
@@ -231,21 +232,6 @@ describe("UI tests", async function () {
     await new Workbench().executeCommand("ast-results.cancelScan");
     await delay(TEN_SECONDS);
     await delay(TEN_SECONDS);
-    const resultsNotifications = await new Workbench().getNotifications();
-    const resultNotification = resultsNotifications[0];
-    const title = await resultNotification.getMessage();
-    expect(title).to.not.be.undefined;
-    const scanId = title.match(UUID_REGEX_VALIDATION);
-    expect(scanId).to.not.be.undefined;
-    await resultNotification.takeAction('Yes');
-    await delay(FIVE_SECONDS);
-    // get latest results
-    let treeScans = await initialize();
-    let scan =  await treeScans?.findItem(
-        "Scan:  " + scanId
-    );
-    await delay(THREE_SECONDS);
-    expect(scan).is.not.undefined;
   });
 
   it("should clear all loaded results", async function () {
