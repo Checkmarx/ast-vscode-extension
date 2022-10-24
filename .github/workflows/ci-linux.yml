@@ -22,8 +22,11 @@ jobs:
         run: npm install
       - name: Code Linting
         run: npm run lint 
-      - name: Set screen for Linux 
+      - name: Run tests
         if: runner.os != 'Linux'
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY}}
+          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: |
           npm test 
       - name: Integration 
