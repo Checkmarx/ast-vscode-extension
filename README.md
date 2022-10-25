@@ -32,41 +32,68 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#overview">Overview</a>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Setting Up</a></li>
-      </ul>
+      <a href="#key-features">Key Features</a>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#prerequisites">Prerequisites</a></li>
+    <li><a href="#initial-setup">Initial Setup</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
 
+## Overview
+
+Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. 
+The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The plugin offers actionable remediation insights in real-time.
+
+This extension comprises two separate tools:
+- **Checkmarx KICS Auto Scanning** is a free tool for identifying vulnerabilities in your IaC files (of [supported types](https://docs.kics.io/latest/platforms/)). Just install the extension and Checkmarx automatically starts identifying IaC vulnerabilities in your project and providing remediation recommendations. [KICS Auto Scanning](https://www.youtube.com/watch?v=sFD-9CQXfs0)
+
+![](./media/kics_quickfix.gif)
+
+![](./media/kics_autoscan.gif)
 
 
-## About The Project
-
-The CxAST Visual Studio Code plugin (extension) enables you to import results from a CxAST scan directly into your VS Code console. You can view the vulnerabilities that were identified in your source code and navigate directly to the vulnerable code in the editor. 
-
-### Main Features
-- Import CxAST scan results
-- Show results from all scan types (CxSAST, CxSCA, and KICS)
-- Group results by file, language, severity, and status
-- Navigate from results directly to the vulnerable code in the editor
-- Vulnerable code is highlighted in the editor
+- **Checkmarx One results** enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. 
+This tool requires authentication, using credentials from your Checkmarx One account.
 
 
+### Key Features
+- **Checkmarx KICS Auto Scanning**
+  - Free tool, no Checkmarx account required.
+  - Scan as you code, with new a new scan running in the background whenever you save an IaC file.
+  - Recommendations for one-click Auto Remediation actions.
+- **Checkmarx One Results**
+  - Access the full power of Checkmarx One (SAST, SCA, and KICS) directly from your IDE.
+  - Run a new scan from your IDE even before committing the code, or import scan results from your Checkmarx One account.
+  - Provides actionable results including remediation recommendations. Navigate from results directly to the vulnerable code in the editor and get right down to work on the remediation.
+  - Recommendations for one-click Auto Remediation actions for open-source risks.
+  - Triage results (by adjusting the severity and state and adding comments) directly from the VS Code console.
 
-<!-- GETTING STARTED -->
-## Getting Started
+## Prerequisites
+**KICS Auto Scanning:**
+You must have Docker installed and running in your environment
 
-All our documentation on how to get started with our extension can be found [here](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).
+**For Checkmarx One Results:**
+You need to have a Checkmarx One account and an API key for your account. To create an API key, see [Generating an API Key](https://checkmarx.com/resource/documents/en/34965-118315-authentication-for-checkmarx-one-cli.html#UUID-a4e31a96-1f36-6293-e95a-97b4b9189060_UUID-1e7abdfa-77eb-2a6c-f12a-c812a1e1dcf7).
+
+## Initial Setup
+For **KICS Auto Scanning**, no configuration is needed, just install the extension, and start getting results!
+For **Checkmarx One Results**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_id_VisualStudioCode-ASTResults-SettinguptheExtension).
+
+Checkmarx One:
+- You have a Checkmarx One account and can run Checkmarx One scans on your source code.
+- You have an API key for your Checkmarx One account.
+
+Kics Auto Scanning:
+- You must have Docker installed and running in your environment (For KICS auto scanning only)
+
+See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html) and [Checkmarx One Results](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
 
 
 ## Contributing
