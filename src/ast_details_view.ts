@@ -184,7 +184,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             this.result.type==="sca"?
               html.scaView(severityPath,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,scaUpgrade,scaUrl)
             :
-              html.tab(html.generalTab(cxPath),html.detailsTab(),"","General","Learn More","","Code Samples","No code samples")
+              html.tab(html.generalTab(cxPath),"",html.loader(),"General","","Changes","","")
           }
         </div>
         <script nonce="${nonce}" src="${scriptUri}">
