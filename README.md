@@ -47,6 +47,8 @@
 </details>
 
 
+<!-- GETTING STARTED -->
+## Getting Started
 
 ## Overview
 
@@ -88,13 +90,18 @@ You need to have a Checkmarx One account and an API key for your account. To cre
 For **KICS Auto Scanning**, no configuration is needed, just install the extension, and start getting results!
 For **Checkmarx One Results**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_id_VisualStudioCode-ASTResults-SettinguptheExtension).
 
+Checkmarx One:
+- You have a Checkmarx One account and can run Checkmarx One scans on your source code.
+- You have an API key for your Checkmarx One account.
 
+Kics Auto Scanning:
+- You must have Docker installed and running in your environment (For KICS auto scanning only)
 
-<!-- GETTING STARTED -->
-## Getting Started
 
 See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html) and [Checkmarx One Results](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
 
+# Quick Fix
+![](./media/kics_quickfix.gif)
 
 ## Contributing
 
