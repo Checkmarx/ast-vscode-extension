@@ -785,7 +785,7 @@
     "@types/node": "^18.11.4",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
-    "@typescript-eslint/parser": "^5.40.1",
+    "@typescript-eslint/parser": "^5.41.0",
     "chai": "4.3.6",
     "eslint": "^8.23.1",
     "mocha": "10.1.0",
