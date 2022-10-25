@@ -56,12 +56,12 @@ Checkmarx continues to spearhead the shift-left approach to AppSec by bringing o
 The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The plugin offers actionable remediation insights in real-time.
 
 This extension comprises two separate tools:
-- **Checkmarx KICS Auto Scanning** is a free tool for identifying vulnerabilities in your IaC files (of [supported types](https://docs.kics.io/latest/platforms/)). Just install the extension and Checkmarx automatically starts identifying IaC vulnerabilities in your project and providing remediation recommendations.
+- **Checkmarx KICS Auto Scanning** is a free tool for identifying vulnerabilities in your IaC files (of [supported types](https://docs.kics.io/latest/platforms/)). Just install the extension and Checkmarx automatically starts identifying IaC vulnerabilities in your project and providing remediation recommendations. [KICS Auto Scanning](https://www.youtube.com/watch?v=sFD-9CQXfs0)
 
 ![](./media/kics_quickfix.gif)
 
 ![](./media/kics_autoscan.gif)
-[](https://www.youtube.com/watch?v=sFD-9CQXfs0)
+
 
 - **Checkmarx One results** enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. 
 This tool requires authentication, using credentials from your Checkmarx One account.
