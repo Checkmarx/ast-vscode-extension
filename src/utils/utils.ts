@@ -3,10 +3,19 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
 import { get, updateError } from "./common/globalState";
-import { getBranches, getProject, getProjectList, getResults, getScan, getScans, learnMore, triageShow } from "./ast/ast";
+import {
+	getBranches,
+	getProject,
+	getProjectList,
+	getResults,
+	getScan,
+	getScans,
+	triageShow
+} from "./ast/ast";
 import { getBfl } from './sast/bfl';
 import { SHOW_ERROR } from './common/commands';
 import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
+import { GitExtension } from '../types/git';
 
 export function getProperty(o: any, propertyName: string): any {
 	const properties = propertyName.split(".");
@@ -214,5 +223,18 @@ export function getScanLabel(createdAt: string, id: string) {
 	const seconds = date.getSeconds()	< 10 ? "0" + date.getSeconds() : date.getSeconds();
 	var dateString = year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
 	return dateString + " " + id;
+}
+
+export async function enableButton(button: string){
+	await vscode.commands.executeCommand("setContext", button, true);
+}
+
+export async function disableButton(button: string){
+	await vscode.commands.executeCommand("setContext", button, false);
+}
+
+export async function getGitAPIRepository() {
+	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
+	return gitExtension.getAPI(1);
 }
 

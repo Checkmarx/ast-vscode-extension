@@ -276,6 +276,20 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.createScan",
+        "category": "checkmarx-ast",
+        "title": "Create Scan",
+        "icon": "$(notebook-execute)",
+        "enablement": "ast-results.isScanEnabled && ast-results.createScanButton"
+      },
+      {
+        "command": "ast-results.cancelScan",
+        "category": "checkmarx-ast",
+        "title": "Cancel Scan",
+        "icon": "$(diff-review-close)",
+        "enablement": "ast-results.isScanEnabled && ast-results.cancelScanButton"
+      },
+      {
         "command": "ast-results.projectPick",
         "category": "checkmarx-ast",
         "title": "Select Project",
@@ -531,8 +545,18 @@
       ],
       "view/item/context": [
         {
+          "command": "ast-results.createScan",
+          "group": "inline@1",
+          "when": "viewItem == project-item && ast-results.isScanEnabled"
+        },
+        {
+          "command": "ast-results.cancelScan",
+          "group": "inline@2",
+          "when": "viewItem == project-item && ast-results.isScanEnabled"
+        },
+        {
           "command": "ast-results.projectPick",
-          "group": "inline",
+          "group": "inline@3",
           "when": "viewItem == project-item"
         },
         {
@@ -705,37 +729,19 @@
         "id": "checkmarx-ast",
         "order": 2,
         "properties": {
-          "checkmarxAST.baseUri": {
-            "order": 2,
-            "type": "string",
-            "description": "AST Server URI",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          "checkmarxAST.baseAuthUri": {
-            "order": 3,
-            "type": "string",
-            "description": "AST Server authentication server URI",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          "checkmarxAST.tenant": {
-            "type": "string",
-            "order": 4,
-            "description": "AST Tenant for authentication",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
           "checkmarxAST.apiKey": {
             "type": "string",
             "order": 5,
             "description": "AST API KEY for authentication",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          "checkmarxAST.additionalParams": {
+            "type": "string",
+            "order": 6,
+            "description": "Additional Parameters",
             "properties": {
               "type": "string",
               "default": ""
