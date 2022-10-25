@@ -46,10 +46,6 @@
   </ol>
 </details>
 
-
-<!-- GETTING STARTED -->
-## Getting Started
-
 ## Overview
 
 Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. 
