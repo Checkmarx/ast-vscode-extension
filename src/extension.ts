@@ -219,11 +219,14 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(newDetails);
   
   // Branch Listener
-  const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')!.exports;
-  if (gitExtension.enabled) {
-    context.subscriptions.push(await getBranchListener(context, logs));
-  } else {
-    logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
+  const gitExtension = vscode.extensions.getExtension('vscode.git');
+  if (gitExtension) {
+    await gitExtension.activate()
+    if (gitExtension && gitExtension.exports.enabled) {
+      context.subscriptions.push(await getBranchListener(context, logs));
+    } else {
+      logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
+    }
   }
 
   // Settings
