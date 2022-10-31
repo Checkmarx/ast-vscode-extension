@@ -184,7 +184,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (!obj) {
       return;
     }
-    const item = new TreeItem(obj.label, undefined, obj);
+    const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
     let node;
     // Verify the current severity filters applied
     if (this.issueLevel.length > 0) {
