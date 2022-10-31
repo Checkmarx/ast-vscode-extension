@@ -59,7 +59,7 @@ export enum IssueFilter {
 	status = "status",
 	language = "language",
 	state = "state",
-	type = "type",
+	type = "displayName",
 	queryName = "queryName",
 	packageIdentifier = "scaNode.packageIdentifier"
   }
