@@ -40,7 +40,6 @@ import { REFRESH_TREE } from "./utils/common/commands";
 import {disableButton, enableButton, getChanges} from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { applyScaFix } from "./utils/scaFix";
-import { GitExtension } from "./types/git";
 import { getLearnMore } from "./utils/sast/learnMore";
 import {getAstConfiguration, isScanRunning, pollForScan, updateStatusBarItem,isScanEnabled} from "./utils/ast/ast";
 import {cancelScan, createScan} from "./create_scan_provider";
@@ -221,12 +220,15 @@ export async function activate(context: vscode.ExtensionContext) {
   // Branch Listener
   const gitExtension = vscode.extensions.getExtension('vscode.git');
   if (gitExtension) {
-    await gitExtension.activate()
+    await gitExtension.activate();
     if (gitExtension && gitExtension.exports.enabled) {
+      logs.info("Git Extension - Add branch.");
       context.subscriptions.push(await getBranchListener(context, logs));
     } else {
-      logs.warn("Could not find active git extension in workspace, will not listen to branch changes");
+      logs.warn("Git Extension - Could not find active git extension in workspace.");
     }
+  } else {
+    logs.warn("Git extension - Could not find vscode.git installed.");
   }
 
   // Settings
