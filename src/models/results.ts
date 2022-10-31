@@ -9,7 +9,7 @@ import { ScaNode } from "./scaNode";
 export class AstResult {
   label: string = "";
   type: string = "";
-  displayName: string="";
+  displayName: string = "";
   fileName: string = "";
   queryName: string = "";
   severity: string = "";
