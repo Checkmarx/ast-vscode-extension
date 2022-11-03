@@ -179,7 +179,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           }
           ${
             this.result.type==="sast"?
-              html.tab(html.generalTab(cxPath),html.detailsTab(), html.loader(),"General","Learn More","Changes","Code Samples","No code samples")
+              html.tab(html.generalTab(cxPath),html.detailsTab(), html.loader(),"General","Learn More","Changes","Remediation Examples","No remediation examples")
             :
             this.result.type==="sca"?
               html.scaView(severityPath,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,scaUpgrade,scaUrl)
