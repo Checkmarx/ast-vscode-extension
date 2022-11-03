@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { GitExtension, RepositoryState } from "../types/git";
 import { REFRESH_TREE } from "./common/commands";
-import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
+import { BRANCH_ID_KEY, BRANCH_LABEL, BRANCH_NAME, BRANCH_TEMP_ID_KEY, KICS_REALTIME_FILE, PROJECT_ID_KEY, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
 import { get, update } from "./common/globalState";
 import { getBranches } from "./ast/ast";
 import { getGitAPIRepository, isKicsFile, isSystemFile} from "./utils";
@@ -30,10 +30,10 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
 		}
 		
 		update(context, BRANCH_TEMP_ID_KEY, {id: branchName, name: branchName}); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
-		
+		update(context, BRANCH_NAME, {id: branchName, name: branchName})
+
 		const projectItem = get(context, PROJECT_ID_KEY);
 		const currentBranch = get(context, BRANCH_ID_KEY);
-		//logs.info(`Repo change: New branch ${branchName} | Existing branch ${currentBranch?.id} | Project ${projectItem?.id}`);
 		
 		if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
 			getBranches(projectItem.id).then((branches) => {

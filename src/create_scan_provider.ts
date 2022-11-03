@@ -3,25 +3,23 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import {getScan, scanCancel, scanCreate} from "./utils/ast/ast";
 import {Logs} from "./models/logs";
-import {Item, update} from "./utils/common/globalState";
+import {get, Item, update} from "./utils/common/globalState";
 import {
     BRANCH_ID_KEY,
     EXTENSION_NAME, NO,
     PROJECT_ID_KEY, SCAN_STATUS_COMPLETE,
     SCAN_CREATE_ID_KEY,
     SCAN_ID_KEY,
-    SCAN_LABEL, SCAN_STATUS_PARTIAL, YES, SCAN_STATUS_RUNNING
+    SCAN_LABEL, SCAN_STATUS_PARTIAL, YES, SCAN_STATUS_RUNNING, BRANCH_TEMP_ID_KEY, BRANCH_NAME
 } from "./utils/common/constants";
-import {disableButton, enableButton, getGitAPIRepository, getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
+import {disableButton, enableButton, getResultsFilePath, getResultsWithProgress, getScanLabel} from "./utils/utils";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import {REFRESH_TREE} from "./utils/common/commands";
 
-async function getBranchFromWorkspace() {
-    const gitApi = await getGitAPIRepository();
-    const state = gitApi.repositories[0]?.state;
-    return state? state.HEAD?.name : undefined;
+function getBranchFromWorkspace(context: vscode.ExtensionContext) {
+    const item = get(context, BRANCH_NAME)
+    return item ? item.name : "";
 }
-
 
 export async function pollForScanResult(context: vscode.ExtensionContext,scanId: string,logs: Logs) {
     let scanResult = await getScan(scanId);
@@ -66,7 +64,7 @@ async function doesFilesMatch(logs: Logs){
 }
 
 async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs){
-    const workspaceBranch = getBranchFromWorkspace();
+    const workspaceBranch = getBranchFromWorkspace(context);
     const scanBranch: Item = context.workspaceState.get(BRANCH_ID_KEY);
     if(workspaceBranch && workspaceBranch === scanBranch.id){
         logs.info("Branch match the view branch. Initiating scan...");

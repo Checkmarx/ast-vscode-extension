@@ -163,8 +163,6 @@ export async function isScanEnabled(logs:Logs) :Promise<boolean>{
 	const cx = new CxWrapper(config);
 	try {
 		enabled = await cx.ideScansEnabled();
-		let mesage=enabled?"Scans from IDE are enabled":"Scans from IDE are not enabled for you tenant";
-		logs.info(mesage);
 	} catch (error) {
 		logs.error(error);
 		return enabled;

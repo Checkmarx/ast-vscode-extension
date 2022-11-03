@@ -28,6 +28,7 @@ export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
 export const SELECTED_SCAN_KEY: string = "ast-results-scan-name";
 export const BRANCH_ID_KEY: string = "ast-results-branch-id";
+export const BRANCH_NAME: string = "ast-results-branch-name";
 export const BRANCH_TEMP_ID_KEY: string = "ast-results-temp-branch-id";
 
 export const PROJECT_LABEL: string = "Project: ";
@@ -113,4 +114,4 @@ export const SCAN_STATUS_PARTIAL = "partial";
 export const SCAN_STATUS_RUNNING = "running";
 
 // CREATE SCAN ADDITIONAL ARGUMENTS
-export const SCAN_CREATE_ADDITIONAL_PARAMETERS = "--async --sast-incremental";
+export const SCAN_CREATE_ADDITIONAL_PARAMETERS = "--async --sast-incremental --resubmit";
