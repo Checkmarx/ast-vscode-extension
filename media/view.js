@@ -308,7 +308,7 @@
 		return html;
 	}
 
-	// Code samples content
+	// Remediation examples content
 	function infoCodeContainer(learnArray){
 		let html = '<div>';
 		if(learnArray.length>0){
@@ -332,7 +332,7 @@
 			html+=
 				`
 				<p>
-					No code samples available to display. 
+					No remediation examples available to display. 
 				</p>
 				`;
 		}
