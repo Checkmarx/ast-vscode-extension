@@ -88,6 +88,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     update(this.context, BRANCH_ID_KEY, undefined);
     await this.refreshData();
   }
+  
+  refresh(): void {
+    this._onDidChangeTreeData.fire(undefined);
+  }
 
   async refreshData(): Promise<void> {
     this.showStatusBarItem();
@@ -193,9 +197,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         this.issueLevel.includes(obj.getSeverity()) &&
         this.stateLevel.includes(obj.getState()!)
       ) {
-        if(obj.type==="kics"){
-          console.log("debug");
-        }
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,

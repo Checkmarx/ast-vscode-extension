@@ -1,30 +1,45 @@
 import * as vscode from "vscode";
 import * as kill from 'tree-kill';
 import * as path from "path";
-import { Logs } from "../../models/logs";
-import { KICS_COUNT, KICS_QUERIES, KICS_RESULTS, KICS_RESULTS_FILE, KICS_TOTAL_COUNTER, PROCESS_OBJECT, PROCESS_OBJECT_KEY } from "../common/constants";
-import { get, update } from "../common/globalState";
-import { applyKicsCodeLensProvider, applyKicsDiagnostic, createKicsScan, getCurrentFile, resultsSummaryLogs,remediationSummaryLogs} from "./realtime";
+import {join} from "path";
+import {Logs} from "../../models/logs";
+import {
+    KICS_COUNT,
+    KICS_QUERIES,
+    KICS_RESULTS,
+    KICS_RESULTS_FILE,
+    KICS_TOTAL_COUNTER,
+    PROCESS_OBJECT,
+    PROCESS_OBJECT_KEY
+} from "../common/constants";
+import {get, update} from "../common/globalState";
+import {
+    applyKicsCodeLensProvider,
+    applyKicsDiagnostic,
+    createKicsScan,
+    getCurrentFile,
+    remediationSummaryLogs,
+    resultsSummaryLogs
+} from "./realtime";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
-import { KicsCodeActionProvider } from "./kicsCodeActions";
-import { kicsRemediation } from "../ast/ast";
-import { writeFileSync } from "fs";
-import { join } from "path";
-import { KicsDiagnostic } from "./kicsDiagnostic";
-import { KICS_REALTIME } from "../common/commands";
+import {CxCommandOutput} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import {KicsCodeActionProvider} from "./kicsCodeActions";
+import {kicsRemediation} from "../ast/ast";
+import {writeFileSync} from "fs";
+import {KicsDiagnostic} from "./kicsDiagnostic";
+import {KICS_REALTIME} from "../common/commands";
 
 export class KicsProvider {
 	public process:any;
 	public codeLensDisposable:vscode.Disposable;
 	public codeActionDisposable:vscode.Disposable;
 	constructor(
-	  private readonly context: vscode.ExtensionContext,
-	  private readonly logs: Logs,
-	  private readonly kicsStatusBarItem: vscode.StatusBarItem,
-	  private readonly diagnosticCollection: vscode.DiagnosticCollection,
-	  private fixableResults : any,
-	  private fixableResultsByLine : any
+        private readonly context: vscode.ExtensionContext,
+        private readonly logs: Logs,
+        private readonly kicsStatusBarItem: vscode.StatusBarItem,
+        private readonly diagnosticCollection: vscode.DiagnosticCollection,
+        private fixableResults : any,
+        private readonly fixableResultsByLine : any
 	) {
 	  const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
 	  this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx KICS":"$(debug-disconnect) Checkmarx KICS";
@@ -62,7 +77,7 @@ export class KicsProvider {
 		this.process = process;
 		update(this.context, PROCESS_OBJECT, {id: this.process, name: PROCESS_OBJECT_KEY});
 
-		// asyncly wait for the KICS scan to end to create the diagnostics and print the summary
+		// async wait for the KICS scan to end to create the diagnostics and print the summary
 		createObject
 		.then((cxOutput:CxCommandOutput) => {
 			if(cxOutput.exitCode!== 0) {
@@ -99,7 +114,7 @@ export class KicsProvider {
 		// Call KICS remediation
 		this.kicsStatusBarItem.text = "$(sync~spin) Checkmarx KICS: Running KICS Fix";
 		const kicsFile = path.dirname(file.file);
-		const resultsFile = await this.createKicsResultsFile(kicsResults);
+		const resultsFile = this.createKicsResultsFile(kicsResults);
 		let similarityIdFilter = "";
 		if(fixAll===false && fixLine===false){
 			fixedResults[0].files.forEach(element => similarityIdFilter+=element.similarity_id+",");
@@ -117,10 +132,9 @@ export class KicsProvider {
 				if(cxOutput.exitCode===0){
 					// Remove the specific kicsResult from the list of kicsResults
 					// Update the list of fixable results for the quick fix all
-					const filteredkicsResults = kicsResults.results.filter(totalResultsElement => {
-						return !fixedResults.includes(totalResultsElement);
-					});
-					kicsResults.results = filteredkicsResults;
+                    kicsResults.results = kicsResults.results.filter(totalResultsElement => {
+                        return !fixedResults.includes(totalResultsElement);
+                    });
 					// Remove codelens, previous diagnostics and actions
 					applyKicsDiagnostic(new CxKicsRealTime(), file.editor.document.uri, diagnosticCollection,);
 					this.codeLensDisposable.dispose();
