@@ -14,7 +14,7 @@ export async function pollForScanResult(context: vscode.ExtensionContext, status
     return new Promise<void>((resolve) => {
 		setInterval(async () => {
             const scanPreparing = get(context, SCAN_CREATE_PREP_KEY);
-            if (scanPreparing?.id) return;
+            if (scanPreparing?.id) {return;}
 
 			const scanCreateId = get(context, SCAN_CREATE_ID_KEY);
 			if (scanCreateId?.id) {
@@ -23,7 +23,7 @@ export async function pollForScanResult(context: vscode.ExtensionContext, status
                 if (scan && scan.status.toLocaleLowerCase() !== SCAN_STATUS_RUNNING && scan.status.toLocaleLowerCase() !== SCAN_STATUS_QUEUED) {
                     scanFinished(context, scan, logs);
                     updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
-                    clearInterval(this)
+                    clearInterval(this);
                     resolve();
                 }
 			} else {
@@ -52,7 +52,7 @@ export async function cancelScan(context: vscode.ExtensionContext, statusBarItem
     if(scan && scan.id){
         const response = await scanCancel(scan.id);
         logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response);
-        update(context, SCAN_CREATE_ID_KEY, undefined)
+        update(context, SCAN_CREATE_ID_KEY, undefined);
     }
     updateStatusBarItem(SCAN_CANCEL, false, statusBarItem);
 }
@@ -88,20 +88,20 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs){
 
 export async function createScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
     logs.info("Scan initiation started. Checking if scan is eligible to be initiated...");
-    update(context, SCAN_CREATE_PREP_KEY, {id: true, name: ""})
+    update(context, SCAN_CREATE_PREP_KEY, {id: true, name: ""});
     updateStatusBarItem(SCAN_CREATE, true, statusBarItem);
 
     updateStatusBarItem(SCAN_CREATE_VERIFY_BRANCH, true, statusBarItem);
     if (!await doesBranchMatch(context, logs)) {
         updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
-        update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""})
+        update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""});
         return;
     }
 
     updateStatusBarItem(SCAN_CREATE_VERIFY_FILES, true, statusBarItem);
     if (!await doesFilesMatch(logs)) {
         updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
-        update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""})
+        update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""});
         return;
     }
 
@@ -109,7 +109,7 @@ export async function createScan(context: vscode.ExtensionContext, statusBarItem
     await createScanForProject(context,logs);
     
     updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
-    update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""})
+    update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""});
 
     await vscode.commands.executeCommand(`ast-results.pollForScan`);
 }
