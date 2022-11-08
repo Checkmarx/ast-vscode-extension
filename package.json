@@ -787,7 +787,7 @@
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.0",
     "chai": "4.3.6",
-    "eslint": "^8.26.0",
+    "eslint": "^8.27.0",
     "mocha": "10.1.0",
     "typescript": "^4.7.4",
     "vsce": "^2.13.0",
