@@ -17,7 +17,7 @@
     <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/logo.png" alt="Logo" width="80" height="80" />
   </a>
 
-  <h3 align="center">AST-VSCODE-PLUGIN</h3>
+  <h3 align="center">VSCODE PLUGIN</h3>
 
   <p align="center">
     <a href="https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html"><strong>Explore the docs »</strong></a>
@@ -54,13 +54,16 @@ The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, ide
 This extension comprises two separate tools:
 - **Checkmarx KICS Auto Scanning** is a free tool for identifying vulnerabilities in your IaC files (of [supported types](https://docs.kics.io/latest/platforms/)). Just install the extension and Checkmarx automatically starts identifying IaC vulnerabilities in your project and providing remediation recommendations. [KICS Auto Scanning](https://www.youtube.com/watch?v=sFD-9CQXfs0)
 
-![](./media/kics_quickfix.gif)
+![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_kics_auto_remediation.gif)
 
-![](./media/kics_autoscan.gif)
 
 
 - **Checkmarx One results** enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. 
 This tool requires authentication, using credentials from your Checkmarx One account.
+
+![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif)
+
+![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif)
 
 
 ### Key Features
@@ -112,7 +115,7 @@ Distributed under the [Apache 2.0](LICENSE). See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Checkmarx - AST Integrations Team
+Checkmarx - Integrations Team
 
 Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github.com/Checkmarx/ast-vscode-extension)
 
