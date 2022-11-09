@@ -53,10 +53,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const runScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => {
-        await createScan(context, runScanStatusBar, logs)
+        await createScan(context, runScanStatusBar, logs);
     }));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.cancelScan`, async () => {
-        await cancelScan(context, runScanStatusBar, logs)
+        await cancelScan(context, runScanStatusBar, logs);
     }));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.pollForScan`, async () => {
         await pollForScanResult(context, runScanStatusBar, logs);
