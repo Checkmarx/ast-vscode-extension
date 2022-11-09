@@ -191,9 +191,9 @@ describe("UI tests", async function () {
     // const fileWorkspaceNotifications = await new Workbench().getNotifications();
     // const fileWorkspaceNotification = fileWorkspaceNotifications[0];
     // await fileWorkspaceNotification.takeAction(YES);
-    // await delay(FIFTY_SECONDS);
-    // await delay(FIFTY_SECONDS);
-    // await delay(FIFTY_SECONDS);
+    await delay(FIFTY_SECONDS);
+    await delay(FIFTY_SECONDS);
+    await delay(FIFTY_SECONDS);
     const resultsNotifications = await new Workbench().getNotifications();
     const firstNotification = resultsNotifications[0];
     const title = await firstNotification.getMessage();
