@@ -42,7 +42,7 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
             return;
         }
 
-        update(context, BRANCH_NAME, {id: branchName, name: branchName})
+        update(context, BRANCH_NAME, {id: branchName, name: branchName});
         update(context, BRANCH_TEMP_ID_KEY, {id: branchName, name: branchName}); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
 
         const projectItem = get(context, PROJECT_ID_KEY);
