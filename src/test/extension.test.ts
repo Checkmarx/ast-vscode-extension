@@ -224,11 +224,6 @@ describe("UI tests", async function () {
     const branchNotification = branchNotifications[0];
     await branchNotification.takeAction(YES);
     await delay(TEN_SECONDS);
-    await delay(TEN_SECONDS);
-    const fileWorkspaceNotifications = await new Workbench().getNotifications();
-    const fileWorkspaceNotification = fileWorkspaceNotifications[0];
-    await fileWorkspaceNotification.takeAction(YES);
-    await delay(TEN_SECONDS);
     await new Workbench().executeCommand("ast-results.cancelScan");
     await delay(TEN_SECONDS);
     await delay(TEN_SECONDS);
