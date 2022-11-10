@@ -1,8 +1,9 @@
 import * as path from 'path';
+import * as fs from "fs";
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
-import { get, updateError } from "./common/globalState";
+import { get, update, updateError } from "./common/globalState";
 import {
 	getBranches,
 	getProject,
@@ -13,8 +14,8 @@ import {
 	triageShow
 } from "./ast/ast";
 import { getBfl } from './sast/bfl';
-import { SHOW_ERROR } from './common/commands';
-import { ERROR_MESSAGE, PROJECT_ID_KEY, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY } from "./common/constants";
+import { REFRESH_TREE, SHOW_ERROR } from './common/commands';
+import { BRANCH_ID_KEY, BRANCH_LABEL, ERROR_MESSAGE, PROJECT_ID_KEY, PROJECT_LABEL, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
 import { GitExtension } from '../types/git';
 
 export function getProperty(o: any, propertyName: string): any {
@@ -238,3 +239,31 @@ export async function getGitAPIRepository() {
 	return gitExtension.getAPI(1);
 }
 
+export async function getResultsJson() {
+	const resultJsonPath = getResultsFilePath();
+	if (fs.existsSync(resultJsonPath)) {
+		return JSON.parse(fs.readFileSync(resultJsonPath, "utf-8").replace(/:([0-9]{15,}),/g, ':"$1",'));
+	}
+	return {results: []};
+}
+
+export async function loadScanId(context: vscode.ExtensionContext, scanId: string, logs: Logs) {
+	const scan = await getScanWithProgress(logs, scanId);
+	if (!scan?.id || !scan?.projectID) {
+	  vscode.window.showErrorMessage("ScanId not found");
+	  return;
+	}
+  
+	const project = await getProjectWithProgress(logs, scan.projectID);
+	if (!project?.id) {
+	  vscode.window.showErrorMessage("Project not found");
+	  return;
+	}
+  
+	update(context, PROJECT_ID_KEY, { id: project.id, name: `${PROJECT_LABEL} ${project.name}` });
+	update(context, BRANCH_ID_KEY, { id: scan.branch, name: `${BRANCH_LABEL} ${getProperty(scan, 'branch')}` });
+	update(context, SCAN_ID_KEY, { id: scan.id, name: `${SCAN_LABEL} ${getScanLabel(scan.createdAt,scan.id)}` });
+  
+	await getResultsWithProgress(logs, scan.id);
+	await vscode.commands.executeCommand(REFRESH_TREE);
+}

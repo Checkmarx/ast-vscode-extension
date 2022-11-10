@@ -1,5 +1,11 @@
+import * as vscode from "vscode";
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, WebView} from 'vscode-extension-tester';
-import { FIVE_SECONDS, TEN_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from './constants';
+import { Logs } from '../models/logs';
+import { REFRESH_TREE } from "../utils/common/commands";
+import { BRANCH_ID_KEY, BRANCH_LABEL, PROJECT_ID_KEY, PROJECT_LABEL, SCAN_ID_KEY, SCAN_LABEL } from "../utils/common/constants";
+import { update } from "../utils/common/globalState";
+import { getProjectWithProgress, getProperty, getResultsWithProgress, getScanLabel, getScanWithProgress } from '../utils/utils';
+import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
 	var r = await new ActivityBar().getViewControl('Checkmarx');

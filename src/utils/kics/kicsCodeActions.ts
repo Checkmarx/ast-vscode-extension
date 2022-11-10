@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 export class KicsCodeActionProvider implements vscode.CodeActionProvider {
-	private kicsResults :any;
-	private file :{ file: string; editor: vscode.TextEditor; };
-	private diagnosticCollection :vscode.DiagnosticCollection;
-	private fixableResults :[];
+	private readonly kicsResults :any;
+	private readonly file :{ file: string; editor: vscode.TextEditor; };
+	private readonly diagnosticCollection :vscode.DiagnosticCollection;
+	private readonly fixableResults :[];
 	private fixableResultsByLine:[];
 	public static readonly providedCodeActionKinds = [
 		vscode.CodeActionKind.QuickFix
