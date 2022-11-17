@@ -20,6 +20,6 @@ jobs:
           GITHUB_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN }}
         run: gh pr merge --auto --merge "$PR_URL"
       - name: Auto approve dependabot PRs
-        uses: hmarr/auto-approve-action@v2
+        uses: hmarr/auto-approve-action@v3
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
