@@ -15,6 +15,7 @@ export class AstResult {
   status: string = "";
   language: string = "";
   description: string = "";
+  descriptionHTML: string = "";
   similarityId:string = "";
   data: any;
   state: string = "";
@@ -45,6 +46,7 @@ export class AstResult {
     this.language = result.data.languageName;
     this.rawObject = result;
     this.description = result.description;
+    this.descriptionHTML = result.descriptionHTML;
     this.data = result.data;
     this.state = result.state;
     this.similarityId = result.similarityId;
@@ -438,12 +440,9 @@ export class AstResult {
     return `
     <div class="left-content">
       <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
-        <p class="header-content">
-          Description
-        </p>
-        <p class="description">
-          ${result.description}
-        </p>
+        <div class="description">
+          ${result.descriptionHTML}
+        </div>
       </div>
       ${result.scaNode.scaPackageData?
       `
@@ -692,11 +691,11 @@ export class AstResult {
                 result.scaNode.recommendedVersion:
                 ""
               }" 
-              data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+              data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
                 result.scaNode.scaPackageData.dependencyPaths[0][0].name:
                 ""
               }" 
-              data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+              data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
                 result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
                 ""
               }"
@@ -706,11 +705,11 @@ export class AstResult {
                     result.scaNode.recommendedVersion:
                     ""
                   }" 
-                  data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                  data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
                     result.scaNode.scaPackageData.dependencyPaths[0][0].name:
                     ""
                   }" 
-                  data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+                  data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
                     result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
                     ""
                   }" 
@@ -726,11 +725,11 @@ export class AstResult {
               result.scaNode.recommendedVersion:
               ""
             }" 
-            data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+            data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
               result.scaNode.scaPackageData.dependencyPaths[0][0].name:
               ""
             }" 
-            data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+            data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
               result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
               ""
             }"
@@ -749,11 +748,11 @@ export class AstResult {
                   result.scaNode.recommendedVersion:
                   ""
                 }" 
-                data-package="${result.scaNode.scaPackageData.dependencyPaths[0][0].name?
+                data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
                   result.scaNode.scaPackageData.dependencyPaths[0][0].name:
                   ""
                 }" 
-                data-file="${result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
+                data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
                   result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
                   ""
                 }">

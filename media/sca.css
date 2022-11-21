@@ -75,6 +75,10 @@
 	margin-bottom: 20px;
 }
 
+.left-content .description h3{
+	padding: 0.2em;
+}
+
 .right-content {
 	color: var(--vscode-inputOption-activeForeground);
 	border-left: 1px solid;
