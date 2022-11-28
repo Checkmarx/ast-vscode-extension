@@ -250,6 +250,10 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (currentValue === IssueFilter.fileName && value.length === 0) {
       value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
     }
+
+    // if (currentValue === IssueFilter.directDependency) {
+    //   value = getProperty(obj.data, IssueFilter.directDependency);
+    // }
     
     if (!value) {
       return previousValue;
@@ -277,15 +281,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element;
-  }
-
-  kicsLocationGroup(obj: any, value: string): string {
-    // In case nothing is found then its a kics result
-    if (value.length === 0) {
-      // Kics filename is inside data.filename
-      value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
-    }
-    return value;
   }
 
   getChildren(
