@@ -250,10 +250,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     if (currentValue === IssueFilter.fileName && value.length === 0) {
       value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
     }
-
-    // if (currentValue === IssueFilter.directDependency) {
-    //   value = getProperty(obj.data, IssueFilter.directDependency);
-    // }
     
     if (!value) {
       return previousValue;
