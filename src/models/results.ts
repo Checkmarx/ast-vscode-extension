@@ -9,6 +9,7 @@ import { ScaNode } from "./scaNode";
 export class AstResult {
   label: string = "";
   type: string = "";
+  scaType: string = "";
   fileName: string = "";
   queryName: string = "";
   severity: string = "";
@@ -40,6 +41,7 @@ export class AstResult {
 
   constructor(result: any) {
     this.type = result.type;
+    this.scaType=result.scaType;
     this.label = result.data.queryName ? result.data.queryName : result.id;
     this.severity = result.severity;
     this.status = result.status;

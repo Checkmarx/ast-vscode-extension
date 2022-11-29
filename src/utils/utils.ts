@@ -27,13 +27,6 @@ export function getProperty(o: any, propertyName: string): any {
 		}
 		finalObject = finalObject?.hasOwnProperty(property)?finalObject[property]:undefined;
 	});
-	// specific cases for sca isDirectDependency group by
-	if(finalObject===true){
-		finalObject="Direct dependency";
-	}
-	if(finalObject===false){
-		finalObject="Indirect dependency";
-	}
 	return finalObject;
 }
 

@@ -64,7 +64,8 @@ export enum IssueFilter {
 	type = "type",
 	queryName = "queryName",
 	packageIdentifier = "scaNode.packageIdentifier",
-	directDependency = "scaNode.scaPackageData.isDirectDependency"
+	directDependency = "scaNode.scaPackageData.typeOfDependency",
+	scaType = "scaType"
   }
   
 export enum IssueLevel {
