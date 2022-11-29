@@ -18,7 +18,7 @@ import { REFRESH_TREE, SHOW_ERROR } from './common/commands';
 import { BRANCH_ID_KEY, BRANCH_LABEL, ERROR_MESSAGE, PROJECT_ID_KEY, PROJECT_LABEL, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
 import { GitExtension } from '../types/git';
 
-export function getProperty(o: any, propertyName: string): any {	
+export function getProperty(o: any, propertyName: string): any {
 	const properties = propertyName.split(".");
 	let finalObject = o;
 	properties.forEach(property=>{
