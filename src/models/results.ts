@@ -40,7 +40,7 @@ export class AstResult {
   }
 
   constructor(result: any) {
-    this.type = result.type;
+    this.type = result.label;
     this.scaType = result.scaType;
     this.label = result.data.queryName ? result.data.queryName : result.id;
     this.severity = result.severity;
