@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "daily"
     reviewers:
-      - "Checkmarx/ast-galactica-team"
+      - "tiagobcx"
     registries:
       - npm-pkg-checkmarx
   - package-ecosystem: "github-actions"
@@ -18,4 +18,4 @@ updates:
     schedule:
       interval: "daily"
     reviewers:
-      - "Checkmarx/ast-galactica-team"
+      - "tiagobcx"
