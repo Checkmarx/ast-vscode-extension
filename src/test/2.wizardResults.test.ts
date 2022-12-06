@@ -1,6 +1,6 @@
 import { By, CustomTreeSection, EditorView, InputBox, until, VSBrowser, WebDriver, Workbench} from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { getQuickPickSelector, initialize, quickPickSelector } from './utils';
+import { delay, getQuickPickSelector, initialize, quickPickSelector } from './utils';
 import { CX_CLEAR, CX_SELECT_ALL, CX_TEST_SCAN_PROJECT_NAME } from './constants';
 
 describe('Wizard load results test', () => {
@@ -75,21 +75,31 @@ describe('Wizard load results test', () => {
 		  driver.wait(
 			until.elementLocated(
 		  By.linkText(
-			"Project:  " + projectName
+			"Scan:  " + scanDate
 		  )
 		),
-			5000
+			50000
 	  	);
+		
 		// Project tree item validation
 		let project = await treeScans?.findItem("Project:  " + projectName);
+		while(project===undefined){
+			project = await treeScans?.findItem("Project:  " + projectName);
+		}
 		expect(project).is.not.undefined;
 		
 		// Branch tree item validation
 		let branch = await treeScans?.findItem("Branch:  " + branchName);
+		while(branch===undefined){
+			project = await treeScans?.findItem("Branch:  " + branchName);
+		}
 		expect(branch).is.not.undefined;
 		
 		// Scan tree item validation
 		let scan = await treeScans?.findItem("Scan:  " + scanDate);
+		while(scan===undefined){
+			project = await treeScans?.findItem("Scan:  " + scanDate);
+		}
 		expect(scan).is.not.undefined;
   });
 });
