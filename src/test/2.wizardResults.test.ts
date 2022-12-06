@@ -1,7 +1,7 @@
 import { By, CustomTreeSection, EditorView, InputBox, until, VSBrowser, WebDriver, Workbench} from 'vscode-extension-tester';
 import { expect } from 'chai';
 import { getQuickPickSelector, initialize, quickPickSelector } from './utils';
-import { CX_SELECT_ALL, CX_TEST_SCAN_PROJECT_NAME } from './constants';
+import { CX_CLEAR, CX_SELECT_ALL, CX_TEST_SCAN_PROJECT_NAME } from './constants';
 
 describe('Wizard load results test', () => {
 	let bench: Workbench;
@@ -17,6 +17,7 @@ describe('Wizard load results test', () => {
 
     after(async () => {
         await new EditorView().closeAllEditors();
+		await bench.executeCommand(CX_CLEAR);
     });
 
     it("should load results using wizard", async ()=> {	
@@ -43,7 +44,6 @@ describe('Wizard load results test', () => {
 		5000
 	  	);
 		let projectName = await getQuickPickSelector(inputProject);
-		// await quickPickSelector(inputProject);
 		await inputProject.confirm();
 	
 		// Branch selection
@@ -71,15 +71,15 @@ describe('Wizard load results test', () => {
 		let scanDate = await getQuickPickSelector(inputScan);
 		await quickPickSelector(inputScan);
 		
-		driver.wait(
+	  	treeScans = await initialize();
+		  driver.wait(
 			until.elementLocated(
 		  By.linkText(
 			"Project:  " + projectName
 		  )
 		),
-		5000
-	  );
-	  	treeScans = await initialize();
+			5000
+	  	);
 		// Project tree item validation
 		let project = await treeScans?.findItem("Project:  " + projectName);
 		expect(project).is.not.undefined;
