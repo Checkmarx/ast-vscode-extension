@@ -106,6 +106,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.groupByDirectDependencyActive",
+        "category": "checkmarx-ast",
+        "title": "✓ Group by: Direct Dependency",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.groupBySeverity",
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Severity",
@@ -140,6 +146,18 @@
         "category": "checkmarx-ast",
         "title": "­­­ ­­ ­ ­ ­Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.groupByDirectDependency",
+        "category": "checkmarx-ast",
+        "title": "­­­ ­­ ­ ­ ­Group by: Direct Dependency",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.groupByDirectDependencies",
+        "category": "checkmarx-ast",
+        "title": "Group by: Direct Dependency",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupBySeverities",
@@ -647,6 +665,11 @@
           "when": "view == astResults && !ast-results-groupByQueryName"
         },
         {
+          "command": "ast-results.groupByDirectDependency",
+          "group": "@groupBy@7",
+          "when": "view == astResults && !ast-results-groupByDirectDependency"
+        },
+        {
           "command": "ast-results.groupBySeverityActive",
           "group": "@groupBy@4",
           "when": "view == astResults && ast-results-groupBySeverity"
@@ -675,6 +698,11 @@
           "command": "ast-results.groupByQueryNameActive",
           "group": "@groupBy@3",
           "when": "view == astResults && ast-results-groupByQueryName"
+        },
+        {
+          "command": "ast-results.groupByDirectDependencyActive",
+          "group": "@groupBy@7",
+          "when": "view == astResults && ast-results-groupByDirectDependency"
         },
         {
           "command": "ast-results.viewSettings",

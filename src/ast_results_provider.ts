@@ -32,7 +32,7 @@ import { REFRESH_TREE } from "./utils/common/commands";
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type, IssueFilter.severity,IssueFilter.packageIdentifier];
+  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
   public stateLevel: StateLevel[] = [
@@ -277,15 +277,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element;
-  }
-
-  kicsLocationGroup(obj: any, value: string): string {
-    // In case nothing is found then its a kics result
-    if (value.length === 0) {
-      // Kics filename is inside data.filename
-      value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
-    }
-    return value;
   }
 
   getChildren(

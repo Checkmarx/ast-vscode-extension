@@ -7,7 +7,7 @@ import { updateFilter } from "./filters";
 
 
 export async function group(logs: Logs, context:vscode.ExtensionContext, astResultsProvider: AstResultsProvider, issueFilter: IssueFilter, filter: string) {
-	logs.info(`Grouping by ${issueFilter}`);
+	logs.info(`Grouping by ${issueFilter===IssueFilter.directDependency?'direct dependency':issueFilter}`);
 	const currentValue = context.globalState.get(filter);
 	updateResultsProviderGroup(astResultsProvider, issueFilter, !currentValue);
 	await updateFilter(context, filter, !currentValue);

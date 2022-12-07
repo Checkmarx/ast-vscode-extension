@@ -24,7 +24,8 @@ import {
     StateLevel,
     STATUS_GROUP,
     TO_VERIFY_FILTER,
-    URGENT_FILTER
+    URGENT_FILTER,
+    DEPENDENCY_GROUP
 } from "./utils/common/constants";
 import {Logs} from "./models/logs";
 import * as path from "path";
@@ -262,6 +263,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatusActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.status, STATUS_GROUP)));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStateActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.state, STATE_GROUP)));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByQueryNameActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.queryName, QUERY_NAME_GROUP)));
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByDirectDependency`, async () => await group(logs, context, astResultsProvider, IssueFilter.directDependency, DEPENDENCY_GROUP)));
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByDirectDependencyActive`, async () => await group(logs, context, astResultsProvider, IssueFilter.directDependency, DEPENDENCY_GROUP)));
 
     // Group Commands for command list
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFiles`, async () => await group(logs, context, astResultsProvider, IssueFilter.fileName, FILE_GROUP)));
@@ -270,6 +273,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStatuses`, async () => await group(logs, context, astResultsProvider, IssueFilter.status, STATUS_GROUP)));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByStates`, async () => await group(logs, context, astResultsProvider, IssueFilter.state, STATE_GROUP)));
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByQueryNames`, async () => await group(logs, context, astResultsProvider, IssueFilter.queryName, QUERY_NAME_GROUP)));
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByDirectDependencies`, async () => await group(logs, context, astResultsProvider, IssueFilter.directDependency, DEPENDENCY_GROUP)));
 
     // Severity Filters Command
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.filterHigh_toggle`, async () => await filter(logs, context, astResultsProvider, IssueLevel.high, HIGH_FILTER)));
