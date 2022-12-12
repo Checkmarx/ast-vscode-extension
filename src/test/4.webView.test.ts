@@ -32,14 +32,6 @@ describe('Individual pickers load results test', () => {
 	while(treeScans===undefined){
 		treeScans = await initialize();
 	}
-	driver.wait(
-		until.elementLocated(
-			By.linkText(
-				"Project:"
-			)
-		),
-	5000
-	  );
 	await bench.executeCommand(CX_LOOK_SCAN);
 	let input = await InputBox.create();
     await input.setText(
