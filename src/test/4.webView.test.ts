@@ -45,12 +45,12 @@ describe('Individual pickers load results test', () => {
 	await bench.executeCommand(CX_LOOK_SCAN);
 	let input = await InputBox.create();
     await input.setText(
-      process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "9db65f63-63de-46f1-828e-13aae2161c5f"
+      process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
     );
 	driver.wait(
 		until.elementLocated(
 			By.linkText(
-				process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "9db65f63-63de-46f1-828e-13aae2161c5f"
+				process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
 			)
 		),
 	5000
@@ -70,7 +70,7 @@ describe('Individual pickers load results test', () => {
 	it("should check open webview and codebashing link", async function () {
 		treeScans = await initialize();
 		let scan = await treeScans?.findItem(
-		  "Scan:  " + process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "9db65f63-63de-46f1-828e-13aae2161c5f"
+		  "Scan:  " + process.env.CX_TEST_SCAN_ID 
 		);
 		console.log("a procurar o scan");
 		while(scan===undefined){
