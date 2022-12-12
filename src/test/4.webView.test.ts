@@ -19,11 +19,14 @@ describe('Individual pickers load results test', () => {
 		const tempPath = __dirname + appender + "TestZip";
 		await (input).setText(tempPath);
 		await (input).confirm();
-		let statusbar = new StatusBar();
-        let chekmarx = await statusbar.getItem('Checkmarx kics auto scan');
-        while(chekmarx!==undefined){
-            chekmarx = await statusbar.getItem('Checkmarx kics auto scan');
-        }
+		driver.wait(
+			until.elementLocated(
+				By.partialLinkText(
+					"Checkmarx kics:"
+				)
+			),
+		5000
+		  );
 		await bench.executeCommand(CX_LOOK_SCAN);
     });
 
