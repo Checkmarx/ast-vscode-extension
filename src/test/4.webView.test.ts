@@ -46,15 +46,6 @@ describe('Individual pickers load results test', () => {
 	5000
 	  );
     await input.confirm();
-    // Make sure that the results were loaded into the tree
-    driver.wait(
-      until.elementLocated(
-        By.className(
-          "monaco-tl-twistie codicon codicon-tree-item-expanded collapsible collapsed"
-        )
-      ),
-      5000
-    );
 	});
 
 	it("should check open webview and codebashing link", async function () {
