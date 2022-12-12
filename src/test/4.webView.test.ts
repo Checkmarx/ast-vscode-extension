@@ -19,14 +19,6 @@ describe('Individual pickers load results test', () => {
 		const tempPath = __dirname + appender + "TestZip";
 		await (input).setText(tempPath);
 		await (input).confirm();
-		driver.wait(
-			until.elementLocated(
-				By.partialLinkText(
-					"Checkmarx kics:"
-				)
-			),
-		5000
-		  );
 		await bench.executeCommand(CX_LOOK_SCAN);
     });
 
