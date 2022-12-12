@@ -19,6 +19,9 @@ describe('Individual pickers load results test', () => {
 		const tempPath = __dirname + appender + "TestZip";
 		await (input).setText(tempPath);
 		await (input).confirm();
+		while(treeScans===undefined){
+			treeScans = await initialize();
+		}
 		await bench.executeCommand(CX_LOOK_SCAN);
     });
 
@@ -28,11 +31,9 @@ describe('Individual pickers load results test', () => {
     });
 
   it("should load results from scan ID", async function () {
-	treeScans = await initialize();
-	while(treeScans===undefined){
-		treeScans = await initialize();
-	}
 	await bench.executeCommand(CX_LOOK_SCAN);
+	treeScans = await initialize();
+	
 	let input = await InputBox.create();
     await input.setText(
       process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
