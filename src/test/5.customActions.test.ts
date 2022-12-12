@@ -34,7 +34,7 @@ describe('filter and groups actions tests', () => {
 					"Scan:  " + process.env.CX_TEST_SCAN_ID
 				)
 			),
-		5000
+		15000
 		  );
 		const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
 		for (var index in commands) {
