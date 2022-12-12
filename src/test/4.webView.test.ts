@@ -74,11 +74,8 @@ describe('Individual pickers load results test', () => {
 		);
 		console.log("a procurar o scan");
 		while(scan===undefined){
-			// scan = await treeScans?.findItem(
-			// 	"Scan:  " + process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : "9db65f63-63de-46f1-828e-13aae2161c5f"
-			//   );
 			scan = await treeScans?.findItem(
-				"Scan:  " + "9db65f63-63de-46f1-828e-13aae2161c5f"
+				"Scan:  " + process.env.CX_TEST_SCAN_ID 
 			  );
 		}		
 		// Get results and open details page
