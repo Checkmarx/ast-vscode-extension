@@ -29,6 +29,9 @@ describe('Individual pickers load results test', () => {
 
   it("should load results from scan ID", async function () {
 	treeScans = await initialize();
+	while(treeScans===undefined){
+		treeScans = await initialize();
+	}
 	driver.wait(
 		until.elementLocated(
 			By.linkText(
@@ -64,6 +67,9 @@ describe('Individual pickers load results test', () => {
 
 	it("should check open webview and codebashing link", async function () {
 		treeScans = await initialize();
+		while(treeScans===undefined){
+			treeScans = await initialize();
+		}
 		let scan = await treeScans?.findItem(
 		  "Scan:  " + process.env.CX_TEST_SCAN_ID 
 		);

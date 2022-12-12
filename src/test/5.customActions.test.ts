@@ -22,6 +22,10 @@ describe('filter and groups actions tests', () => {
     });
 
 	it("should click on all filter severity", async function () {
+		treeScans = await initialize();
+		while(treeScans===undefined){
+			treeScans = await initialize();
+		}
 		await bench.executeCommand(CX_LOOK_SCAN);
 		let input = await InputBox.create();
 		await input.setText(
