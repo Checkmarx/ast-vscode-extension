@@ -73,11 +73,12 @@ export async function getDetailsView(): Promise<WebView> {
 
 export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
 	let children = await engines.getChildren();
-	await delay(THREE_SECONDS);
+	while(children===undefined){
+		children = await engines.getChildren();
+	}
 	// Recursive case, expand and get childrens from the node
 	if(children.length>0){
 		await children[0].expand();
-		await delay(THREE_SECONDS);
 		return validateNestedGroupBy(level+1,children[0]);
 	}
 	// Stoppage case, when childrens list is empty
@@ -86,10 +87,8 @@ export async function validateNestedGroupBy(level:number,engines:any):Promise<nu
 
 export async function validateRootNode(scan:any):Promise<[number,any]>{
 	await scan?.expand();
-	await delay(THREE_SECONDS);
 	// Validate engines type node
 	let engines = await scan?.getChildren();
-	await delay(THREE_SECONDS);
 	let size = engines?.length;
 	return [size,engines];
 }

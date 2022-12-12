@@ -78,10 +78,11 @@ async function doesFilesMatch(logs: Logs){
 async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs){
     const workspaceBranch = get(context, BRANCH_NAME);
     const scanBranch = get(context, BRANCH_ID_KEY);
-    if(workspaceBranch && scanBranch && workspaceBranch.id === scanBranch.id){
+    if((workspaceBranch && scanBranch && workspaceBranch.id === scanBranch.id)||(!workspaceBranch)){
         logs.info("Branch match the view branch. Initiating scan...");
         return true;
-    } else{
+    } 
+    else{
         return await getUserInput("Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?");
     }
 }

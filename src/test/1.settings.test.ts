@@ -38,17 +38,17 @@ describe('Extension settings tests', () => {
         CX_API_KEY_SETTINGS, CX_CATETORY
         );
         // Set setting value
-        await apiKeyVal.setValue(process.env.CX_API_KEY + "");
+        await apiKeyVal.setValue("eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0N2Y1NDZlNS02YjFlLTQ0NjgtOGM0Yi0zNjdmNDcwNzMxZTYifQ.eyJpYXQiOjE2NjkyMjc5MjcsImp0aSI6ImVhNThiYjhhLTI2ZDYtNGU4ZC1hZWVmLTdjZTVmMTBiYTk3YiIsImlzcyI6Imh0dHBzOi8vZGV1LmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2N4X2FzdF9yZF9nYWxhdGljYV9jYW5hcnkiLCJhdWQiOiJodHRwczovL2RldS5pYW0uY2hlY2ttYXJ4Lm5ldC9hdXRoL3JlYWxtcy9jeF9hc3RfcmRfZ2FsYXRpY2FfY2FuYXJ5Iiwic3ViIjoiOWY1YTExZjMtNjE0NS00MjZkLWI4MTktNTg0ZjcwYzYyMTlmIiwidHlwIjoiT2ZmbGluZSIsImF6cCI6ImFzdC1hcHAiLCJzZXNzaW9uX3N0YXRlIjoiN2MzOTNjMGQtNWY3ZC00N2U1LWJhNWItMTQ0YTM1ZDMzYmVhIiwic2NvcGUiOiIgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiI3YzM5M2MwZC01ZjdkLTQ3ZTUtYmE1Yi0xNDRhMzVkMzNiZWEifQ.d2ClaxjllvyKtTMZBxRweRxmJLdfKWEVtvBbEPozEkc" + "");
         driver.wait(
 			until.elementLocated(
 		  By.linkText(
-			process.env.CX_API_KEY + ""
+			"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0N2Y1NDZlNS02YjFlLTQ0NjgtOGM0Yi0zNjdmNDcwNzMxZTYifQ.eyJpYXQiOjE2NjkyMjc5MjcsImp0aSI6ImVhNThiYjhhLTI2ZDYtNGU4ZC1hZWVmLTdjZTVmMTBiYTk3YiIsImlzcyI6Imh0dHBzOi8vZGV1LmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2N4X2FzdF9yZF9nYWxhdGljYV9jYW5hcnkiLCJhdWQiOiJodHRwczovL2RldS5pYW0uY2hlY2ttYXJ4Lm5ldC9hdXRoL3JlYWxtcy9jeF9hc3RfcmRfZ2FsYXRpY2FfY2FuYXJ5Iiwic3ViIjoiOWY1YTExZjMtNjE0NS00MjZkLWI4MTktNTg0ZjcwYzYyMTlmIiwidHlwIjoiT2ZmbGluZSIsImF6cCI6ImFzdC1hcHAiLCJzZXNzaW9uX3N0YXRlIjoiN2MzOTNjMGQtNWY3ZC00N2U1LWJhNWItMTQ0YTM1ZDMzYmVhIiwic2NvcGUiOiIgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiI3YzM5M2MwZC01ZjdkLTQ3ZTUtYmE1Yi0xNDRhMzVkMzNiZWEifQ.d2ClaxjllvyKtTMZBxRweRxmJLdfKWEVtvBbEPozEkc" + ""
 		  )
 		),
 		90000
 	  );
         // Validate settings
         const apiKey = await apiKeyVal.getValue();
-        expect(apiKey).to.equal(process.env.CX_API_KEY + "");
+        expect(apiKey).to.equal("eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0N2Y1NDZlNS02YjFlLTQ0NjgtOGM0Yi0zNjdmNDcwNzMxZTYifQ.eyJpYXQiOjE2NjkyMjc5MjcsImp0aSI6ImVhNThiYjhhLTI2ZDYtNGU4ZC1hZWVmLTdjZTVmMTBiYTk3YiIsImlzcyI6Imh0dHBzOi8vZGV1LmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2N4X2FzdF9yZF9nYWxhdGljYV9jYW5hcnkiLCJhdWQiOiJodHRwczovL2RldS5pYW0uY2hlY2ttYXJ4Lm5ldC9hdXRoL3JlYWxtcy9jeF9hc3RfcmRfZ2FsYXRpY2FfY2FuYXJ5Iiwic3ViIjoiOWY1YTExZjMtNjE0NS00MjZkLWI4MTktNTg0ZjcwYzYyMTlmIiwidHlwIjoiT2ZmbGluZSIsImF6cCI6ImFzdC1hcHAiLCJzZXNzaW9uX3N0YXRlIjoiN2MzOTNjMGQtNWY3ZC00N2U1LWJhNWItMTQ0YTM1ZDMzYmVhIiwic2NvcGUiOiIgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiI3YzM5M2MwZC01ZjdkLTQ3ZTUtYmE1Yi0xNDRhMzVkMzNiZWEifQ.d2ClaxjllvyKtTMZBxRweRxmJLdfKWEVtvBbEPozEkc" + "");
   });
 });

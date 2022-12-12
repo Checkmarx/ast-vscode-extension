@@ -162,6 +162,7 @@ export async function isScanEnabled(logs: Logs): Promise<boolean> {
     const cx = new CxWrapper(config);
     try {
         enabled = await cx.ideScansEnabled();
+        console.log("enabled",enabled)
     } catch (error) {
         logs.error(error);
         return enabled;

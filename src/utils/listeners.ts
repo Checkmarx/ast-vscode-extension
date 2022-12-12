@@ -39,6 +39,7 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
         const tempBranchName = get(context, BRANCH_TEMP_ID_KEY);
         const branchName = repoState.HEAD?.name;
         if (!branchName || (tempBranchName && tempBranchName.id === branchName)) {
+            update(context, BRANCH_NAME,undefined);
             return;
         }
 
