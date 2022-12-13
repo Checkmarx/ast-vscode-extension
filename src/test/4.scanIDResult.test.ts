@@ -17,7 +17,6 @@ describe('Individual pickers load results test', () => {
 
     after(async () => {
         await new EditorView().closeAllEditors();
-		await bench.executeCommand(CX_CLEAR);
     });
   
   it("should load results from scan ID", async function () {
