@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { getDetailsView, getQuickPickSelector, getResults, initialize, quickPickSelector } from './utils';
 import { CX_CLEAR, CX_LOOK_SCAN, CX_SELECT_ALL, CX_SELECT_BRANCH, CX_SELECT_PROJECT, CX_SELECT_SCAN, CX_TEST_SCAN_PROJECT_NAME, VS_CLOSE_GROUP_EDITOR, VS_OPEN_FOLDER } from './constants';
 
-describe('Individual pickers load results test', () => {
+describe('WebView results detail test', () => {
 	let bench: Workbench;
 	let treeScans:CustomTreeSection;
 	let driver: WebDriver;
@@ -26,11 +26,11 @@ describe('Individual pickers load results test', () => {
 			treeScans = await initialize();
 		}
 		let scan = await treeScans?.findItem(
-		  "Scan:  " + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"//process.env.CX_TEST_SCAN_ID 
+		  "Scan:  " + process.env.CX_TEST_SCAN_ID 
 		);
 		while(scan===undefined){
 			scan = await treeScans?.findItem(
-				"Scan:  " + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"//process.env.CX_TEST_SCAN_ID 
+				"Scan:  " + process.env.CX_TEST_SCAN_ID 
 			  );
 		}		
 		// Get results and open details page
@@ -44,16 +44,10 @@ describe('Individual pickers load results test', () => {
 		
 		// Close left view
 		let leftView = new WebView();
-		while(leftView===undefined){
-			leftView = new WebView();
-		}
 		await leftView.click();
 		await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
 		// Open details view
 		let detailsView = await getDetailsView();
-		while(detailsView===undefined){
-			detailsView = await getDetailsView();
-		}
 		// Find details view title
 		let titleWebElement = await detailsView.findWebElement(
 		  By.id("cx_title")
