@@ -65,9 +65,10 @@ export async function validateSeverities(scan:any, severity:string): Promise<boo
 export async function getDetailsView(): Promise<WebView> {
 	// Open details view
 	let detailsView = new WebView();
-	await delay(FIVE_SECONDS);
+	while(detailsView===undefined){
+		detailsView = new WebView();
+	}
 	await detailsView.switchToFrame();
-	await delay(FIVE_SECONDS);
 	return detailsView;
 }
 

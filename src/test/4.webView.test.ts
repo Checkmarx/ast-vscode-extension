@@ -49,7 +49,6 @@ describe('Individual pickers load results test', () => {
 		let scan = await treeScans?.findItem(
 		  "Scan:  " + process.env.CX_TEST_SCAN_ID 
 		);
-		console.log("a procurar o scan");
 		while(scan===undefined){
 			scan = await treeScans?.findItem(
 				"Scan:  " + process.env.CX_TEST_SCAN_ID 
@@ -66,11 +65,16 @@ describe('Individual pickers load results test', () => {
 		
 		// Close left view
 		let leftView = new WebView();
-		
+		while(leftView===undefined){
+			leftView = new WebView();
+		}
 		await leftView.click();
 		await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
 		// Open details view
 		let detailsView = await getDetailsView();
+		while(detailsView===undefined){
+			detailsView = await getDetailsView();
+		}
 		// Find details view title
 		let titleWebElement = await detailsView.findWebElement(
 		  By.id("cx_title")
