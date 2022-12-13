@@ -12,34 +12,13 @@ describe('Individual pickers load results test', () => {
         this.timeout(100000);
 		bench = new Workbench();
 		driver = VSBrowser.instance.driver;
-		
+		treeScans = await initialize();
     });
 
     after(async () => {
         await new EditorView().closeAllEditors();
 		await bench.executeCommand(CX_CLEAR);
     });
-  
-  it("should load results from scan ID", async function () {
-	treeScans = await initialize();
-	while(treeScans===undefined){
-		treeScans = await initialize();
-	}
-	await bench.executeCommand(CX_LOOK_SCAN);
-	let input = await InputBox.create();
-    await input.setText(
-      process.env.CX_TEST_SCAN_ID
-    );
-	driver.wait(
-		until.elementLocated(
-			By.linkText(
-				process.env.CX_TEST_SCAN_ID
-			)
-		),
-	5000
-	  );
-    await input.confirm();
-	});
 
 	it("should check open webview and codebashing link", async function () {
 		treeScans = await initialize();
@@ -47,11 +26,11 @@ describe('Individual pickers load results test', () => {
 			treeScans = await initialize();
 		}
 		let scan = await treeScans?.findItem(
-		  "Scan:  " + process.env.CX_TEST_SCAN_ID 
+		  "Scan:  " + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"//process.env.CX_TEST_SCAN_ID 
 		);
 		while(scan===undefined){
 			scan = await treeScans?.findItem(
-				"Scan:  " + process.env.CX_TEST_SCAN_ID 
+				"Scan:  " + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"//process.env.CX_TEST_SCAN_ID 
 			  );
 		}		
 		// Get results and open details page
