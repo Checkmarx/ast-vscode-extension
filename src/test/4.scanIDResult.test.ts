@@ -44,61 +44,56 @@ describe("Scan ID load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
+    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
   });
 
+  
   it("should load results from scan ID", async function () {
-    await delay(THREE_SECONDS);
-    treeScans = await initialize();
-    await delay(FIVE_SECONDS);
     await bench.executeCommand(CX_LOOK_SCAN);
-    await delay(FIVE_SECONDS);
-    let input = await InputBox.create();
-    await delay(FIVE_SECONDS);
-    await input.setText(
-      process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
-    );
-    await delay(FIVE_SECONDS);
+    let input = await new InputBox();
+    await input.setText(process.env.CX_TEST_SCAN_ID);
     await input.confirm();
-    await delay(FIFTY_SECONDS);
-    // Make sure that the results were loaded into the tree
     driver.wait(
       until.elementLocated(
-        By.className(
-          "monaco-tl-twistie codicon codicon-tree-item-expanded collapsible collapsed"
-        )
+        By.linkText("Scan:  " + process.env.CX_TEST_SCAN_ID)
       ),
-      FIFTY_SECONDS
+      15000
     );
+  });
+
+  it("should check open webview and codebashing link", async function () {
+    treeScans = await initialize();
+    while (treeScans === undefined) {
+      treeScans = await initialize();
+    }
     let scan = await treeScans?.findItem(
       "Scan:  " + process.env.CX_TEST_SCAN_ID
     );
-    await delay(FIVE_SECONDS);
+    while (scan === undefined) {
+      scan = await treeScans?.findItem(
+        "Scan:  " + process.env.CX_TEST_SCAN_ID
+      );
+    }
     // Get results and open details page
     let sastNode = await scan?.findChildItem("sast");
+    if(sastNode===undefined){
+      sastNode = await scan?.findChildItem("sast");
+    }
     let result = await getResults(sastNode);
-    await delay(THIRTY_SECONDS);
+    await delay(5000);
     let resultName = await result[0].getLabel();
-    await delay(FIVE_SECONDS);
     await result[0].click();
-    await delay(THIRTY_SECONDS);
-    // Close left view
-    let leftView = new WebView();
-    await delay(THIRTY_SECONDS);
-    await leftView.click();
-    await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
     // Open details view
     let detailsView = await getDetailsView();
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(
       By.id("cx_title")
     );
-    await delay(FIVE_SECONDS);
     let title = await titleWebElement.getText();
-    await delay(FIVE_SECONDS);
     expect(title).to.equal(resultName);
     let codebashingWebElement = await detailsView.findWebElement(
       By.id("cx_header_codebashing")
