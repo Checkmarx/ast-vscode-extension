@@ -39,6 +39,9 @@ describe('WebView results detail test', () => {
 			sastNode = await scan?.findChildItem("sast");
 		}
 		let result = await getResults(sastNode);
+		while(result===undefined){
+			result = await getResults(sastNode);
+		}
 		let resultName = await result[0].getLabel();
 		await result[0].click();
 		
