@@ -12,26 +12,13 @@ describe('Individual pickers load results test', () => {
         this.timeout(100000);
 		bench = new Workbench();
 		driver = VSBrowser.instance.driver;
+		
     });
 
     after(async () => {
         await new EditorView().closeAllEditors();
 		await bench.executeCommand(CX_CLEAR);
     });
-  
-  it("should load project files", async function () {
-	await bench.executeCommand(VS_OPEN_FOLDER);
-	// open project folder
-	let input = await InputBox.create();
-	const appender = process.platform === "win32" ? "\\" : "/";
-	const tempPath = __dirname + appender + "TestZip";
-	await (input).setText(tempPath);
-	await (input).confirm();
-	while(treeScans===undefined){
-		treeScans = await initialize();
-	}
-	await bench.executeCommand(CX_LOOK_SCAN);
-  });
   
   it("should load results from scan ID", async function () {
 	treeScans = await initialize();
