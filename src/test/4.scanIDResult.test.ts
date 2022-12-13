@@ -44,30 +44,15 @@ describe("Scan ID load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
   });
 
-  
-  it("should load results from scan ID", async function () {
-    await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
-    await input.setText("6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
-    await input.confirm();
-    driver.wait(
-      until.elementLocated(
-        By.linkText("Scan:  " + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c")
-      ),
-      15000
-    );
-  });
-
   it("should load results from scan ID", async function () {
     await delay(THREE_SECONDS);
-    let treeScans = await initialize();
+    treeScans = await initialize();
     await delay(FIVE_SECONDS);
     await bench.executeCommand(CX_LOOK_SCAN);
     await delay(FIVE_SECONDS);
