@@ -12,36 +12,41 @@ describe('Individual pickers load results test', () => {
         this.timeout(100000);
 		bench = new Workbench();
 		driver = VSBrowser.instance.driver;
-		await bench.executeCommand(VS_OPEN_FOLDER);
-		// open project folder
-		let input = await InputBox.create();
-		const appender = process.platform === "win32" ? "\\" : "/";
-		const tempPath = __dirname + appender + "TestZip";
-		await (input).setText(tempPath);
-		await (input).confirm();
-		while(treeScans===undefined){
-			treeScans = await initialize();
-		}
-		await bench.executeCommand(CX_LOOK_SCAN);
     });
 
     after(async () => {
         await new EditorView().closeAllEditors();
 		await bench.executeCommand(CX_CLEAR);
     });
-
-  it("should load results from scan ID", async function () {
+  
+  it("should load project files", async function () {
+	await bench.executeCommand(VS_OPEN_FOLDER);
+	// open project folder
+	let input = await InputBox.create();
+	const appender = process.platform === "win32" ? "\\" : "/";
+	const tempPath = __dirname + appender + "TestZip";
+	await (input).setText(tempPath);
+	await (input).confirm();
+	while(treeScans===undefined){
+		treeScans = await initialize();
+	}
 	await bench.executeCommand(CX_LOOK_SCAN);
+  });
+  
+  it("should load results from scan ID", async function () {
 	treeScans = await initialize();
-	
+	while(treeScans===undefined){
+		treeScans = await initialize();
+	}
+	await bench.executeCommand(CX_LOOK_SCAN);
 	let input = await InputBox.create();
     await input.setText(
-      process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
+      process.env.CX_TEST_SCAN_ID
     );
 	driver.wait(
 		until.elementLocated(
 			By.linkText(
-				process.env.CX_TEST_SCAN_ID ? process.env.CX_TEST_SCAN_ID : ""
+				process.env.CX_TEST_SCAN_ID
 			)
 		),
 	5000
