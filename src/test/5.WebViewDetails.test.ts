@@ -1,6 +1,6 @@
 import { By, CustomTreeSection, EditorView, InputBox, StatusBar, until, VSBrowser, WebDriver, WebView, Workbench} from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { getDetailsView, getQuickPickSelector, getResults, initialize, quickPickSelector } from './utils';
+import { delay, getDetailsView, getQuickPickSelector, getResults, initialize, quickPickSelector } from './utils';
 import { CX_CLEAR, CX_LOOK_SCAN, CX_SELECT_ALL, CX_SELECT_BRANCH, CX_SELECT_PROJECT, CX_SELECT_SCAN, CX_TEST_SCAN_PROJECT_NAME, VS_CLOSE_GROUP_EDITOR, VS_OPEN_FOLDER } from './constants';
 
 describe('WebView results detail test', () => {
@@ -44,6 +44,7 @@ describe('WebView results detail test', () => {
 		
 		// Close left view
 		let leftView = new WebView();
+		await delay(5000);
 		await leftView.click();
 		await bench.executeCommand(VS_CLOSE_GROUP_EDITOR);
 		// Open details view
