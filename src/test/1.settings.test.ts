@@ -63,9 +63,6 @@ describe("Extension settings tests", () => {
       CX_KICS
     )) as LinkSetting;
     let enablement = await setting.getValue();
-    while(enablement===undefined){
-        enablement = await setting.getValue();
-    }
     expect(enablement).to.equal(true);
   });
 });
