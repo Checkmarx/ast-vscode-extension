@@ -31,14 +31,8 @@ describe("Scan ID load results test", () => {
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
-    await input.setText(process.env.CX_TEST_SCAN_ID);
+    await input.setText("6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
     await input.confirm();
-    driver.wait(
-      until.elementLocated(
-        By.linkText(SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID)
-      ),
-      15000
-    );
   });
 
   it("should check open webview and codebashing link", async function () {
@@ -48,10 +42,10 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
+      SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"
     );
     while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID);
+      scan = await treeScans?.findItem(SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
     }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
