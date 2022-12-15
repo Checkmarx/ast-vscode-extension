@@ -59,7 +59,7 @@ describe("Scan ID load results test", () => {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     let result = await getResults(sastNode);
-    await delay(5000);
+    await delay(THREE_SECONDS);
     let resultName = await result[0].getLabel();
     await result[0].click();
     // Open details view
