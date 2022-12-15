@@ -1,7 +1,7 @@
-import { By, CustomTreeSection, EditorView, InputBox, StatusBar, until, VSBrowser, WebDriver, WebView, Workbench} from 'vscode-extension-tester';
+import { By, CustomTreeSection, EditorView, InputBox, until, VSBrowser, WebDriver, Workbench} from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { delay, getDetailsView, getQuickPickSelector, getResults, initialize, quickPickSelector, validateNestedGroupBy, validateRootNode, validateSeverities } from './utils';
-import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, CX_SELECT_ALL, CX_SELECT_BRANCH, CX_SELECT_PROJECT, CX_SELECT_SCAN, CX_TEST_SCAN_PROJECT_NAME, VS_CLOSE_GROUP_EDITOR, VS_OPEN_FOLDER } from './constants';
+import { delay, initialize, validateRootNode, validateSeverities } from './utils/utils';
+import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, SAST_TYPE, SCAN_KEY_TREE } from './constants';
 
 describe('filter and groups actions tests', () => {
 	let bench:Workbench;
@@ -35,7 +35,7 @@ describe('filter and groups actions tests', () => {
 		driver.wait(
 			until.elementLocated(
 				By.linkText(
-					"Scan:  " + process.env.CX_TEST_SCAN_ID
+					SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
 				)
 			),
 		15000
@@ -45,11 +45,11 @@ describe('filter and groups actions tests', () => {
 			await bench.executeCommand(commands[index].command);
 			treeScans = await initialize();
 			let scan = await treeScans?.findItem(
-				"Scan:  " + process.env.CX_TEST_SCAN_ID
+				SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
 			);
 			while(scan===undefined){
 				scan = await treeScans?.findItem(
-					"Scan:  " +process.env.CX_TEST_SCAN_ID
+					SCAN_KEY_TREE +process.env.CX_TEST_SCAN_ID
 				);
 			}
 			let isValidated = await validateSeverities(scan, commands[index].text);
@@ -66,20 +66,20 @@ describe('filter and groups actions tests', () => {
 		// Get scan node
 		const treeScans = await initialize();
 		let scan =  await treeScans?.findItem(
-			"Scan:  " + process.env.CX_TEST_SCAN_ID
+			SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
 		);
 		while(scan===undefined){
 			scan = await treeScans?.findItem(
-				"Scan:  " + process.env.CX_TEST_SCAN_ID
+				SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
 				);
 		}
 		// Expand and validate scan node to obtain engine nodes
 		let tuple = await validateRootNode(scan);
 		//let level = 0;
 		// Get the sast results node, because it is the only one affected by all the group by commands
-		let sastNode = await scan?.findChildItem("sast");
+		let sastNode = await scan?.findChildItem(SAST_TYPE);
 		while(sastNode===undefined){
-			sastNode = await scan?.findChildItem("sast");
+			sastNode = await scan?.findChildItem(SAST_TYPE);
 		}
 		// Validate for all commands the nested tree elements
 		for (var index in commands) {
