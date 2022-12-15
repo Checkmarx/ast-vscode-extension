@@ -43,8 +43,8 @@ describe("Wizard load results test", () => {
       until.elementLocated(By.linkText(STEP_1)),
       5000
     );
-    await inputProject.setText(CX_TEST_SCAN_PROJECT_NAME);
-    driver.wait(until.elementLocated(By.linkText(CX_TEST_SCAN_PROJECT_NAME)), 5000);
+    await inputProject.setText("webgoat");
+    driver.wait(until.elementLocated(By.linkText("webgoat")), 5000);
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();
 
