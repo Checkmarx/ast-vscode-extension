@@ -9,11 +9,7 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { delay, initialize } from "./utils/utils";
-import {
-  CX_CLEAR,
-  CX_LOOK_SCAN,
-  VS_OPEN_FOLDER,
-} from "./constants";
+import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER } from "./constants";
 
 describe("filter and groups actions tests", () => {
   let bench: Workbench;
@@ -25,7 +21,7 @@ describe("filter and groups actions tests", () => {
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     treeScans = await initialize();
-    await bench.executeCommand(VS_OPEN_FOLDER);
+    await new Workbench().executeCommand(VS_OPEN_FOLDER);
   });
 
   after(async () => {
@@ -35,12 +31,12 @@ describe("filter and groups actions tests", () => {
   it("should open the project to scan", async function () {
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "TestZip";
-	await new Workbench().executeCommand(VS_OPEN_FOLDER);
-	await delay(1000);
+    await new Workbench().executeCommand(VS_OPEN_FOLDER);
+    await delay(1000);
     // open project folder
     let input = await InputBox.create();
     await input.setText(tempPath);
-    await input.confirm();    
+    await input.confirm();
     await new Workbench().executeCommand(CX_LOOK_SCAN);
   });
 
