@@ -61,11 +61,11 @@ export const BRANCH_KEY_TREE: string = "Branch:  ";
 
 export const SAST_TYPE: string = "sast";
 
-export const WEBVIEW_TITLE: string = "cx_title";
-export const CODEBASHING_HEADER: string = "cx_header_codebashing";
-export const COMMENT_BOX: string = "comment_box";
-export const LEARN_MORE_LABEL: string = "learn-label";
-export const CHANGES_LABEL: string = "changes-label";
-export const CHANGES_CONTAINER: string = "history-container";
-export const UPDATE_BUTTON: string = "submit";
-export const GENERAL_LABEL: string = "general-label";
+export const WEBVIEW_TITLE = "cx_title";
+export const CODEBASHING_HEADER = "cx_header_codebashing";
+export const COMMENT_BOX = "comment_box";
+export const LEARN_MORE_LABEL = "learn-label";
+export const CHANGES_LABEL = "changes-label";
+export const CHANGES_CONTAINER = "history-container";
+export const UPDATE_BUTTON = "submit";
+export const GENERAL_LABEL = "general-label";
