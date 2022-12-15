@@ -109,7 +109,6 @@ describe("Scan ID load results test", () => {
     }
     await changesTab.click();
     // Make sure that the changes tab is loaded
-    driver.wait(until.elementLocated(By.className(CHANGES_CONTAINER)), 5000);
     expect(changesTab).is.not.undefined;
     await detailsView.switchBack();
   });
