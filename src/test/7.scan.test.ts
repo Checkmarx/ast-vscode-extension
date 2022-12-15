@@ -33,14 +33,14 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should open the project to scan", async function () {
-    await new Workbench().executeCommand(VS_OPEN_FOLDER);
-    // open project folder
-    let input = await InputBox.create();
     const appender = process.platform === "win32" ? "\\" : "/";
     const tempPath = __dirname + appender + "TestZip";
+	await new Workbench().executeCommand(VS_OPEN_FOLDER);
+	await delay(1000);
+    // open project folder
+    let input = await InputBox.create();
     await input.setText(tempPath);
-    await input.confirm();
-    await delay(1000);
+    await input.confirm();    
     await new Workbench().executeCommand(CX_LOOK_SCAN);
   });
 
