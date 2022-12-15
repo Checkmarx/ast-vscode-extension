@@ -3,37 +3,14 @@ import {
   CustomTreeSection,
   EditorView,
   InputBox,
-  StatusBar,
   until,
   VSBrowser,
   WebDriver,
-  WebView,
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import {
-  delay,
-  getDetailsView,
-  getQuickPickSelector,
-  getResults,
-  initialize,
-  quickPickSelector,
-} from "./utils";
-import {
-  CX_CLEAR,
-  CX_LOOK_SCAN,
-  CX_SELECT_ALL,
-  CX_SELECT_BRANCH,
-  CX_SELECT_PROJECT,
-  CX_SELECT_SCAN,
-  CX_TEST_SCAN_PROJECT_NAME,
-  FIFTY_SECONDS,
-  FIVE_SECONDS,
-  THIRTY_SECONDS,
-  THREE_SECONDS,
-  VS_CLOSE_GROUP_EDITOR,
-  VS_OPEN_FOLDER,
-} from "./constants";
+import { delay, getDetailsView, getResults, initialize } from "./utils/utils";
+import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, FIVE_SECONDS, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE, THREE_SECONDS, UPDATE_BUTTON, WEBVIEW_TITLE } from "./constants";
 
 describe("Scan ID load results test", () => {
   let bench: Workbench;
@@ -51,7 +28,6 @@ describe("Scan ID load results test", () => {
     await new EditorView().closeAllEditors();
   });
 
-  
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
@@ -59,7 +35,7 @@ describe("Scan ID load results test", () => {
     await input.confirm();
     driver.wait(
       until.elementLocated(
-        By.linkText("Scan:  " + process.env.CX_TEST_SCAN_ID)
+        By.linkText(SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID)
       ),
       15000
     );
@@ -71,17 +47,15 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      "Scan:  " + process.env.CX_TEST_SCAN_ID
+      SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
     );
     while (scan === undefined) {
-      scan = await treeScans?.findItem(
-        "Scan:  " + process.env.CX_TEST_SCAN_ID
-      );
+      scan = await treeScans?.findItem(SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID);
     }
     // Get results and open details page
-    let sastNode = await scan?.findChildItem("sast");
-    if(sastNode===undefined){
-      sastNode = await scan?.findChildItem("sast");
+    let sastNode = await scan?.findChildItem(SAST_TYPE);
+    if (sastNode === undefined) {
+      sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     let result = await getResults(sastNode);
     await delay(5000);
@@ -90,13 +64,11 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find details view title
-    let titleWebElement = await detailsView.findWebElement(
-      By.id("cx_title")
-    );
+    let titleWebElement = await detailsView.findWebElement(By.id(WEBVIEW_TITLE));
     let title = await titleWebElement.getText();
     expect(title).to.equal(resultName);
     let codebashingWebElement = await detailsView.findWebElement(
-      By.id("cx_header_codebashing")
+      By.id(CODEBASHING_HEADER)
     );
     await delay(FIVE_SECONDS);
     let codebashing = await codebashingWebElement.getText();
@@ -110,9 +82,9 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find Hide comments
-    let comments = await detailsView.findWebElement(By.id("comment_box"));
+    let comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
     while (comments === undefined) {
-      comments = await detailsView.findWebElement(By.id("comment_box"));
+      comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
     }
     expect(comments).is.not.undefined;
     await comments.click();
@@ -123,9 +95,9 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find Learn More Tab
-    let learnTab = await detailsView.findWebElement(By.id("learn-label"));
+    let learnTab = await detailsView.findWebElement(By.id(LEARN_MORE_LABEL));
     while (learnTab === undefined) {
-      learnTab = await detailsView.findWebElement(By.id("learn-label"));
+      learnTab = await detailsView.findWebElement(By.id(LEARN_MORE_LABEL));
     }
     expect(learnTab).is.not.undefined;
     await learnTab.click();
@@ -136,13 +108,13 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find Changes Tab
-    let changesTab = await detailsView.findWebElement(By.id("changes-label"));
+    let changesTab = await detailsView.findWebElement(By.id(CHANGES_LABEL));
     while (changesTab === undefined) {
-      changesTab = await detailsView.findWebElement(By.id("changes-label"));
+      changesTab = await detailsView.findWebElement(By.id(CHANGES_LABEL));
     }
     await changesTab.click();
     // Make sure that the changes tab is loaded
-    driver.wait(until.elementLocated(By.className("history-container")), 5000);
+    driver.wait(until.elementLocated(By.className(CHANGES_CONTAINER)), 5000);
     expect(changesTab).is.not.undefined;
     await detailsView.switchBack();
   });
@@ -151,9 +123,9 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find Changes Tab
-    let submit = await detailsView.findWebElement(By.className("submit"));
+    let submit = await detailsView.findWebElement(By.className(UPDATE_BUTTON));
     while (submit === undefined) {
-      submit = await detailsView.findWebElement(By.className("submit"));
+      submit = await detailsView.findWebElement(By.className(UPDATE_BUTTON));
     }
     expect(submit).is.not.undefined;
     await submit.click();
@@ -164,9 +136,9 @@ describe("Scan ID load results test", () => {
     // Open details view
     let detailsView = await getDetailsView();
     // Find General Tab
-    let generalTab = await detailsView.findWebElement(By.id("general-label"));
+    let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
     while (generalTab === undefined) {
-      generalTab = await detailsView.findWebElement(By.id("general-label"));
+      generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
     }
     expect(generalTab).is.not.undefined;
     await generalTab.click();
