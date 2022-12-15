@@ -60,3 +60,12 @@ export const SCAN_KEY_TREE: string = "Scan:  ";
 export const BRANCH_KEY_TREE: string = "Branch:  ";
 
 export const SAST_TYPE: string = "sast";
+
+export const WEBVIEW_TITLE = "cx_title";
+export const CODEBASHING_HEADER = "cx_header_codebashing";
+export const COMMENT_BOX = "comment_box";
+export const LEARN_MORE_LABEL = "learn-label";
+export const CHANGES_LABEL = "changes-label";
+export const CHANGES_CONTAINER = "history-container";
+export const UPDATE_BUTTON = "submit";
+export const GENERAL_LABEL = "general-label";
