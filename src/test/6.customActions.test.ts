@@ -17,7 +17,6 @@ describe('filter and groups actions tests', () => {
 	});
 
     after(async () => {
-        await new EditorView().closeAllEditors();
 		await bench.executeCommand(CX_CLEAR);
     });
 
