@@ -17,7 +17,6 @@ describe("KICS auto scan test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   it("should run kics auto scan", async function () {
