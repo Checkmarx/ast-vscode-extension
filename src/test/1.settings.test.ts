@@ -10,7 +10,7 @@ import {
   until,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { CX_API_KEY_SETTINGS, CX_CATETORY } from "./constants";
+import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./constants";
 import { waitStatusBar } from "./utils/waiters";
 
 describe("Extension settings tests", () => {
@@ -54,5 +54,18 @@ describe("Extension settings tests", () => {
     // Validate settings
     const apiKey = await apiKeyVal.getValue();
     expect(apiKey).to.equal(process.env.CX_API_KEY);
+  });
+
+  it("should check kics auto scan enablement on settings", async function () {
+    let settingsWizard = await bench.openSettings();
+    const setting = (await settingsWizard.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+    let enablement = await setting.getValue();
+    while(enablement===undefined){
+        enablement = await setting.getValue();
+    }
+    expect(enablement).to.equal(true);
   });
 });

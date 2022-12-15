@@ -42,7 +42,8 @@ describe("Scan ID load results test", () => {
   });
 
   it("should check open webview and codebashing link", async function () {
-    treeScans = await initialize();
+    // Make sure the results are loaded
+	treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
     }

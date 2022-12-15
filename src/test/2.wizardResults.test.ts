@@ -56,7 +56,8 @@ describe("Wizard load results test", () => {
     const inputBranch = new InputBox();
     let branchName = await getQuickPickSelector(inputBranch);
     await quickPickSelector(inputBranch);
-    // Scan selection
+    
+	// Scan selection
     driver.wait(
       until.elementLocated(By.linkText(STEP_3)),
       5000
