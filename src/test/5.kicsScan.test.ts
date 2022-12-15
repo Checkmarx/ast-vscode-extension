@@ -21,17 +21,16 @@ describe("KICS auto scan test", () => {
   });
 
   it("should run kics auto scan", async function () {
+	await delay(FIVE_SECONDS);
+
     // Open file
     const appender = process.platform === "win32" ? "\\" : "/";
     let tempPath = __dirname + appender + "testProj";
-    tempPath += appender + "insecure.php";
+    tempPath += appender+"insecure.php";
     VSBrowser.instance.openResources(tempPath);
     await delay(FIVE_SECONDS);
-    let treeScans = await initialize();
-    while (treeScans === undefined) {
-      treeScans = await initialize();
-    }
-    // Check if the scan is running or ran
+
+    // Check if scan is running or ran
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(true);
     const problemsView = await bottomBar.openOutputView();
@@ -47,6 +46,6 @@ describe("KICS auto scan test", () => {
 
     // Check scan did ran
     // it should not run against files so it should be empty
-    expect(problemsText).to.contain("\n");
+    expect(problemsText).to.contain('\n');
   });
 });
