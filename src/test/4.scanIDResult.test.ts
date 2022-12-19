@@ -49,9 +49,9 @@ describe("Scan ID load results test", () => {
     }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
-    if (sastNode === undefined) {
-      sastNode = await scan?.findChildItem(SAST_TYPE);
-    }
+    // if (sastNode === undefined) {
+    //   sastNode = await scan?.findChildItem(SAST_TYPE);
+    // }
     let result = await getResults(sastNode);
     await delay(THREE_SECONDS);
     let resultName = await result[0].getLabel();
