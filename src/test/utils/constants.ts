@@ -44,9 +44,27 @@ export const CX_GROUP_STATUS: string = "checkmarx-ast: Group by: Status";
 export const CX_GROUP_STATE: string = "checkmarx-ast: Group by: State";
 export const CX_GROUP_QUERY_NAME: string = "checkmarx-ast: Group by: Vulnerability Type";
 
-export const CX_CATETORY = "Checkmarx AST";
-export const CX_API_KEY_SETTINGS = "Api Key";
+export const CX_CATETORY: string = "Checkmarx AST";
+export const CX_API_KEY_SETTINGS: string = "Api Key";
 
 export const UUID_REGEX_VALIDATION = /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
 
-export const CX_TEST_SCAN_PROJECT_NAME = process.env.CX_TEST_PROJECT_NAME ? process.env.CX_TEST_PROJECT_NAME : "webgoat";
+
+export const STEP_1: string = "AST Scan selection (1/3)";
+export const STEP_2: string = "AST Scan selection (2/3)";
+export const STEP_3: string = "AST Scan selection (3/3)";
+
+export const PROJECT_KEY_TREE: string = "Project:  ";
+export const SCAN_KEY_TREE: string = "Scan:  ";
+export const BRANCH_KEY_TREE: string = "Branch:  ";
+
+export const SAST_TYPE: string = "sast";
+
+export const WEBVIEW_TITLE = "cx_title";
+export const CODEBASHING_HEADER = "cx_header_codebashing";
+export const COMMENT_BOX = "comment_box";
+export const LEARN_MORE_LABEL = "learn-label";
+export const CHANGES_LABEL = "changes-label";
+export const CHANGES_CONTAINER = "history-container";
+export const UPDATE_BUTTON = "submit";
+export const GENERAL_LABEL = "general-label";

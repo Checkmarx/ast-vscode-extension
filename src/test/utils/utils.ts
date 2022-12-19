@@ -1,10 +1,4 @@
-import * as vscode from "vscode";
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, WebView} from 'vscode-extension-tester';
-import { Logs } from '../models/logs';
-import { REFRESH_TREE } from "../utils/common/commands";
-import { BRANCH_ID_KEY, BRANCH_LABEL, PROJECT_ID_KEY, PROJECT_LABEL, SCAN_ID_KEY, SCAN_LABEL } from "../utils/common/constants";
-import { update } from "../utils/common/globalState";
-import { getProjectWithProgress, getProperty, getResultsWithProgress, getScanLabel, getScanWithProgress } from '../utils/utils';
 import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
@@ -64,11 +58,15 @@ export async function validateSeverities(scan:any, severity:string): Promise<boo
 
 export async function getDetailsView(): Promise<WebView> {
 	// Open details view
-	let detailsView = new WebView();
-	await delay(FIVE_SECONDS);
-	await detailsView.switchToFrame();
-	await delay(FIVE_SECONDS);
-	return detailsView;
+	try {
+		let detailsView = new WebView();
+		await delay(FIVE_SECONDS);
+		await detailsView.switchToFrame();
+		await delay(FIVE_SECONDS);
+		return detailsView;
+	} catch (error) {
+		return undefined;
+	}
 }
 
 export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
