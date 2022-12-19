@@ -49,7 +49,6 @@ export const CX_API_KEY_SETTINGS: string = "Api Key";
 
 export const UUID_REGEX_VALIDATION = /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
 
-export const CX_TEST_SCAN_PROJECT_NAME: string = process.env.CX_TEST_PROJECT_NAME ? process.env.CX_TEST_PROJECT_NAME : "webgoat";
 
 export const STEP_1: string = "AST Scan selection (1/3)";
 export const STEP_2: string = "AST Scan selection (2/3)";

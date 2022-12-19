@@ -1,5 +1,5 @@
 import { ActivityBar, ViewControl, CustomTreeSection, SideBarView, InputBox, WebView} from 'vscode-extension-tester';
-import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from '../constants';
+import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from './constants';
 
 export async function createControl(): Promise<ViewControl | undefined> {
 	var r = await new ActivityBar().getViewControl('Checkmarx');

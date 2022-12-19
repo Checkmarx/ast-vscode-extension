@@ -23,7 +23,7 @@ import {
   STEP_1,
   STEP_2,
   STEP_3,
-} from "./constants";
+} from "./utils/constants";
 import { waitByLinkText } from "./utils/waiters";
 
 describe("Wizard load results test", () => {
@@ -68,10 +68,7 @@ describe("Wizard load results test", () => {
     await quickPickSelector(inputScan);
 
     treeScans = await initialize();
-    driver.wait(
-      until.elementLocated(By.linkText(SCAN_KEY_TREE + scanDate)),
-      50000
-    );
+    await waitByLinkText(driver,SCAN_KEY_TREE + scanDate,50000);
 
     // Project tree item validation
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);

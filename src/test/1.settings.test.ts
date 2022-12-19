@@ -10,8 +10,9 @@ import {
   until,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./constants";
-import { waitStatusBar } from "./utils/waiters";
+import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./utils/constants";
+import { waitByLinkText, waitStatusBar } from "./utils/waiters";
+import { API_KEY } from "./utils/envs";
 
 describe("Extension settings tests", () => {
   let settingsEditor: SettingsEditor;
@@ -46,14 +47,11 @@ describe("Extension settings tests", () => {
       CX_CATETORY
     );
     // Set setting value
-    await apiKeyVal.setValue(process.env.CX_API_KEY);
-    driver.wait(
-      until.elementLocated(By.linkText(process.env.CX_API_KEY)),
-      90000
-    );
+    await apiKeyVal.setValue(API_KEY);
+    await waitByLinkText(driver,API_KEY,90000);
     // Validate settings
     const apiKey = await apiKeyVal.getValue();
-    expect(apiKey).to.equal(process.env.CX_API_KEY);
+    expect(apiKey).to.equal(API_KEY);
   });
 
   it("should check kics auto scan enablement on settings", async function () {

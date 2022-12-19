@@ -16,11 +16,11 @@ import {
   CX_SELECT_BRANCH,
   CX_SELECT_PROJECT,
   CX_SELECT_SCAN,
-  CX_TEST_SCAN_PROJECT_NAME,
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
-} from "./constants";
+} from "./utils/constants";
 import { waitByLinkText } from "./utils/waiters";
+import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 describe("Individual pickers load results test", () => {
   let bench: Workbench;
