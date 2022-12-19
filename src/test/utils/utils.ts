@@ -58,11 +58,15 @@ export async function validateSeverities(scan:any, severity:string): Promise<boo
 
 export async function getDetailsView(): Promise<WebView> {
 	// Open details view
-	let detailsView = new WebView();
-	await delay(FIVE_SECONDS);
-	await detailsView.switchToFrame();
-	await delay(FIVE_SECONDS);
-	return detailsView;
+	try {
+		let detailsView = new WebView();
+		await delay(FIVE_SECONDS);
+		await detailsView.switchToFrame();
+		await delay(FIVE_SECONDS);
+		return detailsView;
+	} catch (error) {
+		return undefined;
+	}
 }
 
 export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
