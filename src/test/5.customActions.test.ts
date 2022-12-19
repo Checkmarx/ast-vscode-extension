@@ -2,6 +2,7 @@ import { By, CustomTreeSection, EditorView, InputBox, until, VSBrowser, WebDrive
 import { expect } from 'chai';
 import { delay, initialize, validateRootNode, validateSeverities } from './utils/utils';
 import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, SAST_TYPE, SCAN_KEY_TREE } from './constants';
+import { waitByLinkText } from './utils/waiters';
 
 describe('filter and groups actions tests', () => {
 	let bench:Workbench;
@@ -31,14 +32,7 @@ describe('filter and groups actions tests', () => {
 			process.env.CX_TEST_SCAN_ID
 		);
 		await input.confirm();
-		driver.wait(
-			until.elementLocated(
-				By.linkText(
-					SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
-				)
-			),
-		15000
-		  );
+		await waitByLinkText(driver, SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID, 15000);
 		const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
 		for (var index in commands) {
 			await bench.executeCommand(commands[index].command);

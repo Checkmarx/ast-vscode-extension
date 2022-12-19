@@ -14,7 +14,17 @@ import {
   initialize,
   quickPickSelector,
 } from "./utils/utils";
-import { BRANCH_KEY_TREE, CX_CLEAR, CX_SELECT_ALL, CX_TEST_SCAN_PROJECT_NAME, PROJECT_KEY_TREE, SCAN_KEY_TREE, STEP_1, STEP_2, STEP_3 } from "./constants";
+import {
+  BRANCH_KEY_TREE,
+  CX_CLEAR,
+  CX_SELECT_ALL,
+  PROJECT_KEY_TREE,
+  SCAN_KEY_TREE,
+  STEP_1,
+  STEP_2,
+  STEP_3,
+} from "./constants";
+import { waitByLinkText } from "./utils/waiters";
 
 describe("Wizard load results test", () => {
   let bench: Workbench;
@@ -39,35 +49,29 @@ describe("Wizard load results test", () => {
 
     // Project selection
     const inputProject = await InputBox.create();
-    driver.wait(
-      until.elementLocated(By.linkText(STEP_1)),
-      5000
-    );
+    await waitByLinkText(driver, STEP_1, 5000);
     await inputProject.setText("webgoat");
-    driver.wait(until.elementLocated(By.linkText("webgoat")), 5000);
+    await waitByLinkText(driver, "webgoat", 5000);
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();
 
     // Branch selection
-    driver.wait(
-      until.elementLocated(By.linkText(STEP_2)),
-      5000
-    );
+    await waitByLinkText(driver, STEP_2, 5000);
     const inputBranch = new InputBox();
     let branchName = await getQuickPickSelector(inputBranch);
     await quickPickSelector(inputBranch);
-    
-	// Scan selection
-    driver.wait(
-      until.elementLocated(By.linkText(STEP_3)),
-      5000
-    );
+
+    // Scan selection
+    await waitByLinkText(driver, STEP_3, 5000);
     const inputScan = new InputBox();
     let scanDate = await getQuickPickSelector(inputScan);
     await quickPickSelector(inputScan);
 
     treeScans = await initialize();
-    driver.wait(until.elementLocated(By.linkText(SCAN_KEY_TREE + scanDate)), 50000);
+    driver.wait(
+      until.elementLocated(By.linkText(SCAN_KEY_TREE + scanDate)),
+      50000
+    );
 
     // Project tree item validation
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);

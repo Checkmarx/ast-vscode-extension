@@ -20,6 +20,7 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./constants";
+import { waitByLinkText } from "./utils/waiters";
 
 describe("Individual pickers load results test", () => {
   let bench: Workbench;
@@ -44,10 +45,7 @@ describe("Individual pickers load results test", () => {
     await bench.executeCommand(CX_SELECT_PROJECT);
     let input = await InputBox.create();
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
-    driver.wait(
-      until.elementLocated(By.linkText(CX_TEST_SCAN_PROJECT_NAME)),
-      5000
-    );
+	await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
 	// Select from the pickers list
     let projectName = await getQuickPickSelector(input);
     await input.setText(projectName);
@@ -68,7 +66,7 @@ describe("Individual pickers load results test", () => {
 	// Select from the pickers list
     let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
-    driver.wait(until.elementLocated(By.linkText(branchName)), 5000);
+	await waitByLinkText(driver, branchName, 5000);
     await input.confirm();
 	// Wait for branch selection to be made
     let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
@@ -86,7 +84,7 @@ describe("Individual pickers load results test", () => {
 	// Select from the pickers list
     let scanDate = await getQuickPickSelector(input);
     await input.setText(scanDate);
-    driver.wait(until.elementLocated(By.linkText(scanDate)), 5000);
+	await waitByLinkText(driver, scanDate, 5000);
     await input.confirm();
 	// Wait for scan selection to be made
     let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
