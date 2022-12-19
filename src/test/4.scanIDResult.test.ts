@@ -31,7 +31,7 @@ describe("Scan ID load results test", () => {
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
-    await input.setText(process.env.CX_TEST_SCAN_ID);
+    await input.setText("6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
     await input.confirm();
   });
 
@@ -42,22 +42,25 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID
+      SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"
     );
     while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + process.env.CX_TEST_SCAN_ID);
+      scan = await treeScans?.findItem(SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
     }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
-    // if (sastNode === undefined) {
-    //   sastNode = await scan?.findChildItem(SAST_TYPE);
-    // }
+    if (sastNode === undefined) {
+      sastNode = await scan?.findChildItem(SAST_TYPE);
+    }
     let result = await getResults(sastNode);
     await delay(THREE_SECONDS);
     let resultName = await result[0].getLabel();
     await result[0].click();
     // Open details view
     let detailsView = await getDetailsView();
+	while(detailsView===undefined){
+		detailsView = await getDetailsView();
+	}
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(By.id(WEBVIEW_TITLE));
     let title = await titleWebElement.getText();
