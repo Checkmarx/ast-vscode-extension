@@ -107,6 +107,7 @@ export const SCAN_CREATE_VERIFY_BRANCH = "$(sync~spin) Checking matching branche
 export const SCAN_CREATE_VERIFY_FILES = "$(sync~spin) Checking matching files";
 export const SCAN_CREATE_PREPARING = "$(sync~spin) Preparing files for scan";
 export const SCAN_WAITING = "$(sync~spin) Scan running";
+export const SCA_SCAN_WAITING = "$(sync~spin) Checkmarx sca scan running";
 export const SCAN_CANCEL = "$(sync~spin) Canceling Scan";
 export const SCAN_POLL_TIMEOUT = 15000; // MILLISECONDS
 

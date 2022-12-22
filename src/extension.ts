@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import {AstResultsProvider} from "./ast_results_provider";
+import {AstResultsProvider} from "./resultsView/ast_results_provider";
 import {AstResult} from "./models/results";
 import {getError} from "./utils/common/globalState";
 import {
@@ -29,21 +29,23 @@ import {
 } from "./utils/common/constants";
 import {Logs} from "./models/logs";
 import * as path from "path";
-import {multiStepInput} from "./ast_multi_step_input";
-import {AstDetailsDetached} from "./ast_details_view";
-import {branchPicker, projectPicker, scanInput, scanPicker} from "./pickers";
+import {multiStepInput} from "./resultsView/ast_multi_step_input";
+import {AstDetailsDetached} from "./resultsView/ast_details_view";
+import {branchPicker, projectPicker, scanInput, scanPicker} from "./resultsView/pickers";
 import {filter, filterState, initializeFilters} from "./utils/filters";
 import {group} from "./utils/group";
-import {addRealTimeSaveListener, getBranchListener, WorkspaceListener} from "./utils/listeners";
+import {addOpenFolderListener, addRealTimeSaveListener, getBranchListener, WorkspaceListener} from "./utils/listeners";
 import {getCodebashingLink} from "./utils/codebashing/codebashing";
 import {triageSubmit} from "./utils/sast/triage";
-import {REFRESH_TREE} from "./utils/common/commands";
+import {REFRESH_SCA_TREE, REFRESH_TREE} from "./utils/common/commands";
 import {getChanges} from "./utils/utils";
 import {KicsProvider} from "./utils/kics/kics_provider";
 import {applyScaFix} from "./utils/scaFix";
 import {getLearnMore} from "./utils/sast/learnMore";
-import {getAstConfiguration, isScanEnabled} from "./utils/ast/ast";
-import {cancelScan, createScan, pollForScanResult} from "./create_scan_provider";
+import {getAstConfiguration, isScanEnabled, isSCAReady, isSCAScanEnabled} from "./utils/ast/ast";
+import {cancelScan, createScan, pollForScanResult} from "./resultsView/create_scan_provider";
+import { SCAResultsProvider } from "./scaView/sca_results_provider";
+import { createSCAScan } from "./scaView/sca_create_scan_provider";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -52,7 +54,12 @@ export async function activate(context: vscode.ExtensionContext) {
     logs.show();
     logs.info("Checkmarx plugin is running");
 
+    // Status bars for scans from IDE and SCA auto scanning
     const runScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    const runSCAScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    runSCAScanStatusBar.text = "$(check) Checkmarx sca";
+    runSCAScanStatusBar.show();
+    // Scans from IDE scanning commands
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => {
         await createScan(context, runScanStatusBar, logs);
     }));
@@ -63,8 +70,12 @@ export async function activate(context: vscode.ExtensionContext) {
         await pollForScanResult(context, runScanStatusBar, logs);
     }));
     vscode.commands.executeCommand(`${EXTENSION_NAME}.pollForScan`);
-
-
+    
+    // SCA auto scanning commands
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createSCAScan`, async () => {
+        await createSCAScan(context, runSCAScanStatusBar, logs,scaResultsProvider);
+    }));
+    
     const kicsDiagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
     const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     const kicsProvider = new KicsProvider(context, logs, kicsStatusBarItem, kicsDiagnosticCollection, [], []);
@@ -73,7 +84,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const diagnosticCollection = vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-
+    
+    // Cx One main results view
     // Create listener for file saves for real time feedback
     addRealTimeSaveListener(context, logs, kicsStatusBarItem);
 
@@ -214,7 +226,18 @@ export async function activate(context: vscode.ExtensionContext) {
     } else {
         logs.warn("Git extension - Could not find vscode.git installed.");
     }
-
+    
+    // SCA Auto Scanning view
+    addOpenFolderListener(context, logs, kicsStatusBarItem);
+    const scaResultsProvider = new SCAResultsProvider(
+        logs,
+        statusBarItem,
+        diagnosticCollection,
+    );
+    scaResultsProvider.scaResults=[];
+    vscode.window.registerTreeDataProvider(`scaAutoScan`, scaResultsProvider);
+    const scaTree = vscode.window.createTreeView("scaAutoScan", {treeDataProvider: scaResultsProvider});
+    scaResultsProvider.refreshData();
     // Settings
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
             vscode.commands.executeCommand(
@@ -234,21 +257,29 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Listening to settings changes
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    // Scan from IDE enablement
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
+    // SCA auto scanning enablement
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await isSCAScanEnabled(logs));
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAReady`, await isSCAReady(logs));
+    
     vscode.workspace.onDidChangeConfiguration(async (event) => {
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await isSCAScanEnabled(logs));
         const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
         kicsStatusBarItem.text = onSave === true ? "$(check) Checkmarx kics" : "$(debug-disconnect) Checkmarx kics";
         await vscode.commands.executeCommand(REFRESH_TREE);
+        await vscode.commands.executeCommand(REFRESH_SCA_TREE);
     });
 
     // Refresh Tree Commmand
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshTree`, async () => await astResultsProvider.refreshData()));
-
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.refreshSCATree`, async () => await scaResultsProvider.refreshData()));
 
     // Clear Command
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clear`, async () => await astResultsProvider.clean()));
+    context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.clearSca`, async () => await scaResultsProvider.clean()));
 
     // Group Commands for UI
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.groupByFile`, async () => await group(logs, context, astResultsProvider, IssueFilter.fileName, FILE_GROUP)));

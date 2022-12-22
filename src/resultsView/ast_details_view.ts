@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import {AstResult} from "./models/results";
-import {Details} from "./utils/interface/details";
-import {getNonce} from "./utils/utils";
+import {AstResult} from "../models/results";
+import {Details} from "../utils/interface/details";
+import {getNonce} from "../utils/utils";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;

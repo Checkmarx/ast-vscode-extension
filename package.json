@@ -203,6 +203,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.clearSca",
+        "category": "checkmarx-ast",
+        "title": "Clear results tree",
+        "icon": "$(refresh)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.filterHigh_toggle",
         "category": "checkmarx-ast",
         "title": "HIGH",
@@ -478,6 +485,13 @@
         "category": "checkmarx-ast",
         "title": "Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.createSCAScan",
+        "category": "checkmarx-ast",
+        "title": "Run SCA Auto Scan",
+        "icon": "$(notebook-execute)",
+        "enablement": "ast-results.isValidCredentials && ast-results.isSCAScanEnabled"
       }
     ],
     "submenus": [
@@ -595,6 +609,11 @@
       ],
       "view/title": [
         {
+          "command": "ast-results.createSCAScan",
+          "group": "navigation@1",
+          "when": "view == scaAutoScan"
+        },
+        {
           "command": "ast-results.filterHigh_untoggle",
           "group": "navigation@1",
           "when": "view == astResults && ast-results-high"
@@ -707,12 +726,17 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults"
+          "when": "view == astResults || view==scaAutoScan"
         },
         {
           "command": "ast-results.clear",
           "group": "@settings@1",
           "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.clearSca",
+          "group": "navigation@2",
+          "when": "view == scaAutoScan"
         },
         {
           "command": "ast-results.generalPick",
@@ -731,7 +755,12 @@
         {
           "id": "astResults",
           "type": "tree",
-          "name": "Results"
+          "name": "Checkmarx One Results"
+        },
+        {
+          "id": "scaAutoScan",
+          "type": "tree",
+          "name": "Software Composition Analysis : SCA Auto Scanning"
         }
       ]
     },
@@ -749,6 +778,16 @@
         "view": "astResults",
         "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
         "when": "!ast-results.isValidCredentials"
+      },
+      {
+        "view": "scaAutoScan",
+        "contents": "In order to access the possibility to use SCA auto scan from your IDE you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
+        "when": "!ast-results.isValidCredentials"
+      },
+      {
+        "view": "scaAutoScan",
+        "contents": "Open a workspace or a folder in Visual Studio Code to start the analysis.\n",
+        "when": "!ast-results.isSCAReady && ast-results.isValidCredentials"
       }
     ],
     "configuration": [

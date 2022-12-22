@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-import { Logs } from "./models/logs";
+import { Logs } from "../models/logs";
 import {
   getBranchPickItems,
   getProjectsPickItems,
   getResultsWithProgress,
   getScansPickItems,
-} from "./utils/utils";
-import { REFRESH_TREE } from "./utils/common/commands";
-import { BRANCH_ID_KEY, BRANCH_LABEL, PROJECT_ID_KEY, PROJECT_LABEL, SCAN_ID_KEY, SCAN_LABEL, SCAN_PICKER_TITLE } from "./utils/common/constants";
-import { update } from "./utils/common/globalState";
-import { CxQuickPickItem, MultiStepInput } from "./utils/multiStepUtils";
+} from "../utils/utils";
+import { REFRESH_TREE } from "../utils/common/commands";
+import { BRANCH_ID_KEY, BRANCH_LABEL, PROJECT_ID_KEY, PROJECT_LABEL, SCAN_ID_KEY, SCAN_LABEL, SCAN_PICKER_TITLE } from "../utils/common/constants";
+import { update } from "../utils/common/globalState";
+import { CxQuickPickItem, MultiStepInput } from "../utils/multiStepUtils";
 
 export async function multiStepInput(logs: Logs, context: vscode.ExtensionContext) {
   interface State {

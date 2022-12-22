@@ -1,14 +1,14 @@
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import * as vscode from "vscode";
-import { Logs } from "./models/logs";
-import { AstResult } from "./models/results";
-import { getScan, scanCancel, scanCreate, updateStatusBarItem } from "./utils/ast/ast";
+import { Logs } from "../models/logs";
+import { AstResult } from "../models/results";
+import { getScan, scanCancel, scanCreate, updateStatusBarItem } from "../utils/ast/ast";
 import {
     BRANCH_ID_KEY, BRANCH_NAME, NO,
     PROJECT_ID_KEY, SCAN_CANCEL, SCAN_CREATE, SCAN_CREATE_ID_KEY, SCAN_CREATE_PREPARING, SCAN_CREATE_PREP_KEY, SCAN_CREATE_VERIFY_BRANCH, SCAN_CREATE_VERIFY_FILES, SCAN_POLL_TIMEOUT, SCAN_STATUS_COMPLETE, SCAN_STATUS_PARTIAL, SCAN_STATUS_QUEUED, SCAN_STATUS_RUNNING, SCAN_WAITING, YES
-} from "./utils/common/constants";
-import { get, Item, update } from "./utils/common/globalState";
-import { getResultsJson, loadScanId } from "./utils/utils";
+} from "../utils/common/constants";
+import { get, Item, update } from "../utils/common/globalState";
+import { getResultsJson, loadScanId } from "../utils/utils";
 
 export async function pollForScanResult(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
     return new Promise<void>((resolve) => {

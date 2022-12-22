@@ -1,72 +1,40 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { EventEmitter } from "vscode";
-import { AstResult } from "./models/results";
+import { AstResult } from "../models/results";
 import {
   EXTENSION_NAME,
   IssueFilter,
-  IssueLevel,
-  StateLevel,
-  SCAN_ID_KEY,
-  PROJECT_ID_KEY,
-  BRANCH_ID_KEY,
-  SCAN_LABEL,
-  PROJECT_LABEL,
-  BRANCH_LABEL,
   PROJECT_ITEM,
   BRANCH_ITEM,
-  SCAN_ITEM,
   GRAPH_ITEM,
-} from "./utils/common/constants";
-import {
-  Counter,
-  getProperty, getResultsFilePath, getResultsWithProgress,
-} from "./utils/utils";
-import { Logs } from "./models/logs";
-import { get, update } from "./utils/common/globalState";
-import { getAstConfiguration } from "./utils/ast/ast";
-import { SastNode } from "./models/sastNode";
-import { REFRESH_TREE } from "./utils/common/commands";
+} from "../utils/common/constants";
+import {Counter,getProperty} from "../utils/utils";
+import { Logs } from "../models/logs";
+import { getAstConfiguration } from "../utils/ast/ast";
+import { SastNode } from "../models/sastNode";
 
 
-export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
-  public stateFilter: IssueFilter = IssueFilter.state;
-  public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
-  public stateLevel: StateLevel[] = [
-    StateLevel.confirmed,
-    StateLevel.toVerify,
-    StateLevel.urgent,
-    StateLevel.notIgnored,
-  ];
+export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public process:any;
-
+  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
     this._onDidChangeTreeData.event;
   private scan: string | undefined;
+  public scaResults: CxResult[]; 
   private data: TreeItem[] | undefined;
 
   constructor(
-    private readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
     private readonly statusBarItem: vscode.StatusBarItem,
-    private readonly kicsStatusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection
-  ) {
-    const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
-    this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
-    this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-    this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
-    this.kicsStatusBarItem.show();
-  }
+  ) {}
 
   private showStatusBarItem() {
     this.statusBarItem.text = "$(sync~spin) Refreshing tree";
-    this.statusBarItem.tooltip = "Checkmarx command is running";
+    this.statusBarItem.tooltip = "SCA auto scanning command is running";
     this.statusBarItem.show();
   }
 
@@ -78,14 +46,8 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   async clean(): Promise<void> {
-    this.logs.info("Clear all loaded information");
-    const resultJsonPath = path.join(__dirname, "ast-results.json");
-    if (fs.existsSync(resultJsonPath)) {
-      fs.unlinkSync(resultJsonPath);
-    }
-    update(this.context, SCAN_ID_KEY, undefined);
-    update(this.context, PROJECT_ID_KEY, undefined);
-    update(this.context, BRANCH_ID_KEY, undefined);
+    this.logs.info("Clear all sca scan information");
+	this.scaResults=[];
     await this.refreshData();
   }
   
@@ -100,49 +62,24 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this.hideStatusBarItem();
   }
 
-  async openRefreshData(): Promise<void> {
-    this.showStatusBarItem();
-    const scanId = get(this.context, SCAN_ID_KEY)?.name!;
-    if (scanId) {
-      await getResultsWithProgress(this.logs, scanId);
-      await vscode.commands.executeCommand(REFRESH_TREE);
-      this.hideStatusBarItem();
-    }
-  }
-
   generateTree(): TreeItem {
-    const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
-
-    let treeItems = [
-      new TreeItem(
-        get(this.context, PROJECT_ID_KEY)?.name ?? PROJECT_LABEL,
-        PROJECT_ITEM
-      ),
-      new TreeItem(
-        get(this.context, BRANCH_ID_KEY)?.name ?? BRANCH_LABEL,
-        BRANCH_ITEM
-      ),
-      new TreeItem(
-        get(this.context, SCAN_ID_KEY)?.name ?? SCAN_LABEL,
-        SCAN_ITEM
-      ),
-    ];
-
-    this.scan = get(this.context, SCAN_ID_KEY)?.id;
-    if (fs.existsSync(resultJsonPath) && this.scan) {
-      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8").replace(/:([0-9]{15,}),/g, ':"$1",'));
-      const results = this.orderResults(jsonResults.results);
-
-      treeItems = treeItems.concat(this.createSummaryItem(results));
-
-      const treeItem = this.groupBy(results, this.issueFilter);
-      treeItem.label = `${SCAN_LABEL} ${this.scan}`;
-      treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-      treeItems = treeItems.concat(treeItem);
-    }
-
-    return new TreeItem("", undefined, undefined, treeItems);
+    let treeItems = [];
+	const results = this.orderResults(this.scaResults);
+	let treeItem: TreeItem;
+	if(results.length>0){
+		this.scan = "SCA Auto Scanning: 2022-12-20 12:00";
+		treeItem = this.groupBy(results, this.issueFilter);
+		treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+		
+	}
+	else{
+		this.scan = "Checkmarx found no vulnerabilities.";
+		treeItem = this.groupBy(results, this.issueFilter);
+		treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+	}
+	treeItems = treeItems.concat(treeItem);
+	return new TreeItem("", undefined, undefined, treeItems);
   }
 
   orderResults(list: CxResult[]): CxResult[] {
@@ -191,12 +128,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
     let node;
     // Verify the current severity filters applied
-    if (this.issueLevel.length > 0) {
-      // Filter only the results for the severity and state filters type
-      if (
-        this.issueLevel.includes(obj.getSeverity()) &&
-        this.stateLevel.includes(obj.getState()!)
-      ) {
+   
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,
@@ -212,8 +144,6 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
           tree
         );
         node.children?.push(item);
-      }
-    }
   }
 
   createDiagnostic(
