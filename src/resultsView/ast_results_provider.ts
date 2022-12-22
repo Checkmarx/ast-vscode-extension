@@ -19,6 +19,7 @@ import {
   BRANCH_ITEM,
   SCAN_ITEM,
   GRAPH_ITEM,
+  REFRESHING_TREE,
 } from "../utils/common/constants";
 import {
   Counter,
@@ -65,7 +66,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   private showStatusBarItem() {
-    this.statusBarItem.text = "$(sync~spin) Refreshing tree";
+    this.statusBarItem.text = REFRESHING_TREE;
     this.statusBarItem.tooltip = "Checkmarx command is running";
     this.statusBarItem.show();
   }

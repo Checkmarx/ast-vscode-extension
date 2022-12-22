@@ -8,22 +8,30 @@ import {
   PROJECT_ITEM,
   BRANCH_ITEM,
   GRAPH_ITEM,
+  SCA_NO_VULNERABILITIES,
+  REFRESHING_TREE,
+  CLEAR_SCA,
+  SCA_SCAN_RUNNING_LOG,
 } from "../utils/common/constants";
-import {Counter,getProperty} from "../utils/utils";
+import { Counter, getProperty } from "../utils/utils";
 import { Logs } from "../models/logs";
 import { getAstConfiguration } from "../utils/ast/ast";
 import { SastNode } from "../models/sastNode";
 
-
 export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public process:any;
-  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
+  public process: any;
+  public issueFilter: IssueFilter[] = [
+    IssueFilter.type,
+    IssueFilter.scaType,
+    IssueFilter.severity,
+    IssueFilter.packageIdentifier,
+  ];
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
     this._onDidChangeTreeData.event;
   private scan: string | undefined;
-  public scaResults: CxResult[]; 
+  public scaResults: CxResult[];
   private data: TreeItem[] | undefined;
 
   constructor(
@@ -33,8 +41,8 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   ) {}
 
   private showStatusBarItem() {
-    this.statusBarItem.text = "$(sync~spin) Refreshing tree";
-    this.statusBarItem.tooltip = "SCA auto scanning command is running";
+    this.statusBarItem.text = REFRESHING_TREE;
+    this.statusBarItem.tooltip = SCA_SCAN_RUNNING_LOG;
     this.statusBarItem.show();
   }
 
@@ -46,11 +54,11 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   async clean(): Promise<void> {
-    this.logs.info("Clear all sca scan information");
-	this.scaResults=[];
+    this.logs.info(CLEAR_SCA);
+    this.scaResults = [];
     await this.refreshData();
   }
-  
+
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -65,21 +73,19 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   generateTree(): TreeItem {
     this.diagnosticCollection.clear();
     let treeItems = [];
-	const results = this.orderResults(this.scaResults);
-	let treeItem: TreeItem;
-	if(results.length>0){
-		this.scan = "SCA Auto Scanning: 2022-12-20 12:00";
-		treeItem = this.groupBy(results, this.issueFilter);
-		treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-		
-	}
-	else{
-		this.scan = "Checkmarx found no vulnerabilities.";
-		treeItem = this.groupBy(results, this.issueFilter);
-		treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
-	}
-	treeItems = treeItems.concat(treeItem);
-	return new TreeItem("", undefined, undefined, treeItems);
+    const results = this.orderResults(this.scaResults);
+    let treeItem: TreeItem;
+    if (results.length > 0) {
+      this.scan = "SCA Auto Scanning: 2022-12-20 12:00";
+      treeItem = this.groupBy(results, this.issueFilter);
+      treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    } else {
+      this.scan = SCA_NO_VULNERABILITIES;
+      treeItem = this.groupBy(results, this.issueFilter);
+      treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    }
+    treeItems = treeItems.concat(treeItem);
+    return new TreeItem("", undefined, undefined, treeItems);
   }
 
   orderResults(list: CxResult[]): CxResult[] {
@@ -101,10 +107,9 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
     const tree = new TreeItem(this.scan ?? "", undefined, undefined, []);
-    list.forEach((element:any) =>{
+    list.forEach((element: any) => {
       this.groupTree(element, folder, map, groups, tree);
-    }
-    );
+    });
 
     this.diagnosticCollection.clear();
     map.forEach((value, key) =>
@@ -128,22 +133,22 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
     let node;
     // Verify the current severity filters applied
-   
-        if (obj.sastNodes.length > 0) {
-          this.createDiagnostic(
-            obj.label,
-            obj.getSeverityCode(),
-            obj.sastNodes[0],
-            folder,
-            map
-          );
-        }
-        node = groups.reduce(
-          (previousValue: TreeItem, currentValue: string) =>
-            this.reduceGroups(obj, previousValue, currentValue),
-          tree
-        );
-        node.children?.push(item);
+
+    if (obj.sastNodes.length > 0) {
+      this.createDiagnostic(
+        obj.label,
+        obj.getSeverityCode(),
+        obj.sastNodes[0],
+        folder,
+        map
+      );
+    }
+    node = groups.reduce(
+      (previousValue: TreeItem, currentValue: string) =>
+        this.reduceGroups(obj, previousValue, currentValue),
+      tree
+    );
+    node.children?.push(item);
   }
 
   createDiagnostic(
@@ -175,12 +180,12 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   reduceGroups(obj: any, previousValue: TreeItem, currentValue: string) {
     var value = getProperty(obj, currentValue);
-    
+
     // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
     if (currentValue === IssueFilter.fileName && value.length === 0) {
       value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
     }
-    
+
     if (!value) {
       return previousValue;
     }
@@ -241,7 +246,7 @@ export class TreeItem extends vscode.TreeItem {
     this.contextValue = type;
     this.children = children;
     // TODO: Use a type enum
-     if (type) {
+    if (type) {
       this.iconPath = new vscode.ThemeIcon("shield");
     }
 
