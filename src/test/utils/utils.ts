@@ -11,7 +11,7 @@ export async function createView(control:ViewControl): Promise<SideBarView | und
 }	
 
 export async function createTree(view:SideBarView|undefined): Promise<CustomTreeSection | undefined> {
-	return await view?.getContent().getSection("Results") as CustomTreeSection ;
+	return await view?.getContent().getSection("Checkmarx One Results") as CustomTreeSection ;
 }	
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
