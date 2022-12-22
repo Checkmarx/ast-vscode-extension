@@ -747,20 +747,20 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
+        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
     "configuration": [
       {
-        "title": "Checkmarx AST results",
+        "title": "Checkmarx One results",
         "id": "checkmarx-ast",
         "order": 2,
         "properties": {
           "checkmarxAST.apiKey": {
             "type": "string",
             "order": 5,
-            "description": "AST API KEY for authentication",
+            "description": "Checkmarx One API KEY for authentication",
             "properties": {
               "type": "string",
               "default": ""

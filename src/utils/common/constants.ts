@@ -38,14 +38,14 @@ export const BRANCH_LABEL: string = "Branch: ";
 export const BRANCH_PLACEHOLDER: string = "Select branch";
 export const SCAN_LABEL: string = "Scan: ";
 export const SCAN_PLACEHOLDER: string = "Select scan";
-export const SCAN_PICKER_TITLE: string = "AST Scan selection";
+export const SCAN_PICKER_TITLE: string = "Checkmarx One Scan selection";
 
 export const PROJECT_ITEM: string = "project-item";
 export const BRANCH_ITEM: string = "branch-item";
 export const SCAN_ITEM: string = "scan-item";
 export const GRAPH_ITEM: string = "graph-item";
 
-export const RESULTS_FILE_NAME: string = "ast-results";
+export const RESULTS_FILE_NAME: string = "checkmarx-one-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
 
 export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
