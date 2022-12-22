@@ -1,5 +1,5 @@
 {
-  "name": "ast-results",
+  "name": "checkmarx-one-results",
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
@@ -30,697 +30,697 @@
   "contributes": {
     "commands": [
       {
-        "command": "ast-results.newDetails",
+        "command": "checkmarx-one-results.newDetails",
         "title": "Details"
       },
       {
-        "command": "ast-results.viewResult",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.viewResult",
+        "category": "checkmarx-one",
         "title": "View",
         "icon": "$(eye)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.viewSettings",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.viewSettings",
+        "category": "checkmarx-one",
         "title": "Settings",
         "icon": "$(gear)"
       },
       {
-        "command": "ast-results.viewKicsSaveSettings",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.viewKicsSaveSettings",
+        "category": "checkmarx-one",
         "title": "Kics save settings",
         "icon": "$(gear)"
       },
       {
-        "command": "ast-results.refreshTree",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.refreshTree",
+        "category": "checkmarx-one",
         "title": "Refresh tree",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.kicsRealtime",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.kicsRealtime",
+        "category": "checkmarx-one",
         "title": "Run kics realtime scan"
       },
       {
-        "command": "ast-results.clear",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.clear",
+        "category": "checkmarx-one",
         "title": "Clear selections",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupBySeverityActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupBySeverityActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: Severity",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByLanguageActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByLanguageActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: Language",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByStatusActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByStatusActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: Status",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByFileActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByFileActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: File",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByStateActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByStateActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: State",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByQueryNameActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByQueryNameActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: Vulnerability Type",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByDirectDependencyActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByDirectDependencyActive",
+        "category": "checkmarx-one",
         "title": "✓ Group by: Direct Dependency",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupBySeverity",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupBySeverity",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: Severity",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByLanguage",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByLanguage",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: Language",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByStatus",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByStatus",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: Status",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByFile",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByFile",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: File",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByState",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByState",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: State",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByQueryName",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByQueryName",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: Vulnerability Type",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByDirectDependency",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByDirectDependency",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Group by: Direct Dependency",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.groupByDirectDependencies",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByDirectDependencies",
+        "category": "checkmarx-one",
         "title": "Group by: Direct Dependency",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupBySeverities",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupBySeverities",
+        "category": "checkmarx-one",
         "title": "Group by: Severity",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupByLanguages",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByLanguages",
+        "category": "checkmarx-one",
         "title": "Group by: Language",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupByStatuses",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByStatuses",
+        "category": "checkmarx-one",
         "title": "Group by: Status",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupByFiles",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByFiles",
+        "category": "checkmarx-one",
         "title": "Group by: File",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupByStates",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByStates",
+        "category": "checkmarx-one",
         "title": "Group by: State",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.groupByQueryNames",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.groupByQueryNames",
+        "category": "checkmarx-one",
         "title": "Group by: Vulnerability Type",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.clear",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.clear",
+        "category": "checkmarx-one",
         "title": "Clear selections",
         "icon": "$(refresh)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterHigh_toggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterHigh_toggle",
+        "category": "checkmarx-one",
         "title": "HIGH",
         "icon": "media/icons/high_toggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterHigh_untoggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterHigh_untoggle",
+        "category": "checkmarx-one",
         "title": "HIGH",
         "icon": "media/icons/high_untoggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterMedium_toggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterMedium_toggle",
+        "category": "checkmarx-one",
         "title": "MEDIUM",
         "icon": "media/icons/medium_toggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterMedium_untoggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterMedium_untoggle",
+        "category": "checkmarx-one",
         "title": "MEDIUM",
         "icon": "media/icons/medium_untoggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterLow_toggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterLow_toggle",
+        "category": "checkmarx-one",
         "title": "LOW",
         "icon": "media/icons/low_toggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterLow_untoggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterLow_untoggle",
+        "category": "checkmarx-one",
         "title": "LOW",
         "icon": "media/icons/low_untoggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterInfo_toggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterInfo_toggle",
+        "category": "checkmarx-one",
         "title": "INFO",
         "icon": "media/icons/info_toggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterInfo_untoggle",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterInfo_untoggle",
+        "category": "checkmarx-one",
         "title": "INFO",
         "icon": "media/icons/info_untoggle.svg",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterHigh",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterHigh",
+        "category": "checkmarx-one",
         "title": "Filter severity: High",
         "icon": "media/icons/high_untoggle.svg",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterMedium",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterMedium",
+        "category": "checkmarx-one",
         "title": "Filter severity: Medium",
         "icon": "media/icons/medium_toggle.svg",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterLow",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterLow",
+        "category": "checkmarx-one",
         "title": "Filter severity: Low",
         "icon": "media/icons/low_toggle.svg",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterInfo",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterInfo",
+        "category": "checkmarx-one",
         "title": "Filter severity: Info",
         "icon": "media/icons/info_toggle.svg",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.generalPick",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.generalPick",
+        "category": "checkmarx-one",
         "title": "Select All",
         "icon": "$(search)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.createScan",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.createScan",
+        "category": "checkmarx-one",
         "title": "Create Scan",
         "icon": "$(notebook-execute)",
-        "enablement": "ast-results.isScanEnabled && ast-results.createScanButton"
+        "enablement": "checkmarx-one-results.isScanEnabled && checkmarx-one-results.createScanButton"
       },
       {
-        "command": "ast-results.cancelScan",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.cancelScan",
+        "category": "checkmarx-one",
         "title": "Cancel Scan",
         "icon": "$(diff-review-close)",
-        "enablement": "ast-results.isScanEnabled && ast-results.cancelScanButton"
+        "enablement": "checkmarx-one-results.isScanEnabled && checkmarx-one-results.cancelScanButton"
       },
       {
-        "command": "ast-results.projectPick",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.projectPick",
+        "category": "checkmarx-one",
         "title": "Select Project",
         "icon": "$(edit)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.branchPick",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.branchPick",
+        "category": "checkmarx-one",
         "title": "Select Branch",
         "icon": "$(edit)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.scanPick",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.scanPick",
+        "category": "checkmarx-one",
         "title": "Select Scan",
         "icon": "$(edit)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.scanInput",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.scanInput",
+        "category": "checkmarx-one",
         "title": "Look for Scan",
         "icon": "$(search)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterNotExploitableActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotExploitableActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterUrgentActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterUrgentActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterProposedActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterProposedActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterConfirmedActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterConfirmedActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterToConfirmActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToConfirmActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: To Vonfirm",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterToVerifyActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToVerifyActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterNotIgnoredActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotIgnoredActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterIgnoredActive",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterIgnoredActive",
+        "category": "checkmarx-one",
         "title": "✓ Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterNotExploitable",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotExploitable",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterUrgent",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterUrgent",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterProposed",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterProposed",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterConfirmed",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterConfirmed",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterToConfirm",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToConfirm",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: To Confirm",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterToVerify",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToVerify",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterNotIgnored",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotIgnored",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterIgnored",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterIgnored",
+        "category": "checkmarx-one",
         "title": "­­­ ­­ ­ ­ ­Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
+        "enablement": "checkmarx-one-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterNotExploitables",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotExploitables",
+        "category": "checkmarx-one",
         "title": "Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterUrgents",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterUrgents",
+        "category": "checkmarx-one",
         "title": "Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterProposeds",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterProposeds",
+        "category": "checkmarx-one",
         "title": "Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterConfirmeds",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterConfirmeds",
+        "category": "checkmarx-one",
         "title": "Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterToConfirms",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToConfirms",
+        "category": "checkmarx-one",
         "title": "Filter: To Confirm",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterToVerifies",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterToVerifies",
+        "category": "checkmarx-one",
         "title": "Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterIgnoreds",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterIgnoreds",
+        "category": "checkmarx-one",
         "title": "Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterNotIgnoreds",
-        "category": "checkmarx-ast",
+        "command": "checkmarx-one-results.filterNotIgnoreds",
+        "category": "checkmarx-one",
         "title": "Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       }
     ],
     "submenus": [
       {
-        "id": "ast-results.filterBy",
+        "id": "checkmarx-one-results.filterBy",
         "label": "Filter",
         "icon": "$(filter)",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "checkmarx-one-results.isValidCredentials"
       }
     ],
     "menus": {
-      "ast-results.filterBy": [
+      "checkmarx-one-results.filterBy": [
         {
-          "command": "ast-results.filterNotExploitableActive",
+          "command": "checkmarx-one-results.filterNotExploitableActive",
           "group": "navigation@3",
-          "when": "ast-results-NotExploitable"
+          "when": "checkmarx-one-results-NotExploitable"
         },
         {
-          "command": "ast-results.filterProposedActive",
+          "command": "checkmarx-one-results.filterProposedActive",
           "group": "navigation@5",
-          "when": "ast-results-Proposed"
+          "when": "checkmarx-one-results-Proposed"
         },
         {
-          "command": "ast-results.filterConfirmedActive",
+          "command": "checkmarx-one-results.filterConfirmedActive",
           "group": "navigation@1",
-          "when": "ast-results-Confirmed"
+          "when": "checkmarx-one-results-Confirmed"
         },
         {
-          "command": "ast-results.filterToVerifyActive",
+          "command": "checkmarx-one-results.filterToVerifyActive",
           "group": "navigation@6",
-          "when": "ast-results-ToVerify"
+          "when": "checkmarx-one-results-ToVerify"
         },
         {
-          "command": "ast-results.filterUrgentActive",
+          "command": "checkmarx-one-results.filterUrgentActive",
           "group": "navigation@7",
-          "when": "ast-results-Urgent"
+          "when": "checkmarx-one-results-Urgent"
         },
         {
-          "command": "ast-results.filterNotIgnoredActive",
+          "command": "checkmarx-one-results.filterNotIgnoredActive",
           "group": "navigation@4",
-          "when": "ast-results-NotIgnored"
+          "when": "checkmarx-one-results-NotIgnored"
         },
         {
-          "command": "ast-results.filterIgnoredActive",
+          "command": "checkmarx-one-results.filterIgnoredActive",
           "group": "navigation@2",
-          "when": "ast-results-Ignored"
+          "when": "checkmarx-one-results-Ignored"
         },
         {
-          "command": "ast-results.filterNotExploitable",
+          "command": "checkmarx-one-results.filterNotExploitable",
           "group": "navigation@3",
-          "when": "!ast-results-NotExploitable"
+          "when": "!checkmarx-one-results-NotExploitable"
         },
         {
-          "command": "ast-results.filterProposed",
+          "command": "checkmarx-one-results.filterProposed",
           "group": "navigation@5",
-          "when": "!ast-results-Proposed"
+          "when": "!checkmarx-one-results-Proposed"
         },
         {
-          "command": "ast-results.filterConfirmed",
+          "command": "checkmarx-one-results.filterConfirmed",
           "group": "navigation@1",
-          "when": "!ast-results-Confirmed"
+          "when": "!checkmarx-one-results-Confirmed"
         },
         {
-          "command": "ast-results.filterToVerify",
+          "command": "checkmarx-one-results.filterToVerify",
           "group": "navigation@6",
-          "when": "!ast-results-ToVerify"
+          "when": "!checkmarx-one-results-ToVerify"
         },
         {
-          "command": "ast-results.filterUrgent",
+          "command": "checkmarx-one-results.filterUrgent",
           "group": "navigation@7",
-          "when": "!ast-results-Urgent"
+          "when": "!checkmarx-one-results-Urgent"
         },
         {
-          "command": "ast-results.filterNotIgnored",
+          "command": "checkmarx-one-results.filterNotIgnored",
           "group": "navigation@4",
-          "when": "!ast-results-NotIgnored"
+          "when": "!checkmarx-one-results-NotIgnored"
         },
         {
-          "command": "ast-results.filterIgnored",
+          "command": "checkmarx-one-results.filterIgnored",
           "group": "navigation@2",
-          "when": "!ast-results-Ignored"
+          "when": "!checkmarx-one-results-Ignored"
         }
       ],
       "view/item/context": [
         {
-          "command": "ast-results.createScan",
+          "command": "checkmarx-one-results.createScan",
           "group": "inline@1",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
+          "when": "viewItem == project-item && checkmarx-one-results.isScanEnabled"
         },
         {
-          "command": "ast-results.cancelScan",
+          "command": "checkmarx-one-results.cancelScan",
           "group": "inline@2",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
+          "when": "viewItem == project-item && checkmarx-one-results.isScanEnabled"
         },
         {
-          "command": "ast-results.projectPick",
+          "command": "checkmarx-one-results.projectPick",
           "group": "inline@3",
           "when": "viewItem == project-item"
         },
         {
-          "command": "ast-results.branchPick",
+          "command": "checkmarx-one-results.branchPick",
           "group": "inline",
           "when": "viewItem == branch-item"
         },
         {
-          "command": "ast-results.scanPick",
+          "command": "checkmarx-one-results.scanPick",
           "group": "inline",
           "when": "viewItem == scan-item"
         },
         {
-          "command": "ast-results.scanInput",
+          "command": "checkmarx-one-results.scanInput",
           "group": "inline",
           "when": "viewItem == scan-item"
         }
       ],
       "view/title": [
         {
-          "command": "ast-results.filterHigh_untoggle",
+          "command": "checkmarx-one-results.filterHigh_untoggle",
           "group": "navigation@1",
-          "when": "view == astResults && ast-results-high"
+          "when": "view == astResults && checkmarx-one-results-high"
         },
         {
-          "command": "ast-results.filterHigh_toggle",
+          "command": "checkmarx-one-results.filterHigh_toggle",
           "group": "navigation@1",
-          "when": "view == astResults && !ast-results-high"
+          "when": "view == astResults && !checkmarx-one-results-high"
         },
         {
-          "command": "ast-results.filterMedium_untoggle",
+          "command": "checkmarx-one-results.filterMedium_untoggle",
           "group": "navigation@2",
-          "when": "view == astResults && ast-results-medium"
+          "when": "view == astResults && checkmarx-one-results-medium"
         },
         {
-          "command": "ast-results.filterMedium_toggle",
+          "command": "checkmarx-one-results.filterMedium_toggle",
           "group": "navigation@2",
-          "when": "view == astResults && !ast-results-medium"
+          "when": "view == astResults && !checkmarx-one-results-medium"
         },
         {
-          "command": "ast-results.filterLow_untoggle",
+          "command": "checkmarx-one-results.filterLow_untoggle",
           "group": "navigation@3",
-          "when": "view == astResults && ast-results-low"
+          "when": "view == astResults && checkmarx-one-results-low"
         },
         {
-          "command": "ast-results.filterLow_toggle",
+          "command": "checkmarx-one-results.filterLow_toggle",
           "group": "navigation@3",
-          "when": "view == astResults && !ast-results-low"
+          "when": "view == astResults && !checkmarx-one-results-low"
         },
         {
-          "command": "ast-results.filterInfo_untoggle",
+          "command": "checkmarx-one-results.filterInfo_untoggle",
           "group": "navigation@4",
-          "when": "view == astResults && ast-results-info"
+          "when": "view == astResults && checkmarx-one-results-info"
         },
         {
-          "command": "ast-results.filterInfo_toggle",
+          "command": "checkmarx-one-results.filterInfo_toggle",
           "group": "navigation@4",
-          "when": "view == astResults && !ast-results-info"
+          "when": "view == astResults && !checkmarx-one-results-info"
         },
         {
-          "command": "ast-results.groupBySeverity",
+          "command": "checkmarx-one-results.groupBySeverity",
           "group": "@groupBy@4",
-          "when": "view == astResults && !ast-results-groupBySeverity"
+          "when": "view == astResults && !checkmarx-one-results-groupBySeverity"
         },
         {
-          "command": "ast-results.groupByStatus",
+          "command": "checkmarx-one-results.groupByStatus",
           "group": "@groupBy@6",
-          "when": "view == astResults && !ast-results-groupByStatus"
+          "when": "view == astResults && !checkmarx-one-results-groupByStatus"
         },
         {
-          "command": "ast-results.groupByLanguage",
+          "command": "checkmarx-one-results.groupByLanguage",
           "group": "@groupBy@2",
-          "when": "view == astResults && !ast-results-groupByLanguage"
+          "when": "view == astResults && !checkmarx-one-results-groupByLanguage"
         },
         {
-          "command": "ast-results.groupByFile",
+          "command": "checkmarx-one-results.groupByFile",
           "group": "@groupBy@1",
-          "when": "view == astResults && !ast-results-groupByFile"
+          "when": "view == astResults && !checkmarx-one-results-groupByFile"
         },
         {
-          "command": "ast-results.groupByState",
+          "command": "checkmarx-one-results.groupByState",
           "group": "@groupBy@5",
-          "when": "view == astResults && !ast-results-groupByState"
+          "when": "view == astResults && !checkmarx-one-results-groupByState"
         },
         {
-          "command": "ast-results.groupByQueryName",
+          "command": "checkmarx-one-results.groupByQueryName",
           "group": "@groupBy@3",
-          "when": "view == astResults && !ast-results-groupByQueryName"
+          "when": "view == astResults && !checkmarx-one-results-groupByQueryName"
         },
         {
-          "command": "ast-results.groupByDirectDependency",
+          "command": "checkmarx-one-results.groupByDirectDependency",
           "group": "@groupBy@7",
-          "when": "view == astResults && !ast-results-groupByDirectDependency"
+          "when": "view == astResults && !checkmarx-one-results-groupByDirectDependency"
         },
         {
-          "command": "ast-results.groupBySeverityActive",
+          "command": "checkmarx-one-results.groupBySeverityActive",
           "group": "@groupBy@4",
-          "when": "view == astResults && ast-results-groupBySeverity"
+          "when": "view == astResults && checkmarx-one-results-groupBySeverity"
         },
         {
-          "command": "ast-results.groupByStatusActive",
+          "command": "checkmarx-one-results.groupByStatusActive",
           "group": "@groupBy@6",
-          "when": "view == astResults && ast-results-groupByStatus"
+          "when": "view == astResults && checkmarx-one-results-groupByStatus"
         },
         {
-          "command": "ast-results.groupByLanguageActive",
+          "command": "checkmarx-one-results.groupByLanguageActive",
           "group": "@groupBy@2",
-          "when": "view == astResults && ast-results-groupByLanguage"
+          "when": "view == astResults && checkmarx-one-results-groupByLanguage"
         },
         {
-          "command": "ast-results.groupByFileActive",
+          "command": "checkmarx-one-results.groupByFileActive",
           "group": "@groupBy@1",
-          "when": "view == astResults && ast-results-groupByFile"
+          "when": "view == astResults && checkmarx-one-results-groupByFile"
         },
         {
-          "command": "ast-results.groupByStateActive",
+          "command": "checkmarx-one-results.groupByStateActive",
           "group": "@groupBy@5",
-          "when": "view == astResults && ast-results-groupByState"
+          "when": "view == astResults && checkmarx-one-results-groupByState"
         },
         {
-          "command": "ast-results.groupByQueryNameActive",
+          "command": "checkmarx-one-results.groupByQueryNameActive",
           "group": "@groupBy@3",
-          "when": "view == astResults && ast-results-groupByQueryName"
+          "when": "view == astResults && checkmarx-one-results-groupByQueryName"
         },
         {
-          "command": "ast-results.groupByDirectDependencyActive",
+          "command": "checkmarx-one-results.groupByDirectDependencyActive",
           "group": "@groupBy@7",
-          "when": "view == astResults && ast-results-groupByDirectDependency"
+          "when": "view == astResults && checkmarx-one-results-groupByDirectDependency"
         },
         {
-          "command": "ast-results.viewSettings",
+          "command": "checkmarx-one-results.viewSettings",
           "group": "@settings@2",
           "when": "view == astResults"
         },
         {
-          "command": "ast-results.clear",
+          "command": "checkmarx-one-results.clear",
           "group": "@settings@1",
           "when": "view == astResults"
         },
         {
-          "command": "ast-results.generalPick",
+          "command": "checkmarx-one-results.generalPick",
           "group": "navigation@5",
           "when": "view == astResults"
         },
         {
-          "submenu": "ast-results.filterBy",
+          "submenu": "checkmarx-one-results.filterBy",
           "group": "navigation@5",
           "when": "view == astResults"
         }
@@ -747,17 +747,17 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
-        "when": "!ast-results.isValidCredentials"
+        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:checkmarx-one-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
+        "when": "!checkmarx-one-results.isValidCredentials"
       }
     ],
     "configuration": [
       {
         "title": "Checkmarx One results",
-        "id": "checkmarx-ast",
+        "id": "checkmarx-one",
         "order": 2,
         "properties": {
-          "checkmarxAST.apiKey": {
+          "checkmarxOne.apiKey": {
             "type": "string",
             "order": 5,
             "description": "Checkmarx One API KEY for authentication",
@@ -766,7 +766,7 @@
               "default": ""
             }
           },
-          "checkmarxAST.additionalParams": {
+          "checkmarxOne.additionalParams": {
             "type": "string",
             "order": 6,
             "description": "Additional Parameters",
@@ -800,6 +800,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./ && npm run copytestproject",

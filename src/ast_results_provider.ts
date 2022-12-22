@@ -60,7 +60,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
     this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
     this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-    this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
+    this.kicsStatusBarItem.command= "checkmarx-one-results.viewKicsSaveSettings";
     this.kicsStatusBarItem.show();
   }
 
@@ -79,7 +79,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async clean(): Promise<void> {
     this.logs.info("Clear all loaded information");
-    const resultJsonPath = path.join(__dirname, "ast-results.json");
+    const resultJsonPath = path.join(__dirname, "checkmarx-one-results.json");
     if (fs.existsSync(resultJsonPath)) {
       fs.unlinkSync(resultJsonPath);
     }

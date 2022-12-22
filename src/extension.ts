@@ -102,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (!item.selection[0].contextValue && !item.selection[0].children) {
                 // Open new details
                 vscode.commands.executeCommand(
-                    "ast-results.newDetails",
+                    "checkmarx-one-results.newDetails",
                     item.selection[0].result
                 );
             }
@@ -219,7 +219,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
             vscode.commands.executeCommand(
                 "workbench.action.openSettings",
-                `@ext:checkmarx.ast-results`
+                `@ext:checkmarx.checkmarx-one-results`
             );
         }
     ));
