@@ -37,7 +37,7 @@ export async function scaScanCreate(sourcePath: string) : Promise<CxResult[] | u
     //     throw new Error(scan.status);
     // }
     // return r;
-    
+
     // Mock sleep
     const end = new Date().getTime() + 1000;
     while (new Date().getTime() < end) { /* do nothing */ }
@@ -271,17 +271,6 @@ export async function isScanEnabled(logs: Logs): Promise<boolean> {
 
 export async function isSCAScanEnabled(logs:Logs): Promise<boolean>{
     let enabled = true;
-    const apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
-    if (!apiKey) {
-        enabled=false;
-    }
-    return enabled;
-}
-
-// This function just checks if there is a workspace or folder opened
-export async function isSCAReady(logs:Logs): Promise<boolean>{
-    let enabled = true;
-    
     return enabled;
 }
 

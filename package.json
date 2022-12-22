@@ -206,8 +206,7 @@
         "command": "ast-results.clearSca",
         "category": "checkmarx-ast",
         "title": "Clear results tree",
-        "icon": "$(refresh)",
-        "enablement": "ast-results.isValidCredentials"
+        "icon": "$(refresh)"
       },
       {
         "command": "ast-results.filterHigh_toggle",
@@ -491,7 +490,7 @@
         "category": "checkmarx-ast",
         "title": "Run SCA Auto Scan",
         "icon": "$(notebook-execute)",
-        "enablement": "ast-results.isValidCredentials && ast-results.isSCAScanEnabled"
+        "enablement": "ast-results.isSCAScanEnabled"
       }
     ],
     "submenus": [
@@ -778,16 +777,6 @@
         "view": "astResults",
         "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
         "when": "!ast-results.isValidCredentials"
-      },
-      {
-        "view": "scaAutoScan",
-        "contents": "In order to access the possibility to use SCA auto scan from your IDE you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
-        "when": "!ast-results.isValidCredentials"
-      },
-      {
-        "view": "scaAutoScan",
-        "contents": "Open a workspace or a folder in Visual Studio Code to start the analysis.\n",
-        "when": "!ast-results.isSCAReady && ast-results.isValidCredentials"
       }
     ],
     "configuration": [

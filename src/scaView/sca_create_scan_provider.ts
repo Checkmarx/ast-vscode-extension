@@ -32,7 +32,7 @@ export async function cancelScan(context: vscode.ExtensionContext, statusBarItem
 
 
 export async function createSCAScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs,scaResultsProvider:SCAResultsProvider) {
-    updateStatusBarItem(SCAN_CREATE, true, statusBarItem);
+    updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
 	logs.info("Checking if scan can be started...");
 	// Check if there is a folder opened
 	const files  = await vscode.workspace.findFiles("*", undefined, 10);
@@ -44,7 +44,6 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
     }
 	// if there is then start the scan and pool for it
 	else{
-		updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
 		createScanForProject(context,logs).then( async (scaResults) =>{
 			scaResultsProvider.scaResults=scaResults;
 			scaResultsProvider.refreshData();

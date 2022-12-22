@@ -42,7 +42,7 @@ import {getChanges} from "./utils/utils";
 import {KicsProvider} from "./utils/kics/kics_provider";
 import {applyScaFix} from "./utils/scaFix";
 import {getLearnMore} from "./utils/sast/learnMore";
-import {getAstConfiguration, isScanEnabled, isSCAReady, isSCAScanEnabled} from "./utils/ast/ast";
+import {getAstConfiguration, isScanEnabled, isSCAScanEnabled} from "./utils/ast/ast";
 import {cancelScan, createScan, pollForScanResult} from "./resultsView/create_scan_provider";
 import { SCAResultsProvider } from "./scaView/sca_results_provider";
 import { createSCAScan } from "./scaView/sca_create_scan_provider";
@@ -120,6 +120,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }
     });
+
 
     // Webview detailsPanel needs to be global in order to check if there was one open or not
     let detailsPanel: vscode.WebviewPanel | undefined = undefined;
@@ -237,6 +238,17 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider.scaResults=[];
     vscode.window.registerTreeDataProvider(`scaAutoScan`, scaResultsProvider);
     const scaTree = vscode.window.createTreeView("scaAutoScan", {treeDataProvider: scaResultsProvider});
+    scaTree.onDidChangeSelection((item) => {
+        if (item.selection.length > 0) {
+            if (!item.selection[0].contextValue && !item.selection[0].children) {
+                // Open new details
+                vscode.commands.executeCommand(
+                    "ast-results.newDetails",
+                    item.selection[0].result
+                );
+            }
+        }
+    });
     scaResultsProvider.refreshData();
     // Settings
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
@@ -261,16 +273,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
     // SCA auto scanning enablement
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await isSCAScanEnabled(logs));
-    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAReady`, await isSCAReady(logs));
     
     vscode.workspace.onDidChangeConfiguration(async (event) => {
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
-        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await isSCAScanEnabled(logs));
         const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
         kicsStatusBarItem.text = onSave === true ? "$(check) Checkmarx kics" : "$(debug-disconnect) Checkmarx kics";
         await vscode.commands.executeCommand(REFRESH_TREE);
-        await vscode.commands.executeCommand(REFRESH_SCA_TREE);
     });
 
     // Refresh Tree Commmand
