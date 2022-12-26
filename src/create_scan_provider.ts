@@ -111,7 +111,7 @@ export async function createScan(context: vscode.ExtensionContext, statusBarItem
     updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
     update(context, SCAN_CREATE_PREP_KEY, {id: false, name: ""});
 
-    await vscode.commands.executeCommand(`checkmarx-one-results.pollForScan`);
+    await vscode.commands.executeCommand(`ast-results.pollForScan`);
 }
 
 async function getUserInput(msg: string): Promise<boolean> {

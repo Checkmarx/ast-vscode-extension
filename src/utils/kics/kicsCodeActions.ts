@@ -43,7 +43,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 		// used to be able to use kicsDiagnostic typ without changing the context implementation
 		let kicsDiagnostic:any = diagnostic;
 		const action = new vscode.CodeAction('Apply fix to '+queryName, vscode.CodeActionKind.QuickFix);
-		action.command = { command: "checkmarx-one-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[[kicsDiagnostic.kicsResult],this.kicsResults,this.file,this.diagnosticCollection,false,false] };
+		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[[kicsDiagnostic.kicsResult],this.kicsResults,this.file,this.diagnosticCollection,false,false] };
 		action.diagnostics = [diagnostic];
 		action.isPreferred = true;
 		return action;
@@ -53,7 +53,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 	private createFixFileCodeAction(diagnostic: vscode.Diagnostic,fixableResults): vscode.CodeAction[] {
 		// used to be able to use kicsDiagnostic typ without changing the context implementation
 		const action = new vscode.CodeAction('File : Apply all available fixes', vscode.CodeActionKind.QuickFix);
-		action.command = { command: "checkmarx-one-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixableResults,this.kicsResults,this.file,this.diagnosticCollection,true,false] };
+		action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixableResults,this.kicsResults,this.file,this.diagnosticCollection,true,false] };
 		action.diagnostics = [diagnostic];
 		action.isPreferred = true;
 		return [action];
@@ -77,7 +77,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
 					console.log(vscodeRange.start);
 					let diagnostic = new vscode.Diagnostic(vscodeRange,"Quick Fix");
 					let action = new vscode.CodeAction('Line : Apply all available fixes', vscode.CodeActionKind.QuickFix);
-					action.command = { command: "checkmarx-one-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixAllResults,this.kicsResults,this.file,this.diagnosticCollection,false,true] };
+					action.command = { command: "ast-results.kicsRemediation", title: 'KICS fix', tooltip: 'This will apply KICS fix for the vulnerability',arguments:[fixAllResults,this.kicsResults,this.file,this.diagnosticCollection,false,true] };
 					action.diagnostics = [diagnostic];
 					action.isPreferred = true;
 					actions.push(action);

@@ -78,7 +78,7 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
                 // Send the current file to the global state, to be used in the command
                 update(context, KICS_REALTIME_FILE, {id: e.uri.fsPath, name: e.uri.fsPath});
                 await vscode.commands.executeCommand(
-                    "checkmarx-one-results.kicsRealtime"
+                    "ast-results.kicsRealtime"
                 );
             }
         }
@@ -95,7 +95,7 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
             await vscode.window.showTextDocument(e, 1, false);
             update(context, KICS_REALTIME_FILE, {id: e.uri.fsPath, name: e.uri.fsPath});
             await vscode.commands.executeCommand(
-                "checkmarx-one-results.kicsRealtime"
+                "ast-results.kicsRealtime"
             );
         }
     });

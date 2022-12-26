@@ -17,32 +17,32 @@ export const CX_NAME: string = "Checkmarx One";
 export const CX_KICS: string = "Checkmarx KICS";
 export const CX_KICS_NAME: string = "Activate KICS Auto Scanning";
 
-export const CX_SELECT_ALL: string = "checkmarx-one: Select All";
-export const CX_SELECT_PROJECT: string = "checkmarx-one: Select Project";
-export const CX_SELECT_BRANCH: string = "checkmarx-one: Select Branch";
-export const CX_SELECT_SCAN: string = "checkmarx-one: Select Scan";
-export const CX_LOOK_SCAN: string = "checkmarx-one: Look for Scan";
+export const CX_SELECT_ALL: string = "ast-results: Select All";
+export const CX_SELECT_PROJECT: string = "ast-results: Select Project";
+export const CX_SELECT_BRANCH: string = "ast-results: Select Branch";
+export const CX_SELECT_SCAN: string = "ast-results: Select Scan";
+export const CX_LOOK_SCAN: string = "ast-results: Look for Scan";
 
-export const CX_FILTER_INFO: string = "checkmarx-one: Filter severity: Info";
-export const CX_FILTER_LOW: string = "checkmarx-one: Filter severity: Low";
-export const CX_FILTER_MEDIUM: string = "checkmarx-one: Filter severity: Medium";
-export const CX_FILTER_HIGH: string = "checkmarx-one: Filter severity: High";
+export const CX_FILTER_INFO: string = "ast-results: Filter severity: Info";
+export const CX_FILTER_LOW: string = "ast-results: Filter severity: Low";
+export const CX_FILTER_MEDIUM: string = "ast-results: Filter severity: Medium";
+export const CX_FILTER_HIGH: string = "ast-results: Filter severity: High";
 
-export const CX_FILTER_NOT_EXPLOITABLE: string = "checkmarx-one:Filter: Not Exploitable";
-export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE: string = "checkmarx-one:Filter: Proposed Not Exploitable";
-export const CX_FILTER_CONFIRMED: string = "checkmarx-one:Filter: Confirmed";
-export const CX_FILTER_TO_VERIFY: string = "checkmarx-one:Filter: To Verify";
-export const CX_FILTER_URGENT: string = "checkmarx-one:Filter: Urgent";
-export const CX_FILTER_NOT_IGNORED: string = "checkmarx-one:Filter: Not Ignored";
+export const CX_FILTER_NOT_EXPLOITABLE: string = "ast-results:Filter: Not Exploitable";
+export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE: string = "ast-results:Filter: Proposed Not Exploitable";
+export const CX_FILTER_CONFIRMED: string = "ast-results:Filter: Confirmed";
+export const CX_FILTER_TO_VERIFY: string = "ast-results:Filter: To Verify";
+export const CX_FILTER_URGENT: string = "ast-results:Filter: Urgent";
+export const CX_FILTER_NOT_IGNORED: string = "ast-results:Filter: Not Ignored";
 
-export const CX_CLEAR: string = "checkmarx-one: Clear";
+export const CX_CLEAR: string = "ast-results: Clear";
 
-export const CX_GROUP_FILE: string = "checkmarx-one: Group by: File";
-export const CX_GROUP_SEVERITY: string = "checkmarx-one: Group by: Severity";
-export const CX_GROUP_LANGUAGE: string = "checkmarx-one: Group by: Language";
-export const CX_GROUP_STATUS: string = "checkmarx-one: Group by: Status";
-export const CX_GROUP_STATE: string = "checkmarx-one: Group by: State";
-export const CX_GROUP_QUERY_NAME: string = "checkmarx-one: Group by: Vulnerability Type";
+export const CX_GROUP_FILE: string = "ast-results: Group by: File";
+export const CX_GROUP_SEVERITY: string = "ast-results: Group by: Severity";
+export const CX_GROUP_LANGUAGE: string = "ast-results: Group by: Language";
+export const CX_GROUP_STATUS: string = "ast-results: Group by: Status";
+export const CX_GROUP_STATE: string = "ast-results: Group by: State";
+export const CX_GROUP_QUERY_NAME: string = "ast-results: Group by: Vulnerability Type";
 
 export const CX_CATETORY: string = "Checkmarx One";
 export const CX_API_KEY_SETTINGS: string = "Api Key";

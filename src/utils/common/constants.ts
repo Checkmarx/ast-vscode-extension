@@ -1,36 +1,36 @@
-export const EXTENSION_NAME: string = "checkmarx-one-results";
+export const EXTENSION_NAME: string = "ast-results";
 export const EXTENSION_FULL_NAME: string = "Checkmarx";
-export const SCAN_ID_KEY: string = "checkmarx-one-results-scan-id";
-export const SCAN_CREATE_ID_KEY: string = "checkmarx-one-results-scan-create-id";
-export const SCAN_CREATE_PREP_KEY: string = "checkmarx-one-results-scan-prep-id";
+export const SCAN_ID_KEY: string = "ast-results-scan-id";
+export const SCAN_CREATE_ID_KEY: string = "ast-results-scan-create-id";
+export const SCAN_CREATE_PREP_KEY: string = "ast-results-scan-prep-id";
 
-export const HIGH_FILTER: string = "checkmarx-one-results-high";
-export const MEDIUM_FILTER: string = "checkmarx-one-results-medium";
-export const LOW_FILTER: string = "checkmarx-one-results-low";
-export const INFO_FILTER: string = "checkmarx-one-results-info";
+export const HIGH_FILTER: string = "ast-results-high";
+export const MEDIUM_FILTER: string = "ast-results-medium";
+export const LOW_FILTER: string = "ast-results-low";
+export const INFO_FILTER: string = "ast-results-info";
 
-export const NOT_EXPLOITABLE_FILTER: string = "checkmarx-one-results-NotExploitable";
-export const PROPOSED_FILTER: string = "checkmarx-one-results-Proposed";
-export const CONFIRMED_FILTER: string = "checkmarx-one-results-Confirmed";
-export const TO_VERIFY_FILTER: string = "checkmarx-one-results-ToVerify";
-export const URGENT_FILTER: string = "checkmarx-one-results-Urgent";
-export const NOT_IGNORED_FILTER: string = "checkmarx-one-results-NotIgnored";
-export const IGNORED_FILTER: string = "checkmarx-one-results-Ignored";
+export const NOT_EXPLOITABLE_FILTER: string = "ast-results-NotExploitable";
+export const PROPOSED_FILTER: string = "ast-results-Proposed";
+export const CONFIRMED_FILTER: string = "ast-results-Confirmed";
+export const TO_VERIFY_FILTER: string = "ast-results-ToVerify";
+export const URGENT_FILTER: string = "ast-results-Urgent";
+export const NOT_IGNORED_FILTER: string = "ast-results-NotIgnored";
+export const IGNORED_FILTER: string = "ast-results-Ignored";
 
-export const QUERY_NAME_GROUP: string = "checkmarx-one-results-groupByQueryName";
-export const LANGUAGE_GROUP: string = "checkmarx-one-results-groupByLanguage";
-export const SEVERITY_GROUP: string = "checkmarx-one-results-groupBySeverity";
-export const STATUS_GROUP: string = "checkmarx-one-results-groupByStatus";
-export const STATE_GROUP: string = "checkmarx-one-results-groupByState";
-export const FILE_GROUP: string = "checkmarx-one-results-groupByFile";
-export const DEPENDENCY_GROUP: string = "checkmarx-one-results-groupByDirectDependency";
+export const QUERY_NAME_GROUP: string = "ast-results-groupByQueryName";
+export const LANGUAGE_GROUP: string = "ast-results-groupByLanguage";
+export const SEVERITY_GROUP: string = "ast-results-groupBySeverity";
+export const STATUS_GROUP: string = "ast-results-groupByStatus";
+export const STATE_GROUP: string = "ast-results-groupByState";
+export const FILE_GROUP: string = "ast-results-groupByFile";
+export const DEPENDENCY_GROUP: string = "ast-results-groupByDirectDependency";
 
-export const PROJECT_ID_KEY: string = "checkmarx-one-results-project-id";
-export const ERROR: string = "checkmarx-one-results-error";
+export const PROJECT_ID_KEY: string = "ast-results-project-id";
+export const ERROR: string = "ast-results-error";
 export const ERROR_MESSAGE: string = "[CxERROR] ";
-export const BRANCH_ID_KEY: string = "checkmarx-one-results-branch-id";
-export const BRANCH_NAME: string = "checkmarx-one-results-branch-name";
-export const BRANCH_TEMP_ID_KEY: string = "checkmarx-one-results-temp-branch-id";
+export const BRANCH_ID_KEY: string = "ast-results-branch-id";
+export const BRANCH_NAME: string = "ast-results-branch-name";
+export const BRANCH_TEMP_ID_KEY: string = "ast-results-temp-branch-id";
 
 export const PROJECT_LABEL: string = "Project: ";
 export const PROJECT_PLACEHOLDER: string = "Select project";
@@ -45,7 +45,7 @@ export const BRANCH_ITEM: string = "branch-item";
 export const SCAN_ITEM: string = "scan-item";
 export const GRAPH_ITEM: string = "graph-item";
 
-export const RESULTS_FILE_NAME: string = "checkmarx-one-results";
+export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";
 
 export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];

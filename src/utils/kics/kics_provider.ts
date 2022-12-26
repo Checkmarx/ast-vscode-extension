@@ -44,7 +44,7 @@ export class KicsProvider {
 	  const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
 	  this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx KICS":"$(debug-disconnect) Checkmarx KICS";
 	  this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
-	  this.kicsStatusBarItem.command= "checkmarx-one.viewKicsSaveSettings";
+	  this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
 	  this.kicsStatusBarItem.show();
 	  this.fixableResults = [];
 	  this.fixableResultsByLine = [];

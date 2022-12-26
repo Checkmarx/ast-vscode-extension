@@ -48,7 +48,7 @@ describe("Scan from IDE", () => {
       );
     }
     // click play button(or initiate scan with command)
-    await bench.executeCommand("checkmarx-one-results.createScan");
+    await bench.executeCommand("ast-results.createScan");
 
     const resultsNotifications = await new Workbench().getNotifications();
     const firstNotification = resultsNotifications[0];
