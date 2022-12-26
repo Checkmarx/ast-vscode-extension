@@ -753,7 +753,7 @@
     ],
     "configuration": [
       {
-        "title": "Checkmarx One results",
+        "title": "Checkmarx One",
         "id": "ast-results",
         "order": 2,
         "properties": {
