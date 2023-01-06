@@ -190,10 +190,6 @@ export function getResultsFilePath() {
 	return path.join(getFilePath(), `${RESULTS_FILE_NAME}.${RESULTS_FILE_EXTENSION}`);
 }
 
-export function getScaFilePath() {
-	return path.join(getFilePath(), `sca.${RESULTS_FILE_EXTENSION}`);
-}
-
 type CounterKey = string | boolean | number;
 
 interface CounterKeyFunc<T> {
