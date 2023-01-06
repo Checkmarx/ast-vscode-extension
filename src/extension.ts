@@ -86,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     // Syncing with AST everytime the extension gets opened
-    astResultsProvider.openRefreshData().then(r => logs.info("Data refreshed and synced with AST platform"));
+    astResultsProvider.openRefreshData().then(r => logs.info("Data refreshed and synced with Checkmarx One platform"));
     // Initialize filters state
     initializeFilters(logs, context, astResultsProvider).then(() => logs.info("Filters initialized"));
 
