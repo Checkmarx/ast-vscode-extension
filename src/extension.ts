@@ -25,7 +25,8 @@ import {
     STATUS_GROUP,
     TO_VERIFY_FILTER,
     URGENT_FILTER,
-    DEPENDENCY_GROUP
+    DEPENDENCY_GROUP,
+    SCA_START_SCAN
 } from "./utils/common/constants";
 import {Logs} from "./models/logs";
 import * as path from "path";
@@ -251,7 +252,6 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }
     });
-    scaResultsProvider.refreshData();
     // Settings
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.viewSettings`, () => {
             vscode.commands.executeCommand(
@@ -384,6 +384,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.kicsRemediation`, async (fixedResults, kicsResults, file, diagnosticCollection, fixAll, fixLine) => {
         await kicsProvider.kicsRemediation(fixedResults, kicsResults, file, diagnosticCollection, fixAll, fixLine, logs);
     }));
+    scaResultsProvider.refreshData(SCA_START_SCAN);
 }
 
 export function deactivate() {

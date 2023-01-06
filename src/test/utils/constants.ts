@@ -44,6 +44,8 @@ export const CX_GROUP_STATUS: string = "checkmarx-ast: Group by: Status";
 export const CX_GROUP_STATE: string = "checkmarx-ast: Group by: State";
 export const CX_GROUP_QUERY_NAME: string = "checkmarx-ast: Group by: Vulnerability Type";
 
+export const CX_SCA_SCAN: string = "checkmarx-ast: Run SCA Auto Scan";
+
 export const CX_CATETORY: string = "Checkmarx AST";
 export const CX_API_KEY_SETTINGS: string = "Api Key";
 
