@@ -116,7 +116,7 @@ export class Details {
         );
     }
 
-    scaView(severityPath, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability, scaUpgrade, scaUrl: vscode.Uri) {
+    scaView(severityPath, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability, scaUpgrade, scaUrl: vscode.Uri,type?:string) {
         return (
             `
 			<body class="body-sca">
@@ -130,7 +130,7 @@ export class Details {
 				</p>
 			</div>
 			<div class="content">
-				${this.result.scaContent(this.result, scaUpgrade, scaUrl, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability)}
+				${this.result.scaContent(this.result, scaUpgrade, scaUrl, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability,type)}
 			</div>
 		</body>			
 		`

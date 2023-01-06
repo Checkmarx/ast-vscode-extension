@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { scanCancel, scaScanCreate, updateStatusBarItem } from "../utils/ast/ast";
-import { SCAN_CANCEL, SCAN_CREATE, SCAN_CREATE_ID_KEY, SCA_SCAN_WAITING } from "../utils/common/constants";
+import { SCAN_CANCEL, SCAN_CREATE, SCAN_CREATE_ID_KEY, SCA_NO_VULNERABILITIES, SCA_SCAN_WAITING } from "../utils/common/constants";
 import { get, update } from "../utils/common/globalState";
 import { SCAResultsProvider } from "./sca_results_provider";
 
@@ -41,18 +41,23 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
 		logs.error("No files found in workspace. Please open a workspace or folder to be able to start an SCA scan.");
         vscode.window.showInformationMessage("No files found in workspace. Please open a workspace or folder to be able to start an SCA scan.");
 		updateStatusBarItem("$(debug-disconnect) Checkmarx sca", true, statusBarItem);
+		scaResultsProvider.refreshData("No files found in workspace. Please open a workspace or folder to be able to start an SCA scan.");
     }
 	// if there is then start the scan and pool for it
 	else{
 		createScanForProject(context,logs).then( async (scaResults) =>{
 			scaResultsProvider.scaResults=scaResults;
-			scaResultsProvider.refreshData();
-			logs.info("Scan completed successfully, results loaded into the SCA tree");
+			let message = undefined;
+			if(scaResults.length===0){
+				message = SCA_NO_VULNERABILITIES;
+			}
+			scaResultsProvider.refreshData(message);
+			logs.info(`Scan completed successfully, ${scaResults.length} result(s) loaded into the SCA results tree`);
+			updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
 		}).catch(err=>{
 			updateStatusBarItem("$(debug-disconnect) Checkmarx sca", true, statusBarItem);
 			logs.error("Scan did not complete :"+err);
 		});
-		updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
 	}
 
 }

@@ -12,6 +12,7 @@ import {
   REFRESHING_TREE,
   CLEAR_SCA,
   SCA_SCAN_RUNNING_LOG,
+  SCA_START_SCAN,
 } from "../utils/common/constants";
 import { Counter, getProperty } from "../utils/utils";
 import { Logs } from "../models/logs";
@@ -63,24 +64,25 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     this._onDidChangeTreeData.fire(undefined);
   }
 
-  async refreshData(): Promise<void> {
+  async refreshData(message?:string): Promise<void> {
     this.showStatusBarItem();
-    this.data = getAstConfiguration() ? this.generateTree().children : [];
+    this.data = getAstConfiguration() ? this.generateTree(message).children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
 
-  generateTree(): TreeItem {
+  generateTree(message?:string): TreeItem {
     this.diagnosticCollection.clear();
     let treeItems = [];
     const results = this.orderResults(this.scaResults);
     let treeItem: TreeItem;
     if (results.length > 0) {
-      this.scan = "SCA Auto Scanning: 2022-12-20 12:00";
+      let today = new Date();
+      this.scan = `Latest scan: ${ today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" "+today.getHours()+":"+today.getMinutes()}`;
       treeItem = this.groupBy(results, this.issueFilter);
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
-      this.scan = SCA_NO_VULNERABILITIES;
+      this.scan = message?message:SCA_START_SCAN;
       treeItem = this.groupBy(results, this.issueFilter);
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
@@ -106,7 +108,8 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   groupBy(list: Object[], groups: string[]): TreeItem {
     const folder = vscode.workspace.workspaceFolders?.[0];
     const map = new Map<string, vscode.Diagnostic[]>();
-    const tree = new TreeItem(this.scan ?? "", undefined, undefined, []);
+
+    const tree = this.scan? new TreeItem(this.scan, undefined, undefined, []):undefined;
     list.forEach((element: any) => {
       this.groupTree(element, folder, map, groups, tree);
     });

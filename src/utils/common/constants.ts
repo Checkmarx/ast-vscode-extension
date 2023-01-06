@@ -114,6 +114,7 @@ export const SCAN_POLL_TIMEOUT = 15000; // MILLISECONDS
 
 // SCA AUTO SCAN
 export const SCA_NO_VULNERABILITIES = "Checkmarx found no vulnerabilities.";
+export const SCA_START_SCAN = "Click the play button to scan with Checkmarx SCA";
 export const CLEAR_SCA = "Clear all sca scan information";
 export const SCA_SCAN_WAITING = "$(sync~spin) Checkmarx sca scan running";
 export const SCA_SCAN_RUNNING_LOG = "SCA auto scanning command is running";

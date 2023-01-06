@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import {CxWrapper} from "@checkmarxdev/ast-cli-javascript-wrapper";
+import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
@@ -16,102 +17,22 @@ import {Logs} from "../../models/logs";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
 
-export async function scaScanCreate(sourcePath: string) : Promise<CxResult[] | undefined> {
-    // const config = getAstConfiguration();
-    // if (!config) {
-    //     return [];
-    // }
-    // if (!projectName) {
-    //     return;
-    // }
-    // if (!branchName) {
-    //     return;
-    // }
-    // const cx = new CxWrapper(config);
-    // let params = new Map<CxParamType, string>();
-    // const scan = await cx.ScaScanCreate(params);
-    // return scan.payload[0];
-    // if (scan.payload) {
-    //     r = branches.payload;
-    // } else {
-    //     throw new Error(scan.status);
-    // }
-    // return r;
-
-    // Mock sleep
-    const end = new Date().getTime() + 1000;
-    while (new Date().getTime() < end) { /* do nothing */ }
-
-    const jsonResults:CxResult[] = [{
-        type: "sca",
-        label: "sca",
-        id: "Cxa29f6cb5-3c84",
-        similarityId: "Cxa29f6cb5-3c84",
-        status: "RECURRENT",
-        state: "NOT_IGNORED",
-        severity: "MEDIUM",
-        created: "2022-12-14T16:10:31.548926Z",
-        firstFoundAt: "0001-01-01T00:00:00Z",
-        foundAt: "0001-01-01T00:00:00Z",
-        firstScanId: "5efda219-38c6-49a7-a3c9-9b2432a050a8",
-        description: "This package exfiltrates computer and operating system information\n### About\n\nData exfiltration may be done in numerous ways such as through HTTP requests, DNS tunneling, various webhooks and more. It is common by attackers to try to exfiltrate sensitive information such as:\n- Credentials\n- Environment variables\n- SSH keys\n- Authentication tokens\n- Computer and operating system information\n- Network settings\n\n![infographic](https://checkmarx-scs-cdn.s3.amazonaws.com/sca/infographics/data-exfiltration.png)",
-        descriptionHTML: "<p>This package exfiltrates computer and operating system information</p>\n\n<h3>About</h3>\n\n<p>Data exfiltration may be done in numerous ways such as through HTTP requests, DNS tunneling, various webhooks and more. It is common by attackers to try to exfiltrate sensitive information such as:\n- Credentials\n- Environment variables\n- SSH keys\n- Authentication tokens\n- Computer and operating system information\n- Network settings</p>\n\n<p><img src=\"https://checkmarx-scs-cdn.s3.amazonaws.com/sca/infographics/data-exfiltration.png\" alt=\"infographic\" /></p>\n",
-        data: {
-          packageIdentifier: "Pip-azure-powerbiembedded-6969.99.99",
-          recommendedVersion: "",
-          packageData: [],
-        scaPackageData: undefined,
-        queryId: "",
-        queryName: "",
-        group: "",
-        resultHash: "",
-        languageName: "",
-        nodes: [],
-        },
-        comments: {},
-        vulnerabilityDetails: {
-            cweId: 0,
-            cvss: undefined,
-            compliances: undefined,
-            cvssScore: 0,
-            cveName: "cve test"
+export async function scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | undefined> {
+    const config = getAstConfiguration();
+    if (!config) {
+        return [];
+    }
+    const cx = new CxWrapper(config);
+    let jsonResults = [];
+    const scan = await cx.runScaRealtimeScan(sourcePath);
+    if (scan.payload && scan.payload.length>0) {
+        if(scan.payload[0].results){
+            jsonResults = scan.payload[0].results;
         }
-      },
-      {
-        type: "sca",
-        label: "sca",
-        id: "Cxba768ce4-aa4e",
-        similarityId: "Cxba768ce4-aa4e",
-        status: "RECURRENT",
-        state: "NOT_IGNORED",
-        severity: "MEDIUM",
-        created: "2022-12-14T16:10:31.548926Z",
-        firstFoundAt: "0001-01-01T00:00:00Z",
-        foundAt: "0001-01-01T00:00:00Z",
-        firstScanId: "5efda219-38c6-49a7-a3c9-9b2432a050a8",
-        description: "The Contributor of this package, npm user [riaevangelist](https://www.npmjs.com/~riaevangelist), previously seen corrupting one of his popular package [node-ipc](https://checkmarx.com/blog/protestware-politics-and-open-source-software/) infected with a malicious payload. [Read more](https://checkmarx.com/blog/protestware-politics-and-open-source-software/)\n### About\n\nWe recommend freezing this packages version in your manifest file or consider finding an alternative to this package.\n\nRelying on code from an unreliable contributors could damage the integrity of the code built depends on it. There is a risk this package may be corrupted as well in future versions.",
-        descriptionHTML: "<p>The Contributor of this package, npm user <a href=\"https://www.npmjs.com/~riaevangelist\">riaevangelist</a>, previously seen corrupting one of his popular package <a href=\"https://checkmarx.com/blog/protestware-politics-and-open-source-software/\">node-ipc</a> infected with a malicious payload. <a href=\"https://checkmarx.com/blog/protestware-politics-and-open-source-software/\">Read more</a></p>\n\n<h3>About</h3>\n\n<p>We recommend freezing this package&rsquo;s version in your manifest file or consider finding an alternative to this package.</p>\n\n<p>Relying on code from an unreliable contributors could damage the integrity of the code built depends on it. There is a risk this package may be corrupted as well in future versions.</p>\n",
-        data: {
-          packageIdentifier: "Npm-node-ipc-9.2.2",
-          recommendedVersion: "",
-          packageData: [],
-        scaPackageData: undefined,
-        queryId: "",
-        queryName: "",
-        group: "",
-        resultHash: "",
-        languageName: "",
-        nodes: [],
-        },
-        comments: {},
-        vulnerabilityDetails: {
-            cweId: 0,
-            cvss: undefined,
-            compliances: undefined,
-            cvssScore: 0,
-            cveName: "cve test"
-        }
-  }];
+    } else {
+        throw new Error(scan.status);
+    }
+    
   return jsonResults;
 }
 

@@ -424,6 +424,15 @@
 	flex-direction: column;
 }
 
+.remediation-container-realtime {
+	display: flex;
+	margin: 25px;
+	justify-content: center;
+	align-items: center;
+	height: 5rem;
+	text-align: center;
+}
+
 .remediation-links-about {
 	height: 2rem;
 	margin: 0.6rem;

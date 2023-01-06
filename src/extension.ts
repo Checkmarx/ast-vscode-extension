@@ -126,12 +126,13 @@ export async function activate(context: vscode.ExtensionContext) {
     let detailsPanel: vscode.WebviewPanel | undefined = undefined;
     const newDetails = vscode.commands.registerCommand(
         `${EXTENSION_NAME}.newDetails`,
-        async (result: AstResult) => {
+        async (result: AstResult,type?:string) => {
             var detailsDetachedView = new AstDetailsDetached(
                 context.extensionUri,
                 result,
                 context,
-                false
+                false,
+                type
             );
             // Need to check if the detailsPanel is positioned in the rigth place
             if (detailsPanel?.viewColumn === 1 || !detailsPanel?.viewColumn) {
@@ -244,7 +245,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 // Open new details
                 vscode.commands.executeCommand(
                     "ast-results.newDetails",
-                    item.selection[0].result
+                    item.selection[0].result,
+                    "realtime"
                 );
             }
         }
