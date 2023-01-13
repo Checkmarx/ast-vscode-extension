@@ -25,7 +25,7 @@ export async function scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[
     const cx = new CxWrapper(config);
     let jsonResults = [];
     const scan = await cx.runScaRealtimeScan(sourcePath);
-    if (scan.payload && scan.payload.length>0) {
+    if (scan.payload && scan.payload.length>0 && scan.exitCode===0) {
         if(scan.payload[0].results){
             jsonResults = scan.payload[0].results;
         }
