@@ -38,7 +38,7 @@ export const BRANCH_LABEL: string = "Branch: ";
 export const BRANCH_PLACEHOLDER: string = "Select branch";
 export const SCAN_LABEL: string = "Scan: ";
 export const SCAN_PLACEHOLDER: string = "Select scan";
-export const SCAN_PICKER_TITLE: string = "AST Scan selection";
+export const SCAN_PICKER_TITLE: string = "Checkmarx One Scan selection";
 
 export const PROJECT_ITEM: string = "project-item";
 export const BRANCH_ITEM: string = "branch-item";

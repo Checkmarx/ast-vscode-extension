@@ -35,447 +35,447 @@
       },
       {
         "command": "ast-results.viewResult",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "View",
         "icon": "$(eye)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.viewSettings",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Settings",
         "icon": "$(gear)"
       },
       {
         "command": "ast-results.viewKicsSaveSettings",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Kics save settings",
         "icon": "$(gear)"
       },
       {
         "command": "ast-results.refreshTree",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Refresh tree",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.kicsRealtime",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Run kics realtime scan"
       },
       {
         "command": "ast-results.clear",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Clear selections",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupBySeverityActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: Severity",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByLanguageActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: Language",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByStatusActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: Status",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByFileActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: File",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByStateActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: State",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByQueryNameActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByDirectDependencyActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Group by: Direct Dependency",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupBySeverity",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: Severity",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByLanguage",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: Language",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByStatus",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: Status",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByFile",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: File",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByState",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: State",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByQueryName",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByDirectDependency",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Group by: Direct Dependency",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.groupByDirectDependencies",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: Direct Dependency",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupBySeverities",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: Severity",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByLanguages",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: Language",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByStatuses",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: Status",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByFiles",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: File",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByStates",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: State",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.groupByQueryNames",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Group by: Vulnerability Type",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.clear",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Clear selections",
         "icon": "$(refresh)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterHigh_toggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "HIGH",
         "icon": "media/icons/high_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterHigh_untoggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "HIGH",
         "icon": "media/icons/high_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterMedium_toggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "MEDIUM",
         "icon": "media/icons/medium_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterMedium_untoggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "MEDIUM",
         "icon": "media/icons/medium_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterLow_toggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "LOW",
         "icon": "media/icons/low_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterLow_untoggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "LOW",
         "icon": "media/icons/low_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterInfo_toggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "INFO",
         "icon": "media/icons/info_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterInfo_untoggle",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "INFO",
         "icon": "media/icons/info_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterHigh",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter severity: High",
         "icon": "media/icons/high_untoggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterMedium",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter severity: Medium",
         "icon": "media/icons/medium_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterLow",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter severity: Low",
         "icon": "media/icons/low_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterInfo",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter severity: Info",
         "icon": "media/icons/info_toggle.svg",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.generalPick",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Select All",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.createScan",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Create Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isScanEnabled && ast-results.createScanButton"
       },
       {
         "command": "ast-results.cancelScan",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Cancel Scan",
         "icon": "$(diff-review-close)",
         "enablement": "ast-results.isScanEnabled && ast-results.cancelScanButton"
       },
       {
         "command": "ast-results.projectPick",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Select Project",
         "icon": "$(edit)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.branchPick",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Select Branch",
         "icon": "$(edit)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.scanPick",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Select Scan",
         "icon": "$(edit)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.scanInput",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Look for Scan",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterNotExploitableActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterUrgentActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Urgent",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterProposedActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterConfirmedActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToConfirmActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: To Vonfirm",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToVerifyActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: To Verify",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotIgnoredActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterIgnoredActive",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "✓ Filter: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotExploitable",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterUrgent",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Urgent",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterProposed",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterConfirmed",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToConfirm",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: To Confirm",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterToVerify",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: To Verify",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotIgnored",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterIgnored",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Ignored",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
         "command": "ast-results.filterNotExploitables",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Not Exploitable",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterUrgents",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Urgent",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterProposeds",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Proposed Not Exploitable",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterConfirmeds",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Confirmed",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterToConfirms",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: To Confirm",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterToVerifies",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: To Verify",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterIgnoreds",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Ignored",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterNotIgnoreds",
-        "category": "checkmarx-ast",
+        "category": "ast-results",
         "title": "Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials"
       }
@@ -747,26 +747,26 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx AST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx AST [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
+        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
     "configuration": [
       {
-        "title": "Checkmarx AST results",
-        "id": "checkmarx-ast",
+        "title": "Checkmarx One",
+        "id": "ast-results",
         "order": 2,
         "properties": {
-          "checkmarxAST.apiKey": {
+          "checkmarxOne.apiKey": {
             "type": "string",
             "order": 5,
-            "description": "AST API KEY for authentication",
+            "description": "Checkmarx One API KEY for authentication",
             "properties": {
               "type": "string",
               "default": ""
             }
           },
-          "checkmarxAST.additionalParams": {
+          "checkmarxOne.additionalParams": {
             "type": "string",
             "order": 6,
             "description": "Additional Parameters",
@@ -800,6 +800,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./ && npm run copytestproject",
