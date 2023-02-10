@@ -17,8 +17,8 @@ import { groupBy, orderResults } from "../utils/tree/actions";
 export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public process: any;
   public issueFilter: IssueFilter[] = [
-    IssueFilter.type,
-    IssueFilter.scaType,
+    //IssueFilter.type,
+    //IssueFilter.scaType,
     IssueFilter.severity,
     IssueFilter.packageIdentifier,
   ];
@@ -72,8 +72,8 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const results = orderResults(this.scaResults);
     let treeItem: TreeItem;
     if (results.length > 0) {
-      let today = new Date();
-      this.scan = `Latest scan: ${ today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" "+today.getHours()+":"+today.getMinutes()}`;
+      let workspaceFolder = vscode.workspace.workspaceFolders[0];
+      this.scan = `SCA identified ${ results.length} vulnerabilities in ${workspaceFolder.name}`;
       treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
