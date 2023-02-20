@@ -813,7 +813,7 @@
     "@types/mocha": "10.0.1",
     "@types/node": "^18.13.0",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.52.0",
     "chai": "4.3.7",
     "eslint": "^8.34.0",
