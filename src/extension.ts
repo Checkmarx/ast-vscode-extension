@@ -35,7 +35,7 @@ import {AstDetailsDetached} from "./resultsView/ast_details_view";
 import {branchPicker, projectPicker, scanInput, scanPicker} from "./resultsView/pickers";
 import {filter, filterState, initializeFilters} from "./utils/filters";
 import {group} from "./utils/group";
-import {addOpenFolderListener, addRealTimeSaveListener, getBranchListener, WorkspaceListener} from "./utils/listeners";
+import {addRealTimeSaveListener, getBranchListener, WorkspaceListener} from "./utils/listeners";
 import {getCodebashingLink} from "./utils/codebashing/codebashing";
 import {triageSubmit} from "./utils/sast/triage";
 import {REFRESH_SCA_TREE, REFRESH_TREE} from "./utils/common/commands";
@@ -231,7 +231,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     
     // SCA Auto Scanning view
-    addOpenFolderListener(context, logs, kicsStatusBarItem);
     const scaResultsProvider = new SCAResultsProvider(
         logs,
         statusBarItem,

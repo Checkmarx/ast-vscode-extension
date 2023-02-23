@@ -5,7 +5,7 @@ import { SCAN_CANCEL, SCAN_CREATE, SCAN_CREATE_ID_KEY, SCA_NO_VULNERABILITIES, S
 import { get, update } from "../utils/common/globalState";
 import { SCAResultsProvider } from "./sca_results_provider";
 
-async function createScanForProject(context: vscode.ExtensionContext, logs: Logs) {
+async function createScanForProject(logs: Logs) {
     let workspaceFolder = vscode.workspace.workspaceFolders[0];
 	let scanCreateResponse;
     logs.info("Initiating scan for workspace Folder: " + workspaceFolder.uri.fsPath);
@@ -16,20 +16,6 @@ async function createScanForProject(context: vscode.ExtensionContext, logs: Logs
 	}
 	return scanCreateResponse;
 }
-
-export async function cancelScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
-    logs.info("Triggering the cancel scan flow");
-    updateStatusBarItem(SCAN_CANCEL, true, statusBarItem);
-
-    const scan = get(context, SCAN_CREATE_ID_KEY);
-    if(scan && scan.id){
-        const response = await scanCancel(scan.id);
-        logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response);
-        update(context, SCAN_CREATE_ID_KEY, undefined);
-    }
-    updateStatusBarItem(SCAN_CANCEL, false, statusBarItem);
-}
-
 
 export async function createSCAScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs,scaResultsProvider:SCAResultsProvider) {
     updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
@@ -47,10 +33,10 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
 	else{
 		scaResultsProvider.clean();
 		scaResultsProvider.refreshData("Scanning project for vulnerabilities...");
-		createScanForProject(context,logs).then( async (scaResults) =>{
+		createScanForProject(logs).then( async (scaResults) => {
 			scaResultsProvider.scaResults=scaResults;
 			let message = undefined;
-			if(scaResults && scaResults.length===0){
+			if(scaResults && scaResults.length===0) {
 				message = SCA_NO_VULNERABILITIES;
 			}
 			logs.info(`Scan completed successfully, ${scaResults.length} result(s) loaded into the SCA results tree`);
@@ -58,7 +44,7 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
 			updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
 		}).catch(err=>{
 			updateStatusBarItem("$(debug-disconnect) Checkmarx sca", true, statusBarItem);
-			logs.error("Scan did not complete :"+err);
+			logs.error("Scan did not complete : "+err);
 		});
 	}
 

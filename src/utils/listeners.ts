@@ -102,13 +102,6 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
 
 }
 
-export function addOpenFolderListener(context: vscode.ExtensionContext, logs: Logs, kicsStatusBarItem: vscode.StatusBarItem) {
-    vscode.workspace.onDidChangeWorkspaceFolders(async (e) => {
-        console.log(e.added);
-        logs.info(JSON.stringify(e));
-    });
-}
-
 export class WorkspaceListener {
     private _createScanButton: ContextKey;
     private _cancelScanButton: ContextKey;
