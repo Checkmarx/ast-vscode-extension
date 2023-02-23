@@ -17,8 +17,6 @@ import { groupBy, orderResults } from "../utils/tree/actions";
 export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public process: any;
   public issueFilter: IssueFilter[] = [
-    //IssueFilter.type,
-    //IssueFilter.scaType,
     IssueFilter.severity,
     IssueFilter.packageIdentifier,
   ];

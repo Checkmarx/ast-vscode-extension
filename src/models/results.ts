@@ -472,6 +472,14 @@ export class AstResult {
         <div class="description">
           ${result.descriptionHTML?result.descriptionHTML:result.description}
         </div>
+        ${type==="realtime"?`
+        <div class="remediation-links-rows-realtime">
+          <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
+          <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
+            About this vulnerability
+          </p>
+        </div>`:
+          ""}
       </div>
       ${result.scaNode.scaPackageData?
       `
@@ -479,12 +487,16 @@ export class AstResult {
       ${!type?`<p class="header-content">
       Remediation
     </p>`:""}
-        
-      <div class="card-content">
-        <div class=${!type?"remediation-container":"remediation-container-realtime"}>
+    ${!type?`
+    <div class="card-content">
+        <div class="remediation-container">
           ${result.scaRemediation(result,scaUpgrade,scaUrl,type)}	
         </div>
       </div>
+    `
+    :
+    ""
+    }
     </div>
     <div class="card">
         <div style="display: inline-block;position: relative;">
@@ -809,11 +821,7 @@ export class AstResult {
                   }
                 </p>
               </div>
-            </div>`
-            :``
-            }
-
-
+            </div>
             <div class="remediation-links-container">
               <div class="remediation-links-about">
                 <div class="remediation-links-rows">
@@ -832,7 +840,10 @@ export class AstResult {
                  
                 </div>
               </div>
-            </div>`;
+            </div>
+            `
+            :``
+            }`;
   }
 
   private kicsDetails() {
