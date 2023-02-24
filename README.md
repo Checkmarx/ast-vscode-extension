@@ -58,7 +58,7 @@ This extension comprises two separate tools:
 
 
 
-- **Checkmarx One results** enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. 
+- **Checkmarx One** enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. 
 This tool requires authentication, using credentials from your Checkmarx One account.
 
 ![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif)
@@ -71,7 +71,7 @@ This tool requires authentication, using credentials from your Checkmarx One acc
   - Free tool, no Checkmarx account required.
   - Scan as you code, with new a new scan running in the background whenever you save an IaC file.
   - Recommendations for one-click Auto Remediation actions.
-- **Checkmarx One Results**
+- **Checkmarx One**
   - Access the full power of Checkmarx One (SAST, SCA, and KICS) directly from your IDE.
   - Run a new scan from your IDE even before committing the code, or import scan results from your Checkmarx One account.
   - Provides actionable results including remediation recommendations. Navigate from results directly to the vulnerable code in the editor and get right down to work on the remediation.
@@ -82,12 +82,12 @@ This tool requires authentication, using credentials from your Checkmarx One acc
 **KICS Auto Scanning:**
 You must have Docker installed and running in your environment
 
-**For Checkmarx One Results:**
+**For Checkmarx One:**
 You need to have a Checkmarx One account and an API key for your account. To create an API key, see [Generating an API Key](https://checkmarx.com/resource/documents/en/34965-118315-authentication-for-checkmarx-one-cli.html#UUID-a4e31a96-1f36-6293-e95a-97b4b9189060_UUID-1e7abdfa-77eb-2a6c-f12a-c812a1e1dcf7).
 
 ## Initial Setup
 For **KICS Auto Scanning**, no configuration is needed, just install the extension, and start getting results!
-For **Checkmarx One Results**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_id_VisualStudioCode-ASTResults-SettinguptheExtension).
+For **Checkmarx One**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_id_VisualStudioCode-ASTResults-SettinguptheExtension).
 
 Checkmarx One:
 - You have a Checkmarx One account and can run Checkmarx One scans on your source code.
@@ -96,7 +96,7 @@ Checkmarx One:
 Kics Auto Scanning:
 - You must have Docker installed and running in your environment (For KICS auto scanning only)
 
-See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html) and [Checkmarx One Results](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
+See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html) and [Checkmarx One](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
 
 
 ## Contributing

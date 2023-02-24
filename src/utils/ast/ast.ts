@@ -160,8 +160,8 @@ export async function getScans(projectId: string | undefined, branch: string | u
 }
 
 export function getAstConfiguration() {
-    const token = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
-    const additionalParams = vscode.workspace.getConfiguration("checkmarxAST").get("additionalParams") as string;
+    const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+    const additionalParams = vscode.workspace.getConfiguration("checkmarxOne").get("additionalParams") as string;
 
     if (!token) {
         return undefined;
@@ -174,7 +174,7 @@ export function getAstConfiguration() {
 
 export async function isScanEnabled(logs: Logs): Promise<boolean> {
     let enabled = false;
-    const apiKey = vscode.workspace.getConfiguration("checkmarxAST").get("apiKey") as string;
+    const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
     if (!apiKey) {
         return enabled;
     }
