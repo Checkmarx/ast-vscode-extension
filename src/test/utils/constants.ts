@@ -36,7 +36,7 @@ export const CX_FILTER_URGENT: string = "ast-results:Filter: Urgent";
 export const CX_FILTER_NOT_IGNORED: string = "ast-results:Filter: Not Ignored";
 
 export const CX_CLEAR: string = "ast-results: Clear";
-export const CX_SCA_SCAN: string = "ast-results: createSCAScan";
+export const CX_SCA_SCAN: string = "ast-results: Run SCA Auto Scan";
 
 export const CX_GROUP_FILE: string = "ast-results: Group by: File";
 export const CX_GROUP_SEVERITY: string = "ast-results: Group by: Severity";
