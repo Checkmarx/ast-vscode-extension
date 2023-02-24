@@ -169,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (result.type === "sast") {
                 await getLearnMore(logs, context, result, detailsPanel);
             }
-            if (result.type === "sast" || result.type === "kics") {
+            if (result.type === "sast" || result.type === "IaC Security") {
                 await getChanges(logs, context, result, detailsPanel);
             }
             // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
