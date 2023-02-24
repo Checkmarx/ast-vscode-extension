@@ -9,7 +9,7 @@ import {
   import { expect } from "chai";
   import { initializeSCA } from "./utils/utils";
   import {
-	CX_CLEAR,
+	CX_SCA_CLEAR,
 	CX_SCA_SCAN,
   } from "./utils/constants";
   
@@ -26,7 +26,7 @@ import {
   
 	after(async () => {
 	  await new EditorView().closeAllEditors();
-	  await bench.executeCommand(CX_CLEAR);
+	  await bench.executeCommand(CX_SCA_CLEAR);
 	});
   
 	it("should check if tree and play button exists", async function () {
@@ -34,7 +34,7 @@ import {
 	  expect(tree).is.not.undefined;
 	});
 
-	it("should check if tree and play button exists", async function () {
+	it("should check if play button exists", async function () {
 		tree = await initializeSCA();
 		await bench.executeCommand(CX_SCA_SCAN);
 		let outputView = await new BottomBarPanel().openOutputView();

@@ -204,8 +204,8 @@
       },
       {
         "command": "ast-results.clearSca",
-        "category": "checkmarx-ast",
-        "title": "Clear results tree",
+        "category": "ast-results",
+        "title": "Clear SCA results tree",
         "icon": "$(refresh)"
       },
       {
