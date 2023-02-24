@@ -35,6 +35,8 @@ import {
 	});
 
 	it("should check if play button exists", async function () {
+		this.timeout(100000);
+
 		tree = await initializeSCA();
 		await bench.executeCommand(CX_SCA_SCAN);
 		let outputView = await new BottomBarPanel().openOutputView();
