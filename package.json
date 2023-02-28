@@ -747,7 +747,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html).",
+        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -770,6 +770,7 @@
             "type": "string",
             "order": 6,
             "description": "Additional Parameters",
+            "markdownDescription": "CLI command that supports a set of global flag - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
             "properties": {
               "type": "string",
               "default": ""
@@ -786,7 +787,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-visual-studio-code-extension--plugin-.html)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
