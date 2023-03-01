@@ -35,15 +35,15 @@ import {
 	});
 
 	it("should check if play button exists", async function () {
-		this.timeout(100000);
-
 		tree = await initializeSCA();
 		await bench.executeCommand(CX_SCA_SCAN);
 		let outputView = await new BottomBarPanel().openOutputView();
 		let text = await outputView.getText();
+		console.log(text);
 		while(!text.includes("Scan completed successfully")){
 			outputView = await new BottomBarPanel().openOutputView();
 			text = await outputView.getText();
+			console.log(text);
 		}
 		expect(text).is.not(undefined);
 	  });
