@@ -770,7 +770,7 @@
             "type": "string",
             "order": 6,
             "description": "Additional Parameters",
-            "markdownDescription": "CLI command that supports a set of global flag - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
             "properties": {
               "type": "string",
               "default": ""
