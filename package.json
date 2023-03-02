@@ -754,7 +754,7 @@
         {
           "id": "astResults",
           "type": "tree",
-          "name": "Results"
+          "name": "Checkmarx One Results"
         },
         {
           "id": "scaAutoScan",
