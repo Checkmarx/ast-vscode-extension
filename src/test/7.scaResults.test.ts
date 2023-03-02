@@ -45,7 +45,7 @@ import {
 			text = await outputView.getText();
 			console.log(text);
 		}
-		expect(text).is.not(undefined);
+		expect(text).is.not.undefined;
 	  });
   });
   
