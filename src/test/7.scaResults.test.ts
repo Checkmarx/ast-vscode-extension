@@ -18,11 +18,6 @@ import {
 	  this.timeout(100000);
 	});
   
-	after(async () => {
-	  await new EditorView().closeAllEditors();
-	  await new Workbench().executeCommand(CX_SCA_CLEAR);
-	});
-  
 	it("should check if tree and play button exists", async function () {
 	  const tree = await initializeSCA();
 	  expect(tree).is.not.undefined;
