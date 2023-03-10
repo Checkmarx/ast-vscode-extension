@@ -43,7 +43,7 @@ import {KicsProvider} from "./utils/kics/kics_provider";
 import {applyScaFix} from "./utils/scaFix";
 import {getLearnMore} from "./utils/sast/learnMore";
 import {getAstConfiguration, isScanEnabled} from "./utils/ast/ast";
-import {cancelScan, createScan, pollForScanResult} from "./create_scan_provider";
+import {cancelScan, createScan, pollForScanResult, setScanButtonDefaultIfScanIsNotRunning} from "./create_scan_provider";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -53,6 +53,9 @@ export async function activate(context: vscode.ExtensionContext) {
     logs.info("Checkmarx plugin is running");
 
     const runScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+
+    await setScanButtonDefaultIfScanIsNotRunning(context);
+
     context.subscriptions.push(vscode.commands.registerCommand(`${EXTENSION_NAME}.createScan`, async () => {
         await createScan(context, runScanStatusBar, logs);
     }));
