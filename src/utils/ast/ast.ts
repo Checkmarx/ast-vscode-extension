@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import {CxWrapper} from "@checkmarxdev/ast-cli-javascript-wrapper";
+import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
@@ -13,7 +14,27 @@ import {SastNode} from "../../models/sastNode";
 import AstError from "../../exceptions/AstError";
 import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 import {Logs} from "../../models/logs";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
+
+export async function scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | undefined> {
+    const config = getAstConfiguration();
+    if (!config) {
+        return [];
+    }
+    const cx = new CxWrapper(config);
+    let jsonResults = [];
+    const scan = await cx.runScaRealtimeScan(sourcePath);
+    if (scan.payload && scan.payload.length>0 && scan.exitCode===0) {
+        if(scan.payload[0].results){
+            jsonResults = scan.payload[0].results;
+        }
+    } else {
+        throw new Error(scan.status);
+    }
+    
+  return jsonResults;
+}
 
 export async function scanCreate(projectName: string, branchName: string, sourcePath: string) {
     const config = getAstConfiguration();
@@ -166,6 +187,11 @@ export async function isScanEnabled(logs: Logs): Promise<boolean> {
         logs.error(error);
         return enabled;
     }
+    return enabled;
+}
+
+export async function isSCAScanEnabled(logs:Logs): Promise<boolean>{
+    let enabled = true;
     return enabled;
 }
 

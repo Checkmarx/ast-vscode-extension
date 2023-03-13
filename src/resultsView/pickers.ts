@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import {Logs} from "./models/logs";
-import {getBranchPickItems, getProjectsPickItems, getResultsWithProgress, getScansPickItems, loadScanId} from "./utils/utils";
-import {REFRESH_TREE} from "./utils/common/commands";
+import {Logs} from "../models/logs";
+import {getBranchPickItems, getProjectsPickItems, getResultsWithProgress, getScansPickItems, loadScanId} from "../utils/utils";
+import {REFRESH_TREE} from "../utils/common/commands";
 import {
     BRANCH_ID_KEY,
     BRANCH_LABEL,
@@ -12,9 +12,9 @@ import {
     SCAN_ID_KEY,
     SCAN_LABEL,
     SCAN_PLACEHOLDER
-} from "./utils/common/constants";
-import {get, update} from "./utils/common/globalState";
-import {CxQuickPickItem} from "./utils/multiStepUtils";
+} from "../utils/common/constants";
+import {get, update} from "../utils/common/globalState";
+import {CxQuickPickItem} from "../utils/multiStepUtils";
 
 export async function projectPicker(context: vscode.ExtensionContext, logs: Logs) {
     const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();

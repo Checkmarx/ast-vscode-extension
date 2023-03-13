@@ -6,7 +6,7 @@ import { get } from "../common/globalState";
 import * as fs from "fs";
 import { PROJECT_ID_KEY, SAST, SCA, KICS } from "../common/constants";
 import { Logs } from "../../models/logs";
-import { AstDetailsDetached } from "../../ast_details_view";
+import { AstDetailsDetached } from "../../resultsView/ast_details_view";
 import { REFRESH_TREE } from "../common/commands";
 import { getLearnMore } from "./learnMore";
 

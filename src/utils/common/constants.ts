@@ -101,7 +101,9 @@ export const KICS_TOTAL_COUNTER = "total_counter";
 export const KICS_COUNT = "count";
 export const KICS_RESULTS_FILE = "kics-results.json";
 
+export const REFRESHING_TREE = "$(sync~spin) Refreshing tree";
 
+// SCAN FROM IDE
 export const SCAN_CREATE = "$(sync~spin) Scan initializing...";
 export const SCAN_CREATE_VERIFY_BRANCH = "$(sync~spin) Checking matching branches";
 export const SCAN_CREATE_VERIFY_FILES = "$(sync~spin) Checking matching files";
@@ -109,6 +111,13 @@ export const SCAN_CREATE_PREPARING = "$(sync~spin) Preparing files for scan";
 export const SCAN_WAITING = "$(sync~spin) Scan running";
 export const SCAN_CANCEL = "$(sync~spin) Canceling Scan";
 export const SCAN_POLL_TIMEOUT = 15000; // MILLISECONDS
+
+// SCA AUTO SCAN
+export const SCA_NO_VULNERABILITIES = "Checkmarx found no vulnerabilities.";
+export const SCA_START_SCAN = "Click the play button to scan with Checkmarx SCA";
+export const CLEAR_SCA = "Clear all sca scan information";
+export const SCA_SCAN_WAITING = "$(sync~spin) Checkmarx sca scan running";
+export const SCA_SCAN_RUNNING_LOG = "SCA auto scanning command is running";
 
 // USER INPUT BUTTONS
 export const YES = "Yes";

@@ -438,6 +438,11 @@
 	display: flex;
 }
 
+.remediation-links-rows-realtime {
+	display: flex;
+	margin: 25px;
+}
+
 .remediation-upgrade {
 	height: 2rem;
 	margin: 1.5rem;
