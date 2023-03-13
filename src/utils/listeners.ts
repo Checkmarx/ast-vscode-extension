@@ -18,7 +18,7 @@ import {
 import {get, update} from "./common/globalState";
 import {getBranches} from "./ast/ast";
 import {getGitAPIRepository, isKicsFile, isSystemFile} from "./utils";
-import {AstResultsProvider} from "../ast_results_provider";
+import {AstResultsProvider} from "../resultsView/ast_results_provider";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
     const gitApi = await getGitAPIRepository();
@@ -99,8 +99,8 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
             );
         }
     });
-}
 
+}
 
 export class WorkspaceListener {
     private _createScanButton: ContextKey;

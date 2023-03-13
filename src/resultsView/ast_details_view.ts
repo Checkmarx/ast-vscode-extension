@@ -1,18 +1,18 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import {AstResult} from "./models/results";
-import {Details} from "./utils/interface/details";
-import {getNonce} from "./utils/utils";
+import {AstResult} from "../models/results";
+import {Details} from "../utils/interface/details";
+import {getNonce} from "../utils/utils";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
-
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private result: AstResult,
         private context: vscode.ExtensionContext,
         private loadChanges: boolean,
+        private type?:string
     ) {
     }
 
@@ -182,7 +182,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
               html.tab(html.generalTab(cxPath),html.detailsTab(), html.loader(),"General","Learn More","Changes","Remediation Examples","No remediation examples")
             :
             this.result.type==="sca"?
-              html.scaView(severityPath,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,scaUpgrade,scaUrl)
+              html.scaView(severityPath,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,scaUpgrade,scaUrl,this.type)
             :
               html.tab(html.generalTab(cxPath),"",html.loader(),"General","","Changes","","")
           }

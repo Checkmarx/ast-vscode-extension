@@ -11,7 +11,7 @@ export async function createView(control:ViewControl): Promise<SideBarView | und
 }	
 
 export async function createTree(view:SideBarView|undefined): Promise<CustomTreeSection | undefined> {
-	return await view?.getContent().getSection("Results") as CustomTreeSection ;
+	return await view?.getContent().getSection("Checkmarx One Results") as CustomTreeSection ;
 }	
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
@@ -22,6 +22,19 @@ export async function initialize(): Promise<CustomTreeSection | undefined> {
 	}
 	return await createTree(view);
 }
+
+export async function initializeSCA(): Promise<CustomTreeSection | undefined> {
+	let control = await createControl();
+	let view;
+	if(control){
+		view = await createView(control);
+	}
+	return await createTreeSCA(view);
+}
+
+export async function createTreeSCA(view:SideBarView|undefined): Promise<CustomTreeSection | undefined> {
+	return await view?.getContent().getSection("Software Composition Analysis (SCA) Results") as CustomTreeSection ;
+}	
 
 export async function quickPickSelector(input:InputBox){
 	await input.selectQuickPick(0);

@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -201,6 +201,12 @@
         "title": "Clear selections",
         "icon": "$(refresh)",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.clearSca",
+        "category": "ast-results",
+        "title": "Clear SCA results tree",
+        "icon": "$(refresh)"
       },
       {
         "command": "ast-results.filterHigh_toggle",
@@ -478,6 +484,13 @@
         "category": "ast-results",
         "title": "Filter: Not Ignored",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.createSCAScan",
+        "category": "ast-results",
+        "title": "Run SCA Auto Scan",
+        "icon": "$(notebook-execute)",
+        "enablement": "ast-results.isSCAScanEnabled"
       }
     ],
     "submenus": [
@@ -595,6 +608,11 @@
       ],
       "view/title": [
         {
+          "command": "ast-results.createSCAScan",
+          "group": "navigation@1",
+          "when": "view == scaAutoScan"
+        },
+        {
           "command": "ast-results.filterHigh_untoggle",
           "group": "navigation@1",
           "when": "view == astResults && ast-results-high"
@@ -707,12 +725,17 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults"
+          "when": "view == astResults || view==scaAutoScan"
         },
         {
           "command": "ast-results.clear",
           "group": "@settings@1",
           "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.clearSca",
+          "group": "navigation@2",
+          "when": "view == scaAutoScan"
         },
         {
           "command": "ast-results.generalPick",
@@ -731,7 +754,12 @@
         {
           "id": "astResults",
           "type": "tree",
-          "name": "Results"
+          "name": "Checkmarx One Results"
+        },
+        {
+          "id": "scaAutoScan",
+          "type": "tree",
+          "name": "Software Composition Analysis (SCA) Results"
         }
       ]
     },

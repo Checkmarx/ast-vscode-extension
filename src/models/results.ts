@@ -40,9 +40,9 @@ export class AstResult {
   }
 
   constructor(result: any) {
-    this.type = result.label;
+    this.type =  result.scaType?"sca":result.label;
     this.scaType = result.scaType;
-    this.label = result.data.queryName ? result.data.queryName : result.id;
+    this.label = result.data.queryName ? result.data.queryName : result.id?result.id:result.vulnerabilityDetails.cveName;
     this.severity = result.severity;
     this.status = result.status;
     this.language = result.data.languageName;
@@ -58,16 +58,16 @@ export class AstResult {
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
-      const shortFilename = this.fileName
+      const shortFilename = this.fileName && this.fileName.includes("/")
         ? this.fileName.slice(this.fileName.lastIndexOf("/"))
         : "";
-      this.label += ` (${shortFilename}:${result.data.nodes[0].line})`;
+      this.label += ` (${shortFilename.length && shortFilename.length>0?shortFilename:this.fileName}${result.data.nodes[0].line>0?':'+result.data.nodes[0].line:""})`;
       this.cweId = result.cweId;
       if (!this.cweId) {
         this.cweId = this.cweId = result.vulnerabilityDetails?.cweId;
       }
     }
-    if (result.type === SCA) {
+    if (result.type === SCA||result.scaType) {
       this.scaNode = result.data;
     }
     if (result.type === KICS) {
@@ -403,6 +403,33 @@ export class AstResult {
     return html;
   }
 
+  public scaRealtimeNodes(result){
+    let html = "";
+    this.sastNodes.forEach((node, index) => {
+      html+= `
+        <tr>
+            <div>
+                  <div style="display: inline-block;margin:31px;">
+                    \"${result.data.packageIdentifier}\" : 
+                    <a href="#" 
+                      class="ast-node"
+                      id=${index}
+                      data-filename="${node.fileName}" 
+                      data-line="${node.line}" 
+                      data-column="${node.column}"
+                      data-fullName="${node.fullName}" 
+                      data-length="${node.length}"
+                    >
+                      ${node.fileName}
+                    </a>
+                  </div>
+              </div>
+            </td>
+          </tr>`;
+    });
+    return html;
+  }
+
   public scaPackages(scaUpgrade){
     let html = this.scaLocations(scaUpgrade);
     this.scaNode.scaPackageData.dependencyPaths.forEach((dependencyArray: any,index:number)=>{
@@ -438,30 +465,43 @@ export class AstResult {
     return html;
   }
 
-  public scaContent(result:AstResult,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability){
+  public scaContent(result:AstResult,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,type){
     return `
     <div class="left-content">
       <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
         <div class="description">
-          ${result.descriptionHTML}
+          ${result.descriptionHTML?result.descriptionHTML:result.description}
         </div>
+        ${type==="realtime"?`
+        <div class="remediation-links-rows-realtime">
+          <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
+          <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
+            About this vulnerability
+          </p>
+        </div>`:
+          ""}
       </div>
       ${result.scaNode.scaPackageData?
       `
       <div class="card">
-        <p class="header-content">
-          Remediation
-        </p>
-      <div class="card-content">
+      ${!type?`<p class="header-content">
+      Remediation
+    </p>`:""}
+    ${!type?`
+    <div class="card-content">
         <div class="remediation-container">
-          ${result.scaRemediation(result,scaUpgrade,scaUrl)}	
+          ${result.scaRemediation(result,scaUpgrade,scaUrl,type)}	
         </div>
       </div>
+    `
+    :
+    ""
+    }
     </div>
     <div class="card">
         <div style="display: inline-block;position: relative;">
           <p class="header-content">
-            Vulnerable Package Paths
+          ${!type?"Vulnerable Package Paths":"Vulnerable Package"}
           </p>
         </div>
         ${result.scaNode.scaPackageData.dependencyPaths?
@@ -493,14 +533,21 @@ export class AstResult {
       ${result.scaPackages(scaUpgrade)}	
     </div>`
           :
-      `
-        <div class="card-content">
-          <p style="margin:25px;font-size:0.9em">
-            No package path information available
-          </p>
-        </div>
-    </div>
-          `
+          !type? `
+          <div class="card-content">
+            <p style="margin:25px;font-size:0.9em">
+              No package path information available
+            </p>
+          </div>
+      </div>
+            `:
+            `
+          <div class="card-content">
+            ${result.scaRealtimeNodes(result)}
+          </div>
+      </div>
+            `
+     
         }
     <div class="card" style="border:0">
       <p class="header-content">
@@ -522,7 +569,7 @@ export class AstResult {
     `
     }
   <div class="right-content">
-    ${result.vulnerabilityDetails.cvss.version?
+    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.version?
       `
       <div class="content">
         <div class="header-content-selected">
@@ -533,7 +580,15 @@ export class AstResult {
       </div>
     `
     :
-    ''}
+    `
+      <div class="content">
+        <div class="header-content-selected">
+          <button class="cvss-button-selected" disabled>
+            CVSS 3
+          </button>
+        </div>
+      </div>
+    `}
     <div class="sca-details" style="border-bottom: 1px;border-bottom-style: solid;border-color: rgb(128, 128, 128,0.5);">
       <div class="score-card" style="${
           result.severity==="HIGH"?
@@ -570,7 +625,7 @@ export class AstResult {
             Attack Vector
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.attackVector?
+            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.attackVector?
               result.vulnerabilityDetails.cvss.attackVector:
               "No information"
             }
@@ -588,7 +643,7 @@ export class AstResult {
             Attack Complexity
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.attackComplexity?
+            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.attackComplexity?
               result.vulnerabilityDetails.cvss.attackComplexity:
               "No information"
             }
@@ -599,7 +654,7 @@ export class AstResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss.privilegesRequired?
+    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.privilegesRequired?
       `
       <div class="sca-details">
       <div class="info-cards">
@@ -629,7 +684,7 @@ export class AstResult {
             Confidentiality Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.confidentiality?
+            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.confidentiality?
               result.vulnerabilityDetails.cvss.confidentiality:
               "No information"
             }
@@ -640,7 +695,7 @@ export class AstResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss.integrityImpact?
+    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.integrityImpact?
       `
       <div class="sca-details">
         <div class="info-cards">
@@ -668,7 +723,7 @@ export class AstResult {
             Availability Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.availability?
+            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.availability?
               result.vulnerabilityDetails.cvss.availability:
               "No information"
             }
@@ -682,9 +737,11 @@ export class AstResult {
   </div>`;
   }
 
-  private scaRemediation(result,scaUpgrade,scaUrl){
+  private scaRemediation(result,scaUpgrade,scaUrl,type?){
       return `
-            <div 
+            ${
+              !type ?
+              `<div 
               class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
                 "remediation-icon":
                 "remediation-icon-disabled"
@@ -783,7 +840,10 @@ export class AstResult {
                  
                 </div>
               </div>
-            </div>`;
+            </div>
+            `
+            :``
+            }`;
   }
 
   private kicsDetails() {
