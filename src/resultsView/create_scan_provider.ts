@@ -58,7 +58,7 @@ export async function cancelScan(context: vscode.ExtensionContext, statusBarItem
 }
 
 async function doesFilesMatch(logs: Logs){
-    const files  = await vscode.workspace.findFiles("*", undefined, 10);
+    const files  = await vscode.workspace.findFiles("**", undefined);
     if (files.length === 0) {
         await vscode.window.showInformationMessage("No files found in workspace.");
         return;
@@ -66,7 +66,7 @@ async function doesFilesMatch(logs: Logs){
 
     const filesFromExistingScan = await getResultsJson();
     const resultFileNames =  extractFileNamesFromResults(filesFromExistingScan.results);
-    if(doFilesExistInWorkspace(resultFileNames)){
+    if(await doFilesExistInWorkspace(resultFileNames)){
         logs.info("Files match workspace");
         return true;
     } else{

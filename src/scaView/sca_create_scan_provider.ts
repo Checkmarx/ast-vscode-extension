@@ -21,7 +21,7 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
     updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
 	logs.info("Checking if scan can be started...");
 	// Check if there is a folder opened
-	const files  = await vscode.workspace.findFiles("*", undefined, 10);
+	const files  = await vscode.workspace.findFiles("**", undefined);
 	// if it does not then show error log in output
     if (files.length === 0) {
 		logs.error("No files found in workspace. Please open a workspace or folder to be able to start an SCA scan.");
@@ -31,8 +31,8 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
     }
 	// if there is then start the scan and pool for it
 	else{
-		scaResultsProvider.clean();
-		scaResultsProvider.refreshData("Scanning project for vulnerabilities...");
+		await scaResultsProvider.clean();
+		await scaResultsProvider.refreshData("Scanning project for vulnerabilities...");
 		createScanForProject(logs).then( async (scaResults) => {
 			scaResultsProvider.scaResults=scaResults;
 			let message = undefined;
@@ -40,7 +40,7 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
 				message = SCA_NO_VULNERABILITIES;
 			}
 			logs.info(`Scan completed successfully, ${scaResults.length} result(s) loaded into the SCA results tree`);
-			scaResultsProvider.refreshData(message);
+			await scaResultsProvider.refreshData(message);
 			updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
 		}).catch(err=>{
 			updateStatusBarItem("$(debug-disconnect) Checkmarx sca", true, statusBarItem);

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import {Logs} from "../models/logs";
-import {RepositoryState} from "../types/git";
-import {REFRESH_TREE} from "./common/commands";
+import { Logs } from "../models/logs";
+import { RepositoryState } from "../types/git";
+import { REFRESH_TREE } from "./common/commands";
 import {
     BRANCH_ID_KEY,
     BRANCH_LABEL,
@@ -15,10 +15,10 @@ import {
     SCAN_ID_KEY,
     SCAN_LABEL
 } from "./common/constants";
-import {get, update} from "./common/globalState";
-import {getBranches} from "./ast/ast";
-import {getGitAPIRepository, isKicsFile, isSystemFile} from "./utils";
-import {AstResultsProvider} from "../resultsView/ast_results_provider";
+import { get, update } from "./common/globalState";
+import { getBranches } from "./ast/ast";
+import { getGitAPIRepository, isKicsFile, isSystemFile } from "./utils";
+import { AstResultsProvider } from "../resultsView/ast_results_provider";
 
 export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
     const gitApi = await getGitAPIRepository();
@@ -42,8 +42,8 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
             return;
         }
 
-        update(context, BRANCH_NAME, {id: branchName, name: branchName});
-        update(context, BRANCH_TEMP_ID_KEY, {id: branchName, name: branchName}); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
+        update(context, BRANCH_NAME, { id: branchName, name: branchName });
+        update(context, BRANCH_TEMP_ID_KEY, { id: branchName, name: branchName }); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
 
         const projectItem = get(context, PROJECT_ID_KEY);
         const currentBranch = get(context, BRANCH_ID_KEY);
@@ -52,8 +52,8 @@ async function addRepositoryListener(context: vscode.ExtensionContext, logs: Log
             getBranches(projectItem.id).then((branches) => {
                 update(context, BRANCH_TEMP_ID_KEY, undefined);
                 if (branches?.includes(branchName)) {
-                    update(context, BRANCH_ID_KEY, {id: branchName, name: `${BRANCH_LABEL} ${branchName}`});
-                    update(context, SCAN_ID_KEY, {id: undefined, name: SCAN_LABEL});
+                    update(context, BRANCH_ID_KEY, { id: branchName, name: `${BRANCH_LABEL} ${branchName}` });
+                    update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
                     vscode.commands.executeCommand(REFRESH_TREE);
                 }
             });
@@ -76,7 +76,7 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
                 // Check if saved file is within the project
                 logs.info("File saved updating KICS results");
                 // Send the current file to the global state, to be used in the command
-                update(context, KICS_REALTIME_FILE, {id: e.uri.fsPath, name: e.uri.fsPath});
+                update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
                 await vscode.commands.executeCommand(
                     "ast-results.kicsRealtime"
                 );
@@ -93,13 +93,22 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
             logs.info("Opened a supported file by KICS. Starting KICS scan");
             // Mandatory in order to have the document appearing as displayed for VSCode
             await vscode.window.showTextDocument(e, 1, false);
-            update(context, KICS_REALTIME_FILE, {id: e.uri.fsPath, name: e.uri.fsPath});
+            update(context, KICS_REALTIME_FILE, { id: e.uri.fsPath, name: e.uri.fsPath });
             await vscode.commands.executeCommand(
                 "ast-results.kicsRealtime"
             );
         }
     });
 
+}
+
+export async function setScanButtonDefaultIfScanIsNotRunning(context: vscode.ExtensionContext) {
+    const scan = get(context, SCAN_CREATE_ID_KEY);
+    if (!scan?.id) {
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, true);
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, true);
+        update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    }
 }
 
 export class WorkspaceListener {
