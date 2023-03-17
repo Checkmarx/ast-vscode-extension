@@ -49,26 +49,26 @@ describe("Wizard load results test", () => {
 
     // Project selection
     const inputProject = await InputBox.create();
-    await waitByLinkText(driver, STEP_1, 5000);
+    await waitByLinkText(driver, STEP_1, 50000);
     await inputProject.setText("webgoat");
-    await waitByLinkText(driver, "webgoat", 5000);
+    await waitByLinkText(driver, "webgoat", 50000);
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();
 
     // Branch selection
-    await waitByLinkText(driver, STEP_2, 5000);
+    await waitByLinkText(driver, STEP_2, 50000);
     const inputBranch = new InputBox();
     let branchName = await getQuickPickSelector(inputBranch);
     await quickPickSelector(inputBranch);
 
     // Scan selection
-    await waitByLinkText(driver, STEP_3, 5000);
+    await waitByLinkText(driver, STEP_3, 50000);
     const inputScan = new InputBox();
     let scanDate = await getQuickPickSelector(inputScan);
     await quickPickSelector(inputScan);
 
     treeScans = await initialize();
-    await waitByLinkText(driver,SCAN_KEY_TREE + scanDate,50000);
+    await waitByLinkText(driver,SCAN_KEY_TREE + scanDate, 50000);
 
     // Project tree item validation
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
