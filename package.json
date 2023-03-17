@@ -829,7 +829,6 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./ && npm run copytestproject",
