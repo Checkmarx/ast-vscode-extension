@@ -576,16 +576,6 @@
       ],
       "view/item/context": [
         {
-          "command": "ast-results.createScan",
-          "group": "inline@1",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
-        },
-        {
-          "command": "ast-results.cancelScan",
-          "group": "inline@2",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
-        },
-        {
           "command": "ast-results.projectPick",
           "group": "inline@3",
           "when": "viewItem == project-item"
@@ -611,6 +601,16 @@
           "command": "ast-results.createSCAScan",
           "group": "navigation@1",
           "when": "view == scaAutoScan"
+        },
+        {
+          "command": "ast-results.createScan",
+          "group": "navigation@0",
+          "when": "view == astResults"
+        },
+        {
+          "command": "ast-results.cancelScan",
+          "group": "navigation@1",
+          "when": "view == astResults"
         },
         {
           "command": "ast-results.filterHigh_untoggle",
@@ -829,7 +829,6 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
     "lint": "eslint . --ext .ts,.tsx",
     "watch": "tsc -w -p ./ && npm run copytestproject",
