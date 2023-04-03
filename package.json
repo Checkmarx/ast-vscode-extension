@@ -295,7 +295,7 @@
       {
         "command": "ast-results.generalPick",
         "category": "ast-results",
-        "title": "Select All",
+        "title": "\uD83D\uDD0D Select All",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
       },
@@ -605,12 +605,12 @@
         {
           "command": "ast-results.createScan",
           "group": "navigation@0",
-          "when": "view == astResults"
+          "when": "view == astResults && ast-results.createScanButton"
         },
         {
           "command": "ast-results.cancelScan",
           "group": "navigation@1",
-          "when": "view == astResults"
+          "when": "view == astResults && ast-results.cancelScanButton || !ast-results.cancelScanButton && !ast-results.createScanButton"
         },
         {
           "command": "ast-results.filterHigh_untoggle",
@@ -739,7 +739,7 @@
         },
         {
           "command": "ast-results.generalPick",
-          "group": "navigation@5",
+          "group": "@groupBy@0",
           "when": "view == astResults"
         },
         {
