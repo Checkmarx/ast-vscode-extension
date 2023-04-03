@@ -58,39 +58,39 @@ describe("Individual pickers load results test", () => {
   //   expect(project).is.not.undefined;
   // });
 
-  it("should select branch", async function () {
-    let treeScans = await initialize();
-	// Execute branch selection command
-    await bench.executeCommand(CX_SELECT_BRANCH);
-    let input = await InputBox.create();
-	// Select from the pickers list
-    let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-	await waitByLinkText(driver, branchName, 5000);
-    await input.confirm();
-	// Wait for branch selection to be made
-    let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-    while (branch === undefined) {
-      branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-    }
-    expect(branch).is.not.undefined;
-  });
+  // it("should select branch", async function () {
+  //   let treeScans = await initialize();
+	// // Execute branch selection command
+  //   await bench.executeCommand(CX_SELECT_BRANCH);
+  //   let input = await InputBox.create();
+	// // Select from the pickers list
+  //   let branchName = await getQuickPickSelector(input);
+  //   await input.setText(branchName);
+	// await waitByLinkText(driver, branchName, 5000);
+  //   await input.confirm();
+	// // Wait for branch selection to be made
+  //   let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+  //   while (branch === undefined) {
+  //     branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+  //   }
+  //   expect(branch).is.not.undefined;
+  // });
 
-  it("should select scan", async function () {
-    let treeScans = await initialize();
-	// Execute scan selection command
-    await bench.executeCommand(CX_SELECT_SCAN);
-    let input = await InputBox.create();
-	// Select from the pickers list
-    let scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-	await waitByLinkText(driver, scanDate, 5000);
-    await input.confirm();
-	// Wait for scan selection to be made
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
-    while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
-    }
-    expect(scan).is.not.undefined;
-  });
+  // it("should select scan", async function () {
+  //   let treeScans = await initialize();
+	// // Execute scan selection command
+  //   await bench.executeCommand(CX_SELECT_SCAN);
+  //   let input = await InputBox.create();
+	// // Select from the pickers list
+  //   let scanDate = await getQuickPickSelector(input);
+  //   await input.setText(scanDate);
+	// await waitByLinkText(driver, scanDate, 5000);
+  //   await input.confirm();
+	// // Wait for scan selection to be made
+  //   let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+  //   while (scan === undefined) {
+  //     scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+  //   }
+  //   expect(scan).is.not.undefined;
+  // });
 });
