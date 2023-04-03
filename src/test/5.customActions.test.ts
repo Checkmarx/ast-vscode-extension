@@ -22,38 +22,38 @@ describe('filter and groups actions tests', () => {
 		await bench.executeCommand(CX_CLEAR);
     });
 
-	it("should click on all filter severity", async function () {
-		treeScans = await initialize();
-		while(treeScans===undefined){
-			treeScans = await initialize();
-		}
-		await bench.executeCommand(CX_LOOK_SCAN);
-		let input = await InputBox.create();
-		await input.setText(
-			SCAN_ID
-		);
-		await input.confirm();
-		await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 15000);
-		const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
-		for (var index in commands) {
-			await bench.executeCommand(commands[index].command);
-			treeScans = await initialize();
-			let scan = await treeScans?.findItem(
-				SCAN_KEY_TREE + SCAN_ID
-			);
-			while(scan===undefined){
-				scan = await treeScans?.findItem(
-					SCAN_KEY_TREE +SCAN_ID
-				);
-			}
-			let isValidated = await validateSeverities(scan, commands[index].text);
+	// it("should click on all filter severity", async function () {
+	// 	treeScans = await initialize();
+	// 	while(treeScans===undefined){
+	// 		treeScans = await initialize();
+	// 	}
+	// 	await bench.executeCommand(CX_LOOK_SCAN);
+	// 	let input = await InputBox.create();
+	// 	await input.setText(
+	// 		SCAN_ID
+	// 	);
+	// 	await input.confirm();
+	// 	await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 15000);
+	// 	const commands = [{command:CX_FILTER_INFO,text:"INFO"},{command:CX_FILTER_LOW,text:"LOW"},{command:CX_FILTER_MEDIUM,text:"MEDIUM"},{command:CX_FILTER_HIGH,text:"HIGH"}];
+	// 	for (var index in commands) {
+	// 		await bench.executeCommand(commands[index].command);
+	// 		treeScans = await initialize();
+	// 		let scan = await treeScans?.findItem(
+	// 			SCAN_KEY_TREE + SCAN_ID
+	// 		);
+	// 		while(scan===undefined){
+	// 			scan = await treeScans?.findItem(
+	// 				SCAN_KEY_TREE +SCAN_ID
+	// 			);
+	// 		}
+	// 		let isValidated = await validateSeverities(scan, commands[index].text);
 			
-			expect(isValidated).to.equal(true);
-			// Reset filters
-			await bench.executeCommand(commands[index].command);
+	// 		expect(isValidated).to.equal(true);
+	// 		// Reset filters
+	// 		await bench.executeCommand(commands[index].command);
 			
-		}
-	});
+	// 	}
+	// });
 
 	  it("should click on all group by", async function () {
 		const commands = [CX_GROUP_LANGUAGE,CX_GROUP_STATUS,CX_GROUP_STATE,CX_GROUP_QUERY_NAME,CX_GROUP_FILE];

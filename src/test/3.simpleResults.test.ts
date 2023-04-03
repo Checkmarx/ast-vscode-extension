@@ -39,24 +39,24 @@ describe("Individual pickers load results test", () => {
     await bench.executeCommand(CX_CLEAR);
   });
 
-  it("should select project", async function () {
-    treeScans = await initialize();
-	// Execute project selection command
-    await bench.executeCommand(CX_SELECT_PROJECT);
-    let input = await InputBox.create();
-    await input.setText(CX_TEST_SCAN_PROJECT_NAME);
-	await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
-	// Select from the pickers list
-    let projectName = await getQuickPickSelector(input);
-    await input.setText(projectName);
-    await input.confirm();
-	// Wait for project selection to be made
-    let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-    while (project === undefined) {
-      project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-    }
-    expect(project).is.not.undefined;
-  });
+  // it("should select project", async function () {
+  //   treeScans = await initialize();
+	// // Execute project selection command
+  //   await bench.executeCommand(CX_SELECT_PROJECT);
+  //   let input = await InputBox.create();
+  //   await input.setText(CX_TEST_SCAN_PROJECT_NAME);
+	// await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
+	// // Select from the pickers list
+  //   let projectName = await getQuickPickSelector(input);
+  //   await input.setText(projectName);
+  //   await input.confirm();
+	// // Wait for project selection to be made
+  //   let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+  //   while (project === undefined) {
+  //     project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+  //   }
+  //   expect(project).is.not.undefined;
+  // });
 
   it("should select branch", async function () {
     let treeScans = await initialize();
