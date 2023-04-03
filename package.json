@@ -605,7 +605,7 @@
         {
           "command": "ast-results.createScan",
           "group": "navigation@0",
-          "when": "view == astResults && ast-results.createScanButton"
+          "when": "view == astResults && ast-results.createScanButton && !ast-results.cancelScanButton"
         },
         {
           "command": "ast-results.cancelScan",
