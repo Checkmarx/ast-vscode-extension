@@ -14,15 +14,10 @@ import {SastNode} from "../../models/sastNode";
 import AstError from "../../exceptions/AstError";
 import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 import {Logs} from "../../models/logs";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
 
 export async function scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | undefined> {
-    const config = getAstConfiguration();
-    if (!config) {
-        return [];
-    }
-    const cx = new CxWrapper(config);
+    const cx = new CxWrapper(new CxConfig());
     let jsonResults = [];
     const scan = await cx.runScaRealtimeScan(sourcePath);
     if (scan.payload && scan.payload.length>0 && scan.exitCode===0) {

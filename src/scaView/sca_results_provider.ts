@@ -59,7 +59,7 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async refreshData(message?:string): Promise<void> {
     this.showStatusBarItem();
-    this.data = getAstConfiguration() ? this.generateTree(message).children : [];
+    this.data = this.generateTree(message).children;
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
@@ -95,7 +95,6 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     return element.children;
   }
-  
 }
 
 
