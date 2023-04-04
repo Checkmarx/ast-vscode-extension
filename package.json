@@ -739,7 +739,7 @@
         },
         {
           "command": "ast-results.generalPick",
-          "group": "@groupBy@0",
+          "group": "@settings@0",
           "when": "view == astResults"
         },
         {
