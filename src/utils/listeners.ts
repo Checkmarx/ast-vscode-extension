@@ -109,6 +109,12 @@ export async function setScanButtonDefaultIfScanIsNotRunning(context: vscode.Ext
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, true);
         update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
     }
+    const scanID = get(context, SCAN_ID_KEY);
+    if (scanID === undefined){
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, false);
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, false);
+        update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    }
 }
 
 export class WorkspaceListener {
