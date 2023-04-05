@@ -104,7 +104,6 @@ export function addRealTimeSaveListener(context: vscode.ExtensionContext, logs: 
 
 export async function setScanButtonDefaultIfScanIsNotRunning(context: vscode.ExtensionContext) {
     const scan = get(context, SCAN_CREATE_ID_KEY);
-    // const branch = get(context, BRANCH_ID_KEY);
     if (!scan?.id) {
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, true);
         vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.createScanButton`, true);
