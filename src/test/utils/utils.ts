@@ -43,8 +43,7 @@ export async function getQuickPickSelector(input:InputBox): Promise<string> {
 	await delay(FIVE_SECONDS);
 	let quickList = await input.getQuickPicks();
 	await delay(THIRTY_SECONDS);
-	const item = quickList[0];
-	return item ? await item.getText() : "";
+	return quickList[0] ? await quickList[0].getText() : "";
 }
 
 export async function getResults(scan:any): Promise<any[]> {
