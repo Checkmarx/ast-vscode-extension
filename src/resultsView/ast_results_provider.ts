@@ -28,7 +28,7 @@ import { createSummaryItem, groupBy, orderResults } from "../utils/tree/actions"
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
+  public issueFilter: IssueFilter[] = [IssueFilter.typeLabel, IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
   public stateLevel: StateLevel[] = [
