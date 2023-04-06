@@ -830,7 +830,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
-    "lint": "eslint . --ext .ts,.tsx --no-fix --max-warnings 0",
+    "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "watch": "tsc -w -p ./ && npm run copytestproject",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
