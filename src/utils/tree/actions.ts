@@ -22,7 +22,7 @@ export function createSummaryItem(list: CxResult[]): TreeItem {
 }
 
 export function groupBy(
-  list: Object[],
+  list: object[],
   groups: string[],
   scan: string | undefined,
   diagnosticCollection: vscode.DiagnosticCollection
@@ -31,7 +31,7 @@ export function groupBy(
   const map = new Map<string, vscode.Diagnostic[]>();
 
   const tree = scan ? new TreeItem(scan, undefined, undefined, []) : undefined;
-  list.forEach((element: any) => {
+  list.forEach((element: object) => {
     groupTree(element, folder, map, groups, tree);
   });
 
@@ -44,7 +44,7 @@ export function groupBy(
 }
 
 export function groupTree(
-  rawObj: Object,
+  rawObj: object,
   folder: vscode.WorkspaceFolder | undefined,
   map: Map<string, vscode.Diagnostic[]>,
   groups: string[],
@@ -55,7 +55,6 @@ export function groupTree(
     return;
   }
   const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
-  let node;
   // Verify the current severity filters applied
 
   if (obj.sastNodes.length > 0) {
@@ -67,7 +66,7 @@ export function groupTree(
       map
     );
   }
-  node = groups.reduce(
+  const node = groups.reduce(
     (previousValue: TreeItem, currentValue: string) =>
       reduceGroups(obj, previousValue, currentValue),
     tree
@@ -85,11 +84,11 @@ export function createDiagnostic(
   if (!folder) {
     return;
   }
-  const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
+  const filePath = vscode.Uri.joinPath(folder?.uri, node.fileName).toString();
   // Needed because vscode uses zero based line number
   const column = node.column > 0 ? +node.column - 1 : 1;
   const line = node.line > 0 ? +node.line - 1 : 1;
-  let length = column + node.length;
+  const length = column + node.length;
   const startPosition = new vscode.Position(line, column);
   const endPosition = new vscode.Position(line, length);
   const range = new vscode.Range(startPosition, endPosition);
@@ -103,11 +102,11 @@ export function createDiagnostic(
 }
 
 export function reduceGroups(
-  obj: any,
+  obj: AstResult,
   previousValue: TreeItem,
   currentValue: string
-) {
-  var value = getProperty(obj, currentValue);
+): TreeItem {
+  let value = getProperty(obj, currentValue);
 
   // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
   if (currentValue === IssueFilter.fileName && value.length === 0) {

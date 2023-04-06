@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CxVulnerabilityDetails from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
 import path = require("path");
 import * as vscode from "vscode";
@@ -7,20 +9,20 @@ import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
 
 export class AstResult {
-  label: string = "";
-  type: string = "";
-  scaType: string = "";
-  fileName: string = "";
-  queryName: string = "";
-  severity: string = "";
-  status: string = "";
-  language: string = "";
-  description: string = "";
-  descriptionHTML: string = "";
-  similarityId:string = "";
+  label = "";
+  type = "";
+  scaType = "";
+  fileName = "";
+  queryName = "";
+  severity = "";
+  status = "";
+  language = "";
+  description = "";
+  descriptionHTML = "";
+  similarityId = "";
   data: any;
-  state: string = "";
-  queryId: string = "";
+  state = "";
+  queryId = "";
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
@@ -221,7 +223,7 @@ export class AstResult {
           <td>
               <div>
                     <div style="display: inline-block;">
-                      ${index + 1}. \"${node.name.replaceAll('"', "")}\"
+                      ${index + 1}. "${node.name.replaceAll('"', "")}"
                       <a href="#" 
                         class="ast-node"
                         id=${index}
@@ -410,7 +412,7 @@ export class AstResult {
         <tr>
             <div>
                   <div style="display: inline-block;margin:31px;">
-                    \"${result.data.packageIdentifier}\" : 
+                    "${result.data.packageIdentifier}" : 
                     <a href="#" 
                       class="ast-node"
                       id=${index}
@@ -445,7 +447,7 @@ export class AstResult {
             <table class="package-table" style="display: none;" id="package-table-${index+1}">
               <tbody>`;
       }
-      dependencyArray.forEach((dependency:any,_:number)=>{
+      dependencyArray.forEach((dependency:any)=>{
         html+=  `<tr>
                   <td>
                     <div>

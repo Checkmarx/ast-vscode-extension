@@ -24,11 +24,19 @@ import { get, update } from "../utils/common/globalState";
 import { getAstConfiguration } from "../utils/ast/ast";
 import { REFRESH_TREE } from "../utils/common/commands";
 import { TreeItem } from "../utils/tree/treeItem";
-import { createSummaryItem, groupBy, orderResults } from "../utils/tree/actions";
-
+import {
+  createSummaryItem,
+  groupBy,
+  orderResults,
+} from "../utils/tree/actions";
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
+  public issueFilter: IssueFilter[] = [
+    IssueFilter.type,
+    IssueFilter.scaType,
+    IssueFilter.severity,
+    IssueFilter.packageIdentifier,
+  ];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
   public stateLevel: StateLevel[] = [
@@ -37,7 +45,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
-  public process:any;
+  public process;
 
   private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
@@ -53,10 +61,15 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private readonly kicsStatusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection
   ) {
-    const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
-    this.kicsStatusBarItem.text = onSave===true?"$(check) Checkmarx kics":"$(debug-disconnect) Checkmarx kics";
+    const onSave = vscode.workspace
+      .getConfiguration("CheckmarxKICS")
+      .get("Activate KICS Auto Scanning") as boolean;
+    this.kicsStatusBarItem.text =
+      onSave === true
+        ? "$(check) Checkmarx kics"
+        : "$(debug-disconnect) Checkmarx kics";
     this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-    this.kicsStatusBarItem.command= "ast-results.viewKicsSaveSettings";
+    this.kicsStatusBarItem.command = "ast-results.viewKicsSaveSettings";
     this.kicsStatusBarItem.show();
   }
 
@@ -84,7 +97,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     update(this.context, BRANCH_ID_KEY, undefined);
     await this.refreshData();
   }
-  
+
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -98,7 +111,11 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async openRefreshData(): Promise<void> {
     this.showStatusBarItem();
-    const scanId = get(this.context, SCAN_ID_KEY)?.name!;
+    const scanIDItem = get(this.context, SCAN_ID_KEY);
+    let scanId = undefined;
+    if (scanIDItem && scanIDItem.name) {
+      scanId = get(this.context, SCAN_ID_KEY).name;
+    }
     if (scanId) {
       await getResultsWithProgress(this.logs, scanId);
       await vscode.commands.executeCommand(REFRESH_TREE);
@@ -127,12 +144,21 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     this.scan = get(this.context, SCAN_ID_KEY)?.id;
     if (fs.existsSync(resultJsonPath) && this.scan) {
-      const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8").replace(/:([0-9]{15,}),/g, ':"$1",'));
+      const jsonResults = JSON.parse(
+        fs
+          .readFileSync(resultJsonPath, "utf-8")
+          .replace(/:([0-9]{15,}),/g, ':"$1",')
+      );
       const results = orderResults(jsonResults.results);
 
       treeItems = treeItems.concat(createSummaryItem(results));
 
-      const treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
+      const treeItem = groupBy(
+        results,
+        this.issueFilter,
+        this.scan,
+        this.diagnosticCollection
+      );
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);

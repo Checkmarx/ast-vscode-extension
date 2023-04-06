@@ -1,13 +1,14 @@
-import { PackageData } from "./packageData";
+import CxPackageData from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxPackageData";
+import CxScaPackageData from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxScaPackageData";
 
 export class ScaNode {
-	packageIdentifier: any;
-	recommendedVersion: any;
-	scaPackageData: any;
-	constructor(
-	  public description: string,
-	  public id: string,
-	  public packageData: PackageData[],
-	  public packageId: PackageData[]
-	) {}
-  }
+  packageIdentifier: string;
+  recommendedVersion: string;
+  scaPackageData: CxScaPackageData;
+  constructor(
+    public description: string,
+    public id: string,
+    public packageData: CxPackageData[],
+    public packageId: CxPackageData[]
+  ) {}
+}

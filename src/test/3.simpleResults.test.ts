@@ -1,9 +1,7 @@
 import {
-  By,
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -11,7 +9,7 @@ import {
 import { expect } from "chai";
 import { getQuickPickSelector, initialize } from "./utils/utils";
 import {
-	BRANCH_KEY_TREE,
+  BRANCH_KEY_TREE,
   CX_CLEAR,
   CX_SELECT_BRANCH,
   CX_SELECT_PROJECT,
@@ -41,16 +39,16 @@ describe("Individual pickers load results test", () => {
 
   it("should select project", async function () {
     treeScans = await initialize();
-	// Execute project selection command
+    // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    let input = await InputBox.create();
+    const input = await InputBox.create();
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
-	await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
-	// Select from the pickers list
-    let projectName = await getQuickPickSelector(input);
+    await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
+    // Select from the pickers list
+    const projectName = await getQuickPickSelector(input);
     await input.setText(projectName);
     await input.confirm();
-	// Wait for project selection to be made
+    // Wait for project selection to be made
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
     while (project === undefined) {
       project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
@@ -59,16 +57,16 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select branch", async function () {
-    let treeScans = await initialize();
-	// Execute branch selection command
+    const treeScans = await initialize();
+    // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
-    let input = await InputBox.create();
-	// Select from the pickers list
-    let branchName = await getQuickPickSelector(input);
+    const input = await InputBox.create();
+    // Select from the pickers list
+    const branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
-	await waitByLinkText(driver, branchName, 5000);
+    await waitByLinkText(driver, branchName, 5000);
     await input.confirm();
-	// Wait for branch selection to be made
+    // Wait for branch selection to be made
     let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
     while (branch === undefined) {
       branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
@@ -77,16 +75,16 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select scan", async function () {
-    let treeScans = await initialize();
-	// Execute scan selection command
+    const treeScans = await initialize();
+    // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
-    let input = await InputBox.create();
-	// Select from the pickers list
-    let scanDate = await getQuickPickSelector(input);
+    const input = await InputBox.create();
+    // Select from the pickers list
+    const scanDate = await getQuickPickSelector(input);
     await input.setText(scanDate);
-	await waitByLinkText(driver, scanDate, 5000);
+    await waitByLinkText(driver, scanDate, 5000);
     await input.confirm();
-	// Wait for scan selection to be made
+    // Wait for scan selection to be made
     let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
     while (scan === undefined) {
       scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
