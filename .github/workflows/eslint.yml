@@ -1,5 +1,7 @@
 name: Lint
-on: [pull_request]
+on:  
+  pull_request:
+    types: [opened,push]
 jobs:
   eslint_check:
     name: Prepare action
