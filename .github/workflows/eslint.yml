@@ -5,7 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install modules
-        run: yarn
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: npm install
       - name: Run ESLint
-        run: eslint . --ext .ts --no-fix --max-warnings 0
+        run: npm run lint
