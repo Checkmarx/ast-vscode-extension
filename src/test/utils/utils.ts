@@ -41,9 +41,9 @@ export async function quickPickSelector(input:InputBox){
 }
 export async function getQuickPickSelector(input:InputBox): Promise<string> {
 	await delay(FIVE_SECONDS);
-	let quickList = await input.getQuickPicks();
+	let projectList = await input.getQuickPicks();
 	await delay(THIRTY_SECONDS);
-	return quickList[0] ? await quickList[0].getText() : "";
+	return await projectList[0].getText();
 }
 
 export async function getResults(scan:any): Promise<any[]> {
