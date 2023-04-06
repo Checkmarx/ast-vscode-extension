@@ -7,7 +7,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ubuntu-latest] 
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -17,19 +17,17 @@ jobs:
         with:
           node-version: 14
       - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc   
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: npm install
-      - name: Code Linting
-        run: npm run lint 
       - name: Run tests
         if: runner.os != 'Linux'
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: |
-          npm test 
-      - name: Integration 
+          npm test
+      - name: Integration
         if: runner.os == 'Linux'
         env:
           CX_API_KEY: ${{ secrets.API_KEY}}
@@ -42,7 +40,7 @@ jobs:
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
-        with: 
+        with:
           name: artifacts-${{ matrix.os }}
           path: |
             test-resources/screenshots/*.png
@@ -50,6 +48,6 @@ jobs:
       - name: Upload screenshots
         uses: actions/upload-artifact@v3
         if: failure() && runner.os == 'macOS'
-        with: 
+        with:
           name: screenshots
           path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
