@@ -132,7 +132,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
       treeItems = treeItems.concat(createSummaryItem(results));
 
-      const treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
+      const treeItem = groupBy(results, this.issueFilter, this.scan, this.diagnosticCollection, this.issueLevel, this.stateLevel);
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
