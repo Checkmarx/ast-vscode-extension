@@ -28,7 +28,7 @@ import { createSummaryItem, groupBy, orderResults } from "../utils/tree/actions"
 
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-  public issueFilter: IssueFilter[] = [IssueFilter.type,IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
+  public issueFilter: IssueFilter[] = [IssueFilter.typeLabel, IssueFilter.scaType, IssueFilter.severity,IssueFilter.packageIdentifier];
   public stateFilter: IssueFilter = IssueFilter.state;
   public issueLevel: IssueLevel[] = [IssueLevel.high, IssueLevel.medium];
   public stateLevel: StateLevel[] = [
@@ -132,7 +132,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
       treeItems = treeItems.concat(createSummaryItem(results));
 
-      const treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
+      const treeItem = groupBy(results, this.issueFilter, this.scan, this.diagnosticCollection, this.issueLevel, this.stateLevel);
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);

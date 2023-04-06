@@ -213,7 +213,7 @@ export async function triageUpdate(projectId: string, similarityId: string, scan
         return r;
     }
     const cx = new CxWrapper(config);
-    const triage = await cx.triageUpdate(projectId, similarityId, scanType, state, comment, severity);
+    const triage = await cx.triageUpdate(projectId, similarityId, scanType, state, comment, severity.toLowerCase());
     if (triage.exitCode === 0) {
         r = triage.exitCode;
     } else {

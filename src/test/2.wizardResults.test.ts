@@ -31,17 +31,17 @@ describe("Wizard load results test", () => {
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
 
-  // before(async function () {
-  //   this.timeout(100000);
-  //   bench = new Workbench();
-  //   driver = VSBrowser.instance.driver;
-  //   await new Workbench().executeCommand(CX_SELECT_ALL);
-  // });
+  before(async function () {
+    this.timeout(100000);
+    bench = new Workbench();
+    driver = VSBrowser.instance.driver;
+    await new Workbench().executeCommand(CX_SELECT_ALL);
+  });
 
-  // after(async () => {
-  //   await new EditorView().closeAllEditors();
-  //   await bench.executeCommand(CX_CLEAR);
-  // });
+  after(async () => {
+    await new EditorView().closeAllEditors();
+    await bench.executeCommand(CX_CLEAR);
+  });
 
   // it("should load results using wizard", async () => {
   //   // Wizard command execution
@@ -68,7 +68,7 @@ describe("Wizard load results test", () => {
   //   await quickPickSelector(inputScan);
 
   //   treeScans = await initialize();
-  //   await waitByLinkText(driver,SCAN_KEY_TREE + scanDate, 50000);
+  //   await waitByLinkText(driver, SCAN_KEY_TREE + scanDate, 50000);
 
   //   // Project tree item validation
   //   let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);

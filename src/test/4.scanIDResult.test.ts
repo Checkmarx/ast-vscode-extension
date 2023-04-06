@@ -38,7 +38,7 @@ describe("Scan ID load results test", () => {
 
   it("should check open webview and codebashing link", async function () {
     // Make sure the results are loaded
-	treeScans = await initialize();
+    treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
     }
@@ -59,9 +59,9 @@ describe("Scan ID load results test", () => {
     await result[0].click();
     // Open details view
     let detailsView = await getDetailsView();
-	while(detailsView===undefined){
-		detailsView = await getDetailsView();
-	}
+    while (detailsView === undefined) {
+      detailsView = await getDetailsView();
+    }
     // Find details view title
     let titleWebElement = await detailsView.findWebElement(By.id(WEBVIEW_TITLE));
     let title = await titleWebElement.getText();
@@ -113,7 +113,7 @@ describe("Scan ID load results test", () => {
     }
     await changesTab.click();
     // Make sure that the changes tab is loaded
-	await waitByClassName(driver,CHANGES_CONTAINER,5000);
+    await waitByClassName(driver, CHANGES_CONTAINER, 5000);
     expect(changesTab).is.not.undefined;
     await detailsView.switchBack();
   });
