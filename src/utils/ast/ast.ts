@@ -17,7 +17,7 @@ import {Logs} from "../../models/logs";
 
 
 export async function scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | undefined> {
-    const cx = new CxWrapper(new CxConfig());
+    const cx = new CxWrapper(getBaseAstConfiguration());
     let jsonResults = [];
     const scan = await cx.runScaRealtimeScan(sourcePath);
     if (scan.payload && scan.payload.length>0 && scan.exitCode===0) {
@@ -154,16 +154,22 @@ export async function getScans(projectId: string | undefined, branch: string | u
     return r;
 }
 
+export function getBaseAstConfiguration() {
+    const config = new CxConfig();
+    config.additionalParameters =  vscode.workspace.getConfiguration("checkmarxOne").get("additionalParams") as string;
+
+    return config;
+}
+
+
 export function getAstConfiguration() {
     const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
-    const additionalParams = vscode.workspace.getConfiguration("checkmarxOne").get("additionalParams") as string;
-
     if (!token) {
         return undefined;
     }
-    const config = new CxConfig();
+
+    const config = getBaseAstConfiguration();
     config.apiKey = token;
-    config.additionalParameters = additionalParams;
     return config;
 }
 

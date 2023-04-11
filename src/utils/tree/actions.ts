@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { AstResult } from "../../models/results";
 import { SastNode } from "../../models/sastNode";
-import { GRAPH_ITEM, IssueFilter } from "../common/constants";
+import { GRAPH_ITEM, IssueFilter, IssueLevel, StateLevel } from "../common/constants";
 import { Counter, getProperty } from "../utils";
 import { TreeItem } from "./treeItem";
 
@@ -26,8 +26,8 @@ export function groupBy(
   groups: string[],
   scan: string | undefined,
   diagnosticCollection: vscode.DiagnosticCollection,
-  issueLevel: string[] = [],
-  stateLevel: string[] = [],
+  issueLevel: string[] = [IssueLevel.high, IssueLevel.medium, IssueLevel.low, IssueLevel.info],
+  stateLevel: string[] = [StateLevel.confirmed, StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored]
 ): TreeItem {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const map = new Map<string, vscode.Diagnostic[]>();
@@ -63,10 +63,7 @@ export function groupTree(
   // Verify the current severity filters applied
   if (issueLevel.length > 0) {
     // Filter only the results for the severity and state filters type
-    if (
-      issueLevel.includes(obj.getSeverity()) &&
-      stateLevel.includes(obj.getState()!)
-    ) {
+    if ((!obj.getState() || issueLevel.includes(obj.getSeverity())) && (!obj.getState() || stateLevel.includes(obj.getState()))) {
       if (obj.sastNodes.length > 0) {
         createDiagnostic(
           obj.label,
