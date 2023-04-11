@@ -14,19 +14,15 @@ import {
 import { getFilePath } from "../utils";
 import { SastNode } from "../../models/sastNode";
 import AstError from "../../exceptions/AstError";
-import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 import { Logs } from "../../models/logs";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 
 export async function scaScanCreate(
   sourcePath: string
 ): Promise<CxScaRealtime[] | undefined> {
-  const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
-  const cx = new CxWrapper(config);
+  const cx = new CxWrapper(new CxConfig());
   let jsonResults = [];
   const scan = await cx.runScaRealtimeScan(sourcePath);
   if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
@@ -272,7 +268,7 @@ export async function triageUpdate(
     scanType,
     state,
     comment,
-    severity
+    severity.toLowerCase()
   );
   if (triage.exitCode === 0) {
     r = triage.exitCode;

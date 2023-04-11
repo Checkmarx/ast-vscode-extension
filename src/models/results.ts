@@ -3,7 +3,7 @@
 import CxVulnerabilityDetails from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
 import path = require("path");
 import * as vscode from "vscode";
-import { StateLevel,IssueLevel, SCA, KICS } from "../utils/common/constants";
+import { StateLevel, IssueLevel, SCA, KICS } from "../utils/common/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
@@ -11,6 +11,8 @@ import { ScaNode } from "./scaNode";
 export class AstResult {
   label = "";
   type = "";
+  id = "";
+  typeLabel = "";
   scaType = "";
   fileName = "";
   queryName = "";
@@ -27,24 +29,29 @@ export class AstResult {
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
   rawObject: Object;
-  cweId: string| undefined;
-	packageIdentifier: string;
-  vulnerabilityDetails :CxVulnerabilityDetails;
-  setSeverity(severity:string){
-    this.severity=severity;
-    if(this.kicsNode){
+  cweId: string | undefined;
+  packageIdentifier: string;
+  vulnerabilityDetails: CxVulnerabilityDetails;
+  setSeverity(severity: string) {
+    this.severity = severity;
+    if (this.kicsNode) {
       this.kicsNode.severity = severity;
     }
   }
 
-  setState(state:string){
-    this.state=state;
+  setState(state: string) {
+    this.state = state;
   }
 
   constructor(result: any) {
-    this.type =  result.scaType?"sca":result.label;
+    this.type = result.scaType ? "sca" : result.type;
+    this.typeLabel = result.label;
     this.scaType = result.scaType;
-    this.label = result.data.queryName ? result.data.queryName : result.id?result.id:result.vulnerabilityDetails.cveName;
+    this.label = result.data.queryName
+      ? result.data.queryName
+      : result.id
+      ? result.id
+      : result.vulnerabilityDetails.cveName;
     this.severity = result.severity;
     this.status = result.status;
     this.language = result.data.languageName;
@@ -60,16 +67,23 @@ export class AstResult {
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
-      const shortFilename = this.fileName && this.fileName.includes("/")
-        ? this.fileName.slice(this.fileName.lastIndexOf("/"))
-        : "";
-      this.label += ` (${shortFilename.length && shortFilename.length>0?shortFilename:this.fileName}${result.data.nodes[0].line>0?':'+result.data.nodes[0].line:""})`;
+      const shortFilename =
+        this.fileName && this.fileName.includes("/")
+          ? this.fileName.slice(this.fileName.lastIndexOf("/"))
+          : "";
+      this.label += ` (${
+        shortFilename.length && shortFilename.length > 0
+          ? shortFilename
+          : this.fileName
+      }${
+        result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
+      })`;
       this.cweId = result.cweId;
       if (!this.cweId) {
         this.cweId = this.cweId = result.vulnerabilityDetails?.cweId;
       }
     }
-    if (result.type === SCA||result.scaType) {
+    if (result.type === SCA || result.scaType) {
       this.scaNode = result.data;
     }
     if (result.type === KICS) {
@@ -95,31 +109,30 @@ export class AstResult {
     return path.join("media", "icon.png");
   }
 
-  getCxScaAtackVector(){
-    return path.join("media","icons", "attackVector.png");
+  getCxScaAtackVector() {
+    return path.join("media", "icons", "attackVector.png");
   }
-  getCxScaComplexity(){
-    return path.join("media","icons", "complexity.png");
+  getCxScaComplexity() {
+    return path.join("media", "icons", "complexity.png");
   }
-  getCxAuthentication(){
-    return path.join("media","icons", "authentication.png");
+  getCxAuthentication() {
+    return path.join("media", "icons", "authentication.png");
   }
-  getCxConfidentiality(){
-    return path.join("media","icons", "confidentiality.png");
+  getCxConfidentiality() {
+    return path.join("media", "icons", "confidentiality.png");
   }
-  getCxIntegrity(){
-    return path.join("media","icons", "integrity.png");
+  getCxIntegrity() {
+    return path.join("media", "icons", "integrity.png");
   }
-  getCxAvailability(){
-    return path.join("media","icons", "availability.png");
+  getCxAvailability() {
+    return path.join("media", "icons", "availability.png");
   }
-  getCxUpgrade(){
-    return path.join("media","icons", "upgrade.png");
+  getCxUpgrade() {
+    return path.join("media", "icons", "upgrade.png");
   }
-  getCxUrl(){
-    return path.join("media","icons", "url.png");
+  getCxUrl() {
+    return path.join("media", "icons", "url.png");
   }
-  
 
   getTreeIcon() {
     return {
@@ -170,9 +183,23 @@ export class AstResult {
         return StateLevel.urgent;
       case "NOT_IGNORED":
         return StateLevel.notIgnored;
-       case "IGNORED":
+      case "IGNORED":
         return StateLevel.ignored;
     }
+  }
+
+  getResultHash() {
+    if (this.sastNodes && this.sastNodes.length > 0) {
+      return this.data.resultHash;
+    }
+    if (this.kicsNode) {
+      return this.kicsNode.id;
+    }
+    if (this.scaNode) {
+      return this.scaNode.id;
+    }
+
+    return "";
   }
 
   getHtmlDetails(cxPath: vscode.Uri) {
@@ -188,24 +215,27 @@ export class AstResult {
 
     return "";
   }
+  kicsDetails() {
+    throw new Error("Method not implemented.");
+  }
 
   getKicsValues() {
     let r = "";
     if (this.kicsNode?.data) {
-      this.kicsNode.data.value? 
-      (r += `
+      this.kicsNode.data.value
+        ? (r += `
 			  <p>
 			    <b>Value:</b> ${this.kicsNode?.data.value}
 			  </p>
 		  `)
-      : (r += "");
-      this.kicsNode.data.expectedValue? 
-      (r += `
+        : (r += "");
+      this.kicsNode.data.expectedValue
+        ? (r += `
 			  <p>
 			    <b>Expected Value:</b> ${this.kicsNode?.data.expectedValue}
 			  </p>
 		  `)
-      : (r += "");
+        : (r += "");
     }
     return r;
   }
@@ -233,7 +263,9 @@ export class AstResult {
                         data-fullName="${node.fullName}" 
                         data-length="${node.length}"
                       >
-                        ${this.getShortFilename(node.fileName)} [${node.line}:${node.column}]
+                        ${this.getShortFilename(node.fileName)} [${node.line}:${
+          node.column
+        }]
                       </a>
                     </div>
                 </div>
@@ -249,8 +281,8 @@ export class AstResult {
     return html;
   }
 
-  getBflTips(cxPath: vscode.Uri){
-    return (`
+  getBflTips(cxPath: vscode.Uri) {
+    return `
             <div class="loader" id="loader">
             </div>
             <p class="bfl-tip-loaded" id="bfl-tip-loaded">
@@ -259,8 +291,7 @@ export class AstResult {
             <p class="bfl-tip-loading" id="bfl-tip-loading">
               Loading best fix location 
             </p>
-    `
-    );
+    `;
   }
 
   getShortFilename(filename: string) {
@@ -306,20 +337,24 @@ export class AstResult {
     return html;
   }
 
-  public scaLocations(scaUpgrade){
+  public scaLocations(scaUpgrade) {
     let html = "";
-    this.scaNode.scaPackageData.dependencyPaths.forEach((pathArray: any,indexDependency: number)=>{
-      if(indexDependency===0){
-        html +=` <div class="card-content" style="max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency+1}">
+    this.scaNode.scaPackageData.dependencyPaths.forEach(
+      (pathArray: any, indexDependency: number) => {
+        if (indexDependency === 0) {
+          html += ` <div class="card-content" style="max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${
+            indexDependency + 1
+          }">
         <table class="details-table" style="margin-left:28px;margin-top:15px;width:100%">
           <tbody>`;
-      }
-      else{
-        html +=` <div class="card-content" style="display:none;max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency+1}">
+        } else {
+          html += ` <div class="card-content" style="display:none;max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${
+            indexDependency + 1
+          }">
         <table class="details-table" style="margin-left:28px;" >
           <tbody>`;
-      }
-      html +=`
+        }
+        html += `
                 <div>
                     <div style="display: inline-block;margin-left:28px">
                      Package ${pathArray[0].name} is located in:
@@ -327,11 +362,11 @@ export class AstResult {
                 </div>
                 <div style="margin-left:28px">
                `;
-      pathArray.forEach((path: any,index: number)=>{
-        if(index===0){
-          if(path.locations){
-            path.locations.forEach((location: any,index: number)=>{
-              html +=`
+        pathArray.forEach((path: any, index: number) => {
+          if (index === 0) {
+            if (path.locations) {
+              path.locations.forEach((location: any, index: number) => {
+                html += `
                     <a href="#" 
                       class="ast-node"
                       id="${index}"
@@ -343,8 +378,11 @@ export class AstResult {
                     >
                       ${location}
                     </a>
-                    ${ this.scaNode.recommendedVersion && this.scaNode.scaPackageData.supportsQuickFix===true && this.scaNode.scaPackageData.dependencyPaths[0][0].name?
-                      ` <img 
+                    ${
+                      this.scaNode.recommendedVersion &&
+                      this.scaNode.scaPackageData.supportsQuickFix === true &&
+                      this.scaNode.scaPackageData.dependencyPaths[0][0].name
+                        ? ` <img 
                           alt="icon" 
                           class="upgrade-small-icon" 
                           src="${scaUpgrade}"
@@ -352,20 +390,13 @@ export class AstResult {
                           data-package="${this.scaNode.scaPackageData.dependencyPaths[0][0].name}" 
                           data-file="${location}"
                         />`
-                      :""
-
+                        : ""
                     }
-                    ${index+1<path.locations.length?
-                      
-                      `&nbsp;| &nbsp;`
-                      :
-                      ""
-                    }
+                    ${index + 1 < path.locations.length ? `&nbsp;| &nbsp;` : ""}
                 `;
-        }); 
-          }
-          else{
-            html +=`
+              });
+            } else {
+              html += `
                   <div style="display: inline-block">
                     ${path.name} is unresolved
                     <a href="#"
@@ -375,40 +406,38 @@ export class AstResult {
                     </a>
                   </div>
                 `;
+            }
           }
-        }
-    });
-    html +=`      </div>
+        });
+        html += `      </div>
                 </tbody>
               </table>	
             </div>`;
-  });
+      }
+    );
     return html;
   }
 
-  public scaReferences(){
+  public scaReferences() {
     let html = "";
-    if(this.scaNode.packageData){
-      this.scaNode.packageData.forEach((data: any)=>{
-        html +=
-          `<a class="references" id="${data.url}">
+    if (this.scaNode.packageData) {
+      this.scaNode.packageData.forEach((data: any) => {
+        html += `<a class="references" id="${data.url}">
             ${data.type}
             </a>&nbsp&nbsp`;
       });
-    }
-    else{
-      html +=
-          `<p style="margin:25px;font-size:0.9em">
+    } else {
+      html += `<p style="margin:25px;font-size:0.9em">
             No references available 
           </p>`;
     }
     return html;
   }
 
-  public scaRealtimeNodes(result){
+  public scaRealtimeNodes(result) {
     let html = "";
     this.sastNodes.forEach((node, index) => {
-      html+= `
+      html += `
         <tr>
             <div>
                   <div style="display: inline-block;margin:31px;">
@@ -432,23 +461,23 @@ export class AstResult {
     return html;
   }
 
-  public scaPackages(scaUpgrade){
+  public scaPackages(scaUpgrade) {
     let html = this.scaLocations(scaUpgrade);
-    this.scaNode.scaPackageData.dependencyPaths.forEach((dependencyArray: any,index:number)=>{
-      if(index===0){
-        html +=
-        `<div class="card-content">
-            <table class="package-table" id="package-table-${index+1}">
+    this.scaNode.scaPackageData.dependencyPaths.forEach(
+      (dependencyArray: any, index: number) => {
+        if (index === 0) {
+          html += `<div class="card-content">
+            <table class="package-table" id="package-table-${index + 1}">
               <tbody>`;
-      }
-      else{
-        html +=
-        `<div class="card-content">
-            <table class="package-table" style="display: none;" id="package-table-${index+1}">
+        } else {
+          html += `<div class="card-content">
+            <table class="package-table" style="display: none;" id="package-table-${
+              index + 1
+            }">
               <tbody>`;
-      }
-      dependencyArray.forEach((dependency:any)=>{
-        html+=  `<tr>
+        }
+        dependencyArray.forEach((dependency: any) => {
+          html += `<tr>
                   <td>
                     <div>
                       <div style="display: inline-block">
@@ -458,73 +487,102 @@ export class AstResult {
                   </td>
                 </tr>
                `;
-        });                
-      html +=  `
+        });
+        html += `
               </tbody>
                 </table>
                   </div>`;
-    });
+      }
+    );
     return html;
   }
 
-  public scaContent(result:AstResult,scaUpgrade,scaUrl,scaAtackVector,scaComplexity,scaAuthentication,scaConfidentiality,scaIntegrity,scaAvailability,type){
+  public scaContent(
+    result: AstResult,
+    scaUpgrade,
+    scaUrl,
+    scaAtackVector,
+    scaComplexity,
+    scaAuthentication,
+    scaConfidentiality,
+    scaIntegrity,
+    scaAvailability,
+    type
+  ) {
     return `
     <div class="left-content">
       <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
         <div class="description">
-          ${result.descriptionHTML?result.descriptionHTML:result.description}
+          ${
+            result.descriptionHTML ? result.descriptionHTML : result.description
+          }
         </div>
-        ${type==="realtime"?`
+        ${
+          type === "realtime"
+            ? `
         <div class="remediation-links-rows-realtime">
           <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
           <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
             About this vulnerability
           </p>
-        </div>`:
-          ""}
+        </div>`
+            : ""
+        }
       </div>
-      ${result.scaNode.scaPackageData?
-      `
+      ${
+        result.scaNode.scaPackageData
+          ? `
       <div class="card">
-      ${!type?`<p class="header-content">
+      ${
+        !type
+          ? `<p class="header-content">
       Remediation
-    </p>`:""}
-    ${!type?`
+    </p>`
+          : ""
+      }
+    ${
+      !type
+        ? `
     <div class="card-content">
         <div class="remediation-container">
-          ${result.scaRemediation(result,scaUpgrade,scaUrl,type)}	
+          ${result.scaRemediation(result, scaUpgrade, scaUrl, type)}	
         </div>
       </div>
     `
-    :
-    ""
+        : ""
     }
     </div>
     <div class="card">
         <div style="display: inline-block;position: relative;">
           <p class="header-content">
-          ${!type?"Vulnerable Package Paths":"Vulnerable Package"}
+          ${!type ? "Vulnerable Package Paths" : "Vulnerable Package"}
           </p>
         </div>
-        ${result.scaNode.scaPackageData.dependencyPaths?
-          `
+        ${
+          result.scaNode.scaPackageData.dependencyPaths
+            ? `
         <div class="package-buttons-container">
           <button 
             class="package-back"
             id="package-back"
             data-current="1" 
-            data-total="${result.scaNode.scaPackageData.dependencyPaths.length}" 
+            data-total="${
+              result.scaNode.scaPackageData.dependencyPaths.length
+            }" 
             data-previous="null"
             disabled
           >
           </button>
-          <p id="package-counter" class="package-counter-numbers">1/${result.scaNode.scaPackageData.dependencyPaths.length}</p>
+          <p id="package-counter" class="package-counter-numbers">1/${
+            result.scaNode.scaPackageData.dependencyPaths.length
+          }</p>
           <button 
             class="package-next"
             data-current="1" 
-            ${result.scaNode.scaPackageData.dependencyPaths.length===1?
-              "disabled":
-              ""
+            ${
+              result.scaNode.scaPackageData.dependencyPaths.length === 1
+                ? "disabled"
+                : ""
             }
             data-total="${result.scaNode.scaPackageData.dependencyPaths.length}"
             id="package-next"
@@ -534,22 +592,21 @@ export class AstResult {
         </div>
       ${result.scaPackages(scaUpgrade)}	
     </div>`
-          :
-          !type? `
+            : !type
+            ? `
           <div class="card-content">
             <p style="margin:25px;font-size:0.9em">
               No package path information available
             </p>
           </div>
       </div>
-            `:
             `
+            : `
           <div class="card-content">
             ${result.scaRealtimeNodes(result)}
           </div>
       </div>
             `
-     
         }
     <div class="card" style="border:0">
       <p class="header-content">
@@ -561,7 +618,7 @@ export class AstResult {
     </div>
   </div>
       `
-    :`
+          : `
     <div class="card" style="border:0">
       <p style="margin:25px;font-size:0.9em"> 
         No more information available
@@ -569,10 +626,12 @@ export class AstResult {
     </div>
   </div>
     `
-    }
+      }
   <div class="right-content">
-    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.version?
-      `
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.version
+        ? `
       <div class="content">
         <div class="header-content-selected">
           <button class="cvss-button-selected" disabled>
@@ -581,8 +640,7 @@ export class AstResult {
         </div>
       </div>
     `
-    :
-    `
+        : `
       <div class="content">
         <div class="header-content-selected">
           <button class="cvss-button-selected" disabled>
@@ -590,17 +648,18 @@ export class AstResult {
           </button>
         </div>
       </div>
-    `}
+    `
+    }
     <div class="sca-details" style="border-bottom: 1px;border-bottom-style: solid;border-color: rgb(128, 128, 128,0.5);">
       <div class="score-card" style="${
-          result.severity==="HIGH"?
-              "border: 1px solid #D94B48":
-            result.severity==="MEDIUM"?
-              "border: 1px solid #F9AE4D":
-            result.severity==="LOW"?
-              "border: 1px solid #029302":
-              "border: 1px solid #87bed1"
-     }">
+        result.severity === "HIGH"
+          ? "border: 1px solid #D94B48"
+          : result.severity === "MEDIUM"
+          ? "border: 1px solid #F9AE4D"
+          : result.severity === "LOW"
+          ? "border: 1px solid #029302"
+          : "border: 1px solid #87bed1"
+      }">
         <div class="left-${result.severity}">
           <p class="header-text">
             Score
@@ -627,9 +686,11 @@ export class AstResult {
             Attack Vector
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.attackVector?
-              result.vulnerabilityDetails.cvss.attackVector:
-              "No information"
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.attackVector
+                ? result.vulnerabilityDetails.cvss.attackVector
+                : "No information"
             }
           </p>
         </div>
@@ -645,9 +706,11 @@ export class AstResult {
             Attack Complexity
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.attackComplexity?
-              result.vulnerabilityDetails.cvss.attackComplexity:
-              "No information"
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.attackComplexity
+                ? result.vulnerabilityDetails.cvss.attackComplexity
+                : "No information"
             }
           </p>
         </div>
@@ -656,8 +719,10 @@ export class AstResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.privilegesRequired?
-      `
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.privilegesRequired
+        ? `
       <div class="sca-details">
       <div class="info-cards">
         <div class="info-cards-text">
@@ -665,9 +730,10 @@ export class AstResult {
             Privileges Required
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.privilegesRequired?
-              result.vulnerabilityDetails.cvss.privilegesRequired:
-              "No information"
+            ${
+              result.vulnerabilityDetails.cvss.privilegesRequired
+                ? result.vulnerabilityDetails.cvss.privilegesRequired
+                : "No information"
             }
           </p>
         </div>
@@ -676,8 +742,7 @@ export class AstResult {
         </div>
       </div>
     </div>`
-    :
-      ``
+        : ``
     }
     <div class="sca-details">
       <div class="info-cards">
@@ -686,9 +751,11 @@ export class AstResult {
             Confidentiality Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.confidentiality?
-              result.vulnerabilityDetails.cvss.confidentiality:
-              "No information"
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.confidentiality
+                ? result.vulnerabilityDetails.cvss.confidentiality
+                : "No information"
             }
           </p>
         </div>
@@ -697,8 +764,10 @@ export class AstResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.integrityImpact?
-      `
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.integrityImpact
+        ? `
       <div class="sca-details">
         <div class="info-cards">
           <div class="info-cards-text">
@@ -706,9 +775,10 @@ export class AstResult {
               Integrity Impact
             </p>
             <p class="info-cards-value">
-              ${result.vulnerabilityDetails.cvss.integrityImpact?
-                result.vulnerabilityDetails.cvss.integrityImpact:
-                "No information"
+              ${
+                result.vulnerabilityDetails.cvss.integrityImpact
+                  ? result.vulnerabilityDetails.cvss.integrityImpact
+                  : "No information"
               }
             </p>
           </div>
@@ -716,7 +786,8 @@ export class AstResult {
             <img alt="icon" class="info-cards-icons" src="${scaIntegrity}" />
           </div>
         </div>
-      </div>`:``
+      </div>`
+        : ``
     }
     <div class="sca-details">
       <div class="info-cards">
@@ -725,9 +796,11 @@ export class AstResult {
             Availability Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss && result.vulnerabilityDetails.cvss.availability?
-              result.vulnerabilityDetails.cvss.availability:
-              "No information"
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.availability
+                ? result.vulnerabilityDetails.cvss.availability
+                : "No information"
             }
           </p>
         </div>
@@ -739,60 +812,84 @@ export class AstResult {
   </div>`;
   }
 
-  private scaRemediation(result,scaUpgrade,scaUrl,type?){
-      return `
+  private scaRemediation(result, scaUpgrade, scaUrl, type?) {
+    return `
             ${
-              !type ?
-              `<div 
-              class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
-                "remediation-icon":
-                "remediation-icon-disabled"
+              !type
+                ? `<div 
+              class=${
+                result.scaNode.recommendedVersion &&
+                result.scaNode.scaPackageData.supportsQuickFix === true
+                  ? "remediation-icon"
+                  : "remediation-icon-disabled"
               }
-              data-version="${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix===true ?
-                result.scaNode.recommendedVersion:
-                ""
+              data-version="${
+                result.scaNode.recommendedVersion &&
+                result.scaNode.scaPackageData.supportsQuickFix === true
+                  ? result.scaNode.recommendedVersion
+                  : ""
               }" 
-              data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
-                result.scaNode.scaPackageData.dependencyPaths[0][0].name:
-                ""
+              data-package="${
+                result.scaNode.scaPackageData.dependencyPaths &&
+                result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                  ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                  : ""
               }" 
-              data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
-                result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
-                ""
+              data-file="${
+                result.scaNode.scaPackageData.dependencyPaths &&
+                result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                  ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                      .locations
+                  : ""
               }"
               >
                 <img 
-                  data-version="${result.scaNode.recommendedVersion?
-                    result.scaNode.recommendedVersion:
-                    ""
+                  data-version="${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : ""
                   }" 
-                  data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
-                    result.scaNode.scaPackageData.dependencyPaths[0][0].name:
-                    ""
+                  data-package="${
+                    result.scaNode.scaPackageData.dependencyPaths &&
+                    result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                      ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                      : ""
                   }" 
-                  data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
-                    result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
-                    ""
+                  data-file="${
+                    result.scaNode.scaPackageData.dependencyPaths &&
+                    result.scaNode.scaPackageData.dependencyPaths[0][0]
+                      .locations
+                      ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                          .locations
+                      : ""
                   }" 
                   alt="icon" src="${scaUpgrade}" 
                   class="remediation-upgrade" />
               </div>
             <div 
-            class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
-              "remediation-version":
-              "remediation-version-disabled"
+            class=${
+              result.scaNode.recommendedVersion &&
+              result.scaNode.scaPackageData.supportsQuickFix === true
+                ? "remediation-version"
+                : "remediation-version-disabled"
             }
-            data-version="${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix===true ?
-              result.scaNode.recommendedVersion:
-              ""
+            data-version="${
+              result.scaNode.recommendedVersion &&
+              result.scaNode.scaPackageData.supportsQuickFix === true
+                ? result.scaNode.recommendedVersion
+                : ""
             }" 
-            data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
-              result.scaNode.scaPackageData.dependencyPaths[0][0].name:
-              ""
+            data-package="${
+              result.scaNode.scaPackageData.dependencyPaths &&
+              result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                : ""
             }" 
-            data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
-              result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
-              ""
+            data-file="${
+              result.scaNode.scaPackageData.dependencyPaths &&
+              result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                ? result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                : ""
             }"
             >
             
@@ -801,25 +898,34 @@ export class AstResult {
                   Upgrade To Version
                 </p>
                 <p
-                  class=${result.scaNode.recommendedVersion && result.scaNode.scaPackageData.supportsQuickFix ===true ?
-                    "version":
-                    "version-disabled"
+                  class=${
+                    result.scaNode.recommendedVersion &&
+                    result.scaNode.scaPackageData.supportsQuickFix === true
+                      ? "version"
+                      : "version-disabled"
                   }
-                  data-version="${result.scaNode.recommendedVersion?
-                  result.scaNode.recommendedVersion:
-                  ""
+                  data-version="${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : ""
+                  }" 
+                data-package="${
+                  result.scaNode.scaPackageData.dependencyPaths &&
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                    ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                    : ""
                 }" 
-                data-package="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].name?
-                  result.scaNode.scaPackageData.dependencyPaths[0][0].name:
-                  ""
-                }" 
-                data-file="${result.scaNode.scaPackageData.dependencyPaths && result.scaNode.scaPackageData.dependencyPaths[0][0].locations?
-                  result.scaNode.scaPackageData.dependencyPaths[0][0].locations:
-                  ""
+                data-file="${
+                  result.scaNode.scaPackageData.dependencyPaths &&
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                    ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                        .locations
+                    : ""
                 }">
-                  ${result.scaNode.recommendedVersion?
-                    result.scaNode.recommendedVersion:
-                    "Not available"
+                  ${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : "Not available"
                   }
                 </p>
               </div>
@@ -828,14 +934,15 @@ export class AstResult {
               <div class="remediation-links-about">
                 <div class="remediation-links-rows">
                   <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
-                  ${result.scaNode.scaPackageData.fixLink && result.scaNode.scaPackageData.fixLink!==""?
-                  `
+                  ${
+                    result.scaNode.scaPackageData.fixLink &&
+                    result.scaNode.scaPackageData.fixLink !== ""
+                      ? `
                   <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
                     About this vulnerability
                   </p>
                 `
-                  :
-                  ` <p class="remediation-links-text-disabled" id="${result.scaNode.scaPackageData.fixLink}">
+                      : ` <p class="remediation-links-text-disabled" id="${result.scaNode.scaPackageData.fixLink}">
                       About this vulnerability
                     </p>`
                   }
@@ -844,34 +951,7 @@ export class AstResult {
               </div>
             </div>
             `
-            :``
+                : ``
             }`;
-  }
-
-  private kicsDetails() {
-    let html = "";
-    html += `
-        <tr>
-          <td>
-            <div class="tooltip">
-                1. 
-                <span class="tooltiptext">
-                  ${this.kicsNode?.data.filename}
-                </span>
-            </div>
-            <a href="#" 
-              class="ast-node"
-              data-filename="${this.kicsNode?.data.filename}" 
-              data-line="${this.kicsNode?.data.line}" 
-              data-column="${0}"
-              data-fullName="${this.kicsNode?.data.filename}" 
-              data-length="${1}"
-            >
-              ${this.getShortFilename(this.kicsNode?.data.filename)} [${this.kicsNode?.data.line}:${0}]
-            </a>
-          </td>
-        </tr>
-        `;
-    return html;
   }
 }

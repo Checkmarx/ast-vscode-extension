@@ -1,6 +1,9 @@
 import {
+  By,
   CustomTreeSection,
+  EditorView,
   InputBox,
+  until,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -59,7 +62,7 @@ describe("filter and groups actions tests", () => {
       treeScans = await initialize();
     }
     await bench.executeCommand(CX_LOOK_SCAN);
-    const input = await InputBox.create();
+    let input = await InputBox.create();
     await input.setText(SCAN_ID);
     await input.confirm();
     await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 15000);
@@ -69,14 +72,14 @@ describe("filter and groups actions tests", () => {
       { command: CX_FILTER_MEDIUM, text: "MEDIUM" },
       { command: CX_FILTER_HIGH, text: "HIGH" },
     ];
-    for (const index in commands) {
+    for (var index in commands) {
       await bench.executeCommand(commands[index].command);
       treeScans = await initialize();
       let scan = await treeScans?.findItem(SCAN_KEY_TREE + SCAN_ID);
       while (scan === undefined) {
         scan = await treeScans?.findItem(SCAN_KEY_TREE + SCAN_ID);
       }
-      const isValidated = await validateSeverities(scan, commands[index].text);
+      let isValidated = await validateSeverities(scan, commands[index].text);
 
       expect(isValidated).to.equal(true);
       // Reset filters
@@ -99,7 +102,7 @@ describe("filter and groups actions tests", () => {
       scan = await treeScans?.findItem(SCAN_KEY_TREE + SCAN_ID);
     }
     // Expand and validate scan node to obtain engine nodes
-    const tuple = await validateRootNode(scan);
+    let tuple = await validateRootNode(scan);
     //let level = 0;
     // Get the sast results node, because it is the only one affected by all the group by commands
     let sastNode = await scan?.findChildItem(SAST_TYPE);
@@ -107,7 +110,7 @@ describe("filter and groups actions tests", () => {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     // Validate for all commands the nested tree elements
-    for (const index in commands) {
+    for (var index in commands) {
       // Execute the group by command for each command
       await bench.executeCommand(commands[index]);
       await delay(1000);
@@ -126,7 +129,7 @@ describe("filter and groups actions tests", () => {
       CX_FILTER_URGENT,
       CX_FILTER_NOT_IGNORED,
     ];
-    for (const index in commands) {
+    for (var index in commands) {
       await bench.executeCommand(commands[index]);
       expect(index).not.to.be.undefined;
     }

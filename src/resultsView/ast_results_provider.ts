@@ -32,7 +32,7 @@ import {
 
 export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public issueFilter: IssueFilter[] = [
-    IssueFilter.type,
+    IssueFilter.typeLabel,
     IssueFilter.scaType,
     IssueFilter.severity,
     IssueFilter.packageIdentifier,
@@ -157,7 +157,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         results,
         this.issueFilter,
         this.scan,
-        this.diagnosticCollection
+        this.diagnosticCollection,
+        this.issueLevel,
+        this.stateLevel
       );
       treeItem.label = `${SCAN_LABEL} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;

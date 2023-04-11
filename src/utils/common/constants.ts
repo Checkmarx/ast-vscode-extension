@@ -61,7 +61,7 @@ export enum IssueFilter {
 	status = "status",
 	language = "language",
 	state = "state",
-	type = "type",
+	typeLabel = "typeLabel",
 	queryName = "queryName",
 	packageIdentifier = "scaNode.packageIdentifier",
 	directDependency = "scaNode.scaPackageData.typeOfDependency",

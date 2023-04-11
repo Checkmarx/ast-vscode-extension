@@ -45,7 +45,7 @@ describe("Individual pickers load results test", () => {
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
     // Select from the pickers list
-    const projectName = await getQuickPickSelector(input);
+    let projectName = await getQuickPickSelector(input);
     await input.setText(projectName);
     await input.confirm();
     // Wait for project selection to be made
@@ -57,12 +57,12 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select branch", async function () {
-    const treeScans = await initialize();
+    let treeScans = await initialize();
     // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
-    const input = await InputBox.create();
+    let input = await InputBox.create();
     // Select from the pickers list
-    const branchName = await getQuickPickSelector(input);
+    let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
     await waitByLinkText(driver, branchName, 5000);
     await input.confirm();
@@ -75,12 +75,12 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select scan", async function () {
-    const treeScans = await initialize();
+    let treeScans = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
-    const input = await InputBox.create();
+    let input = await InputBox.create();
     // Select from the pickers list
-    const scanDate = await getQuickPickSelector(input);
+    let scanDate = await getQuickPickSelector(input);
     await input.setText(scanDate);
     await waitByLinkText(driver, scanDate, 5000);
     await input.confirm();

@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.0.14",
+  "version": "2.0.16",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -66,7 +66,7 @@
       {
         "command": "ast-results.clear",
         "category": "ast-results",
-        "title": "Clear selections",
+        "title": "Clear Selections",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -193,13 +193,6 @@
         "command": "ast-results.groupByQueryNames",
         "category": "ast-results",
         "title": "Group by: Vulnerability Type",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.clear",
-        "category": "ast-results",
-        "title": "Clear selections",
-        "icon": "$(refresh)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -576,16 +569,6 @@
       ],
       "view/item/context": [
         {
-          "command": "ast-results.createScan",
-          "group": "inline@1",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
-        },
-        {
-          "command": "ast-results.cancelScan",
-          "group": "inline@2",
-          "when": "viewItem == project-item && ast-results.isScanEnabled"
-        },
-        {
           "command": "ast-results.projectPick",
           "group": "inline@3",
           "when": "viewItem == project-item"
@@ -611,6 +594,16 @@
           "command": "ast-results.createSCAScan",
           "group": "navigation@1",
           "when": "view == scaAutoScan"
+        },
+        {
+          "command": "ast-results.createScan",
+          "group": "navigation@0",
+          "when": "view == astResults && ast-results.createScanButton && !ast-results.cancelScanButton  || view == astResults && !ast-results.createScanButton && !ast-results.cancelScanButton"
+        },
+        {
+          "command": "ast-results.cancelScan",
+          "group": "navigation@1",
+          "when": "view == astResults && ast-results.cancelScanButton || view == astResults && !ast-results.createScanButton && ast-results.cancelScanButton"
         },
         {
           "command": "ast-results.filterHigh_untoggle",
@@ -739,7 +732,7 @@
         },
         {
           "command": "ast-results.generalPick",
-          "group": "navigation@5",
+          "group": "@settings@0",
           "when": "view == astResults"
         },
         {
@@ -841,23 +834,23 @@
   "devDependencies": {
     "@types/chai": "4.3.4",
     "@types/mocha": "10.0.1",
-    "@types/node": "^18.14.6",
+    "@types/node": "^18.15.11",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.58.0",
     "chai": "4.3.7",
-    "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.8.0",
+    "eslint": "^8.38.0",
     "mocha": "10.2.0",
-    "typescript": "^4.9.5",
+    "typescript": "^5.0.4",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "5.4.0",
+    "vscode-extension-tester": "5.5.2",
     "vscode-extension-tester-locators": "^3.4.0",
-    "webpack": "^5.76.0",
+    "webpack": "^5.78.0",
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.69",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.70",
     "copyfiles": "2.4.1",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.7.15",

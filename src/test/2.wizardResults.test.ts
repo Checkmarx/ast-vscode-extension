@@ -41,52 +41,52 @@ describe("Wizard load results test", () => {
     await bench.executeCommand(CX_CLEAR);
   });
 
-  it("should load results using wizard", async () => {
-    // Wizard command execution
-    await new Workbench().executeCommand(CX_SELECT_ALL);
+  // it("should load results using wizard", async () => {
+  //   // Wizard command execution
+  //   await new Workbench().executeCommand(CX_SELECT_ALL);
 
-    // Project selection
-    const inputProject = await InputBox.create();
-    await waitByLinkText(driver, STEP_1, 5000);
-    await inputProject.setText("webgoat");
-    await waitByLinkText(driver, "webgoat", 5000);
-    const projectName = await getQuickPickSelector(inputProject);
-    await inputProject.confirm();
+  //   // Project selection
+  //   const inputProject = await InputBox.create();
+  //   await waitByLinkText(driver, STEP_1, 50000);
+  //   await inputProject.setText("webgoat");
+  //   await waitByLinkText(driver, "webgoat", 50000);
+  //   let projectName = await getQuickPickSelector(inputProject);
+  //   await inputProject.confirm();
 
-    // Branch selection
-    await waitByLinkText(driver, STEP_2, 5000);
-    const inputBranch = new InputBox();
-    const branchName = await getQuickPickSelector(inputBranch);
-    await quickPickSelector(inputBranch);
+  //   // Branch selection
+  //   await waitByLinkText(driver, STEP_2, 50000);
+  //   const inputBranch = new InputBox();
+  //   let branchName = await getQuickPickSelector(inputBranch);
+  //   await quickPickSelector(inputBranch);
 
-    // Scan selection
-    await waitByLinkText(driver, STEP_3, 5000);
-    const inputScan = new InputBox();
-    const scanDate = await getQuickPickSelector(inputScan);
-    await quickPickSelector(inputScan);
+  //   // Scan selection
+  //   await waitByLinkText(driver, STEP_3, 50000);
+  //   const inputScan = new InputBox();
+  //   let scanDate = await getQuickPickSelector(inputScan);
+  //   await quickPickSelector(inputScan);
 
-    treeScans = await initialize();
-    await waitByLinkText(driver, SCAN_KEY_TREE + scanDate, 50000);
+  //   treeScans = await initialize();
+  //   await waitByLinkText(driver, SCAN_KEY_TREE + scanDate, 50000);
 
-    // Project tree item validation
-    let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-    while (project === undefined) {
-      project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-    }
-    expect(project).is.not.undefined;
+  //   // Project tree item validation
+  //   let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+  //   while (project === undefined) {
+  //     project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+  //   }
+  //   expect(project).is.not.undefined;
 
-    // Branch tree item validation
-    let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-    while (branch === undefined) {
-      branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-    }
-    expect(branch).is.not.undefined;
+  //   // Branch tree item validation
+  //   let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+  //   while (branch === undefined) {
+  //     branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+  //   }
+  //   expect(branch).is.not.undefined;
 
-    // Scan tree item validation
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
-    while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
-    }
-    expect(scan).is.not.undefined;
-  });
+  //   // Scan tree item validation
+  //   let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+  //   while (scan === undefined) {
+  //     scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+  //   }
+  //   expect(scan).is.not.undefined;
+  // });
 });

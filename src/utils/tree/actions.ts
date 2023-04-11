@@ -25,14 +25,16 @@ export function groupBy(
   list: object[],
   groups: string[],
   scan: string | undefined,
-  diagnosticCollection: vscode.DiagnosticCollection
+  diagnosticCollection: vscode.DiagnosticCollection,
+  issueLevel: string[] = [],
+  stateLevel: string[] = []
 ): TreeItem {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const map = new Map<string, vscode.Diagnostic[]>();
 
-  const tree = scan ? new TreeItem(scan, undefined, undefined, []) : undefined;
+  const tree = new TreeItem(scan ?? "", undefined, undefined, []);
   list.forEach((element: object) => {
-    groupTree(element, folder, map, groups, tree);
+    groupTree(element, folder, map, groups, tree, issueLevel, stateLevel);
   });
 
   diagnosticCollection.clear();
@@ -48,30 +50,40 @@ export function groupTree(
   folder: vscode.WorkspaceFolder | undefined,
   map: Map<string, vscode.Diagnostic[]>,
   groups: string[],
-  tree: TreeItem
+  tree: TreeItem,
+  issueLevel: string[],
+  stateLevel: string[]
 ) {
   const obj = new AstResult(rawObj);
   if (!obj) {
     return;
   }
   const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
+  let node;
   // Verify the current severity filters applied
-
-  if (obj.sastNodes.length > 0) {
-    createDiagnostic(
-      obj.label,
-      obj.getSeverityCode(),
-      obj.sastNodes[0],
-      folder,
-      map
-    );
+  if (issueLevel.length > 0) {
+    // Filter only the results for the severity and state filters type
+    if (
+      issueLevel.includes(obj.getSeverity()) &&
+      stateLevel.includes(obj.getState())
+    ) {
+      if (obj.sastNodes.length > 0) {
+        createDiagnostic(
+          obj.label,
+          obj.getSeverityCode(),
+          obj.sastNodes[0],
+          folder,
+          map
+        );
+      }
+      node = groups.reduce(
+        (previousValue: TreeItem, currentValue: string) =>
+          reduceGroups(obj, previousValue, currentValue),
+        tree
+      );
+      node.children?.push(item);
+    }
   }
-  const node = groups.reduce(
-    (previousValue: TreeItem, currentValue: string) =>
-      reduceGroups(obj, previousValue, currentValue),
-    tree
-  );
-  node.children?.push(item);
 }
 
 export function createDiagnostic(
@@ -105,7 +117,7 @@ export function reduceGroups(
   obj: AstResult,
   previousValue: TreeItem,
   currentValue: string
-): TreeItem {
+) {
   let value = getProperty(obj, currentValue);
 
   // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
