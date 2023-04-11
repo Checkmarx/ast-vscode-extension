@@ -76,7 +76,7 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
       this.scan = message?message:SCA_START_SCAN;
-      treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
+      treeItem = groupBy(results, this.issueFilter, this.scan, this.diagnosticCollection);
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
     treeItems = treeItems.concat(treeItem);
