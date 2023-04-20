@@ -1,40 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
-  FILTER_CONFIRMED,
-  FILTER_CONFIRMED_ACTIVE,
-  FILTER_CONFIRMED_COMMAND,
-  FILTER_HIGH,
-  FILTER_HIGH_TOGGLE,
-  FILTER_HIGH_UNTOGGLE,
-  FILTER_IGNORED,
-  FILTER_IGNORED_ACTIVE,
-  FILTER_IGNORED_COMMAND,
-  FILTER_INFO,
-  FILTER_INFO_TOGGLE,
-  FILTER_INFO_UNTOGGLE,
-  FILTER_LOW,
-  FILTER_LOW_TOGGLE,
-  FILTER_LOW_UNTOGGLE,
-  FILTER_MEDIUM,
-  FILTER_MEDIUM_TOGGLE,
-  FILTER_MEDIUM_UNTOGGLE,
-  FILTER_NOT_EXPLOITABLE,
-  FILTER_NOT_EXPLOITABLE_ACTIVE,
-  FILTER_NOT_EXPLOITABLE_COMMAND,
-  FILTER_NOT_IGNORED,
-  FILTER_NOT_IGNORED_ACTIVE,
-  FILTER_NOT_IGNORED_COMMAND,
-  FILTER_PROPOSED,
-  FILTER_PROPOSED_ACTIVE,
-  FILTER_PROPOSED_COMMAND,
-  FILTER_TO_VERIFY,
-  FILTER_TO_VERIFY_ACTIVE,
-  FILTER_TO_VERIFY_COMMAND,
-  FILTER_URGENT,
-  FILTER_URGENT_ACTIVE,
-  FILTER_URGENT_COMMAND,
-  REFRESH_TREE,
+commands
 } from "../utils/common/commands";
 import {
   CONFIRMED_FILTER,
@@ -137,13 +104,13 @@ export class FilterCommand {
       this.context.globalState.get<boolean>(IGNORED_FILTER) ?? true;
     this.updateResultsProviderState(StateLevel.ignored, ignored);
     await updateFilter(this.context, IGNORED_FILTER, ignored);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 
   private registerFilterHighCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_HIGH_TOGGLE,
+        commands.filterHighToggle,
         async () =>
           await this.filter(
             this.logs,
@@ -155,7 +122,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_HIGH_UNTOGGLE,
+        commands.filterHighUntoggle,
         async () =>
           await this.filter(
             this.logs,
@@ -167,7 +134,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_HIGH,
+        commands.filterHigh,
         async () =>
           await this.filter(
             this.logs,
@@ -182,7 +149,7 @@ export class FilterCommand {
   private registerFilterMediumCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_MEDIUM_TOGGLE,
+        commands.filterMediumToggle,
         async () =>
           await this.filter(
             this.logs,
@@ -195,7 +162,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_MEDIUM_UNTOGGLE,
+        commands.filterMediumUntoggle,
         async () =>
           await this.filter(
             this.logs,
@@ -208,7 +175,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_MEDIUM,
+        commands.filterMedium,
         async () =>
           await this.filter(
             this.logs,
@@ -224,7 +191,7 @@ export class FilterCommand {
   private registerFilterLowCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_LOW_TOGGLE,
+        commands.filterLowToggle,
         async () =>
           await this.filter(
             this.logs,
@@ -236,7 +203,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_LOW_UNTOGGLE,
+        commands.filterLowUntoggle,
         async () =>
           await this.filter(
             this.logs,
@@ -248,7 +215,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_LOW,
+        commands.filterLow,
         async () =>
           await this.filter(
             this.logs,
@@ -263,7 +230,7 @@ export class FilterCommand {
   private registerFilterInfoCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_INFO_UNTOGGLE,
+        commands.filterInfoUntoggle,
         async () =>
           await this.filter(
             this.logs,
@@ -275,7 +242,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_INFO_TOGGLE,
+        commands.filterInfoToggle,
         async () =>
           await this.filter(
             this.logs,
@@ -287,7 +254,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_INFO,
+        commands.filterInfo,
         async () =>
           await this.filter(
             this.logs,
@@ -302,7 +269,7 @@ export class FilterCommand {
   private registerFilterNotExploitableCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_EXPLOITABLE,
+        commands.filterNotExploitable,
         async () =>
           await this.filterState(
             this.logs,
@@ -314,7 +281,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_EXPLOITABLE_ACTIVE,
+        commands.filterNotExploitableActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -326,7 +293,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_EXPLOITABLE_COMMAND,
+        commands.filterNotExploitableCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -341,7 +308,7 @@ export class FilterCommand {
   private registerFilterProposedCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_PROPOSED,
+        commands.filterProposed,
         async () =>
           await this.filterState(
             this.logs,
@@ -353,7 +320,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_PROPOSED_ACTIVE,
+        commands.filterProposedActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -365,7 +332,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_PROPOSED_COMMAND,
+        commands.filterProposedCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -380,7 +347,7 @@ export class FilterCommand {
   private registerFilterConfirmedCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_CONFIRMED,
+        commands.filterConfirmed,
         async () =>
           await this.filterState(
             this.logs,
@@ -392,7 +359,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_CONFIRMED_ACTIVE,
+        commands.filterConfirmedActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -404,7 +371,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_CONFIRMED_COMMAND,
+        commands.filterConfirmedCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -419,7 +386,7 @@ export class FilterCommand {
   private registerFilterToVerifyCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_TO_VERIFY,
+        commands.filterToVerify,
         async () =>
           await this.filterState(
             this.logs,
@@ -431,7 +398,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_TO_VERIFY_ACTIVE,
+        commands.filterToVerifyActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -443,7 +410,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_TO_VERIFY_COMMAND,
+        commands.filterToVerifyCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -458,7 +425,7 @@ export class FilterCommand {
   private registerFilterUrgentCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_URGENT,
+        commands.filterUrgent,
         async () =>
           await this.filterState(
             this.logs,
@@ -470,7 +437,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_URGENT_ACTIVE,
+        commands.filterUrgentActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -482,7 +449,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_URGENT_COMMAND,
+        commands.filterUrgentCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -497,7 +464,7 @@ export class FilterCommand {
   private registerFilterNotIgnoredCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_IGNORED,
+        commands.filterNotIgnored,
         async () =>
           await this.filterState(
             this.logs,
@@ -509,7 +476,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_IGNORED_ACTIVE,
+        commands.filterNotIgnoredActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -521,7 +488,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_NOT_IGNORED_COMMAND,
+        commands.filterNotIgnoredCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -536,7 +503,7 @@ export class FilterCommand {
   private registerFilterIgnoredCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_IGNORED,
+        commands.filterIgnored,
         async () =>
           await this.filterState(
             this.logs,
@@ -548,7 +515,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_IGNORED_ACTIVE,
+        commands.filterIgnoredActive,
         async () =>
           await this.filterState(
             this.logs,
@@ -560,7 +527,7 @@ export class FilterCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        FILTER_IGNORED_COMMAND,
+        commands.filterIgnoredCommand,
         async () =>
           await this.filterState(
             this.logs,
@@ -613,7 +580,7 @@ export class FilterCommand {
     this.updateResultsProvider(activeSeverities, !currentValue);
 
     await updateFilter(context, filter, !currentValue);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 
   private async filterState(
@@ -627,6 +594,6 @@ export class FilterCommand {
     this.updateResultsProviderState(activeStates, !currentValue);
 
     await updateFilter(context, filter, !currentValue);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 }

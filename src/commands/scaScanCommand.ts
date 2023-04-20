@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { CREATE_SCA_SCAN } from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import { createSCAScan } from "../views/scaView/scaCreateScanProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
 
@@ -27,7 +27,7 @@ export class SCACommand {
 
   private createScanCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(CREATE_SCA_SCAN, async () => {
+      vscode.commands.registerCommand(commands.createScaScan, async () => {
         await createSCAScan(
           this.context,
           this.runSCAScanStatusBar,

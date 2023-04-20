@@ -1,11 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
-  BRANCH_PICK,
-  GENERAL_PICK,
-  PROJECT_PICK,
-  SCAN_INPUT,
-  SCAN_PICK,
+  commands
 } from "../utils/common/commands";
 import { multiStepInput } from "../views/resultsView/astMultiStepInput";
 import {
@@ -33,7 +29,7 @@ export class PickerCommand {
 
   private createGeneralPickCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(GENERAL_PICK, async () => {
+      vscode.commands.registerCommand(commands.generalPick, async () => {
         await multiStepInput(this.logs, this.context);
       })
     );
@@ -41,7 +37,7 @@ export class PickerCommand {
 
   private createProjectPickCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(PROJECT_PICK, async () => {
+      vscode.commands.registerCommand(commands.projectPick, async () => {
         await projectPicker(this.context, this.logs);
       })
     );
@@ -49,7 +45,7 @@ export class PickerCommand {
 
   private createBranchPickCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(BRANCH_PICK, async () => {
+      vscode.commands.registerCommand(commands.branchPick, async () => {
         await branchPicker(this.context, this.logs);
       })
     );
@@ -57,7 +53,7 @@ export class PickerCommand {
 
   private createScanPickCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(SCAN_PICK, async () => {
+      vscode.commands.registerCommand(commands.scanPick, async () => {
         await scanPicker(this.context, this.logs);
       })
     );
@@ -65,7 +61,7 @@ export class PickerCommand {
 
   private createScanInputCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(SCAN_INPUT, async () => {
+      vscode.commands.registerCommand(commands.scanInput, async () => {
         await scanInput(this.context, this.logs);
       })
     );

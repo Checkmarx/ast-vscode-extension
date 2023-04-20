@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { RepositoryState } from "../types/git";
-import { REFRESH_TREE } from "../common/commands";
+import { commands } from "../common/commands";
 import {
   BRANCH_ID_KEY,
   BRANCH_LABEL,
@@ -63,7 +63,7 @@ async function addRepositoryListener(
             name: `${BRANCH_LABEL} ${branchName}`,
           });
           update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
-          vscode.commands.executeCommand(REFRESH_TREE);
+          vscode.commands.executeCommand(commands.refreshTree);
         }
       });
     } else {

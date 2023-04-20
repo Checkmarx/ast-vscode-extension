@@ -20,7 +20,7 @@ import { KicsCodeActionProvider } from "./kicsCodeActions";
 import { getResultsRealtime, kicsRemediation } from "../ast/ast";
 import { writeFileSync } from "fs";
 import { KicsDiagnostic } from "./kicsDiagnostic";
-import { KICS_REALTIME, KICS_SETINGS } from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import { KicsSummary } from "../models/kicsNode";
 
 export class KicsProvider {
@@ -43,7 +43,7 @@ export class KicsProvider {
         ? "$(check) Checkmarx KICS"
         : "$(debug-disconnect) Checkmarx KICS";
     this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
-    this.kicsStatusBarItem.command = KICS_SETINGS;
+    this.kicsStatusBarItem.command = commands.kicsSetings;
     this.kicsStatusBarItem.show();
     this.fixableResults = [];
     this.fixableResultsByLine = [];
@@ -211,7 +211,7 @@ export class KicsProvider {
           logs.info("Fixes applied to " + message);
           this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
           this.updateKicsFixableResults(diagnosticCollection);
-          vscode.commands.executeCommand(KICS_REALTIME);
+          vscode.commands.executeCommand(commands.kicsRealtime);
         } else {
           logs.error("Error applying fix: " + JSON.stringify(cxOutput.payload));
         }

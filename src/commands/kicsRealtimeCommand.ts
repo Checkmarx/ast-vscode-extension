@@ -2,9 +2,7 @@ import * as vscode from "vscode";
 import { KicsProvider } from "../kics/kicsRealtimeProvider";
 import { Logs } from "../models/logs";
 import {
-  KICS_REALTIME,
-  KICS_REMEDIATION,
-  KICS_SETINGS,
+ commands
 } from "../utils/common/commands";
 
 export class KICSRealtimeCommand {
@@ -27,7 +25,7 @@ export class KICSRealtimeCommand {
 
   public registerSettings() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(KICS_SETINGS, () => {
+      vscode.commands.registerCommand(commands.kicsSetings, () => {
         vscode.commands.executeCommand(
           "workbench.action.openSettings",
           `Checkmarx KICS`
@@ -39,7 +37,7 @@ export class KICSRealtimeCommand {
   public registerKicsRemediation() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        KICS_REMEDIATION,
+        commands.kicsRemediation,
         async (
           fixedResults,
           kicsResults,
@@ -65,7 +63,7 @@ export class KICSRealtimeCommand {
   private createScanCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        KICS_REALTIME,
+        commands.kicsRealtime,
         async () => await this.kicsProvider.runKics()
       )
     );

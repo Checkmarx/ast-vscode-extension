@@ -6,7 +6,7 @@ import { AstResult } from "../models/results";
 import { getLearnMore } from "../sast/learnMore";
 import { triageSubmit } from "../sast/triage";
 import { applyScaFix } from "../sca/scaFix";
-import { NEW_DETAILS } from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import { getChanges } from "../utils/utils";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
 
@@ -22,7 +22,7 @@ export class WebViewCommand {
 
   public registerNewDetails(): vscode.Disposable {
     return vscode.commands.registerCommand(
-      NEW_DETAILS,
+      commands.newDetails,
       async (result: AstResult, type?: string) => {
         const detailsDetachedView = new AstDetailsDetached(
           this.context.extensionUri,

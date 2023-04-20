@@ -10,7 +10,7 @@ import {
   getResultsWithProgress,
   getScansPickItems,
 } from "../../utils/utils";
-import { REFRESH_TREE } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commands";
 import {
   BRANCH_ID_KEY,
   BRANCH_LABEL,
@@ -113,6 +113,6 @@ export async function multiStepInput(
 
   if (state.scanId?.id) {
     await getResultsWithProgress(logs, state.scanId.id);
-    vscode.commands.executeCommand(REFRESH_TREE);
+    vscode.commands.executeCommand(commands.refreshTree);
   }
 }

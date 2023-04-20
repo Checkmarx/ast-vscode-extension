@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { CANCEL_SCAN, CREATE_SCAN, POLL_SCAN } from "../utils/common/commands";
+import {commands} from "../utils/common/commands";
 import {
   cancelScan,
   createScan,
@@ -29,7 +29,7 @@ export class IDECommand {
 
   private createScanCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(CREATE_SCAN, async () => {
+      vscode.commands.registerCommand(commands.createScan, async () => {
         await createScan(this.context, this.runScanStatusBar, this.logs);
       })
     );
@@ -37,7 +37,7 @@ export class IDECommand {
 
   private cancelScanCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(CANCEL_SCAN, async () => {
+      vscode.commands.registerCommand(commands.cancelScan, async () => {
         await cancelScan(this.context, this.runScanStatusBar, this.logs);
       })
     );
@@ -45,7 +45,7 @@ export class IDECommand {
 
   private pollScanCommand() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(POLL_SCAN, async () => {
+      vscode.commands.registerCommand(commands.pollScan, async () => {
         await pollForScanResult(this.context, this.runScanStatusBar, this.logs);
       })
     );

@@ -19,7 +19,7 @@ import { getResultsFilePath, getResultsWithProgress } from "../../utils/utils";
 import { Logs } from "../../models/logs";
 import { get, update } from "../../utils/common/globalState";
 import { getAstConfiguration } from "../../ast/ast";
-import { KICS_SETINGS, REFRESH_TREE } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commands";
 import { TreeItem } from "../../utils/tree/treeItem";
 import {
   createSummaryItem,
@@ -56,7 +56,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         ? "$(check) Checkmarx kics"
         : "$(debug-disconnect) Checkmarx kics";
     this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-    this.kicsStatusBarItem.command = KICS_SETINGS;
+    this.kicsStatusBarItem.command = commands.kicsSetings;
     this.kicsStatusBarItem.show();
   }
 
@@ -105,7 +105,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     if (scanId) {
       await getResultsWithProgress(this.logs, scanId);
-      await vscode.commands.executeCommand(REFRESH_TREE);
+      await vscode.commands.executeCommand(commands.refreshTree);
       this.hideStatusBarItem();
     }
   }

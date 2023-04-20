@@ -6,12 +6,7 @@ import {
 } from "../ast/ast";
 import { Logs } from "../models/logs";
 import {
-  IS_SCAN_ENABLED,
-  IS_SCA_SCAN_ENABLED,
-  IS_VALID_CREDENTIALS,
-  REFRESH_TREE,
-  SETINGS,
-  SHOW_ERROR,
+  commands
 } from "../utils/common/commands";
 import { getError } from "../utils/common/globalState";
 
@@ -25,7 +20,7 @@ export class CommonCommand {
 
   public registerSettings() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(SETINGS, () => {
+      vscode.commands.registerCommand(commands.setings, () => {
         vscode.commands.executeCommand(
           "workbench.action.openSettings",
           `@ext:checkmarx.ast-results`
@@ -36,7 +31,7 @@ export class CommonCommand {
 
   public registerErrors() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand(SHOW_ERROR, () => {
+      vscode.commands.registerCommand(commands.showError, () => {
         const err = getError(this.context);
         if (err) {
           vscode.window.showErrorMessage(err);
@@ -48,7 +43,7 @@ export class CommonCommand {
   public executeCheckSettings() {
     vscode.commands.executeCommand(
       "setContext",
-      IS_VALID_CREDENTIALS,
+      commands.isValidCredentials,
       getAstConfiguration() ? true : false
     );
   }
@@ -56,7 +51,7 @@ export class CommonCommand {
   public async executeCheckScanEnabled() {
     vscode.commands.executeCommand(
       "setContext",
-      IS_SCAN_ENABLED,
+      commands.isScanEnabled,
       await isScanEnabled(this.logs)
     );
   }
@@ -64,7 +59,7 @@ export class CommonCommand {
   public async executeCheckScaScanEnabled() {
     vscode.commands.executeCommand(
       "setContext",
-      IS_SCA_SCAN_ENABLED,
+      commands.isScaScanEnabled,
       await isSCAScanEnabled()
     );
   }
@@ -75,12 +70,12 @@ export class CommonCommand {
     vscode.workspace.onDidChangeConfiguration(async () => {
       vscode.commands.executeCommand(
         "setContext",
-        IS_VALID_CREDENTIALS,
+        commands.isValidCredentials,
         getAstConfiguration() ? true : false
       );
       vscode.commands.executeCommand(
         "setContext",
-        IS_VALID_CREDENTIALS,
+        commands.isValidCredentials,
         await isScanEnabled(this.logs)
       );
       const onSave = vscode.workspace
@@ -90,7 +85,7 @@ export class CommonCommand {
         onSave === true
           ? "$(check) Checkmarx kics"
           : "$(debug-disconnect) Checkmarx kics";
-      await vscode.commands.executeCommand(REFRESH_TREE);
+      await vscode.commands.executeCommand(commands.refreshTree);
     });
   }
 }

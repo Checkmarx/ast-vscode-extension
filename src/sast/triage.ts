@@ -7,7 +7,7 @@ import { get } from "../utils/common/globalState";
 import { PROJECT_ID_KEY, SCA } from "../utils/common/constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
-import { REFRESH_TREE } from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import { getLearnMore } from "./learnMore";
 import { TriageCommand } from "../models/triageCommand";
 
@@ -103,7 +103,7 @@ export async function triageSubmit(
   // Change the results locally
   try {
     await updateResults(result, context, data.comment);
-    vscode.commands.executeCommand(REFRESH_TREE);
+    vscode.commands.executeCommand(commands.refreshTree);
 
     getChanges(logs, context, result, detailsPanel);
     getLearnMore(logs, context, result, detailsPanel);

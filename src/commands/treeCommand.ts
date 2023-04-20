@@ -1,9 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
-  CLEAR,
-  REFRESH_SCA_TREE,
-  REFRESH_TREE,
+  commands
 } from "../utils/common/commands";
 import { CLEAR_SCA } from "../utils/common/constants";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
@@ -39,7 +37,7 @@ export class TreeCommand {
   private createRefreshTreeCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        REFRESH_TREE,
+        commands.refreshTree,
         async () => await this.astResultsProvider.refreshData()
       )
     );
@@ -48,7 +46,7 @@ export class TreeCommand {
   private createRefreshScaTreeCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        REFRESH_SCA_TREE,
+        commands.refreshScaTree,
         async () => await this.scaResultsProvider.refreshData()
       )
     );
@@ -57,7 +55,7 @@ export class TreeCommand {
   private clearCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        CLEAR,
+        commands.clear,
         async () => await this.astResultsProvider.clean()
       )
     );

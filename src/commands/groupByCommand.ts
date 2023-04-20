@@ -1,28 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
-  GROUP_BY_DIRECT_DEPENDENCY,
-  GROUP_BY_DIRECT_DEPENDENCY_ACTIVE,
-  GROUP_BY_DIRECT_DEPENDENCY_COMMAND,
-  GROUP_BY_FILE,
-  GROUP_BY_FILE_ACTIVE,
-  GROUP_BY_FILE_COMMAND,
-  GROUP_BY_LANGUAGE,
-  GROUP_BY_LANGUAGE_ACTIVE,
-  GROUP_BY_LANGUAGE_COMMAND,
-  GROUP_BY_QUERY_NAME,
-  GROUP_BY_QUERY_NAME_ACTIVE,
-  GROUP_BY_QUERY_NAME_COMMAND,
-  GROUP_BY_SEVERITY,
-  GROUP_BY_SEVERITY_ACTIVE,
-  GROUP_BY_SEVERITY_COMMAND,
-  GROUP_BY_STATE,
-  GROUP_BY_STATE_ACTIVE,
-  GROUP_BY_STATE_COMMAND,
-  GROUP_BY_STATUS,
-  GROUP_BY_STATUS_ACTIVE,
-  GROUP_BY_STATUS_COMMAND,
-  REFRESH_TREE,
+  commands
 } from "../utils/common/commands";
 import {
   DEPENDENCY_GROUP,
@@ -67,39 +46,39 @@ export class GroupByCommand {
       this.context.globalState.get<boolean>(QUERY_NAME_GROUP) ?? false;
     this.updateResultsProviderGroup(GroupBy.queryName, groupQueryName);
     await updateFilter(this.context, QUERY_NAME_GROUP, groupQueryName);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     const groupLanguage =
       this.context.globalState.get<boolean>(LANGUAGE_GROUP) ?? false;
     this.updateResultsProviderGroup(GroupBy.language, groupLanguage);
     await updateFilter(this.context, LANGUAGE_GROUP, groupLanguage);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     // By default only get results grouped by severity
     const groupBySeverity =
       this.context.globalState.get<boolean>(SEVERITY_GROUP) ?? true;
     this.updateResultsProviderGroup(GroupBy.severity, groupBySeverity);
     await updateFilter(this.context, SEVERITY_GROUP, groupBySeverity);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     const groupByStatus =
       this.context.globalState.get<boolean>(STATUS_GROUP) ?? false;
     this.updateResultsProviderGroup(GroupBy.status, groupByStatus);
     await updateFilter(this.context, STATUS_GROUP, groupByStatus);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     const groupByState =
       this.context.globalState.get<boolean>(STATE_GROUP) ?? false;
     this.updateResultsProviderGroup(GroupBy.state, groupByState);
     await updateFilter(this.context, STATE_GROUP, groupByState);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     const groupByFileName =
       this.context.globalState.get<boolean>(FILE_GROUP) ?? false;
     this.updateResultsProviderGroup(GroupBy.fileName, groupByFileName);
     await updateFilter(this.context, FILE_GROUP, groupByFileName);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 
   private registerGroupByFileCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_FILE,
+        commands.groupByFile,
         async () =>
           await this.group(
             this.logs,
@@ -111,7 +90,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_FILE_ACTIVE,
+        commands.groupByFileActive,
         async () =>
           await this.group(
             this.logs,
@@ -123,7 +102,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_FILE_COMMAND,
+        commands.groupByFileCommand,
         async () =>
           await this.group(
             this.logs,
@@ -138,7 +117,7 @@ export class GroupByCommand {
   private registerGroupByLanguageCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_LANGUAGE,
+        commands.groupByLanguage,
         async () =>
           await this.group(
             this.logs,
@@ -150,7 +129,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_LANGUAGE_ACTIVE,
+        commands.groupByLanguageActive,
         async () =>
           await this.group(
             this.logs,
@@ -162,7 +141,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_LANGUAGE_COMMAND,
+        commands.groupByLanguageCommand,
         async () =>
           await this.group(
             this.logs,
@@ -177,7 +156,7 @@ export class GroupByCommand {
   private registerGroupBySeverityCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_SEVERITY,
+        commands.groupBySeverity,
         async () =>
           await this.group(
             this.logs,
@@ -189,7 +168,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_SEVERITY_ACTIVE,
+        commands.groupBySeverityActive,
         async () =>
           await this.group(
             this.logs,
@@ -201,7 +180,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_SEVERITY_COMMAND,
+        commands.groupBySeverityCommand,
         async () =>
           await this.group(
             this.logs,
@@ -216,7 +195,7 @@ export class GroupByCommand {
   private registerGroupByStatusCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATUS,
+        commands.groupByStatus,
         async () =>
           await this.group(
             this.logs,
@@ -228,7 +207,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATUS_ACTIVE,
+        commands.groupByStatusActive,
         async () =>
           await this.group(
             this.logs,
@@ -240,7 +219,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATUS_COMMAND,
+        commands.groupByStatusCommand,
         async () =>
           await this.group(
             this.logs,
@@ -255,21 +234,21 @@ export class GroupByCommand {
   private registerGroupByStateCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATE,
+        commands.groupByState,
         async () =>
           await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
       )
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATE_ACTIVE,
+        commands.groupByStateActive,
         async () =>
           await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
       )
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_STATE_COMMAND,
+        commands.groupByStateCommand,
         async () =>
           await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
       )
@@ -279,7 +258,7 @@ export class GroupByCommand {
   private registerGroupByQueryNameCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_QUERY_NAME,
+        commands.groupByQueryName,
         async () =>
           await this.group(
             this.logs,
@@ -291,7 +270,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_QUERY_NAME_ACTIVE,
+        commands.groupByQueryNameActive,
         async () =>
           await this.group(
             this.logs,
@@ -303,7 +282,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_QUERY_NAME_COMMAND,
+        commands.groupByQueryNameCommand,
         async () =>
           await this.group(
             this.logs,
@@ -318,7 +297,7 @@ export class GroupByCommand {
   private registerGroupByDirectDependencyCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_DIRECT_DEPENDENCY,
+        commands.groupByDirectDependency,
         async () =>
           await this.group(
             this.logs,
@@ -330,7 +309,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_DIRECT_DEPENDENCY_ACTIVE,
+        commands.groupByDirectDependencyActive,
         async () =>
           await this.group(
             this.logs,
@@ -342,7 +321,7 @@ export class GroupByCommand {
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        GROUP_BY_DIRECT_DEPENDENCY_COMMAND,
+        commands.groupByDirectDependencyCommand,
         async () =>
           await this.group(
             this.logs,
@@ -370,7 +349,7 @@ export class GroupByCommand {
     const currentValue = context.globalState.get(filter);
     this.updateResultsProviderGroup(activeGroupBy, !currentValue);
     await updateFilter(context, filter, !currentValue);
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 
   private updateResultsProviderGroup(activeGroupBy: GroupBy, include: boolean) {

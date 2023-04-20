@@ -12,20 +12,20 @@ export const commands = {
   isScanEnabled: `${EXTENSION_NAME}.isScanEnabled`,
   isScaScanEnabled: `${EXTENSION_NAME}.isSCAScanEnabled`,
 
-  filterHighToggle: `${EXTENSION_NAME}.filterHighToggle`,
-  filterHighUntoggle: `${EXTENSION_NAME}.filterHighUntoggle`,
+  filterHighToggle: `${EXTENSION_NAME}.filterHigh_toggle`,
+  filterHighUntoggle: `${EXTENSION_NAME}.filterHigh_untoggle`,
   filterHigh: `${EXTENSION_NAME}.filterHigh`,
 
-  filterMediumToggle: `${EXTENSION_NAME}.filterMediumToggle`,
-  filterMediumUntoggle: `${EXTENSION_NAME}.filterMediumUntoggle`,
+  filterMediumToggle: `${EXTENSION_NAME}.filterMedium_toggle`,
+  filterMediumUntoggle: `${EXTENSION_NAME}.filterMedium_untoggle`,
   filterMedium: `${EXTENSION_NAME}.filterMedium`,
 
-  filterLowToggle: `${EXTENSION_NAME}.filterLowToggle`,
-  filterLowUntoggle: `${EXTENSION_NAME}.filterLowUntoggle`,
+  filterLowToggle: `${EXTENSION_NAME}.filterLow_toggle`,
+  filterLowUntoggle: `${EXTENSION_NAME}.filterLow_untoggle`,
   filterLow: `${EXTENSION_NAME}.filterLow`,
 
-  filterInfoToggle: `${EXTENSION_NAME}.filterInfoToggle`,
-  filterInfoUntoggle: `${EXTENSION_NAME}.filterInfoUntoggle`,
+  filterInfoToggle: `${EXTENSION_NAME}.filterInfo_toggle`,
+  filterInfoUntoggle: `${EXTENSION_NAME}.filterInfo_untoggle`,
   filterInfo: `${EXTENSION_NAME}.filterInfo`,
 
   filterNotExploitable: `${EXTENSION_NAME}.filterNotExploitable`,

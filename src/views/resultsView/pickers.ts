@@ -7,7 +7,7 @@ import {
   getScansPickItems,
   loadScanId,
 } from "../../utils/utils";
-import { REFRESH_TREE } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commands";
 import {
   BRANCH_ID_KEY,
   BRANCH_LABEL,
@@ -37,7 +37,7 @@ export async function projectPicker(
     });
     update(context, BRANCH_ID_KEY, { id: undefined, name: BRANCH_LABEL });
     update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     quickPick.hide();
   });
   quickPick.show();
@@ -80,7 +80,7 @@ export async function branchPicker(
     } else {
       vscode.window.showErrorMessage(messages.pickerBranchProjectMissing);
     }
-    await vscode.commands.executeCommand(REFRESH_TREE);
+    await vscode.commands.executeCommand(commands.refreshTree);
     quickPick.hide();
   });
   quickPick.show();
@@ -109,7 +109,7 @@ export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
     });
     if (item.id) {
       await getResultsWithProgress(logs, item.id);
-      await vscode.commands.executeCommand(REFRESH_TREE);
+      await vscode.commands.executeCommand(commands.refreshTree);
       quickPick.hide();
     }
   });

@@ -31,7 +31,7 @@ import {
 import { get, Item, update } from "../../utils/common/globalState";
 import { getResultsJson, loadScanId } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
-import { POLL_SCAN } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commands";
 
 export async function pollForScanResult(
   context: vscode.ExtensionContext,
@@ -164,7 +164,7 @@ export async function createScan(
   updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
   update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
 
-  await vscode.commands.executeCommand(POLL_SCAN);
+  await vscode.commands.executeCommand(commands.pollScan);
 }
 
 async function getUserInput(msg: string): Promise<boolean> {

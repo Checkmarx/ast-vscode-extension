@@ -14,7 +14,7 @@ import {
   triageShow,
 } from "../ast/ast";
 import { getBfl } from "../sast/bfl";
-import { REFRESH_TREE, SHOW_ERROR } from "./common/commands";
+import { commands } from "./common/commands";
 import {
   BRANCH_ID_KEY,
   BRANCH_LABEL,
@@ -76,7 +76,7 @@ export async function getBranchPickItems(
           : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
-        vscode.commands.executeCommand(SHOW_ERROR);
+        vscode.commands.executeCommand(commands.showError);
         return [];
       }
     }
@@ -102,7 +102,7 @@ export async function getProjectsPickItems(
           : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
-        vscode.commands.executeCommand(SHOW_ERROR);
+        vscode.commands.executeCommand(commands.showError);
         return [];
       }
     }
@@ -133,7 +133,7 @@ export async function getScansPickItems(
           : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
-        vscode.commands.executeCommand(SHOW_ERROR);
+        vscode.commands.executeCommand(commands.showError);
         return [];
       }
     }
@@ -390,5 +390,5 @@ export async function loadScanId(
   });
 
   await getResultsWithProgress(logs, scan.id);
-  await vscode.commands.executeCommand(REFRESH_TREE);
+  await vscode.commands.executeCommand(commands.refreshTree);
 }

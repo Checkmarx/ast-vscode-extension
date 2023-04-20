@@ -27,7 +27,7 @@ import { FilterCommand } from "./commands/filterCommand";
 import { WebViewCommand } from "./commands/webViewCommand";
 import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { messages } from "./utils/common/messages";
-import { NEW_DETAILS, POLL_SCAN } from "./utils/common/commands";
+import { commands } from "./utils/common/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -51,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Scans from IDE scanning commands
   const ideScanCommand = new IDECommand(context, runScanStatusBar, logs);
   ideScanCommand.registerIdeScans();
-  vscode.commands.executeCommand(POLL_SCAN);
+  vscode.commands.executeCommand(commands.pollScan);
 
   const kicsDiagnosticCollection =
     vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
@@ -116,7 +116,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (item.selection.length > 0) {
       if (!item.selection[0].contextValue && !item.selection[0].children) {
         // Open new details
-        vscode.commands.executeCommand(NEW_DETAILS, item.selection[0].result);
+        vscode.commands.executeCommand(commands.newDetails, item.selection[0].result);
       }
     }
   });
@@ -150,7 +150,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (!item.selection[0].contextValue && !item.selection[0].children) {
         // Open new details
         vscode.commands.executeCommand(
-          NEW_DETAILS,
+          commands.newDetails,
           item.selection[0].result,
           REALTIME
         );
