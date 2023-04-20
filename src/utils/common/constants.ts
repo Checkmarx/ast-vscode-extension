@@ -48,45 +48,59 @@ export const GRAPH_ITEM = "graph-item";
 export const RESULTS_FILE_NAME = "ast-results";
 export const RESULTS_FILE_EXTENSION = "json";
 
-export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
-export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];
+export const STATUS = [
+  { class: "select-high", value: "HIGH" },
+  { class: "select-medium", value: "MEDIUM" },
+  { class: "select-low", value: "LOW" },
+  { class: "select-info", value: "INFO" },
+];
+export const STATE = [
+  { tag: "NOT_EXPLOITABLE", value: "Not Exploitable" },
+  { tag: "PROPOSED_NOT_EXPLOITABLE", value: "Proposed Not Exploitable" },
+  { tag: "CONFIRMED", value: "Confirmed" },
+  { tag: "TO_VERIFY", value: "To Verify" },
+  { tag: "URGENT", value: "Urgent" },
+  { tag: "NOT_IGNORED", value: "Not Ignored", dependency: true },
+  { tag: "IGNORED", value: "Ignored", dependency: true },
+];
 
 export const SAST = "sast";
 export const KICS = "kics";
 export const SCA = "sca";
 
-export enum IssueFilter {
-	fileName = "fileName",
-	severity = "severity",
-	status = "status",
-	language = "language",
-	state = "state",
-	typeLabel = "typeLabel",
-	queryName = "queryName",
-	packageIdentifier = "scaNode.packageIdentifier",
-	directDependency = "scaNode.scaPackageData.typeOfDependency",
-	scaType = "scaType"
-  }
-  
-export enum IssueLevel {
-	high = "HIGH",
-	medium = "MEDIUM",
-	low = "LOW",
-	info = "INFO",
-	empty = "",
+export enum GroupBy {
+  fileName = "fileName",
+  severity = "severity",
+  status = "status",
+  language = "language",
+  state = "state",
+  typeLabel = "typeLabel",
+  queryName = "queryName",
+  packageIdentifier = "scaNode.packageIdentifier",
+  directDependency = "scaNode.scaPackageData.typeOfDependency",
+  scaType = "scaType",
+}
+
+export enum SeverityLevel {
+  high = "HIGH",
+  medium = "MEDIUM",
+  low = "LOW",
+  info = "INFO",
+  empty = "",
 }
 
 export enum StateLevel {
-	urgent = "Urgent",
-	toVerify = "ToVerify",
-	confirmed = "Confirmed",
-	proposed = "Proposed",
-	notExploitable = "NotExploitable",
-	notIgnored = "NotIgnored",
-	ignored = "Ignored"
+  urgent = "Urgent",
+  toVerify = "ToVerify",
+  confirmed = "Confirmed",
+  proposed = "Proposed",
+  notExploitable = "NotExploitable",
+  notIgnored = "NotIgnored",
+  ignored = "Ignored",
 }
 
-export const ERROR_REGEX = /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i;
+export const ERROR_REGEX =
+  /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i;
 
 export const AST_ERROR_CODEBASHING_NO_LICENSE = 3;
 export const AST_ERROR_CODEBASHING_NO_LESSON = 4;
@@ -105,7 +119,8 @@ export const REFRESHING_TREE = "$(sync~spin) Refreshing tree";
 
 // SCAN FROM IDE
 export const SCAN_CREATE = "$(sync~spin) Scan initializing...";
-export const SCAN_CREATE_VERIFY_BRANCH = "$(sync~spin) Checking matching branches";
+export const SCAN_CREATE_VERIFY_BRANCH =
+  "$(sync~spin) Checking matching branches";
 export const SCAN_CREATE_VERIFY_FILES = "$(sync~spin) Checking matching files";
 export const SCAN_CREATE_PREPARING = "$(sync~spin) Preparing files for scan";
 export const SCAN_WAITING = "$(sync~spin) Scan running";
@@ -114,7 +129,8 @@ export const SCAN_POLL_TIMEOUT = 15000; // MILLISECONDS
 
 // SCA AUTO SCAN
 export const SCA_NO_VULNERABILITIES = "Checkmarx found no vulnerabilities.";
-export const SCA_START_SCAN = "Click the play button to scan with Checkmarx SCA";
+export const SCA_START_SCAN =
+  "Click the play button to scan with Checkmarx SCA";
 export const CLEAR_SCA = "Clear all sca scan information";
 export const SCA_SCAN_WAITING = "$(sync~spin) Checkmarx sca scan running";
 export const SCA_SCAN_RUNNING_LOG = "SCA auto scanning command is running";
@@ -130,4 +146,9 @@ export const SCAN_STATUS_PARTIAL = "partial";
 export const SCAN_STATUS_RUNNING = "running";
 
 // CREATE SCAN ADDITIONAL ARGUMENTS
-export const SCAN_CREATE_ADDITIONAL_PARAMETERS = "--async --sast-incremental --resubmit";
+export const SCAN_CREATE_ADDITIONAL_PARAMETERS =
+  "--async --sast-incremental --resubmit";
+
+export const TREE_NAME = "astResults";
+export const SCA_TREE_NAME = "scaAutoScan";
+export const REALTIME = "realtime";

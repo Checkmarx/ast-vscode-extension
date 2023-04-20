@@ -3,7 +3,12 @@
 import CxVulnerabilityDetails from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
 import path = require("path");
 import * as vscode from "vscode";
-import { StateLevel, IssueLevel, SCA, KICS } from "../utils/common/constants";
+import {
+  StateLevel,
+  SeverityLevel,
+  SCA,
+  KICS,
+} from "../utils/common/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
@@ -158,15 +163,15 @@ export class AstResult {
   getSeverity() {
     switch (this.severity) {
       case "HIGH":
-        return IssueLevel.high;
+        return SeverityLevel.high;
       case "MEDIUM":
-        return IssueLevel.medium;
+        return SeverityLevel.medium;
       case "INFO":
-        return IssueLevel.info;
+        return SeverityLevel.info;
       case "LOW":
-        return IssueLevel.low;
+        return SeverityLevel.low;
     }
-    return IssueLevel.empty;
+    return SeverityLevel.empty;
   }
 
   getState() {

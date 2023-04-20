@@ -12,8 +12,8 @@ import {
   getScan,
   getScans,
   triageShow,
-} from "./ast/ast";
-import { getBfl } from "./sast/bfl";
+} from "../ast/ast";
+import { getBfl } from "../sast/bfl";
 import { REFRESH_TREE, SHOW_ERROR } from "./common/commands";
 import {
   BRANCH_ID_KEY,
@@ -26,7 +26,7 @@ import {
   SCAN_ID_KEY,
   SCAN_LABEL,
 } from "./common/constants";
-import { GitExtension } from "../types/git";
+import { GitExtension } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 
 export function getProperty(

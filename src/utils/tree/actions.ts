@@ -4,8 +4,8 @@ import { AstResult } from "../../models/results";
 import { SastNode } from "../../models/sastNode";
 import {
   GRAPH_ITEM,
-  IssueFilter,
-  IssueLevel,
+  GroupBy,
+  SeverityLevel,
   StateLevel,
 } from "../common/constants";
 import { Counter, getProperty } from "../utils";
@@ -32,10 +32,10 @@ export function groupBy(
   scan: string | undefined,
   diagnosticCollection: vscode.DiagnosticCollection,
   issueLevel: string[] = [
-    IssueLevel.high,
-    IssueLevel.medium,
-    IssueLevel.low,
-    IssueLevel.info,
+    SeverityLevel.high,
+    SeverityLevel.medium,
+    SeverityLevel.low,
+    SeverityLevel.info,
   ],
   stateLevel: string[] = [
     StateLevel.confirmed,
@@ -136,8 +136,8 @@ export function reduceGroups(
   let value = getProperty(obj, currentValue);
 
   // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
-  if (currentValue === IssueFilter.fileName && value.length === 0) {
-    value = getProperty(obj.data, IssueFilter.fileName.toLowerCase());
+  if (currentValue === GroupBy.fileName && value.length === 0) {
+    value = getProperty(obj.data, GroupBy.fileName.toLowerCase());
   }
 
   if (!value) {
