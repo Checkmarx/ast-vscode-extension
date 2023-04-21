@@ -847,7 +847,7 @@
     "webpack-cli": "^5.0.2"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.70",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.71",
     "copyfiles": "2.4.1",
     "tree-kill": "^1.2.2"
   }
