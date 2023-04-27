@@ -8,10 +8,9 @@ import {
   SeverityLevel,
   StateLevel,
 } from "../common/constants";
-import { Counter, getProperty } from "../utils";
+import { getProperty } from "../utils";
 import { TreeItem } from "./treeItem";
-
-
+import { Counter } from "../../models/counter";
 
 export function createSummaryItem(list: CxResult[]): TreeItem {
   const counter = new Counter(list, (p: CxResult) => p.severity);
