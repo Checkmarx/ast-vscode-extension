@@ -3,7 +3,7 @@ import { Logs } from "../models/logs";
 import {
   commands
 } from "../utils/common/commands";
-import { CLEAR_SCA } from "../utils/common/constants";
+import { constants } from "../utils/common/constants";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
 
@@ -64,7 +64,7 @@ export class TreeCommand {
   private clearScaCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        CLEAR_SCA,
+        constants.clearSca,
         async () => await this.scaResultsProvider.clean()
       )
     );

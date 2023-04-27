@@ -1,61 +1,39 @@
 import * as vscode from "vscode";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
-import { EventEmitter } from "vscode";
 import {
-  EXTENSION_NAME,
   GroupBy,
-  REFRESHING_TREE,
-  CLEAR_SCA,
-  SCA_SCAN_RUNNING_LOG,
-  SCA_START_SCAN,
+  constants
 } from "../../utils/common/constants";
 import { Logs } from "../../models/logs";
 import { TreeItem } from "../../utils/tree/treeItem";
-import { groupBy, orderResults } from "../../utils/tree/actions";
+import { groupBy } from "../../utils/tree/actions";
 import { messages } from "../../utils/common/messages";
+import { orderResults } from "../../utils/utils";
+import { ResultsProvider } from "../resultsProviders";
 
-export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
+export class SCAResultsProvider extends ResultsProvider {
   public process;
   public issueFilter: GroupBy[] = [GroupBy.severity, GroupBy.packageIdentifier];
-  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
-    new EventEmitter<TreeItem | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
-    this._onDidChangeTreeData.event;
   private scan: string | undefined;
   public scaResults: CxResult[];
-  private data: TreeItem[] | undefined;
 
   constructor(
+    protected readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
-    private readonly statusBarItem: vscode.StatusBarItem,
+    protected readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection
-  ) {}
-
-  private showStatusBarItem() {
-    this.statusBarItem.text = REFRESHING_TREE;
-    this.statusBarItem.tooltip = SCA_SCAN_RUNNING_LOG;
-    this.statusBarItem.show();
-  }
-
-  private hideStatusBarItem() {
-    this.statusBarItem.text = EXTENSION_NAME;
-    this.statusBarItem.tooltip = undefined;
-    this.statusBarItem.command = undefined;
-    this.statusBarItem.hide();
+  ) {
+    super(context, statusBarItem);
   }
 
   async clean(): Promise<void> {
-    this.logs.info(CLEAR_SCA);
+    this.logs.info(constants.clearSca);
     this.scaResults = [];
     await this.refreshData();
   }
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
   async refreshData(message?: string): Promise<void> {
-    this.showStatusBarItem();
+    this.showStatusBarItem(constants.scaScanRunningLog);
     this.data = this.generateTree(message).children;
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
@@ -80,7 +58,7 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       );
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
-      this.scan = message ? message : SCA_START_SCAN;
+      this.scan = message ? message : constants.scaStartScan;
       treeItem = groupBy(
         results,
         this.issueFilter,
@@ -91,18 +69,5 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     treeItems = treeItems.concat(treeItem);
     return new TreeItem("", undefined, undefined, treeItems);
-  }
-
-  getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return element;
-  }
-
-  getChildren(
-    element?: TreeItem | undefined
-  ): vscode.ProviderResult<TreeItem[]> {
-    if (element === undefined) {
-      return this.data;
-    }
-    return element.children;
   }
 }

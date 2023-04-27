@@ -9,18 +9,12 @@ import {
   getProjectsPickItems,
   getResultsWithProgress,
   getScansPickItems,
-} from "../../utils/utils";
+} from "../../utils/pickers/pickers";
 import { commands } from "../../utils/common/commands";
 import {
-  BRANCH_ID_KEY,
-  BRANCH_LABEL,
-  PROJECT_ID_KEY,
-  PROJECT_LABEL,
-  SCAN_ID_KEY,
-  SCAN_LABEL,
-  SCAN_PICKER_TITLE,
+  constants
 } from "../../utils/common/constants";
-import { update } from "../../utils/common/globalState";
+import { updateState } from "../../utils/common/globalState";
 import {
   CxQuickPickItem,
   MultiStepInput,
@@ -47,10 +41,10 @@ export async function multiStepInput(
 
   async function pickProject(input: MultiStepInput, state: Partial<State>) {
     state.project = await input.showQuickPick({
-      title: SCAN_PICKER_TITLE,
+      title: constants.scanPickerTitle,
       step: 1,
       totalSteps: 3,
-      placeholder: PROJECT_LABEL,
+      placeholder: constants.projectLabel,
       items: await getProjectsPickItems(logs, context),
       shouldResume: shouldResume,
     });
@@ -63,10 +57,10 @@ export async function multiStepInput(
       projectId = state.project.id;
     }
     state.branch = await input.showQuickPick({
-      title: SCAN_PICKER_TITLE,
+      title: constants.scanPickerTitle,
       step: 2,
       totalSteps: 3,
-      placeholder: BRANCH_LABEL,
+      placeholder: constants.branchLabel,
       items: await getBranchPickItems(logs, projectId, context),
       shouldResume: shouldResume,
     });
@@ -84,31 +78,31 @@ export async function multiStepInput(
     }
 
     state.scanId = await input.showQuickPick({
-      title: SCAN_PICKER_TITLE,
+      title: constants.scanPickerTitle,
       step: 2,
       totalSteps: 3,
-      placeholder: SCAN_LABEL,
+      placeholder: constants.scanLabel,
       items: await getScansPickItems(logs, projectId, branchId, context),
       shouldResume: shouldResume,
     });
   }
 
   function shouldResume() {
-    return new Promise<boolean>(() => {});
+    return new Promise<boolean>(() => { });
   }
 
   const state = await collectInputs();
-  update(context, PROJECT_ID_KEY, {
+  updateState(context, constants.projectIdKey, {
     id: state.project.id,
-    name: `${PROJECT_LABEL} ${state.project.label}`,
+    name: `${constants.projectLabel} ${state.project.label}`,
   });
-  update(context, BRANCH_ID_KEY, {
+  updateState(context, constants.branchIdKey, {
     id: state.branch.id,
-    name: `${BRANCH_LABEL} ${state.branch.label}`,
+    name: `${constants.branchLabel} ${state.branch.label}`,
   });
-  update(context, SCAN_ID_KEY, {
+  updateState(context, constants.scanIdKey, {
     id: state.scanId.id,
-    name: `${SCAN_LABEL} ${state.scanId.label}`,
+    name: `${constants.scanLabel} ${state.scanId.label}`,
   });
 
   if (state.scanId?.id) {

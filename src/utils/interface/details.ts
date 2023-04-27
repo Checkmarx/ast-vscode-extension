@@ -1,6 +1,6 @@
 import { AstResult } from "../../models/results";
 import * as vscode from "vscode";
-import { SCA, STATE, STATUS } from "../common/constants";
+import { constants } from "../common/constants";
 
 export class Details {
   result: AstResult;
@@ -20,18 +20,17 @@ export class Details {
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
-				${
-          this.result.sastNodes.length > 0
-            ? `
+				${this.result.sastNodes.length > 0
+        ? `
 					<div class="header-item-codebashing" id="cx_header_codebashing">
 						<span class="codebashing-link">
 							Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` +
-              this.result.queryName +
-              ` using Checkmarx's eLearning platform">codebashing</span>
+        this.result.queryName +
+        ` using Checkmarx's eLearning platform">codebashing</span>
 						<span>
 					</div>`
-            : ""
-        }
+        : ""
+      }
 			</div>
 			<hr class="division"/>
 			`;
@@ -52,13 +51,13 @@ export class Details {
   }
 
   triage(selectClassname: string) {
-    const state = STATE.filter((element) => {
-      return !!element.dependency === (this.result.type === SCA);
+    const state = constants.state.filter((element) => {
+      return !!element.dependency === (this.result.type === constants.sca);
     });
     const updateButton =
-      this.result.type !== SCA ? `<button class="submit">Update</button>` : ``;
+      this.result.type !== constants.sca ? `<button class="submit">Update</button>` : ``;
     const comment =
-      this.result.type !== SCA
+      this.result.type !== constants.sca
         ? `<div class="comment-container">
 				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
 			</div>`
@@ -66,22 +65,20 @@ export class Details {
 
     return `<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
-					${STATUS.map((element) => {
-            return `<option id=${element.value} class="${element.class}" ${
-              this.result.severity === element.value ? "selected" : ""
-            }>
+					${constants.status.map((element) => {
+      return `<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? "selected" : ""
+        }>
 									${element.value}	
 								</option>`;
-          })}
+    })}
 				</select>
 				<select id="select_state" class="state">
 					${state.map((element) => {
-            return `<option id=${element.value} ${
-              this.result.state === element.tag ? 'selected="selected"' : ""
-            }>
+      return `<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""
+        }>
 											${element.value}	
 										</option>`;
-          })}
+    })}
 				</select>
 				${updateButton}
 			</div>
@@ -124,26 +121,25 @@ export class Details {
 					${this.result.label}
 				</p>
 				<p class="header-name">
-					${
-            this.result.scaNode.packageIdentifier
-              ? this.result.scaNode.packageIdentifier
-              : ""
-          }
+					${this.result.scaNode.packageIdentifier
+        ? this.result.scaNode.packageIdentifier
+        : ""
+      }
 				</p>
 			</div>
 			<div class="content">
 				${this.result.scaContent(
-          this.result,
-          scaUpgrade,
-          scaUrl,
-          scaAtackVector,
-          scaComplexity,
-          scaAuthentication,
-          scaConfidentiality,
-          scaIntegrity,
-          scaAvailability,
-          type
-        )}
+        this.result,
+        scaUpgrade,
+        scaUrl,
+        scaAtackVector,
+        scaComplexity,
+        scaAuthentication,
+        scaConfidentiality,
+        scaIntegrity,
+        scaAvailability,
+        type
+      )}
 			</div>
 		</body>			
 		`;
@@ -176,61 +172,53 @@ export class Details {
     tab4Label: string,
     tab5Content: string
   ) {
-    return `${
-      tab1Label !== ""
+    return `${tab1Label !== ""
         ? `<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}
 			</label>`
         : ""
-    }
-			${
-        tab2Label !== ""
-          ? `<input type="radio" name="tabs" id="learn-tab" />
+      }
+			${tab2Label !== ""
+        ? `<input type="radio" name="tabs" id="learn-tab" />
 			<label for="learn-tab" id="learn-label">
 				${tab2Label}
 			</label>`
-          : ""
+        : ""
       }
-			${
-        tab4Label !== ""
-          ? `<input type="radio" name="tabs" id="code-tab" />
+			${tab4Label !== ""
+        ? `<input type="radio" name="tabs" id="code-tab" />
 			<label for="code-tab" id="code-label">
 				${tab4Label}
 			</label>`
-          : ""
+        : ""
       }
-			${
-        tab3Label !== ""
-          ? `<input type="radio" name="tabs" id="changes-tab" />
+			${tab3Label !== ""
+        ? `<input type="radio" name="tabs" id="changes-tab" />
 			<label for="changes-tab" id="changes-label">
 				${tab3Label}
 			</label>`
-          : ""
+        : ""
       }
-			${
-        tab1Content !== ""
-          ? `<div class="tab general">
+			${tab1Content !== ""
+        ? `<div class="tab general">
 			${tab1Content}
 			</div>`
-          : ""
+        : ""
       }
-			${
-        tab2Content !== ""
-          ? `<div class="tab learn">
+			${tab2Content !== ""
+        ? `<div class="tab learn">
 			${tab2Content}
 			</div>`
-          : ""
+        : ""
       }
-			${
-        tab3Content !== ""
-          ? `<div class="tab changes">
+			${tab3Content !== ""
+        ? `<div class="tab changes">
 			${tab3Content}
 		</div>`
-          : ""
+        : ""
       }
-		${
-      tab5Content !== ""
+		${tab5Content !== ""
         ? `<div class="tab code">
 		<div id="tab-code">
 			<pre class="pre-code">
@@ -241,7 +229,7 @@ export class Details {
 		</div>
 	</div>`
         : ""
-    }
+      }
 			
 			`;
   }

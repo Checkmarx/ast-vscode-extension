@@ -4,20 +4,22 @@ import { getCodebashingLink } from "../codebashing/codebashing";
 import { Logs } from "../models/logs";
 import { AstResult } from "../models/results";
 import { getLearnMore } from "../sast/learnMore";
-import { triageSubmit } from "../sast/triage";
+import { getChanges, triageSubmit } from "../utils/triage";
 import { applyScaFix } from "../sca/scaFix";
 import { commands } from "../utils/common/commands";
-import { getChanges } from "../utils/utils";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
+import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 
 export class WebViewCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
   detailsPanel: vscode.WebviewPanel | undefined;
-  constructor(context: vscode.ExtensionContext, logs: Logs) {
+  resultsProvider: AstResultsProvider;
+  constructor(context: vscode.ExtensionContext, logs: Logs, resultsProvider: AstResultsProvider) {
     this.context = context;
     this.detailsPanel = undefined;
     this.logs = logs;
+    this.resultsProvider = resultsProvider;
   }
 
   public registerNewDetails(): vscode.Disposable {
@@ -114,7 +116,8 @@ export class WebViewCommand {
                   data,
                   this.logs,
                   this.detailsPanel,
-                  detailsDetachedView
+                  detailsDetachedView,
+                  this.resultsProvider
                 );
                 await getChanges(
                   this.logs,

@@ -1,41 +1,41 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import { AstResult } from "../models/results";
-import { getChanges, getResultsFilePath } from "../utils/utils";
+import { getResultsFilePath } from "./utils";
 import { triageUpdate } from "../ast/ast";
-import { get } from "../utils/common/globalState";
-import { PROJECT_ID_KEY, SCA } from "../utils/common/constants";
+import { getFromState } from "./common/globalState";
+import { constants } from "./common/constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
-import { commands } from "../utils/common/commands";
-import { getLearnMore } from "./learnMore";
+import { commands } from "./common/commands";
+import { getLearnMore } from "../sast/learnMore";
 import { TriageCommand } from "../models/triageCommand";
+import { messages } from "./common/messages";
+import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 
 export async function updateResults(
   result: AstResult,
   context: vscode.ExtensionContext,
-  comment: string
+  comment: string,
+  resultsProvider: AstResultsProvider
 ) {
   const resultJsonPath = getResultsFilePath();
   if (!(fs.existsSync(resultJsonPath) && result)) {
-    throw new Error("File not found");
+    throw new Error(messages.fileNotFound);
   }
 
   try {
-    // Change result in json
-    const jsonResults = JSON.parse(fs.readFileSync(resultJsonPath, "utf-8"));
     const resultHash = result.getResultHash();
-    jsonResults.results.forEach((element: AstResult, index: number) => {
+    resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
       // Update the result in the array
       if (element.data.resultHash === resultHash || element.id === resultHash) {
-        jsonResults.results[index] = result.rawObject;
+        resultsProvider.loadedResults[index] = result;
         return;
       }
     });
-    fs.writeFileSync(resultJsonPath, JSON.stringify(jsonResults));
 
     // Update
-    const projectId = get(context, PROJECT_ID_KEY).id;
+    const projectId = getFromState(context, constants.projectIdKey).id;
     await triageUpdate(
       projectId,
       result.similarityId,
@@ -55,16 +55,17 @@ export async function triageSubmit(
   data: TriageCommand,
   logs: Logs,
   detailsPanel: vscode.WebviewPanel,
-  detailsDetachedView: AstDetailsDetached
+  detailsDetachedView: AstDetailsDetached,
+  resultsProvider: AstResultsProvider
 ) {
   // Needed because dependency triage is still not working
-  if (result.type === SCA) {
-    vscode.window.showErrorMessage("Triage not available for SCA.");
+  if (result.type === constants.sca) {
+    vscode.window.showErrorMessage(messages.triageNotAvailableSca);
     return;
   }
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
-    logs.log("INFO", "Updating severity to " + data.severitySelection);
+    logs.log("INFO", messages.triageUpdateSeverity(data.severitySelection));
     // Update severity of the result
     result.setSeverity(data.severitySelection);
     result.rawObject["severity"] = data.severitySelection;
@@ -77,7 +78,7 @@ export async function triageSubmit(
 
   // Case there is feedback on the state
   if (data.stateSelection.length > 0) {
-    logs.log("INFO", "Updating state to " + data.stateSelection);
+    logs.log("INFO", messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
     result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
     result.rawObject["state"] = data.stateSelection
@@ -91,7 +92,7 @@ export async function triageSubmit(
     data.severitySelection.length === 0 &&
     data.comment.length === 0
   ) {
-    vscode.window.showErrorMessage("Make a change before submiting");
+    vscode.window.showErrorMessage(messages.triageNoChange);
     return;
   }
 
@@ -102,15 +103,39 @@ export async function triageSubmit(
     await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
   // Change the results locally
   try {
-    await updateResults(result, context, data.comment);
+    await updateResults(result, context, data.comment, resultsProvider);
     vscode.commands.executeCommand(commands.refreshTree);
 
     getChanges(logs, context, result, detailsPanel);
     getLearnMore(logs, context, result, detailsPanel);
     vscode.window.showInformationMessage(
-      "Feedback submited successfully! Results refreshed."
+      messages.triageSubmitedSuccess
     );
   } catch (error) {
-    vscode.window.showErrorMessage("Triage Error | " + error);
+    vscode.window.showErrorMessage(messages.triageError(error));
+  }
+}
+
+export async function getChanges(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  result: AstResult,
+  detailsPanel: vscode.WebviewPanel
+) {
+  const projectId = getFromState(context, constants.projectIdKey)?.id;
+  if (projectId) {
+    this.triageShow(projectId, result.similarityId, result.type)
+      .then((changes) => {
+        detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
+      })
+      .catch((err) => {
+        detailsPanel?.webview.postMessage({
+          command: "loadChanges",
+          changes: [],
+        });
+        logs.error(err);
+      });
+  } else {
+    logs.error(messages.projectIdUndefined);
   }
 }

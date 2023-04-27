@@ -3,19 +3,9 @@ import { Logs } from "../../models/logs";
 import { RepositoryState } from "../types/git";
 import { commands } from "../common/commands";
 import {
-  BRANCH_ID_KEY,
-  BRANCH_LABEL,
-  BRANCH_NAME,
-  BRANCH_TEMP_ID_KEY,
-  EXTENSION_NAME,
-  KICS_REALTIME_FILE,
-  PROJECT_ID_KEY,
-  SCAN_CREATE_ID_KEY,
-  SCAN_CREATE_PREP_KEY,
-  SCAN_ID_KEY,
-  SCAN_LABEL,
+  constants
 } from "../common/constants";
-import { get, update } from "../common/globalState";
+import { getFromState, updateState } from "../common/globalState";
 import { getBranches } from "../../ast/ast";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
 
@@ -42,32 +32,32 @@ async function addRepositoryListener(
   repoState: RepositoryState
 ) {
   return repoState.onDidChange(() => {
-    const tempBranchName = get(context, BRANCH_TEMP_ID_KEY);
+    const tempBranchName = getFromState(context, constants.branchTempIdKey);
     const branchName = repoState.HEAD?.name;
     if (!branchName || (tempBranchName && tempBranchName.id === branchName)) {
       return;
     }
 
-    update(context, BRANCH_NAME, { id: branchName, name: branchName });
-    update(context, BRANCH_TEMP_ID_KEY, { id: branchName, name: branchName }); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
+    updateState(context, constants.branchName, { id: branchName, name: branchName });
+    updateState(context, constants.branchTempIdKey, { id: branchName, name: branchName }); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
 
-    const projectItem = get(context, PROJECT_ID_KEY);
-    const currentBranch = get(context, BRANCH_ID_KEY);
+    const projectItem = getFromState(context, constants.projectIdKey);
+    const currentBranch = getFromState(context, constants.branchIdKey);
 
     if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
       getBranches(projectItem.id).then((branches) => {
-        update(context, BRANCH_TEMP_ID_KEY, undefined);
+        updateState(context, constants.branchTempIdKey, undefined);
         if (branches?.includes(branchName)) {
-          update(context, BRANCH_ID_KEY, {
+          updateState(context, constants.branchIdKey, {
             id: branchName,
-            name: `${BRANCH_LABEL} ${branchName}`,
+            name: `${constants.branchLabel} ${branchName}`,
           });
-          update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
+          updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel });
           vscode.commands.executeCommand(commands.refreshTree);
         }
       });
     } else {
-      update(context, BRANCH_TEMP_ID_KEY, undefined);
+      updateState(context, constants.branchTempIdKey, undefined);
     }
   });
 }
@@ -89,7 +79,7 @@ export function addRealTimeSaveListener(
         // Check if saved file is within the project
         logs.info("File saved updating KICS results");
         // Send the current file to the global state, to be used in the command
-        update(context, KICS_REALTIME_FILE, {
+        updateState(context, constants.kicsRealtimeFile, {
           id: e.uri.fsPath,
           name: e.uri.fsPath,
         });
@@ -107,7 +97,7 @@ export function addRealTimeSaveListener(
       logs.info("Opened a supported file by KICS. Starting KICS scan");
       // Mandatory in order to have the document appearing as displayed for VSCode
       await vscode.window.showTextDocument(e, 1, false);
-      update(context, KICS_REALTIME_FILE, {
+      updateState(context, constants.kicsRealtimeFile, {
         id: e.uri.fsPath,
         name: e.uri.fsPath,
       });
@@ -119,33 +109,33 @@ export function addRealTimeSaveListener(
 export async function setScanButtonDefaultIfScanIsNotRunning(
   context: vscode.ExtensionContext
 ) {
-  const scan = get(context, SCAN_CREATE_ID_KEY);
+  const scan = getFromState(context, constants.scanCreateIdKey);
   if (!scan?.id) {
     vscode.commands.executeCommand(
       "setContext",
-      `${EXTENSION_NAME}.isScanEnabled`,
+      `${constants.extensionName}.isScanEnabled`,
       true
     );
     vscode.commands.executeCommand(
       "setContext",
-      `${EXTENSION_NAME}.createScanButton`,
+      `${constants.extensionName}.createScanButton`,
       true
     );
-    update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
   }
-  const scanID = get(context, SCAN_ID_KEY);
+  const scanID = getFromState(context, constants.scanIdKey);
   if (scanID === undefined) {
     vscode.commands.executeCommand(
       "setContext",
-      `${EXTENSION_NAME}.isScanEnabled`,
+      `${constants.extensionName}.isScanEnabled`,
       false
     );
     vscode.commands.executeCommand(
       "setContext",
-      `${EXTENSION_NAME}.createScanButton`,
+      `${constants.extensionName}.createScanButton`,
       false
     );
-    update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
   }
 }
 

@@ -7,9 +7,7 @@ import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/co
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import {
-  RESULTS_FILE_EXTENSION,
-  RESULTS_FILE_NAME,
-  SCAN_CREATE_ADDITIONAL_PARAMETERS,
+  constants
 } from "../utils/common/constants";
 import { getFilePath } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
@@ -59,7 +57,7 @@ export async function scanCreate(
   params.set(CxParamType.AGENT, "VS Code");
   params.set(
     CxParamType.ADDITIONAL_PARAMETERS,
-    SCAN_CREATE_ADDITIONAL_PARAMETERS
+    constants.scanCreateAdditionalParameters
   );
   const scan = await cx.scanCreate(params);
   return scan.payload[0];
@@ -89,8 +87,8 @@ export async function getResults(scanId: string | undefined) {
   const cx = new CxWrapper(config);
   await cx.getResults(
     scanId,
-    RESULTS_FILE_EXTENSION,
-    RESULTS_FILE_NAME,
+    constants.resultsFileExtension,
+    constants.resultsFileName,
     getFilePath()
   );
 }

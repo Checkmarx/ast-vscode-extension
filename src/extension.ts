@@ -1,12 +1,7 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import {
-  EXTENSION_FULL_NAME,
-  EXTENSION_NAME,
-  REALTIME,
-  SCA_START_SCAN,
-  SCA_TREE_NAME,
-  TREE_NAME,
+  constants
 } from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import {
@@ -31,7 +26,7 @@ import { commands } from "./utils/common/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
-  const output = vscode.window.createOutputChannel(EXTENSION_FULL_NAME);
+  const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
   logs.show();
   logs.info(messages.pluginRunning);
@@ -54,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(commands.pollScan);
 
   const kicsDiagnosticCollection =
-    vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
+    vscode.languages.createDiagnosticCollection(constants.extensionName);
   const kicsStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
@@ -70,7 +65,7 @@ export async function activate(context: vscode.ExtensionContext) {
   kicsScanCommand.registerKicsScans();
 
   const diagnosticCollection =
-    vscode.languages.createDiagnosticCollection(EXTENSION_NAME);
+    vscode.languages.createDiagnosticCollection(constants.extensionName);
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
@@ -82,7 +77,6 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     logs,
     statusBarItem,
-    kicsStatusBarItem,
     diagnosticCollection,
     filterCommand,
     groupByCommand
@@ -107,8 +101,8 @@ export async function activate(context: vscode.ExtensionContext) {
     500
   );
   // Results side tree creation
-  vscode.window.registerTreeDataProvider(TREE_NAME, astResultsProvider);
-  const tree = vscode.window.createTreeView(TREE_NAME, {
+  vscode.window.registerTreeDataProvider(constants.treeName, astResultsProvider);
+  const tree = vscode.window.createTreeView(constants.treeName, {
     treeDataProvider: astResultsProvider,
   });
   // tree listener to open a webview in a new panel with results details
@@ -121,13 +115,14 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
   // Webview detailsPanel to show result details on the side
-  const webViewCommand = new WebViewCommand(context, logs);
+  const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
   const newDetails = webViewCommand.registerNewDetails();
   context.subscriptions.push(newDetails);
   // Branch change Listener
   await gitExtensionListener(context, logs);
   // SCA Auto Scanning view
   const scaResultsProvider = new SCAResultsProvider(
+    context,
     logs,
     statusBarItem,
     diagnosticCollection
@@ -141,8 +136,8 @@ export async function activate(context: vscode.ExtensionContext) {
     logs
   );
   scaScanCommand.registerScaScans();
-  vscode.window.registerTreeDataProvider(SCA_TREE_NAME, scaResultsProvider);
-  const scaTree = vscode.window.createTreeView(SCA_TREE_NAME, {
+  vscode.window.registerTreeDataProvider(constants.scaTreeName, scaResultsProvider);
+  const scaTree = vscode.window.createTreeView(constants.scaTreeName, {
     treeDataProvider: scaResultsProvider,
   });
   scaTree.onDidChangeSelection((item) => {
@@ -152,7 +147,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand(
           commands.newDetails,
           item.selection[0].result,
-          REALTIME
+          constants.realtime
         );
       }
     }
@@ -185,15 +180,15 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register Severity and state Filters Command for UI and for command list
   filterCommand.registerFilters();
   // Register pickers command
-  const pickerCommand = new PickerCommand(context, logs);
+  const pickerCommand = new PickerCommand(context, logs, astResultsProvider);
   pickerCommand.registerPickerCommands();
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
   // Registe Kics remediation command
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
-  scaResultsProvider.refreshData(SCA_START_SCAN);
+  scaResultsProvider.refreshData(constants.scaStartScan);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate() {}
+export function deactivate() { }

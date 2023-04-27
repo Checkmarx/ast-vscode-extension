@@ -1,107 +1,69 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { EventEmitter } from "vscode";
 import {
-  EXTENSION_NAME,
-  SCAN_ID_KEY,
-  PROJECT_ID_KEY,
-  BRANCH_ID_KEY,
-  SCAN_LABEL,
-  PROJECT_LABEL,
-  BRANCH_LABEL,
-  PROJECT_ITEM,
-  BRANCH_ITEM,
-  SCAN_ITEM,
-  REFRESHING_TREE,
+  constants
 } from "../../utils/common/constants";
-import { getResultsFilePath, getResultsWithProgress } from "../../utils/utils";
+import { getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { Logs } from "../../models/logs";
-import { get, update } from "../../utils/common/globalState";
+import { getFromState, updateState } from "../../utils/common/globalState";
 import { getAstConfiguration } from "../../ast/ast";
 import { commands } from "../../utils/common/commands";
 import { TreeItem } from "../../utils/tree/treeItem";
 import {
   createSummaryItem,
   groupBy,
-  orderResults,
 } from "../../utils/tree/actions";
 import { FilterCommand } from "../../commands/filterCommand";
 import { GroupByCommand } from "../../commands/groupByCommand";
+import { messages } from "../../utils/common/messages";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import { getResultsWithProgress } from "../../utils/pickers/pickers";
+import { ResultsProvider } from "../resultsProviders";
 
-export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
+export class AstResultsProvider extends ResultsProvider {
   public process;
-
-  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
-    new EventEmitter<TreeItem | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
-    this._onDidChangeTreeData.event;
+  public loadedResults: CxResult[];
   private scan: string | undefined;
-  private data: TreeItem[] | undefined;
 
   constructor(
-    private readonly context: vscode.ExtensionContext,
+    protected readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
-    private readonly statusBarItem: vscode.StatusBarItem,
-    private readonly kicsStatusBarItem: vscode.StatusBarItem,
+    protected readonly statusBarItem: vscode.StatusBarItem,
     private readonly diagnosticCollection: vscode.DiagnosticCollection,
     private readonly filterCommand: FilterCommand,
     private readonly groupByCommand: GroupByCommand
   ) {
-    const onSave = vscode.workspace
-      .getConfiguration("CheckmarxKICS")
-      .get("Activate KICS Auto Scanning") as boolean;
-    this.kicsStatusBarItem.text =
-      onSave === true
-        ? "$(check) Checkmarx kics"
-        : "$(debug-disconnect) Checkmarx kics";
-    this.kicsStatusBarItem.tooltip = "Checkmarx kics auto scan";
-    this.kicsStatusBarItem.command = commands.kicsSetings;
-    this.kicsStatusBarItem.show();
-  }
-
-  private showStatusBarItem() {
-    this.statusBarItem.text = REFRESHING_TREE;
-    this.statusBarItem.tooltip = "Checkmarx command is running";
-    this.statusBarItem.show();
-  }
-
-  private hideStatusBarItem() {
-    this.statusBarItem.text = EXTENSION_NAME;
-    this.statusBarItem.tooltip = undefined;
-    this.statusBarItem.command = undefined;
-    this.statusBarItem.hide();
+    super(context, statusBarItem);
+    this.loadedResults = undefined;
   }
 
   async clean(): Promise<void> {
-    this.logs.info("Clear all loaded information");
+    this.logs.info(messages.clearLoadedInfo);
     const resultJsonPath = path.join(__dirname, "ast-results.json");
     if (fs.existsSync(resultJsonPath)) {
       fs.unlinkSync(resultJsonPath);
     }
-    update(this.context, SCAN_ID_KEY, undefined);
-    update(this.context, PROJECT_ID_KEY, undefined);
-    update(this.context, BRANCH_ID_KEY, undefined);
+    updateState(this.context, constants.scanIdKey, undefined);
+    updateState(this.context, constants.projectIdKey, undefined);
+    updateState(this.context, constants.branchIdKey, undefined);
     await this.refreshData();
   }
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
   async refreshData(): Promise<void> {
-    this.showStatusBarItem();
+    this.showStatusBarItem(messages.commandRunning);
     this.data = getAstConfiguration() ? this.generateTree().children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
 
   async openRefreshData(): Promise<void> {
-    this.showStatusBarItem();
-    const scanIDItem = get(this.context, SCAN_ID_KEY);
+    this.showStatusBarItem(messages.commandRunning);
+    this.loadedResults = undefined;
+    const scanIDItem = getFromState(this.context, constants.scanIdKey);
     let scanId = undefined;
     if (scanIDItem && scanIDItem.name) {
-      scanId = get(this.context, SCAN_ID_KEY).name;
+      scanId = getFromState(this.context, constants.scanIdKey).name;
     }
     if (scanId) {
       await getResultsWithProgress(this.logs, scanId);
@@ -113,59 +75,51 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   generateTree(): TreeItem {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
-
-    let treeItems = [
-      new TreeItem(
-        get(this.context, PROJECT_ID_KEY)?.name ?? PROJECT_LABEL,
-        PROJECT_ITEM
-      ),
-      new TreeItem(
-        get(this.context, BRANCH_ID_KEY)?.name ?? BRANCH_LABEL,
-        BRANCH_ITEM
-      ),
-      new TreeItem(
-        get(this.context, SCAN_ID_KEY)?.name ?? SCAN_LABEL,
-        SCAN_ITEM
-      ),
-    ];
-
-    this.scan = get(this.context, SCAN_ID_KEY)?.id;
-    if (fs.existsSync(resultJsonPath) && this.scan) {
-      const jsonResults = JSON.parse(
-        fs
-          .readFileSync(resultJsonPath, "utf-8")
-          .replace(/:([0-9]{15,}),/g, ':"$1",')
-      );
-      const results = orderResults(jsonResults.results);
-
-      treeItems = treeItems.concat(createSummaryItem(results));
+    // createBaseItems
+    let treeItems = this.createRootItems();
+    // get para getFromState
+    this.scan = getFromState(this.context, constants.scanIdKey)?.id;
+    // in case we scanId, it is needed to load them from the json file
+    if (this.scan) {
+      this.loadedResults = readResultsFromFile(resultJsonPath, this.scan);
+    }
+    // otherwise the results must be cleared
+    else {
+      this.loadedResults = undefined;
+    }
+    // if there are results loaded, the tree needs to be recreated
+    if (this.loadedResults !== undefined) {
+      treeItems = treeItems.concat(createSummaryItem(this.loadedResults));
 
       const treeItem = groupBy(
-        results,
+        this.loadedResults,
         this.groupByCommand.activeGroupBy,
         this.scan,
         this.diagnosticCollection,
-        this.filterCommand.activeSeverities,
-        this.filterCommand.activeStates
+        this.filterCommand.getAtiveSeverities(),
+        this.filterCommand.getActiveStates()
       );
-      treeItem.label = `${SCAN_LABEL} ${this.scan}`;
+      treeItem.label = `${constants.scanLabel} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }
-
     return new TreeItem("", undefined, undefined, treeItems);
   }
 
-  getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return element;
-  }
-
-  getChildren(
-    element?: TreeItem | undefined
-  ): vscode.ProviderResult<TreeItem[]> {
-    if (element === undefined) {
-      return this.data;
-    }
-    return element.children;
+  createRootItems(): TreeItem[] {
+    return [
+      new TreeItem(
+        getFromState(this.context, constants.projectIdKey)?.name ?? constants.projectLabel,
+        constants.projectItem
+      ),
+      new TreeItem(
+        getFromState(this.context, constants.branchIdKey)?.name ?? constants.branchLabel,
+        constants.branchItem
+      ),
+      new TreeItem(
+        getFromState(this.context, constants.scanIdKey)?.name ?? constants.scanLabel,
+        constants.scanItem
+      ),
+    ];
   }
 }

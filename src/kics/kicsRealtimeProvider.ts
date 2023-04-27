@@ -4,16 +4,9 @@ import * as path from "path";
 import { join } from "path";
 import { Logs } from "../models/logs";
 import {
-  KICS_COUNT,
-  KICS_QUERIES,
-  KICS_REALTIME_FILE,
-  KICS_RESULTS,
-  KICS_RESULTS_FILE,
-  KICS_TOTAL_COUNTER,
-  PROCESS_OBJECT,
-  PROCESS_OBJECT_KEY,
+  constants
 } from "../utils/common/constants";
-import { get, update } from "../utils/common/globalState";
+import { getFromState, updateState } from "../utils/common/globalState";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { KicsCodeActionProvider } from "./kicsCodeActions";
@@ -22,6 +15,7 @@ import { writeFileSync } from "fs";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 import { commands } from "../utils/common/commands";
 import { KicsSummary } from "../models/kicsNode";
+import { messages } from "../utils/common/messages";
 
 export class KicsProvider {
   public process;
@@ -36,13 +30,13 @@ export class KicsProvider {
     private readonly fixableResultsByLine
   ) {
     const onSave = vscode.workspace
-      .getConfiguration("CheckmarxKICS")
-      .get("Activate KICS Auto Scanning") as boolean;
+      .getConfiguration(constants.cxKics)
+      .get(constants.cxKicsAutoScan) as boolean;
     this.kicsStatusBarItem.text =
       onSave === true
-        ? "$(check) Checkmarx KICS"
-        : "$(debug-disconnect) Checkmarx KICS";
-    this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
+        ? messages.kicsStatusBarConnect
+        : messages.kicsStatusBarDisconnect;
+    this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
     this.kicsStatusBarItem.command = commands.kicsSetings;
     this.kicsStatusBarItem.show();
     this.fixableResults = [];
@@ -51,8 +45,8 @@ export class KicsProvider {
 
   async runKics() {
     this.kicsStatusBarItem.text =
-      "$(sync~spin) Checkmarx KICS: Running KICS Auto Scan";
-    this.kicsStatusBarItem.tooltip = "Checkmarx KICS is running";
+      messages.kicsAutoScanRunning;
+    this.kicsStatusBarItem.tooltip = messages.kicsRunning;
     this.kicsStatusBarItem.show();
     // Get current file, either from global state or from the current open file
     const file = await this.getCurrentFile(this.context, this.logs);
@@ -61,12 +55,12 @@ export class KicsProvider {
     }
 
     // Get the last process from global state, if present we try to kill it to avoid process spawn spam
-    const savedProcess = get(this.context, PROCESS_OBJECT);
+    const savedProcess = getFromState(this.context, constants.processObject);
     if (savedProcess && savedProcess.id) {
       kill(savedProcess.id.pid);
-      update(this.context, PROCESS_OBJECT, {
+      updateState(this.context, constants.processObject, {
         id: undefined,
-        name: PROCESS_OBJECT_KEY,
+        name: constants.processObjectKey,
       });
     }
 
@@ -88,9 +82,9 @@ export class KicsProvider {
 
     // update the current cli spawned process returned by the wrapper
     this.process = process;
-    update(this.context, PROCESS_OBJECT, {
+    updateState(this.context, constants.processObject, {
       id: this.process,
-      name: PROCESS_OBJECT_KEY,
+      name: constants.processObjectKey,
     });
 
     // async wait for the KICS scan to end to create the diagnostics and print the summary
@@ -121,7 +115,7 @@ export class KicsProvider {
             { pattern: file.file },
             kicsResults
           );
-          this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
+          this.kicsStatusBarItem.text = messages.kicsStatusBarConnect;
           this.updateKicsFixableResults(this.diagnosticCollection);
           this.codeActionDisposable =
             vscode.languages.registerCodeActionsProvider(
@@ -137,14 +131,14 @@ export class KicsProvider {
         }
       })
       .catch((error) => {
-        this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
+        this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
         if (error.message && error.message.length > 0) {
-          this.kicsStatusBarItem.text = "$(error) Checkmarx KICS";
-          this.kicsStatusBarItem.tooltip = "Checkmarx KICS auto scan";
+          this.kicsStatusBarItem.text = messages.kicsStatusBarError;
+          this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
           this.logs.error(error);
-          update(this.context, PROCESS_OBJECT, {
+          updateState(this.context, constants.processObject, {
             id: undefined,
-            name: PROCESS_OBJECT_KEY,
+            name: constants.processObjectKey,
           });
         }
       });
@@ -161,7 +155,7 @@ export class KicsProvider {
   ) {
     // Call KICS remediation
     this.kicsStatusBarItem.text =
-      "$(sync~spin) Checkmarx KICS: Running KICS Fix";
+      messages.kicsFixRunning;
     const kicsFile = path.dirname(file.file);
     const resultsFile = this.createKicsResultsFile(kicsResults);
     let similarityIdFilter = "";
@@ -209,7 +203,7 @@ export class KicsProvider {
           vscode.window.showInformationMessage("Fix applied to " + message);
           this.remediationSummaryLogs(cxOutput.payload, this.logs);
           logs.info("Fixes applied to " + message);
-          this.kicsStatusBarItem.text = "$(check) Checkmarx KICS";
+          this.kicsStatusBarItem.text = messages.kicsStatusBarConnect;
           this.updateKicsFixableResults(diagnosticCollection);
           vscode.commands.executeCommand(commands.kicsRealtime);
         } else {
@@ -222,20 +216,20 @@ export class KicsProvider {
   }
 
   createKicsResultsFile(kicsResults): string {
-    const fullPath = join(__dirname, KICS_RESULTS_FILE);
+    const fullPath = join(__dirname, constants.kicsResultsFile);
     try {
       // this was needed to match our structure with the original KICS results field names
-      kicsResults[KICS_QUERIES] = kicsResults[KICS_RESULTS];
-      kicsResults[KICS_TOTAL_COUNTER] = kicsResults[KICS_COUNT];
-      delete kicsResults[KICS_RESULTS];
-      delete kicsResults[KICS_COUNT];
+      kicsResults[constants.kicsQueries] = kicsResults[constants.kicsResults];
+      kicsResults[constants.kicsTotalCounter] = kicsResults[constants.kicsCount];
+      delete kicsResults[constants.kicsResults];
+      delete kicsResults[constants.kicsCount];
       // results to string, to be written to the file
       const data = JSON.stringify(kicsResults);
       // revert changes in the results object
-      kicsResults[KICS_RESULTS] = kicsResults[KICS_QUERIES];
-      kicsResults[KICS_COUNT] = kicsResults[KICS_TOTAL_COUNTER];
-      delete kicsResults[KICS_QUERIES];
-      delete kicsResults[KICS_TOTAL_COUNTER];
+      kicsResults[constants.kicsResults] = kicsResults[constants.kicsQueries];
+      kicsResults[constants.kicsCount] = kicsResults[constants.kicsTotalCounter];
+      delete kicsResults[constants.kicsQueries];
+      delete kicsResults[constants.kicsTotalCounter];
       writeFileSync(fullPath, data, {
         flag: "w",
       });
@@ -293,9 +287,9 @@ export class KicsProvider {
   resultsSummaryLogs(kicsResults: CxKicsRealTime, logs: Logs) {
     logs.info(
       "Results summary:" +
-        JSON.stringify(kicsResults?.summary, null, 2)
-          .replaceAll("{", "")
-          .replaceAll("}", "")
+      JSON.stringify(kicsResults?.summary, null, 2)
+        .replaceAll("{", "")
+        .replaceAll("}", "")
     );
     // Decide wether or not to print the quick fix available information
     if (this.checkIfAnyFixable(kicsResults)) {
@@ -320,9 +314,9 @@ export class KicsProvider {
   remediationSummaryLogs(remediation: object, logs: Logs) {
     logs.info(
       "Remediation summary:" +
-        JSON.stringify(remediation, null, 2)
-          .replaceAll("{", "")
-          .replaceAll("}", "")
+      JSON.stringify(remediation, null, 2)
+        .replaceAll("{", "")
+        .replaceAll("}", "")
     );
   }
 
@@ -340,10 +334,9 @@ export class KicsProvider {
       const startPosition = new vscode.Position(file.line - 1, 0);
       const endPosition = new vscode.Position(file.line - 1, 999);
       kicsDiagnostic.push({
-        message: `${kicsResult.query_name} (${
-          kicsResult.severity.charAt(0) +
+        message: `${kicsResult.query_name} (${kicsResult.severity.charAt(0) +
           kicsResult.severity.slice(1).toLowerCase()
-        })
+          })
   "${kicsResult.description}"
   Value: 
    ${kicsResult.query_name}
@@ -420,7 +413,7 @@ export class KicsProvider {
     context: vscode.ExtensionContext,
     logs: Logs
   ): Promise<{ file: string | undefined; editor: vscode.TextEditor }> {
-    let file = get(context, KICS_REALTIME_FILE)?.id;
+    let file = getFromState(context, constants.kicsRealtimeFile)?.id;
     const opened = vscode.window.activeTextEditor;
     if (!file) {
       if (opened && opened.document.fileName.length > 0) {

@@ -4,16 +4,11 @@ import {
   commands
 } from "../utils/common/commands";
 import {
-  DEPENDENCY_GROUP,
-  FILE_GROUP,
   GroupBy,
-  LANGUAGE_GROUP,
-  QUERY_NAME_GROUP,
-  SEVERITY_GROUP,
-  STATE_GROUP,
-  STATUS_GROUP,
+  constants
 } from "../utils/common/constants";
-import { updateFilter } from "../utils/filters";
+import { messages } from "../utils/common/messages";
+import { updateStateFilter } from "../utils/common/globalState";
 
 export class GroupByCommand {
   context: vscode.ExtensionContext;
@@ -41,37 +36,37 @@ export class GroupByCommand {
   }
 
   public async initializeFilters() {
-    this.logs.info(`Initializing group by selections`);
+    this.logs.info(messages.initilizeGroupBy);
     const groupQueryName =
-      this.context.globalState.get<boolean>(QUERY_NAME_GROUP) ?? false;
+      this.context.globalState.get<boolean>(constants.queryNameGroup) ?? false;
     this.updateResultsProviderGroup(GroupBy.queryName, groupQueryName);
-    await updateFilter(this.context, QUERY_NAME_GROUP, groupQueryName);
+    await updateStateFilter(this.context, constants.queryNameGroup, groupQueryName);
     await vscode.commands.executeCommand(commands.refreshTree);
     const groupLanguage =
-      this.context.globalState.get<boolean>(LANGUAGE_GROUP) ?? false;
+      this.context.globalState.get<boolean>(constants.languageGroup) ?? false;
     this.updateResultsProviderGroup(GroupBy.language, groupLanguage);
-    await updateFilter(this.context, LANGUAGE_GROUP, groupLanguage);
+    await updateStateFilter(this.context, constants.languageGroup, groupLanguage);
     await vscode.commands.executeCommand(commands.refreshTree);
     // By default only get results grouped by severity
     const groupBySeverity =
-      this.context.globalState.get<boolean>(SEVERITY_GROUP) ?? true;
+      this.context.globalState.get<boolean>(constants.severityGroup) ?? true;
     this.updateResultsProviderGroup(GroupBy.severity, groupBySeverity);
-    await updateFilter(this.context, SEVERITY_GROUP, groupBySeverity);
+    await updateStateFilter(this.context, constants.severityGroup, groupBySeverity);
     await vscode.commands.executeCommand(commands.refreshTree);
     const groupByStatus =
-      this.context.globalState.get<boolean>(STATUS_GROUP) ?? false;
+      this.context.globalState.get<boolean>(constants.statusGroup) ?? false;
     this.updateResultsProviderGroup(GroupBy.status, groupByStatus);
-    await updateFilter(this.context, STATUS_GROUP, groupByStatus);
+    await updateStateFilter(this.context, constants.statusGroup, groupByStatus);
     await vscode.commands.executeCommand(commands.refreshTree);
     const groupByState =
-      this.context.globalState.get<boolean>(STATE_GROUP) ?? false;
+      this.context.globalState.get<boolean>(constants.stateGroup) ?? false;
     this.updateResultsProviderGroup(GroupBy.state, groupByState);
-    await updateFilter(this.context, STATE_GROUP, groupByState);
+    await updateStateFilter(this.context, constants.stateGroup, groupByState);
     await vscode.commands.executeCommand(commands.refreshTree);
     const groupByFileName =
-      this.context.globalState.get<boolean>(FILE_GROUP) ?? false;
+      this.context.globalState.get<boolean>(constants.fileGroup) ?? false;
     this.updateResultsProviderGroup(GroupBy.fileName, groupByFileName);
-    await updateFilter(this.context, FILE_GROUP, groupByFileName);
+    await updateStateFilter(this.context, constants.fileGroup, groupByFileName);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
 
@@ -84,7 +79,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.fileName,
-            FILE_GROUP
+            constants.fileGroup
           )
       )
     );
@@ -96,7 +91,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.fileName,
-            FILE_GROUP
+            constants.fileGroup
           )
       )
     );
@@ -108,7 +103,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.fileName,
-            FILE_GROUP
+            constants.fileGroup
           )
       )
     );
@@ -123,7 +118,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.language,
-            LANGUAGE_GROUP
+            constants.languageGroup
           )
       )
     );
@@ -135,7 +130,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.language,
-            LANGUAGE_GROUP
+            constants.languageGroup
           )
       )
     );
@@ -147,7 +142,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.language,
-            LANGUAGE_GROUP
+            constants.languageGroup
           )
       )
     );
@@ -162,7 +157,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.severity,
-            SEVERITY_GROUP
+            constants.severityGroup
           )
       )
     );
@@ -174,7 +169,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.severity,
-            SEVERITY_GROUP
+            constants.severityGroup
           )
       )
     );
@@ -186,7 +181,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.severity,
-            SEVERITY_GROUP
+            constants.severityGroup
           )
       )
     );
@@ -201,7 +196,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.status,
-            STATUS_GROUP
+            constants.statusGroup
           )
       )
     );
@@ -213,7 +208,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.status,
-            STATUS_GROUP
+            constants.statusGroup
           )
       )
     );
@@ -225,7 +220,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.status,
-            STATUS_GROUP
+            constants.statusGroup
           )
       )
     );
@@ -236,21 +231,21 @@ export class GroupByCommand {
       vscode.commands.registerCommand(
         commands.groupByState,
         async () =>
-          await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
+          await this.group(this.logs, this.context, GroupBy.state, constants.stateGroup)
       )
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.groupByStateActive,
         async () =>
-          await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
+          await this.group(this.logs, this.context, GroupBy.state, constants.stateGroup)
       )
     );
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.groupByStateCommand,
         async () =>
-          await this.group(this.logs, this.context, GroupBy.state, STATE_GROUP)
+          await this.group(this.logs, this.context, GroupBy.state, constants.stateGroup)
       )
     );
   }
@@ -264,7 +259,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.queryName,
-            QUERY_NAME_GROUP
+            constants.queryNameGroup
           )
       )
     );
@@ -276,7 +271,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.queryName,
-            QUERY_NAME_GROUP
+            constants.queryNameGroup
           )
       )
     );
@@ -288,7 +283,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.queryName,
-            QUERY_NAME_GROUP
+            constants.queryNameGroup
           )
       )
     );
@@ -303,7 +298,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.directDependency,
-            DEPENDENCY_GROUP
+            constants.dependencyGroup
           )
       )
     );
@@ -315,7 +310,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.directDependency,
-            DEPENDENCY_GROUP
+            constants.dependencyGroup
           )
       )
     );
@@ -327,7 +322,7 @@ export class GroupByCommand {
             this.logs,
             this.context,
             GroupBy.directDependency,
-            DEPENDENCY_GROUP
+            constants.dependencyGroup
           )
       )
     );
@@ -340,15 +335,13 @@ export class GroupByCommand {
     filter: string
   ) {
     logs.info(
-      `Grouping by ${
-        activeGroupBy === GroupBy.directDependency
-          ? "direct dependency"
-          : activeGroupBy
-      }`
+      messages.groupingBy(activeGroupBy === GroupBy.directDependency
+        ? "direct dependency"
+        : activeGroupBy)
     );
     const currentValue = context.globalState.get(filter);
     this.updateResultsProviderGroup(activeGroupBy, !currentValue);
-    await updateFilter(context, filter, !currentValue);
+    await updateStateFilter(context, filter, !currentValue);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
 

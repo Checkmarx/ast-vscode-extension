@@ -9,14 +9,17 @@ import {
   projectPicker,
   scanInput,
   scanPicker,
-} from "../views/resultsView/pickers";
+} from "../utils/pickers/pickers";
+import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 
 export class PickerCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
-  constructor(context: vscode.ExtensionContext, logs: Logs) {
+  resultsProvider : AstResultsProvider;
+  constructor(context: vscode.ExtensionContext, logs: Logs,resultsProvider : AstResultsProvider) {
     this.context = context;
     this.logs = logs;
+    this.resultsProvider = resultsProvider;
   }
 
   public registerPickerCommands() {

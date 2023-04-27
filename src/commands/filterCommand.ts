@@ -1,33 +1,24 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
-commands
+  commands
 } from "../utils/common/commands";
 import {
-  CONFIRMED_FILTER,
-  HIGH_FILTER,
-  IGNORED_FILTER,
-  INFO_FILTER,
   SeverityLevel,
-  LOW_FILTER,
-  MEDIUM_FILTER,
-  NOT_EXPLOITABLE_FILTER,
-  NOT_IGNORED_FILTER,
-  PROPOSED_FILTER,
   StateLevel,
-  TO_VERIFY_FILTER,
-  URGENT_FILTER,
+  constants
 } from "../utils/common/constants";
-import { updateFilter } from "../utils/filters";
+import { messages } from "../utils/common/messages";
+import { updateStateFilter } from "../utils/common/globalState";
 
 export class FilterCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
-  public activeSeverities: SeverityLevel[] = [
+  private activeSeverities: SeverityLevel[] = [
     SeverityLevel.high,
     SeverityLevel.medium,
   ];
-  public activeStates: StateLevel[] = [
+  private activeStates: StateLevel[] = [
     StateLevel.confirmed,
     StateLevel.toVerify,
     StateLevel.urgent,
@@ -36,6 +27,14 @@ export class FilterCommand {
   constructor(context: vscode.ExtensionContext, logs: Logs) {
     this.context = context;
     this.logs = logs;
+  }
+
+  public getAtiveSeverities() {
+    return this.activeSeverities;
+  }
+
+  public getActiveStates() {
+    return this.activeStates;
   }
 
   public registerFilters() {
@@ -53,57 +52,57 @@ export class FilterCommand {
   }
 
   public async initializeFilters() {
-    this.logs.info(`Initializing severity filters`);
-    const high = this.context.globalState.get<boolean>(HIGH_FILTER) ?? true;
-    this.updateResultsProvider(SeverityLevel.high, high);
-    await updateFilter(this.context, HIGH_FILTER, high);
+    this.logs.info(messages.initilizeSeverities);
+    const high = this.context.globalState.get<boolean>(constants.highFilter) ?? true;
+    this.updateSeverities(SeverityLevel.high, high);
+    await updateStateFilter(this.context, constants.highFilter, high);
 
-    const medium = this.context.globalState.get<boolean>(MEDIUM_FILTER) ?? true;
-    this.updateResultsProvider(SeverityLevel.medium, medium);
-    await updateFilter(this.context, MEDIUM_FILTER, medium);
+    const medium = this.context.globalState.get<boolean>(constants.mediumFilter) ?? true;
+    this.updateSeverities(SeverityLevel.medium, medium);
+    await updateStateFilter(this.context, constants.mediumFilter, medium);
 
-    const low = this.context.globalState.get<boolean>(LOW_FILTER) ?? true;
-    this.updateResultsProvider(SeverityLevel.low, low);
-    await updateFilter(this.context, LOW_FILTER, low);
+    const low = this.context.globalState.get<boolean>(constants.lowFilter) ?? true;
+    this.updateSeverities(SeverityLevel.low, low);
+    await updateStateFilter(this.context, constants.lowFilter, low);
 
-    const info = this.context.globalState.get<boolean>(INFO_FILTER) ?? true;
-    this.updateResultsProvider(SeverityLevel.info, info);
-    await updateFilter(this.context, INFO_FILTER, info);
+    const info = this.context.globalState.get<boolean>(constants.infoFilter) ?? true;
+    this.updateSeverities(SeverityLevel.info, info);
+    await updateStateFilter(this.context, constants.infoFilter, info);
 
     this.logs.info(`Initializing state filters`);
     const notExploitable =
-      this.context.globalState.get<boolean>(NOT_EXPLOITABLE_FILTER) ?? false;
-    this.updateResultsProviderState(StateLevel.notExploitable, notExploitable);
-    await updateFilter(this.context, NOT_EXPLOITABLE_FILTER, notExploitable);
+      this.context.globalState.get<boolean>(constants.notExploitableFilter) ?? false;
+    this.updateState(StateLevel.notExploitable, notExploitable);
+    await updateStateFilter(this.context, constants.notExploitableFilter, notExploitable);
 
     const proposed =
-      this.context.globalState.get<boolean>(PROPOSED_FILTER) ?? false;
-    this.updateResultsProviderState(StateLevel.proposed, proposed);
-    await updateFilter(this.context, PROPOSED_FILTER, proposed);
+      this.context.globalState.get<boolean>(constants.proposedFilter) ?? false;
+    this.updateState(StateLevel.proposed, proposed);
+    await updateStateFilter(this.context, constants.proposedFilter, proposed);
 
     const confirmed =
-      this.context.globalState.get<boolean>(CONFIRMED_FILTER) ?? true;
-    this.updateResultsProviderState(StateLevel.confirmed, confirmed);
-    await updateFilter(this.context, CONFIRMED_FILTER, confirmed);
+      this.context.globalState.get<boolean>(constants.confirmedFilter) ?? true;
+    this.updateState(StateLevel.confirmed, confirmed);
+    await updateStateFilter(this.context, constants.confirmedFilter, confirmed);
 
     const toVerify =
-      this.context.globalState.get<boolean>(TO_VERIFY_FILTER) ?? true;
-    this.updateResultsProviderState(StateLevel.toVerify, toVerify);
-    await updateFilter(this.context, TO_VERIFY_FILTER, toVerify);
+      this.context.globalState.get<boolean>(constants.toVerifyFilter) ?? true;
+    this.updateState(StateLevel.toVerify, toVerify);
+    await updateStateFilter(this.context, constants.toVerifyFilter, toVerify);
 
-    const urgent = this.context.globalState.get<boolean>(URGENT_FILTER) ?? true;
-    this.updateResultsProviderState(StateLevel.urgent, urgent);
-    await updateFilter(this.context, URGENT_FILTER, urgent);
+    const urgent = this.context.globalState.get<boolean>(constants.urgentFilter) ?? true;
+    this.updateState(StateLevel.urgent, urgent);
+    await updateStateFilter(this.context, constants.urgentFilter, urgent);
 
     const notIgnored =
-      this.context.globalState.get<boolean>(NOT_IGNORED_FILTER) ?? true;
-    this.updateResultsProviderState(StateLevel.notIgnored, notIgnored);
-    await updateFilter(this.context, NOT_IGNORED_FILTER, notIgnored);
+      this.context.globalState.get<boolean>(constants.notIgnoredFilter) ?? true;
+    this.updateState(StateLevel.notIgnored, notIgnored);
+    await updateStateFilter(this.context, constants.notIgnoredFilter, notIgnored);
 
     const ignored =
-      this.context.globalState.get<boolean>(IGNORED_FILTER) ?? true;
-    this.updateResultsProviderState(StateLevel.ignored, ignored);
-    await updateFilter(this.context, IGNORED_FILTER, ignored);
+      this.context.globalState.get<boolean>(constants.ignoredFilter) ?? true;
+    this.updateState(StateLevel.ignored, ignored);
+    await updateStateFilter(this.context, constants.ignoredFilter, ignored);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
 
@@ -116,7 +115,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.high,
-            HIGH_FILTER
+            constants.highFilter
           )
       )
     );
@@ -128,7 +127,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.high,
-            HIGH_FILTER
+            constants.highFilter
           )
       )
     );
@@ -140,7 +139,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.high,
-            HIGH_FILTER
+            constants.highFilter
           )
       )
     );
@@ -156,7 +155,7 @@ export class FilterCommand {
             this.context,
 
             SeverityLevel.medium,
-            MEDIUM_FILTER
+            constants.mediumFilter
           )
       )
     );
@@ -169,7 +168,7 @@ export class FilterCommand {
             this.context,
 
             SeverityLevel.medium,
-            MEDIUM_FILTER
+            constants.mediumFilter
           )
       )
     );
@@ -182,7 +181,7 @@ export class FilterCommand {
             this.context,
 
             SeverityLevel.medium,
-            MEDIUM_FILTER
+            constants.mediumFilter
           )
       )
     );
@@ -197,7 +196,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.low,
-            LOW_FILTER
+            constants.lowFilter
           )
       )
     );
@@ -209,7 +208,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.low,
-            LOW_FILTER
+            constants.lowFilter
           )
       )
     );
@@ -221,7 +220,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.low,
-            LOW_FILTER
+            constants.lowFilter
           )
       )
     );
@@ -236,7 +235,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.info,
-            INFO_FILTER
+            constants.infoFilter
           )
       )
     );
@@ -248,7 +247,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.info,
-            INFO_FILTER
+            constants.infoFilter
           )
       )
     );
@@ -260,7 +259,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             SeverityLevel.info,
-            INFO_FILTER
+            constants.infoFilter
           )
       )
     );
@@ -275,7 +274,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notExploitable,
-            NOT_EXPLOITABLE_FILTER
+            constants.notExploitableFilter
           )
       )
     );
@@ -287,7 +286,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notExploitable,
-            NOT_EXPLOITABLE_FILTER
+            constants.notExploitableFilter
           )
       )
     );
@@ -299,7 +298,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notExploitable,
-            NOT_EXPLOITABLE_FILTER
+            constants.notExploitableFilter
           )
       )
     );
@@ -314,7 +313,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.proposed,
-            PROPOSED_FILTER
+            constants.proposedFilter
           )
       )
     );
@@ -326,7 +325,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.proposed,
-            PROPOSED_FILTER
+            constants.proposedFilter
           )
       )
     );
@@ -338,7 +337,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.proposed,
-            PROPOSED_FILTER
+            constants.proposedFilter
           )
       )
     );
@@ -353,7 +352,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.confirmed,
-            CONFIRMED_FILTER
+            constants.confirmedFilter
           )
       )
     );
@@ -365,7 +364,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.confirmed,
-            CONFIRMED_FILTER
+            constants.confirmedFilter
           )
       )
     );
@@ -377,7 +376,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.confirmed,
-            CONFIRMED_FILTER
+            constants.confirmedFilter
           )
       )
     );
@@ -392,7 +391,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.toVerify,
-            TO_VERIFY_FILTER
+            constants.toVerifyFilter
           )
       )
     );
@@ -404,7 +403,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.toVerify,
-            TO_VERIFY_FILTER
+            constants.toVerifyFilter
           )
       )
     );
@@ -416,7 +415,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.toVerify,
-            TO_VERIFY_FILTER
+            constants.toVerifyFilter
           )
       )
     );
@@ -431,7 +430,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.urgent,
-            URGENT_FILTER
+            constants.urgentFilter
           )
       )
     );
@@ -443,7 +442,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.urgent,
-            URGENT_FILTER
+            constants.urgentFilter
           )
       )
     );
@@ -455,7 +454,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.urgent,
-            URGENT_FILTER
+            constants.urgentFilter
           )
       )
     );
@@ -470,7 +469,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notIgnored,
-            NOT_IGNORED_FILTER
+            constants.notIgnoredFilter
           )
       )
     );
@@ -482,7 +481,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notIgnored,
-            NOT_IGNORED_FILTER
+            constants.notIgnoredFilter
           )
       )
     );
@@ -494,7 +493,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.notIgnored,
-            NOT_IGNORED_FILTER
+            constants.notIgnoredFilter
           )
       )
     );
@@ -509,7 +508,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.ignored,
-            IGNORED_FILTER
+            constants.ignoredFilter
           )
       )
     );
@@ -521,7 +520,7 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.ignored,
-            IGNORED_FILTER
+            constants.ignoredFilter
           )
       )
     );
@@ -533,13 +532,13 @@ export class FilterCommand {
             this.logs,
             this.context,
             StateLevel.ignored,
-            IGNORED_FILTER
+            constants.ignoredFilter
           )
       )
     );
   }
 
-  private updateResultsProvider(
+  private updateSeverities(
     activeSeverities: SeverityLevel,
     include: boolean
   ) {
@@ -554,7 +553,7 @@ export class FilterCommand {
     }
   }
 
-  private updateResultsProviderState(
+  private updateState(
     activeStates: StateLevel,
     include: boolean
   ) {
@@ -575,11 +574,11 @@ export class FilterCommand {
     activeSeverities: SeverityLevel,
     filter: string
   ) {
-    logs.info(`Filtering ${activeSeverities} results`);
+    logs.info(messages.filterResults(activeSeverities));
     const currentValue = context.globalState.get(filter);
-    this.updateResultsProvider(activeSeverities, !currentValue);
+    this.updateSeverities(activeSeverities, !currentValue);
 
-    await updateFilter(context, filter, !currentValue);
+    await updateStateFilter(context, filter, !currentValue);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
 
@@ -589,11 +588,11 @@ export class FilterCommand {
     activeStates: StateLevel,
     filter: string
   ) {
-    logs.info(`Filtering ${activeStates} results`);
+    logs.info(messages.filterResults(activeStates));
     const currentValue = context.globalState.get(filter);
-    this.updateResultsProviderState(activeStates, !currentValue);
+    this.updateState(activeStates, !currentValue);
 
-    await updateFilter(context, filter, !currentValue);
+    await updateStateFilter(context, filter, !currentValue);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
 }

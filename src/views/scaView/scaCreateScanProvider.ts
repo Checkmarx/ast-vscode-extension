@@ -2,8 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { scaScanCreate, updateStatusBarItem } from "../../ast/ast";
 import {
-  SCA_NO_VULNERABILITIES,
-  SCA_SCAN_WAITING,
+  constants
 } from "../../utils/common/constants";
 import { SCAResultsProvider } from "./scaResultsProvider";
 import { messages } from "../../utils/common/messages";
@@ -26,7 +25,7 @@ export async function createSCAScan(
   logs: Logs,
   scaResultsProvider: SCAResultsProvider
 ) {
-  updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
+  updateStatusBarItem(constants.scaScanWaiting, true, statusBarItem);
   logs.info(messages.scaScanStart);
   // Check if there is a folder opened
   const files = await vscode.workspace.findFiles("**", undefined);
@@ -46,7 +45,7 @@ export async function createSCAScan(
         scaResultsProvider.scaResults = scaResults;
         let message = undefined;
         if (scaResults && scaResults.length === 0) {
-          message = SCA_NO_VULNERABILITIES;
+          message = constants.scaNoVulnerabilities;
         }
         logs.info(messages.scaScanCompletedSuccess(scaResults.length));
         await scaResultsProvider.refreshData(message);

@@ -3,7 +3,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { AstResult } from "../../models/results";
 import { SastNode } from "../../models/sastNode";
 import {
-  GRAPH_ITEM,
+  constants,
   GroupBy,
   SeverityLevel,
   StateLevel,
@@ -11,19 +11,14 @@ import {
 import { Counter, getProperty } from "../utils";
 import { TreeItem } from "./treeItem";
 
-export function orderResults(list: CxResult[]): CxResult[] {
-  const order = ["HIGH", "MEDIUM", "LOW", "INFO"];
-  return list.sort(
-    (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
-  );
-}
+
 
 export function createSummaryItem(list: CxResult[]): TreeItem {
   const counter = new Counter(list, (p: CxResult) => p.severity);
   const label = Array.from(counter.keys())
     .map((key) => `${key}: ${counter.get(key)}`)
     .join(" | ");
-  return new TreeItem(label, GRAPH_ITEM, undefined);
+  return new TreeItem(label, constants.graphItem, undefined);
 }
 
 export function groupBy(
@@ -146,8 +141,8 @@ export function reduceGroups(
 
   const tree = previousValue.children
     ? previousValue.children.find(
-        (item) => item.label === value.replaceAll("_", " ")
-      )
+      (item) => item.label === value.replaceAll("_", " ")
+    )
     : undefined;
   if (tree) {
     tree.setDescription();

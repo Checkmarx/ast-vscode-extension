@@ -9,29 +9,13 @@ import {
   updateStatusBarItem,
 } from "../../ast/ast";
 import {
-  BRANCH_ID_KEY,
-  BRANCH_NAME,
-  NO,
-  PROJECT_ID_KEY,
-  SCAN_CANCEL,
-  SCAN_CREATE,
-  SCAN_CREATE_ID_KEY,
-  SCAN_CREATE_PREPARING,
-  SCAN_CREATE_PREP_KEY,
-  SCAN_CREATE_VERIFY_BRANCH,
-  SCAN_CREATE_VERIFY_FILES,
-  SCAN_POLL_TIMEOUT,
-  SCAN_STATUS_COMPLETE,
-  SCAN_STATUS_PARTIAL,
-  SCAN_STATUS_QUEUED,
-  SCAN_STATUS_RUNNING,
-  SCAN_WAITING,
-  YES,
+  constants
 } from "../../utils/common/constants";
-import { get, Item, update } from "../../utils/common/globalState";
-import { getResultsJson, loadScanId } from "../../utils/utils";
+import { getFromState, Item, updateState } from "../../utils/common/globalState";
+import { getResultsJson } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
+import { loadScanId } from "../../utils/pickers/pickers";
 
 export async function pollForScanResult(
   context: vscode.ExtensionContext,
@@ -40,29 +24,29 @@ export async function pollForScanResult(
 ) {
   return new Promise<void>((resolve) => {
     setInterval(async () => {
-      const scanPreparing = get(context, SCAN_CREATE_PREP_KEY);
+      const scanPreparing = getFromState(context, constants.scanCreatePrepKey);
       if (scanPreparing?.id) {
         return;
       }
 
-      const scanCreateId = get(context, SCAN_CREATE_ID_KEY);
+      const scanCreateId = getFromState(context, constants.scanCreateIdKey);
       if (scanCreateId?.id) {
-        updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
+        updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
         const scan = await getScan(scanCreateId.id);
         if (
           scan &&
-          scan.status.toLocaleLowerCase() !== SCAN_STATUS_RUNNING &&
-          scan.status.toLocaleLowerCase() !== SCAN_STATUS_QUEUED
+          scan.status.toLocaleLowerCase() !== constants.scanStatusRunning &&
+          scan.status.toLocaleLowerCase() !== constants.scanStatusQueued
         ) {
           scanFinished(context, scan, logs);
-          updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+          updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
           clearInterval(this);
           resolve();
         }
       } else {
-        updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+        updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
       }
-    }, SCAN_POLL_TIMEOUT);
+    }, constants.scanPollTimeout);
   });
 }
 
@@ -70,8 +54,8 @@ async function createScanForProject(
   context: vscode.ExtensionContext,
   logs: Logs
 ) {
-  const scanBranch: Item = context.workspaceState.get(BRANCH_ID_KEY);
-  const projectForScan: Item = context.workspaceState.get(PROJECT_ID_KEY);
+  const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
+  const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
   const projectName = projectForScan.name.split(":")[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
@@ -81,7 +65,7 @@ async function createScanForProject(
     workspaceFolder.uri.fsPath
   );
   logs.info(messages.scanCreated + scanCreateResponse.id);
-  update(context, SCAN_CREATE_ID_KEY, {
+  updateState(context, constants.scanCreateIdKey, {
     id: scanCreateResponse.id,
     name: scanCreateResponse.id,
   });
@@ -92,16 +76,16 @@ export async function cancelScan(
   statusBarItem: vscode.StatusBarItem,
   logs: Logs
 ) {
-  logs.info(SCAN_CANCEL);
-  updateStatusBarItem(SCAN_CANCEL, true, statusBarItem);
+  logs.info(constants.scanCancel);
+  updateStatusBarItem(constants.scanCancel, true, statusBarItem);
 
-  const scan = get(context, SCAN_CREATE_ID_KEY);
+  const scan = getFromState(context, constants.scanCreateIdKey);
   if (scan && scan.id) {
     const response = await scanCancel(scan.id);
     logs.info(messages.scanCancellingSent + scan.id + " :" + response);
-    update(context, SCAN_CREATE_ID_KEY, undefined);
+    updateState(context, constants.scanCreateIdKey, undefined);
   }
-  updateStatusBarItem(SCAN_CANCEL, false, statusBarItem);
+  updateStatusBarItem(constants.scanCancel, false, statusBarItem);
 }
 
 async function doesFilesMatch(logs: Logs) {
@@ -125,8 +109,8 @@ async function doesFilesMatch(logs: Logs) {
 }
 
 async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs) {
-  const workspaceBranch = get(context, BRANCH_NAME);
-  const scanBranch = get(context, BRANCH_ID_KEY);
+  const workspaceBranch = getFromState(context, constants.branchName);
+  const scanBranch = getFromState(context, constants.branchIdKey);
   if (workspaceBranch && scanBranch && workspaceBranch.id === scanBranch.id) {
     logs.info(messages.scanBranchMatch);
     return true;
@@ -141,28 +125,28 @@ export async function createScan(
   logs: Logs
 ) {
   logs.info(messages.scanCheckStart);
-  update(context, SCAN_CREATE_PREP_KEY, { id: true, name: "" });
-  updateStatusBarItem(SCAN_CREATE, true, statusBarItem);
+  updateState(context, constants.scanCreatePrepKey, { id: true, name: "" });
+  updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
-  updateStatusBarItem(SCAN_CREATE_VERIFY_BRANCH, true, statusBarItem);
+  updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
   if (!(await doesBranchMatch(context, logs))) {
-    updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
-    update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
     return;
   }
 
-  updateStatusBarItem(SCAN_CREATE_VERIFY_FILES, true, statusBarItem);
+  updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
-    updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
-    update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+    updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
     return;
   }
 
-  updateStatusBarItem(SCAN_CREATE_PREPARING, true, statusBarItem);
+  updateStatusBarItem(constants.scanCreatePreparing, true, statusBarItem);
   await createScanForProject(context, logs);
 
-  updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
-  update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
+  updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
+  updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
 
   await vscode.commands.executeCommand(commands.pollScan);
 }
@@ -170,8 +154,8 @@ export async function createScan(
 async function getUserInput(msg: string): Promise<boolean> {
   // create a promise and wait for it to resolve
   const value = new Promise<boolean>((resolve, reject) => {
-    vscode.window.showInformationMessage(msg, YES, NO).then(async (val) => {
-      if (val && val === YES) {
+    vscode.window.showInformationMessage(msg, constants.yes, constants.no).then(async (val) => {
+      if (val && val === constants.yes) {
         resolve(true);
       } else {
         resolve(false);
@@ -206,11 +190,11 @@ async function scanFinished(
   scan: CxScan,
   logs: Logs
 ) {
-  update(context, SCAN_CREATE_ID_KEY, undefined);
+  updateState(context, constants.scanCreateIdKey, undefined);
 
   if (
-    scan.status.toLowerCase() === SCAN_STATUS_COMPLETE ||
-    scan.status.toLowerCase() === SCAN_STATUS_PARTIAL
+    scan.status.toLowerCase() === constants.scanStatusComplete ||
+    scan.status.toLowerCase() === constants.scanStatusPartial
   ) {
     const userConfirmMessage = messages.scanCompletedLoadResults(
       scan.status,

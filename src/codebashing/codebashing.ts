@@ -2,9 +2,7 @@ import * as vscode from "vscode";
 import { getCodeBashing } from "../ast/ast";
 import { Logs } from "../models/logs";
 import {
-  AST_ERROR_CODEBASHING_NO_LESSON,
-  AST_ERROR_CODEBASHING_NO_LICENSE,
-  ERROR_REGEX,
+  constants
 } from "../utils/common/constants";
 import AstError from "../exceptions/AstError";
 
@@ -33,7 +31,7 @@ export async function getCodebashingLink(
     } catch (err) {
       logs.error("Failed getting codebashing link");
       if (err instanceof AstError) {
-        if (err.code === AST_ERROR_CODEBASHING_NO_LICENSE) {
+        if (err.code === constants.astErrorCodeBashingNoLicense) {
           vscode.window
             .showInformationMessage(CODEBASHING_NO_LICENSE, "Codebashing")
             .then(() =>
@@ -42,14 +40,14 @@ export async function getCodebashingLink(
               )
             );
           return;
-        } else if (err.code === AST_ERROR_CODEBASHING_NO_LESSON) {
+        } else if (err.code === constants.astErrorCodeBashingNoLesson) {
           vscode.window.showInformationMessage(CODEBASHING_NO_LESSON);
           return;
         }
       }
 
       vscode.window.showWarningMessage(
-        String(err).replace(ERROR_REGEX, "").replaceAll("\n", "")
+        String(err).replace(constants.errorRegex, "").replaceAll("\n", "")
       );
     }
   });

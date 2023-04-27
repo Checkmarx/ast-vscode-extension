@@ -4,6 +4,7 @@ import * as path from "path";
 import { AstResult } from "../../models/results";
 import { Details } from "../../utils/interface/details";
 import { getNonce } from "../../utils/utils";
+import { messages } from "../../utils/common/messages";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -84,11 +85,11 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       }
       if (!fileOpened) {
         vscode.window.showErrorMessage(
-          `File ${filePath} not found in workspace`
+          messages.resultFileNotFound(filePath)
         );
       }
     } catch (error) {
-      vscode.window.showErrorMessage(`File ${filePath} not found in workspace`);
+      vscode.window.showErrorMessage(messages.resultFileNotFound(filePath));
     }
   }
 
@@ -191,11 +192,11 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
                   html.generalTab(cxPath),
                   html.detailsTab(),
                   html.loader(),
-                  "General",
-                  "Learn More",
-                  "Changes",
-                  "Remediation Examples",
-                  "No remediation examples"
+                  messages.generalTab,
+                  messages.learnMoreTab,
+                  messages.changesTab,
+                  messages.remediationExamplesTab,
+                  messages.noRemediationExamplesTab
                 )
               : this.result.type === "sca"
               ? html.scaView(
@@ -214,9 +215,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
                   html.generalTab(cxPath),
                   "",
                   html.loader(),
-                  "General",
+                  messages.generalTab,
                   "",
-                  "Changes",
+                  messages.changesTab,
                   "",
                   ""
                 )

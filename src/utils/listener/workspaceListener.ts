@@ -1,13 +1,9 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "../../views/resultsView/astResultsProvider";
 import {
-  EXTENSION_NAME,
-  PROJECT_ID_KEY,
-  BRANCH_ID_KEY,
-  SCAN_CREATE_PREP_KEY,
-  SCAN_CREATE_ID_KEY,
+  constants
 } from "../common/constants";
-import { get } from "../common/globalState";
+import { getFromState } from "../common/globalState";
 import { ContextKey } from "./contextKey";
 
 export class WorkspaceListener {
@@ -16,10 +12,10 @@ export class WorkspaceListener {
 
   constructor() {
     this._createScanButton = new ContextKey(
-      `${EXTENSION_NAME}.createScanButton`
+      `${constants.extensionName}.createScanButton`
     );
     this._cancelScanButton = new ContextKey(
-      `${EXTENSION_NAME}.cancelScanButton`
+      `${constants.extensionName}.cancelScanButton`
     );
   }
 
@@ -34,10 +30,10 @@ export class WorkspaceListener {
     context: vscode.ExtensionContext,
     astResultsProvider: AstResultsProvider
   ) {
-    const project = get(context, PROJECT_ID_KEY);
-    const branch = get(context, BRANCH_ID_KEY);
-    const preparingScan = get(context, SCAN_CREATE_PREP_KEY);
-    const runningScan = get(context, SCAN_CREATE_ID_KEY);
+    const project = getFromState(context, constants.projectIdKey);
+    const branch = getFromState(context, constants.branchIdKey);
+    const preparingScan = getFromState(context, constants.scanCreatePrepKey);
+    const runningScan = getFromState(context, constants.scanCreateIdKey);
 
     if (
       this._createScanButton.set(
