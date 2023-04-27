@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { KICS_REALTIME_FILE } from "../common/constants";
 import { Logs } from "../../models/logs";
 import { get } from "../common/globalState";
-import { getResultsRealtime } from "../ast/ast";
+import { Cx } from "../../cx/cx";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { KicsSummary } from "../../models/kicsNode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
@@ -36,8 +36,9 @@ export function remediationSummaryLogs(remediation:any,logs:Logs){
 export async function createKicsScan(file: string | undefined){
 	let results :any;
 	try {
+		const cx =  new Cx();
 		const additionalParams = vscode.workspace.getConfiguration("CheckmarxKICS").get("Additional Parameters") as string;
-		results = await getResultsRealtime(file!,additionalParams);
+		results = await cx.getResultsRealtime(file!,additionalParams);
 	  } catch (err : any){
 		throw new Error(err.message);	
 	  }

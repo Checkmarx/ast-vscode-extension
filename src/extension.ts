@@ -48,7 +48,7 @@ import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { applyScaFix } from "./utils/scaFix";
 import { getLearnMore } from "./utils/sast/learnMore";
-import { getAstConfiguration, isScanEnabled, isSCAScanEnabled } from "./utils/ast/ast";
+import { Cx} from "./cx/cx";
 import { cancelScan, createScan, pollForScanResult } from "./resultsView/create_scan_provider";
 import { SCAResultsProvider } from "./scaView/sca_results_provider";
 import { createSCAScan } from "./scaView/sca_create_scan_provider";
@@ -275,17 +275,17 @@ export async function activate(context: vscode.ExtensionContext) {
         );
     }
     ));
-
+    const cx =  new Cx();
     // Listening to settings changes
-    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, cx.getAstConfiguration() ? true : false);
     // Scan from IDE enablement
-    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await cx.isScanEnabled(logs));
     // SCA auto scanning enablement
-    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await isSCAScanEnabled(logs));
+    vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isSCAScanEnabled`, await cx.isSCAScanEnabled(logs));
 
     vscode.workspace.onDidChangeConfiguration(async (event) => {
-        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, getAstConfiguration() ? true : false);
-        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await isScanEnabled(logs));
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, cx.getAstConfiguration() ? true : false);
+        vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isScanEnabled`, await cx.isScanEnabled(logs));
         const onSave = vscode.workspace.getConfiguration("CheckmarxKICS").get("Activate KICS Auto Scanning") as boolean;
         kicsStatusBarItem.text = onSave === true ? "$(check) Checkmarx kics" : "$(debug-disconnect) Checkmarx kics";
         await vscode.commands.executeCommand(REFRESH_TREE);

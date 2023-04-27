@@ -5,14 +5,8 @@ import { Logs } from "../models/logs";
 import { AstResult } from '../models/results';
 import { get, update, updateError } from "./common/globalState";
 import {
-	getBranches,
-	getProject,
-	getProjectList,
-	getResults,
-	getScan,
-	getScans,
-	triageShow
-} from "./ast/ast";
+	cx
+} from "../cx";
 import { getBfl } from './sast/bfl';
 import { REFRESH_TREE, SHOW_ERROR } from './common/commands';
 import { BRANCH_ID_KEY, BRANCH_LABEL, ERROR_MESSAGE, PROJECT_ID_KEY, PROJECT_LABEL, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
@@ -44,7 +38,7 @@ export async function getBranchPickItems(logs: Logs, projectId: string, context:
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading branches" });
-			const branchList = await getBranches(projectId);
+			const branchList = await cx.getBranches(projectId);
 			try {
 				return branchList ? branchList.map((label) => ({
 					label: label,
@@ -65,7 +59,7 @@ export async function getProjectsPickItems(logs: Logs, context: vscode.Extension
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading projects" });
 			try {
-				const projectList = await getProjectList();
+				const projectList = await cx.getProjectList();
 				return projectList ? projectList.map((label) => ({
 					label: label.name,
 					id: label.id,
@@ -85,7 +79,7 @@ export async function getScansPickItems(logs: Logs, projectId: string, branchNam
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading scans" });
-			const scanList = await getScans(
+			const scanList = await cx.getScans(
 				projectId,
 				branchName
 			);
@@ -108,7 +102,7 @@ export async function getResultsWithProgress(logs: Logs, scanId: string) {
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading results" });
-			await getResults(scanId);
+			await cx.getResults(scanId);
 		}
 	);
 }
@@ -118,7 +112,7 @@ export async function getScanWithProgress(logs: Logs, scanId: string) {
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading scan" });
-			return await getScan(scanId);
+			return await cx.getScan(scanId);
 		}
 	);
 }
@@ -128,7 +122,7 @@ export async function getProjectWithProgress(logs: Logs, projectId: string) {
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading project" });
-			return await getProject(projectId);
+			return await cx.getProject(projectId);
 		}
 	);
 }
@@ -138,14 +132,14 @@ export async function getBranchesWithProgress(logs: Logs, projectId: string) {
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			progress.report({ message: "Loading branches" });
-			return await getBranches(projectId);
+			return await cx.getBranches(projectId);
 		}
 	);
 }
 
 export async function getChanges(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
 	let projectId = get(context, PROJECT_ID_KEY)?.id;
-	triageShow(projectId!, result.similarityId, result.type).then((changes) => {
+	cx.triageShow(projectId!, result.similarityId, result.type).then((changes) => {
 		detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
 	}).catch((err) => {
 		detailsPanel?.webview.postMessage({ command: "loadChanges", changes: []});

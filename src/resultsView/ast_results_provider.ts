@@ -21,7 +21,7 @@ import {
 import { getResultsFilePath, getResultsWithProgress } from "../utils/utils";
 import { Logs } from "../models/logs";
 import { get, update } from "../utils/common/globalState";
-import { getAstConfiguration } from "../utils/ast/ast";
+import { Cx } from "../cx/cx";
 import { REFRESH_TREE } from "../utils/common/commands";
 import { TreeItem } from "../utils/tree/treeItem";
 import { createSummaryItem, groupBy, orderResults } from "../utils/tree/actions";
@@ -90,8 +90,9 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   }
 
   async refreshData(): Promise<void> {
+    const cx =  new Cx();
     this.showStatusBarItem();
-    this.data = getAstConfiguration() ? this.generateTree().children : [];
+    this.data = cx.getAstConfiguration() ? this.generateTree().children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getCodeBashing } from "../ast/ast";
+import { Cx } from "../../cx/cx";
 import { Logs } from "../../models/logs";
 import { AST_ERROR_CODEBASHING_NO_LESSON, AST_ERROR_CODEBASHING_NO_LICENSE, ERROR_REGEX } from "../common/constants";
 import AstError from "../../exceptions/AstError";
@@ -18,8 +18,9 @@ export async function getCodebashingLink(cweId: string, language: string, queryN
 		async (progress, token) => {
 			token.onCancellationRequested(() => logs.info("Canceled loading"));
 			try {
+				const cx =  new Cx();
 				logs.info("Fetching codebashing link");
-				const codeBashingArray = await getCodeBashing(cweId, language, queryName);
+				const codeBashingArray = await cx.getCodeBashing(cweId, language, queryName);
 				vscode.env.openExternal(vscode.Uri.parse(codeBashingArray!.path));
 			} catch (err) {
 				logs.error("Failed getting codebashing link");

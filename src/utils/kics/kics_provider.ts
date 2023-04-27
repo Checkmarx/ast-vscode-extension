@@ -24,7 +24,7 @@ import {
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import {CxCommandOutput} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import {KicsCodeActionProvider} from "./kicsCodeActions";
-import {kicsRemediation} from "../ast/ast";
+import {Cx} from "../../cx/cx";
 import {writeFileSync} from "fs";
 import {KicsDiagnostic} from "./kicsDiagnostic";
 import {KICS_REALTIME} from "../common/commands";
@@ -126,7 +126,8 @@ export class KicsProvider {
 			});
 			similarityIdFilter=similarityIdFilter.slice(0, -1);
 		}
-		const [createObject,_] = await kicsRemediation(resultsFile,kicsFile,"",similarityIdFilter);
+		const cx =  new Cx();
+		const [createObject,_] = await cx.kicsRemediation(resultsFile,kicsFile,"",similarityIdFilter);
 		createObject
 			.then(async (cxOutput:CxCommandOutput) => {
 				if(cxOutput.exitCode===0){

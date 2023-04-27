@@ -10,7 +10,6 @@ import {
   SCA_START_SCAN,
 } from "../utils/common/constants";
 import { Logs } from "../models/logs";
-import { getAstConfiguration } from "../utils/ast/ast";
 import { TreeItem } from "../utils/tree/treeItem";
 import { groupBy, orderResults } from "../utils/tree/actions";
 
