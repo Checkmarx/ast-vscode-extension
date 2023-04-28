@@ -27,12 +27,13 @@ export function groupBy(
   scan: string | undefined,
   diagnosticCollection: vscode.DiagnosticCollection,
   issueLevel: string[] = [IssueLevel.high, IssueLevel.medium, IssueLevel.low, IssueLevel.info],
-  stateLevel: string[] = [StateLevel.confirmed, StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored]
+  stateLevel: string[] = [StateLevel.confirmed, StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored],
+  treeItem?: string
 ): TreeItem {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const map = new Map<string, vscode.Diagnostic[]>();
 
-  const tree = new TreeItem(scan ?? "", undefined, undefined, []);
+  const tree = new TreeItem(scan ?? "", treeItem, undefined, []);
   list.forEach((element: any) => {
     groupTree(element, folder, map, groups, tree, issueLevel, stateLevel);
   });
