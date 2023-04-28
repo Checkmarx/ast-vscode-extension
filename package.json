@@ -831,22 +831,22 @@
   "devDependencies": {
     "@types/chai": "4.3.4",
     "@types/mocha": "10.0.1",
-    "@types/node": "^18.15.12",
+    "@types/node": "^18.16.2",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
     "chai": "4.3.7",
-    "eslint": "^8.38.0",
+    "eslint": "^8.39.0",
     "mocha": "10.2.0",
     "typescript": "^5.0.4",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "5.5.2",
+    "vscode-extension-tester": "5.5.3",
     "vscode-extension-tester-locators": "^3.4.0",
-    "webpack": "^5.80.0",
-    "webpack-cli": "^5.0.1"
+    "webpack": "^5.81.0",
+    "webpack-cli": "^5.0.2"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "file:./checkmarxDev-ast-cli-javascript-wrapper-0.0.73.tgz",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.72",
     "copyfiles": "2.4.1",
     "tree-kill": "^1.2.2"
   }
