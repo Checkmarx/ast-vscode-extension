@@ -261,7 +261,6 @@ export async function getResultsBfl(scanId: string, queryId: string, resultNodes
 }
 
 export async function getResultsRealtime(fileSources: string, additionalParams: string): Promise<any> {
-
     if (!fileSources) {
         throw new Error("Missing mandatory parameters, fileSources");
     }

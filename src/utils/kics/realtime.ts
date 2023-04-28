@@ -8,8 +8,10 @@ import { KicsSummary } from "../../models/kicsNode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 
 // Logs the output of kics autoscan summary
-export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs){
-	logs.info("Results summary:"+ JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}",""));
+export function resultsSummaryLogs(kicsResults:CxKicsRealTime,logs:Logs) {
+	const summary = JSON.stringify(kicsResults?.summary, null, 2).replaceAll("{","").replaceAll("}","");
+	
+	logs.info("Results summary: " + (summary ? summary : "No vulnerabilities found."));
 	// Decide wether or not to print the quick fix available information 
 	if(checkIfAnyFixable(kicsResults)){
 		logs.info("Check out KICS Auto-remediation: hover the mouse over the result line and use ⌘. or ctrl.");

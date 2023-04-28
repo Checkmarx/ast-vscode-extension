@@ -83,6 +83,11 @@ export class KicsProvider {
 			if(cxOutput.exitCode!== 0) {
 				throw new Error(cxOutput.status);
 			}
+
+			if (!cxOutput.payload) {
+				cxOutput.payload = [new CxKicsRealTime()];
+			}
+
 			// Get the results
 			if(cxOutput.payload){
 				const kicsResults = cxOutput.payload[0];
