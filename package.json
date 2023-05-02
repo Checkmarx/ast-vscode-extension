@@ -827,7 +827,7 @@
     "watch": "tsc -w -p ./ && npm run copytestproject",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
-    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
   },
   "devDependencies": {
     "@types/chai": "4.3.4",

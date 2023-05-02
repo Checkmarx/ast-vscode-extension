@@ -47,11 +47,11 @@ describe("Extension settings tests", () => {
       CX_CATETORY
     );
     // Set setting value
-    await apiKeyVal.setValue(API_KEY);
+    await apiKeyVal.setValue("myvalue");
     await waitByLinkText(driver,API_KEY,90000);
     // Validate settings
     const apiKey = await apiKeyVal.getValue();
-    expect(apiKey).to.equal(API_KEY);
+    expect(apiKey).to.equal("myvalue");
   });
 
   it("should check kics auto scan enablement on settings", async function () {
