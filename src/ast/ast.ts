@@ -40,9 +40,7 @@ export async function scanCreate(
   sourcePath: string
 ) {
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   if (!projectName) {
     return;
   }
@@ -65,24 +63,22 @@ export async function scanCreate(
 
 export async function scanCancel(scanId: string) {
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   if (!scanId) {
     return;
   }
   const cx = new CxWrapper(config);
   const scan = await cx.scanCancel(scanId);
-  return scan.exitCode === 0;
+  if (scan.exitCode !== 0) {
+    throw new Error("Error canceling scan");
+  }
+  return true;
 }
 
 export async function getResults(scanId: string | undefined) {
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
   if (!scanId) {
-    return;
+    throw new Error("Scan ID is not defined while trying to get results");
   }
   const cx = new CxWrapper(config);
   await cx.getResults(
@@ -97,14 +93,10 @@ export async function getScan(
   scanId: string | undefined
 ): Promise<CxScan | undefined> {
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error("Configuration is not defined while trying to get scan");
-  }
   if (!scanId) {
     throw new Error("Scan ID is not defined while trying to get scan");
   }
   const cx = new CxWrapper(config);
-  // continuar aqui com o try catch
   const scan = await cx.scanShow(scanId);
   return scan.payload[0];
 }
@@ -121,11 +113,7 @@ export async function getProject(
   }
   const cx = new CxWrapper(config);
   let project;
-  try {
-    project = await cx.projectShow(projectId);
-  } catch (error) {
-    throw new Error(error);
-  }
+  project = await cx.projectShow(projectId);
   return project.payload[0];
 }
 
@@ -152,9 +140,7 @@ export async function getBranches(
 ): Promise<string[] | undefined> {
   let r = [];
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   const cx = new CxWrapper(config);
   let branches = undefined;
   if (!projectId) {
@@ -176,9 +162,7 @@ export async function getScans(
 ): Promise<CxScan[] | undefined> {
   let r = [];
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   const filter = `project-id=${projectId},branch=${branch},limit=10000,statuses=Completed`;
   const cx = new CxWrapper(config);
   const scans = await cx.scanList(filter);
@@ -213,14 +197,10 @@ export function getAstConfiguration() {
 
 export async function isScanEnabled(logs: Logs): Promise<boolean> {
   let enabled = false;
-  const apiKey = vscode.workspace
-    .getConfiguration("checkmarxOne")
-    .get("apiKey") as string;
-  if (!apiKey) {
+  const config = getAstConfiguration();
+  if (!config) {
     return enabled;
   }
-  const config = new CxConfig();
-  config.apiKey = apiKey;
   const cx = new CxWrapper(config);
   try {
     enabled = await cx.ideScansEnabled();
@@ -244,9 +224,7 @@ export async function triageShow(
 ): Promise<any[] | undefined> {
   let r = [];
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   const cx = new CxWrapper(config);
   const scans = await cx.triageShow(projectId, similarityId, scanType);
   if (scans.payload && scans.exitCode === 0) {
@@ -264,12 +242,8 @@ export async function triageUpdate(
   state: string,
   comment: string,
   severity: string
-): Promise<number> {
-  let r = -1;
+) {
   const config = getAstConfiguration();
-  if (!config) {
-    return r;
-  }
   const cx = new CxWrapper(config);
   const triage = await cx.triageUpdate(
     projectId,
@@ -279,12 +253,6 @@ export async function triageUpdate(
     comment,
     severity.toLowerCase()
   );
-  if (triage.exitCode === 0) {
-    r = triage.exitCode;
-  } else {
-    throw new Error(triage.status);
-  }
-  return r;
 }
 
 export async function getCodeBashing(
@@ -305,7 +273,7 @@ export async function getCodeBashing(
   const codebashing = await cx.codeBashingList(
     cweId.toString(),
     language,
-    queryName.replaceAll("_", " ")
+    queryName
   );
   if (codebashing.exitCode === 0) {
     return codebashing.payload[0];
@@ -412,9 +380,7 @@ export async function learnMore(
 ): Promise<CxLearnMoreDescriptions[] | undefined> {
   let r = [];
   const config = getAstConfiguration();
-  if (!config) {
-    return [];
-  }
+
   const cx = new CxWrapper(config);
   const scans = await cx.learnMore(queryID);
   if (scans.payload && scans.exitCode === 0) {
@@ -423,13 +389,4 @@ export async function learnMore(
     throw new Error(scans.status);
   }
   return r;
-}
-
-export function updateStatusBarItem(
-  text: string,
-  show: boolean,
-  statusBarItem: vscode.StatusBarItem
-) {
-  statusBarItem.text = text;
-  show ? statusBarItem.show() : statusBarItem.hide();
 }

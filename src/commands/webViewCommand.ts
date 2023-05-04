@@ -22,8 +22,8 @@ export class WebViewCommand {
     this.resultsProvider = resultsProvider;
   }
 
-  public registerNewDetails(): vscode.Disposable {
-    return vscode.commands.registerCommand(
+  public registerNewDetails() {
+    const newDetails = vscode.commands.registerCommand(
       commands.newDetails,
       async (result: AstResult, type?: string) => {
         const detailsDetachedView = new AstDetailsDetached(
@@ -82,75 +82,82 @@ export class WebViewCommand {
           );
 
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
-        if (result.type === "sast") {
-          await getLearnMore(
-            this.logs,
-            this.context,
-            result,
-            this.detailsPanel
-          );
-        }
-        if (result.type === "sast" || result.type === "kics") {
-          await getChanges(this.logs, this.context, result, this.detailsPanel);
-        }
+        await this.loadAsyncTabsContent(result);
         // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
         //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
         // Comunication between webview and extension
-        this.detailsPanel.webview.onDidReceiveMessage(async (data) => {
-          switch (data.command) {
-            // Catch open file message to open and view the result entry
-            case "showFile":
-              await detailsDetachedView.loadDecorations(
-                data.path,
-                data.line,
-                data.column,
-                data.length
-              );
-              break;
-            // Catch submit message to open and view the result entry
-            case "submit":
-              if (this.detailsPanel) {
-                await triageSubmit(
-                  result,
-                  this.context,
-                  data,
-                  this.logs,
-                  this.detailsPanel,
-                  detailsDetachedView,
-                  this.resultsProvider
-                );
-                await getChanges(
-                  this.logs,
-                  this.context,
-                  result,
-                  this.detailsPanel
-                );
-              }
-              break;
-            // Catch get codebashing link and open a browser page
-            case "codebashing":
-              if (result.cweId) {
-                await getCodebashingLink(
-                  result.cweId,
-                  result.language,
-                  result.queryName,
-                  this.logs
-                );
-              }
-              break;
-            case "references":
-              vscode.env.openExternal(vscode.Uri.parse(data.link));
-              break;
-            case "scaFix":
-              await applyScaFix(
-                data.package,
-                data.file,
-                data.version,
-                this.logs
-              );
-          }
-        });
+        await this.handleMessages(result, detailsDetachedView);
       }
     );
+    this.context.subscriptions.push(newDetails);
+  }
+  private async loadAsyncTabsContent(result: AstResult) {
+    if (result.type === "sast") {
+      await getLearnMore(
+        this.logs,
+        this.context,
+        result,
+        this.detailsPanel
+      );
+    }
+    if (result.type === "sast" || result.type === "kics") {
+      await getChanges(this.logs, this.context, result, this.detailsPanel);
+    }
+  }
+  private async handleMessages(result: AstResult, detailsDetachedView: AstDetailsDetached) {
+    this.detailsPanel.webview.onDidReceiveMessage(async (data) => {
+      switch (data.command) {
+        // Catch open file message to open and view the result entry
+        case "showFile":
+          await detailsDetachedView.loadDecorations(
+            data.path,
+            data.line,
+            data.column,
+            data.length
+          );
+          break;
+        // Catch submit message to open and view the result entry
+        case "submit":
+          if (this.detailsPanel) {
+            await triageSubmit(
+              result,
+              this.context,
+              data,
+              this.logs,
+              this.detailsPanel,
+              detailsDetachedView,
+              this.resultsProvider
+            );
+            await getChanges(
+              this.logs,
+              this.context,
+              result,
+              this.detailsPanel
+            );
+          }
+          break;
+        // Catch get codebashing link and open a browser page
+        case "codebashing":
+          if (result.cweId) {
+            await getCodebashingLink(
+              result.cweId,
+              result.language,
+              result.queryName,
+              this.logs
+            );
+          }
+          break;
+        case "references":
+          vscode.env.openExternal(vscode.Uri.parse(data.link));
+          break;
+        case "scaFix":
+          await applyScaFix(
+            data.package,
+            data.file,
+            data.version,
+            this.logs
+          );
+      }
+    });
   }
 }

@@ -114,7 +114,7 @@ export const constants = {
   realtime: "realtime",
 
   cxKics: "CheckmarxKICS",
-  cxKicsAutoScan: "Activate KICS Auto Scanning"
+  cxKicsAutoScan: "Activate KICS Auto Scanning",
 };
 
 export enum GroupBy {

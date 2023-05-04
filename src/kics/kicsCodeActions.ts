@@ -50,23 +50,23 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       .concat(
         this.fixableResultsByLine.length > 0 && fixAllResults.length > 1
           ? this.createFixGroupCodeAction(
-              this.fixableResultsByLine,
-              fixAllResults
-            )
+            this.fixableResultsByLine,
+            fixAllResults
+          )
           : []
-      ) // Add the grouped by line fix -> usar o this.fixableResultsByLine construir diagnostico para o grupo com o mesmo range e o this.fixableResultsByLine numa funcao como a createFixGroupCodeAction
+      )
       .concat(
         fixAllResults.length > 0
           ? this.createFixFileCodeAction(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  new vscode.Position(0, 0),
-                  new vscode.Position(0, 0)
-                ),
-                "Quick Fix"
+            new vscode.Diagnostic(
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 0)
               ),
-              this.fixableResults
-            )
+              "Quick Fix"
+            ),
+            this.fixableResults
+          )
           : []
       ); // Add the fix all action if there is more than one fix in the file
   }

@@ -36,6 +36,9 @@ export class AstResultsProvider extends ResultsProvider {
   ) {
     super(context, statusBarItem);
     this.loadedResults = undefined;
+    // Syncing with AST everytime the extension gets opened
+    this.openRefreshData()
+      .then(() => logs.info(messages.dataRefreshed));
   }
 
   async clean(): Promise<void> {

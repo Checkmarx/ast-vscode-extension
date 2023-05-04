@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import {commands} from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import {
   cancelScan,
   createScan,
   pollForScanResult,
 } from "../views/resultsView/createScanProvider";
 
-export class IDECommand {
+export class ScanCommand {
   context: vscode.ExtensionContext;
   runScanStatusBar: vscode.StatusBarItem;
   logs: Logs;
@@ -50,4 +50,9 @@ export class IDECommand {
       })
     );
   }
+
+  public executePollScan() {
+    vscode.commands.executeCommand(commands.pollScan);
+  }
+
 }

@@ -6,8 +6,9 @@ import {
   constants
 } from "../common/constants";
 import { getFromState, updateState } from "../common/globalState";
-import { getBranches } from "../../ast/ast";
+import { getAstConfiguration, getBranches, isScanEnabled } from "../../ast/ast";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
+import { messages } from "../common/messages";
 
 export async function getBranchListener(
   context: vscode.ExtensionContext,
@@ -157,4 +158,29 @@ export async function gitExtensionListener(
   } else {
     logs.warn("Git extension - Could not find vscode.git installed.");
   }
+}
+
+export async function executeCheckSettingsChange(
+  kicsStatusBarItem: vscode.StatusBarItem
+) {
+  vscode.workspace.onDidChangeConfiguration(async () => {
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isValidCredentials,
+      getAstConfiguration() ? true : false
+    );
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isValidCredentials,
+      await isScanEnabled(this.logs)
+    );
+    const onSave = vscode.workspace
+      .getConfiguration(constants.cxKics)
+      .get(constants.cxKicsAutoScan) as boolean;
+    kicsStatusBarItem.text =
+      onSave === true
+        ? messages.kicsStatusBarConnect
+        : messages.kicsStatusBarDisconnect;
+    await vscode.commands.executeCommand(commands.refreshTree);
+  });
 }

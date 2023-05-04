@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
-import { scaScanCreate, updateStatusBarItem } from "../../ast/ast";
+import { scaScanCreate } from "../../ast/ast";
 import {
   constants
 } from "../../utils/common/constants";
 import { SCAResultsProvider } from "./scaResultsProvider";
 import { messages } from "../../utils/common/messages";
+import { updateStatusBarItem } from "../../utils/utils";
 
 async function createScanForProject(logs: Logs) {
   const workspaceFolder = vscode.workspace.workspaceFolders[0];

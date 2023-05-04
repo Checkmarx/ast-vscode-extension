@@ -4,7 +4,7 @@ import { commands } from "../utils/common/commands";
 import { createSCAScan } from "../views/scaView/scaCreateScanProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
 
-export class SCACommand {
+export class ScanSCACommand {
   context: vscode.ExtensionContext;
   runSCAScanStatusBar: vscode.StatusBarItem;
   scaResultsProvider: SCAResultsProvider;

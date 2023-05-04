@@ -73,4 +73,9 @@ export const messages = {
   initilizeGroupBy: "Initializing group by selections",
   groupingBy: (type) => `"Grouping by" ${type}`,
   initilizeSeverities: "Initializing severity filters",
+  fetchCodebashing: "Getting codebashing link",
+  failedCodebashing: "Failed getting codebashing link",
+  codebashing: "Codebashing",
+  cancelCodebashingLoad: "Canceled loading",
+  codeBashingUrl: "https://free.codebashing.com"
 };

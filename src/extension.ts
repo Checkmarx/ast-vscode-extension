@@ -6,13 +6,14 @@ import {
 import { Logs } from "./models/logs";
 import {
   addRealTimeSaveListener,
+  executeCheckSettingsChange,
   gitExtensionListener,
   setScanButtonDefaultIfScanIsNotRunning,
 } from "./utils/listener/listeners";
 import { KicsProvider } from "./kics/kicsRealtimeProvider";
 import { SCAResultsProvider } from "./views/scaView/scaResultsProvider";
-import { IDECommand } from "./commands/ideScanCommand";
-import { SCACommand } from "./commands/scaScanCommand";
+import { ScanCommand } from "./commands/scanCommand";
+import { ScanSCACommand } from "./commands/scanSCACommand";
 import { KICSRealtimeCommand } from "./commands/kicsRealtimeCommand";
 import { TreeCommand } from "./commands/treeCommand";
 import { PickerCommand } from "./commands/pickerCommand";
@@ -31,7 +32,7 @@ export async function activate(context: vscode.ExtensionContext) {
   logs.show();
   logs.info(messages.pluginRunning);
 
-  // Status bars for scans from IDE and SCA auto scanning
+  // Status bars creation
   const runScanStatusBar = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
@@ -40,19 +41,23 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   runSCAScanStatusBar.text = messages.scaStatusBarConnect;
   runSCAScanStatusBar.show();
+  const kicsStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left
+  );
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left
+  );
 
   await setScanButtonDefaultIfScanIsNotRunning(context);
 
   // Scans from IDE scanning commands
-  const ideScanCommand = new IDECommand(context, runScanStatusBar, logs);
-  ideScanCommand.registerIdeScans();
-  vscode.commands.executeCommand(commands.pollScan);
+  const scanCommand = new ScanCommand(context, runScanStatusBar, logs);
+  scanCommand.registerIdeScans();
+  scanCommand.executePollScan();
 
   const kicsDiagnosticCollection =
     vscode.languages.createDiagnosticCollection(constants.extensionName);
-  const kicsStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left
-  );
+
   const kicsProvider = new KicsProvider(
     context,
     logs,
@@ -66,9 +71,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const diagnosticCollection =
     vscode.languages.createDiagnosticCollection(constants.extensionName);
-  const statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left
-  );
   // Create listener for file saves for real time feedback
   addRealTimeSaveListener(context, logs);
   const filterCommand = new FilterCommand(context, logs);
@@ -81,11 +83,6 @@ export async function activate(context: vscode.ExtensionContext) {
     filterCommand,
     groupByCommand
   );
-
-  // Syncing with AST everytime the extension gets opened
-  astResultsProvider
-    .openRefreshData()
-    .then(() => logs.info(messages.dataRefreshed));
   // Initialize filters state
   filterCommand
     .initializeFilters()
@@ -116,8 +113,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   // Webview detailsPanel to show result details on the side
   const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
-  const newDetails = webViewCommand.registerNewDetails();
-  context.subscriptions.push(newDetails);
+  webViewCommand.registerNewDetails();
   // Branch change Listener
   await gitExtensionListener(context, logs);
   // SCA Auto Scanning view
@@ -127,9 +123,9 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem,
     diagnosticCollection
   );
-  scaResultsProvider.scaResults = [];
+
   // SCA auto scanning commands register
-  const scaScanCommand = new SCACommand(
+  const scaScanCommand = new ScanSCACommand(
     context,
     runSCAScanStatusBar,
     scaResultsProvider,
@@ -163,7 +159,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await commonCommand.executeCheckSettingsChange(kicsStatusBarItem);
+  await executeCheckSettingsChange(kicsStatusBarItem);
 
   const treeCommand = new TreeCommand(
     context,

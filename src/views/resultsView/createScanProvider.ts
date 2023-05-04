@@ -6,13 +6,12 @@ import {
   getScan,
   scanCancel,
   scanCreate,
-  updateStatusBarItem,
 } from "../../ast/ast";
 import {
   constants
 } from "../../utils/common/constants";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getResultsJson } from "../../utils/utils";
+import { getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
@@ -81,9 +80,14 @@ export async function cancelScan(
 
   const scan = getFromState(context, constants.scanCreateIdKey);
   if (scan && scan.id) {
-    const response = await scanCancel(scan.id);
-    logs.info(messages.scanCancellingSent + scan.id + " :" + response);
-    updateState(context, constants.scanCreateIdKey, undefined);
+    try {
+      const response = await scanCancel(scan.id);
+      logs.info(messages.scanCancellingSent + scan.id + " :" + response);
+      updateState(context, constants.scanCreateIdKey, undefined);
+    } catch (error) {
+      logs.error(error)
+    }
+
   }
   updateStatusBarItem(constants.scanCancel, false, statusBarItem);
 }

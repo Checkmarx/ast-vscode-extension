@@ -153,3 +153,12 @@ export function orderResults(list: CxResult[]): CxResult[] {
     (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
   );
 }
+
+export function updateStatusBarItem(
+  text: string,
+  show: boolean,
+  statusBarItem: vscode.StatusBarItem
+) {
+  statusBarItem.text = text;
+  show ? statusBarItem.show() : statusBarItem.hide();
+}

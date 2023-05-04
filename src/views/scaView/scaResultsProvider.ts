@@ -24,6 +24,7 @@ export class SCAResultsProvider extends ResultsProvider {
     private readonly diagnosticCollection: vscode.DiagnosticCollection
   ) {
     super(context, statusBarItem);
+    this.scaResults = [];
   }
 
   async clean(): Promise<void> {
