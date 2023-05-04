@@ -9,8 +9,6 @@ import {
   commands
 } from "../utils/common/commands";
 import { getErrorFromState } from "../utils/common/globalState";
-import { constants } from "../utils/common/constants";
-import { messages } from "../utils/common/messages";
 
 export class CommonCommand {
   context: vscode.ExtensionContext;

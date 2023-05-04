@@ -112,8 +112,7 @@ export async function getProject(
     throw new Error("Project ID is not defined while trying to get project");
   }
   const cx = new CxWrapper(config);
-  let project;
-  project = await cx.projectShow(projectId);
+  const project = await cx.projectShow(projectId);
   return project.payload[0];
 }
 
@@ -245,7 +244,7 @@ export async function triageUpdate(
 ) {
   const config = getAstConfiguration();
   const cx = new CxWrapper(config);
-  const triage = await cx.triageUpdate(
+  await cx.triageUpdate(
     projectId,
     similarityId,
     scanType,

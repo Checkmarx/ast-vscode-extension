@@ -85,7 +85,7 @@ export async function cancelScan(
       logs.info(messages.scanCancellingSent + scan.id + " :" + response);
       updateState(context, constants.scanCreateIdKey, undefined);
     } catch (error) {
-      logs.error(error)
+      logs.error(error);
     }
 
   }
