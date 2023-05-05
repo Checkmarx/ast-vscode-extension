@@ -19,6 +19,7 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./utils/constants";
+import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 describe("Wizard load results test", () => {
   let bench: Workbench;
@@ -43,7 +44,7 @@ describe("Wizard load results test", () => {
 
     // Project selection
     const inputProject = await InputBox.create();
-    await inputProject.setText("test-proj-21");
+    await inputProject.setText(CX_TEST_SCAN_PROJECT_NAME);
 
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();

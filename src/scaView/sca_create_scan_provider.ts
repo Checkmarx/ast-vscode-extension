@@ -1,12 +1,10 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { Cx } from "../cx/cx";
-import { SCAN_CANCEL, SCAN_CREATE, SCAN_CREATE_ID_KEY, SCA_NO_VULNERABILITIES, SCA_SCAN_WAITING } from "../utils/common/constants";
-import { get, update } from "../utils/common/globalState";
+import { cx } from "../cx";
+import { SCA_NO_VULNERABILITIES, SCA_SCAN_WAITING } from "../utils/common/constants";
 import { SCAResultsProvider } from "./sca_results_provider";
 
 async function createScanForProject(logs: Logs) {
-	const cx =  new Cx();
     let workspaceFolder = vscode.workspace.workspaceFolders[0];
 	let scanCreateResponse;
     logs.info("Initiating scan for workspace Folder: " + workspaceFolder.uri.fsPath);
@@ -19,7 +17,6 @@ async function createScanForProject(logs: Logs) {
 }
 
 export async function createSCAScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs,scaResultsProvider:SCAResultsProvider) {
-	const cx =  new Cx();
     cx.updateStatusBarItem(SCA_SCAN_WAITING, true, statusBarItem);
 	logs.info("Checking if scan can be started...");
 	// Check if there is a folder opened

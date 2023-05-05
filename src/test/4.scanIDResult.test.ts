@@ -11,6 +11,7 @@ import { expect } from "chai";
 import { getDetailsView, getResults, initialize } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
+import { SCAN_ID } from "./utils/envs";
 
 describe("Scan ID load results test", () => {
   let bench: Workbench;
@@ -30,7 +31,7 @@ describe("Scan ID load results test", () => {
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
-    await input.setText("1");
+    await input.setText(SCAN_ID);
     await input.confirm();
   });
 
@@ -41,7 +42,7 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE + "1"
+      SCAN_KEY_TREE + SCAN_ID
     );
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);

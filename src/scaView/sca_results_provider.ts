@@ -9,7 +9,6 @@ import {
   SCA_SCAN_RUNNING_LOG,
   SCA_START_SCAN,
   STATUS_ITEM,
-  ERROR_ITEM,
 } from "../utils/common/constants";
 import { Logs } from "../models/logs";
 import { TreeItem } from "../utils/tree/treeItem";
