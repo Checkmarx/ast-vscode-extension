@@ -48,10 +48,10 @@ import { getChanges } from "./utils/utils";
 import { KicsProvider } from "./utils/kics/kics_provider";
 import { applyScaFix } from "./utils/scaFix";
 import { getLearnMore } from "./utils/sast/learnMore";
-import { Cx} from "./cx/cx";
 import { cancelScan, createScan, pollForScanResult } from "./resultsView/create_scan_provider";
 import { SCAResultsProvider } from "./scaView/sca_results_provider";
 import { createSCAScan } from "./scaView/sca_create_scan_provider";
+import { cx } from "./cx";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -275,7 +275,6 @@ export async function activate(context: vscode.ExtensionContext) {
         );
     }
     ));
-    const cx =  new Cx();
     // Listening to settings changes
     vscode.commands.executeCommand('setContext', `${EXTENSION_NAME}.isValidCredentials`, cx.getAstConfiguration() ? true : false);
     // Scan from IDE enablement

@@ -40,25 +40,19 @@ export async function quickPickSelector(input:InputBox){
 	await input.selectQuickPick(0);
 }
 export async function getQuickPickSelector(input:InputBox): Promise<string> {
-	await delay(FIVE_SECONDS);
 	let projectList = await input.getQuickPicks();
-	await delay(THIRTY_SECONDS);
 	return await projectList[0].getText();
 }
 
 export async function getResults(scan:any): Promise<any[]> {
-	await delay(FIVE_SECONDS);
     let children = await scan.getChildren();
-    await delay(FIVE_SECONDS);
     // Expand the first results
     await children![0].expand();
-	await delay(FIVE_SECONDS);
     let type = await children![0].getChildren();
 	return type;
 }
 
 export async function validateSeverities(scan:any, severity:string): Promise<boolean> {
-	await delay(FIVE_SECONDS);
 	var r=true;
     let children = await scan.getChildren();
     children.forEach((element: { getLabel: () => any; }) => {
@@ -73,9 +67,7 @@ export async function getDetailsView(): Promise<WebView> {
 	// Open details view
 	try {
 		let detailsView = new WebView();
-		await delay(FIVE_SECONDS);
 		await detailsView.switchToFrame();
-		await delay(FIVE_SECONDS);
 		return detailsView;
 	} catch (error) {
 		return undefined;
@@ -84,11 +76,9 @@ export async function getDetailsView(): Promise<WebView> {
 
 export async function validateNestedGroupBy(level:number,engines:any):Promise<number>{
 	let children = await engines.getChildren();
-	await delay(THREE_SECONDS);
 	// Recursive case, expand and get childrens from the node
 	if(children.length>0){
 		await children[0].expand();
-		await delay(THREE_SECONDS);
 		return validateNestedGroupBy(level+1,children[0]);
 	}
 	// Stoppage case, when childrens list is empty
@@ -97,10 +87,8 @@ export async function validateNestedGroupBy(level:number,engines:any):Promise<nu
 
 export async function validateRootNode(scan:any):Promise<[number,any]>{
 	await scan?.expand();
-	await delay(THREE_SECONDS);
 	// Validate engines type node
 	let engines = await scan?.getChildren();
-	await delay(THREE_SECONDS);
 	let size = engines?.length;
 	return [size,engines];
 }

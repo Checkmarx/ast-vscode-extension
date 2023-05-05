@@ -79,7 +79,6 @@ describe('filter and groups actions tests', () => {
 		for (var index in commands) {
 			// Execute the group by command for each command
 			await bench.executeCommand(commands[index]);
-			await delay(1000);
 		};
 		// Size must not be bigger than 3 because there are at most 3 engines in the first node
 		expect(tuple[0]).to.be.at.most(4);

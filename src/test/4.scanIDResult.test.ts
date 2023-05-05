@@ -44,16 +44,12 @@ describe("Scan ID load results test", () => {
     let scan = await treeScans?.findItem(
       SCAN_KEY_TREE + "1"
     );
-    while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + "1");
-    }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
     if (sastNode === undefined) {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     let result = await getResults(sastNode);
-    await delay(THREE_SECONDS);
     let resultName = await result[0].getLabel();
     await result[0].click();
     // Open details view
@@ -68,12 +64,9 @@ describe("Scan ID load results test", () => {
     let codebashingWebElement = await detailsView.findWebElement(
       By.id(CODEBASHING_HEADER)
     );
-    await delay(FIVE_SECONDS);
     let codebashing = await codebashingWebElement.getText();
-    await delay(FIVE_SECONDS);
     expect(codebashing).is.not.undefined;
     await detailsView.switchBack();
-    await delay(THREE_SECONDS);
   });
 
   it("should click on comments", async function () {
