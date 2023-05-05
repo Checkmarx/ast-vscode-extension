@@ -24,16 +24,12 @@ describe('filter and groups actions tests', () => {
 
 	it("should click on all filter severity", async function () {
 		treeScans = await initialize();
-		while (treeScans === undefined) {
-			treeScans = await initialize();
-		}
 		await bench.executeCommand(CX_LOOK_SCAN);
 		let input = await InputBox.create();
 		await input.setText(
 			SCAN_ID
 		);
 		await input.confirm();
-		await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 15000);
 		const commands = [{ command: CX_FILTER_INFO, text: "INFO" }, { command: CX_FILTER_LOW, text: "LOW" }, { command: CX_FILTER_MEDIUM, text: "MEDIUM" }, { command: CX_FILTER_HIGH, text: "HIGH" }];
 		for (var index in commands) {
 			await bench.executeCommand(commands[index].command);
@@ -62,11 +58,6 @@ describe('filter and groups actions tests', () => {
 		let scan = await treeScans?.findItem(
 			SCAN_KEY_TREE + SCAN_ID
 		);
-		while (scan === undefined) {
-			scan = await treeScans?.findItem(
-				SCAN_KEY_TREE + SCAN_ID
-			);
-		}
 		// Expand and validate scan node to obtain engine nodes
 		let tuple = await validateRootNode(scan);
 		//let level = 0;
