@@ -3,14 +3,13 @@ import {
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { delay, getDetailsView, getResults, initialize } from "./utils/utils";
-import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, FIVE_SECONDS, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE, THREE_SECONDS, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
+import { getDetailsView, getResults, initialize } from "./utils/utils";
+import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 
 describe("Scan ID load results test", () => {

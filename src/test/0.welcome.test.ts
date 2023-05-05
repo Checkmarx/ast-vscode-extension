@@ -1,4 +1,4 @@
-import { EditorView, InputBox, Workbench } from "vscode-extension-tester";
+import { EditorView, Workbench } from "vscode-extension-tester";
 import { expect } from "chai";
 import { initialize } from "./utils/utils";
 

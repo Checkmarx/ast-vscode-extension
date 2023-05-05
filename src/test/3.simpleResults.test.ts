@@ -1,15 +1,12 @@
 import {
-  By,
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-// import {getProjectList} from "../utils/ast/ast";
 import { getQuickPickSelector, initialize } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -20,7 +17,6 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./utils/constants";
-import { waitByLinkText } from "./utils/waiters";
 import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 describe("Individual pickers load results test", () => {

@@ -1,9 +1,7 @@
 import {
-  By,
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -20,11 +18,7 @@ import {
   CX_SELECT_ALL,
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
-  STEP_1,
-  STEP_2,
-  STEP_3,
 } from "./utils/constants";
-import { waitByLinkText } from "./utils/waiters";
 
 describe("Wizard load results test", () => {
   let bench: Workbench;

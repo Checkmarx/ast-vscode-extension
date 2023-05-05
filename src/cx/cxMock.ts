@@ -5,13 +5,11 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import {CxConfig} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { getFilePath} from "../utils/utils";
-import {SastNode} from "../models/sastNode";
-import {Logs} from "../models/logs";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
 
 export class CxMock implements CxPlatform  {
-     async scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | any> {
+     async scaScanCreate() : Promise<CxScaRealtime[] | any> {
         return [
 			{
 			  type: "Regular",
@@ -71,7 +69,7 @@ export class CxMock implements CxPlatform  {
 		  ];
     }
     
-    async scanCreate(projectName: string, branchName: string, sourcePath: string) {
+    async scanCreate() {
         return {
 			tags: {
 			},
@@ -87,11 +85,11 @@ export class CxMock implements CxPlatform  {
 		  };
     }
     
-    async scanCancel(scanId: string) {
+    async scanCancel() {
         return true;
     }
     
-    async getResults(scanId: string | undefined) {
+    async getResults() {
 		const results = {"results":[
 			{
 				"type": "kics",
@@ -301,7 +299,7 @@ export class CxMock implements CxPlatform  {
 		  });
     }
     
-    async getScan(scanId: string | undefined): Promise<CxScan | undefined> {
+    async getScan(): Promise<CxScan | undefined> {
         return {
 			tags: {
 			},
@@ -317,7 +315,7 @@ export class CxMock implements CxPlatform  {
 		  };
     }
     
-    async getProject(projectId: string | undefined): Promise<CxProject | undefined> {
+    async getProject(): Promise<CxProject | undefined> {
         return {
 			tags: {
 			},
@@ -357,11 +355,11 @@ export class CxMock implements CxPlatform  {
 		  ];
     }
     
-    async getBranches(projectId: string | undefined): Promise<string[] | undefined> {
+    async getBranches(): Promise<string[] | undefined> {
 		return ["main"];
     }
     
-    async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+    async getScans(): Promise<CxScan[] | undefined> {
         return [{
 			tags: {
 			},
@@ -409,23 +407,23 @@ export class CxMock implements CxPlatform  {
         return config;
     }
     
-    async isScanEnabled(logs: Logs): Promise<boolean> {
+    async isScanEnabled(): Promise<boolean> {
         return true;
     }
     
-    async isSCAScanEnabled(logs:Logs): Promise<boolean>{
+    async isSCAScanEnabled(): Promise<boolean>{
         return true;
     }
     
-    async triageShow(projectId: string, similarityId: string, scanType: string): Promise<any[] | undefined> {
+    async triageShow(): Promise<any[] | undefined> {
         return [];
     }
     
-    async triageUpdate(projectId: string, similarityId: string, scanType: string, state: string, comment: string, severity: string): Promise<number> {
+    async triageUpdate(): Promise<number> {
         return 0;
     }
     
-    async getCodeBashing(cweId: string, language: string, queryName: string): Promise<CxCodeBashing | undefined> {
+    async getCodeBashing(): Promise<CxCodeBashing | undefined> {
        return {
 		path: "https://codebashing.checkmarx.com/courses/java/lessons/sql_injection",
 		cweId: "CWE-89",
@@ -434,24 +432,24 @@ export class CxMock implements CxPlatform  {
 	  };
     }
     
-    async getResultsBfl(scanId: string, queryId: string, resultNodes: SastNode[]) {
+    async getResultsBfl() {
        return "";
     }
     
-    async getResultsRealtime(fileSources: string, additionalParams: string): Promise<any> {
+    async getResultsRealtime(): Promise<any> {
         return undefined; // does not matter for testing purposes
     
     }
     
-    async scaRemediation(packageFile: string, packages: string, packageVersion: string) {
+    async scaRemediation() {
         return 0;
     }
     
-    async kicsRemediation(resultsFile: string, kicsFile: string, engine: string, similarityIds?: string): Promise<any> {
+    async kicsRemediation(): Promise<any> {
         return undefined; // does not matter for testing purposes
     }
     
-    async learnMore(queryID: string): Promise<any[] | undefined> {
+    async learnMore(): Promise<any[] | undefined> {
         return [{
 			queryId: "5157925289005576664",
 			queryName: "Reflected_XSS_All_Clients",

@@ -1,13 +1,11 @@
 import {
   Workbench,
   EditorView,
-  By,
   SettingsEditor,
   WebDriver,
   LinkSetting,
   VSBrowser,
   BottomBarPanel,
-  until,
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./utils/constants";
