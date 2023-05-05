@@ -8,14 +8,18 @@ import {
   CLEAR_SCA,
   SCA_SCAN_RUNNING_LOG,
   SCA_START_SCAN,
+  STATUS_ITEM,
+  ERROR_ITEM,
 } from "../utils/common/constants";
 import { Logs } from "../models/logs";
 import { TreeItem } from "../utils/tree/treeItem";
-import { groupBy, orderResults } from "../utils/tree/actions";
+import { createSummaryItem, groupBy, orderResults } from "../utils/tree/actions";
+import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
 
 export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   public process: any;
-  public issueFilter: IssueFilter[] = [
+  public groupFilter: IssueFilter[] = [
+    IssueFilter.fileName,
     IssueFilter.severity,
     IssueFilter.packageIdentifier,
   ];
@@ -23,8 +27,9 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     new EventEmitter<TreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> =
     this._onDidChangeTreeData.event;
-  private scan: string | undefined;
+  private message: string | undefined;
   public scaResults: CxResult[];
+  public scaResultsErrors: CxScaRealTimeErrors [];
   private data: TreeItem[] | undefined;
 
   constructor(
@@ -49,6 +54,7 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   async clean(): Promise<void> {
     this.logs.info(CLEAR_SCA);
     this.scaResults = [];
+    this.scaResultsErrors = [];
     await this.refreshData();
   }
 
@@ -58,28 +64,47 @@ export class SCAResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async refreshData(message?:string): Promise<void> {
     this.showStatusBarItem();
-    this.data = this.generateTree(message).children;
+    this.message = message ? message : SCA_START_SCAN;
+    this.data = this.generateTree().children;
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
 
-  generateTree(message?:string): TreeItem {
-    this.diagnosticCollection.clear();
-    let treeItems = [];
-    const results = orderResults(this.scaResults);
-    let treeItem: TreeItem;
-    if (results.length > 0) {
-      let workspaceFolder = vscode.workspace.workspaceFolders[0];
-      this.scan = `SCA identified ${ results.length} vulnerabilities in ${workspaceFolder.name}`;
-      treeItem = groupBy(results, this.issueFilter,this.scan,this.diagnosticCollection);
-      treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-    } else {
-      this.scan = message?message:SCA_START_SCAN;
-      treeItem = groupBy(results, this.issueFilter, this.scan, this.diagnosticCollection);
-      treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+  generateTree(): TreeItem {
+    const resultsTree = this.generateResultsTree();
+    const issuesTree = this.generateErrorsTree();
+
+    if (!resultsTree && !issuesTree) {
+      return new TreeItem(undefined, undefined, undefined, [new TreeItem(this.message)]);
     }
-    treeItems = treeItems.concat(treeItem);
-    return new TreeItem("", undefined, undefined, treeItems);
+
+    const statusTreeItem = new TreeItem(!issuesTree ? "Scan finished successfully" : "Scan finished with errors", STATUS_ITEM, undefined, undefined);
+    const summaryTreeItem = createSummaryItem(this.scaResults);
+
+    return new TreeItem("", undefined, undefined, [statusTreeItem, summaryTreeItem.label ? summaryTreeItem : undefined, resultsTree, issuesTree]);
+  }
+
+  generateErrorsTree(): TreeItem {
+    if (!this.scaResultsErrors || this.scaResultsErrors.length === 0) {
+      return undefined;
+    }
+    const errors = this.scaResultsErrors.map(error => {
+      const messageItem = new TreeItem(error.message);
+      return new TreeItem(error.filename, undefined, undefined, [messageItem]);
+    }); 
+    
+    return new TreeItem("Dependency resolution errors", undefined, undefined, errors);
+  }
+
+  generateResultsTree(): TreeItem {
+    const results = orderResults(this.scaResults);
+    if (results.length === 0) {
+      return undefined;
+    }
+    
+    const treeItem = groupBy(results, this.groupFilter, "Vulnerabilities", this.diagnosticCollection, undefined, undefined);
+    treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    return treeItem;
   }
 
   getTreeItem(element: TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {

@@ -44,6 +44,9 @@ export const PROJECT_ITEM: string = "project-item";
 export const BRANCH_ITEM: string = "branch-item";
 export const SCAN_ITEM: string = "scan-item";
 export const GRAPH_ITEM: string = "graph-item";
+export const STATUS_ITEM: string = "status-item";
+export const ERROR_ITEM: string = "error-item";
+
 
 export const RESULTS_FILE_NAME: string = "ast-results";
 export const RESULTS_FILE_EXTENSION: string = "json";

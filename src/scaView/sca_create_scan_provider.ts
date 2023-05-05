@@ -36,12 +36,13 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
 		await scaResultsProvider.clean();
 		await scaResultsProvider.refreshData("Scanning project for vulnerabilities...");
 		createScanForProject(logs).then( async (scaResults) => {
-			scaResultsProvider.scaResults=scaResults;
+			scaResultsProvider.scaResults=scaResults.results;
+			scaResultsProvider.scaResultsErrors=scaResults.errors;
 			let message = undefined;
 			if(scaResults && scaResults.length===0) {
 				message = SCA_NO_VULNERABILITIES;
 			}
-			logs.info(`Scan completed successfully, ${scaResults.length} result(s) loaded into the SCA results tree`);
+			logs.info(`Scan completed successfully, ${scaResults.results.length} result(s) loaded into the SCA results tree`);
 			await scaResultsProvider.refreshData(message);
 			cx.updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
 		}).catch(err=>{
