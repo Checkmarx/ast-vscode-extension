@@ -8,7 +8,6 @@ import {
   WebDriver,
   Workbench,
 } from "vscode-extension-tester";
-import sinon from 'sinon';
 import { expect } from "chai";
 // import {getProjectList} from "../utils/ast/ast";
 import { getQuickPickSelector, initialize } from "./utils/utils";

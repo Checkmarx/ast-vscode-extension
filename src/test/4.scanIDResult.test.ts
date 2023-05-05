@@ -22,7 +22,6 @@ describe("Scan ID load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   after(async () => {
@@ -32,7 +31,7 @@ describe("Scan ID load results test", () => {
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
-    await input.setText("6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
+    await input.setText("1");
     await input.confirm();
   });
 
@@ -43,10 +42,10 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"
+      SCAN_KEY_TREE + "1"
     );
     while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
+      scan = await treeScans?.findItem(SCAN_KEY_TREE + "1");
     }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);

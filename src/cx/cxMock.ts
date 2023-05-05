@@ -76,7 +76,7 @@ export class CxMock implements CxPlatform  {
 			tags: {
 			},
 			groups: undefined,
-			id: "c790b003-4c0a-4c0b-aacb-8a8d83180aae",
+			id: "1",
 			projectID: "2588deba-1751-4afc-b7e3-db71727a1edd",
 			status: "Completed",
 			createdAt: "2023-04-19T10:07:37.628413+01:00",
@@ -306,7 +306,7 @@ export class CxMock implements CxPlatform  {
 			tags: {
 			},
 			groups: undefined,
-			id: "c790b003-4c0a-4c0b-aacb-8a8d83180aae",
+			id: "1",
 			projectID: "2588deba-1751-4afc-b7e3-db71727a1edd",
 			status: "Completed",
 			createdAt: "2023-04-19T10:07:37.628413+01:00",
@@ -323,8 +323,8 @@ export class CxMock implements CxPlatform  {
 			},
 			groups: [
 			],
-			id: "2588deba-1751-4afc-b7e3-db71727a1edd",
-			name: "TiagoBaptista/testingCli/testingCli",
+			id: "1",
+			name: "test-proj-21",
 			createdAt: "2023-04-19T09:07:36.846145Z",
 			updatedAt: "2023-04-19T09:07:36.846145Z",
 		  };
@@ -337,9 +337,9 @@ export class CxMock implements CxPlatform  {
 				integration: "",
 			  },
 			  groups: [
-				"01",
+				"1",
 			  ],
-			  id: "01",
+			  id: "1",
 			  name: "test-proj-21",
 			  createdAt: "2023-04-19T14:06:42.186311Z",
 			  updatedAt: "2023-04-19T14:26:26.142592Z",
@@ -349,7 +349,7 @@ export class CxMock implements CxPlatform  {
 			  },
 			  groups: [
 			  ],
-			  id: "02",
+			  id: "2",
 			  name: "test-proj-2",
 			  createdAt: "2023-04-19T14:15:15.250732Z",
 			  updatedAt: "2023-04-19T14:15:15.250732Z",
@@ -366,8 +366,8 @@ export class CxMock implements CxPlatform  {
 			tags: {
 			},
 			groups: undefined,
-			id: "01",
-			projectID: "01",
+			id: "1",
+			projectID: "test-proj-21",
 			status: "Completed",
 			createdAt: "2023-04-19T15:10:38.749899+01:00",
 			updatedAt: "2023-04-19T14:11:42.892326Z",
@@ -379,8 +379,8 @@ export class CxMock implements CxPlatform  {
 			tags: {
 			},
 			groups: undefined,
-			id: "02",
-			projectID: "01",
+			id: "2",
+			projectID: "1",
 			status: "Completed",
 			createdAt: "2023-03-19T15:10:38.749899+01:00",
 			updatedAt: "2023-03-19T14:11:42.892326Z",
