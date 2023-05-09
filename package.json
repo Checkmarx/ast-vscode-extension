@@ -822,11 +822,13 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
     "watch": "tsc -w -p ./ && npm run copytestproject",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
-    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
+    "test": "npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
+    "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\""
   },
   "devDependencies": {
     "@types/chai": "4.3.5",
@@ -848,6 +850,20 @@
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.72",
     "copyfiles": "2.4.1",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslintcc": "^0.7.15",
     "tree-kill": "^1.2.2"
+  },
+  "lint-staged": {
+    "**/*.{js,ts}": [
+      "eslint . --fix",
+      "prettier --write ."
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

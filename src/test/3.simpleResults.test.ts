@@ -1,9 +1,7 @@
 import {
-  By,
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -43,7 +41,7 @@ describe("Individual pickers load results test", () => {
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    let input = await InputBox.create();
+    const input = await InputBox.create();
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     await waitByLinkText(driver, CX_TEST_SCAN_PROJECT_NAME, 5000);
     // Select from the pickers list
