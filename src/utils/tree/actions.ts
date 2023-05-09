@@ -146,8 +146,8 @@ export function reduceGroups(
 
   const tree = previousValue.children
     ? previousValue.children.find(
-        (item) => item.label === value.replaceAll("_", " ")
-      )
+      (item) => item.label === value.replaceAll("_", " ")
+    )
     : undefined;
   if (tree) {
     tree.setDescription();

@@ -44,12 +44,13 @@ export const PROJECT_ITEM = "project-item";
 export const BRANCH_ITEM = "branch-item";
 export const SCAN_ITEM = "scan-item";
 export const GRAPH_ITEM = "graph-item";
+export const STATUS_ITEM = "status-item";
 
 export const RESULTS_FILE_NAME = "ast-results";
 export const RESULTS_FILE_EXTENSION = "json";
 
-export const STATUS = [{class:"select-high",value:"HIGH"},{class:"select-medium",value:"MEDIUM"},{class:"select-low",value:"LOW"},{class:"select-info",value:"INFO"}];
-export const STATE = [{tag:"NOT_EXPLOITABLE",value:"Not Exploitable"},{tag:"PROPOSED_NOT_EXPLOITABLE",value:"Proposed Not Exploitable"},{tag:"CONFIRMED",value:"Confirmed"},{tag:"TO_VERIFY",value:"To Verify"},{tag:"URGENT",value:"Urgent"},{tag:"NOT_IGNORED",value:"Not Ignored", dependency:true},{tag:"IGNORED",value:"Ignored", dependency:true}];
+export const STATUS = [{ class: "select-high", value: "HIGH" }, { class: "select-medium", value: "MEDIUM" }, { class: "select-low", value: "LOW" }, { class: "select-info", value: "INFO" }];
+export const STATE = [{ tag: "NOT_EXPLOITABLE", value: "Not Exploitable" }, { tag: "PROPOSED_NOT_EXPLOITABLE", value: "Proposed Not Exploitable" }, { tag: "CONFIRMED", value: "Confirmed" }, { tag: "TO_VERIFY", value: "To Verify" }, { tag: "URGENT", value: "Urgent" }, { tag: "NOT_IGNORED", value: "Not Ignored", dependency: true }, { tag: "IGNORED", value: "Ignored", dependency: true }];
 
 export const SAST = "sast";
 export const KICS = "kics";
@@ -66,8 +67,8 @@ export enum IssueFilter {
 	packageIdentifier = "scaNode.packageIdentifier",
 	directDependency = "scaNode.scaPackageData.typeOfDependency",
 	scaType = "scaType"
-  }
-  
+}
+
 export enum IssueLevel {
 	high = "HIGH",
 	medium = "MEDIUM",
