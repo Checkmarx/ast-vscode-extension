@@ -16,22 +16,14 @@ import { Logs } from "../models/logs";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { messages } from "../utils/common/messages";
 
 export async function scaScanCreate(
   sourcePath: string
 ): Promise<CxScaRealtime[] | undefined> {
   const cx = new CxWrapper(getBaseAstConfiguration());
-  let jsonResults = [];
   const scan = await cx.runScaRealtimeScan(sourcePath);
-  if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
-    if (scan.payload[0].results) {
-      jsonResults = scan.payload[0].results;
-    }
-  } else {
-    throw new Error(scan.status);
-  }
-
-  return jsonResults;
+  return scan.payload[0].results ?? [];
 }
 
 export async function scanCreate(
@@ -40,7 +32,6 @@ export async function scanCreate(
   sourcePath: string
 ) {
   const config = getAstConfiguration();
-
   if (!projectName) {
     return;
   }
@@ -52,7 +43,7 @@ export async function scanCreate(
   params.set(CxParamType.S, sourcePath);
   params.set(CxParamType.BRANCH, branchName);
   params.set(CxParamType.PROJECT_NAME, projectName);
-  params.set(CxParamType.AGENT, "VS Code");
+  params.set(CxParamType.AGENT, constants.scanAgent);
   params.set(
     CxParamType.ADDITIONAL_PARAMETERS,
     constants.scanCreateAdditionalParameters
@@ -63,22 +54,18 @@ export async function scanCreate(
 
 export async function scanCancel(scanId: string) {
   const config = getAstConfiguration();
-
   if (!scanId) {
     return;
   }
   const cx = new CxWrapper(config);
-  const scan = await cx.scanCancel(scanId);
-  if (scan.exitCode !== 0) {
-    throw new Error("Error canceling scan");
-  }
+  await cx.scanCancel(scanId);
   return true;
 }
 
 export async function getResults(scanId: string | undefined) {
   const config = getAstConfiguration();
   if (!scanId) {
-    throw new Error("Scan ID is not defined while trying to get results");
+    throw new Error(messages.noScanIDResults);
   }
   const cx = new CxWrapper(config);
   await cx.getResults(
@@ -94,7 +81,7 @@ export async function getScan(
 ): Promise<CxScan | undefined> {
   const config = getAstConfiguration();
   if (!scanId) {
-    throw new Error("Scan ID is not defined while trying to get scan");
+    throw new Error(messages.noScanIDScan);
   }
   const cx = new CxWrapper(config);
   const scan = await cx.scanShow(scanId);
@@ -105,11 +92,8 @@ export async function getProject(
   projectId: string | undefined
 ): Promise<CxProject | undefined> {
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error("Configuration is not defined while trying to get project");
-  }
   if (!projectId) {
-    throw new Error("Project ID is not defined while trying to get project");
+    throw new Error(messages.noProjectIDScan);
   }
   const cx = new CxWrapper(config);
   const project = await cx.projectShow(projectId);
@@ -117,74 +101,49 @@ export async function getProject(
 }
 
 export async function getProjectList(): Promise<CxProject[] | undefined> {
-  let r = [];
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error(
-      "Configuration is not defined while trying to get project list"
-    );
-  }
   const cx = new CxWrapper(config);
-  const projects = await cx.projectList("limit=10000");
-  if (projects.payload) {
-    r = projects.payload;
-  } else {
-    throw new Error(projects.status);
-  }
-  return r;
+  const projects = await cx.projectList(constants.projectLimit);
+  return projects.payload ?? [];
 }
 
 export async function getBranches(
   projectId: string | undefined
 ): Promise<string[] | undefined> {
-  let r = [];
   const config = getAstConfiguration();
-
   const cx = new CxWrapper(config);
   let branches = undefined;
   if (!projectId) {
-    throw new Error("Project ID is not defined while trying to get branches");
+    throw new Error(messages.noProjectIDBranches);
   }
   branches = await cx.projectBranches(projectId, "");
-  if (branches && branches.payload) {
-    r = branches.payload;
-  } else {
-    throw new Error(branches.status);
-  }
-
-  return r;
+  return branches.payload ?? [];
 }
 
 export async function getScans(
   projectId: string | undefined,
   branch: string | undefined
 ): Promise<CxScan[] | undefined> {
-  let r = [];
   const config = getAstConfiguration();
 
   const filter = `project-id=${projectId},branch=${branch},limit=10000,statuses=Completed`;
   const cx = new CxWrapper(config);
   const scans = await cx.scanList(filter);
-  if (scans.payload) {
-    r = scans.payload;
-  } else {
-    throw new Error(scans.status);
-  }
-  return r;
+  return scans.payload ?? [];
 }
 
 export function getBaseAstConfiguration() {
   const config = new CxConfig();
   config.additionalParameters = vscode.workspace
-    .getConfiguration("checkmarxOne")
-    .get("additionalParams") as string;
+    .getConfiguration(constants.cxOne)
+    .get(constants.additionalParams) as string;
   return config;
 }
 
 export function getAstConfiguration() {
   const token = vscode.workspace
-    .getConfiguration("checkmarxOne")
-    .get("apiKey") as string;
+    .getConfiguration(constants.cxOne)
+    .get(constants.apiKey) as string;
   if (!token) {
     return undefined;
   }
@@ -219,19 +178,11 @@ export async function triageShow(
   projectId: string,
   similarityId: string,
   scanType: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[] | undefined> {
-  let r = [];
+): Promise<object[] | undefined> {
   const config = getAstConfiguration();
-
   const cx = new CxWrapper(config);
   const scans = await cx.triageShow(projectId, similarityId, scanType);
-  if (scans.payload && scans.exitCode === 0) {
-    r = scans.payload;
-  } else {
-    throw new Error(scans.status);
-  }
-  return r;
+  return scans.payload ?? [];
 }
 
 export async function triageUpdate(
@@ -260,12 +211,9 @@ export async function getCodeBashing(
   queryName: string
 ): Promise<CxCodeBashing | undefined> {
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error("Configuration error");
-  }
   if (!cweId || !language || !queryName) {
     throw new Error(
-      "Missing mandatory parameters, cweId, language or queryName "
+      messages.codebashingMissingParams
     );
   }
   const cx = new CxWrapper(config);
@@ -287,12 +235,9 @@ export async function getResultsBfl(
   resultNodes: SastNode[]
 ) {
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error("Configuration error");
-  }
   if (!scanId || !queryId || !resultNodes) {
     throw new Error(
-      "Missing mandatory parameters, scanId, queryId or resultNodes "
+      messages.bflMissingParams
     );
   }
   const cx = new CxWrapper(config);
@@ -301,11 +246,7 @@ export async function getResultsBfl(
     queryId.toString(),
     resultNodes
   );
-  if (bfl.exitCode === 0) {
-    return bfl.payload[0];
-  } else {
-    throw new Error(bfl.status);
-  }
+  return bfl.payload[0] ?? [];
 }
 
 export async function getResultsRealtime(
@@ -313,9 +254,9 @@ export async function getResultsRealtime(
   additionalParams: string
 ): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]> {
   if (!fileSources) {
-    throw new Error("Missing mandatory parameters, fileSources");
+    throw new Error(messages.kicsMissingParams);
   }
-  const cx = new CxWrapper(new CxConfig());
+  const cx = new CxWrapper(getBaseAstConfiguration());
   let [kics, process] = [undefined, undefined];
   try {
     [kics, process] = await cx.kicsRealtimeScan(
@@ -324,7 +265,7 @@ export async function getResultsRealtime(
       additionalParams
     );
   } catch (e) {
-    throw new Error("Error running kics scan");
+    throw new Error(messages.kicsScanError);
   }
   return [kics, process];
 }
@@ -335,16 +276,8 @@ export async function scaRemediation(
   packageVersion: string
 ) {
   const config = getAstConfiguration();
-  if (!config) {
-    throw new Error("Configuration error");
-  }
   const cx = new CxWrapper(config);
-  const scaFix = await cx.scaRemediation(packageFile, packages, packageVersion);
-  if (scaFix.exitCode === 0) {
-    return scaFix.exitCode;
-  } else {
-    throw new Error(scaFix.status.replaceAll("\n", ""));
-  }
+  await cx.scaRemediation(packageFile, packages, packageVersion);
 }
 
 export async function kicsRemediation(
@@ -354,12 +287,12 @@ export async function kicsRemediation(
   similarityIds?: string
 ): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]> {
   if (!resultsFile) {
-    throw new Error("Missing mandatory parameters, resultsFile");
+    throw new Error(messages.kicsRemediationNoResultsFile);
   }
   if (!kicsFile) {
-    throw new Error("Missing mandatory parameters, kicsFile");
+    throw new Error(messages.kicsRemediationNoKicsFile);
   }
-  const cx = new CxWrapper(new CxConfig());
+  const cx = new CxWrapper(getBaseAstConfiguration());
   let [kics, process] = [undefined, undefined];
   try {
     [kics, process] = await cx.kicsRemediation(
@@ -369,7 +302,7 @@ export async function kicsRemediation(
       similarityIds
     );
   } catch (e) {
-    throw new Error("Error running kics remediation");
+    throw new Error(messages.kicsRemediationError);
   }
   return [kics, process];
 }
@@ -377,15 +310,8 @@ export async function kicsRemediation(
 export async function learnMore(
   queryID: string
 ): Promise<CxLearnMoreDescriptions[] | undefined> {
-  let r = [];
   const config = getAstConfiguration();
-
   const cx = new CxWrapper(config);
   const scans = await cx.learnMore(queryID);
-  if (scans.payload && scans.exitCode === 0) {
-    r = scans.payload;
-  } else {
-    throw new Error(scans.status);
-  }
-  return r;
+  return scans.payload ?? [];
 }

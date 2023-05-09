@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { scaRemediation } from "../ast/ast";
 import * as path from "path";
+import { messages } from "../utils/common/messages";
 
 // Applying sca Fix to a specific package
 export async function applyScaFix(
@@ -11,10 +12,10 @@ export async function applyScaFix(
   logs: Logs
 ) {
   if (packageFile.length === 0 || version.length === 0) {
-    logs.info("No available upgrade for package " + packages);
+    logs.info(messages.scaNoUpgrade + packages);
   } else {
     try {
-      logs.info("Upgrading " + packages + " to version " + version);
+      logs.info(messages.scaUpgrading(packages, version));
       const filePackageObjectList = vscode.workspace.workspaceFolders;
       if (filePackageObjectList.length > 0) {
         await scaRemediation(
@@ -23,17 +24,17 @@ export async function applyScaFix(
           version
         );
         logs.info(
-          "Package " + packages + " successfully upgraded to version " + version
+          messages.scaUpgradingSuccess(packages, version)
         );
         vscode.window.showInformationMessage(
-          "Package " + packages + " successfully upgraded to version " + version
+          messages.scaUpgradingSuccess(packages, version)
         );
       } else {
         logs.error(
-          "No folder is opened. Please open the folder for the current project."
+          messages.scaNoFolder
         );
         vscode.window.showErrorMessage(
-          "No folder is opened. Please open the folder for the current project."
+          messages.scaNoFolder
         );
       }
     } catch (error) {

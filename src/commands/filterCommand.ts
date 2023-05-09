@@ -69,7 +69,7 @@ export class FilterCommand {
     this.updateSeverities(SeverityLevel.info, info);
     await updateStateFilter(this.context, constants.infoFilter, info);
 
-    this.logs.info(`Initializing state filters`);
+    this.logs.info(messages.initializeState);
     const notExploitable =
       this.context.globalState.get<boolean>(constants.notExploitableFilter) ?? false;
     this.updateState(StateLevel.notExploitable, notExploitable);

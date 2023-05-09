@@ -10,7 +10,7 @@ import { updateStatusBarItem } from "../../utils/utils";
 
 async function createScanForProject(logs: Logs) {
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
-  let scanCreateResponse;
+  let scanCreateResponse = [];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
   try {
     scanCreateResponse = await scaScanCreate(workspaceFolder.uri.fsPath);

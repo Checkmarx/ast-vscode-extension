@@ -9,6 +9,8 @@ import { applyScaFix } from "../sca/scaFix";
 import { commands } from "../utils/common/commands";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
+import { messages } from "../utils/common/messages";
+import { constants } from "../utils/common/constants";
 
 export class WebViewCommand {
   context: vscode.ExtensionContext;
@@ -41,16 +43,16 @@ export class WebViewCommand {
           this.detailsPanel?.dispose();
           this.detailsPanel = undefined;
           await vscode.commands.executeCommand(
-            "workbench.action.splitEditorRight"
+            messages.splitEditorRight
           );
           // Only keep the result details in the split
           await vscode.commands.executeCommand(
-            "workbench.action.closeEditorsInGroup"
+            messages.closeEditorGroup
           );
         }
         this.detailsPanel?.dispose();
         this.detailsPanel = vscode.window.createWebviewPanel(
-          "newDetails", // Identifies the type of the webview, internal id
+          constants.webviewName, // Identifies the type of the webview, internal id
           "(" + result.severity + ") " + result.label.replaceAll("_", " "), // Title of the detailsPanel displayed to the user
           vscode.ViewColumn.Two, // Show the results in a separated column
           {

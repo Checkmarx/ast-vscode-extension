@@ -26,30 +26,38 @@ export async function getCodebashingLink(
   vscode.window.withProgress(PROGRESS_HEADER, async (progress, token) => {
     token.onCancellationRequested(() => logs.info(messages.cancelCodebashingLoad));
     try {
-      logs.info(messages.fetchCodebashing);
-      const codeBashingArray = await getCodeBashing(cweId, language, queryName.replaceAll("_", " "));
-      vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.path));
+      await handleExistingLink(logs, cweId, language, queryName);
     } catch (err) {
-      logs.error(messages.failedCodebashing);
-      if (err instanceof AstError) {
-        if (err.code === constants.astErrorCodeBashingNoLicense) {
-          vscode.window
-            .showInformationMessage(CODEBASHING_NO_LICENSE, messages.codebashing)
-            .then(() =>
-              vscode.env.openExternal(
-                vscode.Uri.parse(messages.codeBashingUrl)
-              )
-            );
-          return;
-        } else if (err.code === constants.astErrorCodeBashingNoLesson) {
-          vscode.window.showInformationMessage(CODEBASHING_NO_LESSON);
-          return;
-        }
-      }
-
-      vscode.window.showWarningMessage(
-        String(err).replace(constants.errorRegex, "").replaceAll("\n", "")
-      );
+      handleUnexistingLink(logs, err);
     }
   });
+}
+
+async function handleExistingLink(logs: Logs, cweId: string, language: string, queryName: string) {
+  logs.info(messages.fetchCodebashing);
+  const codeBashingArray = await getCodeBashing(cweId, language, queryName.replaceAll("_", " "));
+  vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.path));
+}
+
+function handleUnexistingLink(logs: Logs, err) {
+  logs.error(messages.failedCodebashing);
+  if (err instanceof AstError) {
+    if (err.code === constants.astErrorCodeBashingNoLicense) {
+      vscode.window
+        .showInformationMessage(CODEBASHING_NO_LICENSE, messages.codebashing)
+        .then(() =>
+          vscode.env.openExternal(
+            vscode.Uri.parse(messages.codeBashingUrl)
+          )
+        );
+      return;
+    } else if (err.code === constants.astErrorCodeBashingNoLesson) {
+      vscode.window.showInformationMessage(CODEBASHING_NO_LESSON);
+      return;
+    }
+  }
+
+  vscode.window.showWarningMessage(
+    String(err).replace(constants.errorRegex, "").replaceAll("\n", "")
+  );
 }

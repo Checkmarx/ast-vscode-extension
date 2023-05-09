@@ -28,6 +28,7 @@ export const constants = {
   branchIdKey: "ast-results-branch-id",
   branchName: "ast-results-branch-name",
   branchTempIdKey: "ast-results-temp-branch-id",
+  kicsRealtime: "ast-results.kicsRealtime",
   projectLabel: "Project: ",
   projectPlaceholder: "Select project",
   branchLabel: "Branch: ",
@@ -115,6 +116,14 @@ export const constants = {
 
   cxKics: "CheckmarxKICS",
   cxKicsAutoScan: "Activate KICS Auto Scanning",
+
+  projectLimit: "limit=10000",
+  scanAgent: "VS Code",
+  cxOne: "checkmarxOne",
+  additionalParams: "additionalParams",
+  apiKey: "apiKey",
+  cxKicsLong: "Checkmarx KICS",
+  webviewName: "newDetails"
 };
 
 export enum GroupBy {

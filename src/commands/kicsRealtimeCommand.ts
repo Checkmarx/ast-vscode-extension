@@ -2,8 +2,10 @@ import * as vscode from "vscode";
 import { KicsProvider } from "../kics/kicsRealtimeProvider";
 import { Logs } from "../models/logs";
 import {
- commands
+  commands
 } from "../utils/common/commands";
+import { constants } from "../utils/common/constants";
+import { messages } from "../utils/common/messages";
 
 export class KICSRealtimeCommand {
   context: vscode.ExtensionContext;
@@ -27,8 +29,8 @@ export class KICSRealtimeCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.kicsSetings, () => {
         vscode.commands.executeCommand(
-          "workbench.action.openSettings",
-          `Checkmarx KICS`
+          messages.openSettings,
+          constants.cxKicsLong
         );
       })
     );

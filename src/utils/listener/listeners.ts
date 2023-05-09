@@ -20,7 +20,7 @@ export async function getBranchListener(
     return addRepositoryListener(context, logs, state);
   } else {
     return gitApi.onDidOpenRepository(async () => {
-      logs.info("GIT API - Open repository");
+      logs.info(messages.gitOpenRepo);
       const repoState = gitApi.repositories[0].state;
       return addRepositoryListener(context, logs, repoState);
     });
@@ -74,11 +74,11 @@ export function addRealTimeSaveListener(
     const isSystemFiles = isSystemFile(e);
     if (isValidKicsFile && isSystemFiles) {
       const onSave = vscode.workspace
-        .getConfiguration("CheckmarxKICS")
-        .get("Activate KICS Auto Scanning") as boolean;
+        .getConfiguration(constants.cxKics)
+        .get(constants.cxKicsAutoScan) as boolean;
       if (onSave) {
         // Check if saved file is within the project
-        logs.info("File saved updating KICS results");
+        logs.info(messages.kicsUpdatingResults);
         // Send the current file to the global state, to be used in the command
         updateState(context, constants.kicsRealtimeFile, {
           id: e.uri.fsPath,
@@ -95,14 +95,14 @@ export function addRealTimeSaveListener(
     const isValidKicsFile = isKicsFile(e);
     const isSystemFiles = isSystemFile(e);
     if (isValidKicsFile && isSystemFiles) {
-      logs.info("Opened a supported file by KICS. Starting KICS scan");
+      logs.info(messages.kicsSupportedFile);
       // Mandatory in order to have the document appearing as displayed for VSCode
       await vscode.window.showTextDocument(e, 1, false);
       updateState(context, constants.kicsRealtimeFile, {
         id: e.uri.fsPath,
         name: e.uri.fsPath,
       });
-      await vscode.commands.executeCommand("ast-results.kicsRealtime");
+      await vscode.commands.executeCommand(constants.kicsRealtime);
     }
   });
 }
@@ -148,15 +148,15 @@ export async function gitExtensionListener(
   if (gitExtension) {
     await gitExtension.activate();
     if (gitExtension && gitExtension.exports.enabled) {
-      logs.info("Git Extension - Add branch.");
+      logs.info(messages.gitExtensionBranch);
       context.subscriptions.push(await getBranchListener(context, logs));
     } else {
       logs.warn(
-        "Git Extension - Could not find active git extension in workspace."
+        messages.gitExtensionMissing
       );
     }
   } else {
-    logs.warn("Git extension - Could not find vscode.git installed.");
+    logs.warn(messages.gitExtensionNotInstalled);
   }
 }
 

@@ -10,10 +10,6 @@ import { getFromState, updateState } from "../../utils/common/globalState";
 import { getAstConfiguration } from "../../ast/ast";
 import { commands } from "../../utils/common/commands";
 import { TreeItem } from "../../utils/tree/treeItem";
-import {
-  createSummaryItem,
-  groupBy,
-} from "../../utils/tree/actions";
 import { FilterCommand } from "../../commands/filterCommand";
 import { GroupByCommand } from "../../commands/groupByCommand";
 import { messages } from "../../utils/common/messages";
@@ -92,9 +88,9 @@ export class AstResultsProvider extends ResultsProvider {
     }
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
-      treeItems = treeItems.concat(createSummaryItem(this.loadedResults));
+      treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
 
-      const treeItem = groupBy(
+      const treeItem = this.groupBy(
         this.loadedResults,
         this.groupByCommand.activeGroupBy,
         this.scan,

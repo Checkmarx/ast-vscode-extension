@@ -6,7 +6,6 @@ import {
 } from "../../utils/common/constants";
 import { Logs } from "../../models/logs";
 import { TreeItem } from "../../utils/tree/treeItem";
-import { groupBy } from "../../utils/tree/actions";
 import { messages } from "../../utils/common/messages";
 import { orderResults } from "../../utils/utils";
 import { ResultsProvider } from "../resultsProviders";
@@ -51,7 +50,7 @@ export class SCAResultsProvider extends ResultsProvider {
         results.length,
         workspaceFolder.name
       );
-      treeItem = groupBy(
+      treeItem = this.groupBy(
         results,
         this.issueFilter,
         this.scan,
@@ -60,7 +59,7 @@ export class SCAResultsProvider extends ResultsProvider {
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
       this.scan = message ? message : constants.scaStartScan;
-      treeItem = groupBy(
+      treeItem = this.groupBy(
         results,
         this.issueFilter,
         this.scan,

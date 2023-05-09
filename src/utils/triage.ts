@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import { AstResult } from "../models/results";
 import { getResultsFilePath } from "./utils";
-import { triageUpdate } from "../ast/ast";
+import { triageShow, triageUpdate } from "../ast/ast";
 import { getFromState } from "./common/globalState";
 import { constants } from "./common/constants";
 import { Logs } from "../models/logs";
@@ -124,7 +124,7 @@ export async function getChanges(
 ) {
   const projectId = getFromState(context, constants.projectIdKey)?.id;
   if (projectId) {
-    this.triageShow(projectId, result.similarityId, result.type)
+    triageShow(projectId, result.similarityId, result.type)
       .then((changes) => {
         detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
       })
