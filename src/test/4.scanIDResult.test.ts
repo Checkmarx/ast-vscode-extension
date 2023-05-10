@@ -58,10 +58,12 @@ describe("Scan ID load results test", () => {
       detailsView = await getDetailsView();
     }
     // Find details view title
-    let titleWebElement = await detailsView.findWebElement(By.id(WEBVIEW_TITLE));
-    let title = await titleWebElement.getText();
+    const titleWebElement = await detailsView.findWebElement(
+      By.id(WEBVIEW_TITLE)
+    );
+    const title = await titleWebElement.getText();
     expect(title).to.equal(resultName);
-    let codebashingWebElement = await detailsView.findWebElement(
+    const codebashingWebElement = await detailsView.findWebElement(
       By.id(CODEBASHING_HEADER)
     );
     let codebashing = await codebashingWebElement.getText();
@@ -71,7 +73,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on comments", async function () {
     // Open details view
-    let detailsView = await getDetailsView();
+    const detailsView = await getDetailsView();
     // Find Hide comments
     let comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
     while (comments === undefined) {
@@ -84,7 +86,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on details Learn More tab", async function () {
     // Open details view
-    let detailsView = await getDetailsView();
+    const detailsView = await getDetailsView();
     // Find Learn More Tab
     let learnTab = await detailsView.findWebElement(By.id(LEARN_MORE_LABEL));
     while (learnTab === undefined) {
@@ -97,7 +99,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on details Changes tab", async function () {
     // Open details view
-    let detailsView = await getDetailsView();
+    const detailsView = await getDetailsView();
     // Find Changes Tab
     let changesTab = await detailsView.findWebElement(By.id(CHANGES_LABEL));
     while (changesTab === undefined) {
@@ -112,7 +114,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on update button", async function () {
     // Open details view
-    let detailsView = await getDetailsView();
+    const detailsView = await getDetailsView();
     // Find Changes Tab
     let submit = await detailsView.findWebElement(By.className(UPDATE_BUTTON));
     while (submit === undefined) {
@@ -125,7 +127,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on details General tab", async function () {
     // Open details view
-    let detailsView = await getDetailsView();
+    const detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
     while (generalTab === undefined) {

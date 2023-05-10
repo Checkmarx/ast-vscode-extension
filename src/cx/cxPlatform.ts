@@ -5,6 +5,9 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { SastNode } from "../models/sastNode";
 import { Logs } from "../models/logs";
+import { ChildProcessWithoutNullStreams } from "child_process";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 
 export interface CxPlatform {
 	/**
@@ -101,7 +104,7 @@ export interface CxPlatform {
 		 * @param scanType The result's scan type (sca,sast,kics) to retrieve information.
 		 * @return A promise that when resolved returns a list with all the triage actions that were performed over a specific result.
 	*/
-	triageShow(projectId: string, similarityId: string, scanType: string): Promise<any[] | undefined>;
+	triageShow(projectId: string, similarityId: string, scanType: string);
 
 	/**
 		 * Update the information about a results by aplying triage (used on the changes tab).
@@ -139,7 +142,7 @@ export interface CxPlatform {
 		 * @param additionalParams Additional parameters supported by KICS (optional parameter).
 		 * @return A promise that when resolved returns the list of KICS results.
 	*/
-	getResultsRealtime(fileSources: string, additionalParams: string): Promise<any>;
+	getResultsRealtime(fileSources: string, additionalParams: string): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]>;
 
 	/**
 		 * Applies remediation for a SCA result.
@@ -157,14 +160,14 @@ export interface CxPlatform {
 		 * @param similarityIds The results similarity ID(s) to be fixed (optional, since if none is provided all the available fixes will be applied).
 		 * @return A promise that when resolved returns the doccker process reference as well as the cli output for the remediation command.
 	*/
-	kicsRemediation(resultsFile: string, kicsFile: string, engine: string, similarityIds?: string): Promise<any>;
+	kicsRemediation(resultsFile: string, kicsFile: string, engine: string, similarityIds?: string): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]>;
 
 	/**
 		 * Gets the learn more information from cx one platform for a specific result.
 		 * @param queryID The result's query ID to retrieve the learn more information.
 		 * @return A promise that when resolved returns the learn more information.
 	*/
-	learnMore(queryID: string): Promise<any[] | undefined>;
+	learnMore(queryID: string): Promise<CxLearnMoreDescriptions[] | undefined>;
 
 	/**
 		 * Updates the vscode status bar item.

@@ -32,7 +32,7 @@ describe("Extension settings tests", () => {
   it("open settings and check if are empty", async () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
-    let settings = (await settingsEditor.findSetting(
+    const settings = (await settingsEditor.findSetting(
       CX_API_KEY_SETTINGS
     )) as LinkSetting;
     expect(settings).to.be.undefined;
@@ -52,12 +52,12 @@ describe("Extension settings tests", () => {
   });
 
   it("should check kics auto scan enablement on settings", async function () {
-    let settingsWizard = await bench.openSettings();
+    const settingsWizard = await bench.openSettings();
     const setting = (await settingsWizard.findSetting(
       CX_KICS_NAME,
       CX_KICS
     )) as LinkSetting;
-    let enablement = await setting.getValue();
+    const enablement = await setting.getValue();
     expect(enablement).to.equal(true);
   });
 });

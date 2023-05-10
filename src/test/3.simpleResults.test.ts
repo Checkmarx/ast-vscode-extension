@@ -40,7 +40,7 @@ describe("Individual pickers load results test", () => {
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    let input = await InputBox.create();
+    const input = await InputBox.create();
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     // Select from the pickers list
     let projectName = await getQuickPickSelector(input);

@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { initialize } from "./utils/utils";
 
 describe("Welcome view test", () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let bench: Workbench;
 
   before(async function () {
@@ -15,8 +16,8 @@ describe("Welcome view test", () => {
   });
 
   it("open welcome view and check if exists", async function () {
-    let tree = await initialize();
-    let welcome = await tree?.findWelcomeContent();
+    const tree = await initialize();
+    const welcome = await tree?.findWelcomeContent();
     expect(welcome).is.not.undefined;
   });
 });

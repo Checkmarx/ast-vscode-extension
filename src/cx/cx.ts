@@ -1,37 +1,39 @@
 import * as vscode from "vscode";
-import {CxWrapper} from "@checkmarxdev/ast-cli-javascript-wrapper";
+import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import {CxConfig} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import {
     RESULTS_FILE_EXTENSION,
     RESULTS_FILE_NAME, SCAN_CREATE_ADDITIONAL_PARAMETERS,
 } from "../utils/common/constants";
-import { getFilePath} from "../utils/utils";
-import {SastNode} from "../models/sastNode";
+import { getFilePath } from "../utils/utils";
+import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
-import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
-import {Logs} from "../models/logs";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { Logs } from "../models/logs";
 import { CxPlatform } from "./cxPlatform";
-
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { ChildProcessWithoutNullStreams } from "child_process";
+import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 export class Cx implements CxPlatform {
-     async scaScanCreate(sourcePath: string) : Promise<CxScaRealtime[] | undefined> {
+    async scaScanCreate(sourcePath: string): Promise<CxScaRealtime[] | undefined> {
         const cx = new CxWrapper(this.getBaseAstConfiguration());
         let jsonResults = [];
         const scan = await cx.runScaRealtimeScan(sourcePath);
-        if (scan.payload && scan.payload.length>0 && scan.exitCode===0) {
-            if(scan.payload[0].results){
+        if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
+            if (scan.payload[0].results) {
                 jsonResults = scan.payload[0].results;
             }
         } else {
             throw new Error(scan.status);
         }
-        
-      return jsonResults;
+
+        return jsonResults;
     }
-    
+
     async scanCreate(projectName: string, branchName: string, sourcePath: string) {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -44,7 +46,7 @@ export class Cx implements CxPlatform {
             return;
         }
         const cx = new CxWrapper(config);
-        let params = new Map<CxParamType, string>();
+        const params = new Map<CxParamType, string>();
         params.set(CxParamType.S, sourcePath);
         params.set(CxParamType.BRANCH, branchName);
         params.set(CxParamType.PROJECT_NAME, projectName);
@@ -53,7 +55,7 @@ export class Cx implements CxPlatform {
         const scan = await cx.scanCreate(params);
         return scan.payload[0];
     }
-    
+
     async scanCancel(scanId: string) {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -66,7 +68,7 @@ export class Cx implements CxPlatform {
         const scan = await cx.scanCancel(scanId);
         return scan.exitCode === 0;
     }
-    
+
     async getResults(scanId: string | undefined) {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -78,7 +80,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         await cx.getResults(scanId, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, getFilePath());
     }
-    
+
     async getScan(scanId: string | undefined): Promise<CxScan | undefined> {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -91,7 +93,7 @@ export class Cx implements CxPlatform {
         const scan = await cx.scanShow(scanId);
         return scan.payload[0];
     }
-    
+
     async getProject(projectId: string | undefined): Promise<CxProject | undefined> {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -104,7 +106,7 @@ export class Cx implements CxPlatform {
         const project = await cx.projectShow(projectId);
         return project.payload[0];
     }
-    
+
     async getProjectList(): Promise<CxProject[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
@@ -113,7 +115,7 @@ export class Cx implements CxPlatform {
         }
         const cx = new CxWrapper(config);
         const projects = await cx.projectList("limit=10000");
-    
+
         if (projects.payload) {
             r = projects.payload;
         } else {
@@ -121,7 +123,7 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     async getBranches(projectId: string | undefined): Promise<string[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
@@ -129,7 +131,12 @@ export class Cx implements CxPlatform {
             return [];
         }
         const cx = new CxWrapper(config);
-        const branches = await cx.projectBranches(projectId!, "");
+        let branches = undefined;
+        if (projectId) {
+            branches = await cx.projectBranches(projectId, "");
+        } else {
+            throw new Error("Project ID is not defined while trying to get branches");
+        }
         if (branches.payload) {
             r = branches.payload;
         } else {
@@ -137,7 +144,7 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
@@ -154,26 +161,26 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     getBaseAstConfiguration() {
         const config = new CxConfig();
-        config.additionalParameters =  vscode.workspace.getConfiguration("checkmarxOne").get("additionalParams") as string;
-    
+        config.additionalParameters = vscode.workspace.getConfiguration("checkmarxOne").get("additionalParams") as string;
+
         return config;
     }
-    
-    
+
+
     getAstConfiguration() {
         const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
         if (!token) {
             return undefined;
         }
-    
-        const config =this.getBaseAstConfiguration();
+
+        const config = this.getBaseAstConfiguration();
         config.apiKey = token;
         return config;
     }
-    
+
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
         const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
@@ -191,12 +198,13 @@ export class Cx implements CxPlatform {
         }
         return enabled;
     }
-    
-    async isSCAScanEnabled(logs:Logs): Promise<boolean>{
-        let enabled = true;
+
+    async isSCAScanEnabled(): Promise<boolean> {
+        const enabled = true;
         return enabled;
     }
-    
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async triageShow(projectId: string, similarityId: string, scanType: string): Promise<any[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
@@ -212,9 +220,9 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     async triageUpdate(projectId: string, similarityId: string, scanType: string, state: string, comment: string, severity: string): Promise<number> {
-        let r: number = -1;
+        let r = -1;
         const config = this.getAstConfiguration();
         if (!config) {
             return r;
@@ -228,7 +236,7 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     async getCodeBashing(cweId: string, language: string, queryName: string): Promise<CxCodeBashing | undefined> {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -245,7 +253,7 @@ export class Cx implements CxPlatform {
             throw new AstError(codebashing.exitCode, codebashing.status);
         }
     }
-    
+
     async getResultsBfl(scanId: string, queryId: string, resultNodes: SastNode[]) {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -262,9 +270,9 @@ export class Cx implements CxPlatform {
             throw new Error(bfl.status); //Need to return exit code
         }
     }
-    
-    async getResultsRealtime(fileSources: string, additionalParams: string): Promise<any> {
-    
+
+    async getResultsRealtime(fileSources: string, additionalParams: string): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]> {
+
         if (!fileSources) {
             throw new Error("Missing mandatory parameters, fileSources");
         }
@@ -276,9 +284,9 @@ export class Cx implements CxPlatform {
             throw new Error("Error running kics scan");
         }
         return [kics, process];
-    
+
     }
-    
+
     async scaRemediation(packageFile: string, packages: string, packageVersion: string) {
         const config = this.getAstConfiguration();
         if (!config) {
@@ -292,9 +300,9 @@ export class Cx implements CxPlatform {
             throw new Error(scaFix.status.replaceAll("\n", "")); //Need to return exit code
         }
     }
-    
-    async kicsRemediation(resultsFile: string, kicsFile: string, engine: string, similarityIds?: string): Promise<any> {
-    
+
+    async kicsRemediation(resultsFile: string, kicsFile: string, engine: string, similarityIds?: string): Promise<[Promise<CxCommandOutput>, ChildProcessWithoutNullStreams]> {
+
         if (!resultsFile) {
             throw new Error("Missing mandatory parameters, resultsFile");
         }
@@ -309,10 +317,10 @@ export class Cx implements CxPlatform {
             throw new Error("Error running kics remediation");
         }
         return [kics, process];
-    
+
     }
-    
-    async learnMore(queryID: string): Promise<any[] | undefined> {
+
+    async learnMore(queryID: string): Promise<CxLearnMoreDescriptions[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
         if (!config) {
@@ -327,7 +335,7 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
-    
+
     updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem) {
         statusBarItem.text = text;
         show ? statusBarItem.show() : statusBarItem.hide();

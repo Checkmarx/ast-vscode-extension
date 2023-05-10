@@ -1,3 +1,8 @@
 {
-    "editor.insertSpaces": false
+  "editor.insertSpaces": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.probe": ["javascript", "typescript"],
+  "editor.formatOnSave": true,
+  // First run prettier then ESLint (requires both eslint and prettier extensions to be installed in vscode)
+  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
 }
