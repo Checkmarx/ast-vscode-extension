@@ -16,32 +16,25 @@ import {
   SCAN_LABEL,
 } from "./common/constants";
 import { get, update } from "./common/globalState";
-import { getBranches } from "./ast/ast";
+import { cx } from "../cx";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "./utils";
 import { AstResultsProvider } from "../resultsView/ast_results_provider";
 
-export async function getBranchListener(
-  context: vscode.ExtensionContext,
-  logs: Logs
-) {
+export async function getBranchListener(context: vscode.ExtensionContext, logs: Logs) {
   const gitApi = await getGitAPIRepository();
   const state = gitApi.repositories[0]?.state;
   if (state) {
     return addRepositoryListener(context, logs, state);
   } else {
     return gitApi.onDidOpenRepository(async () => {
-      logs.info("GIT API - Open repository");
+      logs.info('GIT API - Open repository');
       const repoState = gitApi.repositories[0].state;
       return addRepositoryListener(context, logs, repoState);
     });
   }
 }
 
-async function addRepositoryListener(
-  context: vscode.ExtensionContext,
-  logs: Logs,
-  repoState: RepositoryState
-) {
+async function addRepositoryListener(context: vscode.ExtensionContext, logs: Logs, repoState: RepositoryState) {
   return repoState.onDidChange(() => {
     const tempBranchName = get(context, BRANCH_TEMP_ID_KEY);
     const branchName = repoState.HEAD?.name;
@@ -56,13 +49,10 @@ async function addRepositoryListener(
     const currentBranch = get(context, BRANCH_ID_KEY);
 
     if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
-      getBranches(projectItem.id).then((branches) => {
+      cx.getBranches(projectItem.id).then((branches) => {
         update(context, BRANCH_TEMP_ID_KEY, undefined);
         if (branches?.includes(branchName)) {
-          update(context, BRANCH_ID_KEY, {
-            id: branchName,
-            name: `${BRANCH_LABEL} ${branchName}`,
-          });
+          update(context, BRANCH_ID_KEY, { id: branchName, name: `${BRANCH_LABEL} ${branchName}` });
           update(context, SCAN_ID_KEY, { id: undefined, name: SCAN_LABEL });
           vscode.commands.executeCommand(REFRESH_TREE);
         }

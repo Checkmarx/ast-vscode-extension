@@ -5,28 +5,12 @@ import { Logs } from "../models/logs";
 import { AstResult } from "../models/results";
 import { get, update, updateError } from "./common/globalState";
 import {
-  getBranches,
-  getProject,
-  getProjectList,
-  getResults,
-  getScan,
-  getScans,
-  triageShow,
-} from "./ast/ast";
-import { getBfl } from "./sast/bfl";
-import { REFRESH_TREE, SHOW_ERROR } from "./common/commands";
-import {
-  BRANCH_ID_KEY,
-  BRANCH_LABEL,
-  ERROR_MESSAGE,
-  PROJECT_ID_KEY,
-  PROJECT_LABEL,
-  RESULTS_FILE_EXTENSION,
-  RESULTS_FILE_NAME,
-  SCAN_ID_KEY,
-  SCAN_LABEL,
-} from "./common/constants";
-import { GitExtension } from "../types/git";
+  cx
+} from "../cx";
+import { getBfl } from './sast/bfl';
+import { REFRESH_TREE, SHOW_ERROR } from './common/commands';
+import { BRANCH_ID_KEY, BRANCH_LABEL, ERROR_MESSAGE, PROJECT_ID_KEY, PROJECT_LABEL, RESULTS_FILE_EXTENSION, RESULTS_FILE_NAME, SCAN_ID_KEY, SCAN_LABEL } from "./common/constants";
+import { GitExtension } from '../types/git';
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 
 export function getProperty(
@@ -56,24 +40,17 @@ export function getNonce() {
   return text;
 }
 
-export async function getBranchPickItems(
-  logs: Logs,
-  projectId: string,
-  context: vscode.ExtensionContext
-) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+export async function getBranchPickItems(logs: Logs, projectId: string, context: vscode.ExtensionContext) {
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading branches" });
-      const branchList = await getBranches(projectId);
+      const branchList = await cx.getBranches(projectId);
       try {
-        return branchList
-          ? branchList.map((label) => ({
-              label: label,
-              id: label,
-            }))
-          : [];
+        return branchList ? branchList.map((label) => ({
+          label: label,
+          id: label,
+        })) : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
         vscode.commands.executeCommand(SHOW_ERROR);
@@ -83,54 +60,41 @@ export async function getBranchPickItems(
   );
 }
 
-export async function getProjectsPickItems(
-  logs: Logs,
-  context: vscode.ExtensionContext
-) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+export async function getProjectsPickItems(logs: Logs, context: vscode.ExtensionContext) {
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading projects" });
       try {
-        const projectList = await getProjectList();
-        return projectList
-          ? projectList.map((label) => ({
-              label: label.name,
-              id: label.id,
-            }))
-          : [];
+        const projectList = await cx.getProjectList();
+        return projectList ? projectList.map((label) => ({
+          label: label.name,
+          id: label.id,
+        })) : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
         vscode.commands.executeCommand(SHOW_ERROR);
         return [];
       }
     }
+
   );
 }
 
-export async function getScansPickItems(
-  logs: Logs,
-  projectId: string,
-  branchName: string,
-  context: vscode.ExtensionContext
-) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+export async function getScansPickItems(logs: Logs, projectId: string, branchName: string, context: vscode.ExtensionContext) {
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading scans" });
-      const scanList = await getScans(projectId, branchName);
+      const scanList = await cx.getScans(
+        projectId,
+        branchName
+      );
       try {
-        return scanList
-          ? scanList.map((label) => ({
-              label:
-                label === scanList[0]
-                  ? getScanLabel(label.createdAt, label.id) + " (latest)"
-                  : getScanLabel(label.createdAt, label.id),
-              id: label.id,
-            }))
-          : [];
+        return scanList ? scanList.map((label) => ({
+          label: label === scanList[0] ? getScanLabel(label.createdAt, label.id) + " (latest)" : getScanLabel(label.createdAt, label.id),
+          id: label.id,
+        })) : [];
       } catch (error) {
         updateError(context, ERROR_MESSAGE + error);
         vscode.commands.executeCommand(SHOW_ERROR);
@@ -141,58 +105,49 @@ export async function getScansPickItems(
 }
 
 export async function getResultsWithProgress(logs: Logs, scanId: string) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading results" });
-      await getResults(scanId);
+      await cx.getResults(scanId);
     }
   );
 }
 
 export async function getScanWithProgress(logs: Logs, scanId: string) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading scan" });
-      return await getScan(scanId);
+      return await cx.getScan(scanId);
     }
   );
 }
 
 export async function getProjectWithProgress(logs: Logs, projectId: string) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading project" });
-      return await getProject(projectId);
+      return await cx.getProject(projectId);
     }
   );
 }
 
 export async function getBranchesWithProgress(logs: Logs, projectId: string) {
-  return vscode.window.withProgress(
-    PROGRESS_HEADER,
+  return vscode.window.withProgress(PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info("Canceled loading"));
       progress.report({ message: "Loading branches" });
-      return await getBranches(projectId);
+      return await cx.getBranches(projectId);
     }
   );
 }
 
-export async function getChanges(
-  logs: Logs,
-  context: vscode.ExtensionContext,
-  result: AstResult,
-  detailsPanel: vscode.WebviewPanel
-) {
+export async function getChanges(logs: Logs, context: vscode.ExtensionContext, result: AstResult, detailsPanel: vscode.WebviewPanel) {
   const projectId = get(context, PROJECT_ID_KEY)?.id;
   if (projectId) {
-    triageShow(projectId, result.similarityId, result.type)
+    cx.triageShow(projectId, result.similarityId, result.type)
       .then((changes) => {
         detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
       })

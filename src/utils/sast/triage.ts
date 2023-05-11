@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import { AstResult } from "../../models/results";
 import { getChanges, getResultsFilePath } from "../utils";
-import { triageUpdate } from "../ast/ast";
 import { get } from "../common/globalState";
 import { PROJECT_ID_KEY, SCA } from "../common/constants";
 import { Logs } from "../../models/logs";
@@ -10,12 +9,9 @@ import { AstDetailsDetached } from "../../resultsView/ast_details_view";
 import { REFRESH_TREE } from "../common/commands";
 import { getLearnMore } from "./learnMore";
 import { TriageCommand } from "../../models/triageCommand";
+import { cx } from "../../cx";
 
-export async function updateResults(
-  result: AstResult,
-  context: vscode.ExtensionContext,
-  comment: string
-) {
+export async function updateResults(result: AstResult, context: vscode.ExtensionContext, comment: string) {
   const resultJsonPath = getResultsFilePath();
   if (!(fs.existsSync(resultJsonPath) && result)) {
     throw new Error("File not found");
@@ -36,7 +32,7 @@ export async function updateResults(
 
     // Update
     const projectId = get(context, PROJECT_ID_KEY).id;
-    await triageUpdate(
+    await cx.triageUpdate(
       projectId,
       result.similarityId,
       result.type,

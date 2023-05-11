@@ -7,12 +7,7 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { initialize } from "./utils/utils";
-import {
-  CX_CLEAR,
-  CX_LOOK_SCAN,
-  SCAN_KEY_TREE,
-  VS_OPEN_FOLDER,
-} from "./utils/constants";
+import { CX_CLEAR, CX_LOOK_SCAN, SCAN_KEY_TREE, VS_OPEN_FOLDER } from "./utils/constants";
 import { waitByLinkText } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
 
