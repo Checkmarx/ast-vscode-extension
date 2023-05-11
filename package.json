@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.0.18",
+  "version": "2.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -14,7 +14,7 @@
   },
   "icon": "media/icon.png",
   "engines": {
-    "vscode": "^1.56.2"
+    "vscode": "^1.63.0"
   },
   "extensionKind": [
     "workspace"
