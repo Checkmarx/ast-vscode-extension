@@ -1,19 +1,18 @@
-import {AstResult} from "../../models/results";
+import { AstResult } from "../../models/results";
 import * as vscode from "vscode";
-import {SCA, STATE, STATUS} from "../common/constants";
+import { SCA, STATE, STATUS } from "../common/constants";
 
 export class Details {
-    result: AstResult;
-    context: vscode.ExtensionContext;
+  result: AstResult;
+  context: vscode.ExtensionContext;
 
-    constructor(result: AstResult, context: vscode.ExtensionContext) {
-        this.result = result;
-        this.context = context;
-    }
+  constructor(result: AstResult, context: vscode.ExtensionContext) {
+    this.result = result;
+    this.context = context;
+  }
 
-    header(severityPath: vscode.Uri) {
-        return (
-            `
+  header(severityPath: vscode.Uri) {
+    return `
 			<div class="header-container">
 				<div class="header-item-title">
 					<h2 id="cx_title">
@@ -21,89 +20,79 @@ export class Details {
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
-				${this.result.sastNodes.length > 0 ?
-                `
+				${
+          this.result.sastNodes.length > 0
+            ? `
 					<div class="header-item-codebashing" id="cx_header_codebashing">
 						<span class="codebashing-link">
-							Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` + this.result.queryName + ` using Checkmarx's eLearning platform">codebashing</span>
+							Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` +
+              this.result.queryName +
+              ` using Checkmarx's eLearning platform">codebashing</span>
 						<span>
 					</div>`
-                :
-                ""
-            }
+            : ""
+        }
 			</div>
 			<hr class="division"/>
-			`
-        );
-    }
+			`;
+  }
 
-    loader(): string {
-        return (
-            `
-			<div id=\"history-container-loader\">
+  loader(): string {
+    return `
+			<div id="history-container-loader">
 				<center>
-					<p class=\"history-container-loader\">
+					<p class="history-container-loader">
 						Loading changes
 					</p>
-					<div class=\"loader\">
+					<div class="loader">
 					</div>
 				</center>
 			</div>
-			`
-        );
-    }
+			`;
+  }
 
-    triage(selectClassname: string) {
-        let state = STATE.filter((element) => {
-            return (!!element.dependency === (this.result.type === SCA));
-        });
-        const updateButton = this.result.type !== SCA ? `<button class="submit">Update</button>` : ``;
-        const comment = this.result.type !== SCA ?
-            `<div class="comment-container">
+  triage(selectClassname: string) {
+    const state = STATE.filter((element) => {
+      return !!element.dependency === (this.result.type === SCA);
+    });
+    const updateButton =
+      this.result.type !== SCA ? `<button class="submit">Update</button>` : ``;
+    const comment =
+      this.result.type !== SCA
+        ? `<div class="comment-container">
 				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
-			</div>` : ``;
+			</div>`
+        : ``;
 
-        return (
-            `<div class="ast-triage">
+    return `<div class="ast-triage">
 				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
 					${STATUS.map((element) => {
-                return (
-
-                    `<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? 'selected' : ""}>
+            return `<option id=${element.value} class="${element.class}" ${
+              this.result.severity === element.value ? "selected" : ""
+            }>
 									${element.value}	
-								</option>`
-                );
-            })
-            }
+								</option>`;
+          })}
 				</select>
 				<select id="select_state" class="state">
 					${state.map((element) => {
-                return (
-                    `<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""}>
+            return `<option id=${element.value} ${
+              this.result.state === element.tag ? 'selected="selected"' : ""
+            }>
 											${element.value}	
-										</option>`);
-            })
-            }
+										</option>`;
+          })}
 				</select>
 				${updateButton}
 			</div>
 			${comment}
-			</br>`
-        );
-    }
+			</br>`;
+  }
 
-    generalTab(cxPath: vscode.Uri) {
-        return (
-            `<body>
+  generalTab(cxPath: vscode.Uri) {
+    return `<body>
 				<span class="details">
-					${this.result.description
-                ?
-                "<p>" +
-                this.result.description +
-                "</p>"
-                :
-                ''
-            }
+					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
 					${this.result.data.value ? this.result.getKicsValues() : ""}
 				</span>
 				${this.result.getTitle()}
@@ -112,13 +101,22 @@ export class Details {
 						${this.result.getHtmlDetails(cxPath)}
 					</tbody>
 				</table>	
-			</body>`
-        );
-    }
+			</body>`;
+  }
 
-    scaView(severityPath, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability, scaUpgrade, scaUrl: vscode.Uri,type?:string) {
-        return (
-            `
+  scaView(
+    severityPath,
+    scaAtackVector,
+    scaComplexity,
+    scaAuthentication,
+    scaConfidentiality,
+    scaIntegrity,
+    scaAvailability,
+    scaUpgrade,
+    scaUrl: vscode.Uri,
+    type?: string
+  ) {
+    return `
 			<body class="body-sca">
 			<div class="header">
 				<img alt="icon" class="header-severity" src="${severityPath}" />
@@ -126,20 +124,33 @@ export class Details {
 					${this.result.label}
 				</p>
 				<p class="header-name">
-					${this.result.scaNode.packageIdentifier ? this.result.scaNode.packageIdentifier : ""}
+					${
+            this.result.scaNode.packageIdentifier
+              ? this.result.scaNode.packageIdentifier
+              : ""
+          }
 				</p>
 			</div>
 			<div class="content">
-				${this.result.scaContent(this.result, scaUpgrade, scaUrl, scaAtackVector, scaComplexity, scaAuthentication, scaConfidentiality, scaIntegrity, scaAvailability,type)}
+				${this.result.scaContent(
+          this.result,
+          scaUpgrade,
+          scaUrl,
+          scaAtackVector,
+          scaComplexity,
+          scaAuthentication,
+          scaConfidentiality,
+          scaIntegrity,
+          scaAvailability,
+          type
+        )}
 			</div>
 		</body>			
-		`
-        );
-    }
+		`;
+  }
 
-    detailsTab() {
-        return (
-            `
+  detailsTab() {
+    return `
 			<div>
 				<div id="learn-container-loader">
 					<center>
@@ -151,39 +162,76 @@ export class Details {
 					</center>
 				</div>
 			</div>
-			`
-        );
-    }
+			`;
+  }
 
-    // Generic tab component
-    tab(tab1Content: string, tab2Content: string, tab3Content: string, tab1Label: string, tab2Label: string, tab3Label: string, tab4Label: string, tab5Content: string) {
-        return (
-            `${tab1Label !== "" ? `<input type="radio" name="tabs" id="general-tab" checked />
+  // Generic tab component
+  tab(
+    tab1Content: string,
+    tab2Content: string,
+    tab3Content: string,
+    tab1Label: string,
+    tab2Label: string,
+    tab3Label: string,
+    tab4Label: string,
+    tab5Content: string
+  ) {
+    return `${
+      tab1Label !== ""
+        ? `<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}
-			</label>` : ""}
-			${tab2Label !== "" ? `<input type="radio" name="tabs" id="learn-tab" />
+			</label>`
+        : ""
+    }
+			${
+        tab2Label !== ""
+          ? `<input type="radio" name="tabs" id="learn-tab" />
 			<label for="learn-tab" id="learn-label">
 				${tab2Label}
-			</label>` : ""}
-			${tab4Label !== "" ? `<input type="radio" name="tabs" id="code-tab" />
+			</label>`
+          : ""
+      }
+			${
+        tab4Label !== ""
+          ? `<input type="radio" name="tabs" id="code-tab" />
 			<label for="code-tab" id="code-label">
 				${tab4Label}
-			</label>` : ""}
-			${tab3Label !== "" ? `<input type="radio" name="tabs" id="changes-tab" />
+			</label>`
+          : ""
+      }
+			${
+        tab3Label !== ""
+          ? `<input type="radio" name="tabs" id="changes-tab" />
 			<label for="changes-tab" id="changes-label">
 				${tab3Label}
-			</label>` : ""}
-			${tab1Content !== "" ? `<div class="tab general">
+			</label>`
+          : ""
+      }
+			${
+        tab1Content !== ""
+          ? `<div class="tab general">
 			${tab1Content}
-			</div>` : ""}
-			${tab2Content !== "" ? `<div class="tab learn">
+			</div>`
+          : ""
+      }
+			${
+        tab2Content !== ""
+          ? `<div class="tab learn">
 			${tab2Content}
-			</div>` : ""}
-			${tab3Content !== "" ? `<div class="tab changes">
+			</div>`
+          : ""
+      }
+			${
+        tab3Content !== ""
+          ? `<div class="tab changes">
 			${tab3Content}
-		</div>` : ""}
-		${tab5Content !== "" ? `<div class="tab code">
+		</div>`
+          : ""
+      }
+		${
+      tab5Content !== ""
+        ? `<div class="tab code">
 		<div id="tab-code">
 			<pre class="pre-code">
 				<code id="code">
@@ -191,9 +239,10 @@ export class Details {
 				</code>
 			</pre>
 		</div>
-	</div>` : ""}
-			
-			`
-        );
+	</div>`
+        : ""
     }
+			
+			`;
+  }
 }

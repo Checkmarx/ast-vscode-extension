@@ -2,7 +2,12 @@ import * as vscode from "vscode";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { AstResult } from "../../models/results";
 import { SastNode } from "../../models/sastNode";
-import { GRAPH_ITEM, IssueFilter, IssueLevel, StateLevel } from "../common/constants";
+import {
+  GRAPH_ITEM,
+  IssueFilter,
+  IssueLevel,
+  StateLevel,
+} from "../common/constants";
 import { Counter, getProperty } from "../utils";
 import { TreeItem } from "./treeItem";
 
@@ -22,19 +27,28 @@ export function createSummaryItem(list: CxResult[]): TreeItem {
 }
 
 export function groupBy(
-  list: Object[],
+  list: object[],
   groups: string[],
   scan: string | undefined,
   diagnosticCollection: vscode.DiagnosticCollection,
-  issueLevel: string[] = [IssueLevel.high, IssueLevel.medium, IssueLevel.low, IssueLevel.info],
-  stateLevel: string[] = [StateLevel.confirmed, StateLevel.toVerify,StateLevel.urgent,StateLevel.notIgnored],
-  treeItem?: string
+  issueLevel: string[] = [
+    IssueLevel.high,
+    IssueLevel.medium,
+    IssueLevel.low,
+    IssueLevel.info,
+  ],
+  stateLevel: string[] = [
+    StateLevel.confirmed,
+    StateLevel.toVerify,
+    StateLevel.urgent,
+    StateLevel.notIgnored,
+  ]
 ): TreeItem {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const map = new Map<string, vscode.Diagnostic[]>();
 
-  const tree = new TreeItem(scan ?? "", treeItem, undefined, []);
-  list.forEach((element: any) => {
+  const tree = new TreeItem(scan ?? "", undefined, undefined, []);
+  list.forEach((element: object) => {
     groupTree(element, folder, map, groups, tree, issueLevel, stateLevel);
   });
 
@@ -47,13 +61,13 @@ export function groupBy(
 }
 
 export function groupTree(
-  rawObj: Object,
+  rawObj: object,
   folder: vscode.WorkspaceFolder | undefined,
   map: Map<string, vscode.Diagnostic[]>,
   groups: string[],
   tree: TreeItem,
   issueLevel: string[],
-  stateLevel: string[],
+  stateLevel: string[]
 ) {
   const obj = new AstResult(rawObj);
   if (!obj) {
@@ -64,7 +78,10 @@ export function groupTree(
   // Verify the current severity filters applied
   if (issueLevel.length > 0) {
     // Filter only the results for the severity and state filters type
-    if ((!obj.getState() || issueLevel.includes(obj.getSeverity())) && (!obj.getState() || stateLevel.includes(obj.getState()))) {
+    if (
+      (!obj.getState() || issueLevel.includes(obj.getSeverity())) &&
+      (!obj.getState() || stateLevel.includes(obj.getState()))
+    ) {
       if (obj.sastNodes.length > 0) {
         createDiagnostic(
           obj.label,
@@ -94,11 +111,11 @@ export function createDiagnostic(
   if (!folder) {
     return;
   }
-  const filePath = vscode.Uri.joinPath(folder!.uri, node.fileName).toString();
+  const filePath = vscode.Uri.joinPath(folder?.uri, node.fileName).toString();
   // Needed because vscode uses zero based line number
   const column = node.column > 0 ? +node.column - 1 : 1;
   const line = node.line > 0 ? +node.line - 1 : 1;
-  let length = column + node.length;
+  const length = column + node.length;
   const startPosition = new vscode.Position(line, column);
   const endPosition = new vscode.Position(line, length);
   const range = new vscode.Range(startPosition, endPosition);
@@ -112,11 +129,11 @@ export function createDiagnostic(
 }
 
 export function reduceGroups(
-  obj: any,
+  obj: AstResult,
   previousValue: TreeItem,
   currentValue: string
 ) {
-  var value = getProperty(obj, currentValue);
+  let value = getProperty(obj, currentValue);
 
   // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
   if (currentValue === IssueFilter.fileName && value.length === 0) {
@@ -129,8 +146,8 @@ export function reduceGroups(
 
   const tree = previousValue.children
     ? previousValue.children.find(
-        (item) => item.label === value.replaceAll("_", " ")
-      )
+      (item) => item.label === value.replaceAll("_", " ")
+    )
     : undefined;
   if (tree) {
     tree.setDescription();

@@ -1,9 +1,7 @@
 import {
-  By,
   CustomTreeSection,
   EditorView,
   InputBox,
-  until,
   VSBrowser,
   WebDriver,
   Workbench,
