@@ -18,6 +18,11 @@ on:
         required: false
         default: true
         type: boolean
+      publish:
+        description: 'Publish to marketplace'
+        required: false
+        default: true
+        type: boolean
   workflow_dispatch:
     inputs:
       jsTag:
@@ -26,11 +31,15 @@ on:
       vscodeTag:
         description: 'Tag name (ignored if not dev build)'
         required: false
-        default: rc
       dev:
         description: 'Is dev build'
         required: false
         default: true
+        type: boolean
+      publish:
+        description: 'Publish to marketplace'
+        required: false
+        default: false
         type: boolean
 
 jobs:
@@ -69,12 +78,14 @@ jobs:
           if [ ${{ inputs.dev }} == true ]; then
             echo "TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version)" >> $GITHUB_ENV
           else
-            echo "TAG_NAME=$(npm version patch)" >> $GITHUB_ENV
+            echo "TAG_NAME=$(npm version minor)" >> $GITHUB_ENV
           fi
 
+      # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
         run: npm install
 
+      # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
       - name: Get and install JS Wrapper if provided by user
         if: inputs.dev == true && inputs.jsTag != ''
         run: |
@@ -89,76 +100,55 @@ jobs:
             echo "JS wrapper with version ${JS_VERSION_NAME} not found"
           fi
 
+      # INSTALL VSCE
       - name: Install VSCE
         run: npm install -g vsce
 
+      # PACKAGE PROJECT
       - name: Package .vsix file
         run: |
           if [ ${{ inputs.dev }} == true ]; then
+            node .github/scripts/updateDevVersion.js
             vsce package --pre-release
           else
             vsce package
           fi
 
-          TAG_NAME=${{env.TAG_NAME}}
-          echo "VSIX_TAG_NAME=${TAG_NAME:1}" >> $GITHUB_ENV
+      # CREATE GH RELEASE NAME
+      - name: Handle GH Release name
+        run: |
+          VSIX_TAG_NAME=$(cat package.json | jq .version | cut -d'"' -f 2)
+          echo "VSIX_TAG_NAME=$VSIX_TAG_NAME" >> $GITHUB_ENV
+
+          if [ ${{ inputs.dev }} == true ]; then
+            echo "GH_RELEASE_NAME=${{env.TAG_NAME}} (${VSIX_TAG_NAME})" >> $GITHUB_ENV
+          else
+            echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
+          fi
 
       # PUSH TAGS IF IT IS A RELEASE
       - name: Push tag if release
         if: inputs.dev == false
         run: git push && git push --tags
 
+      # CREATE GH RELEASE
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: ${{env.GH_RELEASE_NAME}}
           tag_name: ${{env.TAG_NAME}}
           generate_release_notes: true
           files: ast-results-${{env.VSIX_TAG_NAME}}.vsix
           prerelease: ${{ inputs.dev }}
 
-      - name: Upload source with changes to workflow artifacts
-        if: inputs.dev == true
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{env.TAG_NAME}}
-          path: |
-            ./
-            !node_modules
-
-      - name: Publish to marketplace
+      # PUBLISH TO MARKETPLACE
+      - name: Publish
         env:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
-        if: env.MARKET_TOKEN != null && inputs.dev == false
-        run: vsce publish -p ${{ env.MARKET_TOKEN }}
-
-  notify:
-    runs-on: ubuntu-latest
-    needs: release
-    if: inputs.dev == false
-    steps:
-      - name: Get latest relase notes
-        id: release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
-          body_release="$(gh api -H "Accept: application/vnd.github.v3+json" /repos/Checkmarx/ast-vscode-extension/releases/latest | jq -r '.body' )"
-          body_release="${body_release//$'\n'/'%0A'}"
-          echo "::set-output name=body_release::$body_release"
-      - name: Converts Markdown to HTML
-        id: convert
-        uses: lifepal/markdown-to-html@v1.2
-        with:
-          text: "${{ steps.release.outputs.body_release }}"
-
-      - name: Clean html
-        id: clean
-        run: |
-          clean="$(echo "${{ steps.convert.outputs.html }}" | awk '{gsub(/id=.[a-z]+/,"");print}' | tr -d '\n')"
-          echo "$clean"
-          echo "::set-output name=clean::$clean"
-      - name: Send a Notification
-        id: notify
-        uses: thechetantalwar/teams-notify@v2
-        with:
-          teams_webhook_url: ${{ secrets.TEAMS_WEBHOOK_URI }}
-          message: "${{ steps.clean.outputs.clean }}"
+          if [ ${{ inputs.dev }} == true ]; then
+            vsce publish --pre-release -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish -p ${{ env.MARKET_TOKEN }}
+          fi
