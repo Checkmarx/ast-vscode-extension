@@ -21,7 +21,7 @@ import {
 import { getResultsFilePath, getResultsWithProgress } from "../utils/utils";
 import { Logs } from "../models/logs";
 import { get, update } from "../utils/common/globalState";
-import { getAstConfiguration } from "../utils/ast/ast";
+import { cx } from "../cx";
 import { REFRESH_TREE } from "../utils/common/commands";
 import { TreeItem } from "../utils/tree/treeItem";
 import {
@@ -104,7 +104,7 @@ export class AstResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
   async refreshData(): Promise<void> {
     this.showStatusBarItem();
-    this.data = getAstConfiguration() ? this.generateTree().children : [];
+    this.data = cx.getAstConfiguration() ? this.generateTree().children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }

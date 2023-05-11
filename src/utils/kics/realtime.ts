@@ -2,18 +2,18 @@ import * as vscode from "vscode";
 import { KICS_REALTIME_FILE } from "../common/constants";
 import { Logs } from "../../models/logs";
 import { get } from "../common/globalState";
-import { getResultsRealtime } from "../ast/ast";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { KicsSummary } from "../../models/kicsNode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
+import { cx } from "../../cx";
 
 // Logs the output of kics autoscan summary
 export function resultsSummaryLogs(kicsResults: CxKicsRealTime, logs: Logs) {
   logs.info(
     "Results summary:" +
-      JSON.stringify(kicsResults?.summary, null, 2)
-        .replaceAll("{", "")
-        .replaceAll("}", "")
+    JSON.stringify(kicsResults?.summary, null, 2)
+      .replaceAll("{", "")
+      .replaceAll("}", "")
   );
   // Decide wether or not to print the quick fix available information
   if (checkIfAnyFixable(kicsResults)) {
@@ -38,9 +38,9 @@ function checkIfAnyFixable(kicsResults: CxKicsRealTime): boolean {
 export function remediationSummaryLogs(remediation: object, logs: Logs) {
   logs.info(
     "Remediation summary:" +
-      JSON.stringify(remediation, null, 2)
-        .replaceAll("{", "")
-        .replaceAll("}", "")
+    JSON.stringify(remediation, null, 2)
+      .replaceAll("{", "")
+      .replaceAll("}", "")
   );
 }
 
@@ -48,14 +48,13 @@ export function remediationSummaryLogs(remediation: object, logs: Logs) {
 export async function createKicsScan(file: string | undefined) {
   let results;
   try {
-    const additionalParams = vscode.workspace
-      .getConfiguration("CheckmarxKICS")
-      .get("Additional Parameters") as string;
+    const additionalParams = vscode.workspace.getConfiguration("CheckmarxKICS").get("Additional Parameters") as string;
     if (file) {
-      results = await getResultsRealtime(file, additionalParams);
+      results = await cx.getResultsRealtime(file, additionalParams);
     } else {
       throw new Error("file is not defined on kics scan creation");
     }
+
   } catch (err) {
     throw new Error(err.message);
   }
@@ -76,10 +75,9 @@ export function applyKicsDiagnostic(
     const startPosition = new vscode.Position(file.line - 1, 0);
     const endPosition = new vscode.Position(file.line - 1, 999);
     kicsDiagnostic.push({
-      message: `${kicsResult.query_name} (${
-        kicsResult.severity.charAt(0) +
+      message: `${kicsResult.query_name} (${kicsResult.severity.charAt(0) +
         kicsResult.severity.slice(1).toLowerCase()
-      })
+        })
 "${kicsResult.description}"
 Value: 
  ${kicsResult.query_name}

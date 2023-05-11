@@ -3,12 +3,6 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from "../models/results";
 import {
-  getScan,
-  scanCancel,
-  scanCreate,
-  updateStatusBarItem,
-} from "../utils/ast/ast";
-import {
   BRANCH_ID_KEY,
   BRANCH_NAME,
   NO,
@@ -30,80 +24,53 @@ import {
 } from "../utils/common/constants";
 import { get, Item, update } from "../utils/common/globalState";
 import { getResultsJson, loadScanId } from "../utils/utils";
+import { cx } from "../cx";
 
-export async function pollForScanResult(
-  context: vscode.ExtensionContext,
-  statusBarItem: vscode.StatusBarItem,
-  logs: Logs
-) {
+export async function pollForScanResult(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
   return new Promise<void>((resolve) => {
     setInterval(async () => {
       const scanPreparing = get(context, SCAN_CREATE_PREP_KEY);
-      if (scanPreparing?.id) {
-        return;
-      }
+      if (scanPreparing?.id) { return; }
 
       const scanCreateId = get(context, SCAN_CREATE_ID_KEY);
       if (scanCreateId?.id) {
-        updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
-        const scan = await getScan(scanCreateId.id);
-        if (
-          scan &&
-          scan.status.toLocaleLowerCase() !== SCAN_STATUS_RUNNING &&
-          scan.status.toLocaleLowerCase() !== SCAN_STATUS_QUEUED
-        ) {
+        cx.updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
+        const scan = await cx.getScan(scanCreateId.id);
+        if (scan && scan.status.toLocaleLowerCase() !== SCAN_STATUS_RUNNING && scan.status.toLocaleLowerCase() !== SCAN_STATUS_QUEUED) {
           scanFinished(context, scan, logs);
-          updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+          cx.updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
           clearInterval(this);
           resolve();
         }
       } else {
-        updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+        cx.updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
       }
     }, SCAN_POLL_TIMEOUT);
   });
 }
 
-async function createScanForProject(
-  context: vscode.ExtensionContext,
-  logs: Logs
-) {
+async function createScanForProject(context: vscode.ExtensionContext, logs: Logs) {
   const scanBranch: Item = context.workspaceState.get(BRANCH_ID_KEY);
   const projectForScan: Item = context.workspaceState.get(PROJECT_ID_KEY);
   const projectName = projectForScan.name.split(":")[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
-  logs.info(
-    "Initiating scan for workspace Folder: " + workspaceFolder.uri.fsPath
-  );
-  const scanCreateResponse = await scanCreate(
-    projectName,
-    scanBranch.id,
-    workspaceFolder.uri.fsPath
-  );
+  logs.info("Initiating scan for workspace Folder: " + workspaceFolder.uri.fsPath);
+  const scanCreateResponse = await cx.scanCreate(projectName, scanBranch.id, workspaceFolder.uri.fsPath);
   logs.info("Scan created with ID: " + scanCreateResponse.id);
-  update(context, SCAN_CREATE_ID_KEY, {
-    id: scanCreateResponse.id,
-    name: scanCreateResponse.id,
-  });
+  update(context, SCAN_CREATE_ID_KEY, { id: scanCreateResponse.id, name: scanCreateResponse.id });
 }
 
-export async function cancelScan(
-  context: vscode.ExtensionContext,
-  statusBarItem: vscode.StatusBarItem,
-  logs: Logs
-) {
+export async function cancelScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
   logs.info("Triggering the cancel scan flow");
-  updateStatusBarItem(SCAN_CANCEL, true, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CANCEL, true, statusBarItem);
 
   const scan = get(context, SCAN_CREATE_ID_KEY);
   if (scan && scan.id) {
-    const response = await scanCancel(scan.id);
-    logs.info(
-      "scan cancel instruction sent for ID: " + scan.id + " :" + response
-    );
+    const response = await cx.scanCancel(scan.id);
+    logs.info("scan cancel instruction sent for ID: " + scan.id + " :" + response);
     update(context, SCAN_CREATE_ID_KEY, undefined);
   }
-  updateStatusBarItem(SCAN_CANCEL, false, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CANCEL, false, statusBarItem);
 }
 
 async function doesFilesMatch(logs: Logs) {
@@ -141,35 +108,29 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs) {
   }
 }
 
-export async function createScan(
-  context: vscode.ExtensionContext,
-  statusBarItem: vscode.StatusBarItem,
-  logs: Logs
-) {
-  logs.info(
-    "Scan initiation started. Checking if scan is eligible to be initiated..."
-  );
+export async function createScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs) {
+  logs.info("Scan initiation started. Checking if scan is eligible to be initiated...");
   update(context, SCAN_CREATE_PREP_KEY, { id: true, name: "" });
-  updateStatusBarItem(SCAN_CREATE, true, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CREATE, true, statusBarItem);
 
-  updateStatusBarItem(SCAN_CREATE_VERIFY_BRANCH, true, statusBarItem);
-  if (!(await doesBranchMatch(context, logs))) {
-    updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CREATE_VERIFY_BRANCH, true, statusBarItem);
+  if (!await doesBranchMatch(context, logs)) {
+    cx.updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
     update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
     return;
   }
 
-  updateStatusBarItem(SCAN_CREATE_VERIFY_FILES, true, statusBarItem);
-  if (!(await doesFilesMatch(logs))) {
-    updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CREATE_VERIFY_FILES, true, statusBarItem);
+  if (!await doesFilesMatch(logs)) {
+    cx.updateStatusBarItem(SCAN_WAITING, false, statusBarItem);
     update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
     return;
   }
 
-  updateStatusBarItem(SCAN_CREATE_PREPARING, true, statusBarItem);
+  cx.updateStatusBarItem(SCAN_CREATE_PREPARING, true, statusBarItem);
   await createScanForProject(context, logs);
 
-  updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
+  cx.updateStatusBarItem(SCAN_WAITING, true, statusBarItem);
   update(context, SCAN_CREATE_PREP_KEY, { id: false, name: "" });
 
   await vscode.commands.executeCommand(`ast-results.pollForScan`);
