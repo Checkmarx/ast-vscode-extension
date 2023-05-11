@@ -1,0 +1,34 @@
+name: Delete dev releases
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to delete'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to delete'
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+  packages: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Delete releases and tags
+        continue-on-error: true
+        uses: dev-drprasad/delete-older-releases@v0.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        with:
+          keep_latest: 0
+          delete_tag_pattern: "-${{inputs.tag}}.0"
+          delete_tags: true
