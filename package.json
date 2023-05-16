@@ -843,7 +843,7 @@
     "vsce": "^2.15.0",
     "vscode-extension-tester": "5.5.3",
     "vscode-extension-tester-locators": "^3.4.0",
-    "webpack": "^5.82.0",
+    "webpack": "^5.82.1",
     "webpack-cli": "^5.1.1"
   },
   "dependencies": {
