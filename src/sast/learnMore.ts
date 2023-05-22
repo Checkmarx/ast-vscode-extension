@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { AstResult } from "../models/results";
-import { learnMore } from "../ast/ast";
+import { cx } from "../cx";
 
 export async function getLearnMore(
   logs: Logs,
@@ -9,7 +9,7 @@ export async function getLearnMore(
   result: AstResult,
   detailsPanel: vscode.WebviewPanel
 ) {
-  learnMore(result.queryId)
+  cx.learnMore(result.queryId)
     .then((learn) => {
       detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn });
     })

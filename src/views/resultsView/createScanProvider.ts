@@ -3,10 +3,8 @@ import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { AstResult } from "../../models/results";
 import {
-  getScan,
-  scanCancel,
-  scanCreate,
-} from "../../ast/ast";
+  cx
+} from "../../cx";
 import {
   constants
 } from "../../utils/common/constants";
@@ -31,7 +29,7 @@ export async function pollForScanResult(
       const scanCreateId = getFromState(context, constants.scanCreateIdKey);
       if (scanCreateId?.id) {
         updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
-        const scan = await getScan(scanCreateId.id);
+        const scan = await cx.getScan(scanCreateId.id);
         if (
           scan &&
           scan.status.toLocaleLowerCase() !== constants.scanStatusRunning &&
@@ -58,7 +56,7 @@ async function createScanForProject(
   const projectName = projectForScan.name.split(":")[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
-  const scanCreateResponse = await scanCreate(
+  const scanCreateResponse = await cx.scanCreate(
     projectName,
     scanBranch.id,
     workspaceFolder.uri.fsPath
@@ -81,7 +79,7 @@ export async function cancelScan(
   const scan = getFromState(context, constants.scanCreateIdKey);
   if (scan && scan.id) {
     try {
-      const response = await scanCancel(scan.id);
+      const response = await cx.scanCancel(scan.id);
       logs.info(messages.scanCancellingSent + scan.id + " :" + response);
       updateState(context, constants.scanCreateIdKey, undefined);
     } catch (error) {

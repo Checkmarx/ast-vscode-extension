@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { scaRemediation } from "../ast/ast";
+import { cx } from "../cx";
 import * as path from "path";
 import { messages } from "../utils/common/messages";
 
@@ -18,7 +18,7 @@ export async function applyScaFix(
       logs.info(messages.scaUpgrading(packages, version));
       const filePackageObjectList = vscode.workspace.workspaceFolders;
       if (filePackageObjectList.length > 0) {
-        await scaRemediation(
+        await cx.scaRemediation(
           path.join(filePackageObjectList[0].uri.fsPath, packageFile),
           packages,
           version

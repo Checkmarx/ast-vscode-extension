@@ -7,7 +7,7 @@ import {
 import { getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { Logs } from "../../models/logs";
 import { getFromState, updateState } from "../../utils/common/globalState";
-import { getAstConfiguration } from "../../ast/ast";
+import { cx } from "../../cx";
 import { commands } from "../../utils/common/commands";
 import { TreeItem } from "../../utils/tree/treeItem";
 import { FilterCommand } from "../../commands/filterCommand";
@@ -51,7 +51,7 @@ export class AstResultsProvider extends ResultsProvider {
 
   async refreshData(): Promise<void> {
     this.showStatusBarItem(messages.commandRunning);
-    this.data = getAstConfiguration() ? this.generateTree().children : [];
+    this.data = cx.getAstConfiguration() ? this.generateTree().children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }

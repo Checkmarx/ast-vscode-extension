@@ -12,7 +12,7 @@ import {
 import { getFromState, updateState, updateStateError } from "../common/globalState";
 import { CxQuickPickItem } from "./multiStepUtils";
 import { messages } from "../common/messages";
-import { getBranches, getProjectList, getScans, getResults, getProject, getScan } from "../../ast/ast";
+import { cx } from "../../cx";
 // label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
 export async function projectPicker(
   context: vscode.ExtensionContext,
@@ -129,7 +129,7 @@ export async function getBranchPickItems(
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingBranches });
-      const branchList = await getBranches(projectId);
+      const branchList = await cx.getBranches(projectId);
       try {
         return branchList
           ? branchList.map((label) => ({
@@ -156,7 +156,7 @@ export async function getProjectsPickItems(
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingProjects });
       try {
-        const projectList = await getProjectList();
+        const projectList = await cx.getProjectList();
         return projectList
           ? projectList.map((label) => ({
             label: label.name,
@@ -183,7 +183,7 @@ export async function getScansPickItems(
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingScans });
-      const scanList = await getScans(projectId, branchName);
+      const scanList = await cx.getScans(projectId, branchName);
       try {
         return scanList
           ? scanList.map((label) => ({
@@ -209,7 +209,7 @@ export async function getResultsWithProgress(logs: Logs, scanId: string) {
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingResults });
-      await getResults(scanId);
+      await cx.getResults(scanId);
     }
   );
 }
@@ -254,7 +254,7 @@ export async function getScanWithProgress(logs: Logs, scanId: string) {
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingScan });
-      return await getScan(scanId);
+      return await cx.getScan(scanId);
     }
   );
 }
@@ -265,7 +265,7 @@ export async function getProjectWithProgress(logs: Logs, projectId: string) {
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingProject });
-      return await getProject(projectId);
+      return await cx.getProject(projectId);
     }
   );
 }
@@ -276,7 +276,7 @@ export async function getBranchesWithProgress(logs: Logs, projectId: string) {
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingBranches });
-      return await getBranches(projectId);
+      return await cx.getBranches(projectId);
     }
   );
 }

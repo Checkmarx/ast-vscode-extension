@@ -6,7 +6,7 @@ import {
   constants
 } from "../common/constants";
 import { getFromState, updateState } from "../common/globalState";
-import { getAstConfiguration, getBranches, isScanEnabled } from "../../ast/ast";
+import { cx } from "../../cx";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
 import { messages } from "../common/messages";
 
@@ -46,7 +46,7 @@ async function addRepositoryListener(
     const currentBranch = getFromState(context, constants.branchIdKey);
 
     if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
-      getBranches(projectItem.id).then((branches) => {
+      cx.getBranches(projectItem.id).then((branches) => {
         updateState(context, constants.branchTempIdKey, undefined);
         if (branches?.includes(branchName)) {
           updateState(context, constants.branchIdKey, {
@@ -167,12 +167,12 @@ export async function executeCheckSettingsChange(
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      getAstConfiguration() ? true : false
+      cx.getAstConfiguration() ? true : false
     );
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      await isScanEnabled(this.logs)
+      await cx.isScanEnabled(this.logs)
     );
     const onSave = vscode.workspace
       .getConfiguration(constants.cxKics)

@@ -170,7 +170,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register refresh sca and results Tree Commmand
   treeCommand.registerRefreshCommands();
   // Register clear sca and results tree Command
-  treeCommand.registeClearCommands();
+  treeCommand.registerClearCommands();
   // Register group Commands for UI and for command list
   groupByCommand.registerGroupBy();
   // Register Severity and state Filters Command for UI and for command list

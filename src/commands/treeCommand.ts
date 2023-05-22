@@ -3,7 +3,6 @@ import { Logs } from "../models/logs";
 import {
   commands
 } from "../utils/common/commands";
-import { constants } from "../utils/common/constants";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
 
@@ -29,7 +28,7 @@ export class TreeCommand {
     this.createRefreshScaTreeCommand();
   }
 
-  public registeClearCommands() {
+  public registerClearCommands() {
     this.clearCommand();
     this.clearScaCommand();
   }
@@ -64,7 +63,7 @@ export class TreeCommand {
   private clearScaCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        constants.clearSca,
+        commands.clearSca,
         async () => await this.scaResultsProvider.clean()
       )
     );

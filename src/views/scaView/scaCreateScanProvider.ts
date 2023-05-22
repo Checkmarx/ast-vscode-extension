@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
-import { scaScanCreate } from "../../ast/ast";
+import { cx } from "../../cx";
 import {
   constants
 } from "../../utils/common/constants";
@@ -13,7 +13,7 @@ async function createScanForProject(logs: Logs) {
   let scanCreateResponse = [];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
   try {
-    scanCreateResponse = await scaScanCreate(workspaceFolder.uri.fsPath);
+    scanCreateResponse = await cx.scaScanCreate(workspaceFolder.uri.fsPath);
   } catch (error) {
     logs.error(error);
   }

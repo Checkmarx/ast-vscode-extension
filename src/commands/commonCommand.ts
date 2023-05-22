@@ -1,9 +1,7 @@
 import * as vscode from "vscode";
 import {
-  getAstConfiguration,
-  isScanEnabled,
-  isSCAScanEnabled,
-} from "../ast/ast";
+  cx
+} from "../cx";
 import { Logs } from "../models/logs";
 import {
   commands
@@ -44,7 +42,7 @@ export class CommonCommand {
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      getAstConfiguration() ? true : false
+      cx.getAstConfiguration() ? true : false
     );
   }
 
@@ -52,7 +50,7 @@ export class CommonCommand {
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isScanEnabled,
-      await isScanEnabled(this.logs)
+      await cx.isScanEnabled(this.logs)
     );
   }
 
@@ -60,7 +58,7 @@ export class CommonCommand {
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isScaScanEnabled,
-      await isSCAScanEnabled()
+      await cx.isSCAScanEnabled()
     );
   }
 }

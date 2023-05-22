@@ -10,7 +10,7 @@ import { getFromState, updateState } from "../utils/common/globalState";
 import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { KicsCodeActionProvider } from "./kicsCodeActions";
-import { getResultsRealtime, kicsRemediation } from "../ast/ast";
+import { cx } from "../cx";
 import { writeFileSync } from "fs";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 import { commands } from "../utils/common/commands";
@@ -173,7 +173,7 @@ export class KicsProvider {
       });
       similarityIdFilter = similarityIdFilter.slice(0, -1);
     }
-    const [createObject] = await kicsRemediation(
+    const [createObject] = await cx.kicsRemediation(
       resultsFile,
       kicsFile,
       "",
@@ -274,7 +274,7 @@ export class KicsProvider {
         .getConfiguration("CheckmarxKICS")
         .get("Additional Parameters") as string;
       if (file) {
-        results = await getResultsRealtime(file, additionalParams);
+        results = await cx.getResultsRealtime(file, additionalParams);
       } else {
         throw new Error("file is not defined on kics scan creation");
       }

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getCodeBashing } from "../ast/ast";
+import { cx } from "../cx";
 import { Logs } from "../models/logs";
 import {
   constants
@@ -35,7 +35,7 @@ export async function getCodebashingLink(
 
 async function handleExistingLink(logs: Logs, cweId: string, language: string, queryName: string) {
   logs.info(messages.fetchCodebashing);
-  const codeBashingArray = await getCodeBashing(cweId, language, queryName.replaceAll("_", " "));
+  const codeBashingArray = await cx.getCodeBashing(cweId, language, queryName.replaceAll("_", " "));
   vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.path));
 }
 
