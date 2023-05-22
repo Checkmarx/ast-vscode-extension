@@ -8,23 +8,10 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { delay, getDetailsView, getResults, initialize } from "./utils/utils";
-import {
-  CHANGES_CONTAINER,
-  CHANGES_LABEL,
-  CODEBASHING_HEADER,
-  COMMENT_BOX,
-  CX_LOOK_SCAN,
-  FIVE_SECONDS,
-  GENERAL_LABEL,
-  LEARN_MORE_LABEL,
-  SAST_TYPE,
-  SCAN_KEY_TREE,
-  THREE_SECONDS,
-  UPDATE_BUTTON,
-  WEBVIEW_TITLE,
-} from "./utils/constants";
+import { getDetailsView, getResults, initialize } from "./utils/utils";
+import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
+import { SCAN_ID } from "./utils/envs";
 
 describe("Scan ID load results test", () => {
   let bench: Workbench;
@@ -35,7 +22,6 @@ describe("Scan ID load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   after(async () => {
@@ -44,8 +30,8 @@ describe("Scan ID load results test", () => {
 
   it("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
-    const input = await new InputBox();
-    await input.setText("6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c");
+    let input = await new InputBox();
+    await input.setText(SCAN_ID);
     await input.confirm();
   });
 
@@ -56,21 +42,15 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"
+      SCAN_KEY_TREE + SCAN_ID
     );
-    while (scan === undefined) {
-      scan = await treeScans?.findItem(
-        SCAN_KEY_TREE + "6ee2d7f3-cc88-4d0f-851b-f98a99e54c1c"
-      );
-    }
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
     if (sastNode === undefined) {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
-    const result = await getResults(sastNode);
-    await delay(THREE_SECONDS);
-    const resultName = await result[0].getLabel();
+    let result = await getResults(sastNode);
+    let resultName = await result[0].getLabel();
     await result[0].click();
     // Open details view
     let detailsView = await getDetailsView();
@@ -86,12 +66,9 @@ describe("Scan ID load results test", () => {
     const codebashingWebElement = await detailsView.findWebElement(
       By.id(CODEBASHING_HEADER)
     );
-    await delay(FIVE_SECONDS);
-    const codebashing = await codebashingWebElement.getText();
-    await delay(FIVE_SECONDS);
+    let codebashing = await codebashingWebElement.getText();
     expect(codebashing).is.not.undefined;
     await detailsView.switchBack();
-    await delay(THREE_SECONDS);
   });
 
   it("should click on comments", async function () {

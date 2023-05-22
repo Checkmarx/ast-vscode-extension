@@ -15,10 +15,12 @@ changelog:
       labels:
         - feature
         - features
-    - title: Dependencies Updates 🛠
+    - title: Checkmarx One SDK Updates 🛠
       labels:
-        - dependencies
-        - dependency
+        - cxone
     - title: Other Changes
       labels:
         - "*"
+      exclude:
+        labels:
+          - dependencies

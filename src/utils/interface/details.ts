@@ -173,11 +173,11 @@ export class Details {
     tab5Content: string
   ) {
     return `${tab1Label !== ""
-        ? `<input type="radio" name="tabs" id="general-tab" checked />
+      ? `<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}
 			</label>`
-        : ""
+      : ""
       }
 			${tab2Label !== ""
         ? `<input type="radio" name="tabs" id="learn-tab" />
