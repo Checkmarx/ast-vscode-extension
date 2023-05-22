@@ -35,7 +35,7 @@ async function initializeSCA() {
 }
 exports.initializeSCA = initializeSCA;
 async function createTreeSCA(view) {
-    return await (view === null || view === void 0 ? void 0 : view.getContent().getSection("Software Composition Analysis (SCA) Results"));
+    return await (view === null || view === void 0 ? void 0 : view.getContent().getSection("Software Composition Analysis (SCA)"));
 }
 exports.createTreeSCA = createTreeSCA;
 async function quickPickSelector(input) {

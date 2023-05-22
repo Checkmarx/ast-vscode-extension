@@ -65,7 +65,7 @@
       {
         "command": "ast-results.clear",
         "category": "ast-results",
-        "title": "Clear Selections",
+        "title": "Clear Results Selection",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -287,14 +287,14 @@
       {
         "command": "ast-results.generalPick",
         "category": "ast-results",
-        "title": "Select All",
+        "title": "Choose Different Results",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.createScan",
         "category": "ast-results",
-        "title": "Create Scan",
+        "title": "Run Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isScanEnabled && ast-results.createScanButton"
       },
@@ -480,7 +480,7 @@
       {
         "command": "ast-results.createSCAScan",
         "category": "ast-results",
-        "title": "Run SCA Auto Scan",
+        "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
       }
@@ -751,7 +751,7 @@
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Software Composition Analysis (SCA) Results"
+          "name": "Software Composition Analysis (SCA)"
         }
       ]
     },
