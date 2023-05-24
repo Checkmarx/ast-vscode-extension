@@ -237,8 +237,31 @@ export class AstResult extends CxResult {
 
     return "";
   }
-  kicsDetails() {
-    throw new Error("Method not implemented.");
+  private kicsDetails() {
+    let html = "";
+    html += `
+        <tr>
+          <td>
+            <div class="tooltip">
+                1. 
+                <span class="tooltiptext">
+                  ${this.kicsNode?.data.filename}
+                </span>
+            </div>
+            <a href="#" 
+              class="ast-node"
+              data-filename="${this.kicsNode?.data.filename}" 
+              data-line="${this.kicsNode?.data.line}" 
+              data-column="${0}"
+              data-fullName="${this.kicsNode?.data.filename}" 
+              data-length="${1}"
+            >
+              ${this.getShortFilename(this.kicsNode?.data.filename)} [${this.kicsNode?.data.line}:${0}]
+            </a>
+          </td>
+        </tr>
+        `;
+    return html;
   }
 
   getKicsValues() {

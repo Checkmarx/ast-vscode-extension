@@ -98,6 +98,7 @@ export const messages = {
   scaNoUpgrade: "No available upgrade for package ",
   scaUpgrading: (packages, version) => `Upgrading ${packages} to version ${version}`,
   scaUpgradingSuccess: (packages, version) => `Package ${packages} successfully upgraded to version ${version}`,
+  scaStartScan: "Click the play button to scan with Checkmarx SCA",
   scaNoFolder: "No folder is opened. Please open the folder for the current project.",
   gitOpenRepo: "GIT API - Open repository",
   gitExtensionMissing: "Git Extension - Could not find active git extension in workspace.",
