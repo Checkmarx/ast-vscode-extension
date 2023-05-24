@@ -1,4 +1,111 @@
-export const REFRESH_TREE = "ast-results.refreshTree";
-export const REFRESH_SCA_TREE = "ast-results.refreshSCATree";
-export const SHOW_ERROR = "ast-results.showError";
-export const KICS_REALTIME = "ast-results.kicsRealtime";
+import { constants } from "./constants";
+
+export const commands = {
+  refreshTree: `${constants.extensionName}.refreshTree`,
+  clear: `${constants.extensionName}.clear`,
+
+  showError: `${constants.extensionName}.showError`,
+
+  setings: `${constants.extensionName}.viewSettings`,
+  isValidCredentials: `${constants.extensionName}.isValidCredentials`,
+
+  isScanEnabled: `${constants.extensionName}.isScanEnabled`,
+  isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
+
+  filterHighToggle: `${constants.extensionName}.filterHigh_toggle`,
+  filterHighUntoggle: `${constants.extensionName}.filterHigh_untoggle`,
+  filterHigh: `${constants.extensionName}.filterHigh`,
+
+  filterMediumToggle: `${constants.extensionName}.filterMedium_toggle`,
+  filterMediumUntoggle: `${constants.extensionName}.filterMedium_untoggle`,
+  filterMedium: `${constants.extensionName}.filterMedium`,
+
+  filterLowToggle: `${constants.extensionName}.filterLow_toggle`,
+  filterLowUntoggle: `${constants.extensionName}.filterLow_untoggle`,
+  filterLow: `${constants.extensionName}.filterLow`,
+
+  filterInfoToggle: `${constants.extensionName}.filterInfo_toggle`,
+  filterInfoUntoggle: `${constants.extensionName}.filterInfo_untoggle`,
+  filterInfo: `${constants.extensionName}.filterInfo`,
+
+  filterNotExploitable: `${constants.extensionName}.filterNotExploitable`,
+  filterNotExploitableActive: `${constants.extensionName}.filterNotExploitableActive`,
+  filterNotExploitableCommand: `${constants.extensionName}.filterNotExploitables`,
+
+  filterProposed: `${constants.extensionName}.filterProposed`,
+  filterProposedActive: `${constants.extensionName}.filterProposedActive`,
+  filterProposedCommand: `${constants.extensionName}.filterProposeds`,
+
+  filterConfirmed: `${constants.extensionName}.filterConfirmed`,
+  filterConfirmedActive: `${constants.extensionName}.filterConfirmedActive`,
+  filterConfirmedCommand: `${constants.extensionName}.filterConfirmeds`,
+
+  filterToVerify: `${constants.extensionName}.filterToVerify`,
+  filterToVerifyActive: `${constants.extensionName}.filterToVerifyActive`,
+  filterToVerifyCommand: `${constants.extensionName}.filterToVerifies`,
+
+  filterUrgent: `${constants.extensionName}.filterUrgent`,
+  filterUrgentActive: `${constants.extensionName}.filterUrgentActive`,
+  filterUrgentCommand: `${constants.extensionName}.filterUrgents`,
+
+  filterNotIgnored: `${constants.extensionName}.filterNotIgnored`,
+  filterNotIgnoredActive: `${constants.extensionName}.filterNotIgnoredActive`,
+  filterNotIgnoredCommand: `${constants.extensionName}.filterNotIgnoreds`,
+
+  filterIgnored: `${constants.extensionName}.filterIgnored`,
+  filterIgnoredActive: `${constants.extensionName}.filterIgnoredActive`,
+  filterIgnoredCommand: `${constants.extensionName}.filterIgnoreds`,
+
+  groupByFile: `${constants.extensionName}.groupByFile`,
+  groupByFileActive: `${constants.extensionName}.groupByFileActive`,
+  groupByFileCommand: `${constants.extensionName}.groupByFiles`,
+
+  groupByLanguage: `${constants.extensionName}.groupByLanguage`,
+  groupByLanguageActive: `${constants.extensionName}.groupByLanguageActive`,
+  groupByLanguageCommand: `${constants.extensionName}.groupByLanguages`,
+
+  groupBySeverity: `${constants.extensionName}.groupBySeverity`,
+  groupBySeverityActive: `${constants.extensionName}.groupBySeverityActive`,
+  groupBySeverityCommand: `${constants.extensionName}.groupBySeverities`,
+
+  groupByStatus: `${constants.extensionName}.groupByStatus`,
+  groupByStatusActive: `${constants.extensionName}.groupByStatusActive`,
+  groupByStatusCommand: `${constants.extensionName}.groupByStatuses`,
+
+  groupByState: `${constants.extensionName}.groupByState`,
+  groupByStateActive: `${constants.extensionName}.groupByStateActive`,
+  groupByStateCommand: `${constants.extensionName}.groupByStates`,
+
+  groupByQueryName: `${constants.extensionName}.groupByQueryName`,
+  groupByQueryNameActive: `${constants.extensionName}.groupByQueryNameActive`,
+  groupByQueryNameCommand: `${constants.extensionName}.groupByQueryNames`,
+
+  groupByDirectDependency: `${constants.extensionName}.groupByDirectDependency`,
+  groupByDirectDependencyActive: `${constants.extensionName}.groupByDirectDependencyActive`,
+  groupByDirectDependencyCommand: `${constants.extensionName}.groupByDirectDependencies`,
+
+  createScan: `${constants.extensionName}.createScan`,
+  cancelScan: `${constants.extensionName}.cancelScan`,
+  pollScan: `${constants.extensionName}.pollForScan`,
+
+  kicsRemediation: `${constants.extensionName}.kicsRemediation`,
+  kicsRealtime: `${constants.extensionName}.kicsRealtime`,
+  kicsSetings: `${constants.extensionName}.viewKicsSaveSettings`,
+
+  generalPick: `${constants.extensionName}.generalPick`,
+  projectPick: `${constants.extensionName}.projectPick`,
+  branchPick: `${constants.extensionName}.branchPick`,
+  scanPick: `${constants.extensionName}.scanPick`,
+  scanInput: `${constants.extensionName}.scanInput`,
+
+  createScaScan: `${constants.extensionName}.createSCAScan`,
+  refreshScaTree: `${constants.extensionName}.refreshSCATree`,
+  clearSca: `${constants.extensionName}.clearSca`,
+
+  newDetails: `${constants.extensionName}.newDetails`,
+
+  setContext: "setContext",
+
+  openSettings: "workbench.action.openSettings",
+  openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`
+};

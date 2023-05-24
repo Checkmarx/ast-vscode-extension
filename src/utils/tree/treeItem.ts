@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { AstResult } from "../../models/results";
-import { GRAPH_ITEM, PROJECT_ITEM, BRANCH_ITEM } from "../common/constants";
+import { constants } from "../common/constants";
 export class TreeItem extends vscode.TreeItem {
 	children: TreeItem[] | undefined;
 	result: AstResult | undefined;
@@ -30,13 +30,13 @@ export class TreeItem extends vscode.TreeItem {
 		if (type) {
 			this.iconPath = new vscode.ThemeIcon("shield");
 		}
-		if (type === GRAPH_ITEM) {
+		if (type === constants.graphItem) {
 			this.iconPath = new vscode.ThemeIcon("graph");
 		}
-		if (type === PROJECT_ITEM) {
+		if (type === constants.projectItem) {
 			this.iconPath = new vscode.ThemeIcon("project");
 		}
-		if (type === BRANCH_ITEM) {
+		if (type === constants.branchItem) {
 			this.iconPath = new vscode.ThemeIcon("repo");
 		}
 		if (result) {

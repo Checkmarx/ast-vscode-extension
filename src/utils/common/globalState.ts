@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { ERROR } from "./constants";
+import { constants } from "./constants";
 
-export function update(
+export function updateState(
   context: vscode.ExtensionContext,
   key: string,
   item: Item | undefined
@@ -9,19 +9,28 @@ export function update(
   context.workspaceState.update(key, item);
 }
 
-export function get(
+export function getFromState(
   context: vscode.ExtensionContext,
   key: string
 ): Item | undefined {
   return context.workspaceState.get(key);
 }
 
-export function getError(context: vscode.ExtensionContext): string | undefined {
-  return context.workspaceState.get(ERROR);
+export function getErrorFromState(context: vscode.ExtensionContext): string | undefined {
+  return context.workspaceState.get(constants.error);
 }
 
-export function updateError(context: vscode.ExtensionContext, item: string) {
-  return context.workspaceState.update(ERROR, item);
+export function updateStateError(context: vscode.ExtensionContext, item: string) {
+  return context.workspaceState.update(constants.error, item);
+}
+
+export async function updateStateFilter(
+  context: vscode.ExtensionContext,
+  filter: string,
+  value: boolean
+) {
+  await context.globalState.update(filter, value);
+  await vscode.commands.executeCommand("setContext", filter, value);
 }
 
 export class Item {

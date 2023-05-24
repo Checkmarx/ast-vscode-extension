@@ -17,7 +17,7 @@ export const CX_NAME = "Checkmarx One";
 export const CX_KICS = "Checkmarx KICS";
 export const CX_KICS_NAME = "Activate KICS Auto Scanning";
 
-export const CX_SELECT_ALL = "ast-results: Select All";
+export const CX_SELECT_ALL = "ast-results: Choose Different Results";
 export const CX_SELECT_PROJECT = "ast-results: Select Project";
 export const CX_SELECT_BRANCH = "ast-results: Select Branch";
 export const CX_SELECT_SCAN = "ast-results: Select Scan";
@@ -37,7 +37,7 @@ export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
 
 export const CX_CLEAR = "ast-results: Clear";
 export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
-export const CX_SCA_SCAN = "ast-results: Run SCA Auto Scan";
+export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
 
 export const CX_GROUP_FILE = "ast-results: Group by: File";
 export const CX_GROUP_SEVERITY = "ast-results: Group by: Severity";

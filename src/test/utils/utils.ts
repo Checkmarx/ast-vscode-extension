@@ -33,7 +33,7 @@ export async function initializeSCA(): Promise<CustomTreeSection | undefined> {
 }
 
 export async function createTreeSCA(view: SideBarView | undefined): Promise<CustomTreeSection | undefined> {
-	return await view?.getContent().getSection("Software Composition Analysis (SCA) Results") as CustomTreeSection;
+	return await view?.getContent().getSection("Software Composition Analysis (SCA)") as CustomTreeSection;
 }
 
 export async function quickPickSelector(input: InputBox) {
