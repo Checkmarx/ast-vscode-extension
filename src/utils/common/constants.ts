@@ -40,6 +40,7 @@ export const constants = {
   branchItem: "branch-item",
   scanItem: "scan-item",
   graphItem: "graph-item",
+  statusItem: "status-item",
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [

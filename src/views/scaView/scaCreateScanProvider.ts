@@ -7,10 +7,11 @@ import {
 import { SCAResultsProvider } from "./scaResultsProvider";
 import { messages } from "../../utils/common/messages";
 import { updateStatusBarItem } from "../../utils/utils";
+import CxScaRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 
-async function createScanForProject(logs: Logs) {
+async function createScanForProject(logs: Logs): Promise<CxScaRealTime> {
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
-  let scanCreateResponse = [];
+  let scanCreateResponse;
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
   try {
     scanCreateResponse = await cx.scaScanCreate(workspaceFolder.uri.fsPath);
@@ -20,12 +21,7 @@ async function createScanForProject(logs: Logs) {
   return scanCreateResponse;
 }
 
-export async function createSCAScan(
-  context: vscode.ExtensionContext,
-  statusBarItem: vscode.StatusBarItem,
-  logs: Logs,
-  scaResultsProvider: SCAResultsProvider
-) {
+export async function createSCAScan(context: vscode.ExtensionContext, statusBarItem: vscode.StatusBarItem, logs: Logs, scaResultsProvider: SCAResultsProvider) {
   updateStatusBarItem(constants.scaScanWaiting, true, statusBarItem);
   logs.info(messages.scaScanStart);
   // Check if there is a folder opened
@@ -41,24 +37,19 @@ export async function createSCAScan(
   else {
     await scaResultsProvider.clean();
     await scaResultsProvider.refreshData(messages.scaScanning);
-    createScanForProject(logs)
-      .then(async (scaResults) => {
-        scaResultsProvider.scaResults = scaResults;
-        let message = undefined;
-        if (scaResults && scaResults.length === 0) {
-          message = constants.scaNoVulnerabilities;
-        }
-        logs.info(messages.scaScanCompletedSuccess(scaResults.length));
-        await scaResultsProvider.refreshData(message);
-        updateStatusBarItem(messages.scaStatusBarConnect, true, statusBarItem);
-      })
-      .catch((err) => {
-        updateStatusBarItem(
-          messages.scaStatusBarDisconnect,
-          true,
-          statusBarItem
-        );
-        logs.error(messages.scaScanningNotComplete + err);
-      });
+    createScanForProject(logs).then(async (scaResults: CxScaRealTime) => {
+      scaResultsProvider.scaResults = scaResults.results;
+      scaResultsProvider.scaResultsErrors = scaResults.errors;
+      let message = undefined;
+      if (scaResults && scaResults.results.length === 0) {
+        message = constants.scaNoVulnerabilities;
+      }
+      logs.info(messages.scaScanCompletedSuccess(scaResults.results.length));
+      await scaResultsProvider.refreshData(message);
+      cx.updateStatusBarItem(messages.scaStatusBarConnect, true, statusBarItem);
+    }).catch(err => {
+      cx.updateStatusBarItem(messages.scaStatusBarDisconnect, true, statusBarItem);
+      logs.error(messages.scaScanningNotComplete + err);
+    });
   }
 }

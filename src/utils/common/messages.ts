@@ -32,6 +32,10 @@ export const messages = {
     `Scan completed successfully, ${resultsCount} result(s) loaded into the SCA results tree`,
   scaTreeVulnerabilities: (resultsCount, workspace) =>
     `SCA identified ${resultsCount} vulnerabilities in ${workspace}`,
+  scaSucces: "Scan finished successfully",
+  scaErrors: "Scan finished with errors",
+  scaDependencyErros: "Dependency resolution errors",
+  scaVulnerabilities: "Vulnerabilities",
   pickerProjectMissing: "Please select a project first",
   pickerBranchProjectMissing: "Please select a branch and project first",
   filterResults: (activeFilter) => `Filtering ${activeFilter} results`,
@@ -98,6 +102,7 @@ export const messages = {
   scaNoUpgrade: "No available upgrade for package ",
   scaUpgrading: (packages, version) => `Upgrading ${packages} to version ${version}`,
   scaUpgradingSuccess: (packages, version) => `Package ${packages} successfully upgraded to version ${version}`,
+  scaStartScan: "Click the play button to scan with Checkmarx SCA",
   scaNoFolder: "No folder is opened. Please open the folder for the current project.",
   gitOpenRepo: "GIT API - Open repository",
   gitExtensionMissing: "Git Extension - Could not find active git extension in workspace.",

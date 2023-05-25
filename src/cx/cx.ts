@@ -18,18 +18,17 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 export class Cx implements CxPlatform {
-	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime[] | undefined> {
+	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
-		let jsonResults = [];
+		let jsonResults = undefined;
 		const scan = await cx.runScaRealtimeScan(sourcePath);
 		if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
 			if (scan.payload[0].results) {
-				jsonResults = scan.payload[0].results;
+				jsonResults = scan.payload[0];
 			}
 		} else {
 			throw new Error(scan.status);
 		}
-
 		return jsonResults;
 	}
 
