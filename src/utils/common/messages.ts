@@ -32,6 +32,10 @@ export const messages = {
     `Scan completed successfully, ${resultsCount} result(s) loaded into the SCA results tree`,
   scaTreeVulnerabilities: (resultsCount, workspace) =>
     `SCA identified ${resultsCount} vulnerabilities in ${workspace}`,
+  scaSucces: "Scan finished successfully",
+  scaErrors: "Scan finished with errors",
+  scaDependencyErros: "Dependency resolution errors",
+  scaVulnerabilities: "Vulnerabilities",
   pickerProjectMissing: "Please select a project first",
   pickerBranchProjectMissing: "Please select a branch and project first",
   filterResults: (activeFilter) => `Filtering ${activeFilter} results`,

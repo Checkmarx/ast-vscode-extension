@@ -56,7 +56,7 @@ export class SCAResultsProvider extends ResultsProvider {
       return new TreeItem(undefined, undefined, undefined, [new TreeItem(this.message)]);
     }
 
-    const statusTreeItem = new TreeItem(!issuesTree ? "Scan finished successfully" : "Scan finished with errors", constants.statusItem, undefined, undefined);
+    const statusTreeItem = new TreeItem(!issuesTree ? messages.scaSucces : messages.scaErrors, constants.statusItem, undefined, undefined);
     const summaryTreeItem = this.createSummaryItem(this.scaResults);
 
     return new TreeItem("", undefined, undefined, [statusTreeItem, summaryTreeItem.label ? summaryTreeItem : undefined, resultsTree, issuesTree]);
@@ -71,7 +71,7 @@ export class SCAResultsProvider extends ResultsProvider {
       return new TreeItem(error.filename, undefined, undefined, [messageItem]);
     });
 
-    return new TreeItem("Dependency resolution errors", undefined, undefined, errors);
+    return new TreeItem(messages.scaDependencyErros, undefined, undefined, errors);
   }
 
   generateResultsTree(): TreeItem {
@@ -79,7 +79,7 @@ export class SCAResultsProvider extends ResultsProvider {
     if (results.length === 0) {
       return undefined;
     }
-    const treeItem = this.groupBy(results, this.activeGroupBy, "Vulnerabilities", this.diagnosticCollection, undefined, undefined);
+    const treeItem = this.groupBy(results, this.activeGroupBy, messages.scaVulnerabilities, this.diagnosticCollection, undefined, undefined);
     treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     return treeItem;
   }

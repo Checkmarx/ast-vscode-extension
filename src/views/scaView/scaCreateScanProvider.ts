@@ -46,10 +46,10 @@ export async function createSCAScan(context: vscode.ExtensionContext, statusBarI
       }
       logs.info(messages.scaScanCompletedSuccess(scaResults.results.length));
       await scaResultsProvider.refreshData(message);
-      cx.updateStatusBarItem("$(check) Checkmarx sca", true, statusBarItem);
+      cx.updateStatusBarItem(messages.scaStatusBarConnect, true, statusBarItem);
     }).catch(err => {
-      cx.updateStatusBarItem("$(debug-disconnect) Checkmarx sca", true, statusBarItem);
-      logs.error("Scan did not complete : " + err);
+      cx.updateStatusBarItem(messages.scaStatusBarDisconnect, true, statusBarItem);
+      logs.error(messages.scaScanningNotComplete + err);
     });
   }
 }
