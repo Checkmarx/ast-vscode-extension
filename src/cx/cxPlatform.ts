@@ -16,7 +16,7 @@ export interface CxPlatform {
 		 * @param sourcePath Path to the project to be scanned.
 		 * @return List of sca results.
 	*/
-	scaScanCreate(sourcePath: string): Promise<CxScaRealtime[] | undefined>;
+	scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined>;
 
 	/**
 		 * Creates a scan in cx one platform
