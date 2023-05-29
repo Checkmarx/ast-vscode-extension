@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -837,7 +837,7 @@
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
     "@typescript-eslint/parser": "^5.59.7",
-    "chai": "4.3.7", 
+    "chai": "4.3.7",
     "eslint-config-prettier": "^8.8.0",
     "eslint": "^8.40.0",
     "mocha": "10.2.0",
