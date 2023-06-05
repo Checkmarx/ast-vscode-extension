@@ -32,6 +32,16 @@ export class Cx implements CxPlatform {
 		return jsonResults;
 	}
 
+	async runGpt(message: string) {
+		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const answer = await cx.gpt("gptKey", message);
+		if (answer.payload && answer.exitCode === 0) {
+			return answer.payload.messages;
+		} else {
+			throw new Error(answer.status);
+		}
+	}
+
 	async scanCreate(projectName: string, branchName: string, sourcePath: string) {
 		const config = this.getAstConfiguration();
 		if (!config) {

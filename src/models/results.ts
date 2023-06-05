@@ -127,6 +127,13 @@ export class AstResult extends CxResult {
     return "";
   }
 
+  getGptIcon() {
+    return path.join("media", "icons", "gpt.png");
+  }
+
+  getKicsIcon() {
+    return path.join("media", "icons", "kics.png");
+  }
   getCxIcon() {
     return path.join("media", "icon.png");
   }

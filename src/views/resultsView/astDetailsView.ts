@@ -14,7 +14,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private context: vscode.ExtensionContext,
     private loadChanges: boolean,
     private type?: string
-  ) {}
+  ) { }
 
   public getWebView() {
     return this._view;
@@ -165,6 +165,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const scaUrl = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
     );
+    const gptPath = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, this.result.getGptIcon())
+    );
 
     const nonce = getNonce();
     const selectClassname = "select-" + this.result.severity.toLowerCase();
@@ -184,44 +187,43 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           </title>
         </head>
         <div id="main_div">
-          ${this.result.type !== "sca" ? html.header(severityPath) : ""}
+          ${this.result.type !== "sca" ? html.header(severityPath, gptPath) : ""}
           ${this.result.type !== "sca" ? html.triage(selectClassname) : ""}
-          ${
-            this.result.type === "sast"
-              ? html.tab(
-                  html.generalTab(cxPath),
-                  html.detailsTab(),
-                  html.loader(),
-                  messages.generalTab,
-                  messages.learnMoreTab,
-                  messages.changesTab,
-                  messages.remediationExamplesTab,
-                  messages.noRemediationExamplesTab
-                )
-              : this.result.type === "sca"
-              ? html.scaView(
-                  severityPath,
-                  scaAtackVector,
-                  scaComplexity,
-                  scaAuthentication,
-                  scaConfidentiality,
-                  scaIntegrity,
-                  scaAvailability,
-                  scaUpgrade,
-                  scaUrl,
-                  this.type
-                )
-              : html.tab(
-                  html.generalTab(cxPath),
-                  "",
-                  html.loader(),
-                  messages.generalTab,
-                  "",
-                  messages.changesTab,
-                  "",
-                  ""
-                )
-          }
+          ${this.result.type === "sast"
+        ? html.tab(
+          html.generalTab(cxPath),
+          html.detailsTab(),
+          html.loader(),
+          messages.generalTab,
+          messages.learnMoreTab,
+          messages.changesTab,
+          messages.remediationExamplesTab,
+          messages.noRemediationExamplesTab
+        )
+        : this.result.type === "sca"
+          ? html.scaView(
+            severityPath,
+            scaAtackVector,
+            scaComplexity,
+            scaAuthentication,
+            scaConfidentiality,
+            scaIntegrity,
+            scaAvailability,
+            scaUpgrade,
+            scaUrl,
+            this.type
+          )
+          : html.tab(
+            html.generalTab(cxPath),
+            "",
+            html.loader(),
+            messages.generalTab,
+            "",
+            messages.changesTab,
+            "",
+            ""
+          )
+      }
         </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	

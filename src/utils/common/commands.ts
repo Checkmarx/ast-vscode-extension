@@ -103,6 +103,7 @@ export const commands = {
   clearSca: `${constants.extensionName}.clearSca`,
 
   newDetails: `${constants.extensionName}.newDetails`,
+  gpt: `${constants.extensionName}.gpt`,
 
   setContext: "setContext",
 

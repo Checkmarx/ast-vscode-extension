@@ -497,6 +497,15 @@ export class CxMock implements CxPlatform {
 		}];
 	}
 
+	async runGpt(message) {
+		await this.sleep(5000);
+		return [{ user: 'Ask KICS', message: "Mock message response from gpt" }];
+	}
+
+	sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
 	updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = text;
 		show ? statusBarItem.show() : statusBarItem.hide();
