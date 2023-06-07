@@ -23,7 +23,7 @@ export class Gpt {
 			command: "userMessage",
 			message: { message: userMessage, user: user }
 		});
-		await this.sleep(3000);
+		await this.sleep(1000);
 		// Update webview to show gpt thinking
 		this.gptPanel?.webview.postMessage({
 			command: "thinking",

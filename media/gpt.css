@@ -8,7 +8,7 @@ body {
 }
 
 .animated-text{
-	overflow: hidden;
+	/* overflow: hidden;
 	white-space: nowrap;
 	width: 0;
 	animation: typing;
@@ -16,7 +16,7 @@ body {
 	animation-timing-function: steps(30, end);
 	animation-fill-mode: forwards;
 	border-right: 1px solid;
-	max-width:fit-content; /* prevent the cursor from going full width */
+	max-width:fit-content; prevent the cursor from going full width */
 }
 
 .animated-text-thinking{

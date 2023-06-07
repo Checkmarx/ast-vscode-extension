@@ -53,8 +53,23 @@
 		});
 	});
 
+	var i = 1;
+	var currentMessage;
+	var currentID;
+
+	function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	async function typeWriter() {
+		while (i < currentMessage.length) {
+			await sleep(10);
+			document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(i);
+			i++;
+		}
+	}
 	// Display the changes once loaded
-	window.addEventListener('message', event => {
+	window.addEventListener('message', async event => {
 		document.body.scrollIntoView(false);
 		const message = event.data;
 		let chatContainer;
@@ -76,7 +91,13 @@
 				thinkContainer.style.display = 'none';
 				// Load message response
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.message.text, message.icon.external);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.message.text, message.icon.external, message.thinkID);
+				currentID = message.thinkID;
+				currentMessage = message.message.text;
+				document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(0);
+				await typeWriter();
+				i = 1;
+
 				break;
 			case 'clearQuestion':
 				question = "";
@@ -115,7 +136,7 @@
 		return html;
 	}
 
-	function messageGptContainer(message, icon) {
+	function messageGptContainer(message, icon, id) {
 		let html =
 			`
 			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
@@ -129,8 +150,7 @@
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
-						<p class="animated-text">
-							${message}
+						<p class="animated-text" id="gpt-${id}">
 						</p>
          			</div>
                   </div>
@@ -163,6 +183,37 @@
 		return html;
 	}
 
+	// const parentDiv = document.getElementById('chat-container');
+	// window.onload = function () {
+
+	// };
+	// const observer = new MutationObserver(function (mutationsList) {
+	// 	for (let mutation of mutationsList) {
+	// 		console.log("dentro1");
+	// 		if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+	// 			// Call your custom function here when a new <div> is added
+	// 			// this function is the reverse version of escapeHTML found at 
+	// 			// https://github.com/evilstreak/markdown-js/blob/master/src/render_tree.js
+	// 			function unescapeHTML(text) {
+	// 				return text.replace(/&amp;/g, "&")
+	// 					.replace(/&lt;/g, "<")
+	// 					.replace(/&gt;/g, ">")
+	// 					.replace(/&quot;/g, "\"")
+	// 					.replace(/&#39;/g, "'");
+	// 			}
+	// 			// based on https://gist.github.com/paulirish/1343518
+	// 			(function () {
+	// 				[].forEach.call(document.querySelectorAll('main_div'), function fn(elem) {
+	// 					console.log("dentro12");
+	// 					elem.innerHTML = (new Showdown.converter()).makeHtml(unescapeHTML(elem.innerHTML));
+	// 				});
+	// 			}());
+	// 		}
+	// 	}
+	// });
+	// observer.observe(parentDiv, { childList: true });
+
+
 	// Go back to the top button
 	let mybutton = document.getElementById("btn-back-to-top");
 
@@ -170,6 +221,7 @@
 	window.onscroll = function () {
 		scrollFunction();
 	};
+
 	function scrollFunction() {
 		if (
 			document.body.scrollTop > 20 ||
