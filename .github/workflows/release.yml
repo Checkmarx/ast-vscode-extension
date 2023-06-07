@@ -125,6 +125,13 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
+      
+      # GENERATE AND WRITE CHANGELOG TO FILE
+      - name: Generate release changelog
+        uses: BobAnkh/auto-generate-changelog@v1.2.4
+        with:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PATH: 'CHANGELOG.md'
 
       # PUSH TAGS IF IT IS A RELEASE
       - name: Push tag if release
