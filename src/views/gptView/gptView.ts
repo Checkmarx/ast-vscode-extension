@@ -37,6 +37,9 @@ export class GptView implements vscode.WebviewViewProvider {
 	public getAskKicsIcon() {
 		return this.askKicsIcon;
 	}
+	public getResult(): AstResult {
+		return this.result;
+	}
 	public async resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -82,9 +85,13 @@ export class GptView implements vscode.WebviewViewProvider {
 		const scriptBootStrap = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.js")
 		);
-		const scriptMicrolight = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "microlight.min.js")
+		const scriptHighlight = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "highlight.min.js")
 		);
+		const scriptMarked = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "marked.min.js")
+		);
+
 		const scriptShowdown = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "showdown.min.js")
 		);
@@ -142,6 +149,10 @@ export class GptView implements vscode.WebviewViewProvider {
           <link href="${scaDetails}" rel="stylesheet">
 		  <link href="${styleBootStrap}" rel="stylesheet">
 		  <link href="${styleGptUri}" rel="stylesheet">
+		  <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+		  <script nonce="${nonce}" src="${scriptHighlight}"></script>
+		  <script nonce="${nonce}" src="${scriptShowdown}"></script>
+		  <script nonce="${nonce}" src="${scriptMarked}"></script>
           <title>
             Checkmarx
           </title>
@@ -167,7 +178,7 @@ export class GptView implements vscode.WebviewViewProvider {
                   </div>
                </div>
             </div>
-			<div class="row">
+			<div class="row" id="cards-container">
 				<div class="col">
 					<div class="card" style="background: rgba(55, 148, 255, 0.15);border: 1px solid rgba(55, 148, 255, 0.2);border-radius: 4px;">
 					<div class="card-body" id="explainFile">
@@ -246,11 +257,7 @@ export class GptView implements vscode.WebviewViewProvider {
 		<path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
 	</svg>
 	</button>
-        <script nonce="${nonce}" src="${scriptUri}">
-		<script nonce="${nonce}" src="${scriptBootStrap}">
-		<script nonce="${nonce}" src="${scriptMicrolight}">
-		<script nonce="${nonce}" src="${scriptShowdown}">
-        </script>	
+	<script nonce="${nonce}" src="${scriptUri}"></script>
 			</html>`;
 	}
 }

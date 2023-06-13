@@ -816,6 +816,19 @@
             "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
           }
         }
+      },
+      {
+        "title": "Checkmarx Ask KICS",
+        "id": "ask-kics",
+        "order": 1,
+        "properties": {
+          "CheckmarxAskKICS.Gpt Key": {
+            "type": "string",
+            "order": 3,
+            "default": "",
+            "markdownDescription": "Api key to connect to Gpt."
+          }
+        }
       }
     ]
   },

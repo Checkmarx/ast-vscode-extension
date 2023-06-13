@@ -18,10 +18,15 @@ export class Gpt {
 	private kicsIcon = this.gptView.getAskKicsIcon();
 
 	async runGpt(userMessage: string, user: string) {
+		const result = this.gptView.getResult();
 		// Update webview to show the user message
 		this.gptPanel?.webview.postMessage({
 			command: "userMessage",
 			message: { message: userMessage, user: user }
+		});
+		// disable all the buttons and inputs
+		this.gptPanel?.webview.postMessage({
+			command: "disable",
 		});
 		await this.sleep(1000);
 		// Update webview to show gpt thinking
@@ -31,22 +36,27 @@ export class Gpt {
 			icon: this.kicsIcon
 		});
 		// Get response from gpt and show the response in the webview
-		cx.runGpt(userMessage).then(messages => {
-			//this.logs.info(messages[0].message);
-			const m = messages[messages.length - 1];
+
+		cx.runGpt(userMessage, result.kicsNode?.data.filename, result.kicsNode?.data.line, result.severity, result.label.replaceAll("_", " ")).then(messages => {
+			// enable all the buttons and inputs
+			this.gptPanel?.webview.postMessage({
+				command: "enable",
+			});
+			// send response message
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: messages[messages.length - 1],
+				message: { message: messages[0].responses, user: "Ask KICS" },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
 			this.thinkID += 1;
 		}).catch((e) => {
+			// enable all the buttons and inputs
 			this.gptPanel?.webview.postMessage({
-				command: "response",
-				message: "Ask KICS error : " + e,
-				thinkID: this.thinkID
+				command: "enable",
 			});
+			// send error message
+			this.logs.error(e);
 		});
 	}
 

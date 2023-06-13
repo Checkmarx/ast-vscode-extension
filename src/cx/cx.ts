@@ -17,6 +17,7 @@ import { CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
+import path = require("path");
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
@@ -32,14 +33,22 @@ export class Cx implements CxPlatform {
 		return jsonResults;
 	}
 
-	async runGpt(message: string) {
+	async runGpt(message: string, filePath: string, line: number, severity: string, queryName: string) {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
-		const answer = await cx.gpt("gptKey", message);
-		if (answer.payload && answer.exitCode === 0) {
-			return answer.payload.messages;
-		} else {
-			throw new Error(answer.status);
+		const gptToken = vscode.workspace
+			.getConfiguration("CheckmarxAskKICS")
+			.get("Gpt Key") as string;
+		const filePackageObjectList = vscode.workspace.workspaceFolders;
+		if (filePackageObjectList.length > 0) {
+			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, "gpt-3.5-turbo");
+			if (answer.payload && answer.exitCode === 0) {
+				return answer.payload;
+			} else {
+				throw new Error(answer.status);
+			}
+
 		}
+
 	}
 
 	async scanCreate(projectName: string, branchName: string, sourcePath: string) {

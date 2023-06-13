@@ -272,7 +272,7 @@ export class WebViewCommand {
           await this.gpt.runGpt("Can you offer a remediation suggestion?", username);
           break;
         case "userQuestion":
-          this.logs.info("Asking KICS : userInput" + data.question);
+          this.logs.info("Asking KICS : " + data.question);
           this.gptPanel?.webview.postMessage({
             command: "clearQuestion",
           });
