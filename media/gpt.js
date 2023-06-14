@@ -131,7 +131,8 @@
 		switch (message.command) {
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message);
+				console.log("icon", message.icon);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message, "https://" + message.icon.authority + message.icon.path);
 				break;
 			case 'thinking':
 				console.log("thinking");
@@ -254,14 +255,14 @@
 		return html;
 	}
 
-	function messageUserContainer(message) {
+	function messageUserContainer(message, icon) {
 		let html =
 			`
 			<div class="card" style="border:none;background:#6769725c;margin-top:0.5em;">
                <div class="card-body">
                   <div class="row">
                     <div class="col">
-						<img src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp" class="rounded-circle" style="width: 2em;height:2em;border-style: solid;border-color: #6769725c;border-width:0.5px"
+						<img src="${icon}" class="rounded-circle" style="width: 2em;height:2em;border-style: solid;border-color: #6769725c;border-width:0.5px"
 						alt="Avatar" />
 						${message.user}
          			</div>

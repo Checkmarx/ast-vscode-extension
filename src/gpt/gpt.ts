@@ -16,13 +16,15 @@ export class Gpt {
 		this.thinkID = 0;
 	}
 	private kicsIcon = this.gptView.getAskKicsIcon();
+	private userKicsIcon = this.gptView.getAskKicsUserIcon();
 
 	async runGpt(userMessage: string, user: string) {
 		const result = this.gptView.getResult();
 		// Update webview to show the user message
 		this.gptPanel?.webview.postMessage({
 			command: "userMessage",
-			message: { message: userMessage, user: user }
+			message: { message: userMessage, user: user },
+			icon: this.userKicsIcon
 		});
 		// disable all the buttons and inputs
 		this.gptPanel?.webview.postMessage({
@@ -50,13 +52,19 @@ export class Gpt {
 				icon: this.kicsIcon
 			});
 			this.thinkID += 1;
-		}).catch((e) => {
+		}).catch((e: Error) => {
 			// enable all the buttons and inputs
+			this.gptPanel?.webview.postMessage({
+				command: "response",
+				message: { message: e.message, user: "Ask KICS" },
+				thinkID: this.thinkID,
+				icon: this.kicsIcon
+			});
 			this.gptPanel?.webview.postMessage({
 				command: "enable",
 			});
 			// send error message
-			this.logs.error(e);
+			this.logs.error(e.message);
 		});
 	}
 

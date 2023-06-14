@@ -20,13 +20,14 @@ export class Details {
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
+				${this.result.type === constants.kics ? `
 				<div class="header-item-gpt">
 					<h4 id="cx_title_gpt" class="title_gpt">
 						<img class="gpt_logo" src="${gptPath}" alt="gptLogo" id="gpt_logo_img" />
 						Ask KICS
 					</h4>
-					
 				</div>
+				`: ""}
 				${this.result.sastNodes.length > 0
 				? `
 					<div class="header-item-codebashing" id="cx_header_codebashing">

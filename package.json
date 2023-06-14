@@ -775,7 +775,7 @@
       {
         "title": "Checkmarx One",
         "id": "ast-results",
-        "order": 2,
+        "order": 3,
         "properties": {
           "checkmarxOne.apiKey": {
             "type": "string",
@@ -820,13 +820,29 @@
       {
         "title": "Checkmarx Ask KICS",
         "id": "ask-kics",
-        "order": 1,
+        "order": 2,
         "properties": {
           "CheckmarxAskKICS.Gpt Key": {
             "type": "string",
             "order": 3,
             "default": "",
             "markdownDescription": "Api key to connect to Gpt."
+          },
+          "CheckmarxAskKICS.model": {
+            "order": 2,
+            "type": "string",
+            "default": "gpt-3.5-turbo",
+            "markdownDescription": "The model for ask KICS to use",
+            "enum": [
+              "gpt-4",
+              "gpt-4-32k",
+              "gpt-3.5-turbo"
+            ],
+            "enumDescriptions": [
+              "gpt-4: Multimodal (Recommended)",
+              "gpt-4-32k: Multimodal",
+              "gpt-3.5-turbo: ChatGPT"
+            ]
           }
         }
       }

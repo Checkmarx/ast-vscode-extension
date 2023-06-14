@@ -134,6 +134,11 @@ export class AstResult extends CxResult {
   getKicsIcon() {
     return path.join("media", "icons", "kics.png");
   }
+
+  getKicsUserIcon() {
+    return path.join("media", "icons", "userKics.png");
+  }
+
   getCxIcon() {
     return path.join("media", "icon.png");
   }

@@ -10,6 +10,7 @@ import * as os from 'os';
 export class GptView implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
 	private askKicsIcon;
+	private kicsUserIcon;
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
 		private result: AstResult,
@@ -37,6 +38,11 @@ export class GptView implements vscode.WebviewViewProvider {
 	public getAskKicsIcon() {
 		return this.askKicsIcon;
 	}
+
+	public getAskKicsUserIcon() {
+		return this.kicsUserIcon;
+	}
+
 	public getResult(): AstResult {
 		return this.result;
 	}
@@ -98,41 +104,12 @@ export class GptView implements vscode.WebviewViewProvider {
 		const kicsIcon = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, this.result.getKicsIcon())
 		);
+		const kicsUserIcon = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, this.result.getKicsUserIcon())
+		);
 		this.askKicsIcon = kicsIcon;
-		const cxPath = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxIcon())
-		);
-		const scaAtackVector = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxScaAtackVector())
-		);
-		const scaComplexity = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxScaComplexity())
-		);
-		const scaAuthentication = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxAuthentication())
-		);
-		const scaConfidentiality = webview.asWebviewUri(
-			vscode.Uri.joinPath(
-				this._extensionUri,
-				this.result.getCxConfidentiality()
-			)
-		);
-		const scaIntegrity = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxIntegrity())
-		);
-		const scaAvailability = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxAvailability())
-		);
-		const scaUpgrade = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxUpgrade())
-		);
-		const scaUrl = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
-		);
-
+		this.kicsUserIcon = kicsUserIcon;
 		const nonce = getNonce();
-		const selectClassname = "select-" + this.result.severity.toLowerCase();
-		const html = new Details(this.result, this.context);
 		// Get the user information
 		const userInfo = os.userInfo();
 		// Access the username
