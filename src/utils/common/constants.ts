@@ -41,6 +41,9 @@ export const constants = {
   scanItem: "scan-item",
   graphItem: "graph-item",
   statusItem: "status-item",
+  bookItem: "book-item",
+  requestChangesItem: "requestChanges-item",
+  mailItem: "mail-item",
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [
@@ -124,7 +127,11 @@ export const constants = {
   additionalParams: "additionalParams",
   apiKey: "apiKey",
   cxKicsLong: "Checkmarx KICS",
-  webviewName: "newDetails"
+  webviewName: "newDetails",
+
+  // Documentation & Feedback
+  feedback: "Send us enhancement request or report a bug",
+  documentation: "Documentation"
 };
 
 export enum GroupBy {

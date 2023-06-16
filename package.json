@@ -752,6 +752,11 @@
           "id": "scaAutoScan",
           "type": "tree",
           "name": "Software Composition Analysis (SCA)"
+        },
+        {
+          "id": "docAndFeedback",
+          "type": "tree",
+          "name": "Documentation & Feedback"
         }
       ]
     },
