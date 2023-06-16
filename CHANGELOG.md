@@ -1,15 +1,15 @@
 # CHANGELOG
 
-## [v2.1.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-nightly.0) - 2023-06-07 11:41:23
+## [v2.1.1-gpt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-gpt.0) - 2023-06-14 09:43:30
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### New Features 🚀
-* adding auto criation of changelog upon release by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/503
+### Checkmarx One SDK Updates 🛠
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.73 to 0.0.74 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/512
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.0...v2.1.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.1-nightly.0...v2.1.1-gpt.0
 
 ## [v2.1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.0) - 2023-05-29 15:42:19
 
