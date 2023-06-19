@@ -37,6 +37,7 @@ export class AstResult extends CxResult {
   cweId: string | undefined;
   packageIdentifier: string;
   vulnerabilityDetails: CxVulnerabilityDetails;
+
   setSeverity(severity: string) {
     this.severity = severity;
     if (this.kicsNode) {
@@ -47,8 +48,8 @@ export class AstResult extends CxResult {
   setState(state: string) {
     this.state = state;
   }
-  // extend dos results do wrapper implementar so o que precisamos
-  constructor(result: any) {
+
+  constructor(result?: any) {
     super(result.scaType ? "sca" : result.type, result.data.queryName
       ? result.data.queryName
       : result.id
@@ -129,14 +130,6 @@ export class AstResult extends CxResult {
 
   getGptIcon() {
     return path.join("media", "icons", "gpt.png");
-  }
-
-  getKicsIcon() {
-    return path.join("media", "icons", "kics.png");
-  }
-
-  getKicsUserIcon() {
-    return path.join("media", "icons", "userKics.png");
   }
 
   getCxIcon() {

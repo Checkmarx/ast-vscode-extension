@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
+import { commands } from "../utils/common/commands";
+import { constants } from "../utils/common/constants";
+import { AstResult } from "../models/results";
+import { KicsNode } from "../models/kicsNode";
+import { GptResult } from "../models/gptResult";
 export class KicsCodeActionProvider implements vscode.CodeActionProvider {
   private readonly kicsResults;
   private readonly file: { file: string; editor: vscode.TextEditor };
@@ -68,7 +73,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
             this.fixableResults
           )
           : []
-      ); // Add the fix all action if there is more than one fix in the file
+      ).concat(this.createAskKICSCodeAction(context)); // Add the fix all action if there is more than one fix in the file
   }
 
   // Create individual quick fix
@@ -175,6 +180,36 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
           }
         });
       }
+    });
+    return actions;
+  }
+
+  private createAskKICSCodeAction(
+    context: vscode.CodeActionContext,
+  ): vscode.CodeAction[] {
+    // used to be able to use kicsDiagnostic typ without changing the context implementation
+    const actions: vscode.CodeAction[] = [];
+    context.diagnostics.forEach((diagnostic: KicsDiagnostic) => {
+      const valueOf: string | number | object = diagnostic.code.valueOf();
+      const queryName = Object(valueOf).value;
+      const action = new vscode.CodeAction(
+        "Ask KICS " + queryName,
+        vscode.CodeActionKind.Empty.append('custom')
+      );
+      const convertedResult = new GptResult(undefined, diagnostic.kicsResult);
+
+      action.command = {
+        command: commands.gpt,
+        title: "Ask KICS",
+        tooltip: "This will open an Ask KICS tab for the vulnerability",
+        arguments: [
+          convertedResult,
+          constants.realtime
+        ],
+      };
+      action.diagnostics = [diagnostic];
+      action.isPreferred = true;
+      actions.push(action);
     });
     return actions;
   }

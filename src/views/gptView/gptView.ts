@@ -1,11 +1,9 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as path from "path";
 import { AstResult } from "../../models/results";
-import { Details } from "../../utils/interface/details";
 import { getNonce } from "../../utils/utils";
-import { messages } from "../../utils/common/messages";
 import * as os from 'os';
+import { GptResult } from "../../models/gptResult";
 
 export class GptView implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
@@ -13,7 +11,7 @@ export class GptView implements vscode.WebviewViewProvider {
 	private kicsUserIcon;
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
-		private result: AstResult,
+		private result: GptResult,
 		private context: vscode.ExtensionContext,
 		private loadChanges: boolean,
 		private type?: string
@@ -23,7 +21,7 @@ export class GptView implements vscode.WebviewViewProvider {
 		return this._view;
 	}
 
-	public setResult(result: AstResult) {
+	public setResult(result: GptResult) {
 		this.result = result;
 	}
 
@@ -43,7 +41,7 @@ export class GptView implements vscode.WebviewViewProvider {
 		return this.kicsUserIcon;
 	}
 
-	public getResult(): AstResult {
+	public getResult(): GptResult {
 		return this.result;
 	}
 	public async resolveWebviewView(
@@ -97,15 +95,14 @@ export class GptView implements vscode.WebviewViewProvider {
 		const scriptMarked = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "marked.min.js")
 		);
-
 		const scriptShowdown = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "showdown.min.js")
 		);
 		const kicsIcon = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getKicsIcon())
+			vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "kics.png"))
 		);
 		const kicsUserIcon = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, this.result.getKicsUserIcon())
+			vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "userKics.png"))
 		);
 		this.askKicsIcon = kicsIcon;
 		this.kicsUserIcon = kicsUserIcon;
@@ -136,7 +133,7 @@ export class GptView implements vscode.WebviewViewProvider {
         </head>
         <div id="main_div">
         <div class="container-fluid">
-		<div class="container" style="padding:0">
+		<div class="container" style="padding:0;width:100 !important;">
 		<div class="card" style="border:none;margin-bottom:1em;background:transparent;">
                <div class="card-body" style="padding:0">
                   <div class="row">
@@ -235,7 +232,7 @@ export class GptView implements vscode.WebviewViewProvider {
 	</svg>
 	</button>
 	<script nonce="${nonce}" src="${scriptUri}"></script>
-			</html>`;
+</html>`;
 	}
 }
 

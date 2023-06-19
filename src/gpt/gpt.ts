@@ -39,7 +39,7 @@ export class Gpt {
 		});
 		// Get response from gpt and show the response in the webview
 
-		cx.runGpt(userMessage, result.kicsNode?.data.filename, result.kicsNode?.data.line, result.severity, result.label.replaceAll("_", " ")).then(messages => {
+		cx.runGpt(userMessage, result.filename, result.line, result.severity, result.vulnerabilityName).then(messages => {
 			// enable all the buttons and inputs
 			this.gptPanel?.webview.postMessage({
 				command: "enable",
@@ -64,7 +64,7 @@ export class Gpt {
 				command: "enable",
 			});
 			// send error message
-			this.logs.error(e.message);
+			//this.logs.error(e.message);
 		});
 	}
 

@@ -379,7 +379,9 @@ export class KicsProvider {
   ): vscode.Disposable {
     const codelens = vscode.languages.registerCodeLensProvider(file, {
       provideCodeLenses() {
-        return this.getKicsCodeLensProvider(kicsResults);
+        if (this.getKicsCodeLensProvider) {
+          return this.getKicsCodeLensProvider(kicsResults);
+        }
       },
     });
 

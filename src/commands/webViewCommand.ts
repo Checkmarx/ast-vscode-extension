@@ -14,6 +14,7 @@ import { constants } from "../utils/common/constants";
 import { GptView } from "../views/gptView/gptView";
 import { Gpt } from "../gpt/gpt";
 import * as os from 'os';
+import { GptResult } from "../models/gptResult";
 
 export class WebViewCommand {
   context: vscode.ExtensionContext;
@@ -102,7 +103,7 @@ export class WebViewCommand {
   public registerGpt() {
     const gpt = vscode.commands.registerCommand(
       commands.gpt,
-      async (result: AstResult, type?: string) => {
+      async (result: GptResult, type?: string) => {
         const gptDetachedView = new GptView(
           this.context.extensionUri,
           result,
@@ -159,13 +160,8 @@ export class WebViewCommand {
             this.gptPanel.webview
           );
 
-        // Start to load the changes tab, gets called everytime a new sast details webview is opened
-        //await this.loadAsyncTabsContent(result);
-        // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
-        //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
-        // Comunication between webview and extension
         this.gpt = new Gpt(this.context, this.logs, this.gptPanel, gptDetachedView);
-        await this.handleGptMessages(result, gptDetachedView);
+        await this.handleGptMessages();
       }
     );
     this.context.subscriptions.push(gpt);
@@ -243,14 +239,14 @@ export class WebViewCommand {
           this.logs.info("Opening Ask KICS");
           vscode.commands.executeCommand(
             commands.gpt,
-            result,
+            new GptResult(result, undefined),
             constants.realtime
           );
       }
     });
   }
 
-  private async handleGptMessages(result: AstResult, gptView: GptView) {
+  private async handleGptMessages() {
     // Get the user information
     const userInfo = os.userInfo();
     // Access the username
@@ -277,6 +273,12 @@ export class WebViewCommand {
             command: "clearQuestion",
           });
           await this.gpt.runGpt(data.question, username);
+          break;
+        case "openSettings":
+          vscode.commands.executeCommand(
+            messages.openSettings,
+            constants.gptSettings
+          );
       }
     });
   }

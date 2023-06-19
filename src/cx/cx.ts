@@ -38,6 +38,20 @@ export class Cx implements CxPlatform {
 		const gptToken = vscode.workspace
 			.getConfiguration("CheckmarxAskKICS")
 			.get("Gpt Key") as string;
+		if (!gptToken) {
+			throw new Error(`No gpt apikey is configured. Please go to the extension settings.
+			<a href="#" onClick="(function(){
+				vscode.postMessage({
+					command: 'openSettings',
+				});
+			})();">
+				<button style="width:22%;margin-left:36%;margin-top:15px" id="gpt-settings">
+					Settings
+				</button>
+			</a>
+			`);
+
+		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
 			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, "gpt-3.5-turbo");
