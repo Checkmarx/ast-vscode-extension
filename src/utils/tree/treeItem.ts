@@ -1,6 +1,17 @@
 import * as vscode from "vscode";
 import { AstResult } from "../../models/results";
 import { constants } from "../common/constants";
+
+
+const typeToIconMap: Map<string, string> = new Map([
+	[constants.graphItem, "graph"],
+	[constants.projectItem, "project"],
+	[constants.branchItem, "repo"],
+	[constants.bookItem, "book"],
+	[constants.requestChangesItem, "request-changes"],
+	[constants.mailItem, "mail"],
+]);
+
 export class TreeItem extends vscode.TreeItem {
 	children: TreeItem[] | undefined;
 	result: AstResult | undefined;
@@ -22,22 +33,14 @@ export class TreeItem extends vscode.TreeItem {
 		this.size = 1;
 		this.contextValue = type;
 		this.children = children;
+
 		// TODO: Use a type enum
 		if (type) {
 			this.iconPath = new vscode.ThemeIcon("shield");
 		}
-
-		if (type) {
-			this.iconPath = new vscode.ThemeIcon("shield");
-		}
-		if (type === constants.graphItem) {
-			this.iconPath = new vscode.ThemeIcon("graph");
-		}
-		if (type === constants.projectItem) {
-			this.iconPath = new vscode.ThemeIcon("project");
-		}
-		if (type === constants.branchItem) {
-			this.iconPath = new vscode.ThemeIcon("repo");
+		const vscodeIconValue = typeToIconMap.get(type);
+		if (vscodeIconValue) {
+			this.iconPath = new vscode.ThemeIcon(vscodeIconValue);
 		}
 		if (result) {
 			this.iconPath = result.getTreeIcon();
