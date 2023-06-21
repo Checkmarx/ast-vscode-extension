@@ -2,8 +2,6 @@ import * as vscode from "vscode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
 import { commands } from "../utils/common/commands";
 import { constants } from "../utils/common/constants";
-import { AstResult } from "../models/results";
-import { KicsNode } from "../models/kicsNode";
 import { GptResult } from "../models/gptResult";
 export class KicsCodeActionProvider implements vscode.CodeActionProvider {
   private readonly kicsResults;
@@ -193,15 +191,15 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       const valueOf: string | number | object = diagnostic.code.valueOf();
       const queryName = Object(valueOf).value;
       const action = new vscode.CodeAction(
-        "Ask KICS " + queryName,
+        "AI Guided Remediation " + queryName,
         vscode.CodeActionKind.Empty.append('custom')
       );
       const convertedResult = new GptResult(undefined, diagnostic.kicsResult);
 
       action.command = {
         command: commands.gpt,
-        title: "Ask KICS",
-        tooltip: "This will open an Ask KICS tab for the vulnerability",
+        title: "AI Guided Remediation",
+        tooltip: "This will open an AI Guided Remediation tab for the vulnerability",
         arguments: [
           convertedResult,
           constants.realtime

@@ -126,7 +126,10 @@ export const constants = {
   cxKicsLong: "Checkmarx KICS",
   webviewName: "newDetails",
   gptWebviewName: "gpt",
-  gptSettings: "Checkmarx Ask KICS: Gpt Key"
+  gptSettings: "Checkmarx AI Guided Remediation: Gpt Key",
+  gptCommandName: "CheckmarxAiGuidedRemediation",
+  gptSettingsKey: "Gpt Key",
+  gptEngineKey: "model"
 };
 
 export enum GroupBy {

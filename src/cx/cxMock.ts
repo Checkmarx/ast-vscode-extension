@@ -497,9 +497,9 @@ export class CxMock implements CxPlatform {
 		}];
 	}
 
-	async runGpt(message) {
-		await this.sleep(5000);
-		return [{ user: 'Ask KICS', message: "Mock message response from gpt" }];
+	async runGpt() {
+		await this.sleep(1000);
+		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
 	}
 
 	sleep(ms) {

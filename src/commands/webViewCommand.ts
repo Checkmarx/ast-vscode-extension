@@ -130,7 +130,7 @@ export class WebViewCommand {
         this.gptPanel?.dispose();
         this.gptPanel = vscode.window.createWebviewPanel(
           constants.gptWebviewName, // Identifies the type of the webview, internal id
-          "Ask KICS",
+          "AI Guided Remediation",
           vscode.ViewColumn.Three, // Show the results in a separated column
           {
             enableScripts: true,
@@ -236,7 +236,7 @@ export class WebViewCommand {
           );
           break;
         case "gpt":
-          this.logs.info("Opening Ask KICS");
+          this.logs.info("Opening AI Guided Remediation");
           vscode.commands.executeCommand(
             commands.gpt,
             new GptResult(result, undefined),
@@ -256,19 +256,19 @@ export class WebViewCommand {
       switch (data.command) {
         //Catch open file message to open and view the result entry
         case "explainFile":
-          this.logs.info("Ask KICS : Can you explain this IaC file?");
+          this.logs.info("AI Guided Remediation : Can you explain this IaC file?");
           await this.gpt.runGpt("Can you explain this IaC file?", username);
           break;
         case "explainResults":
-          this.logs.info("Ask KICS : Can you explain these results?");
+          this.logs.info("AI Guided Remediation : Can you explain these results?");
           await this.gpt.runGpt("Can you explain these results?", username);
           break;
         case "explainRemediations":
-          this.logs.info("Ask KICS : Can you offer a remediation suggestion?");
+          this.logs.info("AI Guided Remediation : Can you offer a remediation suggestion?");
           await this.gpt.runGpt("Can you offer a remediation suggestion?", username);
           break;
         case "userQuestion":
-          this.logs.info("Asking KICS : " + data.question);
+          this.logs.info("AI Guided Remediation : " + data.question);
           this.gptPanel?.webview.postMessage({
             command: "clearQuestion",
           });

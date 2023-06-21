@@ -38,7 +38,7 @@
 		});
 	});
 
-	// Activated when clicked in ask kics
+	// Activated when clicked in AI Guided Remediation
 	document.querySelectorAll('.title_gpt').forEach(element => {
 		element.addEventListener('click', () => {
 			vscode.postMessage({

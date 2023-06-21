@@ -38,7 +38,7 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: right;
 }
 
 .codeblockHeader span {
@@ -48,6 +48,8 @@ body {
 
 .copy-button{
 	background: transparent;
+	text-align: right;
+	width: 20px;
 }
 
 .copy-button:hover{
@@ -76,9 +78,12 @@ body {
 	bottom: 4px;
 	right: 50%;
 	display: none;
-	width: 30px;
-	height: 22px;
-	background: rgba(55, 148, 255, 0.35);
+	width: 21px;
+	height: 20px;
+	background: #7BB9FF;
+	border-radius: 20px;
+	padding: 2px;
+	z-index: 999;
 }
 
 #btn-back-to-top:hover {
@@ -92,13 +97,44 @@ body {
 #askQuestion::placeholder {
 	color: white;
 }
-  
+
+.form-control:focus {
+    border:none ; 
+    outline: 0;
+    box-shadow: none;
+}
+
 #explainFile,#explainResults,#explainRemediations{
 	cursor: pointer;
 }
   
-#explainFile:hover,#explainResults:hover,#explainRemediations:hover{
+.questionCard{
+	background: rgba(55, 148, 255, 0.15);
+	border: 1px solid rgba(55, 148, 255, 0.2);
+	border-radius: 4px;
+	position: relative;
+	flex-direction:column;
+	word-wrap: break-word;
+	border-radius: 0.25rem;
+	color: #3794FF;
+}
+
+.questionCard:hover{
 	border:1px solid rgba(55, 148, 255, 0.5);
+	background: rgba(55, 148, 255, 0.30);
+}
+
+.cardArrow{
+	margin-right: 15px;
+}
+
+.avatar{
+	width: 34px;
+	height: 34px;
+	border-style: solid;
+	border-color: #6769725c;
+	border-width:0.5px;
+	border-radius: 50%;
 }
 
 pre {

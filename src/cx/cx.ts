@@ -18,6 +18,7 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import path = require("path");
+import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
@@ -36,25 +37,17 @@ export class Cx implements CxPlatform {
 	async runGpt(message: string, filePath: string, line: number, severity: string, queryName: string) {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
 		const gptToken = vscode.workspace
-			.getConfiguration("CheckmarxAskKICS")
-			.get("Gpt Key") as string;
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptSettingsKey) as string;
+		const gptEngine = vscode.workspace
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptEngineKey) as string;
 		if (!gptToken) {
-			throw new Error(`No gpt apikey is configured. Please go to the extension settings.
-			<a href="#" onClick="(function(){
-				vscode.postMessage({
-					command: 'openSettings',
-				});
-			})();">
-				<button style="width:22%;margin-left:36%;margin-top:15px" id="gpt-settings">
-					Settings
-				</button>
-			</a>
-			`);
-
+			throw new Error(messages.gptMissinApiKey);
 		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
-			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, "gpt-3.5-turbo");
+			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, gptEngine);
 			if (answer.payload && answer.exitCode === 0) {
 				return answer.payload;
 			} else {

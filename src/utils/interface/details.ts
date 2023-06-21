@@ -24,7 +24,7 @@ export class Details {
 				<div class="header-item-gpt">
 					<h4 id="cx_title_gpt" class="title_gpt">
 						<img class="gpt_logo" src="${gptPath}" alt="gptLogo" id="gpt_logo_img" />
-						Ask KICS
+						AI Guided Remediation
 					</h4>
 				</div>
 				`: ""}
