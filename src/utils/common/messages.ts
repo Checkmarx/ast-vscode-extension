@@ -108,7 +108,7 @@ export const messages = {
   gitExtensionMissing: "Git Extension - Could not find active git extension in workspace.",
   gitExtensionBranch: "Git Extension - Add branch.",
   gitExtensionNotInstalled: "Git extension - Could not find vscode.git installed.",
-  gptMissinApiKey: `No gpt apikey is configured. Please go to the extension 
+  gptMissinApiKey: `No GPT apikey is configured. Please go to the extension 
   <a id="gpt-settings" href="#" onClick="(function(){
     vscode.postMessage({
       command: 'openSettings',

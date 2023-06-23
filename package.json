@@ -827,7 +827,7 @@
         "id": "ask-kics",
         "order": 2,
         "properties": {
-          "CheckmarxAiGuidedRemediation.Gpt Key": {
+          "CheckmarxAiGuidedRemediation.GPT Key": {
             "type": "string",
             "order": 3,
             "default": "",
@@ -871,8 +871,8 @@
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@typescript-eslint/parser": "^5.60.0",
     "chai": "4.3.7",
-    "eslint-config-prettier": "^8.8.0",
     "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
     "mocha": "10.2.0",
     "typescript": "^5.0.4",
     "vsce": "^2.15.0",
@@ -882,7 +882,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.74",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.75-ai-guided-remediation.0",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-node": "^11.1.0",
