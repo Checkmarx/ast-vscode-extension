@@ -128,7 +128,7 @@ jobs:
       
       # GENERATE AND WRITE CHANGELOG TO FILE
       - name: Generate release changelog
-        uses: BobAnkh/auto-generate-changelog@v1.2.4
+        uses: BobAnkh/auto-generate-changelog@v1.2.5
         with:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PATH: 'CHANGELOG.md'
