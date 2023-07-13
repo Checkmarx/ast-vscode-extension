@@ -60,11 +60,6 @@ export class Gpt {
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
-			this.gptPanel?.webview.postMessage({
-				command: "enable",
-			});
-			// send error message
-			//this.logs.error(e.message);
 		});
 	}
 

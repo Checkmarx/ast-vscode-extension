@@ -125,6 +125,10 @@ body {
 	border-radius: 50%;
 }
 
+.btn:disabled{
+	opacity: 100 !important;
+}
+
 pre {
     white-space: pre-wrap;
 	border: 1px solid #26292D;

@@ -25,27 +25,30 @@ const vscode = acquireVsCodeApi();
 		// @ts-ignore
 		question = e.target.value;
 	});
+
 	document.getElementById('askQuestion').addEventListener('keypress', (e) => {
 		var userQuestionDis = document.getElementById(`userQuestion`);
 		// case the user presses enter then we send the message but only if it is not waiting for a response from gpt
-		if (e.key === 'Enter' && !e.altKey && userQuestionDis.style.cursor !== 'not-allowed') {
+		if (e.key === 'Enter' && !e.altKey && userQuestionDis.style.cursor !== 'not-allowed' && e.target.value.length > 0) {
 			vscode.postMessage({
 				command: 'userQuestion',
 				question: e.target.value
 			});
 		}
 		// case the user presses alt enter then we add a new line 
-		if (e.key === 'Enter' && e.altKey) {
+		if (e.key === 'Enter' && e.altKey && e.target.value.length > 0) {
 			e.target.value += "\n";
 		}
 	});
 
 	document.querySelectorAll("[id^='userQuestion']").forEach(element => {
 		element.addEventListener('click', () => {
-			vscode.postMessage({
-				command: 'userQuestion',
-				question: question
-			});
+			if (question.length > 0) {
+				vscode.postMessage({
+					command: 'userQuestion',
+					question: question
+				});
+			}
 		});
 	});
 
@@ -167,6 +170,7 @@ const vscode = acquireVsCodeApi();
 				askQuestion.style.pointerEvents = 'auto';
 
 				var userQuestion = document.getElementById(`userQuestion`);
+				userQuestion.disabled = false;
 				userQuestion.style.cursor = 'pointer';
 				break;
 			case 'disable':
@@ -184,6 +188,7 @@ const vscode = acquireVsCodeApi();
 				explainRemediationsDis.style.pointerEvents = 'none';
 
 				var userQuestionDis = document.getElementById(`userQuestion`);
+				userQuestionDis.disabled = true;
 				userQuestionDis.style.cursor = 'not-allowed';
 				break;
 		}
