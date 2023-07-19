@@ -179,7 +179,7 @@ export class GptView implements vscode.WebviewViewProvider {
                   </div>
 				  <div class="row" style="">
                      <div class="col">
-						<p>Here are some example questions to ask :</p>
+						<p style="margin-bottom:0">Here are some example questions to ask :</p>
          			</div>
                   </div>
                </div>
