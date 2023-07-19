@@ -15,6 +15,7 @@ import { GptView } from "../views/gptView/gptView";
 import { Gpt } from "../gpt/gpt";
 import * as os from 'os';
 import { GptResult } from "../models/gptResult";
+import { cx } from "../cx";
 
 export class WebViewCommand {
   context: vscode.ExtensionContext;
@@ -104,12 +105,22 @@ export class WebViewCommand {
     const gpt = vscode.commands.registerCommand(
       commands.gpt,
       async (result: GptResult, type?: string) => {
+        let masked = undefined;
+        try {
+          masked = await cx.mask(result.filename);
+          this.logs.info("Masked Secrets by AI Guided Remediation :" + JSON.stringify(masked.maskedSecrets));
+        } catch (error) {
+          this.logs.info(error);
+        }
+
+
         const gptDetachedView = new GptView(
           this.context.extensionUri,
           result,
           this.context,
           false,
-          type
+          type,
+          masked
         );
         // Need to check if the detailsPanel is positioned in the rigth place
         if (

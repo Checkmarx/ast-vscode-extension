@@ -58,6 +58,19 @@ export class Cx implements CxPlatform {
 
 	}
 
+	async mask(filePath: string) {
+		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const workspacePath = vscode.workspace.workspaceFolders;
+		let masked;
+		if (workspacePath && workspacePath.length > 0) {
+			masked = await cx.maskSecrets(path.join(workspacePath[0].uri.fsPath, filePath));
+		} else {
+			throw new Error("Please open " + filePath + " in the workspace");
+		}
+
+		return masked.payload[0];
+	}
+
 	async scanCreate(projectName: string, branchName: string, sourcePath: string) {
 		const config = this.getAstConfiguration();
 		if (!config) {

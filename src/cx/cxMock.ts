@@ -502,6 +502,11 @@ export class CxMock implements CxPlatform {
 		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
 	}
 
+	async mask() {
+		await this.sleep(1000);
+		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
+	}
+
 	sleep(ms) {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}

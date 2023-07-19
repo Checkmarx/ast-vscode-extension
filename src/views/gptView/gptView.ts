@@ -3,6 +3,7 @@ import * as path from "path";
 import { getNonce } from "../../utils/utils";
 import * as os from 'os';
 import { GptResult } from "../../models/gptResult";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 
 export class GptView implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
@@ -13,7 +14,8 @@ export class GptView implements vscode.WebviewViewProvider {
 		private result: GptResult,
 		private context: vscode.ExtensionContext,
 		private loadChanges: boolean,
-		private type?: string
+		private type?: string,
+		private masked?: CxMask
 	) { }
 
 	public getWebView() {
@@ -64,6 +66,9 @@ export class GptView implements vscode.WebviewViewProvider {
 		const scriptUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
 		);
+		const scriptJquery = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.0.min.js")
+		);
 		const styleResetUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
 		);
@@ -110,6 +115,8 @@ export class GptView implements vscode.WebviewViewProvider {
 		const userInfo = os.userInfo();
 		// Access the username
 		const username = userInfo.username;
+
+
 		return `<!DOCTYPE html>
 			<html lang="en">
         <head>
@@ -122,6 +129,7 @@ export class GptView implements vscode.WebviewViewProvider {
           <link href="${scaDetails}" rel="stylesheet">
 		  <link href="${styleBootStrap}" rel="stylesheet">
 		  <link href="${styleGptUri}" rel="stylesheet">
+		  <script nonce="${nonce}" src="${scriptJquery}"></script>
 		  <script nonce="${nonce}" src="${scriptBootStrap}"></script>
 		  <script nonce="${nonce}" src="${scriptHighlight}"></script>
 		  <script nonce="${nonce}" src="${scriptShowdown}"></script>
@@ -142,14 +150,36 @@ export class GptView implements vscode.WebviewViewProvider {
 					 	alt="Avatar" />
 					 	AI Guided Remediation
 					 </p>
-         		</div>
+         			</div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
-					<p>Welcome ${username}!</p>
-					<p>”AI Guided Remediation” is here to help you get things faster. It can give more information about this IaC file and its results , suggest remediation and more.</p>
-					<p>"AI Guided Remediation" provides a protective measure by anonymizing the source file before it is processed by GPT, thereby mitigating the risks of misuse or unintentional disclosures.</p>
-					<p>Here are some example questions to ask :</p>
+						<p>Welcome ${username}!</p>
+						<p>”AI Guided Remediation” is here to help you get things faster. It can give more information about this IaC file and its results , suggest remediation and more.</p>
+						<p style="margin-bottom:0">"AI Guided Remediation" provides a protective measure by anonymizing the source file before it is processed by GPT, thereby mitigating the risks of misuse or unintentional disclosures.</p>
+         			</div>
+                  </div>
+				  <div class="row" style="padding:0.6em">
+					 <div id="accordion" style="width:100%">
+						<div class="card" style="background:transparent;">
+							<div class="card-header" id="headingOne" style="padding:0!important">
+								<h5 class="mb-0">
+								<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="color:var(--vscode-editor-foreground);text-align:left">
+									Masked Secrets (${this.masked && this.masked.maskedSecrets ? this.masked.maskedSecrets.length : "0"})
+								</button>
+								</h5>
+							</div>
+							<div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+								<div class="card-body">
+									${this.generateMaskedSection()}
+								</div>
+							</div>
+							</div>
+						</div>
+                  </div>
+				  <div class="row" style="">
+                     <div class="col">
+						<p>Here are some example questions to ask :</p>
          			</div>
                   </div>
                </div>
@@ -235,6 +265,18 @@ export class GptView implements vscode.WebviewViewProvider {
 	</button>
 	<script nonce="${nonce}" src="${scriptUri}"></script>
 </html>`;
+	}
+
+	generateMaskedSection(): string {
+		let html = "";
+		if (this.masked && this.masked.maskedSecrets.length > 0) {
+			for (let i = 0; i < this.masked.maskedSecrets.length; i++) {
+				html += "<p>Secret: " + this.masked.maskedSecrets[i].secret + "<br/>" + "Masked: " + this.masked.maskedSecrets[i].masked.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</p>";
+			}
+		} else {
+			html += "No secrets were detected and masked";
+		}
+		return html;
 	}
 }
 

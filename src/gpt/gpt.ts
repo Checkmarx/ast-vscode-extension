@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { GptView } from "../views/gptView/gptView";
 import { cx } from "../cx";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 export class Gpt {
 	private thinkID: number;
 	constructor(
@@ -61,6 +62,15 @@ export class Gpt {
 				icon: this.kicsIcon
 			});
 		});
+	}
+	async mask(filePath: string) {
+		let r: CxMask;
+		try {
+			r = await cx.mask(filePath);
+		} catch (error) {
+			this.logs.error(error);
+		}
+		return r;
 	}
 
 	sleep(ms) {
