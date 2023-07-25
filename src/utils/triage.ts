@@ -68,7 +68,13 @@ export async function triageSubmit(
     logs.log("INFO", messages.triageUpdateSeverity(data.severitySelection));
     // Update severity of the result
     result.setSeverity(data.severitySelection);
-    result.rawObject["severity"] = data.severitySelection;
+    if (typeof result.rawObject === "object" && result.rawObject !== null) {
+      result.rawObject["severity"] = data.severitySelection;
+    } else {
+      result.rawObject = {
+        severity: data.severitySelection,
+      };
+    }
     // Update webview title
     if (detailsPanel && detailsPanel.title) {
       detailsPanel.title =
@@ -80,10 +86,14 @@ export async function triageSubmit(
   if (data.stateSelection.length > 0) {
     logs.log("INFO", messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
+    if (typeof result.rawObject === "object" && result.rawObject !== null) {
+      result.rawObject["state"] = data.stateSelection.replaceAll(" ", "_").toUpperCase();
+    } else {
+      result.rawObject = {
+        state: data.stateSelection.replaceAll(" ", "_").toUpperCase()
+      };
+    }
     result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
-    result.rawObject["state"] = data.stateSelection
-      .replaceAll(" ", "_")
-      .toUpperCase();
   }
 
   // Case the submit is sent without any change

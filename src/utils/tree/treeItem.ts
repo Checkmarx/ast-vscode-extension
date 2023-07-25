@@ -34,7 +34,6 @@ export class TreeItem extends vscode.TreeItem {
 		this.contextValue = type;
 		this.children = children;
 
-		// TODO: Use a type enum
 		if (type) {
 			this.iconPath = new vscode.ThemeIcon("shield");
 		}
