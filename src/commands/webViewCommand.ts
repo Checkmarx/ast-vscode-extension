@@ -40,6 +40,7 @@ export class WebViewCommand {
           result,
           this.context,
           false,
+          this.logs,
           type
         );
         // Need to check if the detailsPanel is positioned in the rigth place

@@ -236,6 +236,24 @@ export class Cx implements CxPlatform {
 		return enabled;
 	}
 
+	async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
+		let enabled = true;
+		const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+		if (!apiKey) {
+			return enabled;
+		}
+		const config = new CxConfig();
+		config.apiKey = apiKey;
+		const cx = new CxWrapper(config);
+		try {
+			enabled = await cx.guidedRemediationEnabled();
+		} catch (error) {
+			logs.error(error);
+			return false;
+		}
+		return enabled;
+	}
+
 	async isSCAScanEnabled(): Promise<boolean> {
 		const enabled = true;
 		return enabled;

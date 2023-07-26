@@ -414,6 +414,9 @@ export class CxMock implements CxPlatform {
 	async isScanEnabled(): Promise<boolean> {
 		return true;
 	}
+	async isAIGuidedRemediationEnabled(): Promise<boolean> {
+		return true;
+	}
 
 	async isSCAScanEnabled(): Promise<boolean> {
 		return true;

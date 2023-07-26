@@ -5,10 +5,12 @@ import { constants } from "../common/constants";
 export class Details {
 	result: AstResult;
 	context: vscode.ExtensionContext;
+	iAIEnabled: boolean;
 
-	constructor(result: AstResult, context: vscode.ExtensionContext) {
+	constructor(result: AstResult, context: vscode.ExtensionContext, iAIEnabled: boolean) {
 		this.result = result;
 		this.context = context;
+		this.iAIEnabled = iAIEnabled;
 	}
 
 	header(severityPath: vscode.Uri, gptPath?: vscode.Uri) {
@@ -20,7 +22,7 @@ export class Details {
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
-				${this.result.type === constants.kics ? `
+				${this.result.type === constants.kics && this.iAIEnabled ? `
 				<div class="header-item-gpt">
 					<h4 id="cx_title_gpt" class="title_gpt">
 						<img class="gpt_logo" src="${gptPath}" alt="gptLogo" id="gpt_logo_img" />

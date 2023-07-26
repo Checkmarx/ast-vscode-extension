@@ -5,6 +5,8 @@ import { AstResult } from "../../models/results";
 import { Details } from "../../utils/interface/details";
 import { getNonce } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
+import { cx } from "../../cx";
+import { Logs } from "../../models/logs";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -13,6 +15,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private result: AstResult,
     private context: vscode.ExtensionContext,
     private loadChanges: boolean,
+    private logs: Logs,
     private type?: string
   ) { }
 
@@ -171,7 +174,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
     const nonce = getNonce();
     const selectClassname = "select-" + this.result.severity.toLowerCase();
-    const html = new Details(this.result, this.context);
+    // Verify if guided remediation is enabled for tenant
+    const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
+    const html = new Details(this.result, this.context, isAIEnabled);
+
     return `<!DOCTYPE html>
 			<html lang="en">
         <head>
