@@ -102,10 +102,10 @@ export async function triageSubmit(
     await updateResults(result, context, data.comment, resultsProvider);
     vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
-      getChanges(logs, context, result, detailsPanel);
+      await getChanges(logs, context, result, detailsPanel);
     }
     if (result.type === "sast") {
-      getLearnMore(logs, context, result, detailsPanel);
+      await getLearnMore(logs, context, result, detailsPanel);
     }
     vscode.window.showInformationMessage(
       messages.triageSubmitedSuccess
