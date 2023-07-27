@@ -1,15 +1,12 @@
 # CHANGELOG
 
-## [v2.1.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-nightly.0) - 2023-06-16 14:07:23
+## [v2.1.1-ai-guided-remediation.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-ai-guided-remediation.0) - 2023-06-22 14:00:36
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### New Features 🚀
-* Documentation & Feedback section by @igorlombacx in https://github.com/Checkmarx/ast-vscode-extension/pull/520
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.1-gpt.0...v2.1.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.1-nightly.0...v2.1.1-ai-guided-remediation.0
 
 ## [v2.1.1-gpt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-gpt.0) - 2023-06-14 09:43:30
 
