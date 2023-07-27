@@ -3,7 +3,7 @@ import { TreeItem } from "../../utils/tree/treeItem";
 import { constants } from "../../utils/common/constants";
 
 const feedbackUrl = "https://github.com/Checkmarx/ast-vscode-extension/issues/new/choose";
-const documentationUrl = "https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-vs-code-extension--plugin-.html";
+const documentationUrl = "https://checkmarx.com/resource/documents/en/34965-8128-visual-studio-code-extension-plugin.html";
 
 export class DocAndFeedbackView implements vscode.TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<TreeItem | undefined> = new vscode.EventEmitter<TreeItem | undefined>();
