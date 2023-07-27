@@ -68,7 +68,6 @@ export async function triageSubmit(
     logs.log("INFO", messages.triageUpdateSeverity(data.severitySelection));
     // Update severity of the result
     result.setSeverity(data.severitySelection);
-    result.rawObject["severity"] = data.severitySelection;
     // Update webview title
     if (detailsPanel && detailsPanel.title) {
       detailsPanel.title =
@@ -81,9 +80,6 @@ export async function triageSubmit(
     logs.log("INFO", messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
     result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
-    result.rawObject["state"] = data.stateSelection
-      .replaceAll(" ", "_")
-      .toUpperCase();
   }
 
   // Case the submit is sent without any change
@@ -105,9 +101,12 @@ export async function triageSubmit(
   try {
     await updateResults(result, context, data.comment, resultsProvider);
     vscode.commands.executeCommand(commands.refreshTree);
-
-    getChanges(logs, context, result, detailsPanel);
-    getLearnMore(logs, context, result, detailsPanel);
+    if (result.type === "sast" || result.type === "kics") {
+      await getChanges(logs, context, result, detailsPanel);
+    }
+    if (result.type === "sast") {
+      await getLearnMore(logs, context, result, detailsPanel);
+    }
     vscode.window.showInformationMessage(
       messages.triageSubmitedSuccess
     );

@@ -33,10 +33,10 @@ export class AstResult extends CxResult {
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
-  rawObject: Object;
   cweId: string | undefined;
   packageIdentifier: string;
   vulnerabilityDetails: CxVulnerabilityDetails;
+
   setSeverity(severity: string) {
     this.severity = severity;
     if (this.kicsNode) {
@@ -47,6 +47,7 @@ export class AstResult extends CxResult {
   setState(state: string) {
     this.state = state;
   }
+
   // extend dos results do wrapper implementar so o que precisamos
   constructor(result: any) {
     super(result.scaType ? "sca" : result.type, result.data.queryName
@@ -79,7 +80,6 @@ export class AstResult extends CxResult {
     this.severity = result.severity;
     this.status = result.status;
     this.language = result.data.languageName;
-    // this.rawObject = result;
     this.description = result.description;
     this.descriptionHTML = result.descriptionHTML;
     this.data = result.data;
@@ -134,24 +134,31 @@ export class AstResult extends CxResult {
   getCxScaAtackVector() {
     return path.join("media", "icons", "attackVector.png");
   }
+
   getCxScaComplexity() {
     return path.join("media", "icons", "complexity.png");
   }
+
   getCxAuthentication() {
     return path.join("media", "icons", "authentication.png");
   }
+
   getCxConfidentiality() {
     return path.join("media", "icons", "confidentiality.png");
   }
+
   getCxIntegrity() {
     return path.join("media", "icons", "integrity.png");
   }
+
   getCxAvailability() {
     return path.join("media", "icons", "availability.png");
   }
+
   getCxUpgrade() {
     return path.join("media", "icons", "upgrade.png");
   }
+
   getCxUrl() {
     return path.join("media", "icons", "url.png");
   }
@@ -237,6 +244,7 @@ export class AstResult extends CxResult {
 
     return "";
   }
+
   private kicsDetails() {
     let html = "";
     html += `
