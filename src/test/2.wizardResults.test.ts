@@ -35,11 +35,11 @@ describe("Wizard load results test", () => {
   after(async () => {
     await new EditorView().closeAllEditors();
     await bench.executeCommand(CX_CLEAR);
+    // Wizard command execution
+    await bench.executeCommand(CX_SELECT_ALL);
   });
 
   it("should load results using wizard", async () => {
-    // Wizard command execution
-    await bench.executeCommand(CX_SELECT_ALL);
 
     // Project selection
     const inputProject = await InputBox.create();
