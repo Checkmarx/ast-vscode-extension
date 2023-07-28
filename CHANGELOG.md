@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [v2.1.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-nightly.0) - 2023-07-28 10:48:24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* AI integration for Iac Results by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/497
+### Checkmarx One SDK Updates 🛠
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.74 to 0.0.75 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/534
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.75 to 0.0.76 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/559
+### Other Changes
+* Fix plugin not updating status/results in CX one by @igorlombacx in https://github.com/Checkmarx/ast-vscode-extension/pull/556
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.1-ai-guided-remediation.0...v2.1.1-nightly.0
+
 ## [v2.1.1-ai-guided-remediation.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-ai-guided-remediation.0) - 2023-06-22 14:00:36
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
