@@ -40,7 +40,10 @@ describe("Wizard load results test", () => {
   });
 
   it("should load results using wizard", async () => {
-
+    treeScans = await initialize();
+    while (treeScans === undefined) {
+      treeScans = await initialize();
+    }
     // Project selection
     const inputProject = await InputBox.create();
 
