@@ -43,7 +43,6 @@ describe("Wizard load results test", () => {
 
     // Project selection
     const inputProject = await InputBox.create();
-    //await inputProject.setText(CX_TEST_SCAN_PROJECT_NAME);
 
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();
