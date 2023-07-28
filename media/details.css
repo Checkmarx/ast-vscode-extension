@@ -38,6 +38,12 @@
   opacity: 40%;
 }
 
+.gpt_logo {
+  width: 1.6em;
+  margin-right: auto;
+  vertical-align: middle;
+}
+
 .logo {
   width: 2.5em;
   margin-right: auto;
@@ -292,7 +298,7 @@ input ~ .tab {
 
 @media only screen and (max-width: 650px) {
   .header-container{
-    display: block;
+    display: flex;
   }
 }
 @media only screen and (min-width: 651px) {
@@ -305,6 +311,16 @@ input ~ .tab {
 
 .header-item-title{
   flex: 70%;
+}
+
+.header-item-gpt{
+  flex: 15%;
+}
+
+.title_gpt{
+  margin-top: 1.5em;
+  color: #3794FF;
+  cursor: pointer;
 }
 
 .header-item-codebashing{

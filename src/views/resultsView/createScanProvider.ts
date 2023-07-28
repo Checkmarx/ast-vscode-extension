@@ -101,6 +101,12 @@ async function doesFilesMatch(logs: Logs) {
   const resultFileNames = extractFileNamesFromResults(
     filesFromExistingScan.results
   );
+
+  // start scan even when there are no results in the current scan
+  if (!resultFileNames || !resultFileNames.length) {
+    return true;
+  }
+
   if (await doFilesExistInWorkspace(resultFileNames)) {
     logs.info(messages.scanFilesMatch);
     return true;

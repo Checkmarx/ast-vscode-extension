@@ -17,6 +17,8 @@ import { CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
+import path = require("path");
+import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
@@ -30,6 +32,43 @@ export class Cx implements CxPlatform {
 			throw new Error(scan.status);
 		}
 		return jsonResults;
+	}
+
+	async runGpt(message: string, filePath: string, line: number, severity: string, queryName: string) {
+		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const gptToken = vscode.workspace
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptSettingsKey) as string;
+		const gptEngine = vscode.workspace
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptEngineKey) as string;
+		if (!gptToken) {
+			throw new Error(messages.gptMissinApiKey);
+		}
+		const filePackageObjectList = vscode.workspace.workspaceFolders;
+		if (filePackageObjectList.length > 0) {
+			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, gptEngine);
+			if (answer.payload && answer.exitCode === 0) {
+				return answer.payload;
+			} else {
+				throw new Error(answer.status);
+			}
+
+		}
+
+	}
+
+	async mask(filePath: string) {
+		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const workspacePath = vscode.workspace.workspaceFolders;
+		let masked;
+		if (workspacePath && workspacePath.length > 0) {
+			masked = await cx.maskSecrets(path.join(workspacePath[0].uri.fsPath, filePath));
+		} else {
+			throw new Error("Please open " + filePath + " in the workspace");
+		}
+
+		return masked.payload[0];
 	}
 
 	async scanCreate(projectName: string, branchName: string, sourcePath: string) {
@@ -193,6 +232,24 @@ export class Cx implements CxPlatform {
 		} catch (error) {
 			logs.error(error);
 			return enabled;
+		}
+		return enabled;
+	}
+
+	async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
+		let enabled = true;
+		const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+		if (!apiKey) {
+			return enabled;
+		}
+		const config = new CxConfig();
+		config.apiKey = apiKey;
+		const cx = new CxWrapper(config);
+		try {
+			enabled = await cx.guidedRemediationEnabled();
+		} catch (error) {
+			logs.error(error);
+			return false;
 		}
 		return enabled;
 	}

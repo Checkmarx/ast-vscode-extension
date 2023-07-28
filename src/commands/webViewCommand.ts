@@ -11,12 +11,19 @@ import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { messages } from "../utils/common/messages";
 import { constants } from "../utils/common/constants";
+import { GptView } from "../views/gptView/gptView";
+import { Gpt } from "../gpt/gpt";
+import * as os from 'os';
+import { GptResult } from "../models/gptResult";
+import { cx } from "../cx";
 
 export class WebViewCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
   detailsPanel: vscode.WebviewPanel | undefined;
+  gptPanel: vscode.WebviewPanel | undefined;
   resultsProvider: AstResultsProvider;
+  gpt: Gpt;
   constructor(context: vscode.ExtensionContext, logs: Logs, resultsProvider: AstResultsProvider) {
     this.context = context;
     this.detailsPanel = undefined;
@@ -33,6 +40,7 @@ export class WebViewCommand {
           result,
           this.context,
           false,
+          this.logs,
           type
         );
         // Need to check if the detailsPanel is positioned in the rigth place
@@ -93,6 +101,84 @@ export class WebViewCommand {
     );
     this.context.subscriptions.push(newDetails);
   }
+
+  public registerGpt() {
+    const gpt = vscode.commands.registerCommand(
+      commands.gpt,
+      async (result: GptResult, type?: string) => {
+        let masked = undefined;
+        try {
+          masked = await cx.mask(result.filename);
+          this.logs.info("Masked Secrets by AI Guided Remediation :" + JSON.stringify(masked.maskedSecrets));
+        } catch (error) {
+          this.logs.info(error);
+        }
+
+
+        const gptDetachedView = new GptView(
+          this.context.extensionUri,
+          result,
+          this.context,
+          false,
+          type,
+          masked
+        );
+        // Need to check if the detailsPanel is positioned in the rigth place
+        if (
+          this.gptPanel?.viewColumn === 1 ||
+          this.gptPanel?.viewColumn === 2 ||
+          !this.gptPanel?.viewColumn
+        ) {
+          this.gptPanel?.dispose();
+          this.gptPanel = undefined;
+          await vscode.commands.executeCommand(
+            messages.splitEditorRight
+          );
+          // Only keep the result details in the split
+          await vscode.commands.executeCommand(
+            messages.closeEditorGroup
+          );
+        }
+        this.gptPanel?.dispose();
+        this.gptPanel = vscode.window.createWebviewPanel(
+          constants.gptWebviewName, // Identifies the type of the webview, internal id
+          "AI Guided Remediation",
+          vscode.ViewColumn.Three, // Show the results in a separated column
+          {
+            enableScripts: true,
+            localResourceRoots: [
+              vscode.Uri.file(path.join(this.context.extensionPath, "media")),
+            ],
+          }
+        );
+        // Only allow one detail to be open
+        this.gptPanel.onDidDispose(
+          () => {
+            this.gptPanel = undefined;
+          },
+          null,
+          this.context.subscriptions
+        );
+        // gptPanel set options
+        this.gptPanel.webview.options = {
+          enableScripts: true,
+          localResourceRoots: [
+            vscode.Uri.file(path.join(this.context.extensionPath, "media/")),
+          ],
+        };
+        // gptPanel set html content
+        this.gptPanel.webview.html =
+          await gptDetachedView.getDetailsWebviewContent(
+            this.gptPanel.webview
+          );
+
+        this.gpt = new Gpt(this.context, this.logs, this.gptPanel, gptDetachedView);
+        await this.handleGptMessages();
+      }
+    );
+    this.context.subscriptions.push(gpt);
+  }
+
   private async loadAsyncTabsContent(result: AstResult) {
     if (result.type === "sast") {
       await getLearnMore(
@@ -106,6 +192,7 @@ export class WebViewCommand {
       await getChanges(this.logs, this.context, result, this.detailsPanel);
     }
   }
+
   private async handleMessages(result: AstResult, detailsDetachedView: AstDetailsDetached) {
     this.detailsPanel.webview.onDidReceiveMessage(async (data) => {
       switch (data.command) {
@@ -158,6 +245,51 @@ export class WebViewCommand {
             data.file,
             data.version,
             this.logs
+          );
+          break;
+        case "gpt":
+          this.logs.info("Opening AI Guided Remediation");
+          vscode.commands.executeCommand(
+            commands.gpt,
+            new GptResult(result, undefined),
+            constants.realtime
+          );
+      }
+    });
+  }
+
+  private async handleGptMessages() {
+    // Get the user information
+    const userInfo = os.userInfo();
+    // Access the username
+    const username = userInfo.username;
+    // handle messages from webview
+    this.gptPanel.webview.onDidReceiveMessage(async (data) => {
+      switch (data.command) {
+        //Catch open file message to open and view the result entry
+        case "explainFile":
+          this.logs.info("AI Guided Remediation : Can you explain this IaC file?");
+          await this.gpt.runGpt("Can you explain this IaC file?", username);
+          break;
+        case "explainResults":
+          this.logs.info("AI Guided Remediation : Can you explain these results?");
+          await this.gpt.runGpt("Can you explain these results?", username);
+          break;
+        case "explainRemediations":
+          this.logs.info("AI Guided Remediation : Can you offer a remediation suggestion?");
+          await this.gpt.runGpt("Can you offer a remediation suggestion?", username);
+          break;
+        case "userQuestion":
+          this.logs.info("AI Guided Remediation : " + data.question);
+          this.gptPanel?.webview.postMessage({
+            command: "clearQuestion",
+          });
+          await this.gpt.runGpt(data.question, username);
+          break;
+        case "openSettings":
+          vscode.commands.executeCommand(
+            messages.openSettings,
+            constants.gptSettings
           );
       }
     });

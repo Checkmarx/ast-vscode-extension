@@ -48,8 +48,7 @@ export class AstResult extends CxResult {
     this.state = state;
   }
 
-  // extend dos results do wrapper implementar so o que precisamos
-  constructor(result: any) {
+  constructor(result?: any) {
     super(result.scaType ? "sca" : result.type, result.data.queryName
       ? result.data.queryName
       : result.id
@@ -125,6 +124,10 @@ export class AstResult extends CxResult {
         return path.join("media", "icons", "low_untoggle.svg");
     }
     return "";
+  }
+
+  getGptIcon() {
+    return path.join("media", "icons", "gpt.png");
   }
 
   getCxIcon() {

@@ -5,6 +5,8 @@ import { AstResult } from "../../models/results";
 import { Details } from "../../utils/interface/details";
 import { getNonce } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
+import { cx } from "../../cx";
+import { Logs } from "../../models/logs";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -13,8 +15,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private result: AstResult,
     private context: vscode.ExtensionContext,
     private loadChanges: boolean,
+    private logs: Logs,
     private type?: string
-  ) {}
+  ) { }
 
   public getWebView() {
     return this._view;
@@ -165,10 +168,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const scaUrl = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
     );
+    const gptPath = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, this.result.getGptIcon())
+    );
 
     const nonce = getNonce();
     const selectClassname = "select-" + this.result.severity.toLowerCase();
-    const html = new Details(this.result, this.context);
+    // Verify if guided remediation is enabled for tenant
+    const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
+    const html = new Details(this.result, this.context, isAIEnabled);
+
     return `<!DOCTYPE html>
 			<html lang="en">
         <head>
@@ -184,44 +193,43 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           </title>
         </head>
         <div id="main_div">
-          ${this.result.type !== "sca" ? html.header(severityPath) : ""}
+          ${this.result.type !== "sca" ? html.header(severityPath, gptPath) : ""}
           ${this.result.type !== "sca" ? html.triage(selectClassname) : ""}
-          ${
-            this.result.type === "sast"
-              ? html.tab(
-                  html.generalTab(cxPath),
-                  html.detailsTab(),
-                  html.loader(),
-                  messages.generalTab,
-                  messages.learnMoreTab,
-                  messages.changesTab,
-                  messages.remediationExamplesTab,
-                  messages.noRemediationExamplesTab
-                )
-              : this.result.type === "sca"
-              ? html.scaView(
-                  severityPath,
-                  scaAtackVector,
-                  scaComplexity,
-                  scaAuthentication,
-                  scaConfidentiality,
-                  scaIntegrity,
-                  scaAvailability,
-                  scaUpgrade,
-                  scaUrl,
-                  this.type
-                )
-              : html.tab(
-                  html.generalTab(cxPath),
-                  "",
-                  html.loader(),
-                  messages.generalTab,
-                  "",
-                  messages.changesTab,
-                  "",
-                  ""
-                )
-          }
+          ${this.result.type === "sast"
+        ? html.tab(
+          html.generalTab(cxPath),
+          html.detailsTab(),
+          html.loader(),
+          messages.generalTab,
+          messages.learnMoreTab,
+          messages.changesTab,
+          messages.remediationExamplesTab,
+          messages.noRemediationExamplesTab
+        )
+        : this.result.type === "sca"
+          ? html.scaView(
+            severityPath,
+            scaAtackVector,
+            scaComplexity,
+            scaAuthentication,
+            scaConfidentiality,
+            scaIntegrity,
+            scaAvailability,
+            scaUpgrade,
+            scaUrl,
+            this.type
+          )
+          : html.tab(
+            html.generalTab(cxPath),
+            "",
+            html.loader(),
+            messages.generalTab,
+            "",
+            messages.changesTab,
+            "",
+            ""
+          )
+      }
         </div>
         <script nonce="${nonce}" src="${scriptUri}">
         </script>	

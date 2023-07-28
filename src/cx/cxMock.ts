@@ -414,6 +414,9 @@ export class CxMock implements CxPlatform {
 	async isScanEnabled(): Promise<boolean> {
 		return true;
 	}
+	async isAIGuidedRemediationEnabled(): Promise<boolean> {
+		return true;
+	}
 
 	async isSCAScanEnabled(): Promise<boolean> {
 		return true;
@@ -495,6 +498,20 @@ export class CxMock implements CxPlatform {
 				},
 			],
 		}];
+	}
+
+	async runGpt() {
+		await this.sleep(1000);
+		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
+	}
+
+	async mask() {
+		await this.sleep(1000);
+		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
+	}
+
+	sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
 	updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem) {

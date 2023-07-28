@@ -128,7 +128,11 @@ export const constants = {
   apiKey: "apiKey",
   cxKicsLong: "Checkmarx KICS",
   webviewName: "newDetails",
-
+  gptWebviewName: "gpt",
+  gptSettings: "Checkmarx AI Guided Remediation: GPT Key",
+  gptCommandName: "CheckmarxAiGuidedRemediation",
+  gptSettingsKey: "GPT Key",
+  gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
   documentation: "Documentation"

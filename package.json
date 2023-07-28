@@ -287,7 +287,7 @@
       {
         "command": "ast-results.generalPick",
         "category": "ast-results",
-        "title": "Choose Different Results",
+        "title": "Select Different Results",
         "icon": "$(search)",
         "enablement": "ast-results.isValidCredentials"
       },
@@ -780,7 +780,7 @@
       {
         "title": "Checkmarx One",
         "id": "ast-results",
-        "order": 2,
+        "order": 3,
         "properties": {
           "checkmarxOne.apiKey": {
             "type": "string",
@@ -819,6 +819,34 @@
             "order": 4,
             "default": "",
             "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
+          }
+        }
+      },
+      {
+        "title": "Checkmarx AI Guided Remediation",
+        "id": "ask-kics",
+        "order": 2,
+        "properties": {
+          "CheckmarxAiGuidedRemediation.GPT Key": {
+            "type": "string",
+            "order": 3,
+            "default": "",
+            "markdownDescription": "Api key to connect to Gpt."
+          },
+          "CheckmarxAiGuidedRemediation.model": {
+            "order": 2,
+            "type": "string",
+            "default": "gpt-3.5-turbo",
+            "markdownDescription": "The model for AI Guided Remediation to use",
+            "enum": [
+              "gpt-4",
+              "gpt-4-32k",
+              "gpt-3.5-turbo"
+            ],
+            "enumDescriptions": [
+              "gpt-4: (Recommended)",
+              "gpt-3.5-turbo"
+            ]
           }
         }
       }

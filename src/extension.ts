@@ -1,30 +1,30 @@
 import * as vscode from "vscode";
-import {AstResultsProvider} from "./views/resultsView/astResultsProvider";
+import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import {
     constants
 } from "./utils/common/constants";
-import {Logs} from "./models/logs";
+import { Logs } from "./models/logs";
 import {
     addRealTimeSaveListener,
     executeCheckSettingsChange,
     gitExtensionListener,
     setScanButtonDefaultIfScanIsNotRunning,
 } from "./utils/listener/listeners";
-import {KicsProvider} from "./kics/kicsRealtimeProvider";
-import {SCAResultsProvider} from "./views/scaView/scaResultsProvider";
-import {ScanCommand} from "./commands/scanCommand";
-import {ScanSCACommand} from "./commands/scanSCACommand";
-import {KICSRealtimeCommand} from "./commands/kicsRealtimeCommand";
-import {TreeCommand} from "./commands/treeCommand";
-import {PickerCommand} from "./commands/pickerCommand";
-import {CommonCommand} from "./commands/commonCommand";
-import {GroupByCommand} from "./commands/groupByCommand";
-import {FilterCommand} from "./commands/filterCommand";
-import {WebViewCommand} from "./commands/webViewCommand";
-import {WorkspaceListener} from "./utils/listener/workspaceListener";
-import {DocAndFeedbackView} from "./views/docsAndFeedbackView/docAndFeedbackView";
-import {messages} from "./utils/common/messages";
-import {commands} from "./utils/common/commands";
+import { KicsProvider } from "./kics/kicsRealtimeProvider";
+import { SCAResultsProvider } from "./views/scaView/scaResultsProvider";
+import { ScanCommand } from "./commands/scanCommand";
+import { ScanSCACommand } from "./commands/scanSCACommand";
+import { KICSRealtimeCommand } from "./commands/kicsRealtimeCommand";
+import { TreeCommand } from "./commands/treeCommand";
+import { PickerCommand } from "./commands/pickerCommand";
+import { CommonCommand } from "./commands/commonCommand";
+import { GroupByCommand } from "./commands/groupByCommand";
+import { FilterCommand } from "./commands/filterCommand";
+import { WebViewCommand } from "./commands/webViewCommand";
+import { WorkspaceListener } from "./utils/listener/workspaceListener";
+import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
+import { messages } from "./utils/common/messages";
+import { commands } from "./utils/common/commands";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -115,6 +115,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Webview detailsPanel to show result details on the side
     const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
     webViewCommand.registerNewDetails();
+    webViewCommand.registerGpt();
     // Branch change Listener
     await gitExtensionListener(context, logs);
     // SCA Auto Scanning view

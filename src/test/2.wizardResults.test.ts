@@ -30,21 +30,19 @@ describe("Wizard load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await new Workbench().executeCommand(CX_SELECT_ALL);
+    await bench.executeCommand(CX_CLEAR);
+    await bench.executeCommand(CX_SELECT_ALL);
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
     await bench.executeCommand(CX_CLEAR);
+    // Wizard command execution
   });
 
   it("should load results using wizard", async () => {
-    // Wizard command execution
-    await new Workbench().executeCommand(CX_SELECT_ALL);
-
     // Project selection
     const inputProject = await InputBox.create();
-    await inputProject.setText(CX_TEST_SCAN_PROJECT_NAME);
 
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();

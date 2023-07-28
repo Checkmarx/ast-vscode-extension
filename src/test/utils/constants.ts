@@ -17,7 +17,7 @@ export const CX_NAME = "Checkmarx One";
 export const CX_KICS = "Checkmarx KICS";
 export const CX_KICS_NAME = "Activate KICS Auto Scanning";
 
-export const CX_SELECT_ALL = "ast-results: Choose Different Results";
+export const CX_SELECT_ALL = "ast-results: Select Different Results";
 export const CX_SELECT_PROJECT = "ast-results: Select Project";
 export const CX_SELECT_BRANCH = "ast-results: Select Branch";
 export const CX_SELECT_SCAN = "ast-results: Select Scan";
