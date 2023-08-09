@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [v2.2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.2.0) - 2023-07-28 13:45:16
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.2.0 -->
+
+## What's Changed
+### New Features 🚀
+* adding auto criation of changelog upon release by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/503
+* Documentation & Feedback section by @igorlombacx in https://github.com/Checkmarx/ast-vscode-extension/pull/520
+* AI integration for Iac Results by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/497
+### Checkmarx One SDK Updates 🛠
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.73 to 0.0.74 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/512
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.74 to 0.0.75 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/534
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.75 to 0.0.76 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/559
+### Other Changes
+* Fix plugin not updating status/results in CX one by @igorlombacx in https://github.com/Checkmarx/ast-vscode-extension/pull/556
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.1.0...v2.2.0
+
 ## [v2.1.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.1.1-nightly.0) - 2023-07-28 10:48:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
