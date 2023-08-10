@@ -96,6 +96,11 @@ export class KicsProvider {
         // Get the results
         if (cxOutput.payload) {
           const kicsResults = cxOutput.payload[0];
+
+          for (const kicsResult of kicsResults.results) {
+            kicsResult.files[0].file_name = file.editor.document.uri.fsPath;
+          }
+
           // Logs the results summary to the output
           this.resultsSummaryLogs(kicsResults, this.logs);
           // Get the results into the problems
