@@ -163,7 +163,7 @@ export class GptView implements vscode.WebviewViewProvider {
 							<div class="card-header" id="headingOne" style="padding:0!important">
 								<h5 class="mb-0">
 								<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="color:var(--vscode-editor-foreground);text-align:left">
-									Masked Secrets (${this.masked && this.masked.maskedSecrets ? this.masked.maskedSecrets.length : "0"})
+									Masked Secrets ${this.masked && this.masked.maskedSecrets ? "(" + this.masked.maskedSecrets.length + ")" : ""}
 								</button>
 								</h5>
 							</div>
@@ -267,7 +267,7 @@ export class GptView implements vscode.WebviewViewProvider {
 
 	generateMaskedSection(): string {
 		let html = "";
-		if (this.masked && this.masked.maskedSecrets.length > 0) {
+		if (this.masked && this.masked.maskedSecrets && this.masked.maskedSecrets.length > 0) {
 			for (let i = 0; i < this.masked.maskedSecrets.length; i++) {
 				html += "<p>Secret: " + this.masked.maskedSecrets[i].secret + "<br/>" + "Masked: " + this.masked.maskedSecrets[i].masked.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "<br/>Line: " + this.masked.maskedSecrets[i].line + "</p>";
 			}

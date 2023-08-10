@@ -109,7 +109,7 @@ export class WebViewCommand {
         let masked = undefined;
         try {
           masked = await cx.mask(result.filename);
-          this.logs.info("Masked Secrets by AI Guided Remediation :" + JSON.stringify(masked.maskedSecrets));
+          this.logs.info("Masked Secrets by AI Guided Remediation: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
         } catch (error) {
           this.logs.info(error);
         }

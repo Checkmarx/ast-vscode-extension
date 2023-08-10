@@ -47,7 +47,7 @@ export class Cx implements CxPlatform {
 		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
-			const answer = await cx.chat(gptToken, path.join(filePackageObjectList[0].uri.fsPath, filePath), line, severity, queryName, message, null, gptEngine);
+			const answer = await cx.chat(gptToken, filePath, line, severity, queryName, message, null, gptEngine);
 			if (answer.payload && answer.exitCode === 0) {
 				return answer.payload;
 			} else {
@@ -63,7 +63,7 @@ export class Cx implements CxPlatform {
 		const workspacePath = vscode.workspace.workspaceFolders;
 		let masked;
 		if (workspacePath && workspacePath.length > 0) {
-			masked = await cx.maskSecrets(path.join(workspacePath[0].uri.fsPath, filePath));
+			masked = await cx.maskSecrets(filePath);
 		} else {
 			throw new Error("Please open " + filePath + " in the workspace");
 		}

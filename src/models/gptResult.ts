@@ -1,5 +1,7 @@
 import { KicsRealtime } from "./kicsRealtime";
 import { AstResult } from "./results";
+import * as vscode from "vscode";
+import path = require("path");
 
 export class GptResult {
 	filename = "";
@@ -8,14 +10,17 @@ export class GptResult {
 	vulnerabilityName = "";
 
 	constructor(astResult: AstResult, kicsResult: KicsRealtime) {
+
 		if (kicsResult !== undefined) {
-			this.filename = kicsResult.files[0].file_name.toString().replaceAll("../", "").replaceAll("path/", "");
+			this.filename = kicsResult.files[0].file_name.toString();
 			this.line = kicsResult.files[0].line;
 			this.severity = kicsResult.severity;
 			this.vulnerabilityName = kicsResult.query_name;
 		}
 		if (astResult !== undefined) {
-			this.filename = astResult.kicsNode?.data.filename;
+			const workspacePath = vscode.workspace.workspaceFolders;
+
+			this.filename = workspacePath ? path.join(workspacePath[0].uri.fsPath, astResult.kicsNode?.data.filename) : astResult.kicsNode?.data.filename;
 			this.line = astResult.kicsNode?.data.line;
 			this.severity = astResult.severity;
 			this.vulnerabilityName = astResult.label.replaceAll("_", " ");
