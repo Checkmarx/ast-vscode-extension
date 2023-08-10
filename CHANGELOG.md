@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.3.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.3.1-nightly.0) - 2023-08-10 15:49:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Bug/ai remediation by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/575
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.3.0...v2.3.1-nightly.0
+
 ## [v2.3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.3.0) - 2023-08-09 13:24:46
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.3.0 -->
