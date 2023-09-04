@@ -55,7 +55,7 @@ jobs:
 
       # CHECKOUT PROJECT
       - name: Checkout
-        uses: actions/checkout@v3.6.0
+        uses: actions/checkout@v4.0.0
 
       # GIT CONFIGURATION
       - run: |
