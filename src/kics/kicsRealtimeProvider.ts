@@ -50,6 +50,7 @@ export class KicsProvider {
         .get("Activate KICS Auto Scanning") as boolean;
 
       if (isKicksAutoscanEnabled) {
+        this.logs.info(messages.kicsSupportedFile);
         async () => await this.runKics();
       }
     } catch (err) {
