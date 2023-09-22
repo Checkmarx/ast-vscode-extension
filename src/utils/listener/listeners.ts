@@ -95,7 +95,6 @@ export function addRealTimeSaveListener(
     const isValidKicsFile = isKicsFile(e);
     const isSystemFiles = isSystemFile(e);
     if (isValidKicsFile && isSystemFiles) {
-      logs.info(messages.kicsSupportedFile);
       // Mandatory in order to have the document appearing as displayed for VSCode
       await vscode.window.showTextDocument(e, 1, false);
       updateState(context, constants.kicsRealtimeFile, {

@@ -66,7 +66,7 @@ export class KICSRealtimeCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.kicsRealtime,
-        async () => await this.kicsProvider.runKics()
+        async () => await this.kicsProvider.runKicsIfEnabled()
       )
     );
   }

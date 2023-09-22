@@ -43,6 +43,21 @@ export class KicsProvider {
     this.fixableResultsByLine = [];
   }
 
+  async runKicsIfEnabled() {
+    try {
+      const isKicksAutoscanEnabled = vscode.workspace
+        .getConfiguration("CheckmarxKICS")
+        .get("Activate KICS Auto Scanning") as boolean;
+
+      if (isKicksAutoscanEnabled) {
+        this.logs.info(messages.kicsSupportedFile);
+        async () => await this.runKics();
+      }
+    } catch (err) {
+      throw new Error(err.message);
+    }
+  }
+
   async runKics() {
     this.kicsStatusBarItem.text =
       messages.kicsAutoScanRunning;
