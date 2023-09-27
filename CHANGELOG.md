@@ -4,13 +4,6 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.4.0 -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Bug/ai remediation by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/575
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.3.0...v2.4.0
-
 ## [v2.3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.3.0) - 2023-08-09 13:24:46
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.3.0 -->
