@@ -13,9 +13,3 @@ updates:
       - "tiagobcx"
     registries:
       - npm-pkg-checkmarx
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    reviewers:
-      - "tiagobcx"
