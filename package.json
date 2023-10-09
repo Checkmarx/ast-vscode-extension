@@ -868,7 +868,7 @@
     "@types/mocha": "10.0.2",
     "@types/node": "^20.8.2",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.4",
     "chai": "4.3.10",
     "eslint-config-prettier": "^9.0.0",
