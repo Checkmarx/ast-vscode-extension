@@ -160,7 +160,8 @@ export async function gitExtensionListener(
 }
 
 export async function executeCheckSettingsChange(
-  kicsStatusBarItem: vscode.StatusBarItem
+  kicsStatusBarItem: vscode.StatusBarItem,
+  logs: Logs,
 ) {
   vscode.workspace.onDidChangeConfiguration(async () => {
     vscode.commands.executeCommand(
@@ -171,7 +172,7 @@ export async function executeCheckSettingsChange(
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      await cx.isScanEnabled(this.logs)
+      await cx.isScanEnabled(logs)
     );
     const onSave = vscode.workspace
       .getConfiguration(constants.cxKics)

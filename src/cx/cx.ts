@@ -17,7 +17,6 @@ import { CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import path = require("path");
 import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {

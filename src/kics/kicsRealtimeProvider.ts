@@ -51,7 +51,7 @@ export class KicsProvider {
 
       if (isKicksAutoscanEnabled) {
         this.logs.info(messages.kicsSupportedFile);
-        async () => await this.runKics();
+        await this.runKics();
       }
     } catch (err) {
       throw new Error(err.message);
