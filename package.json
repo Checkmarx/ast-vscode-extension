@@ -864,7 +864,7 @@
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
   },
   "devDependencies": {
-    "@types/chai": "4.3.6",
+    "@types/chai": "4.3.7",
     "@types/mocha": "10.0.2",
     "@types/node": "^20.8.3",
     "@types/vscode": "^1.50.0",
