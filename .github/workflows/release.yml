@@ -126,13 +126,6 @@ jobs:
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
       
-      # GENERATE AND WRITE CHANGELOG TO FILE
-      - name: Generate release changelog
-        uses: BobAnkh/auto-generate-changelog@v1.2.5
-        with:
-          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PATH: 'CHANGELOG.md'
-
       # PUSH TAGS IF IT IS A RELEASE
       - name: Push tag if release
         if: inputs.dev == false
@@ -159,3 +152,10 @@ jobs:
           else
             vsce publish -p ${{ env.MARKET_TOKEN }}
           fi
+
+      # GENERATE AND WRITE CHANGELOG TO FILE
+      - name: Generate release changelog
+        uses: BobAnkh/auto-generate-changelog@v1.2.5
+        with:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PATH: 'CHANGELOG.md'
