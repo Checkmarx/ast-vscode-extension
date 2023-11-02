@@ -148,7 +148,7 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): CxRes
 }
 
 export function orderResults(list: CxResult[]): CxResult[] {
-  const order = ["HIGH", "MEDIUM", "LOW", "INFO"];
+  const order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"];
   return list.sort(
     (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
   );

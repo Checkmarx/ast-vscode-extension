@@ -12,6 +12,10 @@ export const commands = {
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
 
+  filterCriticalToggle: `${constants.extensionName}.filterCritical_toggle`,
+  filterCriticalUntoggle: `${constants.extensionName}.filterCritical_untoggle`,
+  filterCritical: `${constants.extensionName}.filterCritical`,
+
   filterHighToggle: `${constants.extensionName}.filterHigh_toggle`,
   filterHighUntoggle: `${constants.extensionName}.filterHigh_untoggle`,
   filterHigh: `${constants.extensionName}.filterHigh`,

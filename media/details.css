@@ -74,6 +74,20 @@
   width: 100%;
 }
 
+.select-critical {
+  margin: 0.4em;
+  border-color: transparent;
+  border-radius: 4px;
+  padding: 0.2em 0.5em 0.2em 1.5em;
+  background-color: var(--vscode-input-background);
+  background-image: url("./icons/critical_untoggle.svg");
+  background-repeat: no-repeat;
+  background-size: 0.8em auto;
+  background-position: 0.4em center;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+}
+
 .select-high {
   margin: 0.4em;
   border-color: transparent;
@@ -87,6 +101,7 @@
   color: var(--vscode-foreground);
   cursor: pointer;
 }
+
 .select-medium {
   margin: 0.4em;
   border-color: transparent;

@@ -65,7 +65,7 @@ export async function triageSubmit(
   }
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
-    logs.log("INFO", messages.triageUpdateSeverity(data.severitySelection));
+    logs.info(messages.triageUpdateSeverity(data.severitySelection));
     // Update severity of the result
     result.setSeverity(data.severitySelection);
     // Update webview title
@@ -77,7 +77,7 @@ export async function triageSubmit(
 
   // Case there is feedback on the state
   if (data.stateSelection.length > 0) {
-    logs.log("INFO", messages.triageUpdateState(data.stateSelection));
+    logs.info(messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
     result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
   }
