@@ -137,7 +137,10 @@ export const constants = {
   gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
-  documentation: "Documentation"
+  documentation: "Documentation",
+
+  // TRIAGE
+  triageUpdate: "ast-result-triage"
 };
 
 export enum GroupBy {

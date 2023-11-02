@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { AstResult } from "../models/results";
 import { getResultsFilePath } from "./utils";
 import { cx } from "../cx";
-import { getFromState } from "./common/globalState";
+import { getFromState, updateState } from "./common/globalState";
 import { constants } from "./common/constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
@@ -29,7 +29,9 @@ export async function updateResults(
     resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
       // Update the result in the array
       if (element.data.resultHash === resultHash || element.id === resultHash) {
-        resultsProvider.loadedResults[index] = result;
+        resultsProvider.loadedResults[index].severity = result.severity;
+        resultsProvider.loadedResults[index].state = result.state;
+        resultsProvider.loadedResults[index].status = result.status;
         return;
       }
     });
@@ -100,7 +102,8 @@ export async function triageSubmit(
   // Change the results locally
   try {
     await updateResults(result, context, data.comment, resultsProvider);
-    vscode.commands.executeCommand(commands.refreshTree);
+    updateState(context, constants.triageUpdate, { id: true, name: constants.triageUpdate });
+    await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
       await getChanges(logs, context, result, detailsPanel);
     }
