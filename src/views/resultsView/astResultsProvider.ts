@@ -92,7 +92,7 @@ export class AstResultsProvider extends ResultsProvider {
     }
     // Case we come from triage we must update the state to load results from the correct place
     else {
-      updateState(this.context, "ast-result-triage", { id: false, name: "ast-result-triage" });
+      updateState(this.context, constants.triageUpdate, { id: false, name: constants.triageUpdate });
     }
 
     // if there are results loaded, the tree needs to be recreated

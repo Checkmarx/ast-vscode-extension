@@ -24,31 +24,27 @@ export async function updateResults(
     throw new Error(messages.fileNotFound);
   }
 
-  try {
-    const resultHash = result.getResultHash();
-    resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
-      // Update the result in the array
-      if (element.data.resultHash === resultHash || element.id === resultHash) {
-        resultsProvider.loadedResults[index].severity = result.severity;
-        resultsProvider.loadedResults[index].state = result.state;
-        resultsProvider.loadedResults[index].status = result.status;
-        return;
-      }
-    });
-
-    // Update
-    const projectId = getFromState(context, constants.projectIdKey).id;
-    await cx.triageUpdate(
-      projectId,
-      result.similarityId,
-      result.type,
-      result.state,
-      comment,
-      result.severity
-    );
-  } catch (error) {
-    throw new Error(error);
-  }
+  // Update on cxOne
+  const projectId = getFromState(context, constants.projectIdKey).id;
+  await cx.triageUpdate(
+    projectId,
+    result.similarityId,
+    result.type,
+    result.state,
+    comment,
+    result.severity
+  );
+  // Update local results
+  const resultHash = result.getResultHash();
+  resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
+    // Update the result in the array
+    if (element.data.resultHash === resultHash || element.id === resultHash) {
+      resultsProvider.loadedResults[index].severity = result.severity;
+      resultsProvider.loadedResults[index].state = result.state;
+      resultsProvider.loadedResults[index].status = result.status;
+      return;
+    }
+  });
 }
 
 export async function triageSubmit(
@@ -93,12 +89,6 @@ export async function triageSubmit(
     vscode.window.showErrorMessage(messages.triageNoChange);
     return;
   }
-
-  detailsDetachedView?.setResult(result);
-  detailsDetachedView.setLoad(false);
-  // Update webview html
-  detailsPanel.webview.html =
-    await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
   // Change the results locally
   try {
     await updateResults(result, context, data.comment, resultsProvider);
@@ -115,7 +105,13 @@ export async function triageSubmit(
     );
   } catch (error) {
     vscode.window.showErrorMessage(messages.triageError(error));
+    return;
   }
+  detailsDetachedView?.setResult(result);
+  detailsDetachedView.setLoad(false);
+  // Update webview html
+  detailsPanel.webview.html =
+    await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
 }
 
 export async function getChanges(
