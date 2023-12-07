@@ -871,7 +871,7 @@
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.2",
     "chai": "4.3.10",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.55.0",
     "mocha": "10.2.0",
     "typescript": "^5.3.3",
@@ -884,7 +884,7 @@
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.81",
     "copyfiles": "2.4.1",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.0",
     "tree-kill": "^1.2.2"
