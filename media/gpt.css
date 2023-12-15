@@ -1,4 +1,4 @@
-body {
+.inner-body{
 	padding: 0 !important; /* force chat to be full webview width */
 	color: var(--vscode-foreground) !important;
 	font-size: var(--vscode-font-size);
@@ -6,7 +6,6 @@ body {
 	font-family: var(--vscode-font-family);
 	background-color: var(--vscode-editor-background) !important;
 }
-
 .codeblockHeader {
     display: flex;
     flex-direction: row;

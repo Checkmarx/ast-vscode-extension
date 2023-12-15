@@ -18,6 +18,7 @@ import { GptResult } from "../models/gptResult";
 import { cx } from "../cx";
 
 export class WebViewCommand {
+  private thinkID: number;
   context: vscode.ExtensionContext;
   logs: Logs;
   detailsPanel: vscode.WebviewPanel | undefined;
@@ -29,6 +30,7 @@ export class WebViewCommand {
     this.detailsPanel = undefined;
     this.logs = logs;
     this.resultsProvider = resultsProvider;
+    this.thinkID = 0;
   }
 
   public registerNewDetails() {
@@ -114,7 +116,6 @@ export class WebViewCommand {
           this.logs.info(error);
         }
 
-
         const gptDetachedView = new GptView(
           this.context.extensionUri,
           result,
@@ -194,6 +195,11 @@ export class WebViewCommand {
   }
 
   private async handleMessages(result: AstResult, detailsDetachedView: AstDetailsDetached) {
+    // Get the user information
+    const userInfo = os.userInfo();
+    // Access the username
+    const username = userInfo.username;
+    const gptResult = new GptResult(result, undefined);
     this.detailsPanel.webview.onDidReceiveMessage(async (data) => {
       switch (data.command) {
         // Catch open file message to open and view the result entry
@@ -254,6 +260,31 @@ export class WebViewCommand {
             new GptResult(result, undefined),
             constants.realtime
           );
+          break;
+        case "explainFile":
+          this.logs.info("AI Guided Remediation : Can you explain this IaC file?");
+          await this.runGpt("Can you explain this IaC file?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          break;
+        case "explainResults":
+          this.logs.info("AI Guided Remediation : Can you explain these results?");
+          await this.runGpt("Can you explain these results?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          break;
+        case "explainRemediations":
+          this.logs.info("AI Guided Remediation : Can you offer a remediation suggestion?");
+          await this.runGpt("Can you offer a remediation suggestion?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          break;
+        case "userQuestion":
+          this.logs.info("AI Guided Remediation : " + data.question);
+          this.detailsPanel.webview?.postMessage({
+            command: "clearQuestion",
+          });
+          await this.runGpt(data.question, username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          break;
+        case "openSettings":
+          vscode.commands.executeCommand(
+            messages.openSettings,
+            constants.gptSettings
+          );
       }
     });
   }
@@ -293,5 +324,52 @@ export class WebViewCommand {
           );
       }
     });
+  }
+
+  async runGpt(userMessage: string, user: string, userKicsIcon, kicsIcon, result) {
+    // Update webview to show the user message
+    this.detailsPanel.webview.postMessage({
+      command: "userMessage",
+      message: { message: userMessage, user: user },
+      icon: userKicsIcon
+    });
+    // disable all the buttons and inputs
+    this.detailsPanel.webview.postMessage({
+      command: "disable",
+    });
+    await this.sleep(1000);
+    // Update webview to show gpt thinking
+    this.detailsPanel.webview.postMessage({
+      command: "thinking",
+      thinkID: this.thinkID,
+      icon: kicsIcon
+    });
+    // Get response from gpt and show the response in the webview
+
+    cx.runGpt(userMessage, result.filename, result.line, result.severity, result.vulnerabilityName).then(messages => {
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "enable",
+      });
+      // send response message
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: kicsIcon
+      });
+      this.thinkID += 1;
+    }).catch((e: Error) => {
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: e.message, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: kicsIcon
+      });
+    });
+  }
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

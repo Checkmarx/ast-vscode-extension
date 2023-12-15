@@ -27,7 +27,7 @@
 		defaultOption.disabled = true;
 		defaultOption.selected = true;
 		scans.appendChild(defaultOption);
-		scans.disabled=true;
+		scans.disabled = true;
 		scanID.value = '';
 		vscode.postMessage({
 			command: 'projectSelected',
@@ -47,7 +47,7 @@
 		});
 	});
 
-	function loadOption(text,value,disabled,selected){
+	function loadOption(text, value, disabled, selected) {
 		const option = document.createElement("option");
 		option.text = text;
 		option.value = value;
@@ -56,7 +56,7 @@
 		return option;
 	}
 
-	function disableSelection(disable){
+	function disableSelection(disable) {
 		const projectID = document.getElementById("projectID");
 		const scans = document.getElementById("scans");
 		const scanID = document.getElementById("scanID");

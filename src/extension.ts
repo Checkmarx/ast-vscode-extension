@@ -114,8 +114,8 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     // Webview detailsPanel to show result details on the side
     const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
-    webViewCommand.registerNewDetails();
     webViewCommand.registerGpt();
+    webViewCommand.registerNewDetails();
     // Branch change Listener
     await gitExtensionListener(context, logs);
     // SCA Auto Scanning view

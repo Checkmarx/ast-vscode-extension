@@ -10,6 +10,8 @@ import { Logs } from "../../models/logs";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
+  private askKicsIcon;
+  private kicsUserIcon;
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private result: AstResult,
@@ -35,6 +37,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     return this.loadChanges;
   }
 
+  public getAskKicsIcon() {
+    return this.askKicsIcon;
+  }
+
+  public getAskKicsUserIcon() {
+    return this.kicsUserIcon;
+  }
   public async resolveWebviewView(
     webviewView: vscode.WebviewView,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -120,6 +129,25 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "view.js")
     );
+    const scriptGptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
+    );
+    const scriptJquery = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.0.min.js")
+    );
+    const scriptBootStrap = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.js")
+    );
+    const scriptHighlight = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "highlight.min.js")
+    );
+    const scriptMarked = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "marked.min.js")
+    );
+    const scriptShowdown = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "showdown.min.js")
+    );
+
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
     );
@@ -135,6 +163,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const scaDetails = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "sca.css")
     );
+    const styleGptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "gpt.css")
+    );
+    const styleBootStrap = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.css")
+    );
+
     const severityPath = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getIcon())
     );
@@ -171,6 +206,15 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const gptPath = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getGptIcon())
     );
+    const kicsIcon = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "kics.png"))
+    );
+    const kicsUserIcon = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "userKics.png"))
+    );
+
+    this.askKicsIcon = kicsIcon;
+    this.kicsUserIcon = kicsUserIcon;
 
     const nonce = getNonce();
     const selectClassname = "select-" + this.result.severity.toLowerCase();
@@ -188,6 +232,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           <link href="${styleMainUri}" rel="stylesheet">
           <link href="${styleDetails}" rel="stylesheet">
           <link href="${scaDetails}" rel="stylesheet">
+          ${this.result.type !== "sca" ? `<link href="${styleBootStrap}" rel="stylesheet">` : ""}
+          ${this.result.type !== "sca" ? `<link href="${styleGptUri}" rel="stylesheet">` : ""}
+          <script nonce="${nonce}" src="${scriptJquery}"></script>
+          <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+          <script nonce="${nonce}" src="${scriptHighlight}"></script>
+          <script nonce="${nonce}" src="${scriptShowdown}"></script>
+          <script nonce="${nonce}" src="${scriptMarked}"></script>
           <title>
             Checkmarx
           </title>
@@ -204,7 +255,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           messages.learnMoreTab,
           messages.changesTab,
           messages.remediationExamplesTab,
-          messages.noRemediationExamplesTab
+          messages.noRemediationExamplesTab,
+          "",
+          ""
         )
         : this.result.type === "sca"
           ? html.scaView(
@@ -227,12 +280,14 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             "",
             messages.changesTab,
             "",
-            ""
+            "",
+            "AI Guided Remediation",
+            html.guidedRemediationTab(kicsIcon)
           )
       }
         </div>
-        <script nonce="${nonce}" src="${scriptUri}">
-        </script>	
+        <script nonce="${nonce}" src="${scriptUri}"></script>	
+        <script nonce="${nonce}" src="${scriptGptUri}"></script>	
 			</html>`;
   }
 }

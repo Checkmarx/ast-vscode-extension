@@ -87,6 +87,9 @@ export class GptView implements vscode.WebviewViewProvider {
 		const scaDetails = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "sca.css")
 		);
+		const styleMainGptUri = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "gpt-main.css")
+		);
 		const styleBootStrap = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.css")
 		);
@@ -127,6 +130,7 @@ export class GptView implements vscode.WebviewViewProvider {
           <link href="${scaDetails}" rel="stylesheet">
 		  <link href="${styleBootStrap}" rel="stylesheet">
 		  <link href="${styleGptUri}" rel="stylesheet">
+		  <link href="${styleMainGptUri}" rel="stylesheet">
 		  <script nonce="${nonce}" src="${scriptJquery}"></script>
 		  <script nonce="${nonce}" src="${scriptBootStrap}"></script>
 		  <script nonce="${nonce}" src="${scriptHighlight}"></script>
