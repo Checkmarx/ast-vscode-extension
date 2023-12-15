@@ -7,6 +7,8 @@ import { getNonce } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { cx } from "../../cx";
 import { Logs } from "../../models/logs";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import { GptResult } from "../../models/gptResult";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -203,9 +205,6 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const scaUrl = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
     );
-    const gptPath = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getGptIcon())
-    );
     const kicsIcon = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "kics.png"))
     );
@@ -221,7 +220,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     // Verify if guided remediation is enabled for tenant
     const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
     const html = new Details(this.result, this.context, isAIEnabled);
-
+    let masked: CxMask;
+    if (this.result.type !== "sca" && this.result.type !== "sast") {
+      try {
+        const gptResult = new GptResult(this.result, undefined);
+        masked = await cx.mask(gptResult.filename);
+        this.logs.info("Masked Secrets by AI Guided Remediation: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
+      } catch (error) {
+        this.logs.info(error);
+      }
+    }
     return `<!DOCTYPE html>
 			<html lang="en">
         <head>
@@ -244,7 +252,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           </title>
         </head>
         <div id="main_div">
-          ${this.result.type !== "sca" ? html.header(severityPath, gptPath) : ""}
+          ${this.result.type !== "sca" ? html.header(severityPath) : ""}
           ${this.result.type !== "sca" ? html.triage(selectClassname) : ""}
           ${this.result.type === "sast"
         ? html.tab(
@@ -282,7 +290,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             "",
             "",
             "AI Guided Remediation",
-            html.guidedRemediationTab(kicsIcon)
+            html.guidedRemediationTab(kicsIcon, masked)
           )
       }
         </div>

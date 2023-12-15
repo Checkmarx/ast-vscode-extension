@@ -63,10 +63,12 @@ export class Cx implements CxPlatform {
 		let masked;
 		if (workspacePath && workspacePath.length > 0) {
 			masked = await cx.maskSecrets(filePath);
+			if (masked.exitCode !== 0) {
+				throw new Error(masked.status);
+			}
 		} else {
 			throw new Error("Please open " + filePath + " in the workspace");
 		}
-
 		return masked.payload[0];
 	}
 

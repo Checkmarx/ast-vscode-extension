@@ -16,7 +16,7 @@ export class Details {
 		this.iAIEnabled = iAIEnabled;
 	}
 
-	header(severityPath: vscode.Uri, gptPath?: vscode.Uri) {
+	header(severityPath: vscode.Uri) {
 		return `
 			<div class="header-container">
 				<div class="header-item-title">
@@ -253,7 +253,8 @@ export class Details {
 			`;
 	}
 
-	guidedRemediationTab(kicsIcon) {
+	guidedRemediationTab(kicsIcon, masked: CxMask) {
+		this.masked = masked;
 		const userInfo = os.userInfo();
 		// Access the username
 		const username = userInfo.username;
