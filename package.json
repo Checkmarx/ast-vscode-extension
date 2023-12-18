@@ -872,7 +872,7 @@
     "@typescript-eslint/parser": "^6.15.0",
     "chai": "4.3.10",
     "eslint-config-prettier": "^9.1.0",
-    "eslint": "^8.55.0",
+    "eslint": "^8.56.0",
     "mocha": "10.2.0",
     "typescript": "^5.3.3",
     "vsce": "^2.15.0",
