@@ -253,7 +253,7 @@ export class Details {
 			`;
 	}
 
-	guidedRemediationTab(kicsIcon, masked: CxMask) {
+	guidedRemediationTab(kicsIcon, masked: CxMask) { // TODO: try to make it generic to be used by the tab and the webview
 		this.masked = masked;
 		const userInfo = os.userInfo();
 		// Access the username

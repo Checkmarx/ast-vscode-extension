@@ -326,7 +326,7 @@ export class WebViewCommand {
     });
   }
 
-  async runGpt(userMessage: string, user: string, userKicsIcon, kicsIcon, result) {
+  async runGpt(userMessage: string, user: string, userKicsIcon, kicsIcon, result) { // TO DO: needs to be moved to gpt or make it generic
     // Update webview to show the user message
     this.detailsPanel.webview.postMessage({
       command: "userMessage",
