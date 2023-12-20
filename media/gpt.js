@@ -1,6 +1,5 @@
 // This script will be run within the webview itself
 // It cannot access the main VS Code APIs directly.
-const vscode = acquireVsCodeApi();
 (function () {
 	const copySvg = '<svg style="width:12px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"> <g clip-path="url(#clip0_179_1272)"> <path d="M2.87961 1.60003C2.17268 1.60003 1.59961 2.1731 1.59961 2.88003V9.28003C1.59961 9.63349 1.88615 9.92002 2.23961 9.92002C2.59307 9.92002 2.87961 9.63349 2.87961 9.28003V2.88003L9.27961 2.88003C9.63307 2.88003 9.91961 2.59349 9.91961 2.24003C9.91961 1.88656 9.63307 1.60003 9.27961 1.60003H2.87961Z" fill="#3794FF"/> <path fill-rule="evenodd" clip-rule="evenodd" d="M4.15961 5.44003C4.15961 4.7331 4.73268 4.16003 5.43961 4.16003H13.1196C13.8265 4.16003 14.3996 4.7331 14.3996 5.44003V13.12C14.3996 13.8269 13.8265 14.4 13.1196 14.4H5.43961C4.73268 14.4 4.15961 13.8269 4.15961 13.12V5.44003ZM5.43961 5.44003H13.1196V13.12H5.43961V5.44003Z" fill="#3794FF"/> </g> <defs> <clipPath id="clip0_179_1272"> <rect width="12.8" height="12.8" fill="white" transform="translate(1.59961 1.6)"/> </clipPath> </defs> </svg>';
 	var question = "";

@@ -294,6 +294,9 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           )
       }
         </div>
+        <script>
+          const vscode = acquireVsCodeApi();
+        </script>
         <script nonce="${nonce}" src="${scriptUri}"></script>	
         <script nonce="${nonce}" src="${scriptGptUri}"></script>	
 			</html>`;
