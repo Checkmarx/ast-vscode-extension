@@ -25,12 +25,15 @@ export class WebViewCommand {
   gptPanel: vscode.WebviewPanel | undefined;
   resultsProvider: AstResultsProvider;
   gpt: Gpt;
+  conversationId: string;
+
   constructor(context: vscode.ExtensionContext, logs: Logs, resultsProvider: AstResultsProvider) {
     this.context = context;
     this.detailsPanel = undefined;
     this.logs = logs;
     this.resultsProvider = resultsProvider;
     this.thinkID = 0;
+    this.conversationId = "";
   }
 
   public registerNewDetails() {
@@ -278,7 +281,17 @@ export class WebViewCommand {
           this.detailsPanel.webview?.postMessage({
             command: "clearQuestion",
           });
-          await this.runGpt(data.question, username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          if (gptResult.resultID !== "") {
+            await this.runGptSast(data.question, username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          }
+          else {
+            await this.runGpt(data.question, username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
+          }
+
+          break;
+        case "startSastChat":
+          this.logs.info("AI Guided Remediation : Start Chat");
+          await this.startSastGpt("Start chat", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
           break;
         case "openSettings":
           vscode.commands.executeCommand(
@@ -347,6 +360,7 @@ export class WebViewCommand {
     // Get response from gpt and show the response in the webview
 
     cx.runGpt(userMessage, result.filename, result.line, result.severity, result.vulnerabilityName).then(messages => {
+      this.conversationId = messages[0].conversationId;
       // enable all the buttons and inputs
       this.detailsPanel?.webview.postMessage({
         command: "enable",
@@ -369,7 +383,101 @@ export class WebViewCommand {
       });
     });
   }
+
+  async runGptSast(userMessage: string, user: string, userKicsIcon, kicsIcon, result: GptResult) {
+    // Update webview to show the user message
+    this.detailsPanel.webview.postMessage({
+      command: "userMessage",
+      message: { message: userMessage, user: user },
+      icon: userKicsIcon
+    });
+    // disable all the buttons and inputs
+    this.detailsPanel.webview.postMessage({
+      command: "disableSast",
+    });
+    await this.sleep(1000);
+    // Update webview to show gpt thinking
+    this.detailsPanel.webview.postMessage({
+      command: "thinking",
+      thinkID: this.thinkID,
+      icon: "https://" + kicsIcon.authority + kicsIcon.path
+    });
+    // Get response from gpt and show the response in the webview
+    cx.runSastGpt(userMessage, result.filename, result.resultID, this.conversationId).then(messages => {
+      this.conversationId = messages[0].conversationId;
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "enableSast",
+      });
+      // send response message
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: "https://" + kicsIcon.authority + kicsIcon.path
+      });
+      this.thinkID += 1;
+    }).catch((e: Error) => {
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: e.message, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: "https://" + kicsIcon.authority + kicsIcon.path
+      });
+    });
+  }
+
+  async startSastGpt(userMessage: string, user: string, userKicsIcon, kicsIcon, result: GptResult) { // TO DO: needs to be moved to gpt or make it generic
+    // Update webview to show the input box, and gpt thinking 
+    this.detailsPanel.webview.postMessage({
+      command: "showGptPanel",
+      kicsIcon: "https://" + kicsIcon.authority + kicsIcon.path,
+      username: user
+    });
+
+    // disable all the buttons and inputs
+    this.detailsPanel.webview.postMessage({
+      command: "disableSast",
+    });
+
+    // Update webview to show gpt thinking
+    this.detailsPanel.webview.postMessage({
+      command: "thinking",
+      thinkID: this.thinkID,
+      icon: "https://" + kicsIcon.authority + kicsIcon.path
+    });
+
+
+    // Get response from gpt and show the response in the webview
+
+    cx.runSastGpt(userMessage, result.filename, result.resultID, "").then(messages => {
+      this.conversationId = messages[0].conversationId;
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "enableSast",
+      });
+      // send response message
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: "https://" + kicsIcon.authority + kicsIcon.path
+      });
+      this.thinkID += 1;
+    }).catch((e: Error) => {
+      // enable all the buttons and inputs
+      this.detailsPanel?.webview.postMessage({
+        command: "response",
+        message: { message: e.message, user: "AI Guided Remediation" },
+        thinkID: this.thinkID,
+        icon: kicsIcon
+      });
+    });
+  }
+
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
 }

@@ -212,6 +212,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "userKics.png"))
     );
 
+    const cxIcon = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icon.png"))
+    );
+
     this.askKicsIcon = kicsIcon;
     this.kicsUserIcon = kicsUserIcon;
 
@@ -221,7 +225,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
     const html = new Details(this.result, this.context, isAIEnabled);
     let masked: CxMask;
-    if (this.result.type !== "sca" && this.result.type !== "sast") {
+    if (this.result.type !== "sca") {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);
@@ -253,19 +257,18 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </head>
         <div id="main_div">
           ${this.result.type !== "sca" ? html.header(severityPath) : ""}
-          ${this.result.type !== "sca" ? html.triage(selectClassname) : ""}
           ${this.result.type === "sast"
         ? html.tab(
           html.generalTab(cxPath),
           html.detailsTab(),
-          html.loader(),
+          html.changes(selectClassname),
           messages.generalTab,
           messages.learnMoreTab,
           messages.changesTab,
           messages.remediationExamplesTab,
           messages.noRemediationExamplesTab,
-          "",
-          ""
+          isAIEnabled ? "AI Guided Remediation" : "",
+          isAIEnabled ? html.guidedRemediationSastTab(cxIcon, masked) : ""
         )
         : this.result.type === "sca"
           ? html.scaView(
@@ -283,14 +286,14 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           : html.tab(
             html.generalTab(cxPath),
             "",
-            html.loader(),
+            html.changes(selectClassname),
             messages.generalTab,
             "",
             messages.changesTab,
             "",
             "",
-            "AI Guided Remediation",
-            html.guidedRemediationTab(kicsIcon, masked)
+            isAIEnabled ? "AI Guided Remediation" : "",
+            isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
           )
       }
         </div>

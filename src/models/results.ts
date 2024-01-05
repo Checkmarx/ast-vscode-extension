@@ -68,6 +68,7 @@ export class AstResult extends CxResult {
       result.comments,
       result.vulnerabilityDetails,
       result.descriptionHTML);
+    this.id = result.id;
     this.type = result.scaType ? "sca" : result.type;
     this.typeLabel = result.label;
     this.scaType = result.scaType;

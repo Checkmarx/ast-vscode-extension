@@ -234,11 +234,10 @@ input ~ .tab {
 }
 
 .comment-container{
-  padding: 0.2em;
+  margin: 0.4em;
 }
 
 .comments{
-  margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 0.2em;

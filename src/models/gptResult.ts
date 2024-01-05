@@ -8,7 +8,7 @@ export class GptResult {
 	line = 0;
 	severity = "";
 	vulnerabilityName = "";
-
+	resultID = "";
 	constructor(astResult: AstResult, kicsResult: KicsRealtime) {
 
 		if (kicsResult !== undefined) {
@@ -19,8 +19,13 @@ export class GptResult {
 		}
 		if (astResult !== undefined) {
 			const workspacePath = vscode.workspace.workspaceFolders;
-
-			this.filename = workspacePath ? path.join(workspacePath[0].uri.fsPath, astResult.kicsNode?.data.filename) : astResult.kicsNode?.data.filename;
+			if (astResult.type === "sast") {
+				this.filename = workspacePath ? workspacePath[0].uri.fsPath : astResult.fileName;
+				this.resultID = astResult.id;
+			}
+			else {
+				this.filename = workspacePath ? path.join(workspacePath[0].uri.fsPath, astResult.kicsNode?.data.filename) : astResult.kicsNode?.data.filename;
+			}
 			this.line = astResult.kicsNode?.data.line;
 			this.severity = astResult.severity;
 			this.vulnerabilityName = astResult.label.replaceAll("_", " ");

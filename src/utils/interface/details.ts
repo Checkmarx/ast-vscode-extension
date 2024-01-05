@@ -41,8 +41,8 @@ export class Details {
 			`;
 	}
 
-	loader(): string {
-		return `
+	changes(selectClassname): string {
+		return this.triage(selectClassname) + `
 			<div id="history-container-loader">
 				<center>
 					<p class="history-container-loader">
@@ -64,7 +64,7 @@ export class Details {
 		const comment =
 			this.result.type !== constants.sca
 				? `<div class="comment-container">
-				<textarea placeholder="Comment (optional)" cols="42" rows="3" class="comments" type="text" id="comment_box"></textarea>
+				<textarea placeholder="Comment (optional)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
 			</div>`
 				: ``;
 
@@ -85,9 +85,9 @@ export class Details {
 										</option>`;
 		})}
 				</select>
-				${updateButton}
 			</div>
 			${comment}
+			${updateButton}
 			</br>`;
 	}
 
@@ -252,6 +252,27 @@ export class Details {
 			}
 			`;
 	}
+	guidedRemediationSastTab(kicsIcon, masked: CxMask) {
+		this.masked = masked;
+		return `
+		<div class="inner-body-sast" id="innerBodySast" style=" height: 80vh;display: flex;justify-content: center;align-items: center;">
+		<button id="startSastChat" class="start-sast-chat">
+			<div class="row">
+				<div class="col">
+					<img class="sast-gpt-logo" src="${kicsIcon}" alt="gptLogo"/>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="start-chat-text">
+						Start Remediation
+					</h2>
+				</div>
+			</div>
+		</button>
+		</div>
+		`;
+	}
 
 	guidedRemediationTab(kicsIcon, masked: CxMask) { // TODO: try to make it generic to be used by the tab and the webview
 		this.masked = masked;
@@ -409,6 +430,7 @@ export class Details {
 </div>
 		`;
 	}
+
 	generateMaskedSection(): string {
 		let html = "";
 		if (this.masked && this.masked.maskedSecrets && this.masked.maskedSecrets.length > 0) {

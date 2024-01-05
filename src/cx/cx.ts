@@ -8,7 +8,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import {
 	constants
 } from "../utils/common/constants";
-import { getFilePath } from "../utils/utils";
+import { getFilePath, getResultsFilePath } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
@@ -31,6 +31,31 @@ export class Cx implements CxPlatform {
 			throw new Error(scan.status);
 		}
 		return jsonResults;
+	}
+
+	async runSastGpt(message: string, filePath: string, resultId: string, conversationId?: string) {
+		const resultsFilePath = getResultsFilePath();
+		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const gptToken = vscode.workspace
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptSettingsKey) as string;
+		const gptEngine = vscode.workspace
+			.getConfiguration(constants.gptCommandName)
+			.get(constants.gptEngineKey) as string;
+		if (!gptToken) {
+			throw new Error(messages.gptMissinApiKey);
+		}
+		const filePackageObjectList = vscode.workspace.workspaceFolders;
+		if (filePackageObjectList.length > 0) {
+			const answer = await cx.sastChat(gptToken, filePath, resultsFilePath, resultId, message, conversationId ? conversationId : "", gptEngine);
+			if (answer.payload && answer.exitCode === 0) {
+				return answer.payload;
+			} else {
+				throw new Error(answer.status);
+			}
+
+		}
+
 	}
 
 	async runGpt(message: string, filePath: string, line: number, severity: string, queryName: string) {

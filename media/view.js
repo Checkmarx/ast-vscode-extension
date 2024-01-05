@@ -245,13 +245,13 @@
 		const message = event.data;
 		switch (message.command) {
 			case 'loadChanges':
-				console.log("messaage 1");
 				let changes = message.changes;
 				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
 					loaderContainer.style.display = 'none';
 					loaderContainer.innerHTML = infoChangeContainer(changes);
 					loaderContainer.style.display = 'block';
+					loaderContainer.style.padding = '0.4em';
 				}
 				break;
 			case 'loader':
