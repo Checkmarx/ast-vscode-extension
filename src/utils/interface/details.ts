@@ -255,7 +255,7 @@ export class Details {
 	guidedRemediationSastTab(kicsIcon, masked: CxMask) {
 		this.masked = masked;
 		return `
-		<div class="inner-body-sast" id="innerBodySast" style=" height: 80vh;display: flex;justify-content: center;align-items: center;">
+		<div class="inner-body-sast" id="innerBodySast" style="min-height: 80vh;display: flex;justify-content: center;align-items: center;">
 		<button id="startSastChat" class="start-sast-chat">
 			<div class="row">
 				<div class="col">

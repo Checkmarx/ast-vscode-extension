@@ -225,7 +225,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
     const html = new Details(this.result, this.context, isAIEnabled);
     let masked: CxMask;
-    if (this.result.type !== "sca") {
+    if (this.result.type !== "sca" && this.result.type !== "sast") {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);

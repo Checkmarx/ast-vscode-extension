@@ -21,37 +21,7 @@
 	});
 
 
-	document.querySelectorAll("[id^='askQuestion']").forEach(element => {
-		element.addEventListener('change', (e) => {
-			// @ts-ignore
-			question = e.target.value;
-		});
-		element.addEventListener('keypress', (e) => {
-			var userQuestionDis = document.getElementById(`userQuestion`);
-			// case the user presses enter then we send the message but only if it is not waiting for a response from gpt
-			if (e.key === 'Enter' && !e.altKey && userQuestionDis.style.cursor !== 'not-allowed' && e.target.value.length > 0) {
-				vscode.postMessage({
-					command: 'userQuestion',
-					question: e.target.value
-				});
-			}
-			// case the user presses alt enter then we add a new line 
-			if (e.key === 'Enter' && e.altKey && e.target.value.length > 0) {
-				e.target.value += "\n";
-			}
-		});
-	});
-
-	document.querySelectorAll("[id^='userQuestion']").forEach(element => {
-		element.addEventListener('click', () => {
-			if (question.length > 0) {
-				vscode.postMessage({
-					command: 'userQuestion',
-					question: question
-				});
-			}
-		});
-	});
+	askQuestionListener();
 
 	// Handle the click on the explainFile card
 	document.querySelectorAll("[id^='explainFile']").forEach(element => {
@@ -217,7 +187,7 @@
 				var innerBodySast = document.getElementById(`innerBodySast`);
 				innerBodySast.style.display = 'block';
 				innerBodySast.innerHTML = `
-			<div id="chat-container">
+			<div id="chat-container" style="min-height:80vh">
 			</div>
 			<div>
 				<div style="margin-bottom:10px">
@@ -249,37 +219,8 @@
 						d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z" />
 				</svg>
 			</button>`;
-				document.querySelectorAll("[id^='askQuestion']").forEach(element => {
-					element.addEventListener('change', (e) => {
-						// @ts-ignore
-						question = e.target.value;
-					});
-					element.addEventListener('keypress', (e) => {
-						var userQuestionDis = document.getElementById(`userQuestion`);
-						// case the user presses enter then we send the message but only if it is not waiting for a response from gpt
-						if (e.key === 'Enter' && !e.altKey && userQuestionDis.style.cursor !== 'not-allowed' && e.target.value.length > 0) {
-							vscode.postMessage({
-								command: 'userQuestion',
-								question: e.target.value
-							});
-						}
-						// case the user presses alt enter then we add a new line 
-						if (e.key === 'Enter' && e.altKey && e.target.value.length > 0) {
-							e.target.value += "\n";
-						}
-					});
-				});
-
-				document.querySelectorAll("[id^='userQuestion']").forEach(element => {
-					element.addEventListener('click', () => {
-						if (question.length > 0) {
-							vscode.postMessage({
-								command: 'userQuestion',
-								question: question
-							});
-						}
-					});
-				});
+				askQuestionListener();
+				backTopButton();
 				break;
 		}
 
@@ -368,17 +309,26 @@
 			});
 		});
 	});
-	// Go back to the top button
-	let mybutton = document.getElementById("btn-back-to-top");
 
-	// When the user scrolls down 20px from the top, the button appears
-	window.onscroll = function () {
+	backTopButton();
+
+	function backTopButton() {
+		// Go back to the top button
+		let mybutton = document.getElementById("btn-back-to-top");
+
+		// When the user scrolls down 20px from the top, the button appears
+		window.onscroll = function () {
+			if (mybutton) {
+				scrollFunction(mybutton);
+			}
+		};
+		// When the user clicks on the button, scroll back to the top
 		if (mybutton) {
-			scrollFunction();
+			mybutton.addEventListener("click", backToTop);
 		}
-	};
+	}
 
-	function scrollFunction() {
+	function scrollFunction(mybutton) {
 		if (
 			document.body.scrollTop > 20 ||
 			document.documentElement.scrollTop > 20
@@ -388,15 +338,45 @@
 			mybutton.style.display = "none";
 		}
 	}
-	// When the user clicks on the button, scroll back to the top
-	if (mybutton) {
-		mybutton.addEventListener("click", backToTop);
-	}
 
 	function backToTop() {
 		window.scrollTo({
 			top: 0,
 			behavior: 'smooth'
+		});
+	}
+
+	function askQuestionListener() {
+		document.querySelectorAll("[id^='askQuestion']").forEach(element => {
+			element.addEventListener('change', (e) => {
+				// @ts-ignore
+				question = e.target.value;
+			});
+			element.addEventListener('keypress', (e) => {
+				var userQuestionDis = document.getElementById(`userQuestion`);
+				// case the user presses enter then we send the message but only if it is not waiting for a response from gpt
+				if (e.key === 'Enter' && !e.altKey && userQuestionDis.style.cursor !== 'not-allowed' && e.target.value.length > 0) {
+					vscode.postMessage({
+						command: 'userQuestion',
+						question: e.target.value
+					});
+				}
+				// case the user presses alt enter then we add a new line 
+				if (e.key === 'Enter' && e.altKey && e.target.value.length > 0) {
+					e.target.value += "\n";
+				}
+			});
+		});
+
+		document.querySelectorAll("[id^='userQuestion']").forEach(element => {
+			element.addEventListener('click', () => {
+				if (question.length > 0) {
+					vscode.postMessage({
+						command: 'userQuestion',
+						question: question
+					});
+				}
+			});
 		});
 	}
 }());

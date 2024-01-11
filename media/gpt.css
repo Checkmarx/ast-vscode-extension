@@ -147,7 +147,6 @@
 	color: white;
 	border: none;
 	border-radius: 50%;
-	/* background-image: radial-gradient(circle, #354c66, #32455a, #2f3d4e, #2c3643, #282f38, #262c34, #252a30, #23272c, #23282d, #24292e, #242930, #252a31); */
 	cursor: pointer;
 	box-shadow: 0 0 0 0 #434477;
 	background: transparent;
@@ -161,7 +160,6 @@
 	border: none;
 	border-radius: 50%;
 	background: transparent;
-	/* background-image: radial-gradient(circle, #354c66, #32455a, #2f3d4e, #2c3643, #282f38, #262c34, #252a30, #23272c, #23282d, #24292e, #242930, #252a31); */
 	cursor: pointer;
 	-webkit-animation:none;
 	box-shadow: 0 0 0 1px #434477;
