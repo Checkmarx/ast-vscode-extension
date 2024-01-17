@@ -4,40 +4,40 @@ on:
   workflow_call:
     inputs:
       jsTag:
-        description: 'JS Wrapper tag name'
+        description: "JS Wrapper tag name"
         required: false
         type: string
         default: nightly
       vscodeTag:
-        description: 'Tag name'
+        description: "Tag name"
         required: false
         type: string
         default: nightly
       dev:
-        description: 'Is dev build'
+        description: "Is dev build"
         required: false
         default: true
         type: boolean
       publish:
-        description: 'Publish to marketplace'
+        description: "Publish to marketplace"
         required: false
         default: true
         type: boolean
   workflow_dispatch:
     inputs:
       jsTag:
-        description: 'JSW tag name (ignored if not dev build)'
+        description: "JSW tag name (ignored if not dev build)"
         required: false
       vscodeTag:
-        description: 'Tag name (ignored if not dev build)'
+        description: "Tag name (ignored if not dev build)"
         required: false
       dev:
-        description: 'Is dev build'
+        description: "Is dev build"
         required: false
         default: true
         type: boolean
       publish:
-        description: 'Publish to marketplace'
+        description: "Publish to marketplace"
         required: false
         default: false
         type: boolean
@@ -52,7 +52,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-
       # CHECKOUT PROJECT
       - name: Checkout
         uses: actions/checkout@v4.1.0
@@ -70,7 +69,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 16
 
       # GET TAG NAME
       - name: Generate Tag name
@@ -125,7 +124,7 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
-      
+
       # PUSH TAGS IF IT IS A RELEASE
       - name: Push tag if release
         if: inputs.dev == false
@@ -158,4 +157,4 @@ jobs:
         uses: BobAnkh/auto-generate-changelog@v1.2.5
         with:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PATH: 'CHANGELOG.md'
+          PATH: "CHANGELOG.md"
