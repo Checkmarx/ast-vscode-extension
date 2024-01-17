@@ -858,8 +858,8 @@
     "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "watch": "tsc -w -p ./ && npm run copytestproject",
-    "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
-    "copymedia": "copyfiles \"media/icons/*\" out/ -E",
+    "copytestproject": "cpx \"src/resources/**/*\" out/test/",
+    "copymedia": "cpx \"media/icons/*\" out/",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
   },
@@ -883,7 +883,7 @@
   },
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.82",
-    "copyfiles": "2.4.1",
+    "cpx": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.1",
