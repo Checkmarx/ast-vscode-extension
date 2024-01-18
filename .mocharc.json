@@ -3,6 +3,6 @@
 	"require": "tsx",
 	"package": "./package.json",
 	"reporter": "spec",
-	"timeout": "1000000",
+	"timeout": 1000000,
 	"fullTrace": true
 }
