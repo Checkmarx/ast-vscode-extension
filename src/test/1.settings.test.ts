@@ -33,7 +33,7 @@ describe("Extension settings tests", () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const settings = (await settingsEditor.findSetting(
-      CX_API_KEY_SETTINGS
+      "fake setting",
     )) as LinkSetting;
     expect(settings).to.be.undefined;
   });

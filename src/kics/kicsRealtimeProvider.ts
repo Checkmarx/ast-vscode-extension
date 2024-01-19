@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as kill from "tree-kill";
+import kill from "tree-kill";
 import * as path from "path";
 import { join } from "path";
 import { Logs } from "../models/logs";

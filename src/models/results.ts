@@ -27,7 +27,7 @@ export class AstResult extends CxResult {
   description = "";
   descriptionHTML = "";
   similarityId = "";
-  data: any;
+  declare data: any;
   state = "";
   queryId = "";
   sastNodes: SastNode[] = [];
@@ -35,7 +35,7 @@ export class AstResult extends CxResult {
   kicsNode: KicsNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
-  vulnerabilityDetails: CxVulnerabilityDetails;
+  declare vulnerabilityDetails: CxVulnerabilityDetails;
 
   setSeverity(severity: string) {
     this.severity = severity;

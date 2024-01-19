@@ -7,8 +7,8 @@ import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMa
 
 export class GptView implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
-	private askKicsIcon;
-	private kicsUserIcon;
+	private askKicsIcon: vscode.Uri;
+	private kicsUserIcon: vscode.Uri;
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
 		private result: GptResult,
