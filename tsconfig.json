@@ -1,13 +1,27 @@
 {
+	"ts-node": {
+		"moduleTypes": {
+			"*.ts": "cjs"
+		}
+	},
 	"compilerOptions": {
 		"module": "commonjs",
 		"target": "es2019",
-		"lib": ["ES2021"],
+		"lib": [
+			"ES2021"
+		],
 		"outDir": "out",
 		"sourceMap": true,
 		"strict": false,
 		"rootDir": "src",
 	},
-	"exclude": ["node_modules", ".vscode-test"],
-	"include": ["src/resources/testProj/*.php","src/**/*", "media"]
+	"exclude": [
+		"node_modules",
+		".vscode-test"
+	],
+	"include": [
+		"src/resources/testProj/*.php",
+		"src/**/*",
+		"media"
+	]
 }
