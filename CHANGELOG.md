@@ -4,17 +4,6 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Update dependencies and fix icon import by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/727
-### Checkmarx One SDK Updates 🛠
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.79 to 0.0.80 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/652
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.80 to 0.0.81 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/688
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.81 to 0.0.82 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/724
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.5.0...v2.5.1-nightly.0
-
 ## [v2.5.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.0) - 2023-10-11 15:44:03
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.5.0 -->
