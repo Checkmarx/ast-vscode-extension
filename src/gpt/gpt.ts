@@ -5,6 +5,8 @@ import { cx } from "../cx";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 export class Gpt {
 	private thinkID: number;
+	private kicsIcon: vscode.Uri;
+	private userKicsIcon: vscode.Uri;
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly logs: Logs,
@@ -15,9 +17,10 @@ export class Gpt {
 		this.logs = logs;
 		this.gptPanel = gptPanel;
 		this.thinkID = 0;
+		this.gptView = gptView;
+		this.kicsIcon = gptView.getAskKicsIcon();
+		this.userKicsIcon = gptView.getAskKicsUserIcon();
 	}
-	private kicsIcon = this.gptView.getAskKicsIcon();
-	private userKicsIcon = this.gptView.getAskKicsUserIcon();
 
 	async runGpt(userMessage: string, user: string) {
 		const result = this.gptView.getResult();
