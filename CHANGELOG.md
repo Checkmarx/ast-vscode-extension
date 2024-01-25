@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.5.1-2.5.0-sast-gpt-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-2.5.0-sast-gpt-v2.0) - 2024-01-24 17:24:20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.5.1-2.5.0-sast-gpt.0...v2.5.1-2.5.0-sast-gpt-v2.0
+
 ## [v2.5.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-nightly.0) - 2024-01-19 17:08:16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
