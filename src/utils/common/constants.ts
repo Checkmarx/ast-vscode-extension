@@ -129,9 +129,9 @@ export const constants = {
   cxKicsLong: "Checkmarx KICS",
   webviewName: "newDetails",
   gptWebviewName: "gpt",
-  gptSettings: "Checkmarx AI Guided Remediation: GPT Key",
+  gptSettings: "Checkmarx AI Guided Remediation: OpenAI Key",
   gptCommandName: "CheckmarxAiGuidedRemediation",
-  gptSettingsKey: "GPT Key",
+  gptSettingsKey: "OpenAI Key",
   gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
