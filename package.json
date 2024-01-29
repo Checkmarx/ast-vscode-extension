@@ -866,7 +866,7 @@
   "devDependencies": {
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^20.11.7",
+    "@types/node": "^20.11.10",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
