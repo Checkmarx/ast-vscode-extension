@@ -1,23 +1,28 @@
 # CHANGELOG
 
+## [v2.5.1-2.5.0-sast-gpt-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-2.5.0-sast-gpt-v2.0) - 2024-01-24 17:24:20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.5.1-2.5.0-sast-gpt.0...v2.5.1-2.5.0-sast-gpt-v2.0
+
+## [v2.5.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-nightly.0) - 2024-01-19 17:08:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.5.1-2.5.0-sast-gpt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-2.5.0-sast-gpt.0) - 2024-01-19 17:31:33
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.5.1-nightly.0...v2.5.1-2.5.0-sast-gpt.0
+
 ## [v2.5.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.0) - 2023-10-11 15:44:03
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.5.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Fix for kics scan running even if disabled by @igorlombacx in https://github.com/Checkmarx/ast-vscode-extension/pull/613
-* fixing error related with incorrect use of log object by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/630
-### Checkmarx One SDK Updates 🛠
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.77 to 0.0.78 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/607
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.78 to 0.0.79 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/620
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.4.0...v2.5.0
-
-## [v2.4.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.4.1-nightly.0) - 2023-10-09 13:33:54
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.4.0) - 2023-08-11 13:13:00
 

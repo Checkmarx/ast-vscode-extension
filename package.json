@@ -772,7 +772,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -866,27 +866,27 @@
   "devDependencies": {
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^20.10.4",
+    "@types/node": "^20.11.13",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.14.0",
-    "chai": "4.3.10",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "chai": "5.0.3",
     "eslint-config-prettier": "^9.1.0",
-    "eslint": "^8.55.0",
+    "eslint": "^8.56.0",
     "mocha": "10.2.0",
     "typescript": "^5.3.3",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "6.0.0",
-    "vscode-extension-tester-locators": "^3.9.0",
-    "webpack": "^5.89.0",
+    "vscode-extension-tester": "7.0.0",
+    "vscode-extension-tester-locators": "^3.10.0",
+    "webpack": "^5.90.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.82-0.0.82.sast.chat.v2.0",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.82",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslintcc": "^0.8.0",
+    "eslintcc": "^0.8.1",
     "tree-kill": "^1.2.2"
   },
   "lint-staged": {
