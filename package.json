@@ -866,7 +866,7 @@
   "devDependencies": {
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^20.11.13",
+    "@types/node": "^20.11.16",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
@@ -878,11 +878,11 @@
     "vsce": "^2.15.0",
     "vscode-extension-tester": "7.0.0",
     "vscode-extension-tester-locators": "^3.10.0",
-    "webpack": "^5.90.0",
+    "webpack": "^5.90.1",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.82",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.83",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
