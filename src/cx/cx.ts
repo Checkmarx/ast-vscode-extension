@@ -71,7 +71,7 @@ export class Cx implements CxPlatform {
 		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
-			const answer = await cx.chat(gptToken, filePath, line, severity, queryName, message, null, gptEngine);
+			const answer = await cx.kicsChat(gptToken, filePath, line, severity, queryName, message, null, gptEngine);
 			if (answer.payload && answer.exitCode === 0) {
 				return answer.payload;
 			} else {
