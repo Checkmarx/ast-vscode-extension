@@ -71,19 +71,6 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   });
 
-  it("should click on comments", async function () {
-    // Open details view
-    const detailsView = await getDetailsView();
-    // Find Hide comments
-    let comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
-    while (comments === undefined) {
-      comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
-    }
-    expect(comments).is.not.undefined;
-    await comments.click();
-    await detailsView.switchBack();
-  });
-
   it("should click on details Learn More tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
@@ -115,6 +102,13 @@ describe("Scan ID load results test", () => {
     }
     expect(submit).is.not.undefined;
     await submit.click();
+    // Find Hide comments
+    let comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
+    while (comments === undefined) {
+      comments = await detailsView.findWebElement(By.id(COMMENT_BOX));
+    }
+    expect(comments).is.not.undefined;
+    await comments.click();
     await detailsView.switchBack();
   });
 
