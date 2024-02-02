@@ -827,11 +827,11 @@
         "id": "ask-kics",
         "order": 2,
         "properties": {
-          "CheckmarxAiGuidedRemediation.GPT Key": {
+          "CheckmarxAiGuidedRemediation.OpenAI Key": {
             "type": "string",
             "order": 3,
             "default": "",
-            "markdownDescription": "Api key to connect to Gpt."
+            "markdownDescription": "Api key to connect to OpenAI."
           },
           "CheckmarxAiGuidedRemediation.model": {
             "order": 2,
@@ -870,13 +870,13 @@
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
-    "chai": "5.0.3",
+    "chai": "4.3.8",
     "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.56.0",
     "mocha": "10.2.0",
     "typescript": "^5.3.3",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "7.0.0",
+    "vscode-extension-tester": "6.0.0",
     "vscode-extension-tester-locators": "^3.10.0",
     "webpack": "^5.90.1",
     "webpack-cli": "^5.1.4"

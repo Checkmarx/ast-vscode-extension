@@ -5,8 +5,6 @@
 	var selectSeverity = "";
 	var selectState = "";
 	var comment = "";
-	// @ts-ignore
-	const vscode = acquireVsCodeApi();
 	document.querySelectorAll('.ast-node').forEach(element => {
 		element.addEventListener('click', (e) => {
 			var target = e.target;
@@ -253,6 +251,7 @@
 					loaderContainer.style.display = 'none';
 					loaderContainer.innerHTML = infoChangeContainer(changes);
 					loaderContainer.style.display = 'block';
+					loaderContainer.style.padding = '0.4em';
 				}
 				break;
 			case 'loader':
@@ -443,4 +442,5 @@
 		let element = document.getElementById(id);
 		element.style.display = display;
 	}
+
 })();

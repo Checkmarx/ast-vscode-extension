@@ -1,5 +1,10 @@
 .subtitle {
   margin-top: 0.5em;
+  font-size: 1.2rem!important;
+}
+
+.h2,h2{
+  font-size: 1.5rem!important;
 }
 
 .tooltip {
@@ -201,7 +206,8 @@ input ~ .tab { display: none }
 #general-tab:checked ~ .tab.general,
 #learn-tab:checked ~ .tab.learn,
 #code-tab:checked ~ .tab.code,
-#changes-tab:checked ~ .tab.changes
+#changes-tab:checked ~ .tab.changes,
+#ai-tab:checked ~ .tab.ai
 { display: block; }
 
 input + label {
@@ -228,11 +234,10 @@ input ~ .tab {
 }
 
 .comment-container{
-  padding: 0.2em;
+  margin: 0.4em;
 }
 
 .comments{
-  margin: 0.4em;
   border-color: transparent;
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 0.2em;

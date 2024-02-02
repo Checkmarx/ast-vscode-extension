@@ -500,6 +500,11 @@ export class CxMock implements CxPlatform {
 		}];
 	}
 
+	async runSastGpt() {
+		await this.sleep(1000);
+		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
+	}
+
 	async runGpt() {
 		await this.sleep(1000);
 		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
