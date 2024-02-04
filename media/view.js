@@ -348,7 +348,7 @@
 		return html;
 	}
 
-	// Learn more content
+	// Description content
 	function infoLearnContainer(learnArray) {
 		let html = "<div>";
 		if (learnArray.length > 0) {
