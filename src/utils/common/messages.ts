@@ -50,7 +50,7 @@ export const messages = {
   clearLoadedInfo: "Clear all loaded information",
   resultFileNotFound: (filePath) => `File ${filePath} not found in workspace`,
   generalTab: "General",
-  learnMoreTab: "Learn More",
+  descriptionTab: "Description",
   changesTab: "Triage",
   remediationExamplesTab: "Remediation Examples",
   noRemediationExamplesTab: "No remediation examples",

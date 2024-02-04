@@ -263,7 +263,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           html.detailsTab(),
           html.changes(selectClassname),
           messages.generalTab,
-          messages.learnMoreTab,
+          messages.descriptionTab,
           messages.changesTab,
           messages.remediationExamplesTab,
           messages.noRemediationExamplesTab,
