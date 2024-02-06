@@ -200,13 +200,6 @@ export class Details {
 			</label>`
 				: ""
 			}
-			${tab3Label !== ""
-				? `<input type="radio" name="tabs" id="changes-tab" />
-			<label for="changes-tab" id="changes-label">
-				${tab3Label}
-			</label>`
-				: ""
-			}
 			${tab6Label !== ""
 				? `<input type="radio" name="tabs" id="ai-tab" />
 			<label for="ai-tab" id="ai-label">
@@ -214,6 +207,13 @@ export class Details {
 			</label>`
 				: ""
 			}
+			${tab3Label !== ""
+			? `<input type="radio" name="tabs" id="changes-tab" />
+		<label for="changes-tab" id="changes-label">
+			${tab3Label}
+		</label>`
+			: ""
+		}
 			${tab1Content !== ""
 				? `<div class="tab general">
 			${tab1Content}
