@@ -320,8 +320,7 @@ export class AstResult extends CxResult {
                         data-fullName="${node.fullName}" 
                         data-length="${node.length}"
                       >
-                        ${this.getShortFilename(node.fileName)} [${node.line}:${node.column
-          }]
+                        ${this.getShortFilename(node.fileName)}
                       </a>
                     </div>
                 </div>
