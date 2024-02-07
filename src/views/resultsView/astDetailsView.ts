@@ -229,7 +229,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);
-        this.logs.info("Masked Secrets by AI Guided Remediation: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
+        this.logs.info("Masked Secrets by AI Security Champion: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
       } catch (error) {
         this.logs.info(error);
       }
@@ -267,7 +267,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           messages.triageTab,
           messages.remediationExamplesTab,
           messages.noRemediationExamplesTab,
-          isAIEnabled ? "AI Guided Remediation" : "",
+          isAIEnabled ? "AI Security Champion" : "",
           isAIEnabled ? html.guidedRemediationSastTab(cxIcon, masked) : ""
         )
         : this.result.type === "sca"
@@ -292,7 +292,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             messages.triageTab,
             "",
             "",
-            isAIEnabled ? "AI Guided Remediation" : "",
+            isAIEnabled ? "AI Security Champion" : "",
             isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
           )
       }
