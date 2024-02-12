@@ -861,7 +861,8 @@
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
+    "win-test": "set TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.85.2  -i -r ."
   },
   "devDependencies": {
     "@types/chai": "4.3.11",
@@ -870,7 +871,7 @@
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "chai": "5.0.3",
+    "chai": "4.3.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.56.0",
     "mocha": "10.3.0",
