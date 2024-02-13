@@ -828,7 +828,6 @@
         "order": 2,
         "properties": {
           "CheckmarxSecurityChampion.key": {
-            "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
             "type": "string",
             "order": 3,
             "default": "",

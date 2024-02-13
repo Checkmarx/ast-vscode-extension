@@ -9,6 +9,7 @@ import { cx } from "../../cx";
 import { Logs } from "../../models/logs";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { GptResult } from "../../models/gptResult";
+import { constants } from "../../utils/common/constants";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -229,7 +230,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);
-        this.logs.info("Masked Secrets by AI Security Champion: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
+        this.logs.info(`Masked Secrets by ${constants.aiSecurityChampion}: ` + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
       } catch (error) {
         this.logs.info(error);
       }
@@ -267,7 +268,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           messages.triageTab,
           messages.remediationExamplesTab,
           messages.noRemediationExamplesTab,
-          isAIEnabled ? "AI Security Champion" : "",
+          isAIEnabled ? `${constants.aiSecurityChampion}` : "",
           isAIEnabled ? html.guidedRemediationSastTab(cxIcon, masked) : ""
         )
         : this.result.type === "sca"
@@ -292,7 +293,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             messages.triageTab,
             "",
             "",
-            isAIEnabled ? "AI Security Champion" : "",
+            isAIEnabled ? `${constants.aiSecurityChampion}` : "",
             isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
           )
       }
