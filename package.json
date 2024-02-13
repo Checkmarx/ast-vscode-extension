@@ -823,21 +823,22 @@
         }
       },
       {
-        "title": "Checkmarx AI Guided Remediation",
+        "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
         "order": 2,
         "properties": {
-          "CheckmarxAiGuidedRemediation.OpenAI Key": {
+          "CheckmarxSecurityChampion.key": {
+            "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
             "type": "string",
             "order": 3,
             "default": "",
             "markdownDescription": "Api key to connect to OpenAI."
           },
-          "CheckmarxAiGuidedRemediation.model": {
+          "CheckmarxSecurityChampion.model": {
             "order": 2,
             "type": "string",
             "default": "gpt-3.5-turbo",
-            "markdownDescription": "The model for AI Guided Remediation to use",
+            "markdownDescription": "The model for AI Security Champion to use",
             "enum": [
               "gpt-4",
               "gpt-4-32k",

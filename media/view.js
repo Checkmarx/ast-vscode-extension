@@ -36,7 +36,7 @@
 		});
 	});
 
-	// Activated when clicked in AI Guided Remediation
+	// Activated when clicked in AI Security Champion
 	document.querySelectorAll('.title_gpt').forEach(element => {
 		element.addEventListener('click', () => {
 			vscode.postMessage({

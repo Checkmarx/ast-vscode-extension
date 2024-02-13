@@ -51,7 +51,7 @@ export class Gpt {
 			// send response message
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: messages[0].responses, user: "AI Guided Remediation" },
+				message: { message: messages[0].responses, user: "AI Security Champion" },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
@@ -60,7 +60,7 @@ export class Gpt {
 			// enable all the buttons and inputs
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: e.message, user: "AI Guided Remediation" },
+				message: { message: e.message, user: "AI Security Champion" },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});

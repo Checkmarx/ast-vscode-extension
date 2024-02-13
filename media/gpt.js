@@ -242,7 +242,7 @@
                      <div class="col">
 						<img src="${icon}" class="avatar"
 						alt="Avatar" />
-						AI Guided Remediation
+						AI Security Champion
 					</div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
@@ -264,7 +264,7 @@
                      <div class="col">
 						<img src="${icon}" class="avatar"
 						alt="Avatar" />
-			   			AI Guided Remediation
+			   			AI Security Champion
          			</div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
