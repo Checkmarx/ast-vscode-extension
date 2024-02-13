@@ -51,7 +51,7 @@ export const messages = {
   resultFileNotFound: (filePath) => `File ${filePath} not found in workspace`,
   generalTab: "General",
   descriptionTab: "Description",
-  changesTab: "Triage",
+  triageTab: "Triage",
   remediationExamplesTab: "Remediation Examples",
   noRemediationExamplesTab: "No remediation examples",
   projectNotFound: "Project not found",

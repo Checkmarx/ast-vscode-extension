@@ -200,17 +200,17 @@ export class Details {
 			</label>`
 				: ""
 			}
-			${tab3Label !== ""
-				? `<input type="radio" name="tabs" id="changes-tab" />
-			<label for="changes-tab" id="changes-label">
-				${tab3Label}
-			</label>`
-				: ""
-			}
 			${tab6Label !== ""
 				? `<input type="radio" name="tabs" id="ai-tab" />
 			<label for="ai-tab" id="ai-label">
 				${tab6Label}
+			</label>`
+				: ""
+			}
+			${tab3Label !== ""
+				? `<input type="radio" name="tabs" id="changes-tab" />
+			<label for="changes-tab" id="changes-label">
+				${tab3Label}
 			</label>`
 				: ""
 			}
