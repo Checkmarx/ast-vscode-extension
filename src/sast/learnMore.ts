@@ -11,12 +11,13 @@ export async function getLearnMore(
 ) {
   cx.learnMore(result.queryId)
     .then((learn) => {
-      detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn });
+      detailsPanel?.webview.postMessage({ command: "loadLearnMore", learn, result });
     })
     .catch((err) => {
       detailsPanel?.webview.postMessage({
         command: "loadLearnMore",
         learn: [],
+        result: result
       });
       logs.error(err);
     });

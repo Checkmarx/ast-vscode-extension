@@ -25,17 +25,6 @@ export class Details {
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
-				${this.result.sastNodes.length > 0
-				? `
-					<div class="header-item-codebashing" id="cx_header_codebashing">
-						<span class="codebashing-link">
-							Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` +
-				this.result.queryName +
-				` using Checkmarx's eLearning platform">codebashing</span>
-						<span>
-					</div>`
-				: ""
-			}
 			</div>
 			<hr class="division"/>
 			`;

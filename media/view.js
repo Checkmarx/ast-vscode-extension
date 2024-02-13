@@ -230,16 +230,6 @@
 		});
 	}
 
-	let codebashingElement = document.getElementById('cx_codebashing');
-	if (codebashingElement) {
-		codebashingElement.addEventListener('click', () => {
-			// @ts-ignore
-			vscode.postMessage({
-				command: 'codebashing',
-			});
-		});
-	}
-
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
 		const message = event.data;
@@ -266,12 +256,13 @@
 				let learn = message.learn;
 				let learnLoaderContainer = document.getElementById('learn-container-loader');
 				learnLoaderContainer.style.display = 'none';
-				learnLoaderContainer.innerHTML = infoLearnContainer(learn);
+				learnLoaderContainer.innerHTML = infoLearnContainer(learn, message.result);
 				learnLoaderContainer.style.display = 'block';
 				let codeLoaderContainer = document.getElementById('tab-code');
 				codeLoaderContainer.style.display = 'none';
 				codeLoaderContainer.innerHTML = infoCodeContainer(learn);
 				codeLoaderContainer.style.display = 'block';
+				registerCodebashingEventListener();
 				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
@@ -294,6 +285,18 @@
 			// 	break;
 		}
 	});
+
+	function registerCodebashingEventListener(){
+		let codebashingElement = document.getElementById('cx_codebashing');
+		if (codebashingElement) {
+			codebashingElement.addEventListener('click', () => {
+				// @ts-ignore
+				vscode.postMessage({
+					command: 'codebashing',
+				});
+			});
+		}
+	}
 
 	// Container arround the changes
 	function infoChangeContainer(changes) {
@@ -349,13 +352,14 @@
 	}
 
 	// Description content
-	function infoLearnContainer(learnArray) {
+	function infoLearnContainer(descriptionArray, result) {
 		let html = "<div>";
-		if (learnArray.length > 0) {
-			for (let learn of learnArray) {
-				html += riskSection(learn.risk);
-				html += causeSection(learn.cause);
-				html += recommendationSection(learn.generalRecommendations);
+		if (descriptionArray.length > 0) {
+			for (let description of descriptionArray) {
+				html += riskSection(description.risk);
+				html += causeSection(description.cause);
+				html += recommendationSection(description.generalRecommendations);
+				html += codeBashingSection(result);
 			}
 		}
 		else {
@@ -369,6 +373,22 @@
 		}
 		html += "</div>";
 		return html;
+	}
+
+	function codeBashingSection(result){
+		let codeBashingSection = 
+		result.sastNodes.length > 0
+			? `
+				<div class="header-item-codebashing" id="cx_header_codebashing">
+					<span class="codebashing-link">
+						Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` +
+			result.queryName +
+			` using Checkmarx's eLearning platform">codebashing</span>
+					<span>
+				</div>`
+			: "";
+
+			return codeBashingSection;
 	}
 
 	function riskSection(risk) {
