@@ -24,7 +24,12 @@ export class GptResult {
 				this.resultID = astResult.id;
 			}
 			else {
-				this.filename = workspacePath ? path.join(workspacePath[0].uri.fsPath, astResult.kicsNode?.data.filename) : astResult.kicsNode?.data.filename;
+				try{
+					this.filename = workspacePath ? path.join(workspacePath[0].uri.fsPath, astResult.kicsNode?.data.filename ?? "") : astResult.kicsNode?.data.filename;
+				}
+				catch(e){
+					console.log("Could not produce filename. error: ", e);
+				}
 			}
 			this.line = astResult.kicsNode?.data.line;
 			this.severity = astResult.severity;
