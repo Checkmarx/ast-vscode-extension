@@ -42,7 +42,7 @@ describe("Scan ID load results test", () => {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE
+      "Scan: "
     );
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
