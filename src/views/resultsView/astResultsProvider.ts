@@ -98,7 +98,7 @@ export class AstResultsProvider extends ResultsProvider {
         this.filterCommand.getAtiveSeverities(),
         this.filterCommand.getActiveStates()
       );
-      treeItem.label = `${constants.scanLabel}`;
+      treeItem.label = `${constants.scanLabel} ${this.scan}`;
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }
