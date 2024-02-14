@@ -35,10 +35,10 @@ describe("Scan from IDE", () => {
     const input = await InputBox.create();
     await input.setText(SCAN_ID);
     await input.confirm();
-    await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 5000);
-    let scan = await treeScan?.findItem(SCAN_KEY_TREE + SCAN_ID);
+    await waitByLinkText(driver, "Scan: ", 5000);
+    let scan = await treeScan?.findItem("Scan: ");
     while (scan === undefined) {
-      scan = await treeScan?.findItem(SCAN_KEY_TREE + SCAN_ID);
+      scan = await treeScan?.findItem("Scan: ");
     }
     // click play button(or initiate scan with command)
     await bench.executeCommand("ast-results.createScan");
