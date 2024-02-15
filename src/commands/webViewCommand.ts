@@ -114,7 +114,7 @@ export class WebViewCommand {
         let masked = undefined;
         try {
           masked = await cx.mask(result.filename);
-          this.logs.info("Masked Secrets by AI Guided Remediation: " + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
+          this.logs.info(`Masked Secrets by ${constants.aiSecurityChampion}: ` + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
         } catch (error) {
           this.logs.info(error);
         }
@@ -146,7 +146,7 @@ export class WebViewCommand {
         this.gptPanel?.dispose();
         this.gptPanel = vscode.window.createWebviewPanel(
           constants.gptWebviewName, // Identifies the type of the webview, internal id
-          "AI Guided Remediation",
+          `${constants.aiSecurityChampion}`,
           vscode.ViewColumn.Three, // Show the results in a separated column
           {
             enableScripts: true,
@@ -257,7 +257,7 @@ export class WebViewCommand {
           );
           break;
         case "gpt":
-          this.logs.info("Opening AI Guided Remediation");
+          this.logs.info(`Opening ${constants.aiSecurityChampion}`);
           vscode.commands.executeCommand(
             commands.gpt,
             new GptResult(result, undefined),
@@ -265,19 +265,19 @@ export class WebViewCommand {
           );
           break;
         case "explainFile":
-          this.logs.info("AI Guided Remediation : Can you explain this IaC file?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you explain this IaC file?`);
           await this.runGpt("Can you explain this IaC file?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
           break;
         case "explainResults":
-          this.logs.info("AI Guided Remediation : Can you explain these results?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you explain these results?`);
           await this.runGpt("Can you explain these results?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
           break;
         case "explainRemediations":
-          this.logs.info("AI Guided Remediation : Can you offer a remediation suggestion?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you offer a remediation suggestion?`);
           await this.runGpt("Can you offer a remediation suggestion?", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
           break;
         case "userQuestion":
-          this.logs.info("AI Guided Remediation : " + data.question);
+          this.logs.info(`${constants.aiSecurityChampion} : ` + data.question);
           this.detailsPanel.webview?.postMessage({
             command: "clearQuestion",
           });
@@ -290,7 +290,7 @@ export class WebViewCommand {
 
           break;
         case "startSastChat":
-          this.logs.info("AI Guided Remediation : Start Chat");
+          this.logs.info(`${constants.aiSecurityChampion} : Start Chat`);
           await this.startSastGpt("Start chat", username, detailsDetachedView.getAskKicsUserIcon(), detailsDetachedView.getAskKicsIcon(), gptResult);
           break;
         case "openSettings":
@@ -312,19 +312,19 @@ export class WebViewCommand {
       switch (data.command) {
         //Catch open file message to open and view the result entry
         case "explainFile":
-          this.logs.info("AI Guided Remediation : Can you explain this IaC file?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you explain this IaC file?`);
           await this.gpt.runGpt("Can you explain this IaC file?", username);
           break;
         case "explainResults":
-          this.logs.info("AI Guided Remediation : Can you explain these results?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you explain these results?`);
           await this.gpt.runGpt("Can you explain these results?", username);
           break;
         case "explainRemediations":
-          this.logs.info("AI Guided Remediation : Can you offer a remediation suggestion?");
+          this.logs.info(`${constants.aiSecurityChampion} : Can you offer a remediation suggestion?`);
           await this.gpt.runGpt("Can you offer a remediation suggestion?", username);
           break;
         case "userQuestion":
-          this.logs.info("AI Guided Remediation : " + data.question);
+          this.logs.info(`${constants.aiSecurityChampion} : ` + data.question);
           this.gptPanel?.webview.postMessage({
             command: "clearQuestion",
           });
@@ -368,7 +368,7 @@ export class WebViewCommand {
       // send response message
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        message: { message: messages[0].responses, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: kicsIcon
       });
@@ -377,7 +377,7 @@ export class WebViewCommand {
       // enable all the buttons and inputs
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: e.message, user: "AI Guided Remediation" },
+        message: { message: e.message, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: kicsIcon
       });
@@ -412,7 +412,7 @@ export class WebViewCommand {
       // send response message
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        message: { message: messages[0].responses, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: "https://" + kicsIcon.authority + kicsIcon.path
       });
@@ -421,7 +421,7 @@ export class WebViewCommand {
       // enable all the buttons and inputs
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: e.message, user: "AI Guided Remediation" },
+        message: { message: e.message, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: "https://" + kicsIcon.authority + kicsIcon.path
       });
@@ -460,7 +460,7 @@ export class WebViewCommand {
       // send response message
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: messages[0].responses, user: "AI Guided Remediation" },
+        message: { message: messages[0].responses, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: "https://" + kicsIcon.authority + kicsIcon.path
       });
@@ -469,7 +469,7 @@ export class WebViewCommand {
       // enable all the buttons and inputs
       this.detailsPanel?.webview.postMessage({
         command: "response",
-        message: { message: e.message, user: "AI Guided Remediation" },
+        message: { message: e.message, user: `${constants.aiSecurityChampion}` },
         thinkID: this.thinkID,
         icon: kicsIcon
       });

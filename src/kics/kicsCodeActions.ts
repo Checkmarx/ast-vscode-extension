@@ -191,15 +191,15 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       const valueOf: string | number | object = diagnostic.code.valueOf();
       const queryName = Object(valueOf).value;
       const action = new vscode.CodeAction(
-        "AI Guided Remediation " + queryName,
+        `${constants.aiSecurityChampion} ` + queryName,
         vscode.CodeActionKind.Empty.append('custom')
       );
       const convertedResult = new GptResult(undefined, diagnostic.kicsResult);
 
       action.command = {
         command: commands.gpt,
-        title: "AI Guided Remediation",
-        tooltip: "This will open an AI Guided Remediation tab for the vulnerability",
+        title: `${constants.aiSecurityChampion}`,
+        tooltip: `This will open an ${constants.aiSecurityChampion} tab for the vulnerability`,
         arguments: [
           convertedResult,
           constants.realtime

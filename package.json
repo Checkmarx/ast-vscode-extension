@@ -812,7 +812,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
@@ -823,21 +823,21 @@
         }
       },
       {
-        "title": "Checkmarx AI Guided Remediation",
+        "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
         "order": 2,
         "properties": {
-          "CheckmarxAiGuidedRemediation.OpenAI Key": {
+          "CheckmarxSecurityChampion.key": {
             "type": "string",
             "order": 3,
             "default": "",
             "markdownDescription": "Api key to connect to OpenAI."
           },
-          "CheckmarxAiGuidedRemediation.model": {
+          "CheckmarxSecurityChampion.model": {
             "order": 2,
             "type": "string",
             "default": "gpt-3.5-turbo",
-            "markdownDescription": "The model for AI Guided Remediation to use",
+            "markdownDescription": "The model for AI Security Champion to use",
             "enum": [
               "gpt-4",
               "gpt-4-32k",
@@ -861,7 +861,8 @@
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
+    "win-test": "set TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.85.2  -i -r ."
   },
   "devDependencies": {
     "@types/chai": "4.3.11",
@@ -870,7 +871,7 @@
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
-    "chai": "5.1.0",
+    "chai": "4.3.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.56.0",
     "mocha": "10.3.0",

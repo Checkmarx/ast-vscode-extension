@@ -96,7 +96,7 @@ Checkmarx One:
 Kics Auto Scanning:
 - You must have Docker installed and running in your environment (For KICS auto scanning only)
 
-See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html) and [Checkmarx One](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
+See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html) and [Checkmarx One](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
 
 
 ## Contributing
