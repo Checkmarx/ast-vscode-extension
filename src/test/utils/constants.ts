@@ -58,6 +58,7 @@ export const STEP_3 = "Checkmarx One Scan selection (3/3)";
 
 export const PROJECT_KEY_TREE = "Project:  ";
 export const SCAN_KEY_TREE = "Scan:  ";
+export const SCAN_KEY_TREE_SINGLE_SPACE = "Scan: ";
 export const BRANCH_KEY_TREE = "Branch:  ";
 
 export const SAST_TYPE = "sast";

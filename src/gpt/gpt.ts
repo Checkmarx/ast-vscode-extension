@@ -3,6 +3,8 @@ import { Logs } from "../models/logs";
 import { GptView } from "../views/gptView/gptView";
 import { cx } from "../cx";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import { constants } from "../utils/common/constants";
+
 export class Gpt {
 	private thinkID: number;
 	private kicsIcon: vscode.Uri;
@@ -51,7 +53,7 @@ export class Gpt {
 			// send response message
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: messages[0].responses, user: "AI Guided Remediation" },
+				message: { message: messages[0].responses, user: `${constants.aiSecurityChampion}` },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
@@ -60,7 +62,7 @@ export class Gpt {
 			// enable all the buttons and inputs
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: e.message, user: "AI Guided Remediation" },
+				message: { message: e.message, user: `${constants.aiSecurityChampion}` },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
