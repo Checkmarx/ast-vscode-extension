@@ -871,7 +871,7 @@
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
-    "chai": "5.1.0",
+    "chai": "4.3.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.56.0",
     "mocha": "10.3.0",
