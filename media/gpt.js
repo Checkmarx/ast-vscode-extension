@@ -232,8 +232,14 @@
 			});
 		});
 	});
-
+	function escapeHTML(str) {
+		let div = document.createElement('div');
+	   div.appendChild(document.createTextNode(str));
+	   return div.innerHTML;
+ 	}
 	function thinkingContainer(thinkID, icon) {
+		thinkID = escapeHTML(thinkID);
+    	icon = escapeHTML(icon);
 		let html =
 			`
 			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;">
@@ -256,27 +262,40 @@
 	}
 
 	function messageGptContainer(icon, id) {
-		let html =
-			`
-			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
-               <div class="card-body">
-                  <div class="row">
-                     <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-			   			AI Security Champion
-         			</div>
-                  </div>
-                  <div class="row" style="margin-top:0.8em">
-                     <div class="col">
-						<p class="animated-text" id="gpt-${id}">
-						</p>
-         			</div>
-                  </div>
-               </div>
-            </div>`;
-		return html;
-	}
+        let container = document.createElement('div');
+        container.className = "card";
+        container.style = "border:none;background:transparent;margin-bottom:1em;";
+        let body = document.createElement('div');
+        body.className = "card-body";
+        container.appendChild(body);
+        let row1 = document.createElement('div');
+        row1.className = "row";
+        body.appendChild(row1);
+        let col1 = document.createElement('div');
+        col1.className = "col";
+        row1.appendChild(col1);
+        let img = document.createElement('img');
+        img.src = `${icon}`;
+        img.className = "avatar";
+        img.alt = "Avatar";
+        col1.appendChild(img);
+        col1.appendChild(document.createTextNode("AI Guided Remediation"));
+
+        let row2 = document.createElement('div');
+        row2.className = "row";
+        row2.style = "margin-top:0.8em";
+        body.appendChild(row2);
+        let col2 = document.createElement('div');
+        col2.className = "col";
+        row2.appendChild(col2);
+        let p = document.createElement('p');
+        p.className = "animated-text";
+        p.id = "gpt-${id}";
+        col2.appendChild(p);
+
+        return container.outerHTML;
+    }
+
 
 	function messageUserContainer(message, icon) {
 		let html =
