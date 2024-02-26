@@ -104,6 +104,7 @@
 		document.body.scrollIntoView(false);
 		const message = event.data;
 		let chatContainer;
+		let spanElements;
 		switch (message.command) {
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
@@ -111,7 +112,14 @@
 				break;
 			case 'thinking':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID, message.icon.external ? message.icon.external : message.icon);
+				var messageIcon = message.icon.external ? message.icon.external : message.icon;
+				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID);
+				var iconImage = document.createElement("img");
+				iconImage.setAttribute('src',messageIcon);
+				iconImage.setAttribute('class','avatar');
+				iconImage.setAttribute('alt','Avatar');
+				var imageSpan=document.getElementById('aiSecurityChampionImageDiv');				
+				imageSpan.insertBefore(iconImage,imageSpan.firstChild);				
 				break;
 			case 'response':
 				// Hide thinking
@@ -119,10 +127,17 @@
 				thinkContainer.style.display = 'none';
 				// Load message response
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.icon.external ? message.icon.external : message.icon, message.thinkID);
+				var messageGptMessageIcon = message.icon.external ? message.icon.external : message.icon;
+				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.thinkID);
 				currentID = message.thinkID;
 				currentMessage = message.message.message;
 				// document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(0);
+				var messageContainerIconImage = document.createElement("img");
+				messageContainerIconImage.setAttribute('src',messageGptMessageIcon);
+				messageContainerIconImage.setAttribute('class','avatar');
+				messageContainerIconImage.setAttribute('alt','Avatar');
+				var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv');				
+				messageContainerImageDiv.insertBefore(messageContainerIconImage,messageContainerImageDiv.firstChild);
 				await typeWriter();
 				i = 1;
 
@@ -233,17 +248,13 @@
 		});
 	});
 	
-	function thinkingContainer(thinkID, icon) {		
+	function thinkingContainer(thinkID) {
 		let html =
 			`
 			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                     <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-						AI Security Champion
-					</div>
+                    <div class="col" id="aiSecurityChampionImageDiv"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                     <div class="col">
@@ -255,17 +266,13 @@
 		return html;
 	}	
 
-	function messageGptContainer(icon, id) {
+	function messageGptContainer(id) {
         let html =
 			`
 			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                     <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-			   			AI Security Champion
-         			</div>
+                     <div class="col" id="messageGptContainerIconDiv"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
