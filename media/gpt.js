@@ -108,17 +108,30 @@
 		switch (message.command) {
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message, "https://" + message.icon.authority + message.icon.path);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message);
+				var messageUserContainerIconUrl = new URL("https://" + message.icon.authority + message.icon.path);
+				var messageUserContainerIconImage = document.createElement("img");
+				messageUserContainerIconImage.setAttribute('src',messageUserContainerIconUrl);
+				messageUserContainerIconImage.setAttribute('class','avatar');
+				messageUserContainerIconImage.setAttribute('alt','Avatar');
+				var messageUserContainerImageDiv=document.getElementById('messageUserContainerImageDiv-'+message.message.thinkID);				
+				messageUserContainerImageDiv.appendChild(messageUserContainerIconImage);
+				var user=document.createTextNode(message.message.user);
+				messageUserContainerImageDiv.appendChild(user);
+				var messageUserContainerPara=document.getElementById('messageUserContainerPara-'+message.message.thinkID);
+				var msg=document.createTextNode(message.message.message);
+				messageUserContainerPara.appendChild(msg);
 				break;
 			case 'thinking':
 				chatContainer = document.getElementById('chat-container');
 				var messageIcon = message.icon.external ? message.icon.external : message.icon;
 				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID);
+				var iconUrl = new URL(messageIcon);
 				var iconImage = document.createElement("img");
-				iconImage.setAttribute('src',messageIcon);
+				iconImage.setAttribute('src',iconUrl);
 				iconImage.setAttribute('class','avatar');
 				iconImage.setAttribute('alt','Avatar');
-				var imageSpan=document.getElementById('aiSecurityChampionImageDiv');				
+				var imageSpan=document.getElementById('aiSecurityChampionImageDiv-'+message.thinkID);				
 				imageSpan.insertBefore(iconImage,imageSpan.firstChild);				
 				break;
 			case 'response':
@@ -132,11 +145,12 @@
 				currentID = message.thinkID;
 				currentMessage = message.message.message;
 				// document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(0);
+				var msgContainerIconUrl = new URL(messageGptMessageIcon);				
 				var messageContainerIconImage = document.createElement("img");
-				messageContainerIconImage.setAttribute('src',messageGptMessageIcon);
+				messageContainerIconImage.setAttribute('src',msgContainerIconUrl.toString());
 				messageContainerIconImage.setAttribute('class','avatar');
 				messageContainerIconImage.setAttribute('alt','Avatar');
-				var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv');				
+				var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv-'+message.thinkID);				
 				messageContainerImageDiv.insertBefore(messageContainerIconImage,messageContainerImageDiv.firstChild);
 				await typeWriter();
 				i = 1;
@@ -249,12 +263,13 @@
 	});
 	
 	function thinkingContainer(thinkID) {
+		thinkID = parseInt(thinkID);
 		let html =
 			`
 			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                    <div class="col" id="aiSecurityChampionImageDiv"> AI Security Champion </div>
+                    <div class="col" id="aiSecurityChampionImageDiv-${thinkID}"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                     <div class="col">
@@ -267,12 +282,13 @@
 	}	
 
 	function messageGptContainer(id) {
+		id = parseInt(id);
         let html =
 			`
 			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                     <div class="col" id="messageGptContainerIconDiv"> AI Security Champion </div>
+                     <div class="col" id="messageGptContainerIconDiv-${id}"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
@@ -286,22 +302,19 @@
     }
 
 
-	function messageUserContainer(message, icon) {
+	function messageUserContainer(message) {
+		thinkID = parseInt(message.thinkID);
 		let html =
 			`
 			<div class="card" style="border:none;background:#6769725c;margin-top:0.5em;">
                <div class="card-body">
                   <div class="row">
-                    <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-						${message.user}
+                    <div class="col" id="messageUserContainerImageDiv-${thinkID}"></div>
          			</div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
-					 	<p class="animated-text">
-							${message.message}
+					 	<p class="animated-text" id="messageUserContainerPara-${thinkID}">
 						</p>
          			 </div>
                   </div>
