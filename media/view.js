@@ -409,41 +409,48 @@
 
 
 	// Individual changes
-	function infoChanges(change) {
-		return (
-			`<p class="${change.Severity.length > 0 ? "select-" + change.Severity.toLowerCase() : ""}">
-				${change.Severity.length > 0 ? change.Severity : "No changes in severity."}
-			</p>
-			<p class="state">
-				${change.State.length > 0 ? change.State.replaceAll("_", " ") : "No changes in state."}
-			</p>
-				${change.Comment.length > 0 ?
-				`<p class="comment">
-						${change.Comment}
-					</p>`
-				: ""
-			}
-			`
-		);
+	function infoChanges(change) {		
+		let infoDiv = document.createElement("div");
+		let severityPara = document.createElement("p");
+		let severityClass = change.Severity.length > 0 ? ("select-" + change.Severity.toLowerCase()) : "";
+		severityPara.setAttribute('class',severityClass);
+		var severity = change.Severity.length > 0 ? change.Severity : "No changes in severity.";
+		severityPara.textContent = severity;
+		let statePara = document.createElement("p");
+		statePara.setAttribute('class','state');
+		var state = change.State.length > 0 ? change.State.replaceAll("_", " ") : "No changes in state.";
+		statePara.textContent = state;
+		infoDiv.appendChild(severityPara);
+		infoDiv.appendChild(statePara);
+		if(change.Comment.length > 0){
+		let commentPara = document.createElement("p");
+		commentPara.setAttribute('class','comment');
+		commentPara.textContent = change.Comment;
+		infoDiv.appendChild(commentPara);
+		}
+		return infoDiv.outerHTML;
 	}
 
 	// Generic card for changes
-	function userCardInfo(username, date, info) {
-		return (
-			`<div class="history-container">
-				<div class="history-header">
-				<div class="username">
-					${username}
-				</div>
-				<div class="date">
-					${date}
-				</div>
-				</div>
-				<div class="text-content">
-					${info}
-				</div>
-			</div>`
-		);
+	function userCardInfo(username, date, info) {		
+		let historyContainerDiv = document.createElement('div');
+		historyContainerDiv.setAttribute('class','history-container');
+		let historyHeaderDiv = document.createElement('div');
+		historyHeaderDiv.setAttribute('class','history-header');
+		let userNameDiv = document.createElement('div');
+		userNameDiv.setAttribute('class','username');
+		userNameDiv.textContent = username;
+		let dateDiv = document.createElement('div');
+		dateDiv.setAttribute('class','date');
+		dateDiv.textContent = date;
+		let textContentDiv = document.createElement('div');
+		textContentDiv.setAttribute('class','text-content');
+		textContentDiv.innerHTML = info;
+		historyHeaderDiv.appendChild(userNameDiv);
+		historyHeaderDiv.appendChild(dateDiv);
+		historyContainerDiv.appendChild(historyHeaderDiv);
+		historyContainerDiv.appendChild(textContentDiv);
+		return historyContainerDiv.outerHTML;
 	}
 
 	function loader() {
