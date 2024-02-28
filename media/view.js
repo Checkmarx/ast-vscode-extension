@@ -379,7 +379,7 @@
 	}
 
 	function codeBashingSection(result){
-		let codeBashingSection = 
+		/* let codeBashingSection = 
 		result.sastNodes.length > 0
 			? `
 				<div class="header-item-codebashing" id="cx_header_codebashing">
@@ -389,7 +389,26 @@
 			` using Checkmarx's eLearning platform">codebashing</span>
 					<span>
 				</div>`
-			: "";
+			: "";*/
+			let codeBashingSection = "";
+			if(result.sastNodes.length > 0){
+				let headerItemCodebashingDiv = document.createElement('div');
+				headerItemCodebashingDiv.setAttribute('id','cx_header_codebashing');
+				let codebashingLinkSpan = document.createElement('span');
+				codebashingLinkSpan.setAttribute('class','codebashing-link');
+				codebashingLinkSpan.textContent='Learn more at ';
+				let orangeColorSpan = document.createElement('span');
+				orangeColorSpan.setAttribute('class','orange-color');
+				orangeColorSpan.textContent='>_';
+				let codeBashingSpan = document.createElement('span');
+				codeBashingSpan.setAttribute('class','codebashing-link-value');
+				codeBashingSpan.setAttribute('title',"Learn more about "+result.queryName +" using Checkmarx's eLearning platform");
+				codeBashingSpan.textContent = 'codebashing';
+				codebashingLinkSpan.appendChild(orangeColorSpan);
+				codebashingLinkSpan.appendChild(codeBashingSpan);
+				headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
+				return headerItemCodebashingDiv.outerHTML;
+			}
 			
 			return codeBashingSection;
 	}
