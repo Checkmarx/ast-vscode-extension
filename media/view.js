@@ -328,7 +328,7 @@
 		if (learnArray.length > 0) {
 			for (let learn of learnArray) {
 				for (let code of learn.samples) {
-					html += `
+					/*html += `
 							<div class="learn-section">
 								<p>${code.title} using ${code.progLanguage}</p>
 								<pre class="pre-code">
@@ -337,7 +337,19 @@
 									</code>
 								</pre>
 							</div>
-							`;
+							`;*/
+							let learnSectionDiv = document.createElement('div');
+							learnSectionDiv.setAttribute('class','learn-section');
+							let codeTitlePara = document.createElement('p');
+							codeTitlePara.textContent = ''+code.title+' using '+code.progLanguage;
+							let preCode = document.createElement('pre');
+							preCode.setAttribute('class','pre-code');
+							let codeElement = document.createElement('code');
+							codeElement.textContent = code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt");
+							preCode.appendChild(codeElement);
+							learnSectionDiv.appendChild(codeTitlePara);
+							learnSectionDiv.appendChild(preCode);
+							html += learnSectionDiv.outerHTML;
 
 				}
 			}
@@ -422,7 +434,7 @@
 		learnHeaderPara.setAttribute('class','learn-header');
 		learnHeaderPara.textContent = 'Risk';
 		let riskPara = document.createElement('p');
-		riskPara.textContent = risk;
+		riskPara.innerHTML = risk;
 		learnSectionDiv.appendChild(learnHeaderPara);
 		learnSectionDiv.appendChild(riskPara);
 		return learnSectionDiv.outerHTML;
@@ -437,7 +449,7 @@
 		learnHeaderPara.setAttribute('class','learn-header');
 		learnHeaderPara.textContent = 'Cause';
 		let causePara = document.createElement('p');
-		causePara.textContent = cause;
+		causePara.innerHTML = cause;
 		learnSectionDiv.appendChild(learnHeaderPara);
 		learnSectionDiv.appendChild(causePara);
 		return learnSectionDiv.outerHTML;
@@ -452,7 +464,7 @@
 		learnHeaderPara.textContent = 'General Recommendations';
 		let recommendationsSpan = document.createElement('span');
 		recommendationsSpan.setAttribute('class','code-sample');
-		recommendationsSpan.textContent = recommendations;
+		recommendationsSpan.innerHTML = recommendations;
 		learnSectionDiv.appendChild(learnHeaderPara);
 		learnSectionDiv.appendChild(recommendationsSpan);
 		return learnSectionDiv.outerHTML;
