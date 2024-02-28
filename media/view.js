@@ -396,15 +396,47 @@
 	
 
 	function riskSection(risk) {
-		return `<div class="learn-section"><p class="learn-header">Risk</p><p>${risk}</p></div>`;
+		//return `<div class="learn-section"><p class="learn-header">Risk</p><p>${risk}</p></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class','learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class','learn-header');
+		learnHeaderPara.textContent = 'Risk';
+		let riskPara = document.createElement('p');
+		riskPara.textContent = risk;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(riskPara);
+		return learnSectionDiv.outerHTML;
+
 	}
 
 	function causeSection(cause) {
-		return `<div class="learn-section"><p class="learn-header">Cause</p><p>${cause}</p></div>`;
+		//return `<div class="learn-section"><p class="learn-header">Cause</p><p>${cause}</p></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class','learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class','learn-header');
+		learnHeaderPara.textContent = 'Cause';
+		let causePara = document.createElement('p');
+		causePara.textContent = cause;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(causePara);
+		return learnSectionDiv.outerHTML;
 	}
 
 	function recommendationSection(recommendations) {
-		return `<div class="learn-section"><p class="learn-header">General Recommendations</p><span class="code-sample">${recommendations}</span></div>`;
+		//return `<div class="learn-section"><p class="learn-header">General Recommendations</p><span class="code-sample">${recommendations}</span></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class','learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class','learn-header');
+		learnHeaderPara.textContent = 'General Recommendations';
+		let recommendationsSpan = document.createElement('span');
+		recommendationsSpan.setAttribute('class','code-sample');
+		recommendationsSpan.textContent = recommendations;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(recommendationsSpan);
+		return learnSectionDiv.outerHTML;
 	}
 
 
@@ -454,7 +486,7 @@
 	}
 
 	function loader() {
-		return (
+		/*return (
 			`
 			<div id=\"history-container-loader\">
 				<center>
@@ -466,7 +498,18 @@
 				</center>
 			</div>
 			`
-		);
+		);*/
+		let historyContainerLoaderDiv = document.createElement('div');
+		historyContainerLoaderDiv.setAttribute('id','history-container-loader');
+		historyContainerLoaderDiv.setAttribute('class','center');
+		let historyContainerLoaderPara = document.createElement('p');
+		historyContainerLoaderPara.setAttribute('class','history-container-loader');
+		historyContainerLoaderPara.textContent = 'Loading changes';
+		let loaderDiv = document.createElement('div');
+		loaderDiv.setAttribute('class','loader');
+		historyContainerLoaderDiv.appendChild(historyContainerLoaderPara);
+		historyContainerLoaderDiv.appendChild(loaderDiv);
+		return historyContainerLoaderDiv.outerHTML;
 	}
 
 	function updateDisplay(id, display) {
