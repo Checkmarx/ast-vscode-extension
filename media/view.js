@@ -328,29 +328,18 @@
 		if (learnArray.length > 0) {
 			for (let learn of learnArray) {
 				for (let code of learn.samples) {
-					/*html += `
-							<div class="learn-section">
-								<p>${code.title} using ${code.progLanguage}</p>
-								<pre class="pre-code">
-									<code id="code">
-										${code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt")}
-									</code>
-								</pre>
-							</div>
-							`;*/
-							let learnSectionDiv = document.createElement('div');
-							learnSectionDiv.setAttribute('class','learn-section');
-							let codeTitlePara = document.createElement('p');
-							codeTitlePara.textContent = ''+code.title+' using '+code.progLanguage;
-							let preCode = document.createElement('pre');
-							preCode.setAttribute('class','pre-code');
-							let codeElement = document.createElement('code');
-							codeElement.textContent = code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt");
-							preCode.appendChild(codeElement);
-							learnSectionDiv.appendChild(codeTitlePara);
-							learnSectionDiv.appendChild(preCode);
-							html += learnSectionDiv.outerHTML;
-
+					let learnSectionDiv = document.createElement('div');
+					learnSectionDiv.setAttribute('class','learn-section');
+					let codeTitlePara = document.createElement('p');
+					codeTitlePara.textContent = ''+code.title+' using '+code.progLanguage;
+					let preCode = document.createElement('pre');
+					preCode.setAttribute('class','pre-code');
+					let codeElement = document.createElement('code');
+					codeElement.textContent = code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt");
+					preCode.appendChild(codeElement);
+					learnSectionDiv.appendChild(codeTitlePara);
+					learnSectionDiv.appendChild(preCode);
+					html += learnSectionDiv.outerHTML;
 				}
 			}
 		}
@@ -391,17 +380,6 @@
 	}
 
 	function codeBashingSection(result){
-		/* let codeBashingSection = 
-		result.sastNodes.length > 0
-			? `
-				<div class="header-item-codebashing" id="cx_header_codebashing">
-					<span class="codebashing-link">
-						Learn more at <span class="orange-color">&gt;_</span><span id="cx_codebashing" class="codebashing-link-value" title="Learn more about ` +
-			result.queryName +
-			` using Checkmarx's eLearning platform">codebashing</span>
-					<span>
-				</div>`
-			: "";*/
 			let codeBashingSection = "";
 			if(result.sastNodes.length > 0){
 				let headerItemCodebashingDiv = document.createElement('div');
@@ -420,14 +398,12 @@
 				codebashingLinkSpan.appendChild(codeBashingSpan);
 				headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
 				return headerItemCodebashingDiv.outerHTML;
-			}
-			
+			}			
 			return codeBashingSection;
 	}
 	
 
 	function riskSection(risk) {
-		//return `<div class="learn-section"><p class="learn-header">Risk</p><p>${risk}</p></div>`;
 		let learnSectionDiv = document.createElement('div');
 		learnSectionDiv.setAttribute('class','learn-section');
 		let learnHeaderPara = document.createElement('p');
@@ -442,7 +418,6 @@
 	}
 
 	function causeSection(cause) {
-		//return `<div class="learn-section"><p class="learn-header">Cause</p><p>${cause}</p></div>`;
 		let learnSectionDiv = document.createElement('div');
 		learnSectionDiv.setAttribute('class','learn-section');
 		let learnHeaderPara = document.createElement('p');
@@ -456,7 +431,6 @@
 	}
 
 	function recommendationSection(recommendations) {
-		//return `<div class="learn-section"><p class="learn-header">General Recommendations</p><span class="code-sample">${recommendations}</span></div>`;
 		let learnSectionDiv = document.createElement('div');
 		learnSectionDiv.setAttribute('class','learn-section');
 		let learnHeaderPara = document.createElement('p');
@@ -517,19 +491,6 @@
 	}
 
 	function loader() {
-		/*return (
-			`
-			<div id=\"history-container-loader\">
-				<center>
-					<p class=\"history-container-loader\">
-						Loading changes
-					</p>
-					<div class=\"loader\">
-					</div>
-				</center>
-			</div>
-			`
-		);*/
 		let historyContainerLoaderDiv = document.createElement('div');
 		historyContainerLoaderDiv.setAttribute('id','history-container-loader');
 		historyContainerLoaderDiv.setAttribute('class','center');

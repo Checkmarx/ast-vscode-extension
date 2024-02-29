@@ -109,30 +109,12 @@
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
 				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message);
-				var messageUserContainerIconUrl = new URL("https://" + message.icon.authority + message.icon.path);
-				var messageUserContainerIconImage = document.createElement("img");
-				messageUserContainerIconImage.setAttribute('src',messageUserContainerIconUrl);
-				messageUserContainerIconImage.setAttribute('class','avatar');
-				messageUserContainerIconImage.setAttribute('alt','Avatar');
-				var messageUserContainerImageDiv=document.getElementById('messageUserContainerImageDiv-'+message.message.thinkID);				
-				messageUserContainerImageDiv.appendChild(messageUserContainerIconImage);
-				var user=document.createTextNode(message.message.user);
-				messageUserContainerImageDiv.appendChild(user);
-				var messageUserContainerPara=document.getElementById('messageUserContainerPara-'+message.message.thinkID);
-				var msg=document.createTextNode(message.message.message);
-				messageUserContainerPara.appendChild(msg);
+				userMessageContainerAddElements(message);
 				break;
 			case 'thinking':
 				chatContainer = document.getElementById('chat-container');
-				var messageIcon = message.icon.external ? message.icon.external : message.icon;
 				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID);
-				var iconUrl = new URL(messageIcon);
-				var iconImage = document.createElement("img");
-				iconImage.setAttribute('src',iconUrl);
-				iconImage.setAttribute('class','avatar');
-				iconImage.setAttribute('alt','Avatar');
-				var imageSpan=document.getElementById('aiSecurityChampionImageDiv-'+message.thinkID);				
-				imageSpan.insertBefore(iconImage,imageSpan.firstChild);				
+				thinkingContainerAddElements(message);				
 				break;
 			case 'response':
 				// Hide thinking
@@ -140,18 +122,11 @@
 				thinkContainer.style.display = 'none';
 				// Load message response
 				chatContainer = document.getElementById('chat-container');
-				var messageGptMessageIcon = message.icon.external ? message.icon.external : message.icon;
 				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.thinkID);
 				currentID = message.thinkID;
 				currentMessage = message.message.message;
 				// document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(0);
-				var msgContainerIconUrl = new URL(messageGptMessageIcon);				
-				var messageContainerIconImage = document.createElement("img");
-				messageContainerIconImage.setAttribute('src',msgContainerIconUrl.toString());
-				messageContainerIconImage.setAttribute('class','avatar');
-				messageContainerIconImage.setAttribute('alt','Avatar');
-				var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv-'+message.thinkID);				
-				messageContainerImageDiv.insertBefore(messageContainerIconImage,messageContainerImageDiv.firstChild);
+				messageGptContainerAddElements(message);
 				await typeWriter();
 				i = 1;
 
@@ -279,7 +254,18 @@
                </div>
             </div>`;
 		return html;
-	}	
+	}
+	
+	function thinkingContainerAddElements(message){
+		var messageIcon = message.icon.external ? message.icon.external : message.icon;
+		var iconUrl = new URL(messageIcon);
+		var iconImage = document.createElement("img");
+		iconImage.setAttribute('src',iconUrl);
+		iconImage.setAttribute('class','avatar');
+		iconImage.setAttribute('alt','Avatar');
+		var imageSpan=document.getElementById('aiSecurityChampionImageDiv-'+message.thinkID);				
+		imageSpan.insertBefore(iconImage,imageSpan.firstChild);
+	}
 
 	function messageGptContainer(id) {
 		id = parseInt(id);
@@ -301,6 +287,17 @@
 		return html;
     }
 
+	function messageGptContainerAddElements(message){
+		var messageGptMessageIcon = message.icon.external ? message.icon.external : message.icon;
+		var msgContainerIconUrl = new URL(messageGptMessageIcon);				
+		var messageContainerIconImage = document.createElement("img");
+		messageContainerIconImage.setAttribute('src',msgContainerIconUrl.toString());
+		messageContainerIconImage.setAttribute('class','avatar');
+		messageContainerIconImage.setAttribute('alt','Avatar');
+		var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv-'+message.thinkID);				
+		messageContainerImageDiv.insertBefore(messageContainerIconImage,messageContainerImageDiv.firstChild);
+	}
+
 
 	function messageUserContainer(message) {
 		thinkID = parseInt(message.thinkID);
@@ -321,6 +318,21 @@
                </div>
             </div>`;
 		return html;
+	}
+
+	function userMessageContainerAddElements(message){
+		var messageUserContainerIconUrl = new URL("https://" + message.icon.authority + message.icon.path);
+		var messageUserContainerIconImage = document.createElement("img");
+		messageUserContainerIconImage.setAttribute('src',messageUserContainerIconUrl);
+		messageUserContainerIconImage.setAttribute('class','avatar');
+		messageUserContainerIconImage.setAttribute('alt','Avatar');
+		var messageUserContainerImageDiv=document.getElementById('messageUserContainerImageDiv-'+message.message.thinkID);				
+		messageUserContainerImageDiv.appendChild(messageUserContainerIconImage);
+		var user=document.createTextNode(message.message.user);
+		messageUserContainerImageDiv.appendChild(user);
+		var messageUserContainerPara=document.getElementById('messageUserContainerPara-'+message.message.thinkID);
+		var msg=document.createTextNode(message.message.message);
+		messageUserContainerPara.appendChild(msg);
 	}
 
 	document.querySelectorAll("[id^='gpt-settings']").forEach(element => {
