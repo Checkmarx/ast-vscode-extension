@@ -108,8 +108,7 @@
 		switch (message.command) {
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message);
-				userMessageContainerAddElements(message);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message);
 				break;
 			case 'thinking':
 				chatContainer = document.getElementById('chat-container');
@@ -300,39 +299,38 @@
 
 
 	function messageUserContainer(message) {
-		thinkID = parseInt(message.thinkID);
-		let html =
-			`
-			<div class="card" style="border:none;background:#6769725c;margin-top:0.5em;">
-               <div class="card-body">
-                  <div class="row">
-                    <div class="col" id="messageUserContainerImageDiv-${thinkID}"></div>
-         			</div>
-                  </div>
-                  <div class="row" style="margin-top:0.8em">
-                     <div class="col">
-					 	<p class="animated-text" id="messageUserContainerPara-${thinkID}">
-						</p>
-         			 </div>
-                  </div>
-               </div>
-            </div>`;
-		return html;
-	}
-
-	function userMessageContainerAddElements(message){
+		var cardDiv = document.createElement('div');
+		cardDiv.setAttribute('class','card');
+		cardDiv.setAttribute('style','border:none;background:#6769725c;margin-top:0.5em;');
+		var cardBodyDiv = document.createElement('div');
+		cardBodyDiv.setAttribute('class','card-body');
+		var imageRowDiv = document.createElement('div');
+		imageRowDiv.setAttribute('class','row');
+		var messageUserContainerImageDiv = document.createElement('div');
+		messageUserContainerImageDiv.setAttribute('class','col');
 		var messageUserContainerIconUrl = new URL("https://" + message.icon.authority + message.icon.path);
 		var messageUserContainerIconImage = document.createElement("img");
 		messageUserContainerIconImage.setAttribute('src',messageUserContainerIconUrl);
 		messageUserContainerIconImage.setAttribute('class','avatar');
 		messageUserContainerIconImage.setAttribute('alt','Avatar');
-		var messageUserContainerImageDiv=document.getElementById('messageUserContainerImageDiv-'+message.message.thinkID);				
 		messageUserContainerImageDiv.appendChild(messageUserContainerIconImage);
-		var user=document.createTextNode(message.message.user);
+		var user=document.createTextNode(' '+message.message.user+' ');
 		messageUserContainerImageDiv.appendChild(user);
-		var messageUserContainerPara=document.getElementById('messageUserContainerPara-'+message.message.thinkID);
-		var msg=document.createTextNode(message.message.message);
+		imageRowDiv.appendChild(messageUserContainerImageDiv);
+		var messageRowDiv = document.createElement('div');
+		messageRowDiv.setAttribute('class','row');
+		messageRowDiv.setAttribute('style','margin-top:0.8em');
+		var messageDiv = document.createElement('div');
+		messageDiv.setAttribute('class','col');
+		var messageUserContainerPara=document.createElement('p');
+		var msg=document.createTextNode(' '+message.message.message+' ');
 		messageUserContainerPara.appendChild(msg);
+		messageDiv.appendChild(messageUserContainerPara);
+		messageRowDiv.appendChild(messageDiv);
+		cardBodyDiv.appendChild(imageRowDiv);
+		cardBodyDiv.appendChild(messageRowDiv);
+		cardDiv.appendChild(cardBodyDiv);
+		return cardDiv.outerHTML;
 	}
 
 	document.querySelectorAll("[id^='gpt-settings']").forEach(element => {
