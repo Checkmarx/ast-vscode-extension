@@ -388,7 +388,7 @@ export class WebViewCommand {
     // Update webview to show the user message
     this.detailsPanel.webview.postMessage({
       command: "userMessage",
-      message: { message: userMessage, user: user },
+      message: { message: userMessage, user: user ,thinkID: this.thinkID},
       icon: userKicsIcon
     });
     // disable all the buttons and inputs

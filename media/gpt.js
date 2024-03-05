@@ -104,14 +104,16 @@
 		document.body.scrollIntoView(false);
 		const message = event.data;
 		let chatContainer;
+		let spanElements;
 		switch (message.command) {
 			case 'userMessage':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message.message, "https://" + message.icon.authority + message.icon.path);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageUserContainer(message);
 				break;
 			case 'thinking':
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID, message.icon.external ? message.icon.external : message.icon);
+				chatContainer.innerHTML = chatContainer.innerHTML + thinkingContainer(message.thinkID);
+				thinkingContainerAddElements(message);				
 				break;
 			case 'response':
 				// Hide thinking
@@ -119,10 +121,11 @@
 				thinkContainer.style.display = 'none';
 				// Load message response
 				chatContainer = document.getElementById('chat-container');
-				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.icon.external ? message.icon.external : message.icon, message.thinkID);
+				chatContainer.innerHTML = chatContainer.innerHTML + messageGptContainer(message.thinkID);
 				currentID = message.thinkID;
 				currentMessage = message.message.message;
 				// document.getElementById("gpt-" + currentID).innerHTML += currentMessage.charAt(0);
+				messageGptContainerAddElements(message);
 				await typeWriter();
 				i = 1;
 
@@ -232,18 +235,15 @@
 			});
 		});
 	});
-
-	function thinkingContainer(thinkID, icon) {
+	
+	function thinkingContainer(thinkID) {
+		thinkID = parseInt(thinkID);
 		let html =
 			`
 			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                     <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-						AI Security Champion
-					</div>
+                    <div class="col" id="aiSecurityChampionImageDiv-${thinkID}"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                     <div class="col">
@@ -254,18 +254,26 @@
             </div>`;
 		return html;
 	}
+	
+	function thinkingContainerAddElements(message){
+		var messageIcon = message.icon.external ? message.icon.external : message.icon;
+		var iconUrl = new URL(messageIcon);
+		var iconImage = document.createElement("img");
+		iconImage.setAttribute('src',iconUrl);
+		iconImage.setAttribute('class','avatar');
+		iconImage.setAttribute('alt','Avatar');
+		var imageSpan=document.getElementById('aiSecurityChampionImageDiv-'+message.thinkID);				
+		imageSpan.insertBefore(iconImage,imageSpan.firstChild);
+	}
 
-	function messageGptContainer(icon, id) {
-		let html =
+	function messageGptContainer(id) {
+		id = parseInt(id);
+        let html =
 			`
 			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
                <div class="card-body">
                   <div class="row">
-                     <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-			   			AI Security Champion
-         			</div>
+                     <div class="col" id="messageGptContainerIconDiv-${id}"> AI Security Champion </div>
                   </div>
                   <div class="row" style="margin-top:0.8em">
                      <div class="col">
@@ -276,30 +284,53 @@
                </div>
             </div>`;
 		return html;
+    }
+
+	function messageGptContainerAddElements(message){
+		var messageGptMessageIcon = message.icon.external ? message.icon.external : message.icon;
+		var msgContainerIconUrl = new URL(messageGptMessageIcon);				
+		var messageContainerIconImage = document.createElement("img");
+		messageContainerIconImage.setAttribute('src',msgContainerIconUrl.toString());
+		messageContainerIconImage.setAttribute('class','avatar');
+		messageContainerIconImage.setAttribute('alt','Avatar');
+		var messageContainerImageDiv=document.getElementById('messageGptContainerIconDiv-'+message.thinkID);				
+		messageContainerImageDiv.insertBefore(messageContainerIconImage,messageContainerImageDiv.firstChild);
 	}
 
-	function messageUserContainer(message, icon) {
-		let html =
-			`
-			<div class="card" style="border:none;background:#6769725c;margin-top:0.5em;">
-               <div class="card-body">
-                  <div class="row">
-                    <div class="col">
-						<img src="${icon}" class="avatar"
-						alt="Avatar" />
-						${message.user}
-         			</div>
-                  </div>
-                  <div class="row" style="margin-top:0.8em">
-                     <div class="col">
-					 	<p class="animated-text">
-							${message.message}
-						</p>
-         			 </div>
-                  </div>
-               </div>
-            </div>`;
-		return html;
+
+	function messageUserContainer(message) {
+		var cardDiv = document.createElement('div');
+		cardDiv.setAttribute('class','card');
+		cardDiv.setAttribute('style','border:none;background:#6769725c;margin-top:0.5em;');
+		var cardBodyDiv = document.createElement('div');
+		cardBodyDiv.setAttribute('class','card-body');
+		var imageRowDiv = document.createElement('div');
+		imageRowDiv.setAttribute('class','row');
+		var messageUserContainerImageDiv = document.createElement('div');
+		messageUserContainerImageDiv.setAttribute('class','col');
+		var messageUserContainerIconUrl = new URL("https://" + message.icon.authority + message.icon.path);
+		var messageUserContainerIconImage = document.createElement("img");
+		messageUserContainerIconImage.setAttribute('src',messageUserContainerIconUrl);
+		messageUserContainerIconImage.setAttribute('class','avatar');
+		messageUserContainerIconImage.setAttribute('alt','Avatar');
+		messageUserContainerImageDiv.appendChild(messageUserContainerIconImage);
+		var user=document.createTextNode(' '+message.message.user+' ');
+		messageUserContainerImageDiv.appendChild(user);
+		imageRowDiv.appendChild(messageUserContainerImageDiv);
+		var messageRowDiv = document.createElement('div');
+		messageRowDiv.setAttribute('class','row');
+		messageRowDiv.setAttribute('style','margin-top:0.8em');
+		var messageDiv = document.createElement('div');
+		messageDiv.setAttribute('class','col');
+		var messageUserContainerPara=document.createElement('p');
+		var msg=document.createTextNode(' '+message.message.message+' ');
+		messageUserContainerPara.appendChild(msg);
+		messageDiv.appendChild(messageUserContainerPara);
+		messageRowDiv.appendChild(messageDiv);
+		cardBodyDiv.appendChild(imageRowDiv);
+		cardBodyDiv.appendChild(messageRowDiv);
+		cardDiv.appendChild(cardBodyDiv);
+		return cardDiv.outerHTML;
 	}
 
 	document.querySelectorAll("[id^='gpt-settings']").forEach(element => {
