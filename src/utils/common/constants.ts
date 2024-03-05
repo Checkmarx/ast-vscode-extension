@@ -131,8 +131,8 @@ export const constants = {
   gptWebviewName: "gpt",
   aiSecurityChampion: "AI Security Champion",
   gptSettings: `Checkmarx AI Security Champion: OpenAI Key`,
-  gptCommandName: "CheckmarxAiGuidedRemediation",
-  gptSettingsKey: "OpenAI Key",
+  gptCommandName: "CheckmarxSecurityChampion",
+  gptSettingsKey: "key",
   gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
