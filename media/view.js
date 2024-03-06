@@ -360,10 +360,10 @@
 		let html = "<div>";
 		if (descriptionArray.length > 0) {
 			for (let description of descriptionArray) {
+				html += codeBashingSection(result);
 				html += riskSection(description.risk);
 				html += causeSection(description.cause);
 				html += recommendationSection(description.generalRecommendations);
-				html += codeBashingSection(result);
 			}
 		}
 		else {
@@ -384,6 +384,7 @@
 			if(result.sastNodes.length > 0){
 				let headerItemCodebashingDiv = document.createElement('div');
 				headerItemCodebashingDiv.setAttribute('id','cx_header_codebashing');
+				headerItemCodebashingDiv.style.marginBottom = '20px';
 				let codebashingLinkSpan = document.createElement('span');
 				codebashingLinkSpan.setAttribute('class','codebashing-link');
 				codebashingLinkSpan.textContent='Learn more at ';
