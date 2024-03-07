@@ -11,16 +11,18 @@ export class PromptSecurity {
 	private server: http.Server;
 	private app: express;
   
-	constructor(port:number) {
+	constructor() {
 	  this.hostname = "127.0.0.1";
-	  this.port = port;
-	  this.app = express();
-	  this.app.use(express.json());
-	  this.app.use(express.urlencoded({ extended: true })); 
-	  this.server = this.app.listen(this.port,this.hostname);
 	}
 	getServer(){
 		return this.server;
+	}
+	registerPromptListener(port:number){
+		this.port = port;
+		this.app = express();
+		this.app.use(express.json());
+		this.app.use(express.urlencoded({ extended: true })); 
+		this.server = this.app.listen(this.port,this.hostname);
 	}
 	extensionListener(
 		context:vscode.ExtensionContext

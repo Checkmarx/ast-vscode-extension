@@ -212,11 +212,11 @@ export async function activate(context: vscode.ExtensionContext) {
     
     //You will need to add a checkbox to enable the extension's activation
     const isPromptEnabled:boolean = false;
-    //You will need to change it to recieve a port from the user
-    const port:number = 3312;
+    const promptListener = new PromptSecurity();
     if (isPromptEnabled){
-    //New Prompt listener
-        const promptListener = new PromptSecurity(port);
+        //New Prompt listener
+        //The port number should be dynamic
+        promptListener.registerPromptListener(3312);
         //Global server variable
         server = promptListener.getServer();
         //Starting the endpoint the browser extension can call
