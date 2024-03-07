@@ -11,20 +11,23 @@ export async function promptListener(
 				const code  = editor.document.getText(selection).trim();
 				if (code.length > 20) {
 					const filePath = editor.document.uri.fsPath;
-					let lastSelectedCodeSections: any[] | undefined = context.globalState.get('lastSelectedCodeSections');
+					let lastSelectedCodeSections: SelectionBuffer[] | undefined = context.globalState.get('lastSelectedCodeSections');
 					if (!lastSelectedCodeSections) {
 						lastSelectedCodeSections = [];
 					}
 					if (lastSelectedCodeSections.length > 5) {
 						lastSelectedCodeSections.shift();
 					}
-					lastSelectedCodeSections.push({
-						code: code,
-						filePath: filePath
-					});
+					const buffer: SelectionBuffer = {code: code,filePath: filePath};
+					lastSelectedCodeSections.push(buffer);
 					context.globalState.update('lastSelectedCodeSections', lastSelectedCodeSections);
 				}
 			}
 		}
-	})
+	});
 };
+interface SelectionBuffer {
+	code: string;
+	filePath:string;
+}
+   
