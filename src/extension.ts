@@ -210,7 +210,9 @@ export async function activate(context: vscode.ExtensionContext) {
     // Refresh sca tree with start scan message
     scaResultsProvider.refreshData(constants.scaStartScan);
     
+    //You will need to add a checkbox to enable the extension's activation
     const isPromptEnabled:boolean = false;
+    //You will need to change it to recieve a port from the user
     const port:number = 3312;
     if (isPromptEnabled){
     //New Prompt listener
