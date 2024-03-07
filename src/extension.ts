@@ -26,7 +26,7 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { Server } from "http";
-import { PromptListener } from "./utils/listener/prompt";
+import { PromptSecurity } from "./utils/listener/promptSecurity";
 
 
 
@@ -209,25 +209,28 @@ export async function activate(context: vscode.ExtensionContext) {
     kicsScanCommand.registerKicsRemediation();
     // Refresh sca tree with start scan message
     scaResultsProvider.refreshData(constants.scaStartScan);
-
-
-    //New Prompt listener
-    const promptListener = new PromptListener();
-    //Global server variable
-    server = promptListener.getServer();
-    //Starting the endpoint the browser extension can call
-    promptListener.extensionListener(context);
     
-    //On selection send the context and the event to the selection buffer funtion
-    vscode.window.onDidChangeTextEditorSelection(event => { 
-        promptListener.selectionBuffer(context,event);
-    });
-    //If the window is changed - Prompt
-    vscode.window.onDidChangeWindowState(async windowState => {
-		if (windowState){
-            promptListener.windowChange();
-        }
-	});
+    const isPromptEnabled:boolean = false;
+    const port:number = 3312;
+    if (isPromptEnabled){
+    //New Prompt listener
+        const promptListener = new PromptSecurity(port);
+        //Global server variable
+        server = promptListener.getServer();
+        //Starting the endpoint the browser extension can call
+        promptListener.extensionListener(context);
+        
+        //On selection send the context and the event to the selection buffer funtion
+        vscode.window.onDidChangeTextEditorSelection(event => { 
+            promptListener.selectionBuffer(context,event);
+        });
+        //If the window is changed - Prompt
+        vscode.window.onDidChangeWindowState(async windowState => {
+            if (windowState){
+                promptListener.windowChange();
+            }
+        });
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

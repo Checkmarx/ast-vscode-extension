@@ -5,15 +5,15 @@ import * as http from "http";
 
 
 
-export class PromptListener {
+export class PromptSecurity {
 	private hostname: string;
 	private port: number;
 	private server: http.Server;
 	private app: express;
   
-	constructor() {
+	constructor(port:number) {
 	  this.hostname = "127.0.0.1";
-	  this.port = 3312;
+	  this.port = port;
 	  this.app = express();
 	  this.app.use(express.json());
 	  this.app.use(express.urlencoded({ extended: true })); 
@@ -56,7 +56,7 @@ export class PromptListener {
             if (!selection.isEmpty) {
                 const editor = event.textEditor;
                 const code  = editor.document.getText(selection).trim();
-				if (code.length > 20) {
+				if (code.length > 20 && code.length < 32* 1024) {
 					const filePath = editor.document.uri.fsPath;
 					let lastSelectedCodeSections: SelectionBuffer[] | undefined = context.globalState.get('lastSelectedCodeSections');
 					if (!lastSelectedCodeSections) {
