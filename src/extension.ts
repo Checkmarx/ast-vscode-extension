@@ -25,12 +25,11 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
-import { Server } from "http";
 import { PromptSecurity } from "./utils/listener/promptSecurity";
 
 
 
-let server: Server | null = null;
+const promptListener: PromptSecurity = new PromptSecurity();
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -211,34 +210,15 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider.refreshData(constants.scaStartScan);
     
     //You will need to add a checkbox to enable the extension's activation
-    const isPromptEnabled:boolean = false;
-    const promptListener = new PromptSecurity();
+    const isPromptEnabled:boolean = true;
     if (isPromptEnabled){
-        //New Prompt listener
         //The port number should be dynamic
-        promptListener.registerPromptListener(3312);
-        //Global server variable
-        server = promptListener.getServer();
-        //Starting the endpoint the browser extension can call
-        promptListener.extensionListener(context);
-        
-        //On selection send the context and the event to the selection buffer funtion
-        vscode.window.onDidChangeTextEditorSelection(event => { 
-            promptListener.selectionBuffer(context,event);
-        });
-        //If the window is changed - Prompt
-        vscode.window.onDidChangeWindowState(async windowState => {
-            if (windowState){
-                promptListener.windowChange();
-            }
-        });
+        promptListener.registerPromptListener(context,3312);
     }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function deactivate() {
     //Close Prompt's server if the extension is deactivated
-    if (server) {
-		server.close();
-	}
+    promptListener.deactivate();
 }

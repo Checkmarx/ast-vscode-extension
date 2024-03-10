@@ -7,9 +7,10 @@ import * as http from "http";
 
 export class PromptSecurity {
 	private hostname: string;
-	private port: number;
-	private server: http.Server;
-	private app: express;
+	private port?: number;
+	private server?: http.Server;
+	private app?: express;
+	private context?:vscode.ExtensionContext;
   
 	constructor() {
 	  this.hostname = "127.0.0.1";
@@ -17,21 +18,40 @@ export class PromptSecurity {
 	getServer(){
 		return this.server;
 	}
-	registerPromptListener(port:number){
+	deactivate(){
+		if (this.server){
+			this.server.close();
+		}
+	}
+	registerPromptListener(context:vscode.ExtensionContext,port:number){
 		this.port = port;
 		this.app = express();
 		this.app.use(express.json());
 		this.app.use(express.urlencoded({ extended: true })); 
 		this.server = this.app.listen(this.port,this.hostname);
+		//Starting the endpoint the browser extension can call
+	    this.extensionListener();
+		//On selection send the context and the event to the selection buffer funtion
+		vscode.window.onDidChangeTextEditorSelection(event => { 
+            this.selectionBuffer(event);
+        });
+        //If the window is changed - Prompt
+        vscode.window.onDidChangeWindowState(async windowState => {
+            if (windowState){
+            	this.windowChange();
+            }
+        });
 	}
 	extensionListener(
-		context:vscode.ExtensionContext
 	){
+		this.app.get('/api/health', (req,res) => {
+			res.json({ "vscode":"Yay!" });
+		});
 		this.app.post('/api/checkCode', (req, res) => {
 			const receivedText: string = req.body.text;
 			let containsCode: boolean = false;
 			let filePath: string | undefined = undefined;
-			const lastSelectedCodeSections: SelectionBuffer[] | undefined = context.globalState.get('lastSelectedCodeSections');
+			const lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
 			if (lastSelectedCodeSections) {
 				for (const section of lastSelectedCodeSections) {
 					if (receivedText.includes(section.code)) {
@@ -50,7 +70,6 @@ export class PromptSecurity {
 		}
 	}
 	selectionBuffer(
-		context:vscode.ExtensionContext,
 		event:vscode.TextEditorSelectionChangeEvent
 	){
 		if (event.selections.length > 0) {
@@ -60,7 +79,7 @@ export class PromptSecurity {
                 const code  = editor.document.getText(selection).trim();
 				if (code.length > 20 && code.length < 32* 1024) {
 					const filePath = editor.document.uri.fsPath;
-					let lastSelectedCodeSections: SelectionBuffer[] | undefined = context.globalState.get('lastSelectedCodeSections');
+					let lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
 					if (!lastSelectedCodeSections) {
 						lastSelectedCodeSections = [];
 					}
@@ -71,7 +90,7 @@ export class PromptSecurity {
 						code: code,
 						filePath: filePath
 					});
-					context.globalState.update('lastSelectedCodeSections', lastSelectedCodeSections);
+					this.context.globalState.update('lastSelectedCodeSections', lastSelectedCodeSections);
             	}
 			}
         }
