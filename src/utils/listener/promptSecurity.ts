@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 //For Prompt's server
 import express from 'express';
-import * as http from "http";
+import { Server } from "http";
 
 
 
 export class PromptSecurity {
 	private hostname: string;
 	private port?: number;
-	private server?: http.Server;
+	private server?: Server;
 	private app?: express;
 	private context?:vscode.ExtensionContext;
   
@@ -29,6 +29,7 @@ export class PromptSecurity {
 		this.app.use(express.json());
 		this.app.use(express.urlencoded({ extended: true })); 
 		this.server = this.app.listen(this.port,this.hostname);
+		this.context = context;
 		//Starting the endpoint the browser extension can call
 	    this.extensionListener();
 		//On selection send the context and the event to the selection buffer funtion
