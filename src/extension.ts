@@ -212,9 +212,8 @@ export async function activate(context: vscode.ExtensionContext) {
     //You will need to add a checkbox to enable the extension's activation
     const isPromptEnabled:boolean = true;
     if (isPromptEnabled){
-        promptListener = new PromptSecurity();
         //The port number should be dynamic
-        promptListener.registerPromptListener(context,3312);
+        promptListener = new PromptSecurity(context,3312);
     }
 }
 

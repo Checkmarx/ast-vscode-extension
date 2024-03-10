@@ -12,8 +12,11 @@ export class PromptSecurity {
 	private app?: express;
 	private context?:vscode.ExtensionContext;
   
-	constructor() {
+	constructor(context:vscode.ExtensionContext,port:number) {
 	  this.hostname = "127.0.0.1";
+	  this.context = context;
+	  this.port = port;
+	  this.registerPromptListener();
 	}
 	getServer(){
 		return this.server;
@@ -23,13 +26,11 @@ export class PromptSecurity {
 			this.server.close();
 		}
 	}
-	registerPromptListener(context:vscode.ExtensionContext,port:number){
-		this.port = port;
+	registerPromptListener(){
 		this.app = express();
 		this.app.use(express.json());
 		this.app.use(express.urlencoded({ extended: true })); 
 		this.server = this.app.listen(this.port,this.hostname);
-		this.context = context;
 		//Starting the endpoint the browser extension can call
 	    this.extensionListener();
 		//On selection send the context and the event to the selection buffer funtion
