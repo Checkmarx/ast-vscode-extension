@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [v2.6.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.1-nightly.0) - 2024-03-13 13:25:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* VsCode | CxOne Scan (all engines) and solve all risks (AST-35367) by @PravinGadankush in https://github.com/Checkmarx/ast-vscode-extension/pull/762
+### New Features 🚀
+* Small VSCode and AI Guided Remediation improvements (AST-34151, AST-35572) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/751
+* ignore chai in dependabot by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/765
+* Move 'Learn more at codebashing' inside 'Description' tab (AST-36915) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/781
+### Checkmarx One SDK Updates 🛠
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.83 to 0.0.84 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/747
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.84 to 0.0.85 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/774
+* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.85 to 0.0.86 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/788
+### Other Changes
+* Revert "Bump chai from 4.3.1 to 5.1.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/772
+* Fix NPM script for running tests on Windows (AST-37032) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/783
+
+## New Contributors
+* @checkmarx-kobi-hagmi made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/751
+* @OrShamirCM made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/772
+* @PravinGadankush made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/762
+* @elchananarb made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/781
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.6.0...v2.6.1-nightly.0
+
 ## [v2.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.0) - 2024-02-02 17:46:21
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.6.0 -->
