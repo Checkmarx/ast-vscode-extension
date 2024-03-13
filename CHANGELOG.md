@@ -1,8 +1,8 @@
 # CHANGELOG
 
-## [v2.6.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.1-nightly.0) - 2024-03-13 13:25:08
+## [v2.7.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.0) - 2024-03-13 14:56:17
 
-<!-- Release notes generated using configuration in .github/release.yml at main -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.7.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
@@ -25,7 +25,11 @@
 * @PravinGadankush made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/762
 * @elchananarb made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/781
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.6.0...v2.6.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.6.0...v2.7.0
+
+## [v2.6.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.1-nightly.0) - 2024-03-13 13:25:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.0) - 2024-02-02 17:46:21
 
