@@ -35,7 +35,7 @@ export class Cx implements CxPlatform {
 
 	async runSastGpt(message: string, filePath: string, resultId: string, conversationId?: string) {
 		const resultsFilePath = getResultsFilePath();
-		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const cx = new CxWrapper(this.getAstConfiguration());
 		const gptToken = vscode.workspace
 			.getConfiguration(constants.gptCommandName)
 			.get(constants.gptSettingsKey) as string;

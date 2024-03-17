@@ -1,29 +1,35 @@
 # CHANGELOG
 
-## [v2.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.0) - 2024-02-02 17:46:21
+## [v2.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.0) - 2024-03-15 15:46:56
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.6.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.8.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* Update dependencies and fix icon import by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/727
-### Checkmarx One SDK Updates 🛠
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.79 to 0.0.80 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/652
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.80 to 0.0.81 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/688
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.81 to 0.0.82 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/724
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.82 to 0.0.83 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/745
-### Other Changes
-* Update package.json by @margaritalm in https://github.com/Checkmarx/ast-vscode-extension/pull/736
-* Feature move ai location by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/704
+* adding apikey to sast gpt command + fixing codebashing link by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/792
 
-## New Contributors
-* @margaritalm made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/736
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.5.0...v2.6.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.7.0...v2.8.0
 
-## [v2.5.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-nightly.0) - 2024-01-19 17:08:16
+## [v2.7.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.1-nightly.0) - 2024-03-15 15:26:54
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.7.1-2.0.7-sast-panel-bug.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.1-2.0.7-sast-panel-bug.0) - 2024-03-13 17:29:39
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.7.0...v2.7.1-2.0.7-sast-panel-bug.0
+
+## [v2.7.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.0) - 2024-03-13 14:56:17
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.7.0 -->
+
+## [v2.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.6.0) - 2024-02-02 17:46:21
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.6.0 -->
 
 ## [v2.5.1-2.5.0-sast-gpt-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.5.1-2.5.0-sast-gpt-v2.0) - 2024-01-24 17:24:20
 
