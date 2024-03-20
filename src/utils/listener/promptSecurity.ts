@@ -78,7 +78,7 @@ export class PromptSecurity {
             const selection = event.selections[0];
             if (!selection.isEmpty) {
                 const editor = event.textEditor;
-                const code  = editor.document.getText(selection).trim();
+                const code  = editor.document.getText(selection)?.trim();
 				if (code.length > 20 && code.length < 32* 1024) {
 					const filePath = editor.document.uri.fsPath;
 					let lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
