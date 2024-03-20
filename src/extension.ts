@@ -208,12 +208,15 @@ export async function activate(context: vscode.ExtensionContext) {
     kicsScanCommand.registerKicsRemediation();
     // Refresh sca tree with start scan message
     scaResultsProvider.refreshData(constants.scaStartScan);
-    
-    //You will need to add a checkbox to enable the extension's activation
-    const isPromptEnabled:boolean = true;
-    if (isPromptEnabled){
-        //The port number should be dynamic
-        promptListener = new PromptSecurity(context,3312);
+    try{
+        //You will need to add a checkbox to enable the extension's activation
+        const isPromptEnabled:boolean = true;
+        if (isPromptEnabled){
+            //The port number should be dynamic
+            promptListener = new PromptSecurity(context,3312);
+        }
+    } catch(error) {
+        logs.error(`An error occurred while registering the promptListener: ${error.message}\n It is not active`);
     }
 }
 

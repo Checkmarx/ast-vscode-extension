@@ -14,17 +14,25 @@ export class PromptSecurity {
 	private context?:vscode.ExtensionContext;
   
 	constructor(context:vscode.ExtensionContext,port:number) {
-	  this.hostname = "127.0.0.1";
-	  this.context = context;
-	  this.port = port;
-	  this.registerPromptListener();
+		try{
+			this.hostname = "127.0.0.1";
+			this.context = context;
+			this.port = port;
+			this.registerPromptListener();
+		} catch(error) {
+			vscode.window.showErrorMessage(`An error occurred while activating the PromptListener: ${error.message}`);
+		}
 	}
 	getServer(){
 		return this.server;
 	}
 	deactivate(){
-		if (this.server){
-			this.server.close();
+		try{
+			if (this.server){
+				this.server.close();
+			}
+		} catch(error) {
+			vscode.window.showErrorMessage(`An error occurred while deactivating the plugin: ${error.message}`);
 		}
 	}
 	registerPromptListener(){
@@ -46,7 +54,7 @@ export class PromptSecurity {
 				}
 			});
 		} catch(error) {
-			vscode.window.showErrorMessage(`An error occurred: ${error.message}`);
+			vscode.window.showErrorMessage(`An error occurred while registering the promptListener: ${error.message}`);
 		}
 	}
 	extensionListener(
@@ -55,64 +63,87 @@ export class PromptSecurity {
 			res.json({ "vscode":"Yay!" });
 		});
 		this.app.post('/api/checkCode', (req, res) => {
-			const receivedText: string = req.body.text ?? "";
-			let containsCode: boolean = false;
-			let filePath: string | undefined = undefined;
-			const lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
-			if (lastSelectedCodeSections) {
-				for (const section of lastSelectedCodeSections) {
-					if (receivedText.includes(section.code)) {
-						containsCode = true;
-						filePath = section.filePath;
-						break;
+			try{
+				const receivedText: string = req.body.text ?? "";
+				let containsCode: boolean = false;
+				let filePath: string | undefined = undefined;
+				const lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
+				if (lastSelectedCodeSections) {
+					for (const section of lastSelectedCodeSections) {
+						if (receivedText.includes(section.code)) {
+							containsCode = true;
+							filePath = section.filePath;
+							break;
+						}
 					}
 				}
+				res.json({ containsCode, filePath });
+			} catch(error) {
+				vscode.window.showErrorMessage(`An error occurred while checking if th code was copied: ${error.message}`);
+				res.json({ containsCode: false });
 			}
-			res.json({ containsCode, filePath });
 		});
 	}
 	windowChange(){
-		if (!this.server || !this.server.address()) {
-			this.server = this.app.listen(this.port, this.hostname);
+		try{
+			if (!this.server || !this.server.address()) {
+				this.server = this.app.listen(this.port, this.hostname);
+			}
+		} catch(error) {
+			vscode.window.showErrorMessage(`An error occurred in the process of restarting the server due to window change: ${error.message}`);
 		}
 	}
 	getSelectedText(
 		event:vscode.TextEditorSelectionChangeEvent
 	){
-		let code  = "";
-		if (event.selections.length > 0) {
-            const selection = event.selections[0];
-            if (!selection.isEmpty) {
-                code  = event.textEditor.document.getText(selection)?.trim();
-				if (code.length < MIN_CODE_LENGTH || code.length > MAX_CODE_LENGTH) {
-					code = "";
+		try{	
+			let code  = "";
+			if (event.selections.length > 0) {
+				const selection = event.selections[0];
+				if (!selection.isEmpty) {
+					code  = event.textEditor.document.getText(selection)?.trim();
+					if (code.length < MIN_CODE_LENGTH || code.length > MAX_CODE_LENGTH) {
+						code = "";
+					}
 				}
 			}
+			return code;
+		} catch(error) {
+			vscode.window.showErrorMessage(`An error occurred while getting selected text: ${error.message}`);
+			return "";
 		}
-		return code;
 	}
 	getLastSelectedCodeSections(){
-		let lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
-		if (!lastSelectedCodeSections) {
-			lastSelectedCodeSections = [];
+		try{
+			let lastSelectedCodeSections: SelectionBuffer[] | undefined = this.context.globalState.get('lastSelectedCodeSections');
+			if (!lastSelectedCodeSections) {
+				lastSelectedCodeSections = [];
+			}
+			if (lastSelectedCodeSections.length > 25) {
+				lastSelectedCodeSections.shift();
+			}
+			return lastSelectedCodeSections;
+		} catch(error) {
+			vscode.window.showErrorMessage(`An error occurred while getting last selected code sections: ${error.message}`);
+			return [];
 		}
-		if (lastSelectedCodeSections.length > 25) {
-			lastSelectedCodeSections.shift();
-		}
-		return lastSelectedCodeSections;
 	}
 	selectionBuffer(
 		event:vscode.TextEditorSelectionChangeEvent
 	){
-		const code  = this.getSelectedText(event);
-		if (code !==""){
-			const filePath = event.textEditor.document.uri.fsPath ?? "";
-			const lastSelectedCodeSections = this.getLastSelectedCodeSections();
-			lastSelectedCodeSections.push({
-				code: code,
-				filePath: filePath
-			});
-			this.context.globalState.update('lastSelectedCodeSections', lastSelectedCodeSections);
+		try{
+			const code  = this.getSelectedText(event);
+			if (code !==""){
+				const filePath = event.textEditor.document.uri.fsPath ?? "";
+				const lastSelectedCodeSections = this.getLastSelectedCodeSections();
+				lastSelectedCodeSections.push({
+					code: code,
+					filePath: filePath
+				});
+				this.context.globalState.update('lastSelectedCodeSections', lastSelectedCodeSections);
+			}
+		} catch(error) {	
+			vscode.window.showErrorMessage(`An error occurred while updating the selection buffer: ${error.message}`);
 		}
 	}
 }
