@@ -67,6 +67,8 @@ export async function branchPicker(
         updateState(context, constants.scanIdKey, {
           id: scanList[0].id,
           name: `${constants.scanLabel} ${scanList[0].label}`,
+          datetime: `${constants.scanDateLabel} ${scanList[0].datetime}`,
+          formattedId: `${constants.scanLabel} ${scanList[0].formattedId}`
         });
         await getResultsWithProgress(logs, scanList[0].id);
       } else {
