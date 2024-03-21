@@ -4,6 +4,9 @@ import {
   PROGRESS_HEADER,
   getProperty,
   getScanLabel,
+  getFormattedDateTime,
+  getFormattedId,
+  formatLabel
 } from "../utils";
 import { commands } from "../common/commands";
 import {
@@ -99,6 +102,8 @@ export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
     updateState(context, constants.scanIdKey, {
       id: item.id,
       name: `${constants.scanLabel} ${item.label}`,
+      datetime: `${constants.scanDateLabel} ${item.datetime}`,
+      formattedId: `${constants.scanLabel} ${item.formattedId}`
     });
     if (item.id) {
 
@@ -187,11 +192,10 @@ export async function getScansPickItems(
       try {
         return scanList
           ? scanList.map((label) => ({
-            label:
-              label === scanList[0]
-                ? getScanLabel(label.createdAt, label.id) + " (latest)"
-                : getScanLabel(label.createdAt, label.id),
+            label: formatLabel(label, scanList),
             id: label.id,
+            datetime: getFormattedDateTime(label.createdAt),
+            formattedId: getFormattedId(label, scanList)
           }))
           : [];
       } catch (error) {

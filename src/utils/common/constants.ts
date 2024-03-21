@@ -34,6 +34,7 @@ export const constants = {
   branchLabel: "Branch: ",
   branchPlaceholder: "Select branch",
   scanLabel: "Scan: ",
+  scanDateLabel: "Scan Date:",
   scanPlaceholder: "Select scan",
   scanPickerTitle: "Checkmarx One Scan selection",
   projectItem: "project-item",
@@ -44,6 +45,7 @@ export const constants = {
   bookItem: "book-item",
   requestChangesItem: "requestChanges-item",
   mailItem: "mail-item",
+  calendarItem: "calendar-item",
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [
