@@ -76,6 +76,8 @@ export class KicsProvider {
       updateState(this.context, constants.processObject, {
         id: undefined,
         name: constants.processObjectKey,
+        datetime: undefined,
+        formattedId: undefined
       });
     }
 

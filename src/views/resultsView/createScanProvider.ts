@@ -65,6 +65,8 @@ async function createScanForProject(
   updateState(context, constants.scanCreateIdKey, {
     id: scanCreateResponse.id,
     name: scanCreateResponse.id,
+    formattedId: undefined,
+    datetime: undefined
   });
 }
 
@@ -133,20 +135,20 @@ export async function createScan(
   logs: Logs
 ) {
   logs.info(messages.scanCheckStart);
-  updateState(context, constants.scanCreatePrepKey, { id: true, name: "" });
+  updateState(context, constants.scanCreatePrepKey, { id: true, name: "", formattedId: undefined, datetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
   updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
   if (!(await doesBranchMatch(context, logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", formattedId: undefined, datetime: undefined });
     return;
   }
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", formattedId: undefined, datetime: undefined });
     return;
   }
 
@@ -154,7 +156,7 @@ export async function createScan(
   await createScanForProject(context, logs);
 
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
-  updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+  updateState(context, constants.scanCreatePrepKey, { id: false, name: "", formattedId: undefined, datetime: undefined });
 
   await vscode.commands.executeCommand(commands.pollScan);
 }
