@@ -256,8 +256,8 @@ export async function loadScanId(
   updateState(context, constants.scanIdKey, {
     id: scan.id,
     name: `${constants.scanLabel} ${getScanLabel(scan.createdAt, scan.id)}`,
-    formattedId: undefined,
-    datetime: undefined
+    datetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.createdAt)}`,
+    formattedId: scan.id
   });
 
   await getResultsWithProgress(logs, scan.id);
