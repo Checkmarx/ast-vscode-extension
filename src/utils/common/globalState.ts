@@ -37,4 +37,6 @@ export class Item {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   id: string | any | undefined;
   name: string | undefined;
+  datetime: string | undefined;
+  formattedId: string | undefined;
 }
