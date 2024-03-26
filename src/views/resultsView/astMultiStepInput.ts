@@ -107,8 +107,8 @@ export async function multiStepInput(
   updateState(context, constants.scanIdKey, {
     id: state.scanId.id,
     name: `${constants.scanLabel} ${state.scanId.label}`,
-    formattedId: undefined,
-    datetime: undefined
+    formattedId: `${constants.scanLabel} ${state.scanId.formattedId}`,
+    datetime: state.scanId.datetime
   });
 
   if (state.scanId?.id) {

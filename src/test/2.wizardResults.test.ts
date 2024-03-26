@@ -67,10 +67,12 @@ describe("Wizard load results test", () => {
     let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
 
+    const scanDetailsparts: string[] = scanDate.split(" ");
+    const formattedId: string = scanDetailsparts.slice(-2).join(" ");
     // Scan tree item validation
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
     while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+      scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
     }
     expect(scan).is.not.undefined;
   });
