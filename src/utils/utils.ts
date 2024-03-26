@@ -113,6 +113,10 @@ export function getFormattedDateTime(createdAt: string) {
 }
 
 export function getFormattedId(label: CxScan, scanList: CxScan[]) {
+  if (scanList === null || scanList === undefined || scanList.length === 0){
+    return "";
+  } 
+
   return label === scanList[0]
   ? label.id + " (latest)"
   : label.id;

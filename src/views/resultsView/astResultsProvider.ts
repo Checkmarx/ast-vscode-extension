@@ -88,7 +88,7 @@ export class AstResultsProvider extends ResultsProvider {
     }
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
-      const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).datetime}`, constants.calendarItem);
+      const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);
     
       treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
@@ -120,7 +120,7 @@ export class AstResultsProvider extends ResultsProvider {
         constants.branchItem
       ),
       new TreeItem(
-        `${getFromState(this.context, constants.scanIdKey)?.formattedId ?? constants.scanLabel}`,
+        `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
         constants.scanItem
       )
     ];

@@ -76,8 +76,8 @@ export class KicsProvider {
       updateState(this.context, constants.processObject, {
         id: undefined,
         name: constants.processObjectKey,
-        datetime: undefined,
-        formattedId: undefined
+        scanDatetime: undefined,
+        displayScanId: undefined
       });
     }
 
@@ -102,8 +102,8 @@ export class KicsProvider {
     updateState(this.context, constants.processObject, {
       id: this.process,
       name: constants.processObjectKey,
-      formattedId: undefined,
-      datetime: undefined
+      displayScanId: undefined,
+      scanDatetime: undefined
     });
 
     // async wait for the KICS scan to end to create the diagnostics and print the summary
@@ -163,8 +163,8 @@ export class KicsProvider {
           updateState(this.context, constants.processObject, {
             id: undefined,
             name: constants.processObjectKey,
-            formattedId: undefined,
-            datetime: undefined
+            displayScanId: undefined,
+            scanDatetime: undefined
           });
         }
       });
