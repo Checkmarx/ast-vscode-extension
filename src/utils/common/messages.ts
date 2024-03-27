@@ -67,7 +67,7 @@ export const messages = {
   loadingResults: "Loading results",
   triageNotAvailableSca: "Triage not available for SCA.",
   triageSubmitedSuccess: "Feedback submited successfully! Results refreshed.",
-  triageError: (error) => `Triage Error | ${error}`,
+  triageError: (error) => `Triage ${error}`,
   triageNoChange: "Make a change before submiting",
   triageUpdateState: (state) => `Updating state to ${state}`,
   triageUpdateSeverity: (severity) => `Updating severity to ${severity}`,

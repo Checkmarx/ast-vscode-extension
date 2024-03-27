@@ -60,6 +60,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 		scan: string | undefined,
 		diagnosticCollection: vscode.DiagnosticCollection,
 		issueLevel: string[] = [
+			SeverityLevel.critical,
 			SeverityLevel.high,
 			SeverityLevel.medium,
 			SeverityLevel.low,

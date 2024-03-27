@@ -115,6 +115,8 @@ export class AstResult extends CxResult {
 
   getIcon() {
     switch (this.severity) {
+      case "CRITICAL":
+        return path.join("media", "icons", "critical_untoggle.svg");
       case "HIGH":
         return path.join("media", "icons", "high_untoggle.svg");
       case "MEDIUM":
@@ -176,6 +178,8 @@ export class AstResult extends CxResult {
 
   getSeverityCode() {
     switch (this.severity) {
+      case "CRITICAL":
+        return vscode.DiagnosticSeverity.Error;
       case "HIGH":
         return vscode.DiagnosticSeverity.Error;
       case "MEDIUM":
@@ -190,6 +194,8 @@ export class AstResult extends CxResult {
 
   getSeverity() {
     switch (this.severity) {
+      case "CRITICAL":
+        return SeverityLevel.critical;
       case "HIGH":
         return SeverityLevel.high;
       case "MEDIUM":
@@ -705,7 +711,7 @@ export class AstResult extends CxResult {
             Score
           </p>
           <p>
-            ${result.vulnerabilityDetails.cvssScore.toFixed(1)}
+            ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : ""}
           </p>
         </div>
         <div class="right-${result.severity}">
