@@ -25,6 +25,11 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
+import { PromptSecurity } from "./utils/listener/promptSecurity";
+
+
+
+let promptListener: PromptSecurity | null = null;
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -203,8 +208,22 @@ export async function activate(context: vscode.ExtensionContext) {
     kicsScanCommand.registerKicsRemediation();
     // Refresh sca tree with start scan message
     scaResultsProvider.refreshData(constants.scaStartScan);
+    try{
+        //You will need to add a checkbox to enable the extension's activation
+        const isPromptEnabled:boolean = true;
+        if (isPromptEnabled){
+            //The port number should be dynamic
+            promptListener = new PromptSecurity(context,3312);
+        }
+    } catch(error) {
+        logs.error(`An error occurred while registering the promptListener: ${error.message}\n It is not active`);
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function deactivate() {
+    //Close Prompt's server if the extension is deactivated
+    if (promptListener){
+        promptListener.deactivate();
+    }
 }
