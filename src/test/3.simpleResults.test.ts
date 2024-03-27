@@ -75,7 +75,9 @@ describe("Individual pickers load results test", () => {
     await input.setText(scanDate);
     await input.confirm();
     // Wait for scan selection to be made
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + scanDate);
+    const scanDetailsparts: string[] = scanDate.split(" ");
+    const formattedId: string = scanDetailsparts.slice(-2).join(" ");
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
     expect(scan).is.not.undefined;
   });
 });
