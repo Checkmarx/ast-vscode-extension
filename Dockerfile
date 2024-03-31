@@ -1,8 +1,8 @@
 FROM checkmarx.jfrog.io/ast-docker/chainguard/node:latest as build-env
 
-ARG GIT_TOKEN
+ARG GITHUB_TOKEN
 
-RUN echo "//npm.pkg.github.com/:_authToken=${GIT_TOKEN}" > ~/.npmrc
+RUN echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > ~/.npmrc
 
 WORKDIR /app
 
