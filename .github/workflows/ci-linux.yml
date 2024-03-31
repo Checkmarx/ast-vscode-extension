@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build Docker image
-        run: docker build -f Dockerfile . --build-arg GIT_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        run: docker build -f Dockerfile . --build-arg GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
       - name: Copy 'out' directory
         run: docker cp $(docker ps -q -n 1):/app/out /Users/runner/work/ast-vscode-extension/ast-vscode-extension/
       - name: Run tests
