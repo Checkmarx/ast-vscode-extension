@@ -1,34 +1,31 @@
 # CHANGELOG
 
+## [v2.8.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.1-nightly.0) - 2024-04-09 13:57:35
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Add a scan date row in Checkmarx One Results section (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/804
+* Add extra space to Scan Date label (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/810
+* Update CLI-Wrapper  by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/824
+### Other Changes
+* Revert "Bump @types/node from 20.11.28 to 20.11.30" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/799
+* Revert "Bump @typescript-eslint/parser from 7.3.0 to 7.3.1" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/798
+* Revert "Bump @typescript-eslint/parser from 7.2.0 to 7.3.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/800
+* Revert "Bump vscode-extension-tester from 7.2.0 to 8.0.2" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/826
+* Revert "Bump @typescript-eslint/eslint-plugin from 7.0.1 to 7.5.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/827
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.8.0...v2.8.1-nightly.0
+
 ## [v2.8.1-v2.8.1-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.1-v2.8.1-prerelease.0) - 2024-03-31 09:08:00
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### New Features 🚀
-* Add a scan date row in Checkmarx One Results section (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/804
-### Other Changes
-* Revert "Bump @types/node from 20.11.28 to 20.11.30" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/799
-* Revert "Bump @typescript-eslint/parser from 7.3.0 to 7.3.1" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/798
-* Revert "Bump @typescript-eslint/parser from 7.2.0 to 7.3.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/800
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.8.0...v2.8.1-v2.8.1-prerelease.0
-
 ## [v2.8.1-2.9.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.1-2.9.0-prerelease.0) - 2024-03-27 11:01:30
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### New Features 🚀
-* Add a scan date row in Checkmarx One Results section (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/804
-### Other Changes
-* Revert "Bump @types/node from 20.11.28 to 20.11.30" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/799
-* Revert "Bump @typescript-eslint/parser from 7.3.0 to 7.3.1" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/798
-* Revert "Bump @typescript-eslint/parser from 7.2.0 to 7.3.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/800
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.8.0...v2.8.1-2.9.0-prerelease.0
 
 ## [v2.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.0) - 2024-03-15 15:46:56
 
