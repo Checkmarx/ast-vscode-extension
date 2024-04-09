@@ -1,19 +1,38 @@
 # CHANGELOG
 
+## [v2.8.1-v2.8.1-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.1-v2.8.1-prerelease.0) - 2024-03-31 09:08:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Add a scan date row in Checkmarx One Results section (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/804
+### Other Changes
+* Revert "Bump @types/node from 20.11.28 to 20.11.30" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/799
+* Revert "Bump @typescript-eslint/parser from 7.3.0 to 7.3.1" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/798
+* Revert "Bump @typescript-eslint/parser from 7.2.0 to 7.3.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/800
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.8.0...v2.8.1-v2.8.1-prerelease.0
+
+## [v2.8.1-2.9.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.1-2.9.0-prerelease.0) - 2024-03-27 11:01:30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Add a scan date row in Checkmarx One Results section (AST-35838) by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/804
+### Other Changes
+* Revert "Bump @types/node from 20.11.28 to 20.11.30" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/799
+* Revert "Bump @typescript-eslint/parser from 7.3.0 to 7.3.1" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/798
+* Revert "Bump @typescript-eslint/parser from 7.2.0 to 7.3.0" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/800
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.8.0...v2.8.1-2.9.0-prerelease.0
+
 ## [v2.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.8.0) - 2024-03-15 15:46:56
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.8.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* adding apikey to sast gpt command + fixing codebashing link by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/792
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.7.0...v2.8.0
-
-## [v2.7.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.1-nightly.0) - 2024-03-15 15:26:54
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.7.1-2.0.7-sast-panel-bug.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.7.1-2.0.7-sast-panel-bug.0) - 2024-03-13 17:29:39
 
