@@ -34,7 +34,7 @@ export const constants = {
   branchLabel: "Branch: ",
   branchPlaceholder: "Select branch",
   scanLabel: "Scan: ",
-  scanDateLabel: "Scan Date:",
+  scanDateLabel: "Scan Date: ",
   scanPlaceholder: "Select scan",
   scanPickerTitle: "Checkmarx One Scan selection",
   projectItem: "project-item",
