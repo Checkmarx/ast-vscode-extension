@@ -39,8 +39,8 @@ async function addRepositoryListener(
       return;
     }
 
-    updateState(context, constants.branchName, { id: branchName, name: branchName });
-    updateState(context, constants.branchTempIdKey, { id: branchName, name: branchName }); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
+    updateState(context, constants.branchName, { id: branchName, name: branchName, displayScanId: undefined, scanDatetime: undefined});
+    updateState(context, constants.branchTempIdKey, { id: branchName, name: branchName, displayScanId: undefined, scanDatetime: undefined}); //TODO: This is an hack to fix duplicated onchange calls when branch is changed.
 
     const projectItem = getFromState(context, constants.projectIdKey);
     const currentBranch = getFromState(context, constants.branchIdKey);
@@ -52,8 +52,10 @@ async function addRepositoryListener(
           updateState(context, constants.branchIdKey, {
             id: branchName,
             name: `${constants.branchLabel} ${branchName}`,
+            displayScanId: undefined,
+            scanDatetime: undefined
           });
-          updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel });
+          updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined});
           vscode.commands.executeCommand(commands.refreshTree);
         }
       });
@@ -83,6 +85,8 @@ export function addRealTimeSaveListener(
         updateState(context, constants.kicsRealtimeFile, {
           id: e.uri.fsPath,
           name: e.uri.fsPath,
+          displayScanId: undefined,
+          scanDatetime: undefined
         });
         await vscode.commands.executeCommand("ast-results.kicsRealtime");
       }
@@ -100,6 +104,8 @@ export function addRealTimeSaveListener(
       updateState(context, constants.kicsRealtimeFile, {
         id: e.uri.fsPath,
         name: e.uri.fsPath,
+        displayScanId: undefined,
+        scanDatetime: undefined
       });
       await vscode.commands.executeCommand(constants.kicsRealtime);
     }
@@ -121,7 +127,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
       `${constants.extensionName}.createScanButton`,
       true
     );
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" , displayScanId: "", scanDatetime: ""});
   }
   const scanID = getFromState(context, constants.scanIdKey);
   if (scanID === undefined) {
@@ -135,7 +141,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
       `${constants.extensionName}.createScanButton`,
       false
     );
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" , displayScanId: "", scanDatetime: ""});
   }
 }
 

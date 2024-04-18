@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -862,12 +862,12 @@
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.85.2  -i -r ."
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r ."
   },
   "devDependencies": {
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^20.11.28",
+    "@types/node": "^20.11.30",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.2.0",
@@ -875,15 +875,15 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "mocha": "10.3.0",
-    "typescript": "^5.4.2",
+    "typescript": "^5.4.3",
     "vsce": "^2.15.0",
     "vscode-extension-tester": "7.2.0",
-    "vscode-extension-tester-locators": "^3.11.0",
+    "vscode-extension-tester-locators": "^3.12.2",
     "webpack": "^5.90.2",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.86",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.87",
     "copyfiles": "2.4.1",
     "esbuild": "^0.20.1",
     "eslint-config-prettier": "^9.1.0",

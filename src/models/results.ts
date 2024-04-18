@@ -705,7 +705,7 @@ export class AstResult extends CxResult {
             Score
           </p>
           <p>
-            ${result.vulnerabilityDetails.cvssScore.toFixed(1)}
+            ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : 'N/A'}
           </p>
         </div>
         <div class="right-${result.severity}">
