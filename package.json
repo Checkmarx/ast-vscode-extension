@@ -877,7 +877,7 @@
     "mocha": "10.3.0",
     "typescript": "^5.4.3",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "7.2.0",
+    "vscode-extension-tester": "8.1.0",
     "vscode-extension-tester-locators": "^3.12.2",
     "webpack": "^5.90.2",
     "webpack-cli": "^5.1.4"
