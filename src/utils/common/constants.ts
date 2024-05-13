@@ -95,7 +95,7 @@ export const constants = {
   scanPollTimeout: 15000, // MILLISECONDS
 
   // SCA AUTO SCAN
-  scaNoVulnerabilities: "Checkmarx found no vulnerabilities.",
+  scaNoVulnerabilities: "Checkmarx found no vulnerabilities",
   scaStartScan:
     "Click the play button to scan with Checkmarx SCA",
   clearSca: "Clear all sca scan information",
