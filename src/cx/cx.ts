@@ -113,7 +113,7 @@ export class Cx implements CxPlatform {
 		params.set(CxParamType.S, sourcePath);
 		params.set(CxParamType.BRANCH, branchName);
 		params.set(CxParamType.PROJECT_NAME, projectName);
-		params.set(CxParamType.AGENT, "VS Code");
+		params.set(CxParamType.AGENT, constants.vsCodeAgent);
 		params.set(CxParamType.ADDITIONAL_PARAMETERS, constants.scanCreateAdditionalParameters);
 		const scan = await cx.scanCreate(params);
 		return scan.payload[0];
@@ -141,7 +141,7 @@ export class Cx implements CxPlatform {
 			return;
 		}
 		const cx = new CxWrapper(config);
-		await cx.getResults(scanId, constants.resultsFileExtension, constants.resultsFileName, getFilePath());
+		await cx.getResults(scanId, constants.resultsFileExtension, constants.resultsFileName, getFilePath(), constants.vsCodeAgent);
 	}
 
 	async getScan(scanId: string | undefined): Promise<CxScan | undefined> {

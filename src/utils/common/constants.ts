@@ -124,7 +124,7 @@ export const constants = {
   cxKicsAutoScan: "Activate KICS Auto Scanning",
 
   projectLimit: "limit=10000",
-  scanAgent: "VS Code",
+  vsCodeAgent: "VS Code",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
