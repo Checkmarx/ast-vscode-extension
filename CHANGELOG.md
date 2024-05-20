@@ -1,30 +1,44 @@
 # CHANGELOG
 
-## [v2.11.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.11.0) - 2024-05-08 08:38:30
+## [v2.12.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.0) - 2024-05-20 07:37:39
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.11.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.12.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* Fix broken documentation link in marketplace by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/845
+* VSCode | Fix scan with no vulnerabilities view (AST-42388) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/853
+### New Features 🚀
+* AST-37667 send the agent to results cmd by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/860
 ### Other Changes
-* VSCode | Upgrade js-wrapper version (AST-41951) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/849
+* Revert "Bump typescript from 5.4.3 to 5.4.5" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/850
+* Revert "Bump @types/node from 20.11.30 to 20.12.10" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/851
 
+## New Contributors
+* @tamarleviCm made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/860
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.10.0...v2.11.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.11.0...v2.12.0
 
-## [v2.10.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.10.1-nightly.0) - 2024-05-08 08:14:41
+## [v2.11.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.11.1-nightly.0) - 2024-05-19 07:24:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* Fix broken documentation link in marketplace by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/845
+* VSCode | Fix scan with no vulnerabilities view (AST-42388) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/853
+### New Features 🚀
+* AST-37667 send the agent to results cmd by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/860
 ### Other Changes
-* VSCode | Upgrade js-wrapper version (AST-41951) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/849
+* Revert "Bump typescript from 5.4.3 to 5.4.5" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/850
+* Revert "Bump @types/node from 20.11.30 to 20.12.10" by @OrShamirCM in https://github.com/Checkmarx/ast-vscode-extension/pull/851
 
+## New Contributors
+* @tamarleviCm made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/860
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.10.0...v2.10.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.11.0...v2.11.1-nightly.0
+
+## [v2.11.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.11.0) - 2024-05-08 08:38:30
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.11.0 -->
 
 ## [v2.10.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.10.0) - 2024-04-22 09:45:38
 
