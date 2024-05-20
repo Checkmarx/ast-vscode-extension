@@ -90,8 +90,10 @@ export class AstResultsProvider extends ResultsProvider {
     if (this.loadedResults !== undefined) {
       const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);
-    
-      treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
+
+      if (this.loadedResults.length !== 0) {
+        treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
+      }
 
       const treeItem = this.groupBy(
         this.loadedResults,
@@ -102,6 +104,10 @@ export class AstResultsProvider extends ResultsProvider {
         this.filterCommand.getActiveStates()
       );
       treeItem.label = "Scan"; // `${constants.scanLabel}`;
+
+      if (treeItem.children.length === 0) {
+        treeItem.children.push(new TreeItem(constants.scaNoVulnerabilities, undefined));
+      }
       
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
