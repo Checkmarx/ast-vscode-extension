@@ -1,30 +1,38 @@
 # CHANGELOG
 
-## [v2.10.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.10.0) - 2024-04-22 09:45:38
+## [v2.11.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.11.0) - 2024-05-08 08:38:30
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.10.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.11.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* VSCode | Fix container vulnerabilities description (AST-38437) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/841
+* Fix broken documentation link in marketplace by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/845
+### Other Changes
+* VSCode | Upgrade js-wrapper version (AST-41951) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/849
 
-## New Contributors
-* @AlvoBen made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/841
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.9.0...v2.10.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.10.0...v2.11.0
 
-## [v2.9.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.9.1-0) - 2024-04-18 10:41:10
+## [v2.10.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.10.1-nightly.0) - 2024-05-08 08:14:41
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* VSCode | Fix container vulnerabilities description (AST-38437) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/841
+* Fix broken documentation link in marketplace by @checkmarx-kobi-hagmi in https://github.com/Checkmarx/ast-vscode-extension/pull/845
+### Other Changes
+* VSCode | Upgrade js-wrapper version (AST-41951) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/849
 
-## New Contributors
-* @AlvoBen made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/841
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.9.0...v2.9.1-0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.10.0...v2.10.1-nightly.0
+
+## [v2.10.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.10.0) - 2024-04-22 09:45:38
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.10.0 -->
+
+## [v2.9.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.9.1-0) - 2024-04-18 10:41:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.9.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.9.0) - 2024-04-09 14:20:55
 

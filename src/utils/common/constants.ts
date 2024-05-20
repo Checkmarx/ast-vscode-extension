@@ -95,7 +95,7 @@ export const constants = {
   scanPollTimeout: 15000, // MILLISECONDS
 
   // SCA AUTO SCAN
-  scaNoVulnerabilities: "Checkmarx found no vulnerabilities.",
+  scaNoVulnerabilities: "Checkmarx found no vulnerabilities",
   scaStartScan:
     "Click the play button to scan with Checkmarx SCA",
   clearSca: "Clear all sca scan information",
@@ -124,7 +124,7 @@ export const constants = {
   cxKicsAutoScan: "Activate KICS Auto Scanning",
 
   projectLimit: "limit=10000",
-  scanAgent: "VS Code",
+  vsCodeAgent: "VS Code",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",

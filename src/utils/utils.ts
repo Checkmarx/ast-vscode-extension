@@ -162,7 +162,12 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): CxRes
         .readFileSync(resultJsonPath, "utf-8")
         .replace(/:([0-9]{15,}),/g, ':"$1",')
     );
-    results = orderResults(jsonResults.results);
+    if(jsonResults.results){
+      results = orderResults(jsonResults.results);
+    }
+    else {
+      results = [];
+    }
   }
   return results;
 }

@@ -90,214 +90,222 @@ export class CxMock implements CxPlatform {
 		return true;
 	}
 
-	async getResults() {
-		const results = {
-			"results": [
-				{
-					"type": "kics",
-					"label": "IaC Security",
-					"id": "150256",
-					"similarityId": "92742543fa8505b3ba24ff54894c94594d0d9e3873b05fb38dbcbdef40aa3062",
-					"status": "NEW",
-					"state": "TO_VERIFY",
-					"severity": "LOW",
-					"created": "2022-09-02T10:45:29Z",
-					"firstFoundAt": "2022-08-26T10:28:36Z",
-					"foundAt": "2022-09-02T10:45:29Z",
-					"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
-					"description": "Ensure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working",
-					"descriptionHTML": "\u003cp\u003eEnsure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working\u003c/p\u003e\n",
-					"data": {
-						"queryId": "b03a748a-542d-44f4-bb86-9199ab4fd2d5 [Taken from query_id]",
-						"queryName": "Healthcheck Instruction Missing",
-						"group": "Insecure Configurations [Taken from category]",
-						"line": 3,
-						"platform": "Dockerfile",
-						"issueType": "MissingAttribute",
-						"expectedValue": "Dockerfile contains instruction 'HEALTHCHECK'",
-						"value": "Dockerfile doesn't contain instruction 'HEALTHCHECK'",
-						"filename": "/Dockerfile"
+	async getResults(scanId: string) {
+		let results;
+		if (scanId === "2") {
+			results = {
+				"results": []
+			};
+		}
+		else{
+			results =  {
+				"results": [
+					{
+						"type": "kics",
+						"label": "IaC Security",
+						"id": "150256",
+						"similarityId": "92742543fa8505b3ba24ff54894c94594d0d9e3873b05fb38dbcbdef40aa3062",
+						"status": "NEW",
+						"state": "TO_VERIFY",
+						"severity": "LOW",
+						"created": "2022-09-02T10:45:29Z",
+						"firstFoundAt": "2022-08-26T10:28:36Z",
+						"foundAt": "2022-09-02T10:45:29Z",
+						"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
+						"description": "Ensure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working",
+						"descriptionHTML": "\u003cp\u003eEnsure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working\u003c/p\u003e\n",
+						"data": {
+							"queryId": "b03a748a-542d-44f4-bb86-9199ab4fd2d5 [Taken from query_id]",
+							"queryName": "Healthcheck Instruction Missing",
+							"group": "Insecure Configurations [Taken from category]",
+							"line": 3,
+							"platform": "Dockerfile",
+							"issueType": "MissingAttribute",
+							"expectedValue": "Dockerfile contains instruction 'HEALTHCHECK'",
+							"value": "Dockerfile doesn't contain instruction 'HEALTHCHECK'",
+							"filename": "/Dockerfile"
+						},
+						"comments": {},
+						"vulnerabilityDetails": {
+							"cvss": {}
+						}
 					},
-					"comments": {},
-					"vulnerabilityDetails": {
-						"cvss": {}
-					}
-				},
-				{
-					"type": "kics",
-					"label": "IaC Security",
-					"id": "150255",
-					"similarityId": "bca11aa6fe8840e47585aaa38048073afc521dc953151be020fb8fc4cc38f54a",
-					"status": "NEW",
-					"state": "TO_VERIFY",
-					"severity": "MEDIUM",
-					"created": "2022-09-02T10:45:29Z",
-					"firstFoundAt": "2022-08-26T10:28:36Z",
-					"foundAt": "2022-09-02T10:45:29Z",
-					"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
-					"description": "Package version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes",
-					"descriptionHTML": "\u003cp\u003ePackage version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes\u003c/p\u003e\n",
-					"data": {
-						"queryId": "d3499f6d-1651-41bb-a9a7-de925fea487b [Taken from query_id]",
-						"queryName": "Unpinned Package Version in Apk Add",
-						"group": "Supply-Chain [Taken from category]",
-						"line": 6,
-						"platform": "Dockerfile",
-						"issueType": "IncorrectValue",
-						"expectedValue": "RUN instruction with 'apk add \u003cpackage\u003e' should use package pinning form 'apk add \u003cpackage\u003e=\u003cversion\u003e'",
-						"value": "RUN instruction apk --no-cache add git python3 py-lxml     \u0026\u0026 rm -rf /var/cache/apk/* does not use package pinning form",
-						"filename": "/Dockerfile"
+					{
+						"type": "kics",
+						"label": "IaC Security",
+						"id": "150255",
+						"similarityId": "bca11aa6fe8840e47585aaa38048073afc521dc953151be020fb8fc4cc38f54a",
+						"status": "NEW",
+						"state": "TO_VERIFY",
+						"severity": "MEDIUM",
+						"created": "2022-09-02T10:45:29Z",
+						"firstFoundAt": "2022-08-26T10:28:36Z",
+						"foundAt": "2022-09-02T10:45:29Z",
+						"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
+						"description": "Package version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes",
+						"descriptionHTML": "\u003cp\u003ePackage version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes\u003c/p\u003e\n",
+						"data": {
+							"queryId": "d3499f6d-1651-41bb-a9a7-de925fea487b [Taken from query_id]",
+							"queryName": "Unpinned Package Version in Apk Add",
+							"group": "Supply-Chain [Taken from category]",
+							"line": 6,
+							"platform": "Dockerfile",
+							"issueType": "IncorrectValue",
+							"expectedValue": "RUN instruction with 'apk add \u003cpackage\u003e' should use package pinning form 'apk add \u003cpackage\u003e=\u003cversion\u003e'",
+							"value": "RUN instruction apk --no-cache add git python3 py-lxml     \u0026\u0026 rm -rf /var/cache/apk/* does not use package pinning form",
+							"filename": "/Dockerfile"
+						},
+						"comments": {},
+						"vulnerabilityDetails": {
+							"cvss": {}
+						}
 					},
-					"comments": {},
-					"vulnerabilityDetails": {
-						"cvss": {}
-					}
-				},
-				{
-					"type": "sast",
-					"label": "sast",
-					"id": "255181",
-					"similarityId": "-1792929011",
-					"status": "NEW",
-					"state": "TO_VERIFY",
-					"severity": "HIGH",
-					"created": "2022-09-02T10:45:54Z",
-					"firstFoundAt": "2022-08-26T10:28:57Z",
-					"foundAt": "2022-09-02T10:45:54Z",
-					"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
-					"description": "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
-					"descriptionHTML": "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
-					"data": {
-						// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-						"queryId": 5157925289005576664,
-						"queryName": "Reflected_XSS_All_Clients",
-						"group": "PHP_High_Risk",
-						"resultHash": "ZGJRP6tLG66K4GwKarVTE8GDL/M=",
-						"languageName": "PHP",
-						"nodes": [
-							{
-								"id": "6BkcV9Pylb1Kk14z/xZHkWcP9hk=",
-								"line": 10,
-								"name": "_POST",
-								"column": 8,
-								"length": 6,
-								"method": "$PageLoad",
-								"nodeID": 164,
-								"domType": "UnknownReference",
-								"fileName": "/insecure.php",
-								"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
-								"typeName": "CxDefaultObject",
-								"methodLine": 1,
-								"definitions": "1"
-							},
-							{
-								"id": "o8XLDcRzoLEzVVdI3yyHchg/JH0=",
-								"line": 10,
-								"name": "var",
-								"column": 1,
-								"length": 4,
-								"method": "$PageLoad",
-								"nodeID": 168,
-								"domType": "UnknownReference",
-								"fileName": "/insecure.php",
-								"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
-								"typeName": "CxDefaultObject",
-								"methodLine": 1,
-								"definitions": "1"
-							},
-							{
-								"id": "yis1SnpLBtDSuxZBPhw76TaDjY4=",
-								"line": 11,
-								"name": "var",
-								"column": 12,
-								"length": 4,
-								"method": "$PageLoad",
-								"nodeID": 184,
-								"domType": "UnknownReference",
-								"fileName": "/insecure.php",
-								"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
-								"typeName": "CxDefaultObject",
-								"methodLine": 1,
-								"definitions": "1"
-							},
-							{
-								"id": "kZuPO2VpUX+yVNtYvSP3FVHVJBQ=",
-								"line": 11,
-								"name": "$_DoubleQuotedString",
-								"column": 0,
-								"length": 20,
-								"method": "$PageLoad",
-								"nodeID": 177,
-								"domType": "MethodInvokeExpr",
-								"fileName": "/insecure.php",
-								"fullName": "$_DoubleQuotedString",
-								"typeName": "$_DoubleQuotedString",
-								"methodLine": 1,
-								"definitions": "0"
-							},
-							{
-								"id": "fO7BgAMUgzMTXcmTFe9v8TGpYPg=",
-								"line": 11,
-								"name": "echo",
-								"column": 1,
-								"length": 4,
-								"method": "$PageLoad",
-								"nodeID": 171,
-								"domType": "MethodInvokeExpr",
-								"fileName": "/insecure.php",
-								"fullName": "echo",
-								"typeName": "echo",
-								"methodLine": 1,
-								"definitions": "0"
+					{
+						"type": "sast",
+						"label": "sast",
+						"id": "255181",
+						"similarityId": "-1792929011",
+						"status": "NEW",
+						"state": "TO_VERIFY",
+						"severity": "HIGH",
+						"created": "2022-09-02T10:45:54Z",
+						"firstFoundAt": "2022-08-26T10:28:57Z",
+						"foundAt": "2022-09-02T10:45:54Z",
+						"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
+						"description": "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
+						"descriptionHTML": "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
+						"data": {
+							// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+							"queryId": 5157925289005576664,
+							"queryName": "Reflected_XSS_All_Clients",
+							"group": "PHP_High_Risk",
+							"resultHash": "ZGJRP6tLG66K4GwKarVTE8GDL/M=",
+							"languageName": "PHP",
+							"nodes": [
+								{
+									"id": "6BkcV9Pylb1Kk14z/xZHkWcP9hk=",
+									"line": 10,
+									"name": "_POST",
+									"column": 8,
+									"length": 6,
+									"method": "$PageLoad",
+									"nodeID": 164,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "o8XLDcRzoLEzVVdI3yyHchg/JH0=",
+									"line": 10,
+									"name": "var",
+									"column": 1,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 168,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "yis1SnpLBtDSuxZBPhw76TaDjY4=",
+									"line": 11,
+									"name": "var",
+									"column": 12,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 184,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "kZuPO2VpUX+yVNtYvSP3FVHVJBQ=",
+									"line": 11,
+									"name": "$_DoubleQuotedString",
+									"column": 0,
+									"length": 20,
+									"method": "$PageLoad",
+									"nodeID": 177,
+									"domType": "MethodInvokeExpr",
+									"fileName": "/insecure.php",
+									"fullName": "$_DoubleQuotedString",
+									"typeName": "$_DoubleQuotedString",
+									"methodLine": 1,
+									"definitions": "0"
+								},
+								{
+									"id": "fO7BgAMUgzMTXcmTFe9v8TGpYPg=",
+									"line": 11,
+									"name": "echo",
+									"column": 1,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 171,
+									"domType": "MethodInvokeExpr",
+									"fileName": "/insecure.php",
+									"fullName": "echo",
+									"typeName": "echo",
+									"methodLine": 1,
+									"definitions": "0"
+								}
+							]
+						},
+						"comments": {},
+						"vulnerabilityDetails": {
+							"cweId": 79,
+							"cvss": {},
+							"compliances": [
+								"PCI DSS v3.2.1",
+								"ASD STIG 4.10",
+								"FISMA 2014",
+								"NIST SP 800-53",
+								"OWASP Top 10 2013",
+								"OWASP Top 10 2017",
+								"OWASP Top 10 2021"
+							]
+						}
+					},
+					{
+						"type": "sca",
+						"scaType": "Vulnerability",
+						"label": "sca",
+						"id": "cve-2011-3374",
+						"similarityId": "cve-2011-3374",
+						"status": "RECURRENT",
+						"state": "TO_VERIFY",
+						"severity": "LOW",
+						"created": "2023-04-21T10:34:40Z",
+						"firstFoundAt": "2023-02-23T12:19:31Z",
+						"foundAt": "2023-04-21T10:34:40Z",
+						"firstScanId": "eaa0f3ea-ce32-4059-9836-db13d16fb2c8",
+						"description": "It was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.",
+						"descriptionHTML": "\u003cp\u003eIt was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.\u003c/p\u003e\n",
+						"data": {},
+						"comments": {},
+						"vulnerabilityDetails": {
+							"cweId": "CWE-347",
+							"cvssScore": 3.7,
+							"cvss": {
+								"version": 3,
+								"attackVector": "NETWORK",
+								"availability": "NONE",
+								"confidentiality": "NONE",
+								"attackComplexity": "HIGH"
 							}
-						]
-					},
-					"comments": {},
-					"vulnerabilityDetails": {
-						"cweId": 79,
-						"cvss": {},
-						"compliances": [
-							"PCI DSS v3.2.1",
-							"ASD STIG 4.10",
-							"FISMA 2014",
-							"NIST SP 800-53",
-							"OWASP Top 10 2013",
-							"OWASP Top 10 2017",
-							"OWASP Top 10 2021"
-						]
-					}
-				},
-				{
-					"type": "sca",
-					"scaType": "Vulnerability",
-					"label": "sca",
-					"id": "cve-2011-3374",
-					"similarityId": "cve-2011-3374",
-					"status": "RECURRENT",
-					"state": "TO_VERIFY",
-					"severity": "LOW",
-					"created": "2023-04-21T10:34:40Z",
-					"firstFoundAt": "2023-02-23T12:19:31Z",
-					"foundAt": "2023-04-21T10:34:40Z",
-					"firstScanId": "eaa0f3ea-ce32-4059-9836-db13d16fb2c8",
-					"description": "It was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.",
-					"descriptionHTML": "\u003cp\u003eIt was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.\u003c/p\u003e\n",
-					"data": {},
-					"comments": {},
-					"vulnerabilityDetails": {
-						"cweId": "CWE-347",
-						"cvssScore": 3.7,
-						"cvss": {
-							"version": 3,
-							"attackVector": "NETWORK",
-							"availability": "NONE",
-							"confidentiality": "NONE",
-							"attackComplexity": "HIGH"
 						}
 					}
-				}
-			]
-		};
+				]
+			};
+		}
 		writeFileSync(getFilePath() + "/ast-results.json", JSON.stringify(results), {
 			flag: 'w+',
 		});
