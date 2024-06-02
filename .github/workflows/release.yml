@@ -134,8 +134,8 @@ jobs:
         if: inputs.dev == false
         uses: peter-evans/create-pull-request@v6.0.5
         with:
-          token: $GITHUB_TOKEN
-          branch: $BRANCH_NAME
+          token: ${{ env.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
           title: "Update Version - Automated Changes"
           body: "This is an automated PR created by GitHub Actions"
           base: main
@@ -146,7 +146,7 @@ jobs:
         if: inputs.dev == false
         uses: octokit/request-action@v2.3.1
         with:
-          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:$BRANCH_NAME
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
 
       - name: Merge Pull Request
         if: inputs.dev == false
