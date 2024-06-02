@@ -128,7 +128,8 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
-      
+
+      # CREATE PR FOR VERSION AND TAG CHANGES
       - name: Create Pull Request
         id: create_pr
         if: inputs.dev == false
@@ -141,6 +142,7 @@ jobs:
           base: main
           draft: false
 
+      # WAIT FOR PR CREATION
       - name: Wait for PR to be created
         id: pr
         if: inputs.dev == false
@@ -148,6 +150,7 @@ jobs:
         with:
           route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
 
+      # MERGE PR TO MAIN
       - name: Merge Pull Request
         if: inputs.dev == false
         uses: octokit/request-action@v2.3.1
