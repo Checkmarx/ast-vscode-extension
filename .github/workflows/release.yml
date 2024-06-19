@@ -128,8 +128,12 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
-
-      # CREATE PR FOR VERSION AND TAG CHANGES
+          
+      # PUSH TAG
+      - name: Push tag
+        run: git push --tags
+        
+      # CREATE PR FOR VERSION
       - name: Create Pull Request
         id: create_pr
         if: inputs.dev == false
