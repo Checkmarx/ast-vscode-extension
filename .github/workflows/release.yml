@@ -129,9 +129,9 @@ jobs:
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
           
-      # PUSH TAG
-      - name: Push tag
-        run: git push --tags
+      # # PUSH TAG
+      # - name: Push tag
+      #   run: git push --tags
         
       # CREATE PR FOR VERSION
       - name: Create Pull Request
