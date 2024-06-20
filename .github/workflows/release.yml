@@ -51,9 +51,6 @@ jobs:
     if: inputs.dev
   release:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.OR_GITHUB_TOKEN }}
-      BRANCH_NAME: npm-version-patch
     steps:
 
       # CHECKOUT PROJECT
@@ -128,40 +125,11 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
-          
-      # # PUSH TAG
-      # - name: Push tag
-      #   run: git push --tags
-        
-      # CREATE PR FOR VERSION
-      - name: Create Pull Request
-        id: create_pr
+      
+      # PUSH TAGS IF IT IS A RELEASE
+      - name: Push tag if release
         if: inputs.dev == false
-        uses: peter-evans/create-pull-request@v6.0.5
-        with:
-          token: ${{ env.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          title: "Update Version - Automated Changes"
-          body: "This is an automated PR created by GitHub Actions"
-          base: main
-          draft: false
-
-      # WAIT FOR PR CREATION
-      - name: Wait for PR to be created
-        id: pr
-        if: inputs.dev == false
-        uses: octokit/request-action@v2.3.1
-        with:
-          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
-
-      # MERGE PR TO MAIN
-      - name: Merge Pull Request
-        if: inputs.dev == false
-        uses: octokit/request-action@v2.3.1
-        with:
-          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
-          merge_method: squash
-
+        run: git push && git push --tags
 
       # CREATE GH RELEASE
       - name: Create Release
