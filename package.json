@@ -875,7 +875,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.57.0",
     "mocha": "10.3.0",
-    "typescript": "^5.4.3",
+    "typescript": "^5.5.2",
     "vsce": "^2.15.0",
     "vscode-extension-tester": "8.3.0",
     "vscode-extension-tester-locators": "^3.12.2",
