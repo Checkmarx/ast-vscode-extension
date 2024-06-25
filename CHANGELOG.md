@@ -1,23 +1,33 @@
 # CHANGELOG
 
-## [v2.13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.0) - 2024-05-20 07:59:04
+## [v2.14.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.0) - 2024-06-20 12:31:27
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.13.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.14.0 -->
 
 ## What's Changed
 ### Other Changes
-* update js wrapper by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/861
+* AST-43037 push version tag through PR by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/864
+* Update release.yml by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/873
+* Benalvo/upgrade js wrapper by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/872
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.12.0...v2.13.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.13.0...v2.14.0
 
-## [v2.12.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.1-nightly.0) - 2024-05-20 07:45:18
+## [v2.13.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.1-nightly.0) - 2024-06-20 12:29:27
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.13.1-414.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.1-414.0) - 2024-05-20 07:59:48
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.12.0...v2.12.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.13.0...v2.13.1-414.0
+
+## [v2.13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.0) - 2024-05-20 07:59:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.13.0 -->
 
 ## [v2.12.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.1-0) - 2024-05-20 07:53:33
 
