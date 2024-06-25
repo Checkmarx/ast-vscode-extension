@@ -25,6 +25,7 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
+import { VorpalCommand } from "./commands/vorpalCommand";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Create logs channel and make it visible
@@ -203,7 +204,18 @@ export async function activate(context: vscode.ExtensionContext) {
     kicsScanCommand.registerKicsRemediation();
     // Refresh sca tree with start scan message
     scaResultsProvider.refreshData(constants.scaStartScan);
+  const vorpalCommand =new VorpalCommand(context,logs);
+  vorpalCommand.installVorpal();
+  vorpalCommand.registerVorpalScanOnChangeTest();
+  vorpalCommand.registerQuickFix();
 }
+
+// export let timeout = null;
+
+module.exports = {
+  activate,
+  deactivate,
+};
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function deactivate() {
