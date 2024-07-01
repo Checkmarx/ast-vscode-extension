@@ -7,6 +7,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
 
 export class CxMock implements CxPlatform {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -522,6 +523,9 @@ export class CxMock implements CxPlatform {
 		await this.sleep(1000);
 		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
 	}
+  installVorpal(): Promise<CxVorpal> {
+    return null;
+  }
 
 	sleep(ms) {
 		return new Promise(resolve => setTimeout(resolve, ms));
@@ -531,5 +535,8 @@ export class CxMock implements CxPlatform {
 		statusBarItem.text = text;
 		show ? statusBarItem.show() : statusBarItem.hide();
 	}
+  async scanVorpal(): Promise<CxVorpal> {
+    return new CxVorpal();
+  }
 }
 
