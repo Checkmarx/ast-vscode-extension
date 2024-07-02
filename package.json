@@ -788,7 +788,7 @@
       {
         "title": "Checkmarx One",
         "id": "ast-results",
-        "order": 3,
+        "order": 4,
         "properties": {
           "checkmarxOne.apiKey": {
             "type": "string",
@@ -833,7 +833,7 @@
       {
         "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
-        "order": 2,
+        "order": 3,
         "properties": {
           "CheckmarxSecurityChampion.key": {
             "type": "string",
@@ -861,19 +861,13 @@
       {
         "title": "Checkmarx Vorpal Auto Scanning",
         "id": "vorpal",
-        "order": 4,
+        "order": 2,
         "properties": {
           "CheckmarxVorpal.Activate Vorpal Auto Scanning": {
             "type": "boolean",
             "order": 3,
             "default": false,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **AI Cradentionals required** [Read more](https://checkmarx.com/resource/documents)."
-          },
-          "CheckmarxVorpal.Additional Parameters": {
-            "type": "string",
-            "order": 4,
-            "default": "",
-            "markdownDescription": "Customize the scan configuration using Vorpal scan command flags, [see Vorpal help page](https://...)."
+            "markdownDescription": "Scans your code during the development"
           }
         }
       }
@@ -926,8 +920,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.98",
-    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../../../WebstormProjects/ast-cli-javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.100.tgz",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.104",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",

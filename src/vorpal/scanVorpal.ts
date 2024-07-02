@@ -9,7 +9,6 @@ import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/
 import { constants } from "../utils/common/constants";
 
 const vorpalDir = "CxVorpal";
-export const fixesMap = new Map();
 
 export const diagnosticCollection =
   vscode.languages.createDiagnosticCollection("Checkmarx");
@@ -24,7 +23,7 @@ export async function scanVorpal(document: vscode.TextDocument) {
     // RUN VORPAL SCAN
     const scanVprpalResult = await cx.scanVorpal(filePath);
     // DELETE TEMP FILE
-    fs.unlinkSync(filePath); //problematic. if I send a file and send it again before it com back...
+    fs.unlinkSync(filePath); // problematic. if I send a file and send it again before it com back...
     console.info("file %s deleted", filePath);
     // HANDLE ERROR
     if (scanVprpalResult.error) {
@@ -51,12 +50,11 @@ function updateProblems(scanVprpalResult: CxVorpal, uri: vscode.Uri) {
     );
     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
       range,
-      res.ruleName + res.description,
+      res.ruleName + " - " + res.remediationAdvise,
       parseSavirity(res.severity)
     );
     diagnostic.code = res.ruleId;
     diagnostic.source = constants.vorpalEngineName;
-    fixesMap.set(res.ruleId, res.remediationAdvise);
     diagnostics.push(diagnostic);
   }
   diagnosticCollection.set(uri, diagnostics);

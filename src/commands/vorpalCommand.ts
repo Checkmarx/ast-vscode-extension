@@ -1,35 +1,31 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { fixesMap, installVorpal, scanVorpal } from "../vorpal/scanVorpal";
-import { constants } from "../utils/common/constants";
+import { installVorpal, scanVorpal } from "../vorpal/scanVorpal";
 
 let timeout = null;
 export class VorpalCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
-  debouncedOnTextChange: (...args: any[]) => void;
-  // timeout: NodeJS.Timeout;
-
+  onDidChangeTextDocument: vscode.Disposable;
   constructor(context: vscode.ExtensionContext, logs: Logs) {
     this.context = context;
     this.logs = logs;
-    // this.timeout = null;
   }
-
+  public registerVorpal() {
+    const vorpalActive = vscode.workspace
+      .getConfiguration("CheckmarxVorpal")
+      .get("Activate Vorpal Auto Scanning") as boolean;
+    if (vorpalActive) {
+      this.installVorpal();
+      this.registerVorpalScanOnChangeText();
+    } else {
+      this.disposeVorpalScanOnChangeText();
+    }
+  }
   public installVorpal() {
     installVorpal(this.logs);
-    this.debouncedOnTextChange = this.debounce(this.onTextChange, 2000);
-  }
-
-  public registerQuickFix() {
-    this.context.subscriptions.push(
-      vscode.languages.registerCodeActionsProvider(
-        "plaintext",
-        new QuickFixProvider()
-        // {
-        //   providedCodeActionKinds: QuickFixProvider.providedCodeActionKinds,
-        // }
-      )
+    this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
+      this.debounce(this.onTextChange, 2000)
     );
   }
 
@@ -57,41 +53,14 @@ export class VorpalCommand {
     };
   }
 
-  public registerVorpalScanOnChangeTest() {
-    this.context.subscriptions.push(
-      vscode.workspace.onDidChangeTextDocument(this.debouncedOnTextChange)
-    );
+  public registerVorpalScanOnChangeText() {
+    this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
-}
-export class QuickFixProvider implements vscode.CodeActionProvider {
-
-  public provideCodeActions(
-    document: vscode.TextDocument,
-    range: vscode.Range,
-    context: vscode.CodeActionContext,
-    token: vscode.CancellationToken
-  ): vscode.CodeAction[] | undefined {
-    const diagnostics = context.diagnostics.filter(
-      (diagnostic) =>
-        diagnostic.source === constants.vorpalEngineName &&
-        diagnostic.relatedInformation != null &&
-        diagnostic.range === range
-    );
-    if (diagnostics.length === 0) {
-      return;
+  public disposeVorpalScanOnChangeText() {
+    // const onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(this.debouncedOnTextChange);
+    if (this.onDidChangeTextDocument) {
+      this.onDidChangeTextDocument.dispose();
+      this.context.subscriptions.push(this.onDidChangeTextDocument);
     }
-    const fix = new vscode.CodeAction(
-      "Fix the example issue",
-      vscode.CodeActionKind.QuickFix
-    );
-    fix.edit = new vscode.WorkspaceEdit();
-    fix.edit.replace(
-      document.uri,
-      diagnostics[0].range,
-      fixesMap.get(diagnostics[0].code)
-    );
-    fix.diagnostics = diagnostics;
-    fix.isPreferred = true;
-    return [fix];
   }
 }
