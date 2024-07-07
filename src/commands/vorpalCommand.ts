@@ -25,25 +25,26 @@ export class VorpalCommand {
   public installVorpal() {
     installVorpal(this.logs);
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
-      this.debounce(this.onTextChange, 2000)
+      this.debounce(this.onTextChange, 2000) // must be 2000 and no less
     );
   }
 
-  private onTextChange(event) {
+  public onTextChange(event) {
     try {
-      scanVorpal(event.document);
+      scanVorpal(event.document, this.logs);
     } catch (error) {
       console.error(error);
       this.logs.warn("fail to scan vorpal");
     }
   }
   // Debounce function
-  private debounce(func, wait) {
+  public debounce(func, wait) {
+    const context = this;
     return function (...args) {
       try {
         const later = () => {
           clearTimeout(timeout);
-          func(...args);
+          func.apply(context, args);
         };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
@@ -57,7 +58,6 @@ export class VorpalCommand {
     this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
   public disposeVorpalScanOnChangeText() {
-    // const onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(this.debouncedOnTextChange);
     if (this.onDidChangeTextDocument) {
       this.onDidChangeTextDocument.dispose();
       this.context.subscriptions.push(this.onDidChangeTextDocument);

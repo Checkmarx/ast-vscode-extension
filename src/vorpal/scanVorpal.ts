@@ -10,10 +10,13 @@ import { constants } from "../utils/common/constants";
 
 const vorpalDir = "CxVorpal";
 
-export const diagnosticCollection =
-  vscode.languages.createDiagnosticCollection("Checkmarx");
+export const diagnosticCollection = vscode.languages.createDiagnosticCollection(
+  constants.extensionFullName
+);
 
-export async function scanVorpal(document: vscode.TextDocument) {
+export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
+  if (ignoreFiles(document.uri))
+    return;
   try {
     // SAVE TEMP FILE
     const filePath = saveTempFile(
@@ -21,23 +24,40 @@ export async function scanVorpal(document: vscode.TextDocument) {
       document.getText()
     );
     // RUN VORPAL SCAN
+    logs.info("Start Vorpal Scan On File: " + document.uri.fsPath);
     const scanVprpalResult = await cx.scanVorpal(filePath);
     // DELETE TEMP FILE
     fs.unlinkSync(filePath); // problematic. if I send a file and send it again before it com back...
     console.info("file %s deleted", filePath);
     // HANDLE ERROR
     if (scanVprpalResult.error) {
-      console.error(scanVprpalResult.error);
-      return new error("vorpal error");
+      logs.error(
+        "Vorpal Error: " +
+          (scanVprpalResult.error.description ?? scanVprpalResult.error)
+      );
+      return;
     }
     // VIEW PROBLEMS
+    logs.info(
+      scanVprpalResult.scanDetails.length +
+        " vulnerabilities were found in " +
+        document.uri.fsPath
+    );
     updateProblems(scanVprpalResult, document.uri);
   } catch (error) {
     console.error(error);
-    // logs.warn(constants.errorInstallation);
+    logs.error(constants.errorScanVorpal);
   }
 }
 
+function ignoreFiles(uri: vscode.Uri): boolean {
+  // ignore our output log file, settings.json
+  if (path.basename(uri.fsPath) == "extension-output-checkmarx.ast-results-#1-Checkmarx" ||
+    uri.fsPath.includes("Application Support/Code/User/settings.json")) {
+    return true;
+  }
+  return false;
+}
 function updateProblems(scanVprpalResult: CxVorpal, uri: vscode.Uri) {
   diagnosticCollection.delete(uri);
   const diagnostics: vscode.Diagnostic[] = [];
@@ -90,7 +110,7 @@ export async function installVorpal(logs: Logs) {
   try {
     const res = await cx.installVorpal();
     if (res.error) {
-      logs.warn(constants.errorInstallation);
+      logs.warn(constants.errorInstallation + " : " + res.error);
       return;
     }
     logs.info(constants.vorpalStart);

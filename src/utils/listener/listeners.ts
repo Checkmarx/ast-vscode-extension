@@ -169,9 +169,9 @@ export async function gitExtensionListener(
 export async function executeCheckSettingsChange(
   kicsStatusBarItem: vscode.StatusBarItem,
   logs: Logs,
-  vorpalCommand: VorpalCommand,
+  vorpalCommand: VorpalCommand
 ) {
-  vscode.workspace.onDidChangeConfiguration(async () => {
+  vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
@@ -190,6 +190,14 @@ export async function executeCheckSettingsChange(
         ? messages.kicsStatusBarConnect
         : messages.kicsStatusBarDisconnect;
     await vscode.commands.executeCommand(commands.refreshTree);
-    await vorpalCommand.registerVorpal();
+    const vorpalEffected = event.affectsConfiguration(
+      "CheckmarxVorpal.Activate Vorpal Auto Scanning"
+    );
+    const apikeyEffected = event.affectsConfiguration(
+      "checkmarxOne.apiKey"
+    );
+    if (vorpalEffected || apikeyEffected) {
+      await vorpalCommand.registerVorpal();
+    }
   });
 }

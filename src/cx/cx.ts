@@ -420,34 +420,38 @@ export class Cx implements CxPlatform {
 		statusBarItem.text = text;
 		show ? statusBarItem.show() : statusBarItem.hide();
 	}
-  async installVorpal(): Promise<CxVorpal> {
-    const config = this.getAstConfiguration();
-    if (!config) {
-      throw new Error("Configuration error");
-    }
-    const cx = new CxWrapper(config);
-    const scans = await cx.scanVorpal(null, true, constants.vsCodeAgent);
-    if (scans.payload && scans.exitCode === 0) {
-      return scans.payload[0];
-    } else {
-      throw new Error(scans.status);
-    }
-  }
-
-  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
-    const config = this.getAstConfiguration();
-    if (!config) {
-      throw new Error("Configuration error");
-    }
-    const cx = new CxWrapper(config);
-    const scans = await cx.scanVorpal(sourcePath, false, constants.vsCodeAgent);
-    if (scans.payload && scans.exitCode === 0) {
-      return scans.payload[0];
-    } else {
-      console.error("fail to call vorpal scan");
-      const errorRes = new CxVorpal();
-      errorRes.error = "fail to call vorpal scan";
-      return errorRes;
-    }
-  }
-}
+	async installVorpal(): Promise<CxVorpal> {
+		let config = this.getAstConfiguration();
+		if (!config) {
+		  config = new CxConfig();
+		}
+		const cx = new CxWrapper(config);
+		const scans = await cx.scanVorpal(null, true, constants.vsCodeAgent);
+		if (scans.payload && scans.exitCode === 0) {
+		  return scans.payload[0];
+		} else {
+		  console.error("fail to install vorpal scan");
+		  const errorRes = new CxVorpal();
+		  errorRes.error = scans.status;
+		  return errorRes;
+		}
+	  }
+	
+	  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
+		let config = this.getAstConfiguration();
+		if (!config) {
+		  config = new CxConfig();
+		}
+		const cx = new CxWrapper(config);
+		const scans = await cx.scanVorpal(sourcePath, false, constants.vsCodeAgent);
+		if (scans.payload && scans.exitCode === 0) {
+		  return scans.payload[0];
+		} else {
+		  console.error("fail to call vorpal scan");
+		  const errorRes = new CxVorpal();
+		  errorRes.error = scans.status;
+		  return errorRes;
+		}
+	  }
+	}
+	
