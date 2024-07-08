@@ -140,7 +140,7 @@ export const constants = {
   feedback: "Send us enhancement request or report a bug",
   documentation: "Documentation",
   // Vorpal engine
-  errorInstallation: "Failed to install vorpal engine",
+  errorInstallation: "Failed to run vorpal engine",
   errorScanVorpal: "failed to handle vorpal scan",
   vorpalStart: "Vorpal engine started",
   vorpalEngineName: "CxVorpal",

@@ -430,7 +430,7 @@ export class Cx implements CxPlatform {
 		if (scans.payload && scans.exitCode === 0) {
 		  return scans.payload[0];
 		} else {
-		  console.error("fail to install vorpal scan");
+		  console.error("Failed to run vorpal engine");
 		  const errorRes = new CxVorpal();
 		  errorRes.error = scans.status;
 		  return errorRes;

@@ -7,6 +7,7 @@ export class VorpalCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
   onDidChangeTextDocument: vscode.Disposable;
+  onDidChangeActiveTextEditor: vscode.Disposable;
   constructor(context: vscode.ExtensionContext, logs: Logs) {
     this.context = context;
     this.logs = logs;
@@ -58,11 +59,22 @@ export class VorpalCommand {
 
   public registerVorpalScanOnChangeText() {
     this.context.subscriptions.push(this.onDidChangeTextDocument);
+    this.onDidChangeActiveTextEditor=vscode.window.onDidChangeActiveTextEditor((event)=>{
+      if(event && event.document){
+        this.onTextChange(event);
+      }
+    });
+    this.context.subscriptions.push(this.onDidChangeActiveTextEditor);
+
   }
   public disposeVorpalScanOnChangeText() {
     if (this.onDidChangeTextDocument) {
       this.onDidChangeTextDocument.dispose();
       this.context.subscriptions.push(this.onDidChangeTextDocument);
+    }
+    if (this.onDidChangeActiveTextEditor) {
+      this.onDidChangeActiveTextEditor.dispose();
+      this.context.subscriptions.push(this.onDidChangeActiveTextEditor);
     }
   }
 }
