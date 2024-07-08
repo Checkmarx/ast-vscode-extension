@@ -20,12 +20,14 @@ export class VorpalCommand {
       this.registerVorpalScanOnChangeText();
     } else {
       this.disposeVorpalScanOnChangeText();
+      this.logs.info("Vorpal Auto Scanning is disabled now.");
     }
   }
   public installVorpal() {
     installVorpal(this.logs);
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
-      this.debounce(this.onTextChange, 2000) // must be 2000 and no less
+      // Must be no less than 2000ms. Otherwise, the temporary file can be deleted before the vorpal scan is finished.
+      this.debounce(this.onTextChange, 2000) 
     );
   }
 

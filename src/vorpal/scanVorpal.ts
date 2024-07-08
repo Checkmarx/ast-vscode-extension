@@ -110,7 +110,9 @@ export async function installVorpal(logs: Logs) {
   try {
     const res = await cx.installVorpal();
     if (res.error) {
-      logs.warn(constants.errorInstallation + " : " + res.error);
+      const errorMessage = constants.errorInstallation + " : " + res.error;
+      vscode.window.showErrorMessage(errorMessage);
+      logs.error(errorMessage);
       return;
     }
     logs.info(constants.vorpalStart);
