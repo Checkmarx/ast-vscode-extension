@@ -188,7 +188,7 @@ async function doFilesExistInWorkspace(resultFileNames: string[]) {
 
 function extractFileNamesFromResults(results: string[]) {
   const filenames = [];
-  results.forEach((result) => {
+  results?.forEach((result) => {
     const astResult = new AstResult(result);
     filenames.push(astResult.fileName);
   });
