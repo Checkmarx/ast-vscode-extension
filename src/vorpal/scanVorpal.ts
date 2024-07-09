@@ -58,6 +58,11 @@ function ignoreFiles(uri: vscode.Uri): boolean {
   }
   return false;
 }
+
+export async function clearVorpalProblems() {
+  diagnosticCollection.clear();
+}
+
 function updateProblems(scanVprpalResult: CxVorpal, uri: vscode.Uri) {
   diagnosticCollection.delete(uri);
   const diagnostics: vscode.Diagnostic[] = [];

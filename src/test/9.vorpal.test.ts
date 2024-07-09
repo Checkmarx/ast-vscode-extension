@@ -27,6 +27,7 @@ describe("Vorpal engine tets", () => {
   it("vorpal starts when the apikey changes", async function () {});
   it("vorpal stops listening when Vorpal is turned off in settings", async function () {});
   it("vorpal scan is triggered when a file is edited", async function () {});
+  it("vorpal scan is triggered when a file is opened", async function () {});
   it("vorpal scan is not triggered when vorpal is turned off and the file is edited", async function () {});
   it("vorpal scan with an unsupported language", async function () {});
   it("try to install vorpal with no license", async function () {});

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { installVorpal, scanVorpal } from "../vorpal/scanVorpal";
+import { clearVorpalProblems, installVorpal, scanVorpal } from "../vorpal/scanVorpal";
 
 let timeout = null;
 export class VorpalCommand {
@@ -21,6 +21,8 @@ export class VorpalCommand {
       this.registerVorpalScanOnChangeText();
     } else {
       this.disposeVorpalScanOnChangeText();
+      //remove Vorpal problems
+      clearVorpalProblems();
       this.logs.info("Vorpal Auto Scanning is disabled now.");
     }
   }
