@@ -2,7 +2,9 @@ import { BottomBarPanel, EditorView, SettingsEditor, VSBrowser, WebDriver, Workb
 import { expect } from "chai";
 import { initialize } from "./utils/utils";
 import { waitStatusBar } from "./utils/waiters";
-import { CX_CATETORY } from "./utils/constants";
+import { CX_CATETORY, VS_OPEN_FOLDER } from "./utils/constants";
+import * as vscode from "vscode";
+import path from "path";
 
 describe("Vorpal engine tets", () => {
   let settingsEditor: SettingsEditor;
@@ -45,12 +47,29 @@ describe("Vorpal engine tets", () => {
   it("vorpal starts when the apikey changes", async function () {});
   it("vorpal stops listening when Vorpal is turned off in settings", async function () {});
   it("vorpal scan is triggered when a file is edited", async function () {
-    const editor = new EditorView();
-    await editor.openEditor("package.json");
-    await editor.sendKeys("abc");
+    settingsEditor = await bench.openSettings();
+    const vorpalToggle = await settingsEditor.findSetting(
+       "Activate Vorpal Auto Scanning",
+      "CheckmarxVorpal"
+    );
+    await vorpalToggle.setValue("true");
+    // Assuming there's a file named 'testFile.txt' in your workspace root
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    const testFilePath = path.join(workspaceFolder?.uri.fsPath || '', 'testFile.txt');
+    const testFileUri = vscode.Uri.file(testFilePath);
+     // Open the test file
+     const document = await vscode.workspace.openTextDocument(testFileUri);
+     await vscode.window.showTextDocument(document);
+ 
+     // Edit the file
+     const edit = new vscode.WorkspaceEdit();
+     edit.insert(testFileUri, new vscode.Position(0, 0), 'Hello, Vorpal!');
+     await vscode.workspace.applyEdit(edit);
 
   });
-  it("vorpal scan is triggered when a file is opened", async function () {});
+  it("vorpal scan is triggered when a file is opened", async function () {
+
+  });
   it("vorpal scan is not triggered when vorpal is turned off and the file is edited", async function () {});
   it("vorpal scan with an unsupported language", async function () {});
   it("try to install vorpal with no license", async function () {});
