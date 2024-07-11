@@ -15,7 +15,8 @@ export const diagnosticCollection = vscode.languages.createDiagnosticCollection(
 );
 
 export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
-  if (ignoreFiles(document.uri))
+  
+  if (ignoreFiles(document))
     return;
   try {
     // SAVE TEMP FILE
@@ -27,7 +28,7 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
     logs.info("Start Vorpal Scan On File: " + document.uri.fsPath);
     const scanVprpalResult = await cx.scanVorpal(filePath);
     // DELETE TEMP FILE
-    fs.unlinkSync(filePath); // problematic. if I send a file and send it again before it com back...
+    deleteFile(filePath); 
     console.info("file %s deleted", filePath);
     // HANDLE ERROR
     if (scanVprpalResult.error) {
@@ -50,10 +51,10 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
   }
 }
 
-function ignoreFiles(uri: vscode.Uri): boolean {
+function ignoreFiles(document: vscode.TextDocument): boolean {
   // ignore our output log file, settings.json
-  if (path.basename(uri.fsPath).includes("extension-output-checkmarx.ast-results") ||
-    uri.fsPath.includes("Application Support/Code/User/settings.json")) {
+  if (document.languageId.toUpperCase() == 'LOG' ||
+    document.uri.fsPath.includes("Application Support/Code/User/settings.json")) {
     return true;
   }
   return false;
@@ -126,3 +127,13 @@ export async function installVorpal(logs: Logs) {
     logs.warn(constants.errorInstallation);
   }
 }
+
+function deleteFile(filePath: string) {
+  try {
+    fs.unlinkSync(filePath)
+  } catch (error) {
+    // if the file sent again before it com back...
+    console.error("Failed to delete file:" + filePath, error);
+  }
+}
+
