@@ -52,7 +52,7 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
 
 function ignoreFiles(uri: vscode.Uri): boolean {
   // ignore our output log file, settings.json
-  if (path.basename(uri.fsPath) == "extension-output-checkmarx.ast-results-#1-Checkmarx" ||
+  if (path.basename(uri.fsPath).includes("extension-output-checkmarx.ast-results") ||
     uri.fsPath.includes("Application Support/Code/User/settings.json")) {
     return true;
   }
