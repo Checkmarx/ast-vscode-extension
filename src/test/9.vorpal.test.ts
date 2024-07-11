@@ -26,15 +26,16 @@ describe("Vorpal engine tets", () => {
     settingsEditor = await bench.openSettings();
     const vorpalToggle = await settingsEditor.findSetting(
       "Activate Vorpal Auto Scanning",
-      CX_CATETORY
+      "CheckmarxVorpal"
     );
     expect(vorpalToggle).to.not.be.undefined;
   });
+
   it("vorpal starts when the Vorpal is turned on in settings", async function () {
     settingsEditor = await bench.openSettings();
     const vorpalToggle = await settingsEditor.findSetting(
-      "Activate Vorpal Auto Scanning",
-      CX_CATETORY
+       "Activate Vorpal Auto Scanning",
+      "CheckmarxVorpal"
     );
     await vorpalToggle.setValue("true");
     const vorpalToggleValue = await vorpalToggle.getValue();
