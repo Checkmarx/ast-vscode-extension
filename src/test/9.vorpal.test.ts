@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { initialize } from "./utils/utils";
 import { waitStatusBar } from "./utils/waiters";
 import { CX_CATETORY, VS_OPEN_FOLDER } from "./utils/constants";
-// import * as vscode from "vscode";
+import * as vscode from "vscode";
 import path from "path";
 import { isInstallVorpal, scanVorpalNum } from "../cx/cxMock";
 import fs from "fs";
@@ -52,27 +52,27 @@ describe("Vorpal engine tets", () => {
   it("vorpal scan is triggered when a file is edited", async function () {
     await setVorpalTrueInSettings();
     // Assuming there's a file named 'testFile.txt' in your workspace root
-    // const testFileUri = vscode.Uri.file(testFileName);
-    //  // Open the test file
-    //  const document = await vscode.workspace.openTextDocument(testFileUri);
-    //  await vscode.window.showTextDocument(document);
-    //  const prevScanVorpalNum = scanVorpalNum;
-    //  // Edit the file
-    //  const edit = new vscode.WorkspaceEdit();
-    //  edit.insert(testFileUri, new vscode.Position(0, 0), 'Hello, Vorpal!');
-    //  await vscode.workspace.applyEdit(edit);
-    //  expect(scanVorpalNum).to.be.greaterThan(prevScanVorpalNum);
+    const testFileUri = vscode.Uri.file(testFileName);
+     // Open the test file
+     const document = await vscode.workspace.openTextDocument(testFileUri);
+     await vscode.window.showTextDocument(document);
+     const prevScanVorpalNum = scanVorpalNum;
+     // Edit the file
+     const edit = new vscode.WorkspaceEdit();
+     edit.insert(testFileUri, new vscode.Position(0, 0), 'Hello, Vorpal!');
+     await vscode.workspace.applyEdit(edit);
+     expect(scanVorpalNum).to.be.greaterThan(prevScanVorpalNum);
      
   });
   it("vorpal scan is triggered when a file is opened", async function () {
     await setVorpalTrueInSettings();
     // Assuming there's a file named 'testFile.txt' in your workspace root
-    // const testFileUri = vscode.Uri.file(testFileName);
-    // const prevScamVorpalNum = scanVorpalNum; 
-    // // Open the test file
-    //  const document = await vscode.workspace.openTextDocument(testFileUri);
-    //  await vscode.window.showTextDocument(document);
-    //  expect(scanVorpalNum).to.be.greaterThan(prevScamVorpalNum);
+    const testFileUri = vscode.Uri.file(testFileName);
+    const prevScamVorpalNum = scanVorpalNum; 
+    // Open the test file
+     const document = await vscode.workspace.openTextDocument(testFileUri);
+     await vscode.window.showTextDocument(document);
+     expect(scanVorpalNum).to.be.greaterThan(prevScamVorpalNum);
   });
   it("vorpal scan is not triggered when vorpal is False and the file is edited", async function () {});
   it("vorpal scan with an unsupported language", async function () {});
