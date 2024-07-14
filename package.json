@@ -859,7 +859,7 @@
         }
       },
       {
-        "title": "Checkmarx Vorpal Auto Scanning",
+        "title": "Activate Vorpal Auto Scanning",
         "id": "vorpal",
         "order": 2,
         "properties": {
