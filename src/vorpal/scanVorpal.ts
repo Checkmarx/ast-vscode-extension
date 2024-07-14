@@ -54,7 +54,7 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
 function ignoreFiles(document: vscode.TextDocument): boolean {
   // ignore our output log file, settings.json
   if (document.languageId.toUpperCase() == 'LOG' ||
-    document.uri.fsPath.includes("Application Support/Code/User/settings.json")) {
+    (path.basename(document.uri.fsPath) === 'settings.json' && document.uri.fsPath.includes("User"))) {
     return true;
   }
   return false;
