@@ -5,7 +5,11 @@ import { waitStatusBar } from "./utils/waiters";
 import { CX_CATETORY, VS_OPEN_FOLDER } from "./utils/constants";
 import * as vscode from "vscode";
 import path from "path";
+import { isInstallVorpal, scanVorpalNum } from "../cx/cxMock";
+import fs from "fs";
 
+
+const testFileName = "testFile.txt";
 describe("Vorpal engine tets", () => {
   let settingsEditor: SettingsEditor;
   let bench: Workbench;
@@ -17,62 +21,71 @@ describe("Vorpal engine tets", () => {
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(false);
+    fs.writeFileSync(testFileName, "");
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
+    // Delete the test file
+    fs.unlinkSync(testFileName)
   });
 
-  it("verify vorpal toggle exists in the settings", async function () {
+  it("verify vorpal checkbox exists in the settings", async function () {
     await waitStatusBar();
+    settingsEditor = await bench.openSettings();
+    const vorpalCheckbox = await settingsEditor.findSetting(
+      "Activate Vorpal Auto Scanning",
+      "Checkmarx Vorpal"
+    );
+    expect(vorpalCheckbox).to.not.be.undefined;
+  });
+
+  it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
+    const vorpalCheckbox = await setVorpalTrueInSettings();
+    const vorpalCheckboxValue = await vorpalCheckbox.getValue();
+    expect(vorpalCheckboxValue).to.equal("true");
+    expect(isInstallVorpal).to.be.true;
+  });
+  
+  it("vorpal starts when the apikey changes", async function () {});
+  it("vorpal stops listening when Vorpal is False in settings", async function () {});
+  it("vorpal scan is triggered when a file is edited", async function () {
+    await setVorpalTrueInSettings();
+    // Assuming there's a file named 'testFile.txt' in your workspace root
+    const testFileUri = vscode.Uri.file(testFileName);
+     // Open the test file
+     const document = await vscode.workspace.openTextDocument(testFileUri);
+     await vscode.window.showTextDocument(document);
+     const prevScanVorpalNum = scanVorpalNum;
+     // Edit the file
+     const edit = new vscode.WorkspaceEdit();
+     edit.insert(testFileUri, new vscode.Position(0, 0), 'Hello, Vorpal!');
+     await vscode.workspace.applyEdit(edit);
+     expect(scanVorpalNum).to.be.greaterThan(prevScanVorpalNum);
+     
+  });
+  it("vorpal scan is triggered when a file is opened", async function () {
+    await setVorpalTrueInSettings();
+    // Assuming there's a file named 'testFile.txt' in your workspace root
+    const testFileUri = vscode.Uri.file(testFileName);
+    const prevScamVorpalNum = scanVorpalNum; 
+    // Open the test file
+     const document = await vscode.workspace.openTextDocument(testFileUri);
+     await vscode.window.showTextDocument(document);
+     expect(scanVorpalNum).to.be.greaterThan(prevScamVorpalNum);
+  });
+  it("vorpal scan is not triggered when vorpal is False and the file is edited", async function () {});
+  it("vorpal scan with an unsupported language", async function () {});
+  it("try to install vorpal with no license", async function () {});
+  it("scan an unsecured file with Vorpal, fix the vulnerability, the problem disappeared", async function () {});
+  
+  async function setVorpalTrueInSettings() {
     settingsEditor = await bench.openSettings();
     const vorpalToggle = await settingsEditor.findSetting(
       "Activate Vorpal Auto Scanning",
       "CheckmarxVorpal"
     );
-    expect(vorpalToggle).to.not.be.undefined;
-  });
-
-  it("vorpal starts when the Vorpal is turned on in settings", async function () {
-    settingsEditor = await bench.openSettings();
-    const vorpalToggle = await settingsEditor.findSetting(
-       "Activate Vorpal Auto Scanning",
-      "CheckmarxVorpal"
-    );
     await vorpalToggle.setValue("true");
-    const vorpalToggleValue = await vorpalToggle.getValue();
-    expect(vorpalToggleValue).to.equal("true");
-    // expect(logs)
-  });
-  it("vorpal starts when the apikey changes", async function () {});
-  it("vorpal stops listening when Vorpal is turned off in settings", async function () {});
-  it("vorpal scan is triggered when a file is edited", async function () {
-    settingsEditor = await bench.openSettings();
-    const vorpalToggle = await settingsEditor.findSetting(
-       "Activate Vorpal Auto Scanning",
-      "CheckmarxVorpal"
-    );
-    await vorpalToggle.setValue("true");
-    // Assuming there's a file named 'testFile.txt' in your workspace root
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    const testFilePath = path.join(workspaceFolder?.uri.fsPath || '', 'testFile.txt');
-    const testFileUri = vscode.Uri.file(testFilePath);
-     // Open the test file
-     const document = await vscode.workspace.openTextDocument(testFileUri);
-     await vscode.window.showTextDocument(document);
- 
-     // Edit the file
-     const edit = new vscode.WorkspaceEdit();
-     edit.insert(testFileUri, new vscode.Position(0, 0), 'Hello, Vorpal!');
-     await vscode.workspace.applyEdit(edit);
-
-  });
-  it("vorpal scan is triggered when a file is opened", async function () {
-
-  });
-  it("vorpal scan is not triggered when vorpal is turned off and the file is edited", async function () {});
-  it("vorpal scan with an unsupported language", async function () {});
-  it("try to install vorpal with no license", async function () {});
-  it("scan an unsecured file with Vorpal, fix the vulnerability, the problem disappeared", async function () {});
-
+    return vorpalToggle;
+  }
 });
