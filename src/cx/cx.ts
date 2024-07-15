@@ -120,7 +120,7 @@ export class Cx implements CxPlatform {
 		if (scan.payload && scan.exitCode===0) {
 			return scan.payload[0];
 		}
-		throw new Error(scan.status);
+		throw new AstError(scan.exitCode, scan.status);
 	}
 
 	async scanCancel(scanId: string) {
