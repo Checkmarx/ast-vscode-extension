@@ -79,7 +79,6 @@ function updateProblems(scanVprpalResult: CxVorpal, uri: vscode.Uri) {
       res.ruleName + " - " + res.remediationAdvise,
       parseSavirity(res.severity)
     );
-    diagnostic.code = res.ruleId;
     diagnostic.source = constants.vorpalEngineName;
     diagnostics.push(diagnostic);
   }

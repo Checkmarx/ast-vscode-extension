@@ -143,7 +143,7 @@ export const constants = {
   errorInstallation: "Failed to run vorpal engine",
   errorScanVorpal: "failed to handle vorpal scan",
   vorpalStart: "Vorpal engine started",
-  vorpalEngineName: "CxVorpal",
+  vorpalEngineName: "Vorpal",
 };
 
 export enum GroupBy {
