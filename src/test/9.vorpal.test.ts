@@ -1,8 +1,6 @@
-import { BottomBarPanel, EditorView, SettingsEditor, VSBrowser, WebDriver, Workbench } from "vscode-extension-tester";
 import { expect } from "chai";
-import { initialize } from "./utils/utils";
+import { BottomBarPanel, EditorView, SettingsEditor, VSBrowser, WebDriver, Workbench } from "vscode-extension-tester";
 import { waitStatusBar } from "./utils/waiters";
-import { CX_CATETORY, VS_OPEN_FOLDER } from "./utils/constants";
 // import * as vscode from "vscode";
 import path from "path";
 // import { isInstallVorpal, scanVorpalNum } from "../cx/cxMock";
@@ -10,6 +8,7 @@ import fs from "fs";
 
 
 const testFileName = "testFile.txt";
+
 describe("Vorpal engine tets", () => {
   let settingsEditor: SettingsEditor;
   let bench: Workbench;
@@ -43,8 +42,8 @@ describe("Vorpal engine tets", () => {
 
   it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
     const vorpalCheckbox = await setVorpalTrueInSettings();
-    const vorpalCheckboxValue = await vorpalCheckbox.getValue();
-    expect(vorpalCheckboxValue).to.equal("true");
+    const vorpalCheckboxValue = await vorpalCheckbox.isSelected();
+    expect(vorpalCheckboxValue).to.true;
     // expect(isInstallVorpal).to.be.true;
   });
   
@@ -86,7 +85,9 @@ describe("Vorpal engine tets", () => {
       "Activate Vorpal Auto Scanning",
       "CheckmarxVorpal"
     );
-    await vorpalCheckbox.setValue("true");
+    if (!(await vorpalCheckbox.isSelected())) {
+      await vorpalCheckbox.click();
+    }
     return vorpalCheckbox;
   }
 });

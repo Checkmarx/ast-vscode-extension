@@ -9,7 +9,7 @@ import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
 import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
 
-export let isInstallVorpal = false
+export let isInstallVorpal = false;
 export let scanVorpalNum = 0;
 export class CxMock implements CxPlatform {
 
