@@ -33,6 +33,7 @@ describe("Vorpal engine tets", () => {
   it("verify vorpal checkbox exists in the settings", async function () {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
+    console.log("settingsEditor", settingsEditor);
     const vorpalCheckbox = await settingsEditor.findSetting(
       "Activate Vorpal Auto Scanning",
       "Checkmarx Vorpal"
