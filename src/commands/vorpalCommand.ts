@@ -32,6 +32,12 @@ export class VorpalCommand {
       // Must be no less than 2000ms. Otherwise, the temporary file can be deleted before the vorpal scan is finished.
       this.debounce(this.onTextChange, 2000) 
     );
+    this.onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor((event) => {
+      if (event && event.document) {
+        console.log("onDidChangeActiveTextEditor");
+        this.onTextChange(event);
+      }
+    });
   }
 
   public onTextChange(event) {
@@ -45,6 +51,7 @@ export class VorpalCommand {
   // Debounce function
   public debounce(func, wait) {
     const context = this;
+    console.log("onDidChangeTextDocument");
     return function (...args) {
       try {
         const later = () => {
@@ -61,13 +68,7 @@ export class VorpalCommand {
 
   public registerVorpalScanOnChangeText() {
     this.context.subscriptions.push(this.onDidChangeTextDocument);
-    this.onDidChangeActiveTextEditor=vscode.window.onDidChangeActiveTextEditor((event)=>{
-      if(event && event.document){
-        this.onTextChange(event);
-      }
-    });
     this.context.subscriptions.push(this.onDidChangeActiveTextEditor);
-
   }
   public disposeVorpalScanOnChangeText() {
     if (this.onDidChangeTextDocument) {
