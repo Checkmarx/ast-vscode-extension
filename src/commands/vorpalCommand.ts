@@ -20,7 +20,6 @@ export class VorpalCommand {
       this.registerVorpalScanOnChangeText();
     } else {
       this.disposeVorpalScanOnChangeText();
-      //remove Vorpal problems
       clearVorpalProblems();
       this.logs.info("Vorpal Auto Scanning is disabled now.");
     }
