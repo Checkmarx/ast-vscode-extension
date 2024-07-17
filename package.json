@@ -871,22 +871,6 @@
           }
         }
       }
-    ],
-    "languages": [
-      {
-        "id": "plaintext",
-        "extensions": [".*"]
-      }
-    ],
-    "codeActions": [
-      {
-        "languages": ["plaintext"],
-        "actions": 
-          {
-            "kind": "quickfix",
-            "title": "Fix the example issue"
-        }
-      }
     ]
   },
   "scripts": {
