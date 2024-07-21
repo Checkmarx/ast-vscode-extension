@@ -115,7 +115,11 @@ export class Cx implements CxPlatform {
 		params.set(CxParamType.AGENT, constants.vsCodeAgent);
 		params.set(CxParamType.ADDITIONAL_PARAMETERS, constants.scanCreateAdditionalParameters);
 		const scan = await cx.scanCreate(params);
-		return scan.payload[0];
+		
+		if (scan.payload && scan.exitCode===0) {
+			return scan.payload[0];
+		}
+		throw new AstError(scan.exitCode, scan.status);
 	}
 
 	async scanCancel(scanId: string) {
