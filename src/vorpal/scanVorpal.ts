@@ -125,7 +125,7 @@ export async function installVorpal(logs: Logs) {
 
 function deleteFile(filePath: string) {
   try {
-    fs.unlinkSync(filePath)
+    fs.unlinkSync(filePath);
   } catch (error) {
     // if the file sent again before it com back...
     console.error("Failed to delete file:" + filePath, error);
