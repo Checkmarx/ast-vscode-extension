@@ -219,11 +219,5 @@ export async function activate(context: vscode.ExtensionContext) {
 
 }
 
-exports.activate = activate;
-
 export function deactivate() {}
 
-module.exports = {
-  activate,
-  deactivate
-};
