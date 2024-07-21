@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
   Workbench,
   EditorView,
@@ -8,6 +7,7 @@ import {
   VSBrowser,
   BottomBarPanel,
 } from "vscode-extension-tester";
+import { expect } from "chai";
 import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
 import { API_KEY } from "./utils/envs";

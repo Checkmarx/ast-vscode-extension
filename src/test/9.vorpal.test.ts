@@ -11,7 +11,7 @@ import fs from "fs";
  
  
 const testFileName = path.join(process.cwd(), "src", "test", "testFile.txt");
-describe("Vorpal engine tets", () => {
+describe("Vorpal engine tests", () => {
   let settingsEditor: SettingsEditor;
   let bench: Workbench;
   let driver: WebDriver;
