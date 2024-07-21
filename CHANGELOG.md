@@ -1,12 +1,94 @@
 # CHANGELOG
 
-## [v2.12.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.1-nightly.0) - 2024-05-20 07:45:18
+## [v2.15.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.15.0) - 2024-07-16 15:10:45
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.15.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Don't fail if there are no old scan results (AST-48230) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/887
+* VSCode | Show create scan errors (AST-37388) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/890
+### New Features 🚀
+* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/880
+* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/886
+### Other Changes
+* Revert "change the name of plugin" by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/885
+* update js-wrapper to 0.0.8 by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/892
+
+## New Contributors
+* @sarahCx made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/880
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.0...v2.15.0
+
+## [v2.14.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.1-nightly.0) - 2024-07-16 15:06:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* VSCode | Show create scan errors (AST-37388) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/890
+### Other Changes
+* update js-wrapper to 0.0.8 by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/892
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.1-vorpal-5.0...v2.14.1-nightly.0
+
+## [v2.14.1-vorpal-5.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.1-vorpal-5.0) - 2024-07-08 07:33:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* don't fail if there are no old scan results by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/887
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.1-try.0...v2.14.1-vorpal-5.0
+
+## [v2.14.1-try.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.1-try.0) - 2024-07-03 11:51:07
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/886
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.1-0...v2.14.1-try.0
+
+## [v2.14.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.1-0) - 2024-07-03 09:09:33
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/880
+### Other Changes
+* Revert "change the name of plugin" by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/885
+
+## New Contributors
+* @sarahCx made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/880
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.0...v2.14.1-0
+
+## [v2.14.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.0) - 2024-06-20 12:31:27
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.14.0 -->
+
+## [v2.13.1-414.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.1-414.0) - 2024-05-20 07:59:48
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.12.0...v2.12.1-nightly.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.13.0...v2.13.1-414.0
+
+## [v2.13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.13.0) - 2024-05-20 07:59:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.13.0 -->
+
+## [v2.12.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.1-0) - 2024-05-20 07:53:33
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.12.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.12.0) - 2024-05-20 07:37:39
 

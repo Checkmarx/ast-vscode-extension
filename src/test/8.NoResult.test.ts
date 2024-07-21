@@ -11,7 +11,7 @@ import { expect } from "chai";
 import { getDetailsView, getResults, initialize } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
-import { SCAN_ID } from "./utils/envs";
+import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 import { constants } from "buffer";
 
 describe("Scan ID load results test", () => {
@@ -51,4 +51,17 @@ describe("Scan ID load results test", () => {
         expect(scanResults).not.to.be.undefined;
         expect(scanResults.length).to.be.equal(0);
 	});
+    it("should allow creating a new scan even if the current scan has zero results", async function () {
+        
+        await bench.executeCommand(CX_LOOK_SCAN);
+        const input = await InputBox.create();
+        await input.setText(EMPTY_RESULTS_SCAN_ID);
+        await input.confirm();
+        
+        await bench.executeCommand("ast-results.createScan");
+
+        const resultsNotifications = await new Workbench().getNotifications();
+        const firstNotification = resultsNotifications[0];
+        expect(firstNotification).is.not.undefined;
+    }); 
 });

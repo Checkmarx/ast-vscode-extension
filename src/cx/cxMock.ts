@@ -7,6 +7,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
+import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 
 export class CxMock implements CxPlatform {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +93,8 @@ export class CxMock implements CxPlatform {
 
 	async getResults(scanId: string) {
 		let results;
-		if (scanId === "2") {
+		
+		if (scanId === "2"||scanId === EMPTY_RESULTS_SCAN_ID) {
 			results = {
 				"results": []
 			};
@@ -311,7 +313,22 @@ export class CxMock implements CxPlatform {
 		});
 	}
 
-	async getScan(): Promise<CxScan | undefined> {
+	async getScan(scanId: string): Promise<CxScan | undefined> {
+		
+		if (scanId===(EMPTY_RESULTS_SCAN_ID)) {
+			return{
+				tags: {
+				},
+				groups: undefined,
+				id: EMPTY_RESULTS_SCAN_ID,
+				projectID: "EmptyResultsProjectId",
+				status: "Completed",
+				createdAt: "2023-03-19T15:10:38.749899+01:00",
+				updatedAt: "2023-03-19T14:11:42.892326Z",
+				origin: "grpc-java-netty 1.35.0",
+				initiator: "tester",
+				branch: "main",
+			}} 
 		return {
 			tags: {
 			},
@@ -327,7 +344,20 @@ export class CxMock implements CxPlatform {
 		};
 	}
 
-	async getProject(): Promise<CxProject | undefined> {
+	async getProject(projectId: string): Promise<CxProject | undefined> {
+		
+		if(projectId==="EmptyResultsProjectId"){
+			return{
+				tags: {
+				},
+				groups: [
+				],
+				id: "EmptyResultsProjectId",
+				name: "EmptyResultsProjectName",
+				createdAt: "2023-04-19T09:07:36.846145Z",
+				updatedAt: "2023-04-19T09:07:36.846145Z",
+			}
+		}
 		return {
 			tags: {
 			},
