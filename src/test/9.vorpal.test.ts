@@ -26,6 +26,7 @@ describe("Vorpal engine tests", () => {
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(false);
     fs.writeFileSync(testFileName, "");
+	  vorpalCommand = new VorpalCommand(null, null);
   });
  
   after(async () => {
@@ -51,6 +52,8 @@ describe("Vorpal engine tests", () => {
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();
     expect(vorpalCheckboxValue).to.be.true;
     await sleep(3000);
+    vorpalCommand.installVorpal();
+    expect(utils.isInstallVorpal).to.be.true;
   });
  
   // it("vorpal starts when the apikey changes", async function () {});
