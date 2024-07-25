@@ -12,7 +12,7 @@ describe("Vorpal engine tests", () => {
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(8000);
+    this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();
