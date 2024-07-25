@@ -70,4 +70,15 @@ describe("Extension settings tests", () => {
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();
     expect(vorpalCheckboxValue).to.not.be.undefined;
   });
+
+  it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
+    settingsEditor = await bench.openSettings();
+    const vorpalCheckbox = await settingsEditor.findSetting(
+      "ActivateVorpalAutoScanning",
+      "Checkmarx Vorpal"
+    );
+    vorpalCheckbox.setValue(true);
+    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
+    expect(vorpalCheckboxValue).to.be.true;
+  });
 });
