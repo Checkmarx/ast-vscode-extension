@@ -9,8 +9,6 @@ import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
 import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
-import { changeVorpalStatus, increaseScanVorpalNum } from "../test/utils/utils";
-// import { changeVorpalStatus, increaseScanVorpalNum } from "../test/utils/utils";
 
 export class CxMock implements CxPlatform {
 
@@ -568,12 +566,10 @@ export class CxMock implements CxPlatform {
 	}
 
 	installVorpal(): Promise<CxVorpal> {
-		changeVorpalStatus(true)
 		return null;
 	}
 
 	async scanVorpal(sourcePath: string): Promise<CxVorpal> {
-		increaseScanVorpalNum();
 		return new CxVorpal();
 	}
 }
