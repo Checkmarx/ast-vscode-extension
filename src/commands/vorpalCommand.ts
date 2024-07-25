@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Logs } from "../models/logs";
 import { clearVorpalProblems, installVorpal, scanVorpal } from "../vorpal/scanVorpal";
+import { constants } from '../utils/common/constants';
 
 let timeout = null;
 export class VorpalCommand {
@@ -12,17 +13,22 @@ export class VorpalCommand {
     this.logs = logs;
   }
   public registerVorpal() {
-    const vorpalActive = vscode.workspace
-      .getConfiguration("CheckmarxVorpal")
-      .get("ActivateVorpalAutoScanning") as boolean;
-    if (vorpalActive) {
-      this.installVorpal();
-      this.registerVorpalScanOnChangeText();
-    } else {
-      this.disposeVorpalScanOnChangeText();
-      clearVorpalProblems();
-      this.logs.info("Vorpal Auto Scanning is disabled now.");
-    }
+    try {
+      const vorpalActive = vscode.workspace
+        .getConfiguration("CheckmarxVorpal")
+        .get("ActivateVorpalAutoScanning") as boolean;
+      if (vorpalActive) {
+        this.installVorpal();
+        this.registerVorpalScanOnChangeText();
+        this.logs.info(constants.vorpalStart);
+      } else {
+        this.disposeVorpalScanOnChangeText();
+        clearVorpalProblems();
+        this.logs.info(constants.vorpalDisabled);
+      }
+    } catch(error) {
+      console.error(error);
+   }
   }
   public installVorpal() {
     installVorpal(this.logs);

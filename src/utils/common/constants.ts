@@ -143,6 +143,7 @@ export const constants = {
   errorInstallation: "Failed to run vorpal engine",
   errorScanVorpal: "failed to handle vorpal scan",
   vorpalStart: "Vorpal engine started",
+  vorpalDisabled: "Vorpal Auto Scanning is disabled now.",
   vorpalEngineName: "Vorpal",
 };
 

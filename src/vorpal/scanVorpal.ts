@@ -116,7 +116,6 @@ export async function installVorpal(logs: Logs) {
       logs.error(errorMessage);
       return;
     }
-    logs.info(constants.vorpalStart);
   } catch (error) {
     console.log(error);
     logs.warn(constants.errorInstallation);

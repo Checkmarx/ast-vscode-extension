@@ -434,13 +434,17 @@ export class Cx implements CxPlatform {
 		if (scans.payload && scans.exitCode === 0) {
 		  return scans.payload[0];
 		} else {
-		  console.error("Failed to run vorpal engine");
-		  const errorRes = new CxVorpal();
-		  errorRes.error = scans.status;
-		  return errorRes;
+		  return this.getVorpalError(scans.status, "Failed to run vorpal engine");
 		}
 	  }
 	
+	private getVorpalError(scanStatus: string, errorMessage: string) {
+		console.error(errorMessage);
+		const errorRes = new CxVorpal();
+		errorRes.error = scanStatus;
+		return errorRes;
+	}
+
 	  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
 		let config = this.getAstConfiguration();
 		if (!config) {
@@ -451,10 +455,7 @@ export class Cx implements CxPlatform {
 		if (scans.payload && scans.exitCode === 0) {
 		  return scans.payload[0];
 		} else {
-		  console.error("fail to call vorpal scan");
-		  const errorRes = new CxVorpal();
-		  errorRes.error = scans.status;
-		  return errorRes;
+		  return this.getVorpalError(scans.status, "Fail to call vorpal scan");
 		}
 	  }
 	}

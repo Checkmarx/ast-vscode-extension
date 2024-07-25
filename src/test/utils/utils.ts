@@ -96,16 +96,3 @@ export async function validateRootNode(scan: any): Promise<[number, any]> {
 
 export const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
 
-
-export let isInstallVorpal = false
-export let scanVorpalNum = 0;
- 
-export function changeVorpalStatus(value: boolean) {
-    console.log("Vorpal status changed to: " + value);
-    isInstallVorpal = value;
-}
- 
-export function increaseScanVorpalNum() {
-    console.log("Vorpal scan number increased to: " + scanVorpalNum + 1);
-    scanVorpalNum = scanVorpalNum + 1;
-}
