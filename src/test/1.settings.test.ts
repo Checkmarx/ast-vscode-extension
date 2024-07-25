@@ -77,7 +77,7 @@ describe("Extension settings tests", () => {
       "ActivateVorpalAutoScanning",
       "Checkmarx Vorpal"
     );
-    vorpalCheckbox.setValue(true);
+    await vorpalCheckbox.setValue(true);
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();
     expect(vorpalCheckboxValue).to.be.true;
   });
