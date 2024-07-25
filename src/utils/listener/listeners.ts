@@ -191,7 +191,7 @@ export async function executeCheckSettingsChange(
         : messages.kicsStatusBarDisconnect;
     await vscode.commands.executeCommand(commands.refreshTree);
     const vorpalEffected = event.affectsConfiguration(
-      "CheckmarxVorpal.Activate Vorpal Auto Scanning"
+      "CheckmarxVorpal.ActivateVorpalAutoScanning"
     );
     const apikeyEffected = event.affectsConfiguration(
       "checkmarxOne.apiKey"

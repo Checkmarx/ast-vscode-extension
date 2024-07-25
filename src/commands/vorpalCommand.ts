@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { Logs } from "../models/logs";
 import { clearVorpalProblems, installVorpal, scanVorpal } from "../vorpal/scanVorpal";
 
@@ -14,7 +14,7 @@ export class VorpalCommand {
   public registerVorpal() {
     const vorpalActive = vscode.workspace
       .getConfiguration("CheckmarxVorpal")
-      .get("Activate Vorpal Auto Scanning") as boolean;
+      .get("ActivateVorpalAutoScanning") as boolean;
     if (vorpalActive) {
       this.installVorpal();
       this.registerVorpalScanOnChangeText();

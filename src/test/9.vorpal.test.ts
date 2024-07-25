@@ -28,7 +28,7 @@ describe("Vorpal engine tests", () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const vorpalCheckbox = await settingsEditor.findSetting(
-      "Activate Vorpal Auto Scanning",
+      "ActivateVorpalAutoScanning",
       "Checkmarx Vorpal"
     );
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();

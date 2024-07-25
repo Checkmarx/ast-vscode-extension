@@ -483,14 +483,6 @@
         "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
-      },
-      {
-        "command": "ast-results.installVorpal",
-        "title": "install Vorpal engine"
-      },
-      {
-        "command": "ast-results.scanVorpal",
-        "title": "scan edited file with vorpal engine"
       }
     ],
     "submenus": [
@@ -863,7 +855,7 @@
         "id": "vorpal",
         "order": 2,
         "properties": {
-          "CheckmarxVorpal.Activate Vorpal Auto Scanning": {
+          "CheckmarxVorpal.ActivateVorpalAutoScanning": {
             "type": "boolean",
             "order": 3,
             "default": false,
