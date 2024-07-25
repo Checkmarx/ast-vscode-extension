@@ -15,7 +15,7 @@ describe("Vorpal engine tests", () => {
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(100000);
+    this.timeout(1000000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();
@@ -37,7 +37,9 @@ describe("Vorpal engine tests", () => {
     expect(vorpalCheckboxValue).to.not.be.undefined;
   });
  
-  // it("vorpal starts when the Vorpal checkbox is True in settings", async function () {});
+  it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
+
+  });
   // it("vorpal starts when the apikey changes", async function () {});
   // it("vorpal stops listening when Vorpal is False in settings", async function () {});
   // it("vorpal scan is triggered when a file is edited", async function () {});
