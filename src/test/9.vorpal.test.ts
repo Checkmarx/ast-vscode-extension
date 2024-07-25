@@ -1,11 +1,14 @@
-import { BottomBarPanel, EditorView, SettingsEditor, VSBrowser, WebDriver, Workbench } from "vscode-extension-tester";
+import {
+  Workbench,
+  EditorView,
+  SettingsEditor,
+  WebDriver,
+  VSBrowser,
+  BottomBarPanel,
+} from "vscode-extension-tester";
 import { expect } from "chai";
 import { waitStatusBar } from "./utils/waiters";
  
-import path from "path";
-import fs from "fs"; 
- 
-const testFileName = path.join(process.cwd(), "src", "test", "testFile.txt");
 describe("Vorpal engine tests", () => {
   let settingsEditor: SettingsEditor;
   let bench: Workbench;
@@ -17,7 +20,6 @@ describe("Vorpal engine tests", () => {
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();
     await bottomBar.toggle(false);
-    fs.writeFileSync(testFileName, "");
   });
  
   after(async () => {
