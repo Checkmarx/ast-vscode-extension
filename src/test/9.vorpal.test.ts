@@ -27,7 +27,6 @@ describe("Vorpal engine tests", () => {
   });
  
   it("verify vorpal checkbox exists in the settings", async function () {
-    await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const vorpalCheckbox = await settingsEditor.findSetting(
       "ActivateVorpalAutoScanning",
@@ -38,7 +37,14 @@ describe("Vorpal engine tests", () => {
   });
  
   it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
-
+    settingsEditor = await bench.openSettings();
+    const vorpalCheckbox = await settingsEditor.findSetting(
+      "ActivateVorpalAutoScanning",
+      "Checkmarx Vorpal"
+    );
+    vorpalCheckbox.setValue(true);
+    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
+    expect(vorpalCheckboxValue).to.be.true;
   });
   // it("vorpal starts when the apikey changes", async function () {});
   // it("vorpal stops listening when Vorpal is False in settings", async function () {});
