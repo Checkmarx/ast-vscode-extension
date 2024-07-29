@@ -12,18 +12,18 @@ export class VorpalCommand {
     this.context = context;
     this.logs = logs;
   }
-  public registerVorpal() {
+  public async registerVorpal() {
     try {
       const vorpalActive = vscode.workspace
         .getConfiguration("CheckmarxVorpal")
         .get("ActivateVorpalAutoScanning") as boolean;
       if (vorpalActive) {
-        this.installVorpal();
-        this.registerVorpalScanOnChangeText();
+        await this.installVorpal();
+        await this.registerVorpalScanOnChangeText();
         this.logs.info(constants.vorpalStart);
       } else {
-        this.disposeVorpalScanOnChangeText();
-        clearVorpalProblems();
+        await this.disposeVorpalScanOnChangeText();
+        await clearVorpalProblems();
         this.logs.info(constants.vorpalDisabled);
       }
     } catch(error) {
@@ -72,6 +72,5 @@ export class VorpalCommand {
       this.onDidChangeTextDocument.dispose();
       this.context.subscriptions.push(this.onDidChangeTextDocument);
     }
-    
   }
 }
