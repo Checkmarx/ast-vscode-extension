@@ -106,7 +106,6 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 - [Checkmarx contribution guidelines](docs/contributing.md)
 - [Checkmarx Code of Conduct](docs/code_of_conduct.md)
 
-
 <!-- LICENSE -->
 ## License
 
