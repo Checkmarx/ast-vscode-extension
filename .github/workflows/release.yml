@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: update-npm-version
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
 
       # CHECKOUT PROJECT
@@ -141,7 +141,7 @@ jobs:
         if: inputs.dev == false
         uses: peter-evans/create-pull-request@v6.0.5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ env.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
           title: "Update Version - Automated Changes"
           body: "This is an automated PR created by GitHub Actions"
