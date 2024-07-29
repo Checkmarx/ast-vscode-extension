@@ -53,6 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: npm-version-patch
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
 
       # CHECKOUT PROJECT
