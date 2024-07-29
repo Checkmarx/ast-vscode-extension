@@ -57,7 +57,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: npm-version-patch
+      BRANCH_NAME: update-npm-version
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
 
