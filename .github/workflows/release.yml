@@ -41,7 +41,13 @@ on:
         required: false
         default: false
         type: boolean
-
+        
+permissions:
+  id-token: write
+  contents: write
+  packages: write
+  pull-requests: write
+  
 jobs:
   delete:
     uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@main
@@ -51,6 +57,9 @@ jobs:
     if: inputs.dev
   release:
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: update-npm-version
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
 
       # CHECKOUT PROJECT
@@ -78,7 +87,7 @@ jobs:
           if [ ${{ inputs.dev }} == true ]; then
             echo "TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version)" >> $GITHUB_ENV
           else
-            echo "TAG_NAME=$(npm version minor)" >> $GITHUB_ENV
+            echo "TAG_NAME=$(npm version minor --no-git-tag-version)" >> $GITHUB_ENV
           fi
 
       # INSTALL NPM DEPENDENCIES
@@ -126,10 +135,42 @@ jobs:
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
       
-      # PUSH TAGS IF IT IS A RELEASE
-      - name: Push tag if release
+      # CREATE PR FOR VERSION
+      - name: Create Pull Request
+        id: create_pr
         if: inputs.dev == false
-        run: git push && git push --tags
+        uses: peter-evans/create-pull-request@v6.0.5
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          title: "Update Version - Automated Changes"
+          body: "This is an automated PR created by GitHub Actions"
+          base: main
+          draft: false
+
+      # WAIT FOR PR CREATION
+      - name: Wait for PR to be created
+        id: pr
+        if: inputs.dev == false
+        uses: octokit/request-action@v2.3.1
+        with:
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
+
+      # MERGE PR TO MAIN
+      - name: Merge Pull Request
+        if: inputs.dev == false
+        uses: octokit/request-action@v2.3.1
+        with:
+          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
+          merge_method: squash
+
+      # PUSH TAGS IF IT IS A RELEASE
+      - name: Push tag
+        if: inputs.dev == false
+        run: |
+          git pull 
+          git tag ${{ env.TAG_NAME }}
+          git push --tags
 
       # CREATE GH RELEASE
       - name: Create Release
