@@ -26,9 +26,10 @@
   <ol>
     <li><a href="#overview">Overview</a></li>
     <li><a href="#key-features">Key Features</a></li>
+    <li><a href="#how-to-videos">How To Videos</a></li>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#initial-setup">Initial Setup</a></li>
-    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#contributing">Documentation</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -66,32 +67,31 @@ This tool requires authentication, using credentials from your Checkmarx One acc
   - Adjust the severity, update the state, and add comments directly from the VS Code extension.
 
 ## How To Videos
+- **Installation**
 ![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif)
 
+- **Running a Scan**
 ![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif)
 
-## Prerequisites
-**IAC Security Auto Scanning:**
-You must have Docker installed and running in your environment
-
-**For Checkmarx One:**
-You need to have a Checkmarx One account and an API key for your account. To create an API key, see [Generating an API Key](https://checkmarx.com/resource/documents/en/34965-118315-authentication-for-checkmarx-one-cli.html#UUID-a4e31a96-1f36-6293-e95a-97b4b9189060_UUID-1e7abdfa-77eb-2a6c-f12a-c812a1e1dcf7).
-
-## Initial Setup
-For **KICS Auto Scanning**, no configuration is needed, just install the extension, and start getting results!
-For **Checkmarx One**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).
-
-Checkmarx One:
-- You have a Checkmarx One account and can run Checkmarx One scans on your source code.
-- You have an API key for your Checkmarx One account.
-
-Kics Auto Scanning:
-- You must have Docker installed and running in your environment (For KICS auto scanning only)
-
+- **IAC Security Auto Remediation**
 ![](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_kics_auto_remediation.gif)
 
-See our documentation for using [KICS Auto Scanning](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html) and [Checkmarx One](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html).
+## Prerequisites
+- **IAC Security Auto Scanning:**
+You must have Docker installed and running in your environment
 
+- **For Checkmarx One:**
+You need to have a Checkmarx One account and be able to generate an API key for your account. To create an API key, see [Generating an API Key](https://checkmarx.com/resource/documents/en/34965-118315-authentication-for-checkmarx-one-cli.html#UUID-a4e31a96-1f36-6293-e95a-97b4b9189060_UUID-1e7abdfa-77eb-2a6c-f12a-c812a1e1dcf7).
+
+## Initial Setup
+- For **IAC Security Auto Scanning**, no configuration is needed, just install the extension, and start getting results!
+- For **Checkmarx One**, you need to configure your account info. See documentation [here](https://checkmarx.com/resource/documents/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).
+
+## Documentation
+- [Installation](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html)
+- [Reviewing Results](https://checkmarx.com/resource/documents/en/34965-68743-visual-studio-code---checkmarx-one--ast--results.html)
+- [IAC Security Auto Scanning](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html)
+- [SCA Local Scanning](https://docs.checkmarx.com/en/34965-152266-using-the-vs-code-checkmarx-extension---sca-realtime-scanning.html)
 
 ## Contributing
 
@@ -99,7 +99,6 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 
 - [Checkmarx contribution guidelines](docs/contributing.md)
 - [Checkmarx Code of Conduct](docs/code_of_conduct.md)
-
 
 <!-- LICENSE -->
 ## License
@@ -115,7 +114,7 @@ Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github
 
 Find more integrations from our team [here](https://github.com/Checkmarx/ci-cd-integrations#checkmarx-ast-integrations)
 
-© 2022 Checkmarx Ltd. All Rights Reserved.
+© 2024 Checkmarx Ltd. All Rights Reserved.
 
 [contributors-shield]: https://img.shields.io/github/contributors/Checkmarx/ast-vscode-extension.svg
 [contributors-url]: https://github.com/Checkmarx/ast-vscode-extension/graphs/contributors
