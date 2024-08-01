@@ -8,6 +8,7 @@ import { Logs } from "../models/logs";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
 
 export interface CxPlatform {
 	/**
@@ -176,5 +177,16 @@ export interface CxPlatform {
 		 * @param statusBarItem The {@link vscode.StatusBarItem} associated with the results.
 	*/
 	updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem);
+
+  /**
+   * install the Vorpal engine
+   */
+  installVorpal(): Promise<CxVorpal>;
+
+  /**
+   * Scan the edited file in the vorpal engine and show the results in the problem section
+   * @param sourcePath the edited file sent to the vorpal engine
+   */
+  scanVorpal(sourcePath: string): Promise<CxVorpal>;
 }
 
