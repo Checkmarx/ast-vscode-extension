@@ -26,25 +26,25 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
     );
     // RUN VORPAL SCAN
     logs.info("Start Vorpal Scan On File: " + document.uri.fsPath);
-    const scanVprpalResult = await cx.scanVorpal(filePath);
+    const scanVorpalResult = await cx.scanVorpal(filePath);
     // DELETE TEMP FILE
     deleteFile(filePath); 
     console.info("file %s deleted", filePath);
     // HANDLE ERROR
-    if (scanVprpalResult.error) {
-      logs.error(
-        "Vorpal Error: " +
-          (scanVprpalResult.error.description ?? scanVprpalResult.error)
+    if (scanVorpalResult.error) {
+      logs.warn(
+        "Vorpal Warning: " +
+          (scanVorpalResult.error.description ?? scanVorpalResult.error)
       );
       return;
     }
     // VIEW PROBLEMS
     logs.info(
-      scanVprpalResult.scanDetails.length +
+      scanVorpalResult.scanDetails.length +
         " vulnerabilities were found in " +
         document.uri.fsPath
     );
-    updateProblems(scanVprpalResult, document.uri);
+    updateProblems(scanVorpalResult, document.uri);
   } catch (error) {
     console.error(error);
     logs.error(constants.errorScanVorpal);
@@ -60,12 +60,12 @@ export async function clearVorpalProblems() {
   diagnosticCollection.clear();
 }
 
-function updateProblems(scanVprpalResult: CxVorpal, uri: vscode.Uri) {
+function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
   diagnosticCollection.delete(uri);
   const diagnostics: vscode.Diagnostic[] = [];
 
-  for (let i = 0; i < scanVprpalResult.scanDetails.length; i++) {
-    const res = scanVprpalResult.scanDetails[i];
+  for (let i = 0; i < scanVorpalResult.scanDetails.length; i++) {
+    const res = scanVorpalResult.scanDetails[i];
     const range = new vscode.Range(
       new vscode.Position(res.line - 1, 0),
       new vscode.Position(res.line - 1, 100)
