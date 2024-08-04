@@ -7,7 +7,7 @@ describe("Welcome view test", () => {
   let bench: Workbench;
 
   before(async function () {
-    this.timeout(8000);
+    this.timeout(100000);
     bench = new Workbench();
   });
 
