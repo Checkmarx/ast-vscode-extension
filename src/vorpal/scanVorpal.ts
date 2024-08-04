@@ -17,7 +17,7 @@ export const diagnosticCollection = vscode.languages.createDiagnosticCollection(
 export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
   
   if (ignoreFiles(document))
-    return;
+    {return;}
   try {
     // SAVE TEMP FILE
     const filePath = saveTempFile(
@@ -73,7 +73,7 @@ function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
       range,
       res.ruleName + " - " + res.remediationAdvise,
-      parseSavirity(res.severity)
+      parseSeverity(res.severity)
     );
     diagnostic.source = constants.vorpalEngineName;
     diagnostics.push(diagnostic);
@@ -81,19 +81,24 @@ function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
   diagnosticCollection.set(uri, diagnostics);
 }
 
-function parseSavirity(vorpalSavirity: string) {
-  switch (vorpalSavirity.toUpperCase()) {
-    case "HIGH":
-      return vscode.DiagnosticSeverity.Error;
-    case "MEDIUM":
-      return vscode.DiagnosticSeverity.Warning;
-    case "LOW":
-      return vscode.DiagnosticSeverity.Information;
-    default:
-      console.log("Invalid vorpalSavirity value: " + vorpalSavirity);
-      return vscode.DiagnosticSeverity.Information;
+function parseSeverity(vorpalSeverity: string): vscode.DiagnosticSeverity {
+  const severityMap: Record<string, vscode.DiagnosticSeverity> = {
+    CRITICAL: vscode.DiagnosticSeverity.Error,
+    HIGH: vscode.DiagnosticSeverity.Error,
+    MEDIUM: vscode.DiagnosticSeverity.Warning,
+    LOW: vscode.DiagnosticSeverity.Information
+  };
+
+  const severity = severityMap[vorpalSeverity.toUpperCase()];
+  
+  if (severity === undefined) {
+    console.log(`Invalid vorpalSeverity value: ${vorpalSeverity}`);
+    return vscode.DiagnosticSeverity.Information;
   }
+
+  return severity;
 }
+
 function saveTempFile(fileName: string, content: string): string | null {
   try {
     const tempDir = os.tmpdir();
