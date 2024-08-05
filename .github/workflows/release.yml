@@ -4,50 +4,50 @@ on:
   workflow_call:
     inputs:
       jsTag:
-        description: 'JS Wrapper tag name'
+        description: "JS Wrapper tag name"
         required: false
         type: string
         default: nightly
       vscodeTag:
-        description: 'Tag name'
+        description: "Tag name"
         required: false
         type: string
         default: nightly
       dev:
-        description: 'Is dev build'
+        description: "Is dev build"
         required: false
         default: true
         type: boolean
       publish:
-        description: 'Publish to marketplace'
+        description: "Publish to marketplace"
         required: false
         default: true
         type: boolean
   workflow_dispatch:
     inputs:
       jsTag:
-        description: 'JSW tag name (ignored if not dev build)'
+        description: "JSW tag name (ignored if not dev build)"
         required: false
       vscodeTag:
-        description: 'Tag name (ignored if not dev build)'
+        description: "Tag name (ignored if not dev build)"
         required: false
       dev:
-        description: 'Is dev build'
+        description: "Is dev build"
         required: false
         default: true
         type: boolean
       publish:
-        description: 'Publish to marketplace'
+        description: "Publish to marketplace"
         required: false
         default: false
         type: boolean
-        
+
 permissions:
   id-token: write
   contents: write
   packages: write
   pull-requests: write
-  
+
 jobs:
   delete:
     uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@main
@@ -61,7 +61,6 @@ jobs:
       BRANCH_NAME: update-npm-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
-
       # CHECKOUT PROJECT
       - name: Checkout
         uses: actions/checkout@v4.1.0
@@ -134,12 +133,12 @@ jobs:
           else
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
           fi
-      
+
       # CREATE PR FOR VERSION
       - name: Create Pull Request
         id: create_pr
         if: inputs.dev == false
-        uses: peter-evans/create-pull-request@v6.0.5
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e #v6.0.5
         with:
           token: ${{ env.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
@@ -152,14 +151,14 @@ jobs:
       - name: Wait for PR to be created
         id: pr
         if: inputs.dev == false
-        uses: octokit/request-action@v2.3.1
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
         with:
           route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
 
       # MERGE PR TO MAIN
       - name: Merge Pull Request
         if: inputs.dev == false
-        uses: octokit/request-action@v2.3.1
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
         with:
           route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
           merge_method: squash
@@ -196,7 +195,7 @@ jobs:
 
       # GENERATE AND WRITE CHANGELOG TO FILE
       - name: Generate release changelog
-        uses: BobAnkh/auto-generate-changelog@v1.2.5
+        uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
         with:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PATH: 'CHANGELOG.md'
+          PATH: "CHANGELOG.md"
