@@ -4,13 +4,13 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag to delete'
+        description: "Tag to delete"
         required: true
         type: string
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to delete'
+        description: "Tag to delete"
         required: true
 
 permissions:
@@ -22,10 +22,9 @@ jobs:
   delete:
     runs-on: ubuntu-latest
     steps:
-
       - name: Delete releases and tags
         continue-on-error: true
-        uses: dev-drprasad/delete-older-releases@v0.2.1
+        uses: dev-drprasad/delete-older-releases@653dc03d96473ac9e585c68c8bf5aaccb0dadb61 #v0.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
