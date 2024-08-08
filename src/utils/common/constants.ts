@@ -138,7 +138,13 @@ export const constants = {
   gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
-  documentation: "Documentation"
+  documentation: "Documentation",
+  // Vorpal engine
+  errorInstallation: "Failed to run vorpal engine",
+  errorScanVorpal: "failed to handle vorpal scan",
+  vorpalStart: "Vorpal engine started",
+  vorpalDisabled: "Vorpal Auto Scanning is disabled now.",
+  vorpalEngineName: "Vorpal",
 };
 
 export enum GroupBy {
