@@ -53,7 +53,7 @@ async function createScanForProject(
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
   const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
-  const projectName = projectForScan.name.split(":")[1].trim();
+  const projectName = projectForScan.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
   const scanCreateResponse = await cx.scanCreate(
@@ -65,6 +65,8 @@ async function createScanForProject(
   updateState(context, constants.scanCreateIdKey, {
     id: scanCreateResponse.id,
     name: scanCreateResponse.id,
+    displayScanId: undefined,
+    scanDatetime: undefined
   });
 }
 
@@ -133,20 +135,20 @@ export async function createScan(
   logs: Logs
 ) {
   logs.info(messages.scanCheckStart);
-  updateState(context, constants.scanCreatePrepKey, { id: true, name: "" });
+  updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
   updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
   if (!(await doesBranchMatch(context, logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
     return;
   }
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
     return;
   }
 
@@ -154,7 +156,7 @@ export async function createScan(
   await createScanForProject(context, logs);
 
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
-  updateState(context, constants.scanCreatePrepKey, { id: false, name: "" });
+  updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
 
   await vscode.commands.executeCommand(commands.pollScan);
 }
@@ -186,7 +188,7 @@ async function doFilesExistInWorkspace(resultFileNames: string[]) {
 
 function extractFileNamesFromResults(results: string[]) {
   const filenames = [];
-  results.forEach((result) => {
+  results?.forEach((result) => {
     const astResult = new AstResult(result);
     filenames.push(astResult.fileName);
   });

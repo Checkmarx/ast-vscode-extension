@@ -82,6 +82,10 @@ export function getResultsFilePath() {
 }
 
 export function getScanLabel(createdAt: string, id: string) {
+  return getFormattedDateTime(createdAt) + " " + id;
+}
+
+export function getFormattedDateTime(createdAt: string) {
   // convert date to yyyy/mm/dd HH:mm:ss
   const date = new Date(createdAt);
   const year = date.getFullYear();
@@ -105,7 +109,23 @@ export function getScanLabel(createdAt: string, id: string) {
     minutes +
     ":" +
     seconds;
-  return dateString + " " + id;
+  return dateString;
+}
+
+export function getFormattedId(label: CxScan, scanList: CxScan[]) {
+  if (scanList === null || scanList === undefined || scanList.length === 0){
+    return "";
+  } 
+
+  return label === scanList[0]
+  ? label.id + " (latest)"
+  : label.id;
+}
+
+export function formatLabel(label: CxScan, scanList: CxScan[]) {
+  return label === scanList[0]
+  ? getScanLabel(label.createdAt, label.id) + " (latest)"
+  : getScanLabel(label.createdAt, label.id);
 }
 
 export async function enableButton(button: string) {
@@ -142,7 +162,12 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): CxRes
         .readFileSync(resultJsonPath, "utf-8")
         .replace(/:([0-9]{15,}),/g, ':"$1",')
     );
-    results = orderResults(jsonResults.results);
+    if(jsonResults.results){
+      results = orderResults(jsonResults.results);
+    }
+    else {
+      results = [];
+    }
   }
   return results;
 }

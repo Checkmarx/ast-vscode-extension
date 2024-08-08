@@ -27,7 +27,7 @@ export class AstResult extends CxResult {
   description = "";
   descriptionHTML = "";
   similarityId = "";
-  data: any;
+  declare data: any;
   state = "";
   queryId = "";
   sastNodes: SastNode[] = [];
@@ -35,7 +35,7 @@ export class AstResult extends CxResult {
   kicsNode: KicsNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
-  vulnerabilityDetails: CxVulnerabilityDetails;
+  declare vulnerabilityDetails: CxVulnerabilityDetails;
 
   setSeverity(severity: string) {
     this.severity = severity;
@@ -68,6 +68,7 @@ export class AstResult extends CxResult {
       result.comments,
       result.vulnerabilityDetails,
       result.descriptionHTML);
+    this.id = result.id;
     this.type = result.scaType ? "sca" : result.type;
     this.typeLabel = result.label;
     this.scaType = result.scaType;
@@ -325,8 +326,7 @@ export class AstResult extends CxResult {
                         data-fullName="${node.fullName}" 
                         data-length="${node.length}"
                       >
-                        ${this.getShortFilename(node.fileName)} [${node.line}:${node.column
-          }]
+                        ${this.getShortFilename(node.fileName)}
                       </a>
                     </div>
                 </div>
@@ -711,7 +711,7 @@ export class AstResult extends CxResult {
             Score
           </p>
           <p>
-            ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : ""}
+              ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : 'N/A'}
           </p>
         </div>
         <div class="right-${result.severity}">

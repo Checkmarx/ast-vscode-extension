@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as kill from "tree-kill";
+import kill from "tree-kill";
 import * as path from "path";
 import { join } from "path";
 import { Logs } from "../models/logs";
@@ -76,6 +76,8 @@ export class KicsProvider {
       updateState(this.context, constants.processObject, {
         id: undefined,
         name: constants.processObjectKey,
+        scanDatetime: undefined,
+        displayScanId: undefined
       });
     }
 
@@ -100,6 +102,8 @@ export class KicsProvider {
     updateState(this.context, constants.processObject, {
       id: this.process,
       name: constants.processObjectKey,
+      displayScanId: undefined,
+      scanDatetime: undefined
     });
 
     // async wait for the KICS scan to end to create the diagnostics and print the summary
@@ -159,6 +163,8 @@ export class KicsProvider {
           updateState(this.context, constants.processObject, {
             id: undefined,
             name: constants.processObjectKey,
+            displayScanId: undefined,
+            scanDatetime: undefined
           });
         }
       });

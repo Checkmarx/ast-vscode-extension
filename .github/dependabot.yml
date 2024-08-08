@@ -13,3 +13,5 @@ updates:
       - "tiagobcx"
     registries:
       - npm-pkg-checkmarx
+    ignore:
+      - dependency-name: "chai"

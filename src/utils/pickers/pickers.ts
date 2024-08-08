@@ -4,6 +4,9 @@ import {
   PROGRESS_HEADER,
   getProperty,
   getScanLabel,
+  getFormattedDateTime,
+  getFormattedId,
+  formatLabel
 } from "../utils";
 import { commands } from "../common/commands";
 import {
@@ -25,9 +28,11 @@ export async function projectPicker(
     updateState(context, constants.projectIdKey, {
       id: item.id,
       name: `${constants.projectLabel} ${item.label}`,
+      displayScanId: undefined,
+      scanDatetime: undefined
     });
-    updateState(context, constants.branchIdKey, { id: undefined, name: constants.branchLabel });
-    updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel });
+    updateState(context, constants.branchIdKey, { id: undefined, name: constants.branchLabel, displayScanId: undefined, scanDatetime: undefined});
+    updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined});
 
     await vscode.commands.executeCommand(commands.refreshTree);
     quickPick.hide();
@@ -52,6 +57,8 @@ export async function branchPicker(
     updateState(context, constants.branchIdKey, {
       id: item.id,
       name: `${constants.branchLabel} ${item.label}`,
+      displayScanId: undefined,
+      scanDatetime: undefined
     });
     if (projectItem.id && item.id) {
       const scanList = await getScansPickItems(
@@ -64,10 +71,12 @@ export async function branchPicker(
         updateState(context, constants.scanIdKey, {
           id: scanList[0].id,
           name: `${constants.scanLabel} ${scanList[0].label}`,
+          displayScanId: `${constants.scanLabel} ${scanList[0].formattedId}`,
+          scanDatetime: `${constants.scanDateLabel} ${scanList[0].datetime}`,
         });
         await getResultsWithProgress(logs, scanList[0].id);
       } else {
-        updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel });
+        updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
       }
     } else {
       vscode.window.showErrorMessage(messages.pickerBranchProjectMissing);
@@ -99,6 +108,8 @@ export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
     updateState(context, constants.scanIdKey, {
       id: item.id,
       name: `${constants.scanLabel} ${item.label}`,
+      displayScanId: `${constants.scanLabel} ${item.formattedId}`,
+      scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
     });
     if (item.id) {
 
@@ -187,11 +198,10 @@ export async function getScansPickItems(
       try {
         return scanList
           ? scanList.map((label) => ({
-            label:
-              label === scanList[0]
-                ? getScanLabel(label.createdAt, label.id) + " (latest)"
-                : getScanLabel(label.createdAt, label.id),
+            label: formatLabel(label, scanList),
             id: label.id,
+            datetime: getFormattedDateTime(label.createdAt),
+            formattedId: getFormattedId(label, scanList)
           }))
           : [];
       } catch (error) {
@@ -234,14 +244,20 @@ export async function loadScanId(
   updateState(context, constants.projectIdKey, {
     id: project.id,
     name: `${constants.projectLabel} ${project.name}`,
+    displayScanId: undefined,
+    scanDatetime: undefined
   });
   updateState(context, constants.branchIdKey, {
     id: scan.branch,
     name: `${constants.branchLabel} ${getProperty(scan, "branch")}`,
+    displayScanId: undefined,
+    scanDatetime: undefined
   });
   updateState(context, constants.scanIdKey, {
     id: scan.id,
     name: `${constants.scanLabel} ${getScanLabel(scan.createdAt, scan.id)}`,
+    displayScanId: scan.id,
+    scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.createdAt)}`,
   });
 
   await getResultsWithProgress(logs, scan.id);

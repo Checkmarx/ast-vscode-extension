@@ -5,8 +5,6 @@
 	var selectSeverity = "";
 	var selectState = "";
 	var comment = "";
-	// @ts-ignore
-	const vscode = acquireVsCodeApi();
 	document.querySelectorAll('.ast-node').forEach(element => {
 		element.addEventListener('click', (e) => {
 			var target = e.target;
@@ -38,7 +36,7 @@
 		});
 	});
 
-	// Activated when clicked in AI Guided Remediation
+	// Activated when clicked in AI Security Champion
 	document.querySelectorAll('.title_gpt').forEach(element => {
 		element.addEventListener('click', () => {
 			vscode.postMessage({
@@ -232,15 +230,6 @@
 		});
 	}
 
-	let codebashingElement = document.getElementById('cx_codebashing');
-	if (codebashingElement) {
-		codebashingElement.addEventListener('click', () => {
-			// @ts-ignore
-			vscode.postMessage({
-				command: 'codebashing',
-			});
-		});
-	}
 
 	// Display the changes once loaded
 	window.addEventListener('message', event => {
@@ -253,6 +242,7 @@
 					loaderContainer.style.display = 'none';
 					loaderContainer.innerHTML = infoChangeContainer(changes);
 					loaderContainer.style.display = 'block';
+					loaderContainer.style.padding = '0.4em';
 				}
 				break;
 			case 'loader':
@@ -267,12 +257,13 @@
 				let learn = message.learn;
 				let learnLoaderContainer = document.getElementById('learn-container-loader');
 				learnLoaderContainer.style.display = 'none';
-				learnLoaderContainer.innerHTML = infoLearnContainer(learn);
+				learnLoaderContainer.innerHTML = infoLearnContainer(learn, message.result);
 				learnLoaderContainer.style.display = 'block';
 				let codeLoaderContainer = document.getElementById('tab-code');
 				codeLoaderContainer.style.display = 'none';
 				codeLoaderContainer.innerHTML = infoCodeContainer(learn);
 				codeLoaderContainer.style.display = 'block';
+				registerCodebashingEventListener();
 				break;
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
@@ -292,9 +283,23 @@
 			// 		updateDisplay('bfl-tip-loading','none');
 			// 		updateDisplay('loader','none');
 			// 	}
+
 			// 	break;
 		}
 	});
+
+
+	function registerCodebashingEventListener() {
+		let codebashingElement = document.getElementById('cx_codebashing');
+		if (codebashingElement) {
+			codebashingElement.addEventListener('click', () => {
+				// @ts-ignore
+				vscode.postMessage({
+					command: 'codebashing',
+				});
+			});
+		}
+	}
 
 	// Container arround the changes
 	function infoChangeContainer(changes) {
@@ -323,17 +328,18 @@
 		if (learnArray.length > 0) {
 			for (let learn of learnArray) {
 				for (let code of learn.samples) {
-					html += `
-							<div class="learn-section">
-								<p>${code.title} using ${code.progLanguage}</p>
-								<pre class="pre-code">
-									<code id="code">
-										${code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt")}
-									</code>
-								</pre>
-							</div>
-							`;
-
+					let learnSectionDiv = document.createElement('div');
+					learnSectionDiv.setAttribute('class', 'learn-section');
+					let codeTitlePara = document.createElement('p');
+					codeTitlePara.textContent = '' + code.title + ' using ' + code.progLanguage;
+					let preCode = document.createElement('pre');
+					preCode.setAttribute('class', 'pre-code');
+					let codeElement = document.createElement('code');
+					codeElement.textContent = code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt");
+					preCode.appendChild(codeElement);
+					learnSectionDiv.appendChild(codeTitlePara);
+					learnSectionDiv.appendChild(preCode);
+					html += learnSectionDiv.outerHTML;
 				}
 			}
 		}
@@ -349,14 +355,15 @@
 		return html;
 	}
 
-	// Learn more content
-	function infoLearnContainer(learnArray) {
+	// Description content
+	function infoLearnContainer(descriptionArray, result) {
 		let html = "<div>";
-		if (learnArray.length > 0) {
-			for (let learn of learnArray) {
-				html += riskSection(learn.risk);
-				html += causeSection(learn.cause);
-				html += recommendationSection(learn.generalRecommendations);
+		if (descriptionArray.length > 0) {
+			for (let description of descriptionArray) {
+				html += codeBashingSection(result);
+				html += riskSection(description.risk);
+				html += causeSection(description.cause);
+				html += recommendationSection(description.generalRecommendations);
 			}
 		}
 		else {
@@ -372,75 +379,136 @@
 		return html;
 	}
 
+	function codeBashingSection(result) {
+		let codeBashingSection = "";
+		if (result.sastNodes.length > 0) {
+			let headerItemCodebashingDiv = document.createElement('div');
+			headerItemCodebashingDiv.setAttribute('id', 'cx_header_codebashing');
+			headerItemCodebashingDiv.style.marginBottom = '20px';
+			let codebashingLinkSpan = document.createElement('span');
+			codebashingLinkSpan.setAttribute('class', 'codebashing-link');
+			codebashingLinkSpan.textContent = 'Learn more at ';
+			let orangeColorSpan = document.createElement('span');
+			orangeColorSpan.setAttribute('class', 'orange-color');
+			orangeColorSpan.textContent = '>_';
+			let codeBashingSpan = document.createElement('span');
+			codeBashingSpan.setAttribute('class', 'codebashing-link-value');
+			codeBashingSpan.setAttribute('id', 'cx_codebashing');
+			codeBashingSpan.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
+			codeBashingSpan.textContent = 'codebashing';
+			codebashingLinkSpan.appendChild(orangeColorSpan);
+			codebashingLinkSpan.appendChild(codeBashingSpan);
+			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
+			return headerItemCodebashingDiv.outerHTML;
+		}
+		return codeBashingSection;
+	}
+
+
 	function riskSection(risk) {
-		return `<div class="learn-section"><p class="learn-header">Risk</p><p>${risk}</p></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class', 'learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class', 'learn-header');
+		learnHeaderPara.textContent = 'Risk';
+		let riskPara = document.createElement('p');
+		riskPara.innerHTML = risk;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(riskPara);
+		return learnSectionDiv.outerHTML;
+
 	}
 
 	function causeSection(cause) {
-		return `<div class="learn-section"><p class="learn-header">Cause</p><p>${cause}</p></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class', 'learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class', 'learn-header');
+		learnHeaderPara.textContent = 'Cause';
+		let causePara = document.createElement('p');
+		causePara.innerHTML = cause;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(causePara);
+		return learnSectionDiv.outerHTML;
 	}
 
 	function recommendationSection(recommendations) {
-		return `<div class="learn-section"><p class="learn-header">General Recommendations</p><span class="code-sample">${recommendations}</span></div>`;
+		let learnSectionDiv = document.createElement('div');
+		learnSectionDiv.setAttribute('class', 'learn-section');
+		let learnHeaderPara = document.createElement('p');
+		learnHeaderPara.setAttribute('class', 'learn-header');
+		learnHeaderPara.textContent = 'General Recommendations';
+		let recommendationsSpan = document.createElement('span');
+		recommendationsSpan.setAttribute('class', 'code-sample');
+		recommendationsSpan.innerHTML = recommendations;
+		learnSectionDiv.appendChild(learnHeaderPara);
+		learnSectionDiv.appendChild(recommendationsSpan);
+		return learnSectionDiv.outerHTML;
 	}
 
 
 	// Individual changes
 	function infoChanges(change) {
-		return (
-			`<p class="${change.Severity.length > 0 ? "select-" + change.Severity.toLowerCase() : ""}">
-				${change.Severity.length > 0 ? change.Severity : "No changes in severity."}
-			</p>
-			<p class="state">
-				${change.State.length > 0 ? change.State.replaceAll("_", " ") : "No changes in state."}
-			</p>
-				${change.Comment.length > 0 ?
-				`<p class="comment">
-						${change.Comment}
-					</p>`
-				: ""
-			}
-			`
-		);
+		let infoDiv = document.createElement("div");
+		let severityPara = document.createElement("p");
+		let severityClass = change.Severity.length > 0 ? ("select-" + change.Severity.toLowerCase()) : "";
+		severityPara.setAttribute('class', severityClass);
+		var severity = change.Severity.length > 0 ? change.Severity : "No changes in severity.";
+		severityPara.textContent = severity;
+		let statePara = document.createElement("p");
+		statePara.setAttribute('class', 'state');
+		var state = change.State.length > 0 ? change.State.replaceAll("_", " ") : "No changes in state.";
+		statePara.textContent = state;
+		infoDiv.appendChild(severityPara);
+		infoDiv.appendChild(statePara);
+		if (change.Comment.length > 0) {
+			let commentPara = document.createElement("p");
+			commentPara.setAttribute('class', 'comment');
+			commentPara.textContent = change.Comment;
+			infoDiv.appendChild(commentPara);
+		}
+		return infoDiv.outerHTML;
 	}
 
 	// Generic card for changes
 	function userCardInfo(username, date, info) {
-		return (
-			`<div class="history-container">
-				<div class="history-header">
-				<div class="username">
-					${username}
-				</div>
-				<div class="date">
-					${date}
-				</div>
-				</div>
-				<div class="text-content">
-					${info}
-				</div>
-			</div>`
-		);
+		let historyContainerDiv = document.createElement('div');
+		historyContainerDiv.setAttribute('class', 'history-container');
+		let historyHeaderDiv = document.createElement('div');
+		historyHeaderDiv.setAttribute('class', 'history-header');
+		let userNameDiv = document.createElement('div');
+		userNameDiv.setAttribute('class', 'username');
+		userNameDiv.textContent = username;
+		let dateDiv = document.createElement('div');
+		dateDiv.setAttribute('class', 'date');
+		dateDiv.textContent = date;
+		let textContentDiv = document.createElement('div');
+		textContentDiv.setAttribute('class', 'text-content');
+		textContentDiv.innerHTML = info;
+		historyHeaderDiv.appendChild(userNameDiv);
+		historyHeaderDiv.appendChild(dateDiv);
+		historyContainerDiv.appendChild(historyHeaderDiv);
+		historyContainerDiv.appendChild(textContentDiv);
+		return historyContainerDiv.outerHTML;
 	}
 
 	function loader() {
-		return (
-			`
-			<div id=\"history-container-loader\">
-				<center>
-					<p class=\"history-container-loader\">
-						Loading changes
-					</p>
-					<div class=\"loader\">
-					</div>
-				</center>
-			</div>
-			`
-		);
+		let historyContainerLoaderDiv = document.createElement('div');
+		historyContainerLoaderDiv.setAttribute('id', 'history-container-loader');
+		historyContainerLoaderDiv.setAttribute('class', 'center');
+		let historyContainerLoaderPara = document.createElement('p');
+		historyContainerLoaderPara.setAttribute('class', 'history-container-loader');
+		historyContainerLoaderPara.textContent = 'Loading changes';
+		let loaderDiv = document.createElement('div');
+		loaderDiv.setAttribute('class', 'loader');
+		historyContainerLoaderDiv.appendChild(historyContainerLoaderPara);
+		historyContainerLoaderDiv.appendChild(loaderDiv);
+		return historyContainerLoaderDiv.outerHTML;
 	}
 
 	function updateDisplay(id, display) {
 		let element = document.getElementById(id);
 		element.style.display = display;
 	}
+
 })();

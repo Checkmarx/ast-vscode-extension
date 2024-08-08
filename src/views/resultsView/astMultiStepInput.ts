@@ -95,14 +95,20 @@ export async function multiStepInput(
   updateState(context, constants.projectIdKey, {
     id: state.project.id,
     name: `${constants.projectLabel} ${state.project.label}`,
+    displayScanId: undefined,
+    scanDatetime: undefined
   });
   updateState(context, constants.branchIdKey, {
     id: state.branch.id,
     name: `${constants.branchLabel} ${state.branch.label}`,
+    displayScanId: undefined,
+    scanDatetime: undefined
   });
   updateState(context, constants.scanIdKey, {
     id: state.scanId.id,
     name: `${constants.scanLabel} ${state.scanId.label}`,
+    displayScanId: `${constants.scanLabel} ${state.scanId.formattedId}`,
+    scanDatetime: state.scanId.datetime
   });
 
   if (state.scanId?.id) {

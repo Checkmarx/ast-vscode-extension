@@ -1,4 +1,4 @@
-body {
+.inner-body{
 	padding: 0 !important; /* force chat to be full webview width */
 	color: var(--vscode-foreground) !important;
 	font-size: var(--vscode-font-size);
@@ -127,6 +127,64 @@ body {
 
 .btn:disabled{
 	opacity: 100 !important;
+}
+
+.inner-body-sast{
+	padding: 0 !important; /* force chat to be full webview width */
+	color: var(--vscode-foreground) !important;
+	font-size: var(--vscode-font-size);
+	font-weight: var(--vscode-font-weight);
+	font-family: var(--vscode-font-family);
+	background-color: var(--vscode-editor-background) !important;
+	min-height: 50vh;
+	justify-content: center;
+	display: flex;
+}
+
+.start-sast-chat{
+	width: 250px;
+	height: 250px;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 0 0 0 #434477;
+	background: transparent;
+	-webkit-animation: pulse 3s infinite;
+}
+
+.start-sast-chat:hover{
+	width: 250px;
+	height: 250px;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	cursor: pointer;
+	-webkit-animation:none;
+	box-shadow: 0 0 0 1px #434477;
+}
+
+.sast-gpt-logo{
+	height:110px ;
+}
+
+.start-chat-text{
+	color: grey;
+}
+
+@-webkit-keyframes pulse {
+    0% {
+      transform: scale(.98);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 1px #434477;
+    }
+    100% {
+      transform: scale(.98);
+      box-shadow: 0 0 0 0 #434477;
+    }
 }
 
 pre {

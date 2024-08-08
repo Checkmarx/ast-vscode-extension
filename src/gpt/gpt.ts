@@ -3,8 +3,12 @@ import { Logs } from "../models/logs";
 import { GptView } from "../views/gptView/gptView";
 import { cx } from "../cx";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import { constants } from "../utils/common/constants";
+
 export class Gpt {
 	private thinkID: number;
+	private kicsIcon: vscode.Uri;
+	private userKicsIcon: vscode.Uri;
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly logs: Logs,
@@ -15,9 +19,10 @@ export class Gpt {
 		this.logs = logs;
 		this.gptPanel = gptPanel;
 		this.thinkID = 0;
+		this.gptView = gptView;
+		this.kicsIcon = gptView.getAskKicsIcon();
+		this.userKicsIcon = gptView.getAskKicsUserIcon();
 	}
-	private kicsIcon = this.gptView.getAskKicsIcon();
-	private userKicsIcon = this.gptView.getAskKicsUserIcon();
 
 	async runGpt(userMessage: string, user: string) {
 		const result = this.gptView.getResult();
@@ -48,7 +53,7 @@ export class Gpt {
 			// send response message
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: messages[0].responses, user: "AI Guided Remediation" },
+				message: { message: messages[0].responses, user: `${constants.aiSecurityChampion}` },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});
@@ -57,7 +62,7 @@ export class Gpt {
 			// enable all the buttons and inputs
 			this.gptPanel?.webview.postMessage({
 				command: "response",
-				message: { message: e.message, user: "AI Guided Remediation" },
+				message: { message: e.message, user: `${constants.aiSecurityChampion}` },
 				thinkID: this.thinkID,
 				icon: this.kicsIcon
 			});

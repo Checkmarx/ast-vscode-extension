@@ -35,6 +35,7 @@ export const constants = {
   branchLabel: "Branch: ",
   branchPlaceholder: "Select branch",
   scanLabel: "Scan: ",
+  scanDateLabel: "Scan Date: ",
   scanPlaceholder: "Select scan",
   scanPickerTitle: "Checkmarx One Scan selection",
   projectItem: "project-item",
@@ -45,6 +46,7 @@ export const constants = {
   bookItem: "book-item",
   requestChangesItem: "requestChanges-item",
   mailItem: "mail-item",
+  calendarItem: "calendar-item",
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [
@@ -95,7 +97,7 @@ export const constants = {
   scanPollTimeout: 15000, // MILLISECONDS
 
   // SCA AUTO SCAN
-  scaNoVulnerabilities: "Checkmarx found no vulnerabilities.",
+  scaNoVulnerabilities: "Checkmarx found no vulnerabilities",
   scaStartScan:
     "Click the play button to scan with Checkmarx SCA",
   clearSca: "Clear all sca scan information",
@@ -124,16 +126,17 @@ export const constants = {
   cxKicsAutoScan: "Activate KICS Auto Scanning",
 
   projectLimit: "limit=10000",
-  scanAgent: "VS Code",
+  vsCodeAgent: "VS Code",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
   cxKicsLong: "Checkmarx KICS",
   webviewName: "newDetails",
   gptWebviewName: "gpt",
-  gptSettings: "Checkmarx AI Guided Remediation: GPT Key",
-  gptCommandName: "CheckmarxAiGuidedRemediation",
-  gptSettingsKey: "GPT Key",
+  aiSecurityChampion: "AI Security Champion",
+  gptSettings: `Checkmarx AI Security Champion: OpenAI Key`,
+  gptCommandName: "CheckmarxSecurityChampion",
+  gptSettingsKey: "key",
   gptEngineKey: "model",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",

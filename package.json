@@ -1,9 +1,9 @@
 {
   "name": "ast-results",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx",
+  "displayName": "Checkmarx One",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.5.0",
+  "version": "2.17.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -803,7 +803,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkarmx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -843,7 +843,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68771-kics-auto-scanning-extension-for-vs-code.html)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
@@ -854,21 +854,21 @@
         }
       },
       {
-        "title": "Checkmarx AI Guided Remediation",
+        "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
         "order": 2,
         "properties": {
-          "CheckmarxAiGuidedRemediation.GPT Key": {
+          "CheckmarxSecurityChampion.key": {
             "type": "string",
             "order": 3,
             "default": "",
-            "markdownDescription": "Api key to connect to Gpt."
+            "markdownDescription": "Api key to connect to OpenAI."
           },
-          "CheckmarxAiGuidedRemediation.model": {
+          "CheckmarxSecurityChampion.model": {
             "order": 2,
             "type": "string",
             "default": "gpt-3.5-turbo",
-            "markdownDescription": "The model for AI Guided Remediation to use",
+            "markdownDescription": "The model for AI Security Champion to use",
             "enum": [
               "gpt-4",
               "gpt-4-32k",
@@ -892,33 +892,39 @@
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r ."
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r ."
   },
   "devDependencies": {
-    "@types/chai": "4.3.9",
-    "@types/mocha": "10.0.3",
-    "@types/node": "^20.8.10",
+    "@types/chai": "4.3.11",
+    "@types/mocha": "10.0.6",
+    "@types/node": "^20.14.10",
     "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
-    "chai": "4.3.10",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint": "^8.52.0",
-    "mocha": "10.2.0",
-    "typescript": "^5.2.2",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.2.0",
+    "chai": "4.3.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint": "^8.57.0",
+    "mocha": "10.3.0",
+    "typescript": "^5.5.3",
     "vsce": "^2.15.0",
-    "vscode-extension-tester": "5.10.0",
-    "vscode-extension-tester-locators": "^3.6.0",
-    "webpack": "^5.89.0",
+    "vscode-extension-tester": "8.3.0",
+    "vscode-extension-tester-locators": "^3.12.2",
+    "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.80",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.111",
     "copyfiles": "2.4.1",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslintcc": "^0.8.0",
+    "eslintcc": "^0.8.3",
     "tree-kill": "^1.2.2"
+  },
+  "overrides": {
+    "prebuild-install": "^7.1.1",
+    "bluebird": "^3.7.2",
+    "xml2js": "^0.6.2"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

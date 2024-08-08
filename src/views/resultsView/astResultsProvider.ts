@@ -97,7 +97,12 @@ export class AstResultsProvider extends ResultsProvider {
 
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
-      treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
+      const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
+      treeItems = treeItems.concat(newItem);
+
+      if (this.loadedResults.length !== 0) {
+        treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
+      }
 
       const treeItem = this.groupBy(
         this.loadedResults,
@@ -107,7 +112,12 @@ export class AstResultsProvider extends ResultsProvider {
         this.filterCommand.getAtiveSeverities(),
         this.filterCommand.getActiveStates()
       );
-      treeItem.label = `${constants.scanLabel} ${this.scan}`;
+      treeItem.label = "Scan"; // `${constants.scanLabel}`;
+
+      if (treeItem.children.length === 0) {
+        treeItem.children.push(new TreeItem(constants.scaNoVulnerabilities, undefined));
+      }
+      
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }
@@ -125,9 +135,10 @@ export class AstResultsProvider extends ResultsProvider {
         constants.branchItem
       ),
       new TreeItem(
-        getFromState(this.context, constants.scanIdKey)?.name ?? constants.scanLabel,
+        `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
         constants.scanItem
-      ),
+      )
     ];
   }
+
 }

@@ -7,7 +7,7 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { initialize } from "./utils/utils";
-import { CX_CLEAR, CX_LOOK_SCAN, SCAN_KEY_TREE, VS_OPEN_FOLDER } from "./utils/constants";
+import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL } from "./utils/constants";
 import { waitByLinkText } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
 
@@ -35,10 +35,10 @@ describe("Scan from IDE", () => {
     const input = await InputBox.create();
     await input.setText(SCAN_ID);
     await input.confirm();
-    await waitByLinkText(driver, SCAN_KEY_TREE + SCAN_ID, 5000);
-    let scan = await treeScan?.findItem(SCAN_KEY_TREE + SCAN_ID);
+    await waitByLinkText(driver, SCAN_KEY_TREE_LABEL, 5000);
+    let scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
     while (scan === undefined) {
-      scan = await treeScan?.findItem(SCAN_KEY_TREE + SCAN_ID);
+      scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
     }
     // click play button(or initiate scan with command)
     await bench.executeCommand("ast-results.createScan");

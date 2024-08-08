@@ -18,4 +18,4 @@ async function waitByClassName(driver, text, timeout) {
     driver.wait(vscode_extension_tester_1.until.elementLocated(vscode_extension_tester_1.By.className(text)), timeout);
 }
 exports.waitByClassName = waitByClassName;
-//# sourceMappingURL=waiters.js.map
+//# sourceMappingURL = waiters.js.map
