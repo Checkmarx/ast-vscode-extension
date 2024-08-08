@@ -201,6 +201,20 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "ast-results.filterCritical_untoggle",
+        "category": "ast-results",
+        "title": "CRITICAL",
+        "icon": "media/icons/critical_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.filterCritical_toggle",
+        "category": "ast-results",
+        "title": "CRITICAL",
+        "icon": "media/icons/critical_toggle.svg",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterHigh_toggle",
         "category": "ast-results",
         "title": "HIGH",
@@ -255,6 +269,13 @@
         "title": "INFO",
         "icon": "media/icons/info_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.filterCritical",
+        "category": "ast-results",
+        "title": "Filter severity: Critical",
+        "icon": "media/icons/high_untoggle.svg",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.filterHigh",
@@ -605,43 +626,53 @@
           "when": "view == astResults && ast-results.cancelScanButton || view == astResults && !ast-results.createScanButton && ast-results.cancelScanButton"
         },
         {
-          "command": "ast-results.filterHigh_untoggle",
+          "command": "ast-results.filterCritical_untoggle",
           "group": "navigation@1",
+          "when": "view == astResults && ast-results-critical"
+        },
+        {
+          "command": "ast-results.filterCritical_toggle",
+          "group": "navigation@1",
+          "when": "view == astResults && !ast-results-critical"
+        },
+        {
+          "command": "ast-results.filterHigh_untoggle",
+          "group": "navigation@2",
           "when": "view == astResults && ast-results-high"
         },
         {
           "command": "ast-results.filterHigh_toggle",
-          "group": "navigation@1",
+          "group": "navigation@2",
           "when": "view == astResults && !ast-results-high"
         },
         {
           "command": "ast-results.filterMedium_untoggle",
-          "group": "navigation@2",
+          "group": "navigation@3",
           "when": "view == astResults && ast-results-medium"
         },
         {
           "command": "ast-results.filterMedium_toggle",
-          "group": "navigation@2",
+          "group": "navigation@3",
           "when": "view == astResults && !ast-results-medium"
         },
         {
           "command": "ast-results.filterLow_untoggle",
-          "group": "navigation@3",
+          "group": "navigation@4",
           "when": "view == astResults && ast-results-low"
         },
         {
           "command": "ast-results.filterLow_toggle",
-          "group": "navigation@3",
+          "group": "navigation@4",
           "when": "view == astResults && !ast-results-low"
         },
         {
           "command": "ast-results.filterInfo_untoggle",
-          "group": "navigation@4",
+          "group": "navigation@5",
           "when": "view == astResults && ast-results-info"
         },
         {
           "command": "ast-results.filterInfo_toggle",
-          "group": "navigation@4",
+          "group": "navigation@5",
           "when": "view == astResults && !ast-results-info"
         },
         {
