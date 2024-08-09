@@ -92,7 +92,11 @@ export async function triageSubmit(
   // Change the results locally
   try {
     await updateResults(result, context, data.comment, resultsProvider);
-    updateState(context, constants.triageUpdate, { id: true, name: constants.triageUpdate });
+    updateState(context, constants.triageUpdate, {
+      id: true, name: constants.triageUpdate,
+      scanDatetime: "",
+      displayScanId: ""
+    });
     await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
       await getChanges(logs, context, result, detailsPanel);
