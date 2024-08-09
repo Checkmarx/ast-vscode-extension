@@ -92,7 +92,11 @@ export class AstResultsProvider extends ResultsProvider {
     }
     // Case we come from triage we must update the state to load results from the correct place
     else {
-      updateState(this.context, constants.triageUpdate, { id: false, name: constants.triageUpdate });
+      updateState(this.context, constants.triageUpdate, {
+        id: false, name: constants.triageUpdate,
+        scanDatetime: "",
+        displayScanId: ""
+      });
     }
 
     // if there are results loaded, the tree needs to be recreated
@@ -117,7 +121,7 @@ export class AstResultsProvider extends ResultsProvider {
       if (treeItem.children.length === 0) {
         treeItem.children.push(new TreeItem(constants.scaNoVulnerabilities, undefined));
       }
-      
+
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }
