@@ -29,7 +29,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
-  logs.show();
   logs.info(messages.pluginRunning);
 
   // Status bars creation
