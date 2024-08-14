@@ -72,7 +72,7 @@ function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
     );
     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
       range,
-      res.ruleName + " - " + res.remediationAdvise,
+      `${res.ruleName} - ${res.remediationAdvise}`,
       parseSeverity(res.severity)
     );
     diagnostic.source = constants.vorpalEngineName;
@@ -131,7 +131,6 @@ function deleteFile(filePath: string) {
   try {
     fs.unlinkSync(filePath);
   } catch (error) {
-    // if the file sent again before it com back...
-    console.error("Failed to delete file:" + filePath, error);
+    // when the file sent again before it come back...
   }
 }

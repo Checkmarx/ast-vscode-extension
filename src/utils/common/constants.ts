@@ -145,6 +145,8 @@ export const constants = {
   vorpalStart: "Vorpal engine started",
   vorpalDisabled: "Vorpal Auto Scanning is disabled now.",
   vorpalEngineName: "Vorpal",
+  ActivateVorpalAutoScanning:"ActivateVorpalAutoScanning",
+  CheckmarxVorpal:"CheckmarxVorpal",
 };
 
 export enum GroupBy {

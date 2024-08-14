@@ -8,9 +8,15 @@ import {
   BottomBarPanel,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./utils/constants";
+import {
+  CX_API_KEY_SETTINGS,
+  CX_CATETORY,
+  CX_KICS,
+  CX_KICS_NAME,
+} from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
 import { API_KEY } from "./utils/envs";
+import { constants } from "../utils/common/constants";
 
 describe("Extension settings tests", () => {
   let settingsEditor: SettingsEditor;
@@ -33,7 +39,7 @@ describe("Extension settings tests", () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const settings = (await settingsEditor.findSetting(
-      "fake setting",
+      "fake setting"
     )) as LinkSetting;
     expect(settings).to.be.undefined;
   });
@@ -64,8 +70,8 @@ describe("Extension settings tests", () => {
   it("verify vorpal checkbox exists in the settings", async function () {
     settingsEditor = await bench.openSettings();
     const vorpalCheckbox = await settingsEditor.findSetting(
-      "ActivateVorpalAutoScanning",
-      "Checkmarx Vorpal"
+      constants.ActivateVorpalAutoScanning,
+      constants.CheckmarxVorpal
     );
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();
     expect(vorpalCheckboxValue).to.not.be.undefined;
@@ -74,8 +80,8 @@ describe("Extension settings tests", () => {
   it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
     settingsEditor = await bench.openSettings();
     const vorpalCheckbox = await settingsEditor.findSetting(
-      "ActivateVorpalAutoScanning",
-      "Checkmarx Vorpal"
+      constants.ActivateVorpalAutoScanning,
+      constants.CheckmarxVorpal
     );
     await vorpalCheckbox.setValue(true);
     let vorpalCheckboxValue = await vorpalCheckbox.getValue();

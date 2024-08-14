@@ -1,7 +1,11 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { clearVorpalProblems, installVorpal, scanVorpal } from "../vorpal/scanVorpal";
-import { constants } from '../utils/common/constants';
+import {
+  clearVorpalProblems,
+  installVorpal,
+  scanVorpal,
+} from "../vorpal/vorpalService";
+import { constants } from "../utils/common/constants";
 
 let timeout = null;
 export class VorpalCommand {
@@ -15,8 +19,8 @@ export class VorpalCommand {
   public async registerVorpal() {
     try {
       const vorpalActive = vscode.workspace
-        .getConfiguration("CheckmarxVorpal")
-        .get("ActivateVorpalAutoScanning") as boolean;
+        .getConfiguration(constants.CheckmarxVorpal)
+        .get(constants.ActivateVorpalAutoScanning) as boolean;
       if (vorpalActive) {
         await this.installVorpal();
         await this.registerVorpalScanOnChangeText();
@@ -26,17 +30,17 @@ export class VorpalCommand {
         await clearVorpalProblems();
         this.logs.info(constants.vorpalDisabled);
       }
-    } catch(error) {
+    } catch (error) {
       console.error(error);
-   }
+    }
   }
   public installVorpal() {
     installVorpal(this.logs);
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
       // Must be no less than 2000ms. Otherwise, the temporary file can be deleted before the vorpal scan is finished.
-      this.debounce(this.onTextChange, 2000) 
+      this.debounce(this.onTextChange, 2000)
     );
-    }
+  }
 
   public onTextChange(event) {
     try {

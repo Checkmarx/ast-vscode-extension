@@ -102,9 +102,6 @@ export const commands = {
   refreshScaTree: `${constants.extensionName}.refreshSCATree`,
   clearSca: `${constants.extensionName}.clearSca`,
 
-  installVorpal: `${constants.extensionName}.installVorpal`,
-  scanVorpal: `${constants.extensionName}.scanVorpal`,
-
   newDetails: `${constants.extensionName}.newDetails`,
   gpt: `${constants.extensionName}.gpt`,
 
