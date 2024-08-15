@@ -5,9 +5,7 @@ import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxSc
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import {
-	constants
-} from "../utils/common/constants";
+import { constants } from "../utils/common/constants";
 import { getFilePath, getResultsFilePath } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
@@ -17,6 +15,7 @@ import { CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
 import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
@@ -419,4 +418,39 @@ export class Cx implements CxPlatform {
 		statusBarItem.text = text;
 		show ? statusBarItem.show() : statusBarItem.hide();
 	}
-}
+	async installVorpal(): Promise<CxVorpal> {
+		let config = this.getAstConfiguration();
+		if (!config) {
+		  config = new CxConfig();
+		}
+		const cx = new CxWrapper(config);
+		const scans = await cx.scanVorpal(null, true, constants.vsCodeAgent);
+		if (scans.payload && scans.exitCode === 0) {
+		  return scans.payload[0];
+		} else {
+		  return this.getVorpalError(scans.status, "Failed to run vorpal engine");
+		}
+	  }
+	
+	private getVorpalError(scanStatus: string, errorMessage: string) {
+		console.error(errorMessage);
+		const errorRes = new CxVorpal();
+		errorRes.error = scanStatus;
+		return errorRes;
+	}
+
+	  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
+		let config = this.getAstConfiguration();
+		if (!config) {
+		  config = new CxConfig();
+		}
+		const cx = new CxWrapper(config);
+		const scans = await cx.scanVorpal(sourcePath, false, constants.vsCodeAgent);
+		if (scans.payload && scans.exitCode === 0) {
+		  return scans.payload[0];
+		} else {
+		  return this.getVorpalError(scans.status, "Fail to call vorpal scan");
+		}
+	  }
+	}
+	
