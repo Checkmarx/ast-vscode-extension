@@ -780,7 +780,7 @@
       {
         "title": "Checkmarx One",
         "id": "ast-results",
-        "order": 3,
+        "order": 4,
         "properties": {
           "checkmarxOne.apiKey": {
             "type": "string",
@@ -825,7 +825,7 @@
       {
         "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
-        "order": 2,
+        "order": 3,
         "properties": {
           "CheckmarxSecurityChampion.key": {
             "type": "string",
@@ -849,6 +849,19 @@
             ]
           }
         }
+      },
+      {
+        "title": "Activate Vorpal Auto Scanning",
+        "id": "vorpal",
+        "order": 2,
+        "properties": {
+          "CheckmarxVorpal.ActivateVorpalAutoScanning": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your file as you code"
+          }
+        }
       }
     ]
   },
@@ -861,7 +874,7 @@
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.71.0  -i -r .",
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
     "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r ."
   },
   "devDependencies": {
@@ -883,6 +896,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.111",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
