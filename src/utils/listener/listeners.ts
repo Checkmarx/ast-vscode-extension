@@ -9,6 +9,7 @@ import { getFromState, updateState } from "../common/globalState";
 import { cx } from "../../cx";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
 import { messages } from "../common/messages";
+import { VorpalCommand } from "../../commands/vorpalCommand";
 
 export async function getBranchListener(
   context: vscode.ExtensionContext,
@@ -168,8 +169,9 @@ export async function gitExtensionListener(
 export async function executeCheckSettingsChange(
   kicsStatusBarItem: vscode.StatusBarItem,
   logs: Logs,
+  vorpalCommand: VorpalCommand
 ) {
-  vscode.workspace.onDidChangeConfiguration(async () => {
+  vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
@@ -188,5 +190,14 @@ export async function executeCheckSettingsChange(
         ? messages.kicsStatusBarConnect
         : messages.kicsStatusBarDisconnect;
     await vscode.commands.executeCommand(commands.refreshTree);
+    const vorpalEffected = event.affectsConfiguration(
+      `${constants.CheckmarxVorpal}.${constants.ActivateVorpalAutoScanning}`
+    );
+    const apikeyEffected = event.affectsConfiguration(
+      "checkmarxOne.apiKey"
+    );
+    if (vorpalEffected || apikeyEffected) {
+      await vorpalCommand.registerVorpal();
+    }
   });
 }
