@@ -4,9 +4,9 @@ exports.waitByClassName = exports.waitByLinkText = exports.waitStatusBar = void 
 const vscode_extension_tester_1 = require("vscode-extension-tester");
 async function waitStatusBar() {
     const statusbar = new vscode_extension_tester_1.StatusBar();
-    let chekmarx = await statusbar.getItem('Checkmarx kics auto scan');
+    let chekmarx = await statusbar.getItem('Checkmarx kics real-time scan');
     while (chekmarx !== undefined) {
-        chekmarx = await statusbar.getItem('Checkmarx kics auto scan');
+        chekmarx = await statusbar.getItem('Checkmarx kics real-time scan');
     }
 }
 exports.waitStatusBar = waitStatusBar;

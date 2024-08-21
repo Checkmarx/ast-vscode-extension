@@ -804,11 +804,11 @@
         }
       },
       {
-        "title": "Checkmarx KICS Auto Scanning",
+        "title": "Checkmarx KICS Real-time Scanning",
         "id": "kics-ast",
         "order": 1,
         "properties": {
-          "CheckmarxKICS.Activate KICS Auto Scanning": {
+          "CheckmarxKICS.Activate KICS Real-time Scanning": {
             "type": "boolean",
             "order": 3,
             "default": true,
@@ -851,11 +851,11 @@
         }
       },
       {
-        "title": "Activate Vorpal Auto Scanning",
+        "title": "Activate Vorpal Real-time Scanning",
         "id": "vorpal",
         "order": 2,
         "properties": {
-          "CheckmarxVorpal.ActivateVorpalAutoScanning": {
+          "CheckmarxVorpal.Activate Vorpal Real-time Scanning": {
             "type": "boolean",
             "order": 3,
             "default": false,
@@ -896,7 +896,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.112",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",

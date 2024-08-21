@@ -47,7 +47,7 @@ export class KicsProvider {
     try {
       const isKicksAutoscanEnabled = vscode.workspace
         .getConfiguration("CheckmarxKICS")
-        .get("Activate KICS Auto Scanning") as boolean;
+        .get("Activate KICS Real-time Scanning") as boolean;
 
       if (isKicksAutoscanEnabled) {
         this.logs.info(messages.kicsSupportedFile);
