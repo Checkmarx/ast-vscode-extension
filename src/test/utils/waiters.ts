@@ -2,9 +2,9 @@ import { By, StatusBar, until, WebDriver } from "vscode-extension-tester";
 
 export async function waitStatusBar() {
   const statusbar = new StatusBar();
-  let chekmarx = await statusbar.getItem("Checkmarx kics auto scan");
+  let chekmarx = await statusbar.getItem("Checkmarx kics real-time scan");
   while (chekmarx !== undefined) {
-    chekmarx = await statusbar.getItem("Checkmarx kics auto scan");
+    chekmarx = await statusbar.getItem("Checkmarx kics real-time scan");
   }
 }
 

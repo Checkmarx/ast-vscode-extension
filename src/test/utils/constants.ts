@@ -15,7 +15,7 @@ export const VS_OPEN_FOLDER = "File: Open Folder...";
 
 export const CX_NAME = "Checkmarx One";
 export const CX_KICS = "Checkmarx KICS";
-export const CX_KICS_NAME = "Activate KICS Auto Scanning";
+export const CX_KICS_NAME = "Activate KICS Real-time Scanning";
 
 export const CX_SELECT_ALL = "ast-results: Select Different Results";
 export const CX_SELECT_PROJECT = "ast-results: Select Project";
