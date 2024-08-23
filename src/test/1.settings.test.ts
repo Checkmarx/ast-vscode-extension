@@ -8,9 +8,15 @@ import {
   BottomBarPanel,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { CX_API_KEY_SETTINGS, CX_CATETORY, CX_KICS, CX_KICS_NAME } from "./utils/constants";
+import {
+  CX_API_KEY_SETTINGS,
+  CX_CATETORY,
+  CX_KICS,
+  CX_KICS_NAME,
+} from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
 import { API_KEY } from "./utils/envs";
+import { constants } from "../utils/common/constants";
 
 describe("Extension settings tests", () => {
   let settingsEditor: SettingsEditor;
@@ -33,7 +39,7 @@ describe("Extension settings tests", () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const settings = (await settingsEditor.findSetting(
-      "fake setting",
+      "fake setting"
     )) as LinkSetting;
     const apiKey = await settings.getValue();
     expect(apiKey).to.be.empty;
@@ -52,7 +58,7 @@ describe("Extension settings tests", () => {
     expect(apiKey).to.equal(API_KEY);
   });
 
-  it("should check kics auto scan enablement on settings", async function () {
+  it("should check kics real-time scan enablement on settings", async function () {
     const settingsWizard = await bench.openSettings();
     const setting = (await settingsWizard.findSetting(
       CX_KICS_NAME,
@@ -60,5 +66,26 @@ describe("Extension settings tests", () => {
     )) as LinkSetting;
     const enablement = await setting.getValue();
     expect(enablement).to.equal(true);
+  });
+
+  it("verify vorpal checkbox exists in the settings", async function () {
+    settingsEditor = await bench.openSettings();
+    const vorpalCheckbox = await settingsEditor.findSetting(
+      constants.ActivateVorpalAutoScanning,
+      constants.CheckmarxVorpal
+    );
+    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
+    expect(vorpalCheckboxValue).to.not.be.undefined;
+  });
+
+  it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
+    settingsEditor = await bench.openSettings();
+    const vorpalCheckbox = await settingsEditor.findSetting(
+      constants.ActivateVorpalAutoScanning,
+      constants.CheckmarxVorpal
+    );
+    await vorpalCheckbox.setValue(true);
+    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
+    expect(vorpalCheckboxValue).to.be.true;
   });
 });

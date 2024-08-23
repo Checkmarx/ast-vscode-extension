@@ -123,7 +123,7 @@ export const constants = {
   realtime: "realtime",
 
   cxKics: "CheckmarxKICS",
-  cxKicsAutoScan: "Activate KICS Auto Scanning",
+  cxKicsAutoScan: "Activate KICS Real-time Scanning",
 
   projectLimit: "limit=10000",
   vsCodeAgent: "VS Code",
@@ -144,6 +144,15 @@ export const constants = {
 
   // TRIAGE
   triageUpdate: "ast-result-triage"
+
+  // Vorpal engine
+  errorInstallation: "Failed to run vorpal engine",
+  errorScanVorpal: "failed to handle vorpal scan",
+  vorpalStart: "Vorpal engine started",
+  vorpalDisabled: "Vorpal Real-time Scanning is disabled now.",
+  vorpalEngineName: "Vorpal",
+  ActivateVorpalAutoScanning:"Activate Vorpal Real-time Scanning",
+  CheckmarxVorpal:"CheckmarxVorpal",
 };
 
 export enum GroupBy {

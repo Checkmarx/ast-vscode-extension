@@ -23,6 +23,7 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
+import { VorpalCommand } from "./commands/vorpalCommand";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -175,6 +176,8 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+  const vorpalCommand = new VorpalCommand(context, logs);
+  vorpalCommand.registerVorpal();
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
   commonCommand.registerSettings();
@@ -186,7 +189,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await executeCheckSettingsChange(kicsStatusBarItem, logs);
+  await executeCheckSettingsChange(kicsStatusBarItem, logs, vorpalCommand);
 
   const treeCommand = new TreeCommand(
     context,
