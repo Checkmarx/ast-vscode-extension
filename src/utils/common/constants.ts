@@ -143,7 +143,7 @@ export const constants = {
   documentation: "Documentation",
 
   // TRIAGE
-  triageUpdate: "ast-result-triage"
+  triageUpdate: "ast-result-triage",
 
   // Vorpal engine
   errorInstallation: "Failed to run vorpal engine",
