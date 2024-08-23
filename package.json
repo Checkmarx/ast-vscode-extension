@@ -767,7 +767,7 @@
         },
         {
           "submenu": "ast-results.filterBy",
-          "group": "navigation@5",
+          "group": "navigation@6",
           "when": "view == astResults"
         }
       ]
