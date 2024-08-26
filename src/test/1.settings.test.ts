@@ -41,8 +41,7 @@ describe("Extension settings tests", () => {
     const settings = (await settingsEditor.findSetting(
       "fake setting"
     )) as LinkSetting;
-    const apiKey = await settings.getValue();
-    expect(apiKey).to.be.empty;
+    expect(settings).to.be.undefined;
   });
 
   it("should set the settings and check if values are populated", async function () {
