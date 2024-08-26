@@ -12,7 +12,7 @@ import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 
 export class CxMock implements CxPlatform {
 
-	
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async scaScanCreate(): Promise<CxScaRealtime[] | any> {
 		return [
@@ -96,14 +96,14 @@ export class CxMock implements CxPlatform {
 
 	async getResults(scanId: string) {
 		let results;
-		
-		if (scanId === "2"||scanId === EMPTY_RESULTS_SCAN_ID) {
+
+		if (scanId === "2" || scanId === EMPTY_RESULTS_SCAN_ID) {
 			results = {
 				"results": []
 			};
 		}
-		else{
-			results =  {
+		else {
+			results = {
 				"results": [
 					{
 						"type": "kics",
@@ -280,6 +280,120 @@ export class CxMock implements CxPlatform {
 						}
 					},
 					{
+						"type": "sast",
+						"label": "sast",
+						"id": "255181",
+						"similarityId": "-1792929011",
+						"status": "NEW",
+						"state": "TO_VERIFY",
+						"severity": "CRITICAL",
+						"created": "2022-09-02T10:45:54Z",
+						"firstFoundAt": "2022-08-26T10:28:57Z",
+						"foundAt": "2022-09-02T10:45:54Z",
+						"firstScanId": "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
+						"description": "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
+						"descriptionHTML": "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
+						"data": {
+							// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+							"queryId": 5157925289005576664,
+							"queryName": "Reflected_XSS_All_Clients",
+							"group": "PHP_High_Risk",
+							"resultHash": "ZGJRP6tLG66K4GwKarVTE8GDL/M=",
+							"languageName": "PHP",
+							"nodes": [
+								{
+									"id": "6BkcV9Pylb1Kk14z/xZHkWcP9hk=",
+									"line": 10,
+									"name": "_POST",
+									"column": 8,
+									"length": 6,
+									"method": "$PageLoad",
+									"nodeID": 164,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "o8XLDcRzoLEzVVdI3yyHchg/JH0=",
+									"line": 10,
+									"name": "var",
+									"column": 1,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 168,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "yis1SnpLBtDSuxZBPhw76TaDjY4=",
+									"line": 11,
+									"name": "var",
+									"column": 12,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 184,
+									"domType": "UnknownReference",
+									"fileName": "/insecure.php",
+									"fullName": "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23.var",
+									"typeName": "CxDefaultObject",
+									"methodLine": 1,
+									"definitions": "1"
+								},
+								{
+									"id": "kZuPO2VpUX+yVNtYvSP3FVHVJBQ=",
+									"line": 11,
+									"name": "$_DoubleQuotedString",
+									"column": 0,
+									"length": 20,
+									"method": "$PageLoad",
+									"nodeID": 177,
+									"domType": "MethodInvokeExpr",
+									"fileName": "/insecure.php",
+									"fullName": "$_DoubleQuotedString",
+									"typeName": "$_DoubleQuotedString",
+									"methodLine": 1,
+									"definitions": "0"
+								},
+								{
+									"id": "fO7BgAMUgzMTXcmTFe9v8TGpYPg=",
+									"line": 11,
+									"name": "echo",
+									"column": 1,
+									"length": 4,
+									"method": "$PageLoad",
+									"nodeID": 171,
+									"domType": "MethodInvokeExpr",
+									"fileName": "/insecure.php",
+									"fullName": "echo",
+									"typeName": "echo",
+									"methodLine": 1,
+									"definitions": "0"
+								}
+							]
+						},
+						"comments": {},
+						"vulnerabilityDetails": {
+							"cweId": 79,
+							"cvss": {},
+							"compliances": [
+								"PCI DSS v3.2.1",
+								"ASD STIG 4.10",
+								"FISMA 2014",
+								"NIST SP 800-53",
+								"OWASP Top 10 2013",
+								"OWASP Top 10 2017",
+								"OWASP Top 10 2021"
+							]
+						}
+					},
+					{
 						"type": "sca",
 						"scaType": "Vulnerability",
 						"label": "sca",
@@ -317,9 +431,9 @@ export class CxMock implements CxPlatform {
 	}
 
 	async getScan(scanId: string): Promise<CxScan | undefined> {
-		
-		if (scanId===(EMPTY_RESULTS_SCAN_ID)) {
-			return{
+
+		if (scanId === (EMPTY_RESULTS_SCAN_ID)) {
+			return {
 				tags: {
 				},
 				groups: undefined,
@@ -331,7 +445,8 @@ export class CxMock implements CxPlatform {
 				origin: "grpc-java-netty 1.35.0",
 				initiator: "tester",
 				branch: "main",
-			}} 
+			};
+		}
 		return {
 			tags: {
 			},
@@ -348,9 +463,9 @@ export class CxMock implements CxPlatform {
 	}
 
 	async getProject(projectId: string): Promise<CxProject | undefined> {
-		
-		if(projectId==="EmptyResultsProjectId"){
-			return{
+
+		if (projectId === "EmptyResultsProjectId") {
+			return {
 				tags: {
 				},
 				groups: [
@@ -359,7 +474,7 @@ export class CxMock implements CxPlatform {
 				name: "EmptyResultsProjectName",
 				createdAt: "2023-04-19T09:07:36.846145Z",
 				updatedAt: "2023-04-19T09:07:36.846145Z",
-			}
+			};
 		}
 		return {
 			tags: {
@@ -555,7 +670,7 @@ export class CxMock implements CxPlatform {
 		await this.sleep(1000);
 		return [{ conversationId: '0', response: ["Mock message response from gpt"] }];
 	}
-	
+
 	sleep(ms) {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
