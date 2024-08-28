@@ -41,9 +41,6 @@ export class Cx implements CxPlatform {
 		const gptEngine = vscode.workspace
 			.getConfiguration(constants.gptCommandName)
 			.get(constants.gptEngineKey) as string;
-		if (!gptToken) {
-			throw new Error(messages.gptMissinApiKey);
-		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
 			const answer = await cx.sastChat(gptToken, filePath, resultsFilePath, resultId, message, conversationId ? conversationId : "", gptEngine);
@@ -58,16 +55,13 @@ export class Cx implements CxPlatform {
 	}
 
 	async runGpt(message: string, filePath: string, line: number, severity: string, queryName: string) {
-		const cx = new CxWrapper(this.getBaseAstConfiguration());
+		const cx = new CxWrapper(this.getAstConfiguration());
 		const gptToken = vscode.workspace
 			.getConfiguration(constants.gptCommandName)
 			.get(constants.gptSettingsKey) as string;
 		const gptEngine = vscode.workspace
 			.getConfiguration(constants.gptCommandName)
 			.get(constants.gptEngineKey) as string;
-		if (!gptToken) {
-			throw new Error(messages.gptMissinApiKey);
-		}
 		const filePackageObjectList = vscode.workspace.workspaceFolders;
 		if (filePackageObjectList.length > 0) {
 			const answer = await cx.kicsChat(gptToken, filePath, line, severity, queryName, message, null, gptEngine);
