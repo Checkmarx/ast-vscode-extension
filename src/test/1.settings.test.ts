@@ -57,7 +57,7 @@ describe("Extension settings tests", () => {
     expect(apiKey).to.equal(API_KEY);
   });
 
-  it("should check kics auto scan enablement on settings", async function () {
+  it("should check kics real-time scan enablement on settings", async function () {
     const settingsWizard = await bench.openSettings();
     const setting = (await settingsWizard.findSetting(
       CX_KICS_NAME,
