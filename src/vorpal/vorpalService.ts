@@ -41,7 +41,7 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
     // VIEW PROBLEMS
     logs.info(
       scanVorpalResult.scanDetails.length +
-        " vulnerabilities were found in " +
+        " security best coding practices issues were found in " +
         document.uri.fsPath
     );
     updateProblems(scanVorpalResult, document.uri);
