@@ -151,8 +151,14 @@ export const constants = {
   vorpalStart: "Vorpal engine started",
   vorpalDisabled: "Vorpal Real-time Scanning is disabled now.",
   vorpalEngineName: "Vorpal",
-  ActivateVorpalAutoScanning:"Activate Vorpal Real-time Scanning",
-  CheckmarxVorpal:"CheckmarxVorpal",
+  ActivateVorpalAutoScanning: "Activate Vorpal Real-time Scanning",
+  CheckmarxVorpal: "CheckmarxVorpal",
+
+  criticalSeverity: "CRITICAL",
+  highSeverity: "HIGH",
+  mediumSeverity: "MEDIUM",
+  lowSeverity: "LOW",
+  infoSeverity: "INFO",
 };
 
 export enum GroupBy {
