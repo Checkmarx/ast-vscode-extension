@@ -9,6 +9,7 @@ describe("Welcome view test", () => {
   before(async function () {
     this.timeout(100000);
     bench = new Workbench();
+    await initialize();
   });
 
   after(async () => {

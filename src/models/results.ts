@@ -115,13 +115,15 @@ export class AstResult extends CxResult {
 
   getIcon() {
     switch (this.severity) {
-      case "HIGH":
+      case constants.criticalSeverity:
+        return path.join("media", "icons", "critical_untoggle.svg");
+      case constants.highSeverity:
         return path.join("media", "icons", "high_untoggle.svg");
-      case "MEDIUM":
+      case constants.mediumSeverity:
         return path.join("media", "icons", "medium_untoggle.svg");
-      case "INFO":
+      case constants.infoSeverity:
         return path.join("media", "icons", "info_untoggle.svg");
-      case "LOW":
+      case constants.lowSeverity:
         return path.join("media", "icons", "low_untoggle.svg");
     }
     return "";
@@ -176,13 +178,15 @@ export class AstResult extends CxResult {
 
   getSeverityCode() {
     switch (this.severity) {
-      case "HIGH":
+      case constants.criticalSeverity:
         return vscode.DiagnosticSeverity.Error;
-      case "MEDIUM":
+      case constants.highSeverity:
+        return vscode.DiagnosticSeverity.Error;
+      case constants.mediumSeverity:
         return vscode.DiagnosticSeverity.Warning;
-      case "INFO":
+      case constants.infoSeverity:
         return vscode.DiagnosticSeverity.Information;
-      case "LOW":
+      case constants.infoSeverity:
         return vscode.DiagnosticSeverity.Information;
     }
     return vscode.DiagnosticSeverity.Information;
@@ -190,13 +194,15 @@ export class AstResult extends CxResult {
 
   getSeverity() {
     switch (this.severity) {
-      case "HIGH":
+      case constants.criticalSeverity:
+        return SeverityLevel.critical;
+      case constants.highSeverity:
         return SeverityLevel.high;
-      case "MEDIUM":
+      case constants.mediumSeverity:
         return SeverityLevel.medium;
-      case "INFO":
+      case constants.infoSeverity:
         return SeverityLevel.info;
-      case "LOW":
+      case constants.lowSeverity:
         return SeverityLevel.low;
     }
     return SeverityLevel.empty;
@@ -705,7 +711,7 @@ export class AstResult extends CxResult {
             Score
           </p>
           <p>
-            ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : 'N/A'}
+              ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : 'N/A'}
           </p>
         </div>
         <div class="right-${result.severity}">

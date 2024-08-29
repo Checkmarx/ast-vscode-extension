@@ -76,16 +76,29 @@ export class AstResultsProvider extends ResultsProvider {
     this.diagnosticCollection.clear();
     // createBaseItems
     let treeItems = this.createRootItems();
-    // get para getFromState
+    // get scanID from state
     this.scan = getFromState(this.context, constants.scanIdKey)?.id;
-    // in case we scanId, it is needed to load them from the json file
-    if (this.scan) {
-      this.loadedResults = readResultsFromFile(resultJsonPath, this.scan);
+    const fromTriage = getFromState(this.context, constants.triageUpdate)?.id;
+    // Case we come from triage we want to use the loaded results wich were modified in triage
+    if (fromTriage === undefined || !fromTriage) {
+      // in case we scanId, it is needed to load them from the json file
+      if (this.scan) {
+        this.loadedResults = readResultsFromFile(resultJsonPath, this.scan);
+      }
+      // otherwise the results must be cleared
+      else {
+        this.loadedResults = undefined;
+      }
     }
-    // otherwise the results must be cleared
+    // Case we come from triage we must update the state to load results from the correct place
     else {
-      this.loadedResults = undefined;
+      updateState(this.context, constants.triageUpdate, {
+        id: false, name: constants.triageUpdate,
+        scanDatetime: "",
+        displayScanId: ""
+      });
     }
+
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
       const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
@@ -108,7 +121,7 @@ export class AstResultsProvider extends ResultsProvider {
       if (treeItem.children.length === 0) {
         treeItem.children.push(new TreeItem(constants.scaNoVulnerabilities, undefined));
       }
-      
+
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }

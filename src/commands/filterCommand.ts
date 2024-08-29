@@ -15,6 +15,7 @@ export class FilterCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
   private activeSeverities: SeverityLevel[] = [
+    SeverityLevel.critical,
     SeverityLevel.high,
     SeverityLevel.medium,
   ];
@@ -38,6 +39,7 @@ export class FilterCommand {
   }
 
   public registerFilters() {
+    this.registerFilterCriticalCommand();
     this.registerFilterHighCommand();
     this.registerFilterMediumCommand();
     this.registerFilterLowCommand();
@@ -53,6 +55,11 @@ export class FilterCommand {
 
   public async initializeFilters() {
     this.logs.info(messages.initilizeSeverities);
+
+    const critical = this.context.globalState.get<boolean>(constants.criticalFilter) ?? true;
+    this.updateSeverities(SeverityLevel.critical, critical);
+    await updateStateFilter(this.context, constants.criticalFilter, critical);
+
     const high = this.context.globalState.get<boolean>(constants.highFilter) ?? true;
     this.updateSeverities(SeverityLevel.high, high);
     await updateStateFilter(this.context, constants.highFilter, high);
@@ -104,6 +111,46 @@ export class FilterCommand {
     this.updateState(StateLevel.ignored, ignored);
     await updateStateFilter(this.context, constants.ignoredFilter, ignored);
     await vscode.commands.executeCommand(commands.refreshTree);
+  }
+
+
+  private registerFilterCriticalCommand() {
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterCriticalToggle,
+        async () =>
+          await this.filter(
+            this.logs,
+            this.context,
+            SeverityLevel.critical,
+            constants.criticalFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterCriticalUntoggle,
+        async () =>
+          await this.filter(
+            this.logs,
+            this.context,
+            SeverityLevel.critical,
+            constants.criticalFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterCritical,
+        async () =>
+          await this.filter(
+            this.logs,
+            this.context,
+            SeverityLevel.critical,
+            constants.criticalFilter
+          )
+      )
+    );
   }
 
   private registerFilterHighCommand() {

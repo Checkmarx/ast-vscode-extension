@@ -113,19 +113,19 @@ export function getFormattedDateTime(createdAt: string) {
 }
 
 export function getFormattedId(label: CxScan, scanList: CxScan[]) {
-  if (scanList === null || scanList === undefined || scanList.length === 0){
+  if (scanList === null || scanList === undefined || scanList.length === 0) {
     return "";
-  } 
+  }
 
   return label === scanList[0]
-  ? label.id + " (latest)"
-  : label.id;
+    ? label.id + " (latest)"
+    : label.id;
 }
 
 export function formatLabel(label: CxScan, scanList: CxScan[]) {
   return label === scanList[0]
-  ? getScanLabel(label.createdAt, label.id) + " (latest)"
-  : getScanLabel(label.createdAt, label.id);
+    ? getScanLabel(label.createdAt, label.id) + " (latest)"
+    : getScanLabel(label.createdAt, label.id);
 }
 
 export async function enableButton(button: string) {
@@ -162,7 +162,7 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): CxRes
         .readFileSync(resultJsonPath, "utf-8")
         .replace(/:([0-9]{15,}),/g, ':"$1",')
     );
-    if(jsonResults.results){
+    if (jsonResults.results) {
       results = orderResults(jsonResults.results);
     }
     else {
@@ -173,7 +173,7 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): CxRes
 }
 
 export function orderResults(list: CxResult[]): CxResult[] {
-  const order = ["HIGH", "MEDIUM", "LOW", "INFO"];
+  const order = [constants.criticalSeverity, constants.highSeverity, constants.mediumSeverity, constants.lowSeverity, constants.infoSeverity];
   return list.sort(
     (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
   );

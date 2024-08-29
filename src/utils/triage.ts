@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { AstResult } from "../models/results";
 import { getResultsFilePath } from "./utils";
 import { cx } from "../cx";
-import { getFromState } from "./common/globalState";
+import { getFromState, updateState } from "./common/globalState";
 import { constants } from "./common/constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
@@ -24,29 +24,27 @@ export async function updateResults(
     throw new Error(messages.fileNotFound);
   }
 
-  try {
-    const resultHash = result.getResultHash();
-    resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
-      // Update the result in the array
-      if (element.data.resultHash === resultHash || element.id === resultHash) {
-        resultsProvider.loadedResults[index] = result;
-        return;
-      }
-    });
-
-    // Update
-    const projectId = getFromState(context, constants.projectIdKey).id;
-    await cx.triageUpdate(
-      projectId,
-      result.similarityId,
-      result.type,
-      result.state,
-      comment,
-      result.severity
-    );
-  } catch (error) {
-    throw new Error(error);
-  }
+  // Update on cxOne
+  const projectId = getFromState(context, constants.projectIdKey).id;
+  await cx.triageUpdate(
+    projectId,
+    result.similarityId,
+    result.type,
+    result.state,
+    comment,
+    result.severity
+  );
+  // Update local results
+  const resultHash = result.getResultHash();
+  resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
+    // Update the result in the array
+    if (element.data.resultHash === resultHash || element.id === resultHash) {
+      resultsProvider.loadedResults[index].severity = result.severity;
+      resultsProvider.loadedResults[index].state = result.state;
+      resultsProvider.loadedResults[index].status = result.status;
+      return;
+    }
+  });
 }
 
 export async function triageSubmit(
@@ -65,7 +63,7 @@ export async function triageSubmit(
   }
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
-    logs.log("INFO", messages.triageUpdateSeverity(data.severitySelection));
+    logs.info(messages.triageUpdateSeverity(data.severitySelection));
     // Update severity of the result
     result.setSeverity(data.severitySelection);
     // Update webview title
@@ -77,7 +75,7 @@ export async function triageSubmit(
 
   // Case there is feedback on the state
   if (data.stateSelection.length > 0) {
-    logs.log("INFO", messages.triageUpdateState(data.stateSelection));
+    logs.info(messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
     result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
   }
@@ -91,16 +89,15 @@ export async function triageSubmit(
     vscode.window.showErrorMessage(messages.triageNoChange);
     return;
   }
-
-  detailsDetachedView?.setResult(result);
-  detailsDetachedView.setLoad(false);
-  // Update webview html
-  detailsPanel.webview.html =
-    await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
   // Change the results locally
   try {
     await updateResults(result, context, data.comment, resultsProvider);
-    vscode.commands.executeCommand(commands.refreshTree);
+    updateState(context, constants.triageUpdate, {
+      id: true, name: constants.triageUpdate,
+      scanDatetime: "",
+      displayScanId: ""
+    });
+    await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
       await getChanges(logs, context, result, detailsPanel);
     }
@@ -112,7 +109,13 @@ export async function triageSubmit(
     );
   } catch (error) {
     vscode.window.showErrorMessage(messages.triageError(error));
+    return;
   }
+  detailsDetachedView?.setResult(result);
+  detailsDetachedView.setLoad(false);
+  // Update webview html
+  detailsPanel.webview.html =
+    await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
 }
 
 export async function getChanges(

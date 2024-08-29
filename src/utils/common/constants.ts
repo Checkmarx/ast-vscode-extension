@@ -4,6 +4,7 @@ export const constants = {
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
+  criticalFilter: "ast-results-critical",
   highFilter: "ast-results-high",
   mediumFilter: "ast-results-medium",
   lowFilter: "ast-results-low",
@@ -49,6 +50,7 @@ export const constants = {
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [
+    { class: "select-critical", value: "CRITICAL" },
     { class: "select-high", value: "HIGH" },
     { class: "select-medium", value: "MEDIUM" },
     { class: "select-low", value: "LOW" },
@@ -139,14 +141,24 @@ export const constants = {
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
   documentation: "Documentation",
+
+  // TRIAGE
+  triageUpdate: "ast-result-triage",
+
   // Vorpal engine
   errorInstallation: "Failed to run vorpal engine",
   errorScanVorpal: "failed to handle vorpal scan",
   vorpalStart: "Vorpal engine started",
   vorpalDisabled: "Vorpal Real-time Scanning is disabled now.",
   vorpalEngineName: "Vorpal",
-  ActivateVorpalAutoScanning:"Activate Vorpal Real-time Scanning",
-  CheckmarxVorpal:"CheckmarxVorpal",
+  ActivateVorpalAutoScanning: "Activate Vorpal Real-time Scanning",
+  CheckmarxVorpal: "CheckmarxVorpal",
+
+  criticalSeverity: "CRITICAL",
+  highSeverity: "HIGH",
+  mediumSeverity: "MEDIUM",
+  lowSeverity: "LOW",
+  infoSeverity: "INFO",
 };
 
 export enum GroupBy {
@@ -163,6 +175,7 @@ export enum GroupBy {
 }
 
 export enum SeverityLevel {
+  critical = "CRITICAL",
   high = "HIGH",
   medium = "MEDIUM",
   low = "LOW",
