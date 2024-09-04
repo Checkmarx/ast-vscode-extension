@@ -1,0 +1,5 @@
+# Codeowners file
+# Each line is a file pattern followed by one or more owners
+
+# Specify the default owners for the entire repository
+*       @OrShamirCM @AlvoBen
