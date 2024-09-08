@@ -193,46 +193,46 @@ jobs:
             vsce publish -p ${{ env.MARKET_TOKEN }}
           fi
 
-  # GENERATE CHANGELOG CONTENT WITHOUT WRITING TO FILE
-  - name: Generate release changelog content
-    id: generate_changelog
-    uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
-    with:
-      ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      PATH: "CHANGELOG.md"
-      COMMIT_CHANGES: false
-      OUTPUT_FILE: "changelog_content.md"
+      # GENERATE CHANGELOG CONTENT WITHOUT WRITING TO FILE
+      - name: Generate release changelog content
+        id: generate_changelog
+        uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
+        with:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PATH: "CHANGELOG.md"
+          COMMIT_CHANGES: false
+          OUTPUT_FILE: "changelog_content.md"
 
-  # CREATE A NEW BRANCH FOR CHANGELOG
-  - name: Create Changelog Update Branch
-    run: |
-      git checkout -b changelog-update-${{ github.run_number }}
-      cp changelog_content.md CHANGELOG.md
-      git add CHANGELOG.md
-      git commit -m "Update changelog for release ${{ env.TAG_NAME }}"
-      git push origin changelog-update-${{ github.run_number }}
+      # CREATE A NEW BRANCH FOR CHANGELOG
+      - name: Create Changelog Update Branch
+        run: |
+          git checkout -b changelog-update-${{ github.run_number }}
+          cp changelog_content.md CHANGELOG.md
+          git add CHANGELOG.md
+          git commit -m "Update changelog for release ${{ env.TAG_NAME }}"
+          git push origin changelog-update-${{ github.run_number }}
 
-  # CREATE PULL REQUEST FOR CHANGELOG UPDATE
-  - name: Create Pull Request for Changelog
-    id: create_pr
-    uses: peter-evans/create-pull-request@v5
-    with:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      branch: changelog-update-${{ github.run_number }}
-      title: "Update Changelog for Release ${{ env.TAG_NAME }}"
-      body: "This pull request updates the changelog for release ${{ env.TAG_NAME }}"
-      base: main
+      # CREATE PULL REQUEST FOR CHANGELOG UPDATE
+      - name: Create Pull Request for Changelog
+        id: create_pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: changelog-update-${{ github.run_number }}
+          title: "Update Changelog for Release ${{ env.TAG_NAME }}"
+          body: "This pull request updates the changelog for release ${{ env.TAG_NAME }}"
+          base: main
 
-  # WAIT FOR PR TO BE CREATED
-  - name: Wait for PR to be created
-    id: pr
-    uses: octokit/request-action@v2.3.1
-    with:
-      route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:changelog-update-${{ github.run_number }}
+      # WAIT FOR PR TO BE CREATED
+      - name: Wait for PR to be created
+        id: pr
+        uses: octokit/request-action@v2.3.1
+        with:
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:changelog-update-${{ github.run_number }}
 
-  # MERGE PULL REQUEST INTO MAIN
-  - name: Merge Pull Request
-    uses: octokit/request-action@v2.3.1
-    with:
-      route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
-      merge_method: squash
+      # MERGE PULL REQUEST INTO MAIN
+      - name: Merge Pull Request
+        uses: octokit/request-action@v2.3.1
+        with:
+          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
+          merge_method: squash
