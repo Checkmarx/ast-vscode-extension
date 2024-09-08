@@ -214,8 +214,8 @@ jobs:
 
       # CREATE PULL REQUEST FOR CHANGELOG UPDATE
       - name: Create Pull Request for Changelog
-        id: create_pr
-        uses: peter-evans/create-pull-request@v5
+        id: create_changelog_pr
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: changelog-update-${{ github.run_number }}
@@ -225,14 +225,14 @@ jobs:
 
       # WAIT FOR PR TO BE CREATED
       - name: Wait for PR to be created
-        id: pr
+        id: wait_for_changelog_pr
         uses: octokit/request-action@v2.3.1
         with:
           route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:changelog-update-${{ github.run_number }}
 
       # MERGE PULL REQUEST INTO MAIN
-      - name: Merge Pull Request
+      - name: Merge Changelog Pull Request
         uses: octokit/request-action@v2.3.1
         with:
-          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
+          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_changelog_pr.outputs.pull-request-number }}/merge
           merge_method: squash
