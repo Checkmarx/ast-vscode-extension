@@ -22,7 +22,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private loadChanges: boolean,
     private logs: Logs,
     private type?: string
-  ) { }
+  ) {}
 
   public getWebView() {
     return this._view;
@@ -99,9 +99,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         }
       }
       if (!fileOpened) {
-        vscode.window.showErrorMessage(
-          messages.resultFileNotFound(filePath)
-        );
+        vscode.window.showErrorMessage(messages.resultFileNotFound(filePath));
       }
     } catch (error) {
       vscode.window.showErrorMessage(messages.resultFileNotFound(filePath));
@@ -136,19 +134,44 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
     );
     const scriptJquery = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.0.min.js")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "jquery",
+        "jquery-3.7.0.min.js"
+      )
     );
     const scriptBootStrap = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.js")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "bootstrap",
+        "bootstrap.min.js"
+      )
     );
     const scriptHighlight = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "highlight.min.js")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "codeRenderers",
+        "highlight.min.js"
+      )
     );
     const scriptMarked = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "marked.min.js")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "codeRenderers",
+        "marked.min.js"
+      )
     );
     const scriptShowdown = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "showdown.min.js")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "codeRenderers",
+        "showdown.min.js"
+      )
     );
 
     const styleResetUri = webview.asWebviewUri(
@@ -170,7 +193,12 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, "media", "gpt.css")
     );
     const styleBootStrap = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.css")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "media",
+        "bootstrap",
+        "bootstrap.min.css"
+      )
     );
 
     const severityPath = webview.asWebviewUri(
@@ -207,10 +235,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
     );
     const kicsIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "kics.png"))
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        path.join("media", "icons", "kics.png")
+      )
     );
     const kicsUserIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "userKics.png"))
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        path.join("media", "icons", "userKics.png")
+      )
     );
 
     const cxIcon = webview.asWebviewUri(
@@ -230,7 +264,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);
-        this.logs.info(`Masked Secrets by ${constants.aiSecurityChampion}: ` + (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0"));
+        this.logs.info(
+          `Masked Secrets by ${constants.aiSecurityChampion}: ` +
+            (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0")
+        );
       } catch (error) {
         this.logs.info(error);
       }
@@ -245,8 +282,16 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           <link href="${styleMainUri}" rel="stylesheet">
           <link href="${styleDetails}" rel="stylesheet">
           <link href="${scaDetails}" rel="stylesheet">
-          ${this.result.type !== "sca" ? `<link href="${styleBootStrap}" rel="stylesheet">` : ""}
-          ${this.result.type !== "sca" ? `<link href="${styleGptUri}" rel="stylesheet">` : ""}
+          ${
+            this.result.type !== "sca"
+              ? `<link href="${styleBootStrap}" rel="stylesheet">`
+              : ""
+          }
+          ${
+            this.result.type !== "sca"
+              ? `<link href="${styleGptUri}" rel="stylesheet">`
+              : ""
+          }
           <script nonce="${nonce}" src="${scriptJquery}"></script>
           <script nonce="${nonce}" src="${scriptBootStrap}"></script>
           <script nonce="${nonce}" src="${scriptHighlight}"></script>
@@ -258,45 +303,61 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </head>
         <div id="main_div">
           ${this.result.type !== "sca" ? html.header(severityPath) : ""}
-          ${this.result.type === "sast"
-        ? html.tab(
-          html.generalTab(cxPath),
-          html.detailsTab(),
-          html.changes(selectClassname),
-          messages.generalTab,
-          messages.descriptionTab,
-          messages.triageTab,
-          messages.remediationExamplesTab,
-          messages.noRemediationExamplesTab,
-          isAIEnabled ? `${constants.aiSecurityChampion}` : "",
-          isAIEnabled ? html.guidedRemediationSastTab(cxIcon, masked) : ""
-        )
-        : this.result.type === "sca"
-          ? html.scaView(
-            severityPath,
-            scaAtackVector,
-            scaComplexity,
-            scaAuthentication,
-            scaConfidentiality,
-            scaIntegrity,
-            scaAvailability,
-            scaUpgrade,
-            scaUrl,
-            this.type
-          )
-          : html.tab(
-            html.generalTab(cxPath),
-            "",
-            html.changes(selectClassname),
-            messages.generalTab,
-            "",
-            messages.triageTab,
-            "",
-            "",
-            isAIEnabled ? `${constants.aiSecurityChampion}` : "",
-            isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
-          )
-      }
+          ${
+            this.result.type === "sast"
+              ? html.tab(
+                  html.generalTab(cxPath),
+                  html.detailsTab(),
+                  html.changes(selectClassname),
+                  messages.generalTab,
+                  messages.descriptionTab,
+                  messages.triageTab,
+                  messages.remediationExamplesTab,
+                  messages.noRemediationExamplesTab,
+                  isAIEnabled ? `${constants.aiSecurityChampion}` : "",
+                  isAIEnabled
+                    ? html.guidedRemediationSastTab(cxIcon, masked)
+                    : ""
+                )
+              : this.result.type === "sca"
+              ? html.scaView(
+                  severityPath,
+                  scaAtackVector,
+                  scaComplexity,
+                  scaAuthentication,
+                  scaConfidentiality,
+                  scaIntegrity,
+                  scaAvailability,
+                  scaUpgrade,
+                  scaUrl,
+                  this.type
+                )
+              : this.result.type === constants.scs
+              ? html.tab(
+                  html.generalTab(cxPath),
+                  html.scsDetailsDescriptionTab(),
+                  html.scsDetailsRemediationTab(),
+                  messages.generalTab,
+                  messages.descriptionTab,
+                  messages.remediationExamplesTab,
+                  "",
+                  "",
+                  "",
+                  ""
+                )
+              : html.tab(
+                  html.generalTab(cxPath),
+                  "",
+                  html.changes(selectClassname),
+                  messages.generalTab,
+                  "",
+                  messages.triageTab,
+                  "",
+                  "",
+                  isAIEnabled ? `${constants.aiSecurityChampion}` : "",
+                  isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
+                )
+          }
         </div>
         <script>
           const vscode = acquireVsCodeApi();

@@ -11,6 +11,7 @@ import {
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
+import { SCSSecretDetectionNode } from "./SCSSecretDetectionNode";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
 export class AstResult extends CxResult {
@@ -33,6 +34,7 @@ export class AstResult extends CxResult {
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
+  scsNode: SCSSecretDetectionNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
   declare vulnerabilityDetails: CxVulnerabilityDetails;
@@ -77,6 +79,8 @@ export class AstResult extends CxResult {
     this.scaType = result.scaType;
     this.label = result.data.queryName
       ? result.data.queryName
+      : result.data.ruleName
+      ? result.data.ruleName
       : result.id
       ? result.id
       : result.vulnerabilityDetails.cveName;
@@ -91,6 +95,21 @@ export class AstResult extends CxResult {
     this.queryName = result.data.queryName;
     this.queryId = result.data.queryId;
     this.vulnerabilityDetails = result.vulnerabilityDetails;
+
+    this.handleFileNameAndLine(result);
+
+    if (result.type === constants.sca || result.scaType) {
+      this.scaNode = result.data;
+    }
+    if (result.type === constants.kics) {
+      this.kicsNode = result;
+    }
+    if (result.type === constants.scs) {
+      this.scsNode = result;
+    }
+  }
+
+  handleFileNameAndLine(result: any): void {
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
@@ -105,36 +124,27 @@ export class AstResult extends CxResult {
       }${
         result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
       })`;
-      this.cweId = result.cweId;
-      if (!this.cweId) {
-        this.cweId = this.cweId = result.vulnerabilityDetails?.cweId;
-      }
+    } else if (result.data.fileName) {
+      this.fileName = result.data.fileName;
+      const shortFilename =
+        this.fileName && this.fileName.includes("/")
+          ? this.fileName.slice(this.fileName.lastIndexOf("/"))
+          : "";
+      this.label += ` (${
+        shortFilename.length && shortFilename.length > 0
+          ? shortFilename
+          : this.fileName
+      }${result.data.line > 0 ? ":" + result.data.line : ""})`;
     }
-    if (result.type === constants.sca || result.scaType) {
-      this.scaNode = result.data;
-    }
-    if (result.type === constants.kics) {
-      this.kicsNode = result;
-    }
-  }
-  determineLanguage(result: any): string | undefined {
-    if (result.data && result.data.languageName) {
-      return result.data.languageName;
-    } else if (result.data && result.data.filename) {
-      const fileName = result.data.filename;
-      const extension = fileName.split(".").pop();
-      if (extension) {
-        return extension;
-      }
-    }
-    return undefined;
+
+    this.cweId = result.cweId || result.vulnerabilityDetails?.cweId;
   }
 
   determineTypeLabel(result: any): string | undefined {
     if (result.label) {
       return result.label;
     }
-    if (result.type === "sscs-secret-detection") {
+    if (result.type === constants.scs) {
       return "scs";
     }
     return undefined;

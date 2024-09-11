@@ -68,8 +68,10 @@ export const constants = {
   sast: "sast",
   kics: "kics",
   sca: "sca",
+  scs: "sscs-secret-detection",
 
-  errorRegex: /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i,
+  errorRegex:
+    /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i,
 
   astErrorCodeBashingNoLicense: 3,
   astErrorCodeBashingNoLesson: 4,
@@ -88,8 +90,7 @@ export const constants = {
 
   // SCAN FROM IDE
   scanCreate: "$(sync~spin) Scan initializing...",
-  scanCreateVerifyBranch:
-    "$(sync~spin) Checking matching branches",
+  scanCreateVerifyBranch: "$(sync~spin) Checking matching branches",
   scanCreateVerifyFiles: "$(sync~spin) Checking matching files",
   scanCreatePreparing: "$(sync~spin) Preparing files for scan",
   scanWaiting: "$(sync~spin) Scan running",
@@ -98,8 +99,7 @@ export const constants = {
 
   // SCA AUTO SCAN
   scaNoVulnerabilities: "Checkmarx found no vulnerabilities",
-  scaStartScan:
-    "Click the play button to scan with Checkmarx SCA",
+  scaStartScan: "Click the play button to scan with Checkmarx SCA",
   clearSca: "Clear all sca scan information",
   scaScanWaiting: "$(sync~spin) Checkmarx sca scan running",
   scaScanRunningLog: "SCA auto scanning command is running",
@@ -115,8 +115,7 @@ export const constants = {
   scanStatusRunning: "running",
 
   // CREATE SCAN ADDITIONAL ARGUMENTS
-  scanCreateAdditionalParameters:
-    "--async --sast-incremental --resubmit",
+  scanCreateAdditionalParameters: "--async --sast-incremental --resubmit",
 
   treeName: "astResults",
   scaTreeName: "scaAutoScan",
@@ -171,7 +170,7 @@ export enum GroupBy {
   queryName = "queryName",
   packageIdentifier = "scaNode.packageIdentifier",
   directDependency = "scaNode.scaPackageData.typeOfDependency",
-  scaType = "scaType"
+  scaType = "scaType",
 }
 
 export enum SeverityLevel {
@@ -190,5 +189,5 @@ export enum StateLevel {
   proposed = "Proposed",
   notExploitable = "NotExploitable",
   notIgnored = "NotIgnored",
-  ignored = "Ignored"
+  ignored = "Ignored",
 }
