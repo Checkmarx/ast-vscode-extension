@@ -193,12 +193,14 @@ jobs:
             vsce publish -p ${{ env.MARKET_TOKEN }}
           fi
 
-      # GENERATE AND CREATE A NEW BRANCH FOR CHANGELOG UPDATES
+      # CHECKOUT AND CREATE BRANCH FOR CHANGELOG UPDATES
       - name: Checkout and create branch for changelog updates
         run: |
-          git fetch
+          git fetch origin
           git checkout -b update-changelog-branch
+          git pull origin update-changelog-branch || true
           git push origin update-changelog-branch
+
 
       # GENERATE AND WRITE CHANGELOG TO FILE
       - name: Generate release changelog
