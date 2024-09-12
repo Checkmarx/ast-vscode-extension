@@ -209,12 +209,14 @@ jobs:
           COMMIT_MESSAGE: "docs(changelog): update release notes"
           TYPE: feat:Feature,fix:Fix
           DEFAULT_SCOPE: general
+          PULL_REQUEST: true
           SUPPRESS_UNSCOPED: false
           UNRELEASED_COMMITS: false
           REGENERATE_COUNT: 0
           REPLACE_EMPTY_RELEASE_INFO: "*No description*"
         env:
           BRANCH_NAME: update-changelog-branch
+
 
       # CREATE A PULL REQUEST TO MERGE THE CHANGELOG UPDATE INTO MAIN
       - name: Create Pull Request for changelog updates
