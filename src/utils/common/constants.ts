@@ -68,7 +68,8 @@ export const constants = {
   sast: "sast",
   kics: "kics",
   sca: "sca",
-  scs: "sscs-secret-detection",
+  scs: "scs",
+  scsSecretDetection: "sscs-secret-detection",
 
   errorRegex:
     /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i,

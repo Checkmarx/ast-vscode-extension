@@ -29,7 +29,8 @@ export const CX_FILTER_MEDIUM = "ast-results: Filter severity: Medium";
 export const CX_FILTER_HIGH = "ast-results: Filter severity: High";
 
 export const CX_FILTER_NOT_EXPLOITABLE = "ast-results:Filter: Not Exploitable";
-export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE = "ast-results:Filter: Proposed Not Exploitable";
+export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE =
+  "ast-results:Filter: Proposed Not Exploitable";
 export const CX_FILTER_CONFIRMED = "ast-results:Filter: Confirmed";
 export const CX_FILTER_TO_VERIFY = "ast-results:Filter: To Verify";
 export const CX_FILTER_URGENT = "ast-results:Filter: Urgent";
@@ -49,8 +50,8 @@ export const CX_GROUP_QUERY_NAME = "ast-results: Group by: Vulnerability Type";
 export const CX_CATETORY = "Checkmarx One";
 export const CX_API_KEY_SETTINGS = "Api Key";
 
-export const UUID_REGEX_VALIDATION = /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
-
+export const UUID_REGEX_VALIDATION =
+  /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/gi;
 
 export const STEP_1 = "Checkmarx One Scan selection (1/3)";
 export const STEP_2 = "Checkmarx One Scan selection (2/3)";
@@ -62,6 +63,7 @@ export const SCAN_KEY_TREE_LABEL = "Scan";
 export const BRANCH_KEY_TREE = "Branch:  ";
 
 export const SAST_TYPE = "sast";
+export const SCS_Type = "scs";
 
 export const WEBVIEW_TITLE = "cx_title";
 export const CODEBASHING_HEADER = "cx_header_codebashing";

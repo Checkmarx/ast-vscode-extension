@@ -104,7 +104,7 @@ export class AstResult extends CxResult {
     if (result.type === constants.kics) {
       this.kicsNode = result;
     }
-    if (result.type === constants.scs) {
+    if (result.type === constants.scsSecretDetection) {
       this.scsNode = result;
     }
   }
@@ -144,8 +144,8 @@ export class AstResult extends CxResult {
     if (result.label) {
       return result.label;
     }
-    if (result.type === constants.scs) {
-      return "scs";
+    if (result.type === constants.scsSecretDetection) {
+      return constants.scs;
     }
     return undefined;
   }
