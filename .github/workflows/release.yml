@@ -202,6 +202,7 @@ jobs:
           PATH: "CHANGELOG.md"
           COMMIT_MESSAGE: "docs(changelog): update release notes"
           BRANCH: "update-changelog-${{ env.TAG_NAME }}"
+          REGENERATE_COUNT: 20  # Limit the number of releases to process
 
       # CREATE PULL REQUEST FOR CHANGELOG
       - name: Create Pull Request for Changelog
