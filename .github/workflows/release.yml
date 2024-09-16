@@ -193,6 +193,12 @@ jobs:
             vsce publish -p ${{ env.MARKET_TOKEN }}
           fi
 
+      # Ensure branch exists or create it
+      - name: Create branch if it doesn't exist
+        run: |
+          git checkout -b update-changelog-${{ env.TAG_NAME }} || git checkout update-changelog-${{ env.TAG_NAME }}
+          git push origin update-changelog-${{ env.TAG_NAME }}  # Push the branch to the remote repository
+
       # GENERATE CHANGELOG
       - name: Generate release changelog
         id: generate_changelog
