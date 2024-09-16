@@ -203,3 +203,14 @@ jobs:
           COMMIT_MESSAGE: "docs(changelog): update release notes"
           BRANCH: "update-changelog-${{ env.TAG_NAME }}"
 
+      # CREATE PULL REQUEST FOR CHANGELOG
+      - name: Create Pull Request for Changelog
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit-message: "docs(changelog): update release notes"
+          title: "Update CHANGELOG.md for ${{ env.TAG_NAME }}"
+          body: "Automatically generated changelog update for ${{ env.TAG_NAME }}"
+          branch: "update-changelog-${{ env.TAG_NAME }}"
+          base: "main"
+
