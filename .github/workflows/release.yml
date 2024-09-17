@@ -197,5 +197,5 @@ jobs:
       - name: Generate release changelog
         uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
         with:
-          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           PATH: "CHANGELOG.md"
