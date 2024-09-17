@@ -127,7 +127,6 @@ jobs:
         run: |
           VSIX_TAG_NAME=$(cat package.json | jq .version | cut -d'"' -f 2)
           echo "VSIX_TAG_NAME=$VSIX_TAG_NAME" >> $GITHUB_ENV
-
           if [ ${{ inputs.dev }} == true ]; then
             echo "GH_RELEASE_NAME=${{env.TAG_NAME}} (${VSIX_TAG_NAME})" >> $GITHUB_ENV
           else
