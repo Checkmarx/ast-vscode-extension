@@ -15,6 +15,7 @@ import {
   initialize,
   validateRootNode,
   getQuickPickSelector,
+  clickFirstVulnerability,
 } from "./utils/utils";
 import {
   CHANGES_LABEL,
@@ -39,6 +40,9 @@ import {
   CX_FILTER_TO_VERIFY,
   CX_FILTER_URGENT,
   CX_FILTER_NOT_IGNORED,
+  CX_CLEAR,
+  CX_GROUP_LANGUAGE,
+  CX_GROUP_QUERY_NAME,
 } from "./utils/constants";
 import { SCAN_ID, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
@@ -51,12 +55,36 @@ describe("Get SCS results and checking GroupBy , Filter and Open details window"
     this.timeout(8000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    const bottomBar = new BottomBarPanel();
-    await bottomBar.toggle(false);
+    await new Workbench().executeCommand("workbench.action.closeActiveEditor");
+    await bench.executeCommand(CX_CLEAR);
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
+  });
+
+  it("should clear groub by for scs and open details window ", async function () {
+    const commands = [
+      CX_GROUP_LANGUAGE,
+      CX_GROUP_STATUS,
+      CX_GROUP_STATE,
+      CX_GROUP_QUERY_NAME,
+      CX_GROUP_FILE,
+      CX_FILTER_NOT_EXPLOITABLE,
+      CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
+      CX_FILTER_CONFIRMED,
+      CX_FILTER_TO_VERIFY,
+      CX_FILTER_URGENT,
+      CX_FILTER_NOT_IGNORED,
+      CX_GROUP_FILE,
+      CX_GROUP_STATE,
+      CX_GROUP_STATUS,
+      CX_GROUP_SEVERITY,
+    ];
+
+    for (var index in commands) {
+      await bench.executeCommand(commands[index]);
+    }
   });
 
   it("should select project", async function () {
@@ -122,8 +150,7 @@ describe("Get SCS results and checking GroupBy , Filter and Open details window"
     if (scsnode === undefined) {
       scsnode = await scan?.findChildItem(SCS_Type);
     }
-    let result = await getResults(scsnode);
-    await result[0].click();
+    await clickFirstVulnerability(scsnode);
 
     const commands = [
       CX_GROUP_FILE,
