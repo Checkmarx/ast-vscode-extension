@@ -4,24 +4,9 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.20.0 -->
 
-## What's Changed
-### Other Changes
-* upgrade js wrapper to v0.0.113 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/947
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/949
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.19.0...v2.20.0
-
 ## [v2.19.1-2.20.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.19.1-2.20.0-prerelease.0) - 2024-09-16 08:02:25
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Other Changes
-* upgrade js wrapper to v0.0.113 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/947
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.19.1-0...v2.19.1-2.20.0-prerelease.0
 
 ## [v2.19.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.19.1-0) - 2024-09-04 05:21:24
 
@@ -35,124 +20,33 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.19.0 -->
 
-## What's Changed
-### New Features 🚀
-* VSCode | Support AzureAI (AST-64548) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/898
-* Adding support for critical severity in the tree and triage by @tiagobcx in https://github.com/Checkmarx/ast-vscode-extension/pull/660
-### Other Changes
-* VSCode | Replace "vulnerabilities" by "security best coding practices issues" (AST-65346) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/934
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/937
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.18.0...v2.19.0
-
 ## [v2.18.1-v2.18.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.18.1-v2.18.0-prerelease.0) - 2024-08-29 06:32:33
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### New Features 🚀
-* VSCode | Support AzureAI (AST-64548) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/898
-### Other Changes
-* VSCode | Replace "vulnerabilities" by "security best coding practices issues" (AST-65346) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/934
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.18.0...v2.18.1-v2.18.0-prerelease.0
 
 ## [v2.18.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.18.0) - 2024-08-22 09:18:01
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.18.0 -->
 
-## What's Changed
-### Checkmarx One SDK Updates 🛠
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.108 to 0.0.111 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/920
-### Other Changes
-* Fixing popup output pane (AST-37522) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/911
-* Fedramp fix sast& iac vul (AST-47966) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/917
-* Update readme by @jbrotsos in https://github.com/Checkmarx/ast-vscode-extension/pull/912
-* AST-38524 Vorpal extension by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/881
-* update js-wrapper to 0.0.112 by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/926
-* Change titles from Auto Scanning to Real-Time Scanning by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/929
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/932
-
-## New Contributors
-* @Korjen97 made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/911
-* @jbrotsos made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/912
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.17.0...v2.18.0
-
 ## [v2.17.1-realtime-scan.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.17.1-realtime-scan.0) - 2024-08-15 13:55:07
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Other Changes
-* AST-38524 Vorpal extension by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/881
-* update js-wrapper to 0.0.112 by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/926
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.17.1-vorpal-13.0...v2.17.1-realtime-scan.0
 
 ## [v2.17.1-vorpal-13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.17.1-vorpal-13.0) - 2024-08-08 16:53:07
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Checkmarx One SDK Updates 🛠
-* Bump @checkmarxdev/ast-cli-javascript-wrapper from 0.0.108 to 0.0.111 by @dependabot in https://github.com/Checkmarx/ast-vscode-extension/pull/920
-### Other Changes
-* Fixing popup output pane (AST-37522) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/911
-* Fedramp fix sast& iac vul (AST-47966) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/917
-* Update readme by @jbrotsos in https://github.com/Checkmarx/ast-vscode-extension/pull/912
-
-## New Contributors
-* @Korjen97 made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/911
-* @jbrotsos made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/912
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.17.0...v2.17.1-vorpal-13.0
-
 ## [v2.17.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.17.0) - 2024-07-29 08:16:01
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.17.0 -->
-
-## What's Changed
-### Other Changes
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/906
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.16.0...v2.17.0
 
 ## [v2.16.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.16.0) - 2024-07-29 08:08:26
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.16.0 -->
 
-## What's Changed
-### Bug Fixes 🐛
-* VSCode | Fix create scan with project name that contains ':' (AST-55377) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/900
-### Other Changes
-* Test to create scan with no results (AST-48230) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/891
-* change bootstrap version to 5.0.2 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/902
-* AST-43037 create pr to update the version by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/901
-* Update Version - Automated Changes by @github-actions in https://github.com/Checkmarx/ast-vscode-extension/pull/904
-
-## New Contributors
-* @github-actions made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/904
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.15.0...v2.16.0
-
 ## [v2.15.1-nightly.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.15.1-nightly.0) - 2024-07-29 07:55:01
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Bug Fixes 🐛
-* VSCode | Fix create scan with project name that contains ':' (AST-55377) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/900
-### Other Changes
-* change bootstrap version to 5.0.2 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/902
-* AST-43037 create pr to update the version by @tamarleviCm in https://github.com/Checkmarx/ast-vscode-extension/pull/901
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.15.1-vorpal-12.0...v2.15.1-nightly.0
 
 ## [v2.15.1-vorpal-12.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.15.1-vorpal-12.0) - 2024-07-21 11:33:31
 
@@ -173,22 +67,6 @@
 ## [v2.15.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.15.0) - 2024-07-16 15:10:45
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.15.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Don't fail if there are no old scan results (AST-48230) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/887
-* VSCode | Show create scan errors (AST-37388) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/890
-### New Features 🚀
-* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/880
-* change the name of plugin by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/886
-### Other Changes
-* Revert "change the name of plugin" by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/885
-* update js-wrapper to 0.0.8 by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/892
-
-## New Contributors
-* @sarahCx made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/880
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.14.0...v2.15.0
 
 ## [v2.14.1-vorpal-10.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.14.1-vorpal-10.0) - 2024-07-16 15:12:09
 
