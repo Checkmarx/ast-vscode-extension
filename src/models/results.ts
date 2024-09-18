@@ -6,11 +6,12 @@ import * as vscode from "vscode";
 import {
   StateLevel,
   SeverityLevel,
-  constants
+  constants,
 } from "../utils/common/constants";
 import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
+import { SCSSecretDetectionNode } from "./SCSSecretDetectionNode";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
 export class AstResult extends CxResult {
@@ -33,6 +34,7 @@ export class AstResult extends CxResult {
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
+  scsNode: SCSSecretDetectionNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
   declare vulnerabilityDetails: CxVulnerabilityDetails;
@@ -49,9 +51,11 @@ export class AstResult extends CxResult {
   }
 
   constructor(result?: any) {
-    super(result.scaType ? "sca" : result.type, result.data.queryName
-      ? result.data.queryName
-      : result.id
+    super(
+      result.scaType ? "sca" : result.type,
+      result.data.queryName
+        ? result.data.queryName
+        : result.id
         ? result.id
         : result.vulnerabilityDetails.cveName,
       result.id,
@@ -67,16 +71,19 @@ export class AstResult extends CxResult {
       result.data,
       result.comments,
       result.vulnerabilityDetails,
-      result.descriptionHTML);
+      result.descriptionHTML
+    );
     this.id = result.id;
     this.type = result.scaType ? "sca" : result.type;
-    this.typeLabel = result.label;
+    this.typeLabel = this.determineTypeLabel(result);
     this.scaType = result.scaType;
     this.label = result.data.queryName
       ? result.data.queryName
+      : result.data.ruleName
+      ? result.data.ruleName
       : result.id
-        ? result.id
-        : result.vulnerabilityDetails.cveName;
+      ? result.id
+      : result.vulnerabilityDetails.cveName;
     this.severity = result.severity;
     this.status = result.status;
     this.language = result.data.languageName;
@@ -88,6 +95,22 @@ export class AstResult extends CxResult {
     this.queryName = result.data.queryName;
     this.queryId = result.data.queryId;
     this.vulnerabilityDetails = result.vulnerabilityDetails;
+
+    this.handleFileNameAndLine(result);
+
+    if (result.type === constants.sca || result.scaType) {
+      this.scaNode = result.data;
+    }
+    if (result.type === constants.kics) {
+      this.kicsNode = result;
+    }
+    if (result.type === constants.scsSecretDetection) {
+      this.scsNode = result;
+    }
+  }
+
+  handleFileNameAndLine(result: any): void {
+    // Relevant for sast, sca , kicks because , they have the filename inside result.data.nodes
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
       this.fileName = result.data.nodes[0].fileName;
@@ -95,22 +118,38 @@ export class AstResult extends CxResult {
         this.fileName && this.fileName.includes("/")
           ? this.fileName.slice(this.fileName.lastIndexOf("/"))
           : "";
-      this.label += ` (${shortFilename.length && shortFilename.length > 0
-        ? shortFilename
-        : this.fileName
-        }${result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
-        })`;
-      this.cweId = result.cweId;
-      if (!this.cweId) {
-        this.cweId = this.cweId = result.vulnerabilityDetails?.cweId;
-      }
+      this.label += ` (${
+        shortFilename.length && shortFilename.length > 0
+          ? shortFilename
+          : this.fileName
+      }${
+        result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
+      })`;
+    } else if (result.data.fileName) {
+      //Relevant for scs  , because this engine  have the filename inside result.data
+      this.fileName = result.data.fileName;
+      const shortFilename =
+        this.fileName && this.fileName.includes("/")
+          ? this.fileName.slice(this.fileName.lastIndexOf("/"))
+          : "";
+      this.label += ` (${
+        shortFilename.length && shortFilename.length > 0
+          ? shortFilename
+          : this.fileName
+      }${result.data.line > 0 ? ":" + result.data.line : ""})`;
     }
-    if (result.type === constants.sca || result.scaType) {
-      this.scaNode = result.data;
+
+    this.cweId = result.cweId || result.vulnerabilityDetails?.cweId;
+  }
+
+  determineTypeLabel(result: any): string | undefined {
+    if (result.label) {
+      return result.label;
     }
-    if (result.type === constants.kics) {
-      this.kicsNode = result;
+    if (result.type === constants.scsSecretDetection) {
+      return constants.scs;
     }
+    return undefined;
   }
 
   getIcon() {
@@ -184,8 +223,6 @@ export class AstResult extends CxResult {
         return vscode.DiagnosticSeverity.Error;
       case constants.mediumSeverity:
         return vscode.DiagnosticSeverity.Warning;
-      case constants.infoSeverity:
-        return vscode.DiagnosticSeverity.Information;
       case constants.infoSeverity:
         return vscode.DiagnosticSeverity.Information;
     }
@@ -274,7 +311,9 @@ export class AstResult extends CxResult {
               data-fullName="${this.kicsNode?.data.filename}" 
               data-length="${1}"
             >
-              ${this.getShortFilename(this.kicsNode?.data.filename)} [${this.kicsNode?.data.line}:${0}]
+              ${this.getShortFilename(this.kicsNode?.data.filename)} [${
+      this.kicsNode?.data.line
+    }:${0}]
             </a>
           </td>
         </tr>
@@ -403,13 +442,15 @@ export class AstResult extends CxResult {
     this.scaNode.scaPackageData.dependencyPaths.forEach(
       (pathArray: any, indexDependency: number) => {
         if (indexDependency === 0) {
-          html += ` <div class="card-content" style="max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency + 1
-            }">
+          html += ` <div class="card-content" style="max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${
+            indexDependency + 1
+          }">
         <table class="details-table" style="margin-left:28px;margin-top:15px;width:100%">
           <tbody>`;
         } else {
-          html += ` <div class="card-content" style="display:none;max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${indexDependency + 1
-            }">
+          html += ` <div class="card-content" style="display:none;max-height:134px;overflow:scroll;margin-top:15px" id="locations-table-${
+            indexDependency + 1
+          }">
         <table class="details-table" style="margin-left:28px;" >
           <tbody>`;
         }
@@ -437,10 +478,11 @@ export class AstResult extends CxResult {
                     >
                       ${location}
                     </a>
-                    ${this.scaNode.recommendedVersion &&
-                    this.scaNode.scaPackageData.supportsQuickFix === true &&
-                    this.scaNode.scaPackageData.dependencyPaths[0][0].name
-                    ? ` <img 
+                    ${
+                      this.scaNode.recommendedVersion &&
+                      this.scaNode.scaPackageData.supportsQuickFix === true &&
+                      this.scaNode.scaPackageData.dependencyPaths[0][0].name
+                        ? ` <img 
                           alt="icon" 
                           class="upgrade-small-icon" 
                           src="${scaUpgrade}"
@@ -448,8 +490,8 @@ export class AstResult extends CxResult {
                           data-package="${this.scaNode.scaPackageData.dependencyPaths[0][0].name}" 
                           data-file="${location}"
                         />`
-                    : ""
-                  }
+                        : ""
+                    }
                     ${index + 1 < path.locations.length ? `&nbsp;| &nbsp;` : ""}
                 `;
               });
@@ -529,7 +571,8 @@ export class AstResult extends CxResult {
               <tbody>`;
         } else {
           html += `<div class="card-content">
-            <table class="package-table" style="display: none;" id="package-table-${index + 1
+            <table class="package-table" style="display: none;" id="package-table-${
+              index + 1
             }">
               <tbody>`;
         }
@@ -570,39 +613,44 @@ export class AstResult extends CxResult {
     <div class="left-content">
       <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
         <div class="description">
-          ${result.descriptionHTML ? result.descriptionHTML : result.description
-      }
+          ${
+            result.descriptionHTML ? result.descriptionHTML : result.description
+          }
         </div>
-        ${type === "realtime"
-        ? `
+        ${
+          type === "realtime"
+            ? `
         <div class="remediation-links-rows-realtime">
           <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
           <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
             About this vulnerability
           </p>
         </div>`
-        : ""
-      }
+            : ""
+        }
       </div>
-      ${result.scaNode.scaPackageData
-        ? `
+      ${
+        result.scaNode.scaPackageData
+          ? `
       <div class="card">
-      ${!type
+      ${
+        !type
           ? `<p class="header-content">
       Remediation
     </p>`
           : ""
-        }
-    ${!type
-          ? `
+      }
+    ${
+      !type
+        ? `
     <div class="card-content">
         <div class="remediation-container">
           ${result.scaRemediation(result, scaUpgrade, scaUrl, type)}	
         </div>
       </div>
     `
-          : ""
-        }
+        : ""
+    }
     </div>
     <div class="card">
         <div style="display: inline-block;position: relative;">
@@ -610,28 +658,32 @@ export class AstResult extends CxResult {
           ${!type ? "Vulnerable Package Paths" : "Vulnerable Package"}
           </p>
         </div>
-        ${result.scaNode.scaPackageData.dependencyPaths
-          ? `
+        ${
+          result.scaNode.scaPackageData.dependencyPaths
+            ? `
         <div class="package-buttons-container">
           <button 
             class="package-back"
             id="package-back"
             data-current="1" 
-            data-total="${result.scaNode.scaPackageData.dependencyPaths.length
-          }" 
+            data-total="${
+              result.scaNode.scaPackageData.dependencyPaths.length
+            }" 
             data-previous="null"
             disabled
           >
           </button>
-          <p id="package-counter" class="package-counter-numbers">1/${result.scaNode.scaPackageData.dependencyPaths.length
+          <p id="package-counter" class="package-counter-numbers">1/${
+            result.scaNode.scaPackageData.dependencyPaths.length
           }</p>
           <button 
             class="package-next"
             data-current="1" 
-            ${result.scaNode.scaPackageData.dependencyPaths.length === 1
-            ? "disabled"
-            : ""
-          }
+            ${
+              result.scaNode.scaPackageData.dependencyPaths.length === 1
+                ? "disabled"
+                : ""
+            }
             data-total="${result.scaNode.scaPackageData.dependencyPaths.length}"
             id="package-next"
             data-previous="null"
@@ -640,7 +692,7 @@ export class AstResult extends CxResult {
         </div>
       ${result.scaPackages(scaUpgrade)}	
     </div>`
-          : !type
+            : !type
             ? `
           <div class="card-content">
             <p style="margin:25px;font-size:0.9em">
@@ -666,7 +718,7 @@ export class AstResult extends CxResult {
     </div>
   </div>
       `
-        : `
+          : `
     <div class="card" style="border:0">
       <p style="margin:25px;font-size:0.9em"> 
         No more information available
@@ -676,8 +728,9 @@ export class AstResult extends CxResult {
     `
       }
   <div class="right-content">
-    ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.version
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.version
         ? `
       <div class="content">
         <div class="header-content-selected">
@@ -696,22 +749,28 @@ export class AstResult extends CxResult {
         </div>
       </div>
     `
-      }
+    }
     <div class="sca-details" style="border-bottom: 1px;border-bottom-style: solid;border-color: rgb(128, 128, 128,0.5);">
-      <div class="score-card" style="${result.severity === "HIGH"
-        ? "border: 1px solid #D94B48"
-        : result.severity === "MEDIUM"
+      <div class="score-card" style="${
+        result.severity === "HIGH"
+          ? "border: 1px solid #D94B48"
+          : result.severity === "MEDIUM"
           ? "border: 1px solid #F9AE4D"
           : result.severity === "LOW"
-            ? "border: 1px solid #029302"
-            : "border: 1px solid #87bed1"
+          ? "border: 1px solid #029302"
+          : "border: 1px solid #87bed1"
       }">
         <div class="left-${result.severity}">
           <p class="header-text">
             Score
           </p>
           <p>
-              ${result.vulnerabilityDetails && result.vulnerabilityDetails.cvssScore ? result.vulnerabilityDetails.cvssScore.toFixed(1) : 'N/A'}
+              ${
+                result.vulnerabilityDetails &&
+                result.vulnerabilityDetails.cvssScore
+                  ? result.vulnerabilityDetails.cvssScore.toFixed(1)
+                  : "N/A"
+              }
           </p>
         </div>
         <div class="right-${result.severity}">
@@ -732,11 +791,12 @@ export class AstResult extends CxResult {
             Attack Vector
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.attackVector
-        ? result.vulnerabilityDetails.cvss.attackVector
-        : "No information"
-      }
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.attackVector
+                ? result.vulnerabilityDetails.cvss.attackVector
+                : "No information"
+            }
           </p>
         </div>
         <div class="info-cards-icon">
@@ -751,11 +811,12 @@ export class AstResult extends CxResult {
             Attack Complexity
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.attackComplexity
-        ? result.vulnerabilityDetails.cvss.attackComplexity
-        : "No information"
-      }
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.attackComplexity
+                ? result.vulnerabilityDetails.cvss.attackComplexity
+                : "No information"
+            }
           </p>
         </div>
         <div class="info-cards-icon">
@@ -763,8 +824,9 @@ export class AstResult extends CxResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.privilegesRequired
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.privilegesRequired
         ? `
       <div class="sca-details">
       <div class="info-cards">
@@ -773,10 +835,11 @@ export class AstResult extends CxResult {
             Privileges Required
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss.privilegesRequired
-          ? result.vulnerabilityDetails.cvss.privilegesRequired
-          : "No information"
-        }
+            ${
+              result.vulnerabilityDetails.cvss.privilegesRequired
+                ? result.vulnerabilityDetails.cvss.privilegesRequired
+                : "No information"
+            }
           </p>
         </div>
         <div class="info-cards-icon">
@@ -785,7 +848,7 @@ export class AstResult extends CxResult {
       </div>
     </div>`
         : ``
-      }
+    }
     <div class="sca-details">
       <div class="info-cards">
         <div class="info-cards-text">
@@ -793,11 +856,12 @@ export class AstResult extends CxResult {
             Confidentiality Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.confidentiality
-        ? result.vulnerabilityDetails.cvss.confidentiality
-        : "No information"
-      }
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.confidentiality
+                ? result.vulnerabilityDetails.cvss.confidentiality
+                : "No information"
+            }
           </p>
         </div>
         <div class="info-cards-icon">
@@ -805,8 +869,9 @@ export class AstResult extends CxResult {
         </div>
       </div>
     </div>
-    ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.integrityImpact
+    ${
+      result.vulnerabilityDetails.cvss &&
+      result.vulnerabilityDetails.cvss.integrityImpact
         ? `
       <div class="sca-details">
         <div class="info-cards">
@@ -815,10 +880,11 @@ export class AstResult extends CxResult {
               Integrity Impact
             </p>
             <p class="info-cards-value">
-              ${result.vulnerabilityDetails.cvss.integrityImpact
-          ? result.vulnerabilityDetails.cvss.integrityImpact
-          : "No information"
-        }
+              ${
+                result.vulnerabilityDetails.cvss.integrityImpact
+                  ? result.vulnerabilityDetails.cvss.integrityImpact
+                  : "No information"
+              }
             </p>
           </div>
           <div class="info-cards-icon">
@@ -827,7 +893,7 @@ export class AstResult extends CxResult {
         </div>
       </div>`
         : ``
-      }
+    }
     <div class="sca-details">
       <div class="info-cards">
         <div class="info-cards-text">
@@ -835,11 +901,12 @@ export class AstResult extends CxResult {
             Availability Impact
           </p>
           <p class="info-cards-value">
-            ${result.vulnerabilityDetails.cvss &&
-        result.vulnerabilityDetails.cvss.availability
-        ? result.vulnerabilityDetails.cvss.availability
-        : "No information"
-      }
+            ${
+              result.vulnerabilityDetails.cvss &&
+              result.vulnerabilityDetails.cvss.availability
+                ? result.vulnerabilityDetails.cvss.availability
+                : "No information"
+            }
           </p>
         </div>
         <div class="info-cards-icon">
@@ -852,71 +919,83 @@ export class AstResult extends CxResult {
 
   private scaRemediation(result, scaUpgrade, scaUrl, type?) {
     return `
-            ${!type
-        ? `<div 
-              class=${result.scaNode.recommendedVersion &&
-          result.scaNode.scaPackageData.supportsQuickFix === true
-          ? "remediation-icon"
-          : "remediation-icon-disabled"
-        }
-              data-version="${result.scaNode.recommendedVersion &&
-          result.scaNode.scaPackageData.supportsQuickFix === true
-          ? result.scaNode.recommendedVersion
-          : ""
-        }" 
-              data-package="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          : ""
-        }" 
-              data-file="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].locations
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0]
-            .locations
-          : ""
-        }"
+            ${
+              !type
+                ? `<div 
+              class=${
+                result.scaNode.recommendedVersion &&
+                result.scaNode.scaPackageData.supportsQuickFix === true
+                  ? "remediation-icon"
+                  : "remediation-icon-disabled"
+              }
+              data-version="${
+                result.scaNode.recommendedVersion &&
+                result.scaNode.scaPackageData.supportsQuickFix === true
+                  ? result.scaNode.recommendedVersion
+                  : ""
+              }" 
+              data-package="${
+                result.scaNode.scaPackageData.dependencyPaths &&
+                result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                  ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                  : ""
+              }" 
+              data-file="${
+                result.scaNode.scaPackageData.dependencyPaths &&
+                result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                  ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                      .locations
+                  : ""
+              }"
               >
                 <img 
-                  data-version="${result.scaNode.recommendedVersion
-          ? result.scaNode.recommendedVersion
-          : ""
-        }" 
-                  data-package="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          : ""
-        }" 
-                  data-file="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0]
-            .locations
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0]
-            .locations
-          : ""
-        }" 
+                  data-version="${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : ""
+                  }" 
+                  data-package="${
+                    result.scaNode.scaPackageData.dependencyPaths &&
+                    result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                      ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                      : ""
+                  }" 
+                  data-file="${
+                    result.scaNode.scaPackageData.dependencyPaths &&
+                    result.scaNode.scaPackageData.dependencyPaths[0][0]
+                      .locations
+                      ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                          .locations
+                      : ""
+                  }" 
                   alt="icon" src="${scaUpgrade}" 
                   class="remediation-upgrade" />
               </div>
             <div 
-            class=${result.scaNode.recommendedVersion &&
-          result.scaNode.scaPackageData.supportsQuickFix === true
-          ? "remediation-version"
-          : "remediation-version-disabled"
-        }
-            data-version="${result.scaNode.recommendedVersion &&
-          result.scaNode.scaPackageData.supportsQuickFix === true
-          ? result.scaNode.recommendedVersion
-          : ""
-        }" 
-            data-package="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          : ""
-        }" 
-            data-file="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].locations
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0].locations
-          : ""
-        }"
+            class=${
+              result.scaNode.recommendedVersion &&
+              result.scaNode.scaPackageData.supportsQuickFix === true
+                ? "remediation-version"
+                : "remediation-version-disabled"
+            }
+            data-version="${
+              result.scaNode.recommendedVersion &&
+              result.scaNode.scaPackageData.supportsQuickFix === true
+                ? result.scaNode.recommendedVersion
+                : ""
+            }" 
+            data-package="${
+              result.scaNode.scaPackageData.dependencyPaths &&
+              result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                : ""
+            }" 
+            data-file="${
+              result.scaNode.scaPackageData.dependencyPaths &&
+              result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                ? result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                : ""
+            }"
             >
             
               <div class="remediation-version-container">
@@ -924,30 +1003,35 @@ export class AstResult extends CxResult {
                   Upgrade To Version
                 </p>
                 <p
-                  class=${result.scaNode.recommendedVersion &&
-          result.scaNode.scaPackageData.supportsQuickFix === true
-          ? "version"
-          : "version-disabled"
-        }
-                  data-version="${result.scaNode.recommendedVersion
-          ? result.scaNode.recommendedVersion
-          : ""
-        }" 
-                data-package="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
-          : ""
-        }" 
-                data-file="${result.scaNode.scaPackageData.dependencyPaths &&
-          result.scaNode.scaPackageData.dependencyPaths[0][0].locations
-          ? result.scaNode.scaPackageData.dependencyPaths[0][0]
-            .locations
-          : ""
-        }">
-                  ${result.scaNode.recommendedVersion
-          ? result.scaNode.recommendedVersion
-          : "Not available"
-        }
+                  class=${
+                    result.scaNode.recommendedVersion &&
+                    result.scaNode.scaPackageData.supportsQuickFix === true
+                      ? "version"
+                      : "version-disabled"
+                  }
+                  data-version="${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : ""
+                  }" 
+                data-package="${
+                  result.scaNode.scaPackageData.dependencyPaths &&
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                    ? result.scaNode.scaPackageData.dependencyPaths[0][0].name
+                    : ""
+                }" 
+                data-file="${
+                  result.scaNode.scaPackageData.dependencyPaths &&
+                  result.scaNode.scaPackageData.dependencyPaths[0][0].locations
+                    ? result.scaNode.scaPackageData.dependencyPaths[0][0]
+                        .locations
+                    : ""
+                }">
+                  ${
+                    result.scaNode.recommendedVersion
+                      ? result.scaNode.recommendedVersion
+                      : "Not available"
+                  }
                 </p>
               </div>
             </div>
@@ -955,23 +1039,24 @@ export class AstResult extends CxResult {
               <div class="remediation-links-about">
                 <div class="remediation-links-rows">
                   <img class="remediation-links-rows-image" alt="icon" src="${scaUrl}" />
-                  ${result.scaNode.scaPackageData.fixLink &&
-          result.scaNode.scaPackageData.fixLink !== ""
-          ? `
+                  ${
+                    result.scaNode.scaPackageData.fixLink &&
+                    result.scaNode.scaPackageData.fixLink !== ""
+                      ? `
                   <p class="remediation-links-text" id="${result.scaNode.scaPackageData.fixLink}">
                     About this vulnerability
                   </p>
                 `
-          : ` <p class="remediation-links-text-disabled" id="${result.scaNode.scaPackageData.fixLink}">
+                      : ` <p class="remediation-links-text-disabled" id="${result.scaNode.scaPackageData.fixLink}">
                       About this vulnerability
                     </p>`
-        }
+                  }
                  
                 </div>
               </div>
             </div>
             `
-        : ``
-      }`;
+                : ``
+            }`;
   }
 }
