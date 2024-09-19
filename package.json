@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx One",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.19.0",
+  "version": "2.20.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -923,11 +923,11 @@
     "vsce": "^2.15.0",
     "vscode-extension-tester": "8.3.0",
     "vscode-extension-tester-locators": "^3.12.2",
-    "webpack": "^5.93.0",
+    "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.112",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.113",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
