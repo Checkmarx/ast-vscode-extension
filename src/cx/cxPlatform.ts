@@ -1,14 +1,14 @@
 import * as vscode from "vscode";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
+import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
+import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/codebashing/CxCodeBashing";
 import { SastNode } from "../models/sastNode";
 import { Logs } from "../models/logs";
 import { ChildProcessWithoutNullStreams } from "child_process";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
-import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxCommandOutput";
+import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/learnmore/CxLearnMoreDescriptions";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/vorpal/CxVorpal";
 
 export interface CxPlatform {
 	/**

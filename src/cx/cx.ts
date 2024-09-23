@@ -1,21 +1,21 @@
 import * as vscode from "vscode";
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
+import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/codebashing/CxCodeBashing";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
 import { getFilePath, getResultsFilePath } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
-import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxParamType";
 import { Logs } from "../models/logs";
 import { CxPlatform } from "./cxPlatform";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
-import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/learnmore/CxLearnMoreDescriptions";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/vorpal/CxVorpal";
 import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {

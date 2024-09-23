@@ -7,7 +7,7 @@ import { getNonce } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { cx } from "../../cx";
 import { Logs } from "../../models/logs";
-import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/mask/CxMask";
 import { GptResult } from "../../models/gptResult";
 import { constants } from "../../utils/common/constants";
 

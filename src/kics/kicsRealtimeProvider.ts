@@ -7,8 +7,8 @@ import {
   constants
 } from "../utils/common/constants";
 import { getFromState, updateState } from "../utils/common/globalState";
-import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/kicsRealtime/CxKicsRealTime";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxCommandOutput";
 import { KicsCodeActionProvider } from "./kicsCodeActions";
 import { cx } from "../cx";
 import { writeFileSync } from "fs";

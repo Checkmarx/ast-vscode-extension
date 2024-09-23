@@ -6,8 +6,8 @@ import {
   constants
 } from "./common/constants";
 import { GitExtension } from "./types/git";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/results/CxResult";
 
 export function getProperty(
   o: AstResult | CxScan,

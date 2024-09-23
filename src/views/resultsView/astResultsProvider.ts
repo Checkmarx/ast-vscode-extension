@@ -13,7 +13,7 @@ import { TreeItem } from "../../utils/tree/treeItem";
 import { FilterCommand } from "../../commands/filterCommand";
 import { GroupByCommand } from "../../commands/groupByCommand";
 import { messages } from "../../utils/common/messages";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/results/CxResult";
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 

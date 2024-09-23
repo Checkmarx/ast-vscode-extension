@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
+import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/codebashing/CxCodeBashing";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/wrapper/CxConfig";
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/vorpal/CxVorpal";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 
 export class CxMock implements CxPlatform {
