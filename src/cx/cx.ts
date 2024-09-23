@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
+import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli";
 import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/project/CxProject";
