@@ -148,11 +148,11 @@ export const constants = {
   // ASCA engine
   errorInstallation: "Failed to run ASCA engine",
   errorScanAsca: "failed to handle ASCA scan",
-  ascaStart: "Secure Coding Engine started",
-  ascaDisabled: "Secure Coding Real-time Scanning is disabled now.",
+  ascaStart: "AI Secure Coding Assistant Engine started",
+  ascaDisabled: "AI Secure Coding Assistant Engine disabled",
   ascaEngineName: "ASCA",
-  ActivateAscaAutoScanning: "Activate Real-time Scanning",
-  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant",
+  ActivateAscaAutoScanning: "Activate ASCA",
+  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

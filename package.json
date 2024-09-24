@@ -886,7 +886,7 @@
         "id": "asca",
         "order": 2,
         "properties": {
-          "Checkmarx AI Secure Coding Assistant.Activate Real-time Scanning": {
+          "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
             "type": "boolean",
             "order": 3,
             "default": false,

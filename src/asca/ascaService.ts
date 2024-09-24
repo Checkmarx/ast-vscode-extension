@@ -25,7 +25,7 @@ export async function scanAsca(document: vscode.TextDocument, logs: Logs) {
       document.getText()
     );
     // RUN ASCA SCAN
-    logs.info("Start Secure coding Engine Scan On File: " + document.uri.fsPath);
+    logs.info("Start ASCA scan On File: " + document.uri.fsPath);
     const scanAscaResult = await cx.scanAsca(filePath);
     // DELETE TEMP FILE
     deleteFile(filePath); 
