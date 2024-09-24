@@ -58,7 +58,6 @@ function ignoreFiles(document: vscode.TextDocument): boolean {
 
 export async function clearAscaProblems() {
   diagnosticCollection.clear();
-  const tempDir = os.tmpdir();
 }
 
 function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {

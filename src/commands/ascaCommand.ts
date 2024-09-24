@@ -19,10 +19,9 @@ export class AscaCommand {
   public async registerAsca() {
     try {
       const ascaActive = vscode.workspace
-        .getConfiguration(constants.CheckmarxAsca);
-      var ascaActiveAsBool = ascaActive.get(constants.ActivateAscaAutoScanning) as boolean;
-        // .get(constants.ActivateAscaAutoScanning) as boolean;
-      if (ascaActiveAsBool.valueOf() === true) {
+        .getConfiguration(constants.CheckmarxAsca)
+        .get(constants.ActivateAscaAutoScanning) as boolean;
+      if (ascaActive) {
         await this.installAsca();
         await this.registerAscaScanOnChangeText();
         this.logs.info(constants.ascaStart);
