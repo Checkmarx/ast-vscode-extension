@@ -5,7 +5,7 @@ import path from "path";
 import * as os from "os";
 import { error } from "console";
 import { Logs } from "../models/logs";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/vorpal/CxVorpal";
 import { constants } from "../utils/common/constants";
 
 const vorpalDir = "CxVorpal";

@@ -1,4 +1,4 @@
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scan/CxScan";
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { AstResult } from "../../models/results";

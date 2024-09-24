@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/results/CxResult";
 import {
   GroupBy,
   constants
@@ -9,7 +9,7 @@ import { TreeItem } from "../../utils/tree/treeItem";
 import { messages } from "../../utils/common/messages";
 import { orderResults } from "../../utils/utils";
 import { ResultsProvider } from "../resultsProviders";
-import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
+import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper-runtime-cli/dist/main/scaRealtime/CxScaRealTimeErrors";
 
 export class SCAResultsProvider extends ResultsProvider {
   public process;
