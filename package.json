@@ -882,7 +882,7 @@
         }
       },
       {
-        "title": "Activate ASCA Real-time Scanning",
+        "title": "Activate ASCA",
         "id": "asca",
         "order": 2,
         "properties": {
