@@ -1,17 +1,16 @@
 # CHANGELOG
 
-## [v2.20.1-2.20.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-prerelease.0) - 2024-09-18 08:11:28
+## [v2.20.1-2.20.0-asca.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-asca.0) - 2024-09-24 08:50:40
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Changelog and prereleases should appear in vscode (AST-66013) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/952
-### Other Changes
-* Itay feature: Show SCS results include group by and Filter and Vulnerability Tab (AST-63908) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/946
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.20.0...v2.20.1-2.20.0-prerelease.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.20.1-2.20.0-prerelease.0...v2.20.1-2.20.0-asca.0
+
+## [v2.20.1-2.20.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-prerelease.0) - 2024-09-18 08:11:28
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.20.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.0) - 2024-09-16 12:38:10
 
