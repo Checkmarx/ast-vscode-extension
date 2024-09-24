@@ -9,7 +9,7 @@ import { getFromState, updateState } from "../common/globalState";
 import { cx } from "../../cx";
 import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
 import { messages } from "../common/messages";
-import { VorpalCommand } from "../../commands/vorpalCommand";
+import { AscaCommand } from "../../commands/ascaCommand";
 
 export async function getBranchListener(
   context: vscode.ExtensionContext,
@@ -169,7 +169,7 @@ export async function gitExtensionListener(
 export async function executeCheckSettingsChange(
   kicsStatusBarItem: vscode.StatusBarItem,
   logs: Logs,
-  vorpalCommand: VorpalCommand
+  ascaCommand: AscaCommand
 ) {
   vscode.workspace.onDidChangeConfiguration(async (event) => {
     vscode.commands.executeCommand(
@@ -190,14 +190,14 @@ export async function executeCheckSettingsChange(
         ? messages.kicsStatusBarConnect
         : messages.kicsStatusBarDisconnect;
     await vscode.commands.executeCommand(commands.refreshTree);
-    const vorpalEffected = event.affectsConfiguration(
-      `${constants.CheckmarxVorpal}.${constants.ActivateVorpalAutoScanning}`
+    const ascaEffected = event.affectsConfiguration(
+      `${constants.CheckmarxAsca}.${constants.ActivateAscaAutoScanning}`
     );
     const apikeyEffected = event.affectsConfiguration(
       "checkmarxOne.apiKey"
     );
-    if (vorpalEffected || apikeyEffected) {
-      await vorpalCommand.registerVorpal();
+    if (ascaEffected || apikeyEffected) {
+      await ascaCommand.registerAsca();
     }
   });
 }
