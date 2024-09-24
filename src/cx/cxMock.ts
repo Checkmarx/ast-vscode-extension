@@ -7,7 +7,7 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 
 export class CxMock implements CxPlatform {
@@ -1169,11 +1169,11 @@ export class CxMock implements CxPlatform {
     show ? statusBarItem.show() : statusBarItem.hide();
   }
 
-  installVorpal(): Promise<CxVorpal> {
+  installAsca(): Promise<CxAsca> {
     return null;
   }
 
-  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
-    return new CxVorpal();
+  async scanAsca(sourcePath: string): Promise<CxAsca> {
+    return new CxAsca();
   }
 }

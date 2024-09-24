@@ -145,14 +145,14 @@ export const constants = {
   // TRIAGE
   triageUpdate: "ast-result-triage",
 
-  // Vorpal engine
-  errorInstallation: "Failed to run vorpal engine",
-  errorScanVorpal: "failed to handle vorpal scan",
-  vorpalStart: "Vorpal engine started",
-  vorpalDisabled: "Vorpal Real-time Scanning is disabled now.",
-  vorpalEngineName: "Vorpal",
-  ActivateVorpalAutoScanning: "Activate Vorpal Real-time Scanning",
-  CheckmarxVorpal: "CheckmarxVorpal",
+  // ASCA engine
+  errorInstallation: "Failed to run ASCA engine",
+  errorScanAsca: "failed to handle ASCA scan",
+  ascaStart: "Secure Coding Engine started",
+  ascaDisabled: "Secure Coding Real-time Scanning is disabled now.",
+  ascaEngineName: "ASCA",
+  ActivateAscaAutoScanning: "Activate Real-time Scanning",
+  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant",
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

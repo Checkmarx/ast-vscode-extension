@@ -882,11 +882,11 @@
         }
       },
       {
-        "title": "Activate Vorpal Real-time Scanning",
-        "id": "vorpal",
+        "title": "Activate ASCA Real-time Scanning",
+        "id": "asca",
         "order": 2,
         "properties": {
-          "CheckmarxVorpal.Activate Vorpal Real-time Scanning": {
+          "Checkmarx AI Secure Coding Assistant.Activate Real-time Scanning": {
             "type": "boolean",
             "order": 3,
             "default": false,
@@ -916,8 +916,8 @@
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.2.0",
     "chai": "4.3.1",
-    "eslint-config-prettier": "^9.1.0",
     "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
     "mocha": "10.3.0",
     "typescript": "^5.5.3",
     "vsce": "^2.15.0",
@@ -927,7 +927,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.113",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.114",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",

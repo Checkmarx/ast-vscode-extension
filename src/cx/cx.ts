@@ -15,7 +15,7 @@ import { CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { messages } from "../utils/common/messages";
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
@@ -418,38 +418,38 @@ export class Cx implements CxPlatform {
 		statusBarItem.text = text;
 		show ? statusBarItem.show() : statusBarItem.hide();
 	}
-	async installVorpal(): Promise<CxVorpal> {
+	async installAsca(): Promise<CxAsca> {
 		let config = this.getAstConfiguration();
 		if (!config) {
 		  config = new CxConfig();
 		}
 		const cx = new CxWrapper(config);
-		const scans = await cx.scanVorpal(null, true, constants.vsCodeAgent);
+		const scans = await cx.scanAsca(null, true, constants.vsCodeAgent);
 		if (scans.payload && scans.exitCode === 0) {
 		  return scans.payload[0];
 		} else {
-		  return this.getVorpalError(scans.status, "Failed to run vorpal engine");
+		  return this.getAscaError(scans.status, "Failed to run ASCA engine");
 		}
 	  }
 	
-	private getVorpalError(scanStatus: string, errorMessage: string) {
+	private getAscaError(scanStatus: string, errorMessage: string) {
 		console.error(errorMessage);
-		const errorRes = new CxVorpal();
+		const errorRes = new CxAsca();
 		errorRes.error = scanStatus;
 		return errorRes;
 	}
 
-	  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
+	  async scanAsca(sourcePath: string): Promise<CxAsca> {
 		let config = this.getAstConfiguration();
 		if (!config) {
 		  config = new CxConfig();
 		}
 		const cx = new CxWrapper(config);
-		const scans = await cx.scanVorpal(sourcePath, false, constants.vsCodeAgent);
+		const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent);
 		if (scans.payload && scans.exitCode === 0) {
 		  return scans.payload[0];
 		} else {
-		  return this.getVorpalError(scans.status, "Fail to call vorpal scan");
+		  return this.getAscaError(scans.status, "Fail to call ASCA scan");
 		}
 	  }
 	}

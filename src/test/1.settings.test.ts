@@ -67,24 +67,24 @@ describe("Extension settings tests", () => {
     expect(enablement).to.equal(true);
   });
 
-  it("verify vorpal checkbox exists in the settings", async function () {
+  it("verify ASCA checkbox exists in the settings", async function () {
     settingsEditor = await bench.openSettings();
-    const vorpalCheckbox = await settingsEditor.findSetting(
-      constants.ActivateVorpalAutoScanning,
-      constants.CheckmarxVorpal
+    const ascaCheckbox = await settingsEditor.findSetting(
+      constants.ActivateAscaAutoScanning,
+      constants.CheckmarxAsca
     );
-    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
-    expect(vorpalCheckboxValue).to.not.be.undefined;
+    let ascaCheckboxValue = await ascaCheckbox.getValue();
+    expect(ascaCheckboxValue).to.not.be.undefined;
   });
 
-  it("vorpal starts when the Vorpal checkbox is True in settings", async function () {
+  it("ASCA starts when the ASCA checkbox is True in settings", async function () {
     settingsEditor = await bench.openSettings();
-    const vorpalCheckbox = await settingsEditor.findSetting(
-      constants.ActivateVorpalAutoScanning,
-      constants.CheckmarxVorpal
+    const ascaCheckbox = await settingsEditor.findSetting(
+      constants.ActivateAscaAutoScanning,
+      constants.CheckmarxAsca
     );
-    await vorpalCheckbox.setValue(true);
-    let vorpalCheckboxValue = await vorpalCheckbox.getValue();
-    expect(vorpalCheckboxValue).to.be.true;
+    await ascaCheckbox.setValue(true);
+    let ascaCheckboxValue = await ascaCheckbox.getValue();
+    expect(ascaCheckboxValue).to.be.true;
   });
 });
