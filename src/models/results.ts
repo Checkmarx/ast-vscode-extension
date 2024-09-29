@@ -81,6 +81,8 @@ export class AstResult extends CxResult {
       ? result.data.queryName
       : result.data.ruleName
       ? result.data.ruleName
+      : this.formatFilenameLine(result)
+      ? this.formatFilenameLine(result)
       : result.id
       ? result.id
       : result.vulnerabilityDetails.cveName;
@@ -107,6 +109,14 @@ export class AstResult extends CxResult {
     if (result.type === constants.scsSecretDetection) {
       this.scsNode = result;
     }
+  }
+
+  formatFilenameLine(result: {
+    data: { line: number; filename: string };
+  }): string {
+    const filename = result.data.filename.split("/").pop();
+    const line = result.data.line;
+    return `(/${filename}:${line})`;
   }
 
   handleFileNameAndLine(result: any): void {
