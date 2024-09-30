@@ -1,21 +1,16 @@
 # CHANGELOG
 
+## [v2.21.1-v2.21.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.21.1-v2.21.0-prerelease.0) - 2024-09-25 07:10:50
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.21.0...v2.21.1-v2.21.0-prerelease.0
+
 ## [v2.21.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.21.0) - 2024-09-25 07:09:55
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.21.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Changelog and prereleases should appear in vscode (AST-66013) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/952
-### Other Changes
-* Itay feature: Show SCS results include group by and Filter and Vulnerability Tab (AST-63908) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/946
-* Update Vorpal Name to ASCA(AST-65647) by @miryamfoiferCX in https://github.com/Checkmarx/ast-vscode-extension/pull/955
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/958
-
-## New Contributors
-* @miryamfoiferCX made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/955
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.20.0...v2.21.0
 
 ## [v2.20.1-2.20.0-asca.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-asca.0) - 2024-09-24 08:50:40
 
