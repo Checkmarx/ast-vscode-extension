@@ -126,7 +126,7 @@ export class AstResult extends CxResult {
         result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
       })`;
     } else if (result.data.fileName) {
-      //Relevant for scs  , because this engine  have the filename inside result.data
+      //Relevant for scs  , because this engine  have the filename inside  result.data
       this.fileName = result.data.fileName;
       const shortFilename =
         this.fileName && this.fileName.includes("/")
