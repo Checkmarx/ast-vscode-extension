@@ -112,11 +112,13 @@ export class AstResult extends CxResult {
   }
 
   formatFilenameLine(result: {
-    data: { line: number; filename: string };
+    data?: { line?: number; filename?: string };
   }): string {
-    const filename = result.data.filename.split("/").pop();
-    const line = result.data.line;
-    return `(/${filename}:${line})`;
+    const filename = result.data?.filename?.split("/").pop();
+    const line = result.data?.line;
+    if (filename && line !== undefined) {
+      return `(/${filename}:${line})`;
+    }
   }
 
   handleFileNameAndLine(result: any): void {
