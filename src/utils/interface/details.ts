@@ -186,7 +186,7 @@ export class Details {
     const ruleDescription = this.result.data?.ruleDescription;
 
     if (!ruleDescription) {
-      return "";
+      return `<div>${messages.noDescriptionTab}</div>`;
     }
 
     return `
