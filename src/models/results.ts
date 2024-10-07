@@ -34,7 +34,7 @@ export class AstResult extends CxResult {
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
-  scsNode: SCSSecretDetectionNode | undefined;
+  secretDetectionNode: SCSSecretDetectionNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
   declare vulnerabilityDetails: CxVulnerabilityDetails;
@@ -107,7 +107,7 @@ export class AstResult extends CxResult {
       this.kicsNode = result;
     }
     if (result.type === constants.scsSecretDetection) {
-      this.scsNode = result;
+      this.secretDetectionNode = result;
     }
   }
 
@@ -159,7 +159,7 @@ export class AstResult extends CxResult {
       return result.label;
     }
     if (result.type === constants.scsSecretDetection) {
-      return constants.scs;
+      return constants.secretDetection;
     }
     return undefined;
   }

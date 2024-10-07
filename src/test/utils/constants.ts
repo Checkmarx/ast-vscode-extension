@@ -63,7 +63,7 @@ export const SCAN_KEY_TREE_LABEL = "Scan";
 export const BRANCH_KEY_TREE = "Branch:  ";
 
 export const SAST_TYPE = "sast";
-export const SCS_Type = "scs";
+export const SCS_SECRET_DETECTION_Type = "secret detection";
 
 export const WEBVIEW_TITLE = "cx_title";
 export const CODEBASHING_HEADER = "cx_header_codebashing";

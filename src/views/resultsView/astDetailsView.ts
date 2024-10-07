@@ -335,8 +335,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
               : this.result.type === constants.scsSecretDetection
               ? html.tab(
                   html.generalTab(cxPath),
-                  html.scsDetailsDescriptionTab(),
-                  html.scsDetailsRemediationTab(),
+                  html.secretDetectionDetailsDescriptionTab(),
+                  html.secretDetectionDetailsRemediationTab(),
                   messages.generalTab,
                   messages.descriptionTab,
                   messages.remediationExamplesTab,

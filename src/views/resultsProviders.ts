@@ -57,7 +57,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       return result.label;
     }
     if (result.type === constants.scsSecretDetection) {
-      return constants.scs;
+      return constants.secretDetection;
     }
     return undefined;
   }

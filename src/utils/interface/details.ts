@@ -168,7 +168,7 @@ export class Details {
 			`;
   }
 
-  scsDetailsRemediationTab() {
+  secretDetectionDetailsRemediationTab() {
     const remediation = this.result.data?.remediation;
 
     if (!remediation) {
@@ -182,7 +182,7 @@ export class Details {
 	`;
   }
 
-  scsDetailsDescriptionTab() {
+  secretDetectionDetailsDescriptionTab() {
     const ruleDescription = this.result.data?.ruleDescription;
 
     if (!ruleDescription) {
