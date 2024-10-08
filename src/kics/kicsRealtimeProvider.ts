@@ -296,9 +296,10 @@ export class KicsProvider {
   async createKicsScan(file: string | undefined) {
     let results;
     try {
-      const additionalParams = vscode.workspace
+      let additionalParams = vscode.workspace
         .getConfiguration("CheckmarxKICS")
         .get("Additional Parameters") as string;
+        additionalParams = additionalParams.replace(/\s+/g, ",");
       if (file) {
         results = await cx.getResultsRealtime(file, additionalParams);
       } else {
