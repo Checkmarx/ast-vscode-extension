@@ -11,6 +11,6 @@ export class SCSSecretDetectionNode {
     public fileName: string,
     public line: number,
     public ruleDescription: string,
-    public remediationAdditional: string
+    public remediation: string
   ) {}
 }

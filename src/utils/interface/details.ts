@@ -168,21 +168,21 @@ export class Details {
 			`;
   }
 
-  scsDetailsRemediationTab() {
-    const remediationAdditional = this.result.data?.remediationAdditional;
+  secretDetectionDetailsRemediationTab() {
+    const remediation = this.result.data?.remediation;
 
-    if (!remediationAdditional) {
+    if (!remediation) {
       return `<div>${messages.noRemediationExamplesTab}</div>`;
     }
 
     return `
 	  <div>
-		${remediationAdditional ? `<p>${remediationAdditional}</p>` : ""}
+		${remediation ? `<p>${remediation}</p>` : ""}
 	  </div>
 	`;
   }
 
-  scsDetailsDescriptionTab() {
+  secretDetectionDetailsDescriptionTab() {
     const ruleDescription = this.result.data?.ruleDescription;
 
     if (!ruleDescription) {

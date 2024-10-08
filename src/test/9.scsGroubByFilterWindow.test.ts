@@ -23,7 +23,7 @@ import {
   GENERAL_LABEL,
   LEARN_MORE_LABEL,
   SCAN_KEY_TREE_LABEL,
-  SCS_Type,
+  SCS_SECRET_DETECTION_Type,
   CX_GROUP_STATUS,
   CX_GROUP_STATE,
   CX_GROUP_FILE,
@@ -46,7 +46,7 @@ import {
 } from "./utils/constants";
 import { SCAN_ID, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
-describe("Get SCS results and checking GroupBy , Filter and Open details window", () => {
+describe("Get secret detection results and checking GroupBy , Filter and Open details window", () => {
   let bench: Workbench;
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
@@ -63,7 +63,7 @@ describe("Get SCS results and checking GroupBy , Filter and Open details window"
     await new EditorView().closeAllEditors();
   });
 
-  it("should clear groub by for scs and open details window ", async function () {
+  it("should clear groub by for scs secret detection and open details window ", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -139,18 +139,22 @@ describe("Get SCS results and checking GroupBy , Filter and Open details window"
     await input.confirm();
   });
 
-  it("SCS tree with GroupBy command ", async function () {
+  it("secret detection tree with GroupBy command ", async function () {
     treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
 
-    let scsnode = await scan?.findChildItem(SCS_Type);
-    if (scsnode === undefined) {
-      scsnode = await scan?.findChildItem(SCS_Type);
+    let secretDetectionNode = await scan?.findChildItem(
+      SCS_SECRET_DETECTION_Type
+    );
+    if (secretDetectionNode === undefined) {
+      secretDetectionNode = await scan?.findChildItem(
+        SCS_SECRET_DETECTION_Type
+      );
     }
-    await clickFirstVulnerability(scsnode);
+    await clickFirstVulnerability(secretDetectionNode);
 
     const commands = [
       CX_GROUP_FILE,
@@ -168,7 +172,7 @@ describe("Get SCS results and checking GroupBy , Filter and Open details window"
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it("SCS tree with Filter command", async function () {
+  it("Secret detection tree with Filter command", async function () {
     await initialize();
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
