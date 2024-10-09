@@ -79,8 +79,6 @@ export class AstResult extends CxResult {
     this.scaType = result.scaType;
     this.label = result.data.queryName
       ? result.data.queryName
-      : result.data.ruleName
-      ? result.data.ruleName
       : this.formatFilenameLine(result)
       ? this.formatFilenameLine(result)
       : result.id
@@ -112,12 +110,13 @@ export class AstResult extends CxResult {
   }
 
   formatFilenameLine(result: {
-    data?: { line?: number; filename?: string };
+    data?: { line?: number; filename?: string; ruleName?: string };
   }): string {
     const filename = result.data?.filename?.split("/").pop();
     const line = result.data?.line;
-    if (filename && line !== undefined) {
-      return `(/${filename}:${line})`;
+    const ruleName = result.data?.ruleName;
+    if (ruleName && filename && line !== undefined) {
+      return `${ruleName} (/${filename}:${line})`;
     }
   }
 
