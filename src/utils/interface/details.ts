@@ -107,6 +107,14 @@ export class Details {
 			</body>`;
   }
 
+  secretDetectiongeneralTab() {
+    return `<body>
+				<span>
+					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
+				</span>
+				</body>`;
+  }
+
   scaView(
     severityPath,
     scaAtackVector,
@@ -177,7 +185,7 @@ export class Details {
 
     return `
 	  <div>
-		${remediation ? `<p>${remediation}</p>` : ""}
+		${remediation ? `<p>${remediation}.</p>` : ""}
 	  </div>
 	`;
   }
