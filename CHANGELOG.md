@@ -1,18 +1,22 @@
 # CHANGELOG
 
+## [v2.23.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.23.0) - 2024-10-09 08:54:36
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.23.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Enhance format additional parameters by replacing spaces with commas (AST-65670) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/971
+### Other Changes
+* Other/fix secret detection label with path and line(AST-69045) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/972
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/973
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.22.0...v2.23.0
+
 ## [v2.22.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.22.0) - 2024-10-08 12:20:06
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.22.0 -->
-
-## What's Changed
-### Other Changes
-* Fixing scs full integration when ast-result response not updated yet (AST-69045) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/963
-* Change scs name and use remediation instead remediation additional (AST-69045) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/966
-* update-js wrapper version by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/967
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/970
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.21.0...v2.22.0
 
 ## [v2.21.1-v2.21.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.21.1-v2.21.0-prerelease.0) - 2024-09-25 07:10:50
 
