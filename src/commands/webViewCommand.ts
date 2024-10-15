@@ -99,6 +99,7 @@ export class WebViewCommand {
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
         await this.loadAsyncTabsContent(result);
 
+        // The event is intended for loading data to the results of SAST, when returning to the plugin tab from another tab
         this.detailsPanel.onDidChangeViewState(async (e) => {
           if (e.webviewPanel.visible) {
             await this.loadAsyncTabsContent(result);
