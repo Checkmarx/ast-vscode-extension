@@ -99,8 +99,8 @@ export class WebViewCommand {
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
         await this.loadAsyncTabsContent(result);
 
-        vscode.window.onDidChangeActiveTextEditor(async (editor) => {
-          if (!editor) {
+        this.detailsPanel.onDidChangeViewState(async (e) => {
+          if (e.webviewPanel.visible) {
             await this.loadAsyncTabsContent(result);
           }
         });
