@@ -1,18 +1,22 @@
 # CHANGELOG
 
-## [v2.23.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.23.0) - 2024-10-09 08:54:36
+## [v2.24.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.24.0) - 2024-10-21 09:28:00
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.23.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.24.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* Enhance format additional parameters by replacing spaces with commas (AST-65670) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/971
+* Fix sast tabs stuck when edit code (AST-70036) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/975
 ### Other Changes
-* Other/fix secret detection label with path and line(AST-69045) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/972
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/973
+* update version by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/981
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/983
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.22.0...v2.23.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.23.0...v2.24.0
+
+## [v2.23.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.23.0) - 2024-10-09 08:54:36
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.23.0 -->
 
 ## [v2.22.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.22.0) - 2024-10-08 12:20:06
 
