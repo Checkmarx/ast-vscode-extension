@@ -185,7 +185,7 @@ export class Details {
 
     return `
 	  <div>
-		${remediation ? `<p>${remediation}.</p>` : ""}
+		${remediation ? `<p>${remediation}</p>` : ""}
 	  </div>
 	`;
   }
