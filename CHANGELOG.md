@@ -1,17 +1,16 @@
 # CHANGELOG
 
+## [v2.25.1-v2.21.2-v2.21.1-upgradeNode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.1-v2.21.2-v2.21.1-upgradeNode.0) - 2024-11-05 10:53:09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.25.0...v2.25.1-v2.21.2-v2.21.1-upgradeNode.0
+
 ## [v2.25.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.0) - 2024-11-05 10:52:12
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.25.0 -->
-
-## What's Changed
-### Other Changes
-* Remove dot in RemediationTab (AST-73321) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/994
-* Update js wrapper version to 0.0.117 - CLI 2.3.3 by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/996
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/999
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.24.0...v2.25.0
 
 ## [v2.24.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.24.0) - 2024-10-21 09:28:00
 
