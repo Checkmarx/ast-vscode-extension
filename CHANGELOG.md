@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v2.26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.0) - 2024-11-19 13:31:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.26.0 -->
+
+## What's Changed
+### Other Changes
+* Update Type Script version ( AST-72890) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1001
+* Update js wrapper version to 0.0.118 - CLI 2.3.5 by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1004
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1005
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.25.0...v2.26.0
+
 ## [v2.25.1-v2.21.2-v2.21.1-upgradeNode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.1-v2.21.2-v2.21.1-upgradeNode.0) - 2024-11-05 10:53:09
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
