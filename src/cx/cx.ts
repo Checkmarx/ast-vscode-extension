@@ -253,7 +253,8 @@ export class Cx implements CxPlatform {
 		try {
 			enabled = await cx.ideScansEnabled();
 		} catch (error) {
-			logs.error(error);
+			const errMsg = `Error checking tenant configuration: ${error}`;
+            logs.error(errMsg);
 			return enabled;
 		}
 		return enabled;

@@ -179,7 +179,7 @@ export async function executeCheckSettingsChange(
     );
     vscode.commands.executeCommand(
       commands.setContext,
-      commands.isValidCredentials,
+      commands.isScanEnabled,
       await cx.isScanEnabled(logs)
     );
     const onSave = vscode.workspace
