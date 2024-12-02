@@ -455,13 +455,8 @@ export class Cx implements CxPlatform {
 	  }
 	  
 	  async authValidate(logs: Logs): Promise<boolean> {
-		const invalidAPIKeyMsg = "Provided Checkmarx One API KEY is invalid";
-		const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
-		if (!apiKey) {
-		  return false;
-		}
-		const config = new CxConfig();
-		config.apiKey = apiKey;
+		const invalidAPIKeyMsg = "Failed to authenticate to Checkmarx One server";
+		const config = this.getAstConfiguration();
 		const cx = new CxWrapper(config);
 		try {
 		  const valid = await cx.authValidate();
@@ -470,11 +465,12 @@ export class Cx implements CxPlatform {
 			return true;
 		  }
 		  else{
+			logs.error(`${invalidAPIKeyMsg}: ${valid.status}`);
 			vscode.window.showErrorMessage(invalidAPIKeyMsg);
 			return false;
 		  }
 		} catch (error) {
-			logs.error(error);
+			logs.error(`${invalidAPIKeyMsg}: ${error}`);
 			vscode.window.showErrorMessage(invalidAPIKeyMsg);
 			return false;
 		}
