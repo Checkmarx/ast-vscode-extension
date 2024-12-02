@@ -16,7 +16,7 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
-import { messages } from "../utils/common/messages";
+
 export class Cx implements CxPlatform {
 	async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
 		const cx = new CxWrapper(this.getBaseAstConfiguration());
@@ -254,7 +254,6 @@ export class Cx implements CxPlatform {
 			enabled = await cx.ideScansEnabled();
 		} catch (error) {
 			const errMsg = `Error checking tenant configuration: ${error}`;
-			vscode.window.showErrorMessage("Provided Checkmarx One API KEY is invalid");
             logs.error(errMsg);
 			return enabled;
 		}
@@ -454,5 +453,32 @@ export class Cx implements CxPlatform {
 		  return this.getAscaError(scans.status, "Fail to call ASCA scan");
 		}
 	  }
+	  
+	  async authValidate(logs: Logs): Promise<boolean> {
+		const invalidAPIKeyMsg = "Provided Checkmarx One API KEY is invalid";
+		const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+		if (!apiKey) {
+		  return false;
+		}
+		const config = new CxConfig();
+		config.apiKey = apiKey;
+		const cx = new CxWrapper(config);
+		try {
+		  const valid = await cx.authValidate();
+		  if (valid.exitCode === 0) {
+			vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
+			return true;
+		  }
+		  else{
+			vscode.window.showErrorMessage(invalidAPIKeyMsg);
+			return false;
+		  }
+		} catch (error) {
+			logs.error(error);
+			vscode.window.showErrorMessage(invalidAPIKeyMsg);
+			return false;
+		}
 	}
+	
+}
 	
