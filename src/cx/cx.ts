@@ -254,6 +254,7 @@ export class Cx implements CxPlatform {
 			enabled = await cx.ideScansEnabled();
 		} catch (error) {
 			const errMsg = `Error checking tenant configuration: ${error}`;
+			vscode.window.showErrorMessage("Provided Checkmarx One API KEY is invalid");
             logs.error(errMsg);
 			return enabled;
 		}
