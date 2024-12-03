@@ -927,7 +927,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.119",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.120",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
