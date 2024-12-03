@@ -1176,4 +1176,8 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
+  
+  async authValidate(): Promise<boolean> {
+    return true;
+  }
 }

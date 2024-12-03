@@ -188,5 +188,7 @@ export interface CxPlatform {
    * @param sourcePath the edited file sent to the ASCA engine
    */
   scanAsca(sourcePath: string): Promise<CxAsca>;
+  
+  authValidate(logs: Logs): Promise<boolean>;
 }
 
