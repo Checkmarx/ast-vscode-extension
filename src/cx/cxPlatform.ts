@@ -18,6 +18,8 @@ export interface CxPlatform {
 		 * @return List of sca results.
 	*/
 	scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined>;
+	
+	getProjectListWithParams(params: string): Promise<CxProject[] | undefined>;
 
 	/**
 		 * Creates a scan in cx one platform

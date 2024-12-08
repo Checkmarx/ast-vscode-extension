@@ -175,11 +175,30 @@ export class Cx implements CxPlatform {
             return [];
         }
         const cx = new CxWrapper(config);
-        const projects = await cx.projectList("limit=10000");
+        const projects = await cx.projectList("limit=20");
 
         if (projects.payload) {
             r = projects.payload;
         } else {
+            throw new Error(projects.status);
+        }
+        return r;
+    }
+
+    async getProjectListWithParams(params: string): Promise<CxProject[] | undefined> {
+        let r = [];
+        const config = this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const projects = await cx.projectList(params);
+
+        if (projects.payload) {
+            r = projects.payload;
+        } else if (projects.exitCode===0){
+            return r;
+        }else {
             throw new Error(projects.status);
         }
         return r;
@@ -212,7 +231,7 @@ export class Cx implements CxPlatform {
         if (!config) {
             return [];
         }
-        const filter = `project-id=${projectId},branch=${branch},limit=10000,statuses=Completed`;
+        const filter = `project-id=${projectId},branch=${branch},limit=20,statuses=Completed`;
         const cx = new CxWrapper(config);
         const scans = await cx.scanList(filter);
         if (scans.payload) {
