@@ -13,6 +13,7 @@ import { getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
+import { setScanButtonDefaultIfScanIsNotRunning } from "../../utils/listener/listeners";
 
 export async function pollForScanResult(
   context: vscode.ExtensionContext,
@@ -153,8 +154,12 @@ export async function createScan(
   }
 
   updateStatusBarItem(constants.scanCreatePreparing, true, statusBarItem);
-  await createScanForProject(context, logs);
-
+  try {
+    await createScanForProject(context, logs);
+  } catch (error) {
+      setScanButtonDefaultIfScanIsNotRunning(context);
+    throw error;
+  }
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
   updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
 
