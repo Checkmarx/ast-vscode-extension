@@ -20,7 +20,7 @@ export async function projectPicker(
   quickPick.items = await getProjectsPickItems(logs, context);
   quickPick.onDidChangeValue(async (value) => {
     try{
-      const params = `limit=${pageSize},offset=${currentPage},name=${value}`;
+      const params = `name=${value}`;
       quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
     }
     catch (error) {
