@@ -1,22 +1,16 @@
 import * as vscode from "vscode";
-import { Logs } from "../../models/logs";
-import {
-  PROGRESS_HEADER,
-  getProperty,
-  getScanLabel,
-  getFormattedDateTime,
-  getFormattedId,
-  formatLabel
-} from "../utils";
-import { commands } from "../common/commands";
-import {
-  constants
-} from "../common/constants";
-import { getFromState, updateState, updateStateError } from "../common/globalState";
-import { CxQuickPickItem } from "./multiStepUtils";
-import { messages } from "../common/messages";
-import { cx } from "../../cx";
-// label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
+import {Logs} from "../../models/logs";
+import {formatLabel, getFormattedDateTime, getFormattedId, getProperty, getScanLabel, PROGRESS_HEADER} from "../utils";
+import {commands} from "../common/commands";
+import {constants} from "../common/constants";
+import {getFromState, updateState, updateStateError} from "../common/globalState";
+import {CxQuickPickItem} from "./multiStepUtils";
+import {messages} from "../common/messages";
+import {cx} from "../../cx";
+
+let currentPage = 0;
+const pageSize = 20;
+// label, function to search for projects/branchse, etc. override, onDidChange, "pre pick" function to return a bool
 export async function projectPicker(
   context: vscode.ExtensionContext,
   logs: Logs,
@@ -24,19 +18,40 @@ export async function projectPicker(
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = constants.projectPlaceholder;
   quickPick.items = await getProjectsPickItems(logs, context);
+  quickPick.onDidChangeValue(async (value) => {
+    try{
+      const params = `limit=${pageSize},offset=${currentPage},name=${value}`;
+      quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
+    }
+    catch (error) {
+      updateStateError(context, constants.errorMessage + error);
+      vscode.commands.executeCommand(commands.showError);
+    }
+  });
   quickPick.onDidChangeSelection(async ([item]) => {
-    updateState(context, constants.projectIdKey, {
-      id: item.id,
-      name: `${constants.projectLabel} ${item.label}`,
-      displayScanId: undefined,
-      scanDatetime: undefined
-    });
+    if (item.id === 'nextPage') {
+      currentPage++;
+      const params = `limit=${pageSize},offset=${pageSize*currentPage}`;
+      quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
+    } else if (item.id === 'previousPage') {
+      currentPage--;
+      const params = `limit=${pageSize},offset=${pageSize*currentPage}`;
+      quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
+    } else {
+        updateState(context, constants.projectIdKey, {
+          id: item.id,
+          name: `${constants.projectLabel} ${item.label}`,
+          displayScanId: undefined,
+          scanDatetime: undefined
+        });
+    
+    
     updateState(context, constants.branchIdKey, { id: undefined, name: constants.branchLabel, displayScanId: undefined, scanDatetime: undefined});
     updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined});
 
     await vscode.commands.executeCommand(commands.refreshTree);
     quickPick.hide();
-  });
+  }});
   quickPick.show();
 }
 
@@ -161,12 +176,13 @@ export async function getProjectsPickItems(
   logs: Logs,
   context: vscode.ExtensionContext
 ) {
-  return vscode.window.withProgress(
+  const items = await vscode.window.withProgress(
     PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingProjects });
       try {
+        currentPage = 0;
         const projectList = await cx.getProjectList();
         return projectList
           ? projectList.map((label) => ({
@@ -181,6 +197,60 @@ export async function getProjectsPickItems(
       }
     }
   );
+  if (currentPage > 0) {
+    items.unshift({
+      label: '$(arrow-left) Previous Page',
+      id: 'previousPage',
+    });
+  }
+
+  items.push({
+    label: '$(arrow-right) Next Page',
+    id: 'nextPage',
+  });
+  return items;
+}
+
+export async function getProjectsPickItemsWithParams(
+  params: string,
+  logs: Logs,
+  context: vscode.ExtensionContext
+) {
+  const items = await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+        currentPage = 0;
+      });
+      progress.report({ message: messages.loadingProjects });
+      try {
+        const projectList = await cx.getProjectListWithParams(params);
+        return projectList
+          ? projectList.map((label?) => ({
+            label: label.name,
+            id: label.id,
+          }))
+          : [];
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
+  );
+  if (currentPage > 0) {
+    items.unshift({
+      label: '$(arrow-left) Previous Page',
+      id: 'previousPage',
+    });
+  }
+
+  items.push({
+    label: '$(arrow-right) Next Page',
+    id: 'nextPage',
+  });
+  return items;
 }
 
 export async function getScansPickItems(
