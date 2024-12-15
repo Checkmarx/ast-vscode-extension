@@ -10,11 +10,13 @@ import {cx} from "../../cx";
 
 let currentPage = 0;
 const pageSize = 20;
+
 // label, function to search for projects/branchse, etc. override, onDidChange, "pre pick" function to return a bool
 export async function projectPicker(
   context: vscode.ExtensionContext,
   logs: Logs,
 ) {
+  const projectCache = new Map<number, CxQuickPickItem[]>();
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = constants.projectPlaceholder;
   quickPick.items = await getProjectsPickItems(logs, context);
@@ -31,12 +33,28 @@ export async function projectPicker(
   quickPick.onDidChangeSelection(async ([item]) => {
     if (item.id === 'nextPage') {
       currentPage++;
-      const params = `limit=${pageSize},offset=${pageSize*currentPage}`;
-      quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
+      if (projectCache.has(currentPage)) {
+        // Use cached items
+        quickPick.items = projectCache.get(currentPage)!;
+      } else {
+        // Fetch new items and cache them
+        const params = `limit=${pageSize},offset=${pageSize * currentPage}`;
+        const items = await getProjectsPickItemsWithParams(params, logs, context);
+        projectCache.set(currentPage, items);
+        quickPick.items = items;
+      }
     } else if (item.id === 'previousPage') {
       currentPage--;
-      const params = `limit=${pageSize},offset=${pageSize*currentPage}`;
-      quickPick.items = await getProjectsPickItemsWithParams(params, logs, context);
+      if (projectCache.has(currentPage)) {
+        // Use cached items
+        quickPick.items = projectCache.get(currentPage)!;
+      } else {
+        // Fetch new items and cache them
+        const params = `limit=${pageSize},offset=${pageSize * currentPage}`;
+        const items = await getProjectsPickItemsWithParams(params, logs, context);
+        projectCache.set(currentPage, items);
+        quickPick.items = items;
+      }
     } else {
         updateState(context, constants.projectIdKey, {
           id: item.id,
