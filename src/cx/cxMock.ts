@@ -1053,6 +1053,11 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
+  async getProjectListWithParams(prefix: string): Promise<CxProject[] | undefined> {
+    console.log(`Filtering projects by prefix: ${prefix}`);
+    return this.getProjectList();
+  }
+
   async triageShow() {
     return [];
   }
