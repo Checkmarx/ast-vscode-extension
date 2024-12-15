@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* VSCode | Fix UI Freezing and Unclickable Icons (AST-70028) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1006
+### Other Changes
+* upgrade js wrapper to 0.0.120 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1007
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1008
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.26.0...v2.27.0
+
+## [v2.26.1-fix-unclickable.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.1-fix-unclickable.0) - 2024-12-03 10:19:21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.0) - 2024-11-19 13:31:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.26.0 -->
+
 ## [v2.25.1-v2.21.2-v2.21.1-upgradeNode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.1-v2.21.2-v2.21.1-upgradeNode.0) - 2024-11-05 10:53:09
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
