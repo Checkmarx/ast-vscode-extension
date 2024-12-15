@@ -9,7 +9,7 @@ import {
   constants
 } from "../../utils/common/constants";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getResultsJson, updateStatusBarItem } from "../../utils/utils";
+import { getGitAPIRepository, getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
@@ -52,6 +52,14 @@ async function createScanForProject(
   logs: Logs
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
+  if(scanBranch.id === constants.localBranch){
+    const gitApi = await getGitAPIRepository();
+    const gitBranchName = gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+    if (!gitBranchName) {
+      throw new Error("Branch name from git not found");
+    }
+    scanBranch.id = gitBranchName;
+  }
   const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
   const projectName = projectForScan.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
@@ -138,12 +146,15 @@ export async function createScan(
   updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
-  updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
-  if (!(await doesBranchMatch(context, logs))) {
-    updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
-    return;
+  if (getFromState(context, constants.branchIdKey).id !== constants.localBranch) {
+    updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
+    if (!(await doesBranchMatch(context, logs))) {
+      updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+      updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+      return;
+    }
   }
+  
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {

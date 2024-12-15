@@ -9,6 +9,7 @@ import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
+import { constants } from "../utils/common/constants";
 
 export class CxMock implements CxPlatform {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -991,7 +992,10 @@ export class CxMock implements CxPlatform {
     return ["main"];
   }
 
-  async getScans(): Promise<CxScan[] | undefined> {
+  async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+    if (branch === constants.localBranch) {
+      return [];
+    }
     return [
       {
         tags: {},

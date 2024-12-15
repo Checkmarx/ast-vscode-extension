@@ -29,6 +29,7 @@ export const constants = {
   branchIdKey: "ast-results-branch-id",
   branchName: "ast-results-branch-name",
   branchTempIdKey: "ast-results-temp-branch-id",
+  localBranch: "scan my local branch",
   kicsRealtime: "ast-results.kicsRealtime",
   projectLabel: "Project: ",
   projectPlaceholder: "Select project",
