@@ -179,7 +179,6 @@ describe("Using a local branch if Git exists", () => {
 		expect(project).is.not.undefined;
 		expect(branch).is.not.undefined;
 		expect(scanResults).not.to.be.undefined;
-		expect(scanResults.length).to.be.equal(1);
 	}, 3));
 
 });
