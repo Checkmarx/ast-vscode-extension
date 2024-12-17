@@ -164,7 +164,6 @@ describe("Using a local branch if Git exists", () => {
 		await bench.executeCommand("ast-results.createScan");
 
 		const firstNotification = waitForNotificationWithTimeout(5000)
-		console.log("firstNotification", firstNotification);
 		expect(firstNotification).is.not.undefined;
 
 	}, 3));
