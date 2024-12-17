@@ -1,5 +1,4 @@
 import {
-	By,
 	CustomTreeSection,
 	EditorView,
 	InputBox,
@@ -21,6 +20,7 @@ import {
 import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 import { constants } from "../utils/common/constants";
 import { execSync } from "child_process";
+import * as fs from "fs";
 
 
 function retryTest(testFn, retries = 3) {
@@ -91,6 +91,8 @@ describe("Using a local branch if Git exists", () => {
 	let bench: Workbench;
 	let treeScans: CustomTreeSection;
 	let driver: WebDriver;
+	let originalBranch: string | undefined;
+	let gitExistedBefore: boolean;
 
 	before(async function () {
 		this.timeout(300000);
@@ -99,7 +101,9 @@ describe("Using a local branch if Git exists", () => {
 		// check if git repository exists
 		try {
 			execSync("git status", { stdio: "ignore" });
+			originalBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
 		} catch (error) {
+			gitExistedBefore = false;
 			execSync("git init");
 			execSync("git commit --allow-empty -m 'Initial commit'");
 		}
@@ -112,6 +116,12 @@ describe("Using a local branch if Git exists", () => {
 
 
 	after(async function () {
+		if (gitExistedBefore && originalBranch) {
+			switchToBranch(originalBranch);
+		}
+		else if (!gitExistedBefore) {
+			await fs.promises.rm(".git", { recursive: true, force: true });
+		}
 		await new EditorView().closeAllEditors();
 		await bench.executeCommand(CX_CLEAR);
 
