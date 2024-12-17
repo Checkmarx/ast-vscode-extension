@@ -1,18 +1,24 @@
 # CHANGELOG
 
-## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* VSCode | Fix UI Freezing and Unclickable Icons (AST-70028) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1006
+* Enabling the button after create scan failure (AST-77386) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1010
+### New Features 🚀
+* Use a local branch to create a scan. (AST-75824) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1011
 ### Other Changes
-* upgrade js wrapper to 0.0.120 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1007
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1008
+* Update js wrapper version to 0.0.121 with CLI 2.3.7 by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1012
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1013
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.26.0...v2.27.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.27.0...v2.28.0
+
+## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
 
 ## [v2.26.1-fix-unclickable.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.1-fix-unclickable.0) - 2024-12-03 10:19:21
 
