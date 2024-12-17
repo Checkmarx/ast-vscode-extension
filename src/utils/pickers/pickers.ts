@@ -7,7 +7,7 @@ import {
   getFormattedDateTime,
   getFormattedId,
   formatLabel,
-  getGitAPIRepository
+  getGitBranchName
 } from "../utils";
 import { commands } from "../common/commands";
 import {
@@ -47,9 +47,7 @@ async function setDefaultBranch(
   logs: Logs,
 ) {
   try {
-    const gitApi = await getGitAPIRepository();
-    const gitBranchName = gitApi.repositories[0]?.state.HEAD?.name; // TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
-
+    const gitBranchName = await getGitBranchName();
     if (gitBranchName) {
       const branchList = await cx.getBranches(projectId);
       const branchName = branchList.includes(gitBranchName) ? gitBranchName : constants.localBranch;
@@ -172,8 +170,7 @@ export async function getBranchPickItems(
           }))
           : [];
 
-        const gitApi = await getGitAPIRepository();
-        const gitBranchName = gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+        const gitBranchName = await getGitBranchName();
         if (gitBranchName) {
           const localBranch = { label: constants.localBranch, id: constants.localBranch };
           branches = [localBranch, ...branches];

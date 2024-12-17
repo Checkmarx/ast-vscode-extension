@@ -142,6 +142,11 @@ export async function getGitAPIRepository() {
   return gitExtension.getAPI(1);
 }
 
+export async function getGitBranchName() {
+  const gitApi = await getGitAPIRepository();
+  return gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+}
+
 export async function getResultsJson() {
   const resultJsonPath = getResultsFilePath();
   if (fs.existsSync(resultJsonPath)) {

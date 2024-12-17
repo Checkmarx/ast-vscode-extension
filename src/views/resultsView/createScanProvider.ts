@@ -9,7 +9,7 @@ import {
   constants
 } from "../../utils/common/constants";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getGitAPIRepository, getResultsJson, updateStatusBarItem } from "../../utils/utils";
+import { getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
@@ -54,8 +54,7 @@ async function createScanForProject(
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
   if(scanBranch.id === constants.localBranch){
-    const gitApi = await getGitAPIRepository();
-    const gitBranchName = gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+    const gitBranchName = await getGitBranchName();
     if (!gitBranchName) {
       throw new Error("Branch name from git not found");
     }
