@@ -44,7 +44,7 @@ import {
   CX_GROUP_LANGUAGE,
   CX_GROUP_QUERY_NAME,
 } from "./utils/constants";
-import { SCAN_ID, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { SCAN_ID, CX_TEST_SCAN_PROJECT_NAME, CX_TEST_SCAN_BRANCH_NAME } from "./utils/envs";
 
 describe("Get secret detection results and checking GroupBy , Filter and Open details window", () => {
   let bench: Workbench;
@@ -108,6 +108,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await bench.executeCommand(CX_SELECT_BRANCH);
     let input = await InputBox.create();
     // Select from the pickers list
+    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
     await input.confirm();
