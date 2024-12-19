@@ -9,6 +9,7 @@ import { GitExtension } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import JSONStream from 'jsonstream-ts';
+import { Transform } from 'stream';
 
 
 
@@ -173,9 +174,18 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): Promi
 
     const results: CxResult[] = [];
     const stream = fs.createReadStream(resultJsonPath, { encoding: 'utf-8' });
-    const jsonStream = JSONStream.parse('results.*',undefined);
+
+    const transformStream = new Transform({
+      transform(chunk, encoding, callback) {
+        const transformed = chunk.toString().replace(/:([0-9]{15,}),/g, ':"$1",');
+        callback(null, transformed);
+      },
+    });
+
+    const jsonStream = JSONStream.parse('results.*', undefined);
 
     stream
+        .pipe(transformStream)
         .pipe(jsonStream)
         .on('data', (data) => {
           results.push(data);
