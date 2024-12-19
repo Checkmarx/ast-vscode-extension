@@ -51,7 +51,8 @@ export class AstResultsProvider extends ResultsProvider {
 
   async refreshData(): Promise<void> {
     this.showStatusBarItem(messages.commandRunning);
-    this.data = cx.getAstConfiguration() ? this.generateTree().children : [];
+    const treeItem = await this.generateTree();
+    this.data = cx.getAstConfiguration() ? treeItem.children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
@@ -71,7 +72,7 @@ export class AstResultsProvider extends ResultsProvider {
     }
   }
 
-  generateTree(): TreeItem {
+  async generateTree(): Promise<TreeItem> {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
     // createBaseItems
@@ -83,7 +84,7 @@ export class AstResultsProvider extends ResultsProvider {
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan) {
-        this.loadedResults = readResultsFromFile(resultJsonPath, this.scan);
+        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan);
       }
       // otherwise the results must be cleared
       else {
@@ -109,12 +110,12 @@ export class AstResultsProvider extends ResultsProvider {
       }
 
       const treeItem = this.groupBy(
-        this.loadedResults,
-        this.groupByCommand.activeGroupBy,
-        this.scan,
-        this.diagnosticCollection,
-        this.filterCommand.getAtiveSeverities(),
-        this.filterCommand.getActiveStates()
+          this.loadedResults,
+          this.groupByCommand.activeGroupBy,
+          this.scan,
+          this.diagnosticCollection,
+          this.filterCommand.getAtiveSeverities(),
+          this.filterCommand.getActiveStates()
       );
       treeItem.label = "Scan"; // `${constants.scanLabel}`;
 
