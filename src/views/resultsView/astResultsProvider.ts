@@ -84,7 +84,11 @@ export class AstResultsProvider extends ResultsProvider {
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan) {
-        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan);
+        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan)
+            .catch((error) => {
+              this.logs.error(`Error reading results: ${error.message}`);
+              return undefined;
+            });
       }
       // otherwise the results must be cleared
       else {
