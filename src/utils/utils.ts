@@ -8,7 +8,7 @@ import {
 import { GitExtension } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
-import JSONStream from 'JSONStream';
+import JSONStream from 'jsonstream-ts';
 
 
 
@@ -173,7 +173,7 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): Promi
 
     const results: CxResult[] = [];
     const stream = fs.createReadStream(resultJsonPath, { encoding: 'utf-8' });
-    const jsonStream = JSONStream.parse('results.*'); // Parses each entry in the "results" array
+    const jsonStream = JSONStream.parse('results.*',undefined);
 
     stream
         .pipe(jsonStream)
