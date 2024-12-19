@@ -8,6 +8,11 @@ import {
 import { GitExtension } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import JSONStream from 'jsonstream-ts';
+import { Transform } from 'stream';
+
+
+
 
 export function getProperty(
   o: AstResult | CxScan,
@@ -159,22 +164,39 @@ export async function getResultsJson() {
   return { results: [] };
 }
 
-export function readResultsFromFile(resultJsonPath: string, scan: string): CxResult[] {
-  let results = undefined;
-  if (fs.existsSync(resultJsonPath) && scan) {
-    const jsonResults = JSON.parse(
-      fs
-        .readFileSync(resultJsonPath, "utf-8")
-        .replace(/:([0-9]{15,}),/g, ':"$1",')
-    );
-    if (jsonResults.results) {
-      results = orderResults(jsonResults.results);
+
+export function readResultsFromFile(resultJsonPath: string, scan: string): Promise<CxResult[]> {
+  return new Promise((resolve, reject) => {
+    if (!fs.existsSync(resultJsonPath) || !scan) {
+      resolve([]);
+      return;
     }
-    else {
-      results = [];
-    }
-  }
-  return results;
+
+    const results: CxResult[] = [];
+    const stream = fs.createReadStream(resultJsonPath, { encoding: 'utf-8' });
+
+    const transformStream = new Transform({
+      transform(chunk, encoding, callback) {
+        const transformed = chunk.toString().replace(/:([0-9]{15,}),/g, ':"$1",');
+        callback(null, transformed);
+      },
+    });
+
+    const jsonStream = JSONStream.parse('results.*', undefined);
+
+    stream
+        .pipe(transformStream)
+        .pipe(jsonStream)
+        .on('data', (data) => {
+          results.push(data);
+        })
+        .on('end', () => {
+          resolve(orderResults(results));
+        })
+        .on('error', (error) => {
+          reject(error);
+        });
+  });
 }
 
 export function orderResults(list: CxResult[]): CxResult[] {
