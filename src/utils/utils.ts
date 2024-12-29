@@ -183,26 +183,6 @@ export async function getRepositoryFullName(): Promise<string | void> {
   return;
 }
 
-
-export async function getRepositoryName() {
-  const gitAPI = await getGitAPIRepository();
-  if (!gitAPI) {
-    vscode.window.showErrorMessage("Git extension is not available.");
-    return;
-  }
-
-  const repositories  = gitAPI.repositories;
-  if (repositories.length === 0) {
-    return;
-  }
-
-  const firstRepo = repositories[0];
-  const repoPath = firstRepo.rootUri.fsPath;
-  const repoName = repoPath.substring(repoPath.lastIndexOf("/") + 1);
-
-  return repoName;
-}
-
 export async function getResultsJson() {
   const resultJsonPath = getResultsFilePath();
   if (fs.existsSync(resultJsonPath)) {
