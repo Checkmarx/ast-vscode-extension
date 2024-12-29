@@ -5,13 +5,11 @@ import { AstResult } from "../models/results";
 import {
   constants
 } from "./common/constants";
-import { GitExtension } from "./types/git";
+import { GitExtension, Repository } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import JSONStream from 'jsonstream-ts';
 import { Transform } from 'stream';
-
-
 
 
 export function getProperty(
@@ -150,6 +148,59 @@ export async function getGitAPIRepository() {
 export async function getGitBranchName() {
   const gitApi = await getGitAPIRepository();
   return gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+}
+
+function extractRepoFullName(remoteURL: string): string | undefined {
+  const match = remoteURL.match(/[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
+  return match ? `${match[1]}/${match[2]}` : undefined;
+}
+
+export async function getActiveRepository(): Promise<Repository | undefined> {
+  const gitAPI = await getGitAPIRepository();
+  if (!gitAPI) {
+    return undefined;
+  }
+  return gitAPI.repositories[0]; // Default to the first repository
+}
+
+export async function getRepositoryFullName(): Promise<string | void> {
+  const activeRepo = await getActiveRepository();
+  if (!activeRepo) {
+    return;
+  }
+
+  const remote = activeRepo.state.remotes.find((r) => r.name === "origin") || activeRepo.state.remotes[0];
+  const remoteURL = remote?.fetchUrl;
+
+  if (!remoteURL) {
+    return;
+  }
+
+  const fullName = extractRepoFullName(remoteURL);
+  if (fullName) {
+    return fullName;
+  } 
+  return;
+}
+
+
+export async function getRepositoryName() {
+  const gitAPI = await getGitAPIRepository();
+  if (!gitAPI) {
+    vscode.window.showErrorMessage("Git extension is not available.");
+    return;
+  }
+
+  const repositories  = gitAPI.repositories;
+  if (repositories.length === 0) {
+    return;
+  }
+
+  const firstRepo = repositories[0];
+  const repoPath = firstRepo.rootUri.fsPath;
+  const repoName = repoPath.substring(repoPath.lastIndexOf("/") + 1);
+
+  return repoName;
 }
 
 export async function getResultsJson() {
