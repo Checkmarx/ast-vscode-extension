@@ -168,9 +168,10 @@ describe("Using a local branch if Git exists", () => {
         let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
         if (message === messages.scanProjectNotMatch) {
-            await firstNotification?.getActions()[0].click();
-            const resultsNotifications = await new Workbench().getNotifications();
-            firstNotification = resultsNotifications[0];
+            let actions = await firstNotification?.getActions()
+            let action = await actions[0];
+            await action.click();
+            firstNotification = await waitForNotificationWithTimeout(5000);
         }
         expect(firstNotification).is.not.undefined;
 
