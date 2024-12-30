@@ -36,6 +36,7 @@ describe("Scan from IDE", () => {
     const input = await InputBox.create();
     await input.setText(SCAN_ID);
     await input.confirm();
+    await bench.executeCommand("ast-results.createScan");
     let resultsNotifications = await new Workbench().getNotifications();
     let firstNotification = resultsNotifications[0];
     let message = await firstNotification?.getMessage();
