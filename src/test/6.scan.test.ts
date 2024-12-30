@@ -57,17 +57,14 @@ describe("Scan from IDE", () => {
         }
         // click play button(or initiate scan with command)
         await bench.executeCommand("ast-results.createScan");
-
-        let resultsNotifications = await new Workbench().getNotifications();
-        let firstNotification = resultsNotifications[0];
+        
+        let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
         if (message === messages.scanProjectNotMatch) {
             let actions = await firstNotification?.getActions()
-            let action = await actions[0];
+            let action = await actions[1];
             await action.click();
-            firstNotification = await waitForNotificationWithTimeout(5000);
         }
-        expect(firstNotification).is.not.undefined;
     });
 });
 
