@@ -163,17 +163,17 @@ export async function getActiveRepository(): Promise<Repository | undefined> {
   return gitAPI.repositories[0]; // Default to the first repository
 }
 
-export async function getRepositoryFullName(): Promise<string | void> {
+export async function getRepositoryFullName(): Promise<string | undefined> {
   const activeRepo = await getActiveRepository();
   if (!activeRepo) {
-    return;
+    return undefined;
   }
 
   const remote = activeRepo.state.remotes.find((r) => r.name === "origin") || activeRepo.state.remotes[0];
   const remoteURL = remote?.fetchUrl;
 
   if (!remoteURL) {
-    return;
+    return undefined;
   }
 
   return extractRepoFullName(remoteURL)

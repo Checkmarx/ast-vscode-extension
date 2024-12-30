@@ -158,14 +158,14 @@ export async function createScan(
   updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
+  if (!(await doesProjectMatch(context, logs))) {
+    updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+    return;
+  }
+
   if (getFromState(context, constants.branchIdKey).id !== constants.localBranch) {
     updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
-
-    if (!(await doesProjectMatch(context, logs))) {
-      updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-      updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
-      return;
-    }
 
     if (!(await doesBranchMatch(context, logs))) {
       updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
