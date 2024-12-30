@@ -62,7 +62,7 @@ describe("Scan from IDE", () => {
     let firstNotification = resultsNotifications[0];
     let message = await firstNotification?.getMessage();
     if (message === messages.scanProjectNotMatch) {
-        await await firstNotification?.getActions()[0].click();
+        await firstNotification?.getActions()[0].click();
         resultsNotifications = await new Workbench().getNotifications();
         firstNotification = resultsNotifications[0];
         expect(firstNotification).is.not.undefined;
