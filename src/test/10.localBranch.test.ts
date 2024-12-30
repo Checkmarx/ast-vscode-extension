@@ -6,8 +6,10 @@ import {
 	WebDriver,
 	Workbench,
 } from "vscode-extension-tester";
-import { expect } from "chai";
-import { getQuickPickSelector, initialize } from "./utils/utils";
+import { messages } from "../utils/common/messages";
+
+import {expect} from "chai";
+import {getQuickPickSelector, initialize} from "./utils/utils";
 import {
 	BRANCH_KEY_TREE,
 	CX_CLEAR,
@@ -163,8 +165,14 @@ describe("Using a local branch if Git exists", () => {
 	it("should run scan with local branch", retryTest(async function () {
 		await bench.executeCommand("ast-results.createScan");
 
-		const firstNotification = waitForNotificationWithTimeout(5000)
-		expect(firstNotification).is.not.undefined;
+        let firstNotification = await waitForNotificationWithTimeout(5000)
+        let message = await firstNotification?.getMessage();
+        if (message === messages.scanProjectNotMatch) {
+            await firstNotification?.getActions()[0].click();
+            const resultsNotifications = await new Workbench().getNotifications();
+            firstNotification = resultsNotifications[0];
+        }
+        expect(firstNotification).is.not.undefined;
 
 	}, 3));
 
