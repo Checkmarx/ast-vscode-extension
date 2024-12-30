@@ -176,11 +176,7 @@ export async function getRepositoryFullName(): Promise<string | void> {
     return;
   }
 
-  const fullName = extractRepoFullName(remoteURL);
-  if (fullName) {
-    return fullName;
-  } 
-  return;
+  return extractRepoFullName(remoteURL)
 }
 
 export async function getResultsJson() {
