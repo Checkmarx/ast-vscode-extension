@@ -41,7 +41,9 @@ describe("Scan from IDE", () => {
         let firstNotification = resultsNotifications[0];
         let message = await firstNotification?.getMessage();
         expect(message).to.equal(messages.scanProjectNotMatch);
-        await firstNotification?.getActions()[1].click();
+        let actions = await firstNotification?.getActions()
+        let action = await actions[1];
+        await action.click();
     });
 
     it("should run scan from IDE", async function () {
