@@ -1,20 +1,24 @@
 # CHANGELOG
 
-## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
+## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.29.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* Enabling the button after create scan failure (AST-77386) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1010
+* VS Code | Parse large results files (AST-77956) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1014
 ### New Features 🚀
-* Use a local branch to create a scan. (AST-75824) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1011
+* VS CODE | Adding a warning for the user when the SCM project doesn't match the CX project (AST-78313) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1015
 ### Other Changes
-* Update js wrapper version to 0.0.121 with CLI 2.3.7 by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1012
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1013
+* Upgrade JS wrapper to 0.0.122 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1016
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1017
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.27.0...v2.28.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.28.0...v2.29.0
+
+## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
 
 ## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
 
