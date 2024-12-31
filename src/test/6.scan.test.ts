@@ -57,10 +57,17 @@ describe("Scan from IDE", () => {
     });
 
     it("should get wrong project notification", async function () {
+        const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
         await input.setText(SCAN_ID);
         await input.confirm();
+        await waitByLinkText(driver, SCAN_KEY_TREE_LABEL, 5000);
+        let scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
+        while (scan === undefined) {
+            scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
+        }
+        // click play button(or initiate scan with command)
         await bench.executeCommand("ast-results.createScan");
         let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
