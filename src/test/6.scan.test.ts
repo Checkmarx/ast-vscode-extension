@@ -5,13 +5,13 @@ import {
     WebDriver,
     Workbench,
 } from "vscode-extension-tester";
-import {expect} from "chai";
-import {initialize} from "./utils/utils";
 import {CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL} from "./utils/constants";
 import {waitByLinkText} from "./utils/waiters";
 import {SCAN_ID} from "./utils/envs";
 import {messages} from "../utils/common/messages";
 import { fail } from "assert";
+import {initialize, waitForNotificationWithTimeout} from "./utils/utils";
+
 
 
 describe("Scan from IDE", () => {
@@ -81,29 +81,3 @@ describe("Scan from IDE", () => {
 
     });
 });
-
-async function waitForNotificationWithTimeout(timeout) {
-    let firstNotification;
-    let isTimeout = false;
-
-    const timer = setTimeout(() => {
-        isTimeout = true;
-    }, timeout);
-
-    while (!firstNotification) {
-        if (isTimeout) {
-            break;
-        }
-        const resultsNotifications = await new Workbench().getNotifications();
-        firstNotification = resultsNotifications[0];
-
-        await sleep(100);
-    }
-
-    clearTimeout(timer);
-    return firstNotification;
-}
-
-async function sleep(ms: number) {
-    return await new Promise(resolve => setTimeout(resolve, ms));
-}
