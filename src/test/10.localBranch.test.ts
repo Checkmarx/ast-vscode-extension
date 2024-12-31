@@ -62,27 +62,7 @@ async function selectItem(text) {
     return item;
 }
 
-async function waitForNotificationWithTimeout(timeout) {
-	let firstNotification;
-	let isTimeout = false;
 
-	const timer = setTimeout(() => {
-		isTimeout = true;
-	}, timeout);
-
-	while (!firstNotification) {
-		if (isTimeout) {
-			break;
-		}
-		const resultsNotifications = await new Workbench().getNotifications();
-		firstNotification = resultsNotifications[0];
-
-		await sleep(100);
-	}
-
-	clearTimeout(timer);
-	return firstNotification;
-}
 
 describe("Using a local branch if Git exists", () => {
     let bench: Workbench;
