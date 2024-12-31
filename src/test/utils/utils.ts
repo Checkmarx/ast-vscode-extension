@@ -4,7 +4,7 @@ import {
   CustomTreeSection,
   SideBarView,
   InputBox,
-  WebView,
+  WebView, Workbench,
 } from "vscode-extension-tester";
 import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from "./constants";
 
@@ -122,6 +122,50 @@ export async function validateRootNode(scan: any): Promise<[number, any]> {
   let engines = await scan?.getChildren();
   let size = engines?.length;
   return [size, engines];
+}
+
+export async function waitForNotificationWithTimeout(timeout) {
+  let firstNotification;
+  let isTimeout = false;
+
+  const timer = setTimeout(() => {
+    isTimeout = true;
+  }, timeout);
+
+  while (!firstNotification) {
+    if (isTimeout) {
+      break;
+    }
+    const resultsNotifications = await new Workbench().getNotifications();
+    firstNotification = resultsNotifications[0];
+
+    await sleep(100);
+  }
+
+  clearTimeout(timer);
+  return firstNotification;
+}
+
+export async function sleep(ms: number) {
+  return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function retryTest(testFn, retries = 3) {
+  return async function () {
+    let lastError;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await testFn();
+        return;
+      } catch (error) {
+        lastError = error;
+        console.warn(`Retrying test... Attempt ${attempt} of ${retries}`);
+        if (attempt === retries) {
+          throw lastError;
+        }
+      }
+    }
+  };
 }
 
 export const delay = (ms: number | undefined) =>

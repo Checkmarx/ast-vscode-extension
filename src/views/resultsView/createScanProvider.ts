@@ -9,7 +9,7 @@ import {
   constants
 } from "../../utils/common/constants";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
+import { getRepositoryFullName, getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
@@ -137,6 +137,18 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs) {
   }
 }
 
+async function doesProjectMatch(context: vscode.ExtensionContext, logs: Logs) {
+  const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
+  const projectName = projectForScan?.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
+  const workspaceProject = await getRepositoryFullName();
+  if (projectForScan && projectName && projectName === workspaceProject) {
+    logs.info(messages.scanProjectMatch);
+    return true;
+  } else {
+    return await getUserInput(messages.scanProjectNotMatch);
+  }
+}
+
 export async function createScan(
   context: vscode.ExtensionContext,
   statusBarItem: vscode.StatusBarItem,
@@ -146,8 +158,15 @@ export async function createScan(
   updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
+  if (!(await doesProjectMatch(context, logs))) {
+    updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+    return;
+  }
+
   if (getFromState(context, constants.branchIdKey).id !== constants.localBranch) {
     updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
+
     if (!(await doesBranchMatch(context, logs))) {
       updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
       updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
