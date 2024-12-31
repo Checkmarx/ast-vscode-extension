@@ -150,5 +150,23 @@ export async function sleep(ms: number) {
   return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function retryTest(testFn, retries = 3) {
+  return async function () {
+    let lastError;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await testFn();
+        return;
+      } catch (error) {
+        lastError = error;
+        console.warn(`Retrying test... Attempt ${attempt} of ${retries}`);
+        if (attempt === retries) {
+          throw lastError;
+        }
+      }
+    }
+  };
+}
+
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));

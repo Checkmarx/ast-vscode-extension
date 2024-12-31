@@ -8,7 +8,7 @@ import {
 } from "vscode-extension-tester";
 import { messages } from "../utils/common/messages";
 import {expect} from "chai";
-import {getQuickPickSelector, initialize, sleep, waitForNotificationWithTimeout} from "./utils/utils";
+import {getQuickPickSelector, initialize, retryTest, sleep, waitForNotificationWithTimeout} from "./utils/utils";
 import {
     BRANCH_KEY_TREE,
     CX_CLEAR,
@@ -22,25 +22,6 @@ import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 import { constants } from "../utils/common/constants";
 import { execSync } from "child_process";
 import * as fs from "fs";
-
-
-function retryTest(testFn, retries = 3) {
-    return async function () {
-        let lastError;
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                await testFn();
-                return;
-            } catch (error) {
-                lastError = error;
-                console.warn(`Retrying test... Attempt ${attempt} of ${retries}`);
-                if (attempt === retries) {
-                    throw lastError;
-                }
-            }
-        }
-    };
-}
 
 function switchToBranch(branchName: string) {
 	try {

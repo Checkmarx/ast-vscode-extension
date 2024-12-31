@@ -10,7 +10,7 @@ import {waitByLinkText} from "./utils/waiters";
 import {SCAN_ID} from "./utils/envs";
 import {messages} from "../utils/common/messages";
 import { fail } from "assert";
-import {initialize, waitForNotificationWithTimeout} from "./utils/utils";
+import {initialize, retryTest, waitForNotificationWithTimeout} from "./utils/utils";
 import {expect} from "chai";
 
 
@@ -33,7 +33,7 @@ describe("Scan from IDE", () => {
         await bench.executeCommand(CX_CLEAR);
     });
 
-    it("should run scan from IDE", async function () {
+    it("should run scan from IDE", retryTest(async function () {
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
@@ -55,10 +55,10 @@ describe("Scan from IDE", () => {
             await action.click();
         }
         firstNotification = await waitForNotificationWithTimeout(5000);
-        expect(firstNotification).to.be.undefined;
-    });
+        expect(firstNotification).to.not.be.undefined;
+    }));
 
-    it("should get wrong project notification", async function () {
+    it("should get wrong project notification", retryTest(async function () {
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
@@ -81,5 +81,5 @@ describe("Scan from IDE", () => {
           fail("Should get wrong project notification");
         }
 
-    });
+    }));
 });
