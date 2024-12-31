@@ -11,6 +11,7 @@ import {CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL} from "./uti
 import {waitByLinkText} from "./utils/waiters";
 import {SCAN_ID} from "./utils/envs";
 import {messages} from "../utils/common/messages";
+import { fail } from "assert";
 
 
 describe("Scan from IDE", () => {
@@ -31,21 +32,6 @@ describe("Scan from IDE", () => {
         await bench.executeCommand(CX_CLEAR);
     });
 
-    it("should get wrong project notification", async function () {
-        await bench.executeCommand(CX_LOOK_SCAN);
-        const input = await InputBox.create();
-        await input.setText(SCAN_ID);
-        await input.confirm();
-        await bench.executeCommand("ast-results.createScan");
-        let resultsNotifications = await new Workbench().getNotifications();
-        let firstNotification = resultsNotifications[0];
-        let message = await firstNotification?.getMessage();
-        expect(message).to.equal(messages.scanProjectNotMatch);
-        let actions = await firstNotification?.getActions()
-        let action = await actions[1];
-        await action.click();
-    });
-
     it("should run scan from IDE", async function () {
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
@@ -59,14 +45,33 @@ describe("Scan from IDE", () => {
         }
         // click play button(or initiate scan with command)
         await bench.executeCommand("ast-results.createScan");
-        
+
+        let firstNotification = await waitForNotificationWithTimeout(5000)
+        let message = await firstNotification?.getMessage();
+        if (message === messages.scanProjectNotMatch) {
+            let actions = await firstNotification?.getActions()
+            let action = await actions[0];
+            await action.click();
+        }
+        await waitForNotificationWithTimeout(5000);
+    });
+
+    it("should get wrong project notification", async function () {
+        await bench.executeCommand(CX_LOOK_SCAN);
+        const input = await InputBox.create();
+        await input.setText(SCAN_ID);
+        await input.confirm();
+        await bench.executeCommand("ast-results.createScan");
         let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
         if (message === messages.scanProjectNotMatch) {
             let actions = await firstNotification?.getActions()
             let action = await actions[1];
             await action.click();
+        } else {
+          fail("Should get wrong project notification");
         }
+
     });
 });
 
