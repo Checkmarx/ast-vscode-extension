@@ -11,6 +11,7 @@ import {SCAN_ID} from "./utils/envs";
 import {messages} from "../utils/common/messages";
 import { fail } from "assert";
 import {initialize, waitForNotificationWithTimeout} from "./utils/utils";
+import {expect} from "chai";
 
 
 
@@ -53,7 +54,8 @@ describe("Scan from IDE", () => {
             let action = await actions[0];
             await action.click();
         }
-        await waitForNotificationWithTimeout(5000);
+        firstNotification = await waitForNotificationWithTimeout(5000);
+        expect(firstNotification).to.be.undefined;
     });
 
     it("should get wrong project notification", async function () {
