@@ -139,9 +139,9 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs) {
 
 async function doesProjectMatch(context: vscode.ExtensionContext, logs: Logs) {
   const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
-  const projectName = projectForScan.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
+  const projectName = projectForScan?.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
   const workspaceProject = await getRepositoryFullName();
-  if (projectName === workspaceProject) {
+  if (projectForScan && projectName && projectName === workspaceProject) {
     logs.info(messages.scanProjectMatch);
     return true;
   } else {
