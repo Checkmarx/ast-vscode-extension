@@ -39,14 +39,14 @@ jobs:
           npm test
       - name: Upload test artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
           name: artifacts-${{ matrix.os }}
           path: |
             test-resources/screenshots/*.png
           retention-days: 2
       - name: Upload screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         if: failure() && runner.os == 'macOS'
         with:
           name: screenshots
