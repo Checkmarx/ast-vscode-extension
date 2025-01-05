@@ -1,15 +1,20 @@
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
-import { AstResult } from "../../models/results";
+// import { AstResult } from "../../models/astResults/AstResult";
+import { AstResultFactory } from "../../models/astResults/AstResultFactory";
+import { cx } from "../../cx";
+import { constants } from "../../utils/common/constants";
 import {
-  cx
-} from "../../cx";
+  getFromState,
+  Item,
+  updateState,
+} from "../../utils/common/globalState";
 import {
-  constants
-} from "../../utils/common/constants";
-import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
+  getGitBranchName,
+  getResultsJson,
+  updateStatusBarItem,
+} from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
@@ -53,15 +58,19 @@ async function createScanForProject(
   logs: Logs
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
-  if(scanBranch.id === constants.localBranch){
+  if (scanBranch.id === constants.localBranch) {
     const gitBranchName = await getGitBranchName();
     if (!gitBranchName) {
       throw new Error("Branch name from git not found");
     }
     scanBranch.id = gitBranchName;
   }
-  const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
-  const projectName = projectForScan.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
+  const projectForScan: Item = context.workspaceState.get(
+    constants.projectIdKey
+  );
+  const projectName = projectForScan.name
+    .match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1]
+    .trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
   logs.info(messages.scanStartWorkspace + workspaceFolder.uri.fsPath);
   const scanCreateResponse = await cx.scanCreate(
@@ -74,7 +83,7 @@ async function createScanForProject(
     id: scanCreateResponse.id,
     name: scanCreateResponse.id,
     displayScanId: undefined,
-    scanDatetime: undefined
+    scanDatetime: undefined,
   });
 }
 
@@ -95,7 +104,6 @@ export async function cancelScan(
     } catch (error) {
       logs.error(error);
     }
-
   }
   updateStatusBarItem(constants.scanCancel, false, statusBarItem);
 }
@@ -143,23 +151,39 @@ export async function createScan(
   logs: Logs
 ) {
   logs.info(messages.scanCheckStart);
-  updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
+  updateState(context, constants.scanCreatePrepKey, {
+    id: true,
+    name: "",
+    displayScanId: undefined,
+    scanDatetime: undefined,
+  });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
-  if (getFromState(context, constants.branchIdKey).id !== constants.localBranch) {
+  if (
+    getFromState(context, constants.branchIdKey).id !== constants.localBranch
+  ) {
     updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
     if (!(await doesBranchMatch(context, logs))) {
       updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-      updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+      updateState(context, constants.scanCreatePrepKey, {
+        id: false,
+        name: "",
+        displayScanId: undefined,
+        scanDatetime: undefined,
+      });
       return;
     }
   }
-  
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
-    updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+    updateState(context, constants.scanCreatePrepKey, {
+      id: false,
+      name: "",
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
     return;
   }
 
@@ -167,11 +191,16 @@ export async function createScan(
   try {
     await createScanForProject(context, logs);
   } catch (error) {
-      setScanButtonDefaultIfScanIsNotRunning(context);
+    setScanButtonDefaultIfScanIsNotRunning(context);
     throw error;
   }
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
-  updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+  updateState(context, constants.scanCreatePrepKey, {
+    id: false,
+    name: "",
+    displayScanId: undefined,
+    scanDatetime: undefined,
+  });
 
   await vscode.commands.executeCommand(commands.pollScan);
 }
@@ -179,14 +208,16 @@ export async function createScan(
 async function getUserInput(msg: string): Promise<boolean> {
   // create a promise and wait for it to resolve
   const value = new Promise<boolean>((resolve, reject) => {
-    vscode.window.showInformationMessage(msg, constants.yes, constants.no).then(async (val) => {
-      if (val && val === constants.yes) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-      reject();
-    });
+    vscode.window
+      .showInformationMessage(msg, constants.yes, constants.no)
+      .then(async (val) => {
+        if (val && val === constants.yes) {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+        reject();
+      });
   });
   return value;
 }
@@ -204,7 +235,7 @@ async function doFilesExistInWorkspace(resultFileNames: string[]) {
 function extractFileNamesFromResults(results: string[]) {
   const filenames = [];
   results?.forEach((result) => {
-    const astResult = new AstResult(result);
+    const astResult = AstResultFactory.createInstance(result);
     filenames.push(astResult.fileName);
   });
   return filenames;

@@ -1,18 +1,13 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
-import { AstResult } from "../models/results";
-import {
-  constants
-} from "./common/constants";
+import { AstResult } from "../models/astResults/AstResult";
+import { constants } from "./common/constants";
 import { GitExtension } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
-import JSONStream from 'jsonstream-ts';
-import { Transform } from 'stream';
-
-
-
+import JSONStream from "jsonstream-ts";
+import { Transform } from "stream";
 
 export function getProperty(
   o: AstResult | CxScan,
@@ -122,9 +117,7 @@ export function getFormattedId(label: CxScan, scanList: CxScan[]) {
     return "";
   }
 
-  return label === scanList[0]
-    ? label.id + " (latest)"
-    : label.id;
+  return label === scanList[0] ? label.id + " (latest)" : label.id;
 }
 
 export function formatLabel(label: CxScan, scanList: CxScan[]) {
@@ -149,7 +142,7 @@ export async function getGitAPIRepository() {
 
 export async function getGitBranchName() {
   const gitApi = await getGitAPIRepository();
-  return gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+  return gitApi.repositories[0]?.state.HEAD?.name; //TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
 }
 
 export async function getResultsJson() {
@@ -164,8 +157,10 @@ export async function getResultsJson() {
   return { results: [] };
 }
 
-
-export function readResultsFromFile(resultJsonPath: string, scan: string): Promise<CxResult[]> {
+export function readResultsFromFile(
+  resultJsonPath: string,
+  scan: string
+): Promise<CxResult[]> {
   return new Promise((resolve, reject) => {
     if (!fs.existsSync(resultJsonPath) || !scan) {
       resolve([]);
@@ -173,34 +168,42 @@ export function readResultsFromFile(resultJsonPath: string, scan: string): Promi
     }
 
     const results: CxResult[] = [];
-    const stream = fs.createReadStream(resultJsonPath, { encoding: 'utf-8' });
+    const stream = fs.createReadStream(resultJsonPath, { encoding: "utf-8" });
 
     const transformStream = new Transform({
       transform(chunk, encoding, callback) {
-        const transformed = chunk.toString().replace(/:([0-9]{15,}),/g, ':"$1",');
+        const transformed = chunk
+          .toString()
+          .replace(/:([0-9]{15,}),/g, ':"$1",');
         callback(null, transformed);
       },
     });
 
-    const jsonStream = JSONStream.parse('results.*', undefined);
+    const jsonStream = JSONStream.parse("results.*", undefined);
 
     stream
-        .pipe(transformStream)
-        .pipe(jsonStream)
-        .on('data', (data) => {
-          results.push(data);
-        })
-        .on('end', () => {
-          resolve(orderResults(results));
-        })
-        .on('error', (error) => {
-          reject(error);
-        });
+      .pipe(transformStream)
+      .pipe(jsonStream)
+      .on("data", (data) => {
+        results.push(data);
+      })
+      .on("end", () => {
+        resolve(orderResults(results));
+      })
+      .on("error", (error) => {
+        reject(error);
+      });
   });
 }
 
 export function orderResults(list: CxResult[]): CxResult[] {
-  const order = [constants.criticalSeverity, constants.highSeverity, constants.mediumSeverity, constants.lowSeverity, constants.infoSeverity];
+  const order = [
+    constants.criticalSeverity,
+    constants.highSeverity,
+    constants.mediumSeverity,
+    constants.lowSeverity,
+    constants.infoSeverity,
+  ];
   return list.sort(
     (a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)
   );

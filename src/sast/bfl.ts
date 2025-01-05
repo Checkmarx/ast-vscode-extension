@@ -3,14 +3,15 @@ import { Logs } from "../models/logs";
 import { SastNode } from "../models/sastNode";
 import { messages } from "../utils/common/messages";
 import path = require("path");
-import { AstResult } from "../models/results";
+import { AstResult } from "../models/astResults/AstResult";
+import { SastAstResult } from "../models/astResults/SastAstResult";
 import { constants } from "../utils/common/constants";
 import { getFromState } from "../utils/common/globalState";
 
 export async function getBfl(
   scanId: string,
   queryId: string,
-  resultNodes: SastNode[],
+  resultNodes: SastNode[] | any,
   logs: Logs
 ) {
   try {
@@ -18,10 +19,7 @@ export async function getBfl(
     console.log("bfl");
     const bflIndex = await this.getResultsBfl(scanId, queryId, resultNodes);
     if (bflIndex < 0) {
-      logs.log(
-        "INFO",
-        messages.bflNoLocation
-      );
+      logs.log("INFO", messages.bflNoLocation);
     }
     return bflIndex;
   } catch (err) {
@@ -43,19 +41,22 @@ export async function getResultsBfl(
     path.join("media", "icon.png")
   );
   if (scanId) {
-    getBfl(scanId, result.queryId, result.sastNodes, logs)
-      .then((index) => {
-        detailsPanel?.webview.postMessage({
-          command: "loadBfl",
-          index: { index: index, logo: cxPath },
+    if (AstResult.checkType(result) === constants.sast) {
+      const sastObj = result as SastAstResult;
+      getBfl(scanId, sastObj.queryId, sastObj.multipleSastNode.getNodes(), logs)
+        .then((index) => {
+          detailsPanel?.webview.postMessage({
+            command: "loadBfl",
+            index: { index: index, logo: cxPath },
+          });
+        })
+        .catch(() => {
+          detailsPanel?.webview.postMessage({
+            command: "loadBfl",
+            index: { index: -1, logo: cxPath },
+          });
         });
-      })
-      .catch(() => {
-        detailsPanel?.webview.postMessage({
-          command: "loadBfl",
-          index: { index: -1, logo: cxPath },
-        });
-      });
+    }
   } else {
     logs.error(messages.scanIdUndefined);
   }

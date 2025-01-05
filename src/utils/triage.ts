@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { AstResult } from "../models/results";
+import { AstResult } from "../models/astResults/AstResult";
 import { getResultsFilePath } from "./utils";
 import { cx } from "../cx";
 import { getFromState, updateState } from "./common/globalState";
@@ -93,9 +93,10 @@ export async function triageSubmit(
   try {
     await updateResults(result, context, data.comment, resultsProvider);
     updateState(context, constants.triageUpdate, {
-      id: true, name: constants.triageUpdate,
+      id: true,
+      name: constants.triageUpdate,
       scanDatetime: "",
-      displayScanId: ""
+      displayScanId: "",
     });
     await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
@@ -104,9 +105,7 @@ export async function triageSubmit(
     if (result.type === "sast") {
       await getLearnMore(logs, context, result, detailsPanel);
     }
-    vscode.window.showInformationMessage(
-      messages.triageSubmitedSuccess
-    );
+    vscode.window.showInformationMessage(messages.triageSubmitedSuccess);
   } catch (error) {
     vscode.window.showErrorMessage(messages.triageError(error));
     return;

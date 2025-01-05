@@ -9,8 +9,13 @@ import {
 } from "../utils/common/constants";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { Counter } from "../models/counter";
-import { AstResult } from "../models/results";
-import { SastNode } from "../models/sastNode";
+// import { AstResult } from "../models/results";
+import { AstResult } from "../models/astResults/AstResult";
+import { AstResultFactory } from "../models/astResults/AstResultFactory";
+import { SastAstResult } from "../models/astResults/SastAstResult";
+
+// import { SastNode } from "../models/sastNode";
+import { SastNode } from "../models/nodes/SastNode";
 import { getProperty } from "../utils/utils";
 export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   protected _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
@@ -125,7 +130,8 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     issueLevel: string[],
     stateLevel: string[]
   ) {
-    const obj = new AstResult(rawObj);
+    const obj = AstResultFactory.createInstance(rawObj);
+
     if (!obj || !obj.typeLabel) {
       return;
     }
@@ -138,14 +144,17 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         (!obj.getState() || issueLevel.includes(obj.getSeverity())) &&
         (!obj.getState() || stateLevel.includes(obj.getState()))
       ) {
-        if (obj.sastNodes.length > 0) {
-          this.createDiagnostic(
-            obj.label,
-            obj.getSeverityCode(),
-            obj.sastNodes[0],
-            folder,
-            map
-          );
+        if (obj.type === constants.sast) {
+          const sastObj = obj as SastAstResult;
+          if (sastObj.multipleSastNode.getNodes().length > 0) {
+            this.createDiagnostic(
+              sastObj.label,
+              sastObj.getSeverityCode(),
+              sastObj.multipleSastNode.getNodes()[0],
+              folder,
+              map
+            );
+          }
         }
         node = groups.reduce(
           (previousValue: TreeItem, currentValue: string) =>
@@ -192,7 +201,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     let value = getProperty(obj, currentValue);
 
     // Needed to group by filename in kics, in case nothing is found then its a kics result and must be found inside data.filename
-    if (currentValue === GroupBy.fileName && value.length === 0) {
+    if (currentValue === GroupBy.fileName && value?.length === 0) {
       value = getProperty(obj.data, GroupBy.fileName.toLowerCase());
     }
 

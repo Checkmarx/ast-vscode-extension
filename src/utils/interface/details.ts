@@ -1,4 +1,6 @@
-import { AstResult } from "../../models/results";
+// import { AstResult } from "../../models/results";
+import { AstResult } from "../../models/astResults/AstResult";
+import { ScaAstResult } from "../../models/astResults/ScaAstResult";
 import * as vscode from "vscode";
 import * as os from "os";
 import { constants } from "../common/constants";
@@ -127,6 +129,7 @@ export class Details {
     scaUrl: vscode.Uri,
     type?: string
   ) {
+    const scaObj = this.result as ScaAstResult;
     return `
 			<body class="body-sca">
 			<div class="header">
@@ -135,15 +138,11 @@ export class Details {
 					${this.result.label}
 				</p>
 				<p class="header-name">
-					${
-            this.result.scaNode.packageIdentifier
-              ? this.result.scaNode.packageIdentifier
-              : ""
-          }
+					${scaObj.scaNode.packageIdentifier ? scaObj.scaNode.packageIdentifier : ""}
 				</p>
 			</div>
 			<div class="content">
-				${this.result.scaContent(
+				${scaObj.scaContent(
           this.result,
           scaUpgrade,
           scaUrl,
@@ -152,8 +151,7 @@ export class Details {
           scaAuthentication,
           scaConfidentiality,
           scaIntegrity,
-          scaAvailability,
-          type
+          scaAvailability
         )}
 			</div>
 		</body>			
@@ -358,6 +356,7 @@ export class Details {
 						<div class="card" style="background:transparent;">
 							<div class="card-header" id="headingOne" style="padding:0!important">
 								<h5 class="mb-0">import { messages } from '../common/messages';
+import { ScaAstResult } from '../../models/astResults/ScaAstResult';
 
 									<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"
 										aria-expanded="true" aria-controls="collapseOne"

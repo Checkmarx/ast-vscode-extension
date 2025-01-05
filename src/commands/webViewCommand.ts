@@ -2,7 +2,7 @@ import path = require("path");
 import * as vscode from "vscode";
 import { getCodebashingLink } from "../codebashing/codebashing";
 import { Logs } from "../models/logs";
-import { AstResult } from "../models/results";
+import { AstResult } from "../models/astResults/AstResult";
 import { getLearnMore } from "../sast/learnMore";
 import { getChanges, triageSubmit } from "../utils/triage";
 import { applyScaFix } from "../sca/scaFix";

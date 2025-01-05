@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { AstResult } from "../../models/results";
+import { AstResult } from "../../models/astResults/AstResult";
 import { Details } from "../../utils/interface/details";
 import { getNonce } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";

@@ -1,9 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  constants
-} from "../../utils/common/constants";
+import { constants } from "../../utils/common/constants";
 import { getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { Logs } from "../../models/logs";
 import { getFromState, updateState } from "../../utils/common/globalState";
@@ -33,8 +31,7 @@ export class AstResultsProvider extends ResultsProvider {
     super(context, statusBarItem);
     this.loadedResults = undefined;
     // Syncing with AST everytime the extension gets opened
-    this.openRefreshData()
-      .then(() => logs.info(messages.dataRefreshed));
+    this.openRefreshData().then(() => logs.info(messages.dataRefreshed));
   }
 
   async clean(): Promise<void> {
@@ -84,11 +81,13 @@ export class AstResultsProvider extends ResultsProvider {
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan) {
-        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan)
-            .catch((error) => {
-              this.logs.error(`Error reading results: ${error.message}`);
-              return undefined;
-            });
+        this.loadedResults = await readResultsFromFile(
+          resultJsonPath,
+          this.scan
+        ).catch((error) => {
+          this.logs.error(`Error reading results: ${error.message}`);
+          return undefined;
+        });
       }
       // otherwise the results must be cleared
       else {
@@ -98,33 +97,41 @@ export class AstResultsProvider extends ResultsProvider {
     // Case we come from triage we must update the state to load results from the correct place
     else {
       updateState(this.context, constants.triageUpdate, {
-        id: false, name: constants.triageUpdate,
+        id: false,
+        name: constants.triageUpdate,
         scanDatetime: "",
-        displayScanId: ""
+        displayScanId: "",
       });
     }
 
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
-      const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
+      const newItem = new TreeItem(
+        `${getFromState(this.context, constants.scanIdKey).scanDatetime}`,
+        constants.calendarItem
+      );
       treeItems = treeItems.concat(newItem);
 
       if (this.loadedResults.length !== 0) {
-        treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
+        treeItems = treeItems.concat(
+          this.createSummaryItem(this.loadedResults)
+        );
       }
 
       const treeItem = this.groupBy(
-          this.loadedResults,
-          this.groupByCommand.activeGroupBy,
-          this.scan,
-          this.diagnosticCollection,
-          this.filterCommand.getAtiveSeverities(),
-          this.filterCommand.getActiveStates()
+        this.loadedResults,
+        this.groupByCommand.activeGroupBy,
+        this.scan,
+        this.diagnosticCollection,
+        this.filterCommand.getAtiveSeverities(),
+        this.filterCommand.getActiveStates()
       );
       treeItem.label = "Scan"; // `${constants.scanLabel}`;
 
       if (treeItem.children.length === 0) {
-        treeItem.children.push(new TreeItem(constants.scaNoVulnerabilities, undefined));
+        treeItem.children.push(
+          new TreeItem(constants.scaNoVulnerabilities, undefined)
+        );
       }
 
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -136,18 +143,22 @@ export class AstResultsProvider extends ResultsProvider {
   createRootItems(): TreeItem[] {
     return [
       new TreeItem(
-        getFromState(this.context, constants.projectIdKey)?.name ?? constants.projectLabel,
+        getFromState(this.context, constants.projectIdKey)?.name ??
+          constants.projectLabel,
         constants.projectItem
       ),
       new TreeItem(
-        getFromState(this.context, constants.branchIdKey)?.name ?? constants.branchLabel,
+        getFromState(this.context, constants.branchIdKey)?.name ??
+          constants.branchLabel,
         constants.branchItem
       ),
       new TreeItem(
-        `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
+        `${
+          getFromState(this.context, constants.scanIdKey)?.displayScanId ??
+          constants.scanLabel
+        }`,
         constants.scanItem
-      )
+      ),
     ];
   }
-
 }
