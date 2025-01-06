@@ -1,23 +1,14 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2019",
-		"lib": [
-			"ES2021"
-		],
-		"outDir": "out",
-		"sourceMap": true,
-		"strict": false,
-		"esModuleInterop": true,
-		"rootDir": "src",
-	},
-	"exclude": [
-		"node_modules",
-		".vscode-test"
-	],
-	"include": [
-		"src/resources/testProj/*.php",
-		"src/**/*",
-		"media"
-	]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "lib": ["ES2021", "dom"],
+    "outDir": "out",
+    "sourceMap": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "rootDir": "src"
+  },
+  "exclude": ["node_modules", ".vscode-test"],
+  "include": ["src/resources/testProj/*.php", "src/**/*", "media"]
 }

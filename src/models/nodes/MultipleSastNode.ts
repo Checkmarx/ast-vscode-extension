@@ -23,7 +23,7 @@ export class MultipleSastNode {
     this.nodes.splice(index, 1);
   }
 
-  get length(): number {
+  getlength(): number {
     return this.nodes.length;
   }
 
