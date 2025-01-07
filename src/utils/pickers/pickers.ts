@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import {
@@ -11,21 +12,130 @@ import {
 } from "../utils";
 import { commands } from "../common/commands";
 import {
-  constants
+  constants,
+  QuickPickPaginationButtons
 } from "../common/constants";
 import { getFromState, updateState, updateStateError } from "../common/globalState";
 import { CxQuickPickItem } from "./multiStepUtils";
 import { messages } from "../common/messages";
 import { cx } from "../../cx";
-// label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
-export async function projectPicker(
-  context: vscode.ExtensionContext,
-  logs: Logs,
+
+async function createPicker(
+  placeholder: string,
+  title: string,
+  fetchItems: (params: string, offset: number, pageSize: number) => Promise<CxQuickPickItem[]>,//TODO replace the type
+  handleSelection: (item: CxQuickPickItem) => Promise<void>,
+  additionalConstantItem?: any
 ) {
+
+  let currentPage = 0;
+  const pageSize = 20;
+  let currentFilter = '';
+  const itemsCache = new Map<number, { items: CxQuickPickItem[]; hasNextPage: boolean }>();
+  let activeRequest: Promise<void> | null = null;
+  let hasNextPage = false;
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-  quickPick.placeholder = constants.projectPlaceholder;
-  quickPick.items = await getProjectsPickItems(logs, context);
+  quickPick.placeholder = placeholder;
+  quickPick.title = title;
+
+  const resetQuickPickState = () => {
+    currentPage = 0;
+    currentFilter = '';
+    itemsCache.clear();
+    activeRequest = null;
+  };
+
+  const loadPage = async (page: number, currentFilter: string) => {
+    if (activeRequest) {
+      activeRequest = null;
+    }
+    activeRequest = (async () => {
+      try {
+        quickPick.busy = true;
+        const offset = page * pageSize;
+
+        // Fetching a page with one extra item beyond the required size to determine if there are additional pages
+        const items = await fetchItems(currentFilter, offset, pageSize + 1);
+        hasNextPage = items.length > pageSize;
+
+        const visibleItems = [...(additionalConstantItem ? [additionalConstantItem] : []),
+        ...items.slice(0, pageSize)];
+        itemsCache.set(page, { items: visibleItems, hasNextPage });
+        quickPick.items = visibleItems;
+
+        updateButtons();
+
+      } catch (error) {
+        vscode.window.showErrorMessage(`Error loading items: ${error}`);
+      } finally {
+        quickPick.busy = false;
+        activeRequest = null;
+      }
+    })();
+    await activeRequest;
+  };
+
+  const updateButtons = () => {
+    quickPick.buttons = [
+      ...(currentPage > 0
+        ? [{
+          iconPath: new vscode.ThemeIcon('arrow-left'),
+          tooltip: QuickPickPaginationButtons.previousPage
+        }]
+        : []),
+      ...(hasNextPage
+        ? [{
+          iconPath: new vscode.ThemeIcon('arrow-right'),
+          tooltip: QuickPickPaginationButtons.nextPage
+        }]
+        : [])
+    ];
+  };
+
+  quickPick.onDidTriggerButton(async (button) => {
+    if (button.tooltip === QuickPickPaginationButtons.previousPage) {
+      currentPage--;
+    } else if (button.tooltip === QuickPickPaginationButtons.nextPage) {
+      currentPage++;
+    }
+
+    if (itemsCache.has(currentPage)) {
+      quickPick.items = itemsCache.get(currentPage).items;
+      hasNextPage = itemsCache.get(currentPage).hasNextPage;
+      updateButtons();
+    } else {
+      await loadPage(currentPage, currentFilter);
+    }
+  });
+
+  quickPick.onDidChangeValue(
+    debounce(async (value) => {
+      currentFilter = value;
+      currentPage = 0;
+      itemsCache.clear();
+      quickPick.items = [];
+      await loadPage(currentPage, currentFilter);
+    }, 300)
+  );
+
   quickPick.onDidChangeSelection(async ([item]) => {
+    await handleSelection(item);
+    quickPick.hide();
+  });
+
+  resetQuickPickState();
+  await loadPage(currentPage, currentFilter);
+  quickPick.show();
+}
+
+// label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
+export async function projectPicker(context: vscode.ExtensionContext, logs: Logs) {
+
+  const fetchProjects = async (filter: string, offset: number, pageSize: number) => {
+    return await getProjectsPickItemsWithParams(logs, context, filter, pageSize, offset);
+  };
+
+  const handleProjectSelection = async (item: CxQuickPickItem) => {
     updateState(context, constants.projectIdKey, {
       id: item.id,
       name: `${constants.projectLabel} ${item.label}`,
@@ -36,10 +146,40 @@ export async function projectPicker(
     updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
     await setDefaultBranch(item.id, context, logs);
     await vscode.commands.executeCommand(commands.refreshTree);
-    quickPick.hide();
-  });
-  quickPick.show();
+  };
+
+  await createPicker(constants.projectPlaceholder, constants.projectPickerTitle, fetchProjects, handleProjectSelection);
 }
+
+export async function branchPicker(context: vscode.ExtensionContext, logs: Logs) {
+  const projectItem = getFromState(context, constants.projectIdKey);
+  // Check if project is picked
+  if (!projectItem || !projectItem.id) {
+    vscode.window.showErrorMessage(messages.pickerProjectMissing);
+    return;
+  }
+
+  const gitBranchName = await getGitBranchName();
+  const localBranch = gitBranchName ? {
+    label: constants.localBranch,
+    id: constants.localBranch,
+    alwaysShow: true,
+  } : undefined;
+
+
+  const fetchBranches = async (filter: string, offset: number, pageSize: number): Promise<CxQuickPickItem[]> => {
+    return await getBranchsPickItemsWithParams(logs, projectItem.id, context, filter, pageSize, offset);
+  };
+
+  const handleBranchSelection = async (item: CxQuickPickItem) => {
+
+    handleBranchChange(item, context, projectItem, logs);
+
+  };
+
+  await createPicker(constants.branchPlaceholder, constants.branchPickerTitle, fetchBranches, handleBranchSelection, localBranch);
+}
+
 
 async function setDefaultBranch(
   projectId: string,
@@ -49,9 +189,9 @@ async function setDefaultBranch(
   try {
     const gitBranchName = await getGitBranchName();
     if (gitBranchName) {
-      const branchList = await cx.getBranches(projectId);
-      const branchName = branchList.includes(gitBranchName) ? gitBranchName : constants.localBranch;
-      handleBranchChange({ label: branchName, id: branchName }, context, { id: projectId }, logs, undefined);
+      const branchList = await cx.getBranchesWithParams(projectId, gitBranchName);
+      const branchName = branchList.length === 0 || branchList[0] !== gitBranchName ? constants.localBranch : branchList[0];
+      handleBranchChange({ label: branchName, id: branchName }, context, { id: projectId }, logs);
     }
   } catch (error) {
     logs.error(`Failed to used in a local branch: ${error}`);
@@ -59,54 +199,41 @@ async function setDefaultBranch(
   }
 }
 
-export async function branchPicker(
-  context: vscode.ExtensionContext,
-  logs: Logs,
-) {
-  const projectItem = getFromState(context, constants.projectIdKey);
-  // Check if project is picked
-  if (!projectItem || !projectItem.id) {
-    vscode.window.showErrorMessage(messages.pickerProjectMissing);
-    return;
-  }
-  const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
-  quickPick.placeholder = constants.branchPlaceholder;
-  quickPick.items = await getBranchPickItems(logs, projectItem.id, context);
-  quickPick.onDidChangeSelection(([item]) => handleBranchChange(item, context, projectItem, logs, quickPick));
-  quickPick.show();
-}
-
-async function handleBranchChange(item: CxQuickPickItem, context: vscode.ExtensionContext, projectItem, logs: Logs, quickPick: vscode.QuickPick<CxQuickPickItem>) {
+async function handleBranchChange(item: CxQuickPickItem, context: vscode.ExtensionContext, projectItem, logs: Logs) {
   updateState(context, constants.branchIdKey, {
     id: item.id,
     name: `${constants.branchLabel} ${item.label}`,
     displayScanId: undefined,
     scanDatetime: undefined
   });
+
   if (projectItem.id && item.id) {
-    const scanList = await getScansPickItems(
-      logs,
-      projectItem.id,
-      item.id,
-      context
-    );
-    if (scanList.length > 0) {
-      updateState(context, constants.scanIdKey, {
-        id: scanList[0].id,
-        name: `${constants.scanLabel} ${scanList[0].label}`,
-        displayScanId: `${constants.scanLabel} ${scanList[0].formattedId}`,
-        scanDatetime: `${constants.scanDateLabel} ${scanList[0].datetime}`,
-      });
-      await getResultsWithProgress(logs, scanList[0].id);
-    } else {
+    if (item.id === constants.localBranch) {
       updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
+    } else {
+      const scanList = await getScansPickItems(
+        logs,
+        projectItem.id,
+        item.id,
+        context
+      );
+      if (scanList.length > 0) {
+        updateState(context, constants.scanIdKey, {
+          id: scanList[0].id,
+          name: `${constants.scanLabel} ${scanList[0].label}`,
+          displayScanId: `${constants.scanLabel} ${scanList[0].formattedId}`,
+          scanDatetime: `${constants.scanDateLabel} ${scanList[0].datetime}`,
+        });
+        await getResultsWithProgress(logs, scanList[0].id);
+      } else {
+        updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
+      }
     }
   } else {
     vscode.window.showErrorMessage(messages.pickerBranchProjectMissing);
   }
 
   await vscode.commands.executeCommand(commands.refreshTree);
-  quickPick?.hide();
 }
 
 export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
@@ -154,27 +281,33 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
 export async function getBranchPickItems(
   logs: Logs,
   projectId: string,
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
+) {
+  return getBranchsPickItemsWithParams(logs, projectId, context, "", 10000, 0);
+}
+
+export async function getBranchsPickItemsWithParams(
+  logs: Logs,
+  projectId: string,
+  context: vscode.ExtensionContext,
+  filter: string,
+  limit: number,
+  offset: number
 ) {
   return vscode.window.withProgress(
     PROGRESS_HEADER,
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingBranches });
-      const branchList = await cx.getBranches(projectId);
+      const params = `${filter},limit=${limit},offset=${offset}`;
+      const branchList = await cx.getBranchesWithParams(projectId, params);
       try {
-        let branches = branchList
+        const branches = branchList
           ? branchList.map((label) => ({
             label: label,
             id: label,
           }))
           : [];
-
-        const gitBranchName = await getGitBranchName();
-        if (gitBranchName) {
-          const localBranch = { label: constants.localBranch, id: constants.localBranch };
-          branches = [localBranch, ...branches];
-        }
 
         return branches;
       } catch (error) {
@@ -186,23 +319,31 @@ export async function getBranchPickItems(
   );
 }
 
-export async function getProjectsPickItems(
+export async function getProjectsPickItems(logs: Logs, context: vscode.ExtensionContext) {
+  return getProjectsPickItemsWithParams(logs, context, "", 10000, 0);
+}
+
+export async function getProjectsPickItemsWithParams(
   logs: Logs,
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
+  filter: string,
+  limit: number,
+  offset: number
 ) {
-  return vscode.window.withProgress(
+  return await vscode.window.withProgress(
     PROGRESS_HEADER,
     async (progress, token) => {
-      token.onCancellationRequested(() => logs.info(messages.cancelLoading));
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
       progress.report({ message: messages.loadingProjects });
       try {
-        const projectList = await cx.getProjectList();
-        return projectList
-          ? projectList.map((label) => ({
-            label: label.name,
-            id: label.id,
-          }))
-          : [];
+
+        const params = `name=${filter},limit=${limit},offset=${offset}`;
+        const projectList = await cx.getProjectListWithParams(params);
+
+        return projectList.map((label) => ({ label: label.name, id: label.id }));
+
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
         vscode.commands.executeCommand(commands.showError);
@@ -210,8 +351,8 @@ export async function getProjectsPickItems(
       }
     }
   );
-}
 
+}
 export async function getScansPickItems(
   logs: Logs,
   projectId: string,
@@ -321,7 +462,15 @@ export async function getBranchesWithProgress(logs: Logs, projectId: string) {
     async (progress, token) => {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingBranches });
-      return await cx.getBranches(projectId);
+      return await cx.getBranchesWithParams(projectId, "");
     }
   );
+}
+
+function debounce(func: (...args: any[]) => void, delay: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
 }

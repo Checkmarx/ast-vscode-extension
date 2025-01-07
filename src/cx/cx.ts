@@ -1,19 +1,19 @@
 import * as vscode from "vscode";
-import {CxWrapper} from "@checkmarxdev/ast-cli-javascript-wrapper";
+import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import {CxConfig} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
-import {constants} from "../utils/common/constants";
-import {getFilePath, getResultsFilePath} from "../utils/utils";
-import {SastNode} from "../models/sastNode";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { constants } from "../utils/common/constants";
+import { getFilePath, getResultsFilePath } from "../utils/utils";
+import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
-import {CxParamType} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
-import {Logs} from "../models/logs";
-import {CxPlatform} from "./cxPlatform";
-import {CxCommandOutput} from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
-import {ChildProcessWithoutNullStreams} from "child_process";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { Logs } from "../models/logs";
+import { CxPlatform } from "./cxPlatform";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions
     from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
@@ -168,14 +168,14 @@ export class Cx implements CxPlatform {
         return project.payload[0];
     }
 
-    async getProjectList(): Promise<CxProject[] | undefined> {
+    async getProjectListWithParams(params: string): Promise<CxProject[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
         if (!config) {
             return [];
         }
         const cx = new CxWrapper(config);
-        const projects = await cx.projectList("limit=10000");
+        const projects = await cx.projectList(params);
 
         if (projects.payload) {
             r = projects.payload;
@@ -185,7 +185,7 @@ export class Cx implements CxPlatform {
         return r;
     }
 
-    async getBranches(projectId: string | undefined): Promise<string[] | undefined> {
+    async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
         let r = [];
         const config = this.getAstConfiguration();
         if (!config) {
@@ -194,7 +194,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         let branches = undefined;
         if (projectId) {
-            branches = await cx.projectBranches(projectId, "");
+            branches = await cx.projectBranches(projectId, params ?? "");
         } else {
             throw new Error("Project ID is not defined while trying to get branches");
         }
@@ -480,4 +480,3 @@ export class Cx implements CxPlatform {
     }
 
 }
-	

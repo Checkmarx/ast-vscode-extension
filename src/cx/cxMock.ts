@@ -964,6 +964,9 @@ export class CxMock implements CxPlatform {
       updatedAt: "2023-04-19T09:07:36.846145Z",
     };
   }
+  async getProjectListWithParams(): Promise<CxProject[] | undefined> {
+    return this.getProjectList();
+  }
 
   async getProjectList(): Promise<CxProject[] | undefined> {
     return [
@@ -986,6 +989,10 @@ export class CxMock implements CxPlatform {
         updatedAt: "2023-04-19T14:15:15.250732Z",
       },
     ];
+  }
+
+  async getBranchesWithParams(): Promise<string[] | undefined> {
+    return await this.getBranches();
   }
 
   async getBranches(): Promise<string[] | undefined> {
@@ -1180,7 +1187,7 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
-  
+
   async authValidate(): Promise<boolean> {
     return true;
   }
