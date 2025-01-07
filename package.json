@@ -906,7 +906,8 @@
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r ."
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "unit-test": "mocha --require ts-node/register './src/test/unit/**/*.test.ts'"
   },
   "devDependencies": {
     "@types/chai": "4.3.11",
