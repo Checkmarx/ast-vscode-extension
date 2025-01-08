@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
+import "./mocks/cxWrapper-mock";
 import { cx } from "../cx";
 
 describe("Cx - getScan", () => {
