@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
-import { cx } from "../../cx";
+import { cx } from "../cx";
 
 describe("Cx - getScan", () => {
   it("should return scan object when scanId is provided", async () => {
