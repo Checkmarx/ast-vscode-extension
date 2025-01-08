@@ -1,4 +1,5 @@
 import mockRequire from "mock-require";
+import { constants } from "../../utils/common/constants";
 
 mockRequire("vscode", {
   workspace: {
@@ -6,8 +7,8 @@ mockRequire("vscode", {
       if (section === "checkmarxOne") {
         return {
           get: (key: string) => {
-            if (key === "apiKey") {
-              return "apiKey";
+            if (key === constants.apiKey) {
+              return constants.apiKey;
             }
             return undefined;
           },
