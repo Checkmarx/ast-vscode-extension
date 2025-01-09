@@ -1192,8 +1192,16 @@ export class CxMock implements CxPlatform {
     const offsetParam = items.find(param => param.startsWith('offset='));
     return offsetParam ? offsetParam.split('=')[1] : null;
   }
+
+  getBranchName(params: string) {
+    return params.split(',')[0];
+  }
+
   async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
     if (params) {
+      if (this.getBranchName(params) === "main") {
+        return ["main"];
+      }
       if (this.getOffsetValue(params) === '0') {
         return ["main", "branch1", "branch2", "branch3", "branch4", "branch5", "branch6", "branch7", "branch8", "branch9", "branch10", "branch11", "branch12", "branch13", "branch14", "branch15", "branch16", "branch17", "branch18", "branch19", "branch20"];
       }
