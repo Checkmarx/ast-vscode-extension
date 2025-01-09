@@ -20,6 +20,8 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: npm install
+      - name: unit test
+        run: npm unit-test
       - name: Run tests
         if: runner.os != 'Linux'
         env:
