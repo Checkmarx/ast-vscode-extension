@@ -170,3 +170,12 @@ export function retryTest(testFn, retries = 3) {
 
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
+
+export async function selectItem(text) {
+    const input = await InputBox.create();
+    await input.setText(text);
+    let item = await getQuickPickSelector(input);
+    await input.setText(item);
+    await input.confirm();
+    return item;
+}
