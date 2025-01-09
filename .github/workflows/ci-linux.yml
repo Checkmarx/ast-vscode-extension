@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: unit test
-        run: npm unit-test
+        run: npm run unit-test
       - name: Run tests
         if: runner.os != 'Linux'
         env:
