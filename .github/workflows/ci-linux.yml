@@ -22,6 +22,10 @@ jobs:
         run: npm install
       - name: unit test
         run: npm run unit-test
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+      - name: Show coverage report
+        run: npm run coverage:report
   integration-tests:
     strategy:
       max-parallel: 1
