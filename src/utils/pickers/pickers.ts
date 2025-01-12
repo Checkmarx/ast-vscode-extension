@@ -23,7 +23,7 @@ import { cx } from "../../cx";
 async function createPicker(
   placeholder: string,
   title: string,
-  fetchItems: (params: string, offset: number, pageSize: number) => Promise<CxQuickPickItem[]>,//TODO replace the type
+  fetchItems: (params: string, offset: number, pageSize: number) => Promise<CxQuickPickItem[]>,
   handleSelection: (item: CxQuickPickItem) => Promise<void>,
   additionalConstantItem?: any
 ) {
@@ -32,7 +32,7 @@ async function createPicker(
   const pageSize = 20;
   let currentFilter = '';
   const itemsCache = new Map<number, { items: CxQuickPickItem[]; hasNextPage: boolean }>();
-  let activeRequest: Promise<void> | null = null;
+  let activeRequestId: number | null = null;
   let hasNextPage = false;
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
   quickPick.placeholder = placeholder;
@@ -42,20 +42,24 @@ async function createPicker(
     currentPage = 0;
     currentFilter = '';
     itemsCache.clear();
-    activeRequest = null;
+    activeRequestId = null;
   };
 
   const loadPage = async (page: number, currentFilter: string) => {
-    if (activeRequest) {
-      activeRequest = null;
-    }
-    activeRequest = (async () => {
+    const requestId = Date.now();
+    activeRequestId = requestId;
+    
       try {
         quickPick.busy = true;
         const offset = page * pageSize;
 
         // Fetching a page with one extra item beyond the required size to determine if there are additional pages
         const items = await fetchItems(currentFilter, offset, pageSize + 1);
+
+        if (activeRequestId !== requestId) {
+          return;
+        }
+
         hasNextPage = items.length > pageSize;
 
         const visibleItems = [...(additionalConstantItem ? [additionalConstantItem] : []),
@@ -63,19 +67,19 @@ async function createPicker(
         itemsCache.set(page, { items: visibleItems, hasNextPage });
         quickPick.items = visibleItems;
 
-        updateButtons();
+        updatePaginationButtons(hasNextPage, page);
 
       } catch (error) {
         vscode.window.showErrorMessage(`Error loading items: ${error}`);
       } finally {
-        quickPick.busy = false;
-        activeRequest = null;
+        if (activeRequestId === requestId) {
+             quickPick.busy = false;
+             activeRequestId = null;
+          }
       }
-    })();
-    await activeRequest;
   };
 
-  const updateButtons = () => {
+  const updatePaginationButtons = (hasNextPage: boolean, currentPage: number) => {    
     quickPick.buttons = [
       ...(currentPage > 0
         ? [{
@@ -102,7 +106,7 @@ async function createPicker(
     if (itemsCache.has(currentPage)) {
       quickPick.items = itemsCache.get(currentPage).items;
       hasNextPage = itemsCache.get(currentPage).hasNextPage;
-      updateButtons();
+      updatePaginationButtons(hasNextPage, currentPage);
     } else {
       await loadPage(currentPage, currentFilter);
     }

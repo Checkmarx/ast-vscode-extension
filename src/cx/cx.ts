@@ -175,11 +175,12 @@ export class Cx implements CxPlatform {
             return [];
         }
         const cx = new CxWrapper(config);
-        const projects = await cx.projectList(params);
+        const projects = await cx.projectList(params ?? "");
 
-        if (projects.payload) {
-            r = projects.payload;
-        } else {
+        if (projects.exitCode === 0) {
+            r = projects.payload ?? [];
+        }
+        else {
             throw new Error(projects.status);
         }
         return r;
