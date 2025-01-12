@@ -1,18 +1,28 @@
 # CHANGELOG
 
-## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.29.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
-* VSCode | Fix UI Freezing and Unclickable Icons (AST-70028) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1006
+* VS Code | Parse large results files (AST-77956) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1014
+### New Features 🚀
+* VS CODE | Adding a warning for the user when the SCM project doesn't match the CX project (AST-78313) by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1015
 ### Other Changes
-* upgrade js wrapper to 0.0.120 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1007
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1008
+* Upgrade JS wrapper to 0.0.122 by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1016
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1017
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.26.0...v2.27.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.28.0...v2.29.0
+
+## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
+
+## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
 
 ## [v2.26.1-fix-unclickable.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.1-fix-unclickable.0) - 2024-12-03 10:19:21
 
