@@ -61,13 +61,11 @@ export async function browserLoginCommand(
 
   console.log("checkmarxApiKey", checkmarxApiKey);
 
-  const authSuccessMsg = "Successfully authenticated to Checkmarx One server";
   const config = await getAstConfiguration();
   const cx = new CxWrapper(config);
 
   const valid = await cx.authValidate();
   if (valid.exitCode === 0 && config.apiKey != "") {
-    logs.info(authSuccessMsg);
     return;
   }
 
