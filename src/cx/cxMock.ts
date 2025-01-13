@@ -965,6 +965,8 @@ export class CxMock implements CxPlatform {
     };
   }
   async getProjectListWithParams(params: string): Promise<CxProject[] | undefined> {
+    console.log("from getProjectListWithParams, params: ", params);
+    
     if (params) {
       if (this.getOffsetValue(params) === '0') {
         return [
@@ -1198,8 +1200,11 @@ export class CxMock implements CxPlatform {
   }
 
   async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
+    console.log("from getBranchesWithParams, params: ", params);
+    
     if (params) {
       if (this.getBranchName(params) === "main") {
+        console.log("returning main branch");
         return ["main"];
       }
       if (this.getOffsetValue(params) === '0') {

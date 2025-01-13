@@ -57,7 +57,6 @@ export async function quickPickSelector(input: InputBox) {
   await input.selectQuickPick(0);
 }
 export async function getQuickPickSelector(input: InputBox): Promise<string> {
-  console.log("Getting quick pick selector from utils in line 60. input: ", input);
   
   let projectList = await input.getQuickPicks();
   console.log("Getting quick pick selector from utils in line 63. projectList: ", projectList);

@@ -61,7 +61,10 @@ async function createPicker(
         }
 
         hasNextPage = items.length > pageSize;
-
+if (additionalConstantItem) {
+  console.log("additionalConstantItem: ", additionalConstantItem);
+  
+}
         const visibleItems = [...(additionalConstantItem ? [additionalConstantItem] : []),
         ...items.slice(0, pageSize)];
         itemsCache.set(page, { items: visibleItems, hasNextPage });
