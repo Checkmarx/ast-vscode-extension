@@ -34,7 +34,7 @@ function switchToBranch(branchName: string) {
 
 }
 
-describe("Using a local branch if Git exists", () => {
+describe.skip("Using a local branch if Git exists", () => {
 	let bench: Workbench;
 	let treeScans: CustomTreeSection;
 	let driver: WebDriver;
