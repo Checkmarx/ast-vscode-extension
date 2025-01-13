@@ -194,9 +194,15 @@ async function setDefaultBranch(
   logs: Logs,
 ) {
   try {
+    console.log("set default branch");
+    
     const gitBranchName = await getGitBranchName();
+    console.log("gitBranchName: ", gitBranchName);
+    
     if (gitBranchName) {
       const branchList = await cx.getBranchesWithParams(projectId, gitBranchName);
+      console.log("branchList: ", branchList);
+      
       const branchName = branchList.length === 0 || branchList[0] !== gitBranchName ? constants.localBranch : branchList[0];
       handleBranchChange({ label: branchName, id: branchName }, context, { id: projectId }, logs);
     }
