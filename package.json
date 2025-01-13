@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx One",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.20.0",
+  "version": "2.29.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -882,11 +882,11 @@
         }
       },
       {
-        "title": "Activate Vorpal Real-time Scanning",
-        "id": "vorpal",
+        "title": "Activate ASCA",
+        "id": "asca",
         "order": 2,
         "properties": {
-          "CheckmarxVorpal.Activate Vorpal Real-time Scanning": {
+          "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
             "type": "boolean",
             "order": 3,
             "default": false,
@@ -906,20 +906,27 @@
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r ."
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
+    "unit-coverage": "npx nyc npm run unit-test"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^20.14.10",
+    "@types/node": "^22.9.0",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.2.0",
     "chai": "4.3.1",
-    "eslint-config-prettier": "^9.1.0",
+    "codecov": "^3.8.3",
     "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
     "mocha": "10.3.0",
-    "typescript": "^5.5.3",
+    "mock-require": "^3.0.3",
+    "nyc": "^17.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
     "vsce": "^2.15.0",
     "vscode-extension-tester": "8.3.0",
     "vscode-extension-tester-locators": "^3.12.2",
@@ -927,11 +934,12 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.113",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.122",
     "copyfiles": "2.4.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
+    "jsonstream-ts": "^1.3.6",
     "tree-kill": "^1.2.2"
   },
   "overrides": {

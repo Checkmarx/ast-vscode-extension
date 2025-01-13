@@ -34,7 +34,7 @@ export class AstResult extends CxResult {
   sastNodes: SastNode[] = [];
   scaNode: ScaNode | undefined;
   kicsNode: KicsNode | undefined;
-  scsNode: SCSSecretDetectionNode | undefined;
+  secretDetectionNode: SCSSecretDetectionNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
   declare vulnerabilityDetails: CxVulnerabilityDetails;
@@ -79,8 +79,8 @@ export class AstResult extends CxResult {
     this.scaType = result.scaType;
     this.label = result.data.queryName
       ? result.data.queryName
-      : result.data.ruleName
-      ? result.data.ruleName
+      : this.formatFilenameLine(result)
+      ? this.formatFilenameLine(result)
       : result.id
       ? result.id
       : result.vulnerabilityDetails.cveName;
@@ -105,7 +105,18 @@ export class AstResult extends CxResult {
       this.kicsNode = result;
     }
     if (result.type === constants.scsSecretDetection) {
-      this.scsNode = result;
+      this.secretDetectionNode = result;
+    }
+  }
+
+  formatFilenameLine(result: {
+    data?: { line?: number; filename?: string; ruleName?: string };
+  }): string {
+    const filename = result.data?.filename?.split("/").pop();
+    const line = result.data?.line;
+    const ruleName = result.data?.ruleName;
+    if (ruleName && filename && line !== undefined) {
+      return `${ruleName} (/${filename}:${line})`;
     }
   }
 
@@ -147,7 +158,7 @@ export class AstResult extends CxResult {
       return result.label;
     }
     if (result.type === constants.scsSecretDetection) {
-      return constants.scs;
+      return constants.secretDetection;
     }
     return undefined;
   }

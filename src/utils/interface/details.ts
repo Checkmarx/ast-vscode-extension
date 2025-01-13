@@ -107,6 +107,14 @@ export class Details {
 			</body>`;
   }
 
+  secretDetectiongeneralTab() {
+    return `<body>
+				<span>
+					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
+				</span>
+				</body>`;
+  }
+
   scaView(
     severityPath,
     scaAtackVector,
@@ -168,25 +176,25 @@ export class Details {
 			`;
   }
 
-  scsDetailsRemediationTab() {
-    const remediationAdditional = this.result.data?.remediationAdditional;
+  secretDetectionDetailsRemediationTab() {
+    const remediation = this.result.data?.remediation;
 
-    if (!remediationAdditional) {
+    if (!remediation) {
       return `<div>${messages.noRemediationExamplesTab}</div>`;
     }
 
     return `
 	  <div>
-		${remediationAdditional ? `<p>${remediationAdditional}</p>` : ""}
+		${remediation ? `<p>${remediation}</p>` : ""}
 	  </div>
 	`;
   }
 
-  scsDetailsDescriptionTab() {
+  secretDetectionDetailsDescriptionTab() {
     const ruleDescription = this.result.data?.ruleDescription;
 
     if (!ruleDescription) {
-      return "";
+      return `<div>${messages.noDescriptionTab}</div>`;
     }
 
     return `

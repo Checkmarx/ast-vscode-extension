@@ -8,7 +8,7 @@ import { Logs } from "../models/logs";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 
 export interface CxPlatform {
 	/**
@@ -179,14 +179,16 @@ export interface CxPlatform {
 	updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem);
 
   /**
-   * install the Vorpal engine
+   * install the ASCA engine
    */
-  installVorpal(): Promise<CxVorpal>;
+  installAsca(): Promise<CxAsca>;
 
   /**
-   * Scan the edited file in the vorpal engine and show the results in the problem section
-   * @param sourcePath the edited file sent to the vorpal engine
+   * Scan the edited file in the ASCA engine and show the results in the problem section
+   * @param sourcePath the edited file sent to the ASCA engine
    */
-  scanVorpal(sourcePath: string): Promise<CxVorpal>;
+  scanAsca(sourcePath: string): Promise<CxAsca>;
+  
+  authValidate(logs: Logs): Promise<boolean>;
 }
 

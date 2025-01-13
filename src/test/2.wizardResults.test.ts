@@ -19,7 +19,7 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./utils/constants";
-import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 describe("Wizard load results test", () => {
   let bench: Workbench;
@@ -48,9 +48,11 @@ describe("Wizard load results test", () => {
     await inputProject.confirm();
 
     // Branch selection
-    const inputBranch = new InputBox();
-    let branchName = await getQuickPickSelector(inputBranch);
-    await quickPickSelector(inputBranch);
+    const input = await InputBox.create();
+    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
+    let branchName = await getQuickPickSelector(input);
+    await input.setText(branchName);
+    await input.confirm();
 
     // Scan selection
     const inputScan = new InputBox();

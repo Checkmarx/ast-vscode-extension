@@ -1,17 +1,84 @@
 # CHANGELOG
 
-## [v2.20.1-2.20.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-prerelease.0) - 2024-09-18 08:11:28
+## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Bug Fixes 🐛
-* Changelog and prereleases should appear in vscode (AST-66013) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/952
 ### Other Changes
-* Itay feature: Show SCS results include group by and Filter and Vulnerability Tab (AST-63908) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/946
+* Update artifact github action (AST-77702) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1018
+* Set up infra for unit test with first mock and first test (AST-70569) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1020
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.20.0...v2.20.1-2.20.0-prerelease.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.0...v2.29.1-pagination.0
+
+## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.29.0 -->
+
+## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
+
+## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.27.0 -->
+
+## [v2.26.1-fix-unclickable.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.1-fix-unclickable.0) - 2024-12-03 10:19:21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.26.0) - 2024-11-19 13:31:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.26.0 -->
+
+## [v2.25.1-v2.21.2-v2.21.1-upgradeNode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.1-v2.21.2-v2.21.1-upgradeNode.0) - 2024-11-05 10:53:09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.25.0...v2.25.1-v2.21.2-v2.21.1-upgradeNode.0
+
+## [v2.25.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.25.0) - 2024-11-05 10:52:12
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.25.0 -->
+
+## [v2.24.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.24.0) - 2024-10-21 09:28:00
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.24.0 -->
+
+## [v2.23.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.23.0) - 2024-10-09 08:54:36
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.23.0 -->
+
+## [v2.22.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.22.0) - 2024-10-08 12:20:06
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.22.0 -->
+
+## [v2.21.1-v2.21.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.21.1-v2.21.0-prerelease.0) - 2024-09-25 07:10:50
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.21.0...v2.21.1-v2.21.0-prerelease.0
+
+## [v2.21.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.21.0) - 2024-09-25 07:09:55
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.21.0 -->
+
+## [v2.20.1-2.20.0-asca.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-asca.0) - 2024-09-24 08:50:40
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.20.1-2.20.0-prerelease.0...v2.20.1-2.20.0-asca.0
+
+## [v2.20.1-2.20.0-prerelease.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.1-2.20.0-prerelease.0) - 2024-09-18 08:11:28
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.20.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.20.0) - 2024-09-16 12:38:10
 

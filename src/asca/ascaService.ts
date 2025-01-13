@@ -5,16 +5,16 @@ import path from "path";
 import * as os from "os";
 import { error } from "console";
 import { Logs } from "../models/logs";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { constants } from "../utils/common/constants";
 
-const vorpalDir = "CxVorpal";
+const ascaDir = "CxVorpal";
 
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection(
   constants.extensionFullName
 );
 
-export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
+export async function scanAsca(document: vscode.TextDocument, logs: Logs) {
 
   if (ignoreFiles(document))
     {return;}
@@ -24,30 +24,30 @@ export async function scanVorpal(document: vscode.TextDocument, logs: Logs) {
       path.basename(document.uri.fsPath),
       document.getText()
     );
-    // RUN VORPAL SCAN
-    logs.info("Start Vorpal Scan On File: " + document.uri.fsPath);
-    const scanVorpalResult = await cx.scanVorpal(filePath);
+    // RUN ASCA SCAN
+    logs.info("Start ASCA scan On File: " + document.uri.fsPath);
+    const scanAscaResult = await cx.scanAsca(filePath);
     // DELETE TEMP FILE
     deleteFile(filePath); 
     console.info("file %s deleted", filePath);
     // HANDLE ERROR
-    if (scanVorpalResult.error) {
+    if (scanAscaResult.error) {
       logs.warn(
-        "Vorpal Warning: " +
-          (scanVorpalResult.error.description ?? scanVorpalResult.error)
+        "ASCA Warning: " +
+          (scanAscaResult.error.description ?? scanAscaResult.error)
       );
       return;
     }
     // VIEW PROBLEMS
     logs.info(
-      scanVorpalResult.scanDetails.length +
-        " security best coding practices issues were found in " +
+      scanAscaResult.scanDetails.length +
+        " security best practice violations were found in " +
         document.uri.fsPath
     );
-    updateProblems(scanVorpalResult, document.uri);
+    updateProblems(scanAscaResult, document.uri);
   } catch (error) {
     console.error(error);
-    logs.error(constants.errorScanVorpal);
+    logs.error(constants.errorScanAsca);
   }
 }
 
@@ -56,16 +56,16 @@ function ignoreFiles(document: vscode.TextDocument): boolean {
   return document.uri.scheme !== 'file';
 }
 
-export async function clearVorpalProblems() {
+export async function clearAscaProblems() {
   diagnosticCollection.clear();
 }
 
-function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
+function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {
   diagnosticCollection.delete(uri);
   const diagnostics: vscode.Diagnostic[] = [];
 
-  for (let i = 0; i < scanVorpalResult.scanDetails.length; i++) {
-    const res = scanVorpalResult.scanDetails[i];
+  for (let i = 0; i < scanAscaResult.scanDetails.length; i++) {
+    const res = scanAscaResult.scanDetails[i];
     const range = new vscode.Range(
       new vscode.Position(res.line - 1, 0),
       new vscode.Position(res.line - 1, 100)
@@ -75,13 +75,13 @@ function updateProblems(scanVorpalResult: CxVorpal, uri: vscode.Uri) {
       `${res.ruleName} - ${res.remediationAdvise}`,
       parseSeverity(res.severity)
     );
-    diagnostic.source = constants.vorpalEngineName;
+    diagnostic.source = constants.ascaEngineName;
     diagnostics.push(diagnostic);
   }
   diagnosticCollection.set(uri, diagnostics);
 }
 
-function parseSeverity(vorpalSeverity: string): vscode.DiagnosticSeverity {
+function parseSeverity(ascaSeverity: string): vscode.DiagnosticSeverity {
   const severityMap: Record<string, vscode.DiagnosticSeverity> = {
     CRITICAL: vscode.DiagnosticSeverity.Error,
     HIGH: vscode.DiagnosticSeverity.Error,
@@ -89,10 +89,10 @@ function parseSeverity(vorpalSeverity: string): vscode.DiagnosticSeverity {
     LOW: vscode.DiagnosticSeverity.Information
   };
 
-  const severity = severityMap[vorpalSeverity.toUpperCase()];
+  const severity = severityMap[ascaSeverity.toUpperCase()];
 
   if (severity === undefined) {
-    console.log(`Invalid vorpalSeverity value: ${vorpalSeverity}`);
+    console.log(`Invalid ASCASeverity value: ${ascaSeverity}`);
     return vscode.DiagnosticSeverity.Information;
   }
 
@@ -102,7 +102,7 @@ function parseSeverity(vorpalSeverity: string): vscode.DiagnosticSeverity {
 function saveTempFile(fileName: string, content: string): string | null {
   try {
     const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, vorpalDir, fileName);
+    const tempFilePath = path.join(tempDir, ascaDir, fileName);
     fs.writeFileSync(tempFilePath, content);
     console.info("Temp file was saved in: " + tempFilePath);
     return tempFilePath;
@@ -112,9 +112,9 @@ function saveTempFile(fileName: string, content: string): string | null {
   }
 }
 
-export async function installVorpal(logs: Logs) {
+export async function installAsca(logs: Logs) {
   try {
-    const res = await cx.installVorpal();
+    const res = await cx.installAsca();
     if (res.error) {
       const errorMessage = constants.errorInstallation + " : " + res.error;
       vscode.window.showErrorMessage(errorMessage);

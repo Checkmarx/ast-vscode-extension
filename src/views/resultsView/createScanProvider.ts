@@ -9,10 +9,11 @@ import {
   constants
 } from "../../utils/common/constants";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
-import { getResultsJson, updateStatusBarItem } from "../../utils/utils";
+import { getRepositoryFullName, getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
 import { commands } from "../../utils/common/commands";
 import { loadScanId } from "../../utils/pickers/pickers";
+import { setScanButtonDefaultIfScanIsNotRunning } from "../../utils/listener/listeners";
 
 export async function pollForScanResult(
   context: vscode.ExtensionContext,
@@ -52,6 +53,13 @@ async function createScanForProject(
   logs: Logs
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
+  if(scanBranch.id === constants.localBranch){
+    const gitBranchName = await getGitBranchName();
+    if (!gitBranchName) {
+      throw new Error("Branch name from git not found");
+    }
+    scanBranch.id = gitBranchName;
+  }
   const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
   const projectName = projectForScan.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
   const workspaceFolder = vscode.workspace.workspaceFolders[0];
@@ -129,6 +137,18 @@ async function doesBranchMatch(context: vscode.ExtensionContext, logs: Logs) {
   }
 }
 
+async function doesProjectMatch(context: vscode.ExtensionContext, logs: Logs) {
+  const projectForScan: Item = context.workspaceState.get(constants.projectIdKey);
+  const projectName = projectForScan?.name.match(new RegExp(`${constants.projectLabel}\\s*(.+)`))[1].trim();
+  const workspaceProject = await getRepositoryFullName();
+  if (projectForScan && projectName && projectName === workspaceProject) {
+    logs.info(messages.scanProjectMatch);
+    return true;
+  } else {
+    return await getUserInput(messages.scanProjectNotMatch);
+  }
+}
+
 export async function createScan(
   context: vscode.ExtensionContext,
   statusBarItem: vscode.StatusBarItem,
@@ -138,12 +158,22 @@ export async function createScan(
   updateState(context, constants.scanCreatePrepKey, { id: true, name: "", displayScanId: undefined, scanDatetime: undefined });
   updateStatusBarItem(constants.scanCreate, true, statusBarItem);
 
-  updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
-  if (!(await doesBranchMatch(context, logs))) {
+  if (!(await doesProjectMatch(context, logs))) {
     updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
     updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
     return;
   }
+
+  if (getFromState(context, constants.branchIdKey).id !== constants.localBranch) {
+    updateStatusBarItem(constants.scanCreateVerifyBranch, true, statusBarItem);
+
+    if (!(await doesBranchMatch(context, logs))) {
+      updateStatusBarItem(constants.scanWaiting, false, statusBarItem);
+      updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
+      return;
+    }
+  }
+  
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
@@ -153,8 +183,12 @@ export async function createScan(
   }
 
   updateStatusBarItem(constants.scanCreatePreparing, true, statusBarItem);
-  await createScanForProject(context, logs);
-
+  try {
+    await createScanForProject(context, logs);
+  } catch (error) {
+      setScanButtonDefaultIfScanIsNotRunning(context);
+    throw error;
+  }
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);
   updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: undefined, scanDatetime: undefined });
 

@@ -7,8 +7,9 @@ import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wra
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
-import CxVorpal from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/vorpal/CxVorpal";
+import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
+import { constants } from "../utils/common/constants";
 
 export class CxMock implements CxPlatform {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -991,7 +992,10 @@ export class CxMock implements CxPlatform {
     return ["main"];
   }
 
-  async getScans(): Promise<CxScan[] | undefined> {
+  async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+    if (branch === constants.localBranch) {
+      return [];
+    }
     return [
       {
         tags: {},
@@ -1169,11 +1173,15 @@ export class CxMock implements CxPlatform {
     show ? statusBarItem.show() : statusBarItem.hide();
   }
 
-  installVorpal(): Promise<CxVorpal> {
+  installAsca(): Promise<CxAsca> {
     return null;
   }
 
-  async scanVorpal(sourcePath: string): Promise<CxVorpal> {
-    return new CxVorpal();
+  async scanAsca(sourcePath: string): Promise<CxAsca> {
+    return new CxAsca();
+  }
+  
+  async authValidate(): Promise<boolean> {
+    return true;
   }
 }

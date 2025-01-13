@@ -17,7 +17,7 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./utils/constants";
-import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 describe("Individual pickers load results test", () => {
   let bench: Workbench;
@@ -57,6 +57,7 @@ describe("Individual pickers load results test", () => {
     await bench.executeCommand(CX_SELECT_BRANCH);
     let input = await InputBox.create();
     // Select from the pickers list
+    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
     await input.confirm();

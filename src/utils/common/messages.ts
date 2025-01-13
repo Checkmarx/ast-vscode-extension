@@ -14,8 +14,11 @@ export const messages = {
   scanProjectsNotMatch:
     "Project in workspace doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanBranchMatch: "Branch match the view branch. Initiating scan...",
+  scanProjectMatch: "Project match the view project. Initiating scan...",
   scanBranchNotMatch:
     "Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?",
+  scanProjectNotMatch:
+      "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanCheckStart:
     "Scan initiation started. Checking if scan is eligible to be initiated...",
   scanCompletedLoadResults: (status, scanID) =>
@@ -43,7 +46,8 @@ export const messages = {
   kicsStatusBarDisconnect: "$(debug-disconnect) Checkmarx kics",
   kicsStatusBarError: "$(error) Checkmarx KICS",
   kicsAutoScan: "Checkmarx kics real-time scan",
-  kicsAutoScanRunning: "$(sync~spin) Checkmarx KICS: Running KICS Real-time Scan",
+  kicsAutoScanRunning:
+    "$(sync~spin) Checkmarx KICS: Running KICS Real-time Scan",
   kicsRunning: "Checkmarx KICS is running",
   kicsFixRunning: "$(sync~spin) Checkmarx KICS: Running KICS Fix",
   commandRunning: "Checkmarx command is running",
@@ -51,6 +55,7 @@ export const messages = {
   resultFileNotFound: (filePath) => `File ${filePath} not found in workspace`,
   generalTab: "General",
   descriptionTab: "Description",
+  noDescriptionTab: "No description",
   triageTab: "Triage",
   remediationExamplesTab: "Remediation Examples",
   noRemediationExamplesTab: "No remediation examples",
@@ -86,8 +91,10 @@ export const messages = {
   noScanIDScan: "Scan ID is not defined while trying to get scan",
   noProjectIDScan: "Project ID is not defined while trying to get project",
   noProjectIDBranches: "Project ID is not defined while trying to get branches",
-  codebashingMissingParams: "Missing mandatory parameters, cweId, language or queryName ",
-  bflMissingParams: "Missing mandatory parameters, scanId, queryId or resultNodes ",
+  codebashingMissingParams:
+    "Missing mandatory parameters, cweId, language or queryName ",
+  bflMissingParams:
+    "Missing mandatory parameters, scanId, queryId or resultNodes ",
   kicsMissingParams: "Missing mandatory parameters, fileSources",
   kicsScanError: "Error running kics scan",
   kicsRemediationNoResultsFile: "Missing mandatory parameters, resultsFile",
@@ -100,14 +107,19 @@ export const messages = {
   splitEditorRight: "workbench.action.splitEditorRight",
   closeEditorGroup: "workbench.action.closeEditorsInGroup",
   scaNoUpgrade: "No available upgrade for package ",
-  scaUpgrading: (packages, version) => `Upgrading ${packages} to version ${version}`,
-  scaUpgradingSuccess: (packages, version) => `Package ${packages} successfully upgraded to version ${version}`,
+  scaUpgrading: (packages, version) =>
+    `Upgrading ${packages} to version ${version}`,
+  scaUpgradingSuccess: (packages, version) =>
+    `Package ${packages} successfully upgraded to version ${version}`,
   scaStartScan: "Click the play button to scan with Checkmarx SCA",
-  scaNoFolder: "No folder is opened. Please open the folder for the current project.",
+  scaNoFolder:
+    "No folder is opened. Please open the folder for the current project.",
   gitOpenRepo: "GIT API - Open repository",
-  gitExtensionMissing: "Git Extension - Could not find active git extension in workspace.",
+  gitExtensionMissing:
+    "Git Extension - Could not find active git extension in workspace.",
   gitExtensionBranch: "Git Extension - Add branch.",
-  gitExtensionNotInstalled: "Git extension - Could not find vscode.git installed.",
+  gitExtensionNotInstalled:
+    "Git extension - Could not find vscode.git installed.",
   gptMissinApiKey: `No GPT apikey is configured. Please go to the extension 
   <a id="gpt-settings" href="#" onClick="(function(){
     vscode.postMessage({
@@ -116,5 +128,5 @@ export const messages = {
   })();">
     settings
   </a>
-  `
+  `,
 };
