@@ -1201,7 +1201,7 @@ export class CxMock implements CxPlatform {
 
   async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
     console.log("from getBranchesWithParams, params: ", params);
-    
+    return ["main"];
     if (params) {
       if (this.getBranchName(params) === "main") {
         console.log("returning main branch");
