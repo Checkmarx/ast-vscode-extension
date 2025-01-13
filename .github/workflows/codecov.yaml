@@ -35,3 +35,5 @@ jobs:
         flags: target=auto
         fail_ci_if_error: true
         verbose: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
