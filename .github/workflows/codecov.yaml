@@ -21,7 +21,7 @@ jobs:
     - name: Authenticate with GitHub package registry
       run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
     - name: Git config for private repo access
-      run: git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
+      run: git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com".insteadOf "https://github.com"
     - name: Install dependencies
       run: npm install
     - name: Run unit tests with coverage
