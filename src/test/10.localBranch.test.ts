@@ -22,6 +22,7 @@ import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 import { constants } from "../utils/common/constants";
 import { execSync } from "child_process";
 import * as fs from "fs";
+import { log } from "console";
 
 function switchToBranch(branchName: string) {
 	try {
@@ -79,11 +80,15 @@ describe("Using a local branch if Git exists", () => {
 		await sleep(3000);
 		treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_PROJECT);
+console.log("select project");
 
 		const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
+console.log("selected project name", projectName);
 
 		let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + constants.localBranch);
+		console.log("branch from test, line 90", branch);
+		
 		expect(project, `Should select ${projectName}`).is.not.undefined;
 		expect(branch, `Sould display ${constants.localBranch}`).is.not.undefined;
 	}, 3));
@@ -93,6 +98,7 @@ describe("Using a local branch if Git exists", () => {
 	it("should exist local branch in branches list", retryTest(async function () {
 		let treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_BRANCH);
+console.log("select branch");
 
 		const branchName = await selectItem(constants.localBranch);
 
