@@ -18,8 +18,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 22.11.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    - name: Config github private repo
+      run: git config
     - name: Authenticate with GitHub package registry
       run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
     - name: Install dependencies
@@ -31,9 +31,6 @@ jobs:
       uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # create your CODECOV_TOKEN using the token from 'set repo' in codecov site
-        files: ./cover.out  
         flags: target=auto
         fail_ci_if_error: true
         verbose: false
-      env:
-        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
