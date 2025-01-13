@@ -233,9 +233,9 @@ export class Cx implements CxPlatform {
 
     getAstConfiguration() {
         const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
-        if (!token) {
-            return undefined;
-        }
+        // if (!token) {
+        //     return undefined;
+        // }
 
         const config = this.getBaseAstConfiguration();
         config.apiKey = token;

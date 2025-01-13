@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import { constants } from "./utils/common/constants";
 import { Logs } from "./models/logs";
+
 import {
   addRealTimeSaveListener,
   executeCheckSettingsChange,
@@ -24,12 +25,194 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
+import * as http from "http";
 
+// Function to handle browser-based loginnn
+
+export async function getBaseAstConfiguration() {
+  const config = new CxConfig();
+  config.additionalParameters = vscode.workspace
+    .getConfiguration("checkmarxOne")
+    .get("additionalParams") as string;
+
+  return config;
+}
+
+export async function getAstConfiguration() {
+  const token = vscode.workspace
+    .getConfiguration("checkmarxOne")
+    .get("apiKey") as string;
+
+  const config = await getBaseAstConfiguration();
+  config.apiKey = token;
+  return config;
+}
+
+export async function browserLoginCommand(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  // Retrieve the API key from the configuration
+  const checkmarxApiKey = vscode.workspace
+    .getConfiguration("checkmarxOne")
+    .get("apiKey") as string;
+
+  console.log("checkmarxApiKey", checkmarxApiKey);
+
+  const authSuccessMsg = "Successfully authenticated to Checkmarx One server";
+  const config = await getAstConfiguration();
+  const cx = new CxWrapper(config);
+
+  const valid = await cx.authValidate();
+  if (valid.exitCode === 0 && config.apiKey != "") {
+    logs.info(authSuccessMsg);
+    return;
+  }
+
+  const response = await vscode.window.showInformationMessage(
+    "API key is missing or invalid. Authenticate via browser to continue using Checkmarx One.",
+    "Authenticate via Browser",
+    "Cancel"
+  );
+
+  if (response === "Authenticate via Browser") {
+    try {
+      // OAuth Configuration
+      const AUTH_URL =
+        "https://iam-dev.dev.cxast.net/auth/realms/dev_tenant/protocol/openid-connect/auth";
+      const TOKEN_URL =
+        "https://iam-dev.dev.cxast.net/auth/realms/dev_tenant/protocol/openid-connect/token";
+      const REDIRECT_URI = "http://localhost:54321/callback";
+      const CLIENT_ID = "ast-app";
+      const SCOPES = "openid";
+
+      // Create authorization URL
+      const authRequestUrl = `${AUTH_URL}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+        REDIRECT_URI
+      )}&scope=${SCOPES}`;
+
+      // Create local server to handle callback
+      const server = http.createServer(async (req, res) => {
+        if (req.url?.startsWith("/callback")) {
+          try {
+            // Parse the callback URL
+            const url = new URL(req.url, `http://localhost:54321`);
+            const code = url.searchParams.get("code");
+
+            if (!code) {
+              res.writeHead(400, { "Content-Type": "text/plain" });
+              res.end("Authorization code not received");
+              server.close();
+              return;
+            }
+
+            // Exchange code for tokens
+            const tokenResponse = await fetch(TOKEN_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                grant_type: "authorization_code",
+                client_id: CLIENT_ID,
+                redirect_uri: REDIRECT_URI,
+                code: code,
+              }),
+            });
+
+            if (!tokenResponse.ok) {
+              const errorText = await tokenResponse.text();
+              logs.error(`Token exchange failed: ${errorText}`);
+              res.writeHead(400, { "Content-Type": "text/plain" });
+              res.end("Failed to exchange code for token");
+              server.close();
+              return;
+            }
+
+            const tokens: {
+              access_token: string;
+              refresh_token?: string;
+              id_token?: string;
+            } = await tokenResponse.json();
+            // Log tokens for testing
+            console.log("Access Token:", tokens.access_token);
+            console.log("Refresh Token:", tokens.refresh_token);
+            console.log("ID Token:", tokens.id_token);
+
+            logs.info("Access Token: " + tokens.access_token);
+            logs.info(
+              "Refresh Token: " + (tokens.refresh_token || "No refresh token")
+            );
+            logs.info("ID Token: " + (tokens.id_token || "No ID token"));
+
+            await vscode.workspace
+              .getConfiguration("checkmarxOne")
+              .update("apiKey", tokens.refresh_token);
+            logs.info("API key saved successfully.");
+            vscode.window.showInformationMessage("API key saved successfully!");
+
+            // Send success response to browser
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(`
+              <html>
+                <body>
+                  <h1>Authentication Successful!</h1>
+                  <p>You can close this window now.</p>
+                </body>
+              </html>
+            `);
+
+            // Show success message in VS Code
+            vscode.window.showInformationMessage(authSuccessMsg);
+
+            // Close the server
+            server.close();
+          } catch (error) {
+            logs.error(`Error during token exchange: ${error}`);
+            res.writeHead(500, { "Content-Type": "text/plain" });
+            res.end("Internal server error during authentication");
+            server.close();
+          }
+        }
+      });
+
+      // Start the server
+      server.listen(54321, () => {
+        logs.info("Authentication server listening on port 54321");
+      });
+
+      server.on("error", (error) => {
+        logs.error(`Server error: ${error}`);
+        vscode.window.showErrorMessage("Failed to start authentication server");
+      });
+
+      // Open the browser for authentication
+      await vscode.env.openExternal(vscode.Uri.parse(authRequestUrl));
+    } catch (error) {
+      logs.error(`Authentication failed: ${error}`);
+      vscode.window.showErrorMessage(
+        "Authentication failed. Please try again."
+      );
+    }
+  }
+}
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
   logs.info(messages.pluginRunning);
+
+  // Call the browserLoginCommand automatically on activation
+  //await browserLoginCommand(context, logs);
+
+  //Register browser-based login command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.login", async () => {
+      await browserLoginCommand(context, logs);
+    })
+  );
 
   // Status bars creation
   const runScanStatusBar = vscode.window.createStatusBarItem(

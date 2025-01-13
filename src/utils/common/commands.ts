@@ -6,6 +6,8 @@ export const commands = {
 
   showError: `${constants.extensionName}.showError`,
 
+  login: `${constants.extensionName}.login`, 
+
   setings: `${constants.extensionName}.viewSettings`,
   isValidCredentials: `${constants.extensionName}.isValidCredentials`,
 
