@@ -39,6 +39,8 @@ export const constants = {
   scanDateLabel: "Scan Date: ",
   scanPlaceholder: "Select scan",
   scanPickerTitle: "Checkmarx One Scan selection",
+  projectPickerTitle: "Checkmarx One Project selection",
+  branchPickerTitle: "Checkmarx One Branch selection",
   projectItem: "project-item",
   branchItem: "branch-item",
   scanItem: "scan-item",
@@ -192,4 +194,8 @@ export enum StateLevel {
   notExploitable = "NotExploitable",
   notIgnored = "NotIgnored",
   ignored = "Ignored",
+}
+export enum QuickPickPaginationButtons{
+  nextPage = "Next Page",
+  previousPage = "Previous Page"
 }

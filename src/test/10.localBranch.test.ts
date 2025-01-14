@@ -1,22 +1,22 @@
 import {
-    CustomTreeSection,
-    EditorView,
-    InputBox,
-    VSBrowser,
-    WebDriver,
-    Workbench,
+	CustomTreeSection,
+	EditorView,
+	InputBox,
+	VSBrowser,
+	WebDriver,
+	Workbench,
 } from "vscode-extension-tester";
 import { messages } from "../utils/common/messages";
-import {expect} from "chai";
-import {getQuickPickSelector, initialize, retryTest, sleep, waitForNotificationWithTimeout} from "./utils/utils";
+import { expect } from "chai";
+import { initialize, retryTest, sleep, waitForNotificationWithTimeout, selectItem } from "./utils/utils";
 import {
-    BRANCH_KEY_TREE,
-    CX_CLEAR,
-    CX_SELECT_BRANCH,
-    CX_SELECT_PROJECT,
-    CX_SELECT_SCAN,
-    PROJECT_KEY_TREE,
-    SCAN_KEY_TREE_LABEL,
+	BRANCH_KEY_TREE,
+	CX_CLEAR,
+	CX_SELECT_BRANCH,
+	CX_SELECT_PROJECT,
+	CX_SELECT_SCAN,
+	PROJECT_KEY_TREE,
+	SCAN_KEY_TREE_LABEL,
 } from "./utils/constants";
 import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 import { constants } from "../utils/common/constants";
@@ -33,17 +33,6 @@ function switchToBranch(branchName: string) {
 	}
 
 }
-
-async function selectItem(text) {
-    const input = await InputBox.create();
-    await input.setText(text);
-    let item = await getQuickPickSelector(input);
-    await input.setText(item);
-    await input.confirm();
-    return item;
-}
-
-
 
 describe.skip("Using a local branch if Git exists", () => {
     let bench: Workbench;
@@ -67,10 +56,10 @@ describe.skip("Using a local branch if Git exists", () => {
 		}
 		switchToBranch(branchName);
 
-        bench = new Workbench();
-        driver = VSBrowser.instance.driver;
-        await bench.executeCommand(CX_SELECT_SCAN);
-    });
+		bench = new Workbench();
+		driver = VSBrowser.instance.driver;
+		await bench.executeCommand(CX_SELECT_SCAN);
+	});
 
 
 	after(async function () {
@@ -90,9 +79,9 @@ describe.skip("Using a local branch if Git exists", () => {
 		await sleep(3000);
 		treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_PROJECT);
-		
+
 		const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
-		
+
 		let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + constants.localBranch);
 		expect(project, `Should select ${projectName}`).is.not.undefined;
@@ -104,9 +93,9 @@ describe.skip("Using a local branch if Git exists", () => {
 	it("should exist local branch in branches list", retryTest(async function () {
 		let treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_BRANCH);
-		
+
 		const branchName = await selectItem(constants.localBranch);
-		
+
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
 		expect(branch).is.not.undefined;
 	}, 3));
@@ -121,15 +110,15 @@ describe.skip("Using a local branch if Git exists", () => {
 	it("should run scan with local branch", retryTest(async function () {
 		await bench.executeCommand("ast-results.createScan");
 
-        let firstNotification = await waitForNotificationWithTimeout(5000)
-        let message = await firstNotification?.getMessage();
-        if (message === messages.scanProjectNotMatch) {
-            let actions = await firstNotification?.getActions()
-            let action = await actions[0];
-            await action.click();
-            firstNotification = await waitForNotificationWithTimeout(5000);
-        }
-        expect(firstNotification).is.not.undefined;
+		let firstNotification = await waitForNotificationWithTimeout(5000)
+		let message = await firstNotification?.getMessage();
+		if (message === messages.scanProjectNotMatch) {
+			let actions = await firstNotification?.getActions()
+			let action = await actions[0];
+			await action.click();
+			firstNotification = await waitForNotificationWithTimeout(5000);
+		}
+		expect(firstNotification).is.not.undefined;
 
 	}, 3));
 
