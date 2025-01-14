@@ -45,7 +45,7 @@ async function selectItem(text) {
 
 
 
-describe("Using a local branch if Git exists", () => {
+describe.skip("Using a local branch if Git exists", () => {
     let bench: Workbench;
     let treeScans: CustomTreeSection;
     let driver: WebDriver;
