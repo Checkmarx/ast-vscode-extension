@@ -57,7 +57,11 @@ export async function quickPickSelector(input: InputBox) {
   await input.selectQuickPick(0);
 }
 export async function getQuickPickSelector(input: InputBox): Promise<string> {
+  
   let projectList = await input.getQuickPicks();
+  console.log("Getting quick pick selector from utils in line 63. projectList length: ", projectList.length);
+  
+  console.log("Getting quick pick selector from utils in line 63. projectList: ", projectList[0].getLabel());
   return await projectList[0].getText();
 }
 
@@ -161,6 +165,8 @@ export function retryTest(testFn, retries = 3) {
         lastError = error;
         console.warn(`Retrying test... Attempt ${attempt} of ${retries}`);
         if (attempt === retries) {
+          console.log("Last error: ", lastError);
+          
           throw lastError;
         }
       }
@@ -170,3 +176,12 @@ export function retryTest(testFn, retries = 3) {
 
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
+
+export async function selectItem(text) {
+    const input = await InputBox.create();
+    await input.setText(text);
+    let item = await getQuickPickSelector(input);
+    await input.setText(item);
+    await input.confirm();
+    return item;
+}
