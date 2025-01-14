@@ -48,7 +48,7 @@ This tool requires authentication, using credentials from your Checkmarx One acc
 ### Key Features
 
 - **Remediation Advice**
-  - Receive actionable results with remediation recommendations. Easily navigate from the results to the vulnerable code within the editor, allowing you to begin remediation immediately.
+  - Receive actionable results with remediation recommendations. Easily navigate from the results to the vulnerable code within the editor, allowing you to begin remediation immediately .
   - Access one-click Auto Remediation options for open-source risks.
   - Utilize the AI Security Champion feature for code remediation suggestions.
 - **Pre-commit Scans**
