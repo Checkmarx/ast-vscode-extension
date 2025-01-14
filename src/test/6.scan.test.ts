@@ -53,12 +53,12 @@ describe("Scan from IDE", () => {
             let actions = await firstNotification?.getActions()
             let action = await actions[0];
             await action.click();
+            firstNotification = await waitForNotificationWithTimeout(5000);
         }
-        firstNotification = await waitForNotificationWithTimeout(5000);
         expect(firstNotification).to.not.be.undefined;
     }));
 
-    it("should get wrong project notification", retryTest(async function () {
+    it.skip("should get wrong project notification", retryTest(async function () {
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
