@@ -43,7 +43,7 @@ The Checkmarx Visual Studio Code extension integrates seamlessly into your IDE, 
 
 - **Checkmarx One** allows developers to access the full functionality of their Checkmarx One account directly from their IDE, eliminating the need for developers to use the CxOne platform. With this integration, you can initiate new scans, review scan results, and receive guided remediation advice. Checkmarx offers comprehensive details about each vulnerability, including remediation recommendations, examples of effective fixes, and AI-generated code suggestions. The extension also lets you quickly navigate from a vulnerability to the associated source code, making it easier to identify and address problematic areas.
   
-This tool requires authentication, using credentials from your Checkmarx One account.
+This tool requires authentication, using credentials from your Checkmarx One account .
 
 ### Key Features
 
