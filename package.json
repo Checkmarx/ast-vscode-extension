@@ -908,7 +908,9 @@
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
     "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
     "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
-    "unit-coverage": "npx nyc npm run unit-test"
+    "unit-coverage": "npx nyc npm run unit-test",
+    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r .",
+    "win-test:ui-end-to-end": "set TEST=uiEndToEnd&& npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r ."
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
@@ -936,6 +938,7 @@
   "dependencies": {
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.122",
     "copyfiles": "2.4.1",
+    "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
