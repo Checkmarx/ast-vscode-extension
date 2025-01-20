@@ -55,16 +55,17 @@ export interface CxPlatform {
 
 	/**
 		 * List projects available in the cx one platform.
+		 * @param params Additional parameters to search for projects.
 		 * @return A promise that when resolved returns a list of {@link CxProject}.
 	*/
-	getProjectList(): Promise<CxProject[] | undefined>;
+	getProjectListWithParams(params: string): Promise<CxProject[] | undefined>;
 
 	/**
 		 * Get the branch list for a specific project from the cx one platform.
 		 * @param projectId The project ID to retrieve information.
 		 * @return A promise that when resolved returns a list of {@link string} containing the branch names.
 	*/
-	getBranches(projectId: string | undefined): Promise<string[] | undefined>;
+	getBranchesWithParams(projectId: string | undefined, params: string | undefined): Promise<string[] | undefined>;
 
 	/**
 		 * Get the scan list for a specific project from the cx one platform.
@@ -178,17 +179,17 @@ export interface CxPlatform {
 	*/
 	updateStatusBarItem(text: string, show: boolean, statusBarItem: vscode.StatusBarItem);
 
-  /**
-   * install the ASCA engine
-   */
-  installAsca(): Promise<CxAsca>;
+	/**
+	 * install the ASCA engine
+	 */
+	installAsca(): Promise<CxAsca>;
 
-  /**
-   * Scan the edited file in the ASCA engine and show the results in the problem section
-   * @param sourcePath the edited file sent to the ASCA engine
-   */
-  scanAsca(sourcePath: string): Promise<CxAsca>;
-  
-  authValidate(logs: Logs): Promise<boolean>;
+	/**
+	 * Scan the edited file in the ASCA engine and show the results in the problem section
+	 * @param sourcePath the edited file sent to the ASCA engine
+	 */
+	scanAsca(sourcePath: string): Promise<CxAsca>;
+
+	authValidate(logs: Logs): Promise<boolean>;
 }
 

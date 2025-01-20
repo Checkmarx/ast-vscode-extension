@@ -8,11 +8,12 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize } from "./utils/utils";
+import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 import { constants } from "buffer";
+import { messages } from "../utils/common/messages";
 
 describe("Scan ID load results test", () => {
     let bench: Workbench;
@@ -60,8 +61,14 @@ describe("Scan ID load results test", () => {
         
         await bench.executeCommand("ast-results.createScan");
 
-        const resultsNotifications = await new Workbench().getNotifications();
-        const firstNotification = resultsNotifications[0];
-        expect(firstNotification).is.not.undefined;
+ let firstNotification = await waitForNotificationWithTimeout(5000)
+        let message = await firstNotification?.getMessage();
+        if (message === messages.scanProjectNotMatch) {
+            let actions = await firstNotification?.getActions()
+            let action = await actions[0];
+            await action.click();
+            firstNotification = await waitForNotificationWithTimeout(5000);
+        }
+        expect(firstNotification).to.not.be.undefined;
     }); 
 });

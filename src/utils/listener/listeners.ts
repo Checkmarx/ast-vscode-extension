@@ -57,7 +57,7 @@ async function addRepositoryListener(
         const currentBranch = getFromState(context, constants.branchIdKey);
 
         if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
-            cx.getBranches(projectItem.id).then((branches) => {
+            cx.getBranchesWithParams(projectItem.id).then((branches) => {
                 updateState(context, constants.branchTempIdKey, undefined);
                 if (branches?.includes(branchName)) {
                     updateState(context, constants.branchIdKey, {

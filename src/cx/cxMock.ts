@@ -964,8 +964,208 @@ export class CxMock implements CxPlatform {
       updatedAt: "2023-04-19T09:07:36.846145Z",
     };
   }
-
-  async getProjectList(): Promise<CxProject[] | undefined> {
+  async getProjectListWithParams(params: string): Promise<CxProject[] | undefined> {
+    if (params) {
+      if (this.getOffsetValue(params) === '0') {
+        return [
+          {
+            tags: {
+              integration: "",
+            },
+            groups: ["1"],
+            id: "1",
+            name: "test-proj-21",
+            createdAt: "2023-04-19T14:06:42.186311Z",
+            updatedAt: "2023-04-19T14:26:26.142592Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "3",
+            name: "test-proj-3",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "4",
+            name: "test-proj-4",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "5",
+            name: "test-proj-5",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "6",
+            name: "test-proj-6",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "7",
+            name: "test-proj-7",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "8",
+            name: "test-proj-8",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "9",
+            name: "test-proj-9",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "10",
+            name: "test-proj-10",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "11",
+            name: "test-proj-11",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "12",
+            name: "test-proj-12",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "13",
+            name: "test-proj-13",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "14",
+            name: "test-proj-14",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "15",
+            name: "test-proj-15",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "16",
+            name: "test-proj-16",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "17",
+            name: "test-proj-17",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "18",
+            name: "test-proj-18",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "19",
+            name: "test-proj-19",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "20",
+            name: "test-proj-20",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "21",
+            name: "test-proj-21",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "22",
+            name: "test-proj-22",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          }];
+      }
+      return [
+        {
+          tags: {},
+          groups: [],
+          id: "22",
+          name: "test-proj-22",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+        {
+          tags: {},
+          groups: [],
+          id: "23",
+          name: "test-proj-23",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+        {
+          tags: {},
+          groups: [],
+          id: "24",
+          name: "test-proj-24",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+      ];
+    }
     return [
       {
         tags: {
@@ -987,8 +1187,26 @@ export class CxMock implements CxPlatform {
       },
     ];
   }
+  getOffsetValue(params: string) {
+    const items = params.split(',');
+    const offsetParam = items.find(param => param.startsWith('offset='));
+    return offsetParam ? offsetParam.split('=')[1] : null;
+  }
 
-  async getBranches(): Promise<string[] | undefined> {
+  getBranchName(params: string) {
+    return params.split(',')[0];
+  }
+
+  async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
+    if (params) {
+      if (this.getBranchName(params) === "main") {
+        return ["main"];
+      }
+      if (this.getOffsetValue(params) === '0') {
+        return ["main", "branch1", "branch2", "branch3", "branch4", "branch5", "branch6", "branch7", "branch8", "branch9", "branch10", "branch11", "branch12", "branch13", "branch14", "branch15", "branch16", "branch17", "branch18", "branch19", "branch20"];
+      }
+      return ["branch21", "branch22", "branch23", "branch24", "branch25", "branch26"];
+    }
     return ["main"];
   }
 
@@ -1180,7 +1398,7 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
-  
+
   async authValidate(): Promise<boolean> {
     return true;
   }

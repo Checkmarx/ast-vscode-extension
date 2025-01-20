@@ -66,9 +66,15 @@ function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {
 
   for (let i = 0; i < scanAscaResult.scanDetails.length; i++) {
     const res = scanAscaResult.scanDetails[i];
+
+    const problemText = res.problematicLine;
+    const startIndex = problemText.length - problemText.trimStart().length;
+    const endIndex = startIndex + problemText.length;
+
+
     const range = new vscode.Range(
-      new vscode.Position(res.line - 1, 0),
-      new vscode.Position(res.line - 1, 100)
+      new vscode.Position(res.line - 1, startIndex),
+      new vscode.Position(res.line - 1, endIndex)
     );
     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
       range,
