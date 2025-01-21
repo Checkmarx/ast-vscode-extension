@@ -23,13 +23,13 @@ jobs:
     - name: Run e2e tests
       if: runner.os != 'Linux'
       env:
-        CX_APIKEY: ${{ secrets.APIKEY }}
+        CX_APIKEY: ${{ secrets.CX_APIKEY }}
       run: |
         npm run test:ui-end-to-end
     - name: Run e2e tests
       if: runner.os == 'Linux'
       env:
-        CX_APIKEY: ${{ secrets.APIKEY }}
+        CX_APIKEY: ${{ secrets.CX_APIKEY }}
       run: |
         sudo apt-get install xvfb
         export DISPLAY=:99.0
