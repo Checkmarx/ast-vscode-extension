@@ -2,8 +2,13 @@ import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
 import { cx } from "../cx";
+import { resetMocks } from "./mocks/vscode-mock";
 
 describe("Cx - getScan", () => {
+  beforeEach(() => {
+    resetMocks();
+  });
+
   it("should return scan object when scanId is provided", async () => {
     const scanId = "1";
     const result = await cx.getScan(scanId);
