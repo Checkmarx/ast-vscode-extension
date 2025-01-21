@@ -42,7 +42,7 @@ export async function waitForElementToAppear(
     return selectedItem;
   }
 
-  export async function getQuickPickSelector(input: InputBox): Promise<string> {
+  async function getQuickPickSelector(input: InputBox): Promise<string> {
     const retries = 20;
     let projectList = [];
   
