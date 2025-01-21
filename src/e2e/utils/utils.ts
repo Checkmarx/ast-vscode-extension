@@ -4,7 +4,6 @@ import {
   } from "vscode-extension-tester";
   import {  sleep } from "../../test/utils/utils";
 
-  import {getQuickPickSelector } from "../../test/utils/utils";
 export async function waitForElementToAppear(
     treeScans: CustomTreeSection,
     key: string,
@@ -36,9 +35,29 @@ export async function waitForElementToAppear(
   
   export async function selectItem(input: InputBox, itemName: string) {
     await input.setText(itemName);
-  
+    
     const selectedItem = await getQuickPickSelector(input);
     await input.setText(selectedItem);
     await input.confirm();
     return selectedItem;
+  }
+
+  export async function getQuickPickSelector(input: InputBox): Promise<string> {
+    const retries = 20;
+    let projectList = [];
+  
+    
+    for (let i = 0; i < retries; i++) {
+      projectList = await input.getQuickPicks();
+      if (projectList.length > 0) {
+        break;
+      }
+      await sleep(500); 
+    }
+  
+    if (projectList.length === 0) {
+      throw new Error("Failed to load project list in QuickPickSelector");
+    }
+  
+    return projectList[0].getText();
   }
