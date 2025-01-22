@@ -14,8 +14,11 @@ export const messages = {
   scanProjectsNotMatch:
     "Project in workspace doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanBranchMatch: "Branch match the view branch. Initiating scan...",
+  scanProjectMatch: "Project match the view project. Initiating scan...",
   scanBranchNotMatch:
     "Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?",
+  scanProjectNotMatch:
+      "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanCheckStart:
     "Scan initiation started. Checking if scan is eligible to be initiated...",
   scanCompletedLoadResults: (status, scanID) =>

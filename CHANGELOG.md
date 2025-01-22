@@ -1,20 +1,24 @@
 # CHANGELOG
 
+## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Update artifact github action (AST-77702) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1018
+* Set up infra for unit test with first mock and first test (AST-70569) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1020
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.0...v2.29.1-pagination.0
+
+## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.29.0 -->
+
 ## [v2.28.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.28.0) - 2024-12-17 16:09:13
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.28.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Enabling the button after create scan failure (AST-77386) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1010
-### New Features 🚀
-* Use a local branch to create a scan. (AST-75824) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1011
-### Other Changes
-* Update js wrapper version to 0.0.121 with CLI 2.3.7 by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1012
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1013
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.27.0...v2.28.0
 
 ## [v2.27.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.27.0) - 2024-12-03 15:41:00
 

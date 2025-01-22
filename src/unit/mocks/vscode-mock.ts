@@ -62,3 +62,4 @@ mockRequire("vscode", mock);
 
 export const getCommandsExecuted = () => commandsExecuted;
 export const clearCommandsExecuted = () => { commandsExecuted = []; };
+

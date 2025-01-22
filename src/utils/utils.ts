@@ -5,9 +5,12 @@ import { AstResult } from "../models/results";
 import {
   constants
 } from "./common/constants";
-import { GitExtension } from "./types/git";
+import { GitExtension, Repository } from "./types/git";
 import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import JSONStream from 'jsonstream-ts';
+import { Transform } from 'stream';
+
 
 export function getProperty(
   o: AstResult | CxScan,
@@ -147,6 +150,35 @@ export async function getGitBranchName() {
   return gitApi.repositories[0]?.state.HEAD?.name;//TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
 }
 
+function extractRepoFullName(remoteURL: string): string | undefined {
+  const match = remoteURL.match(/[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
+  return match ? `${match[1]}/${match[2]}` : undefined;
+}
+
+export async function getActiveRepository(): Promise<Repository | undefined> {
+  const gitAPI = await getGitAPIRepository();
+  if (!gitAPI) {
+    return undefined;
+  }
+  return gitAPI.repositories[0]; // Default to the first repository
+}
+
+export async function getRepositoryFullName(): Promise<string | undefined> {
+  const activeRepo = await getActiveRepository();
+  if (!activeRepo) {
+    return undefined;
+  }
+
+  const remote = activeRepo.state.remotes.find((r) => r.name === "origin") || activeRepo.state.remotes[0];
+  const remoteURL = remote?.fetchUrl;
+
+  if (!remoteURL) {
+    return undefined;
+  }
+
+  return extractRepoFullName(remoteURL)
+}
+
 export async function getResultsJson() {
   const resultJsonPath = getResultsFilePath();
   if (fs.existsSync(resultJsonPath)) {
@@ -159,22 +191,39 @@ export async function getResultsJson() {
   return { results: [] };
 }
 
-export function readResultsFromFile(resultJsonPath: string, scan: string): CxResult[] {
-  let results = undefined;
-  if (fs.existsSync(resultJsonPath) && scan) {
-    const jsonResults = JSON.parse(
-      fs
-        .readFileSync(resultJsonPath, "utf-8")
-        .replace(/:([0-9]{15,}),/g, ':"$1",')
-    );
-    if (jsonResults.results) {
-      results = orderResults(jsonResults.results);
+
+export function readResultsFromFile(resultJsonPath: string, scan: string): Promise<CxResult[]> {
+  return new Promise((resolve, reject) => {
+    if (!fs.existsSync(resultJsonPath) || !scan) {
+      resolve([]);
+      return;
     }
-    else {
-      results = [];
-    }
-  }
-  return results;
+
+    const results: CxResult[] = [];
+    const stream = fs.createReadStream(resultJsonPath, { encoding: 'utf-8' });
+
+    const transformStream = new Transform({
+      transform(chunk, encoding, callback) {
+        const transformed = chunk.toString().replace(/:([0-9]{15,}),/g, ':"$1",');
+        callback(null, transformed);
+      },
+    });
+
+    const jsonStream = JSONStream.parse('results.*', undefined);
+
+    stream
+        .pipe(transformStream)
+        .pipe(jsonStream)
+        .on('data', (data) => {
+          results.push(data);
+        })
+        .on('end', () => {
+          resolve(orderResults(results));
+        })
+        .on('error', (error) => {
+          reject(error);
+        });
+  });
 }
 
 export function orderResults(list: CxResult[]): CxResult[] {

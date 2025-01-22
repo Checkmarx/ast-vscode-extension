@@ -4,5 +4,8 @@
   "eslint.probe": ["javascript", "typescript"],
   "editor.formatOnSave": true,
   // First run prettier then ESLint (requires both eslint and prettier extensions to be installed in vscode)
-  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
+  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"],
+  "mochaExplorer.files": "src/unit/**/*.test.ts",
+  "mochaExplorer.require": "ts-node/register",
+  "mochaExplorer.ui": "bdd"
 }

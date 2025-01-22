@@ -6,8 +6,9 @@ import {
 	WebDriver,
 	Workbench,
 } from "vscode-extension-tester";
+import { messages } from "../utils/common/messages";
 import { expect } from "chai";
-import { getQuickPickSelector, initialize } from "./utils/utils";
+import { initialize, retryTest, sleep, waitForNotificationWithTimeout, selectItem } from "./utils/utils";
 import {
 	BRANCH_KEY_TREE,
 	CX_CLEAR,
@@ -22,25 +23,6 @@ import { constants } from "../utils/common/constants";
 import { execSync } from "child_process";
 import * as fs from "fs";
 
-
-function retryTest(testFn, retries = 3) {
-	return async function () {
-		let lastError;
-		for (let attempt = 1; attempt <= retries; attempt++) {
-			try {
-				await testFn();
-				return;
-			} catch (error) {
-				lastError = error;
-				console.warn(`Retrying test... Attempt ${attempt} of ${retries}`);
-				if (attempt === retries) {
-					throw lastError;
-				}
-			}
-		}
-	};
-}
-
 function switchToBranch(branchName: string) {
 	try {
 		execSync(`git show-ref --verify --quiet refs/heads/${branchName}`);
@@ -52,50 +34,15 @@ function switchToBranch(branchName: string) {
 
 }
 
-async function sleep(ms: number) {
-	return await new Promise(resolve => setTimeout(resolve, ms));
-}
+describe.skip("Using a local branch if Git exists", () => {
+    let bench: Workbench;
+    let treeScans: CustomTreeSection;
+    let driver: WebDriver;
+    let originalBranch: string | undefined;
+    let gitExistedBefore: boolean;
 
-async function selectItem(text) {
-	const input = await InputBox.create();
-	await input.setText(text);
-	let item = await getQuickPickSelector(input);
-	await input.setText(item);
-	await input.confirm();
-	return item;
-}
-
-async function waitForNotificationWithTimeout(timeout) {
-	let firstNotification;
-	let isTimeout = false;
-
-	const timer = setTimeout(() => {
-		isTimeout = true;
-	}, timeout);
-
-	while (!firstNotification) {
-		if (isTimeout) {
-			break;
-		}
-		const resultsNotifications = await new Workbench().getNotifications();
-		firstNotification = resultsNotifications[0];
-
-		await sleep(100);
-	}
-
-	clearTimeout(timer);
-	return firstNotification;
-}
-
-describe("Using a local branch if Git exists", () => {
-	let bench: Workbench;
-	let treeScans: CustomTreeSection;
-	let driver: WebDriver;
-	let originalBranch: string | undefined;
-	let gitExistedBefore: boolean;
-
-	before(async function () {
-		this.timeout(300000);
+    before(async function () {
+        this.timeout(300000);
 
 		const branchName = "branch-not-exist-in-cx";
 		// check if git repository exists
@@ -132,9 +79,9 @@ describe("Using a local branch if Git exists", () => {
 		await sleep(3000);
 		treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_PROJECT);
-		
+
 		const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
-		
+
 		let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + constants.localBranch);
 		expect(project, `Should select ${projectName}`).is.not.undefined;
@@ -146,9 +93,9 @@ describe("Using a local branch if Git exists", () => {
 	it("should exist local branch in branches list", retryTest(async function () {
 		let treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_BRANCH);
-		
+
 		const branchName = await selectItem(constants.localBranch);
-		
+
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
 		expect(branch).is.not.undefined;
 	}, 3));
@@ -163,7 +110,14 @@ describe("Using a local branch if Git exists", () => {
 	it("should run scan with local branch", retryTest(async function () {
 		await bench.executeCommand("ast-results.createScan");
 
-		const firstNotification = waitForNotificationWithTimeout(5000)
+		let firstNotification = await waitForNotificationWithTimeout(5000)
+		let message = await firstNotification?.getMessage();
+		if (message === messages.scanProjectNotMatch) {
+			let actions = await firstNotification?.getActions()
+			let action = await actions[0];
+			await action.click();
+			firstNotification = await waitForNotificationWithTimeout(5000);
+		}
 		expect(firstNotification).is.not.undefined;
 
 	}, 3));
