@@ -60,7 +60,7 @@ export async function clearAscaProblems() {
   diagnosticCollection.clear();
 }
 
-function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {
+export function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {
   diagnosticCollection.delete(uri);
   const diagnostics: vscode.Diagnostic[] = [];
 
@@ -69,12 +69,10 @@ function updateProblems(scanAscaResult: CxAsca, uri: vscode.Uri) {
 
     const problemText = res.problematicLine;
     const startIndex = problemText.length - problemText.trimStart().length;
-    const endIndex = startIndex + problemText.length;
-
 
     const range = new vscode.Range(
       new vscode.Position(res.line - 1, startIndex),
-      new vscode.Position(res.line - 1, endIndex)
+      new vscode.Position(res.line - 1, problemText.length)
     );
     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
       range,
