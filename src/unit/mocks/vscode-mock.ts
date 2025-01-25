@@ -37,7 +37,11 @@ const mock = {
             }
             return undefined;
         },
-        workspaceFolders: [{ uri: { fsPath: "/mock/path" } }]
+        workspaceFolders: [{ uri: { fsPath: "/mock/path" } }],
+        openTextDocument: () => Promise.resolve({
+            // Mock document properties
+        }),
+        findFiles: () => Promise.resolve([])
     },
 
     window: {
@@ -52,6 +56,17 @@ const mock = {
             dispose: () => {},
             replace: () => {},
             name: "Test"
+        }),
+        createWebviewPanel: () => ({
+            webview: {
+                html: "",
+                asWebviewUri: (uri: any) => uri,
+                onDidReceiveMessage: () => ({ dispose: () => {} }),
+                postMessage: () => Promise.resolve()
+            },
+            reveal: () => {},
+            dispose: () => {},
+            onDidDispose: () => ({ dispose: () => {} })
         })
     },
 
@@ -118,7 +133,29 @@ const mock = {
             fsPath: path,
             scheme: 'file',
             path: path
+        }),
+        joinPath: (uri: any, ...pathSegments: string[]) => ({
+            fsPath: pathSegments.join('/'),
+            scheme: 'file',
+            path: pathSegments.join('/')
         })
+    },
+
+    // 🔹 **תוספת של TreeItem**
+    TreeItem: class {
+        label: string;
+        collapsibleState: any;
+        
+        constructor(label: string, collapsibleState: any) {
+            this.label = label;
+            this.collapsibleState = collapsibleState;
+        }
+    },
+
+    TreeItemCollapsibleState: {
+        None: 0,
+        Collapsed: 1,
+        Expanded: 2
     }
 };
 
