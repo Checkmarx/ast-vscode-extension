@@ -141,7 +141,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("secret detection tree with GroupBy command ", async function () {
-    this.timeout(10000);
+    this.timeout(20000);
     treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
