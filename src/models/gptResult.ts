@@ -2,7 +2,9 @@ import { KicsRealtime } from "./kicsRealtime";
 import { AstResult } from "./results";
 import * as vscode from "vscode";
 import path = require("path");
-
+import {
+	constants,
+  } from "../utils/common/constants";
 export class GptResult {
 	filename = "";
 	line = 0;
@@ -22,6 +24,11 @@ export class GptResult {
 			if (astResult.type === "sast") {
 				this.filename = workspacePath ? workspacePath[0].uri.fsPath : astResult.fileName;
 				this.resultID = astResult.id;
+			}
+			if (astResult.type === constants.scsSecretDetection) {
+				if (workspacePath && astResult.data.filename) {
+					this.filename = path.join(workspacePath[0].uri.fsPath, astResult.data.filename);
+				} 
 			}
 			else {
 				try{
