@@ -43,7 +43,6 @@ jobs:
       with:
         name: screenshots
         path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
-
   unit-tests:
     strategy:
       max-parallel: 1

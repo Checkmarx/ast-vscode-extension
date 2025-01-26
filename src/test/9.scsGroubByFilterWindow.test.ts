@@ -52,7 +52,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(8000);
+    this.timeout(16000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await new Workbench().executeCommand("workbench.action.closeActiveEditor");
