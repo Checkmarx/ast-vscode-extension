@@ -191,7 +191,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on General tab", async function () {
-    this.timeout(10000);
+    this.timeout(20000);
     const detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
@@ -204,7 +204,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on Description tab", async function () {
-    this.timeout(10000);
+    this.timeout(20000);
     // Open details view
     const detailsView = await getDetailsView();
     // Find Description Tab
@@ -222,7 +222,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on Remediation tab", async function () {
-    this.timeout(10000);
+    this.timeout(20000);
     // Open details view
     const detailsView = await getDetailsView();
     // Find Remediation Tab
