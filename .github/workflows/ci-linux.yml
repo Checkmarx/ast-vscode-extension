@@ -64,7 +64,7 @@ jobs:
     - name: Run unit tests with coverage
       run: npm run unit-coverage
 
-  integration-tests:
+  ui-tests:
     strategy:
       max-parallel: 1
       matrix:

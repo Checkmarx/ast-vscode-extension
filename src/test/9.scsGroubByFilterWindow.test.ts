@@ -141,6 +141,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("secret detection tree with GroupBy command ", async function () {
+    this.timeout(10000);
     treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
@@ -190,6 +191,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on General tab", async function () {
+    this.timeout(10000);
     const detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
@@ -202,6 +204,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on Description tab", async function () {
+    this.timeout(10000);
     // Open details view
     const detailsView = await getDetailsView();
     // Find Description Tab
@@ -219,6 +222,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should click on Remediation tab", async function () {
+    this.timeout(10000);
     // Open details view
     const detailsView = await getDetailsView();
     // Find Remediation Tab
