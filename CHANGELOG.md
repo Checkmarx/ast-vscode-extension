@@ -1,16 +1,12 @@
 # CHANGELOG
 
-## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
+## [v2.29.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-test-release.0) - 2025-01-27 14:55:42
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Update artifact github action (AST-77702) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1018
-* Set up infra for unit test with first mock and first test (AST-70569) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1020
+## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
 
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.0...v2.29.1-pagination.0
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
 
