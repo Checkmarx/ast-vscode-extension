@@ -229,7 +229,7 @@ jobs:
           PATH: "CHANGELOG.md"
 
   notify:
-    if: inputs.dev == false || inputs.vscodeTag == 'test-release'
+    if: inputs.dev == false
     needs: release
     uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
     with:
