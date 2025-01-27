@@ -87,18 +87,26 @@ jobs:
       - name: Generate Tag name
         id: generate_tag_name
         run: |
+          echo "vscodeTag input: ${{ inputs.vscodeTag }}"
           if [ ${{ inputs.dev }} == true ]; then
-            echo "1"
-            echo "TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version)" >> $GITHUB_ENV
-            echo "TAG_NAME=${{env.TAG_NAME}}"
+            echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
+            TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version prerelease command failed"
+              exit 1
+            fi
           else
-            echo "2"
-            echo "TAG_NAME=$(npm version minor --no-git-tag-version)" >> $GITHUB_ENV
-            echo "TAG_NAME=${{env.TAG_NAME}}"
+            echo "Running npm version minor"
+            TAG_NAME=$(npm version minor --no-git-tag-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version minor command failed"
+              exit 1
+            fi
           fi
+          echo "Generated TAG_NAME: $TAG_NAME"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "::set-output name=TAG_NAME::$TAG_NAME"
 
-
-          echo "::set-output name=TAG_NAME::${{env.TAG_NAME}}"
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
