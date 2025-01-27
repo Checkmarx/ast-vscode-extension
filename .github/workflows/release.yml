@@ -217,10 +217,10 @@ jobs:
     needs: release
     uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
     with:
-      product_name: Javascript Wrapper
+      product_name: VS Code
       release_version: ${{ needs.release.outputs.TAG_NAME }}
       cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
       release_author: "Phoenix Team"
-      release_url: https://github.com/CheckmarxDev/ast-cli-javascript-wrapper/releases/tag/${{ needs.release.outputs.TAG_NAME }}
-      jira_product_name: JAVASCRIPT_WRAPPER
+      release_url: https://github.com/Checkmarx/ast-vscode-extension/releases/tag/${{ needs.release.outputs.TAG_NAME }}
+      jira_product_name: VSCODE
     secrets: inherit
