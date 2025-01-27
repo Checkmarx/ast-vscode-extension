@@ -61,7 +61,7 @@ jobs:
       BRANCH_NAME: update-npm-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     outputs:
-      TAG_NAME: ${{ steps.set_tag_name.outputs.TAG_NAME }}
+      TAG_NAME: ${{ steps.generate_tag_name.outputs.TAG_NAME }}
       CLI_VERSION: ${{ steps.extract_cli_version.outputs.CLI_VERSION }}
     steps:
       # CHECKOUT PROJECT
@@ -85,6 +85,7 @@ jobs:
 
       # GET TAG NAME
       - name: Generate Tag name
+        id: generate_tag_name
         run: |
           if [ ${{ inputs.dev }} == true ]; then
             echo "TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version)" >> $GITHUB_ENV
