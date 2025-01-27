@@ -60,6 +60,9 @@ jobs:
     env:
       BRANCH_NAME: update-npm-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    outputs:
+      TAG_NAME: ${{ steps.set_tag_name.outputs.TAG_NAME }}
+      CLI_VERSION: ${{ steps.extract_cli_version.outputs.CLI_VERSION }}
     steps:
       # CHECKOUT PROJECT
       - name: Checkout
@@ -107,6 +110,15 @@ jobs:
           else
             echo "JS wrapper with version ${JS_VERSION_NAME} not found"
           fi
+
+
+      - name: Extract CLI version
+        id: extract_cli_version
+        run: |
+          CLI_VERSION=$(./node_modules/@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/resources/cx-linux version | grep -Eo '^[0-9]+\.[0-9]+\.[0-9]+')
+          echo "CLI version being packed is $CLI_VERSION"
+          echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=CLI_VERSION::$CLI_VERSION"
 
       # INSTALL VSCE
       - name: Install VSCE
@@ -167,7 +179,7 @@ jobs:
       - name: Push tag
         if: inputs.dev == false
         run: |
-          git pull 
+          git pull
           git tag ${{ env.TAG_NAME }}
           git push --tags
 
@@ -199,3 +211,16 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           PATH: "CHANGELOG.md"
+
+  notify:
+    if: inputs.dev == false || inputs.vscodeTag == 'test-release'
+    needs: release
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
+    with:
+      product_name: Javascript Wrapper
+      release_version: ${{ needs.release.outputs.TAG_NAME }}
+      cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
+      release_author: "Phoenix Team"
+      release_url: https://github.com/CheckmarxDev/ast-cli-javascript-wrapper/releases/tag/${{ needs.release.outputs.TAG_NAME }}
+      jira_product_name: JAVASCRIPT_WRAPPER
+    secrets: inherit
