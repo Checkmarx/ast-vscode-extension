@@ -17,7 +17,7 @@ describe("GptResult", () => {
       },
     ];
   });
-
+  // check path for secret detection
   it("should correctly join workspace path with filename for secret detection", () => {
     const gptResult = new GptResult(mockAstResult as AstResult, undefined);
 
