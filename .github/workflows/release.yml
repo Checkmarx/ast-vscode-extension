@@ -92,8 +92,9 @@ jobs:
           else
             echo "TAG_NAME=$(npm version minor --no-git-tag-version)" >> $GITHUB_ENV
           fi
-          echo "TAG_NAME=$TAG_NAME"
-          echo "::set-output name=TAG_NAME::$TAG_NAME"
+
+          echo "TAG_NAME=${{env.TAG_NAME}}"
+          echo "::set-output name=TAG_NAME::${{env.TAG_NAME}}"
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
