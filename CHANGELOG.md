@@ -1,16 +1,32 @@
 # CHANGELOG
 
-## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
+## [v2.29.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-test-release.0) - 2025-01-27 14:55:42
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* Fix diagnostic markers positioning to highlight specific code (AST-79936) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1030
+* Fix bug add full path of file in scs (AST-76884) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1034
+### New Features 🚀
+* Add pagination (AST-77612) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1021
 ### Other Changes
-* Update artifact github action (AST-77702) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1018
-* Set up infra for unit test with first mock and first test (AST-70569) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1020
+* fix test by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1029
+* other/Add test with real data and added command to run pipline (AST-80487) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1031
+* add unit tests for updateProblems function (AST-79936) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1032
+* Added unit tests (AST-80092) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1033
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.0...v2.29.1-pagination.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.1-pagination.0...v2.29.1-test-release.0
+
+### Fix
+
+- general:
+  - fix test (#1029) ([02408c9](https://github.com/Checkmarx/ast-vscode-extension/commit/02408c95c56d3ed238ab2d6cfd4a5c17486ef1ca)) ([#1029](https://github.com/Checkmarx/ast-vscode-extension/pull/1029))
+
+## [v2.29.1-pagination.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-pagination.0) - 2025-01-12 08:07:43
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.29.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.0) - 2024-12-31 11:29:55
 
