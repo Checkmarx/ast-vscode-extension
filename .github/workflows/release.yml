@@ -60,6 +60,9 @@ jobs:
     env:
       BRANCH_NAME: update-npm-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    outputs:
+      TAG_NAME: ${{ steps.generate_tag_name.outputs.TAG_NAME }}
+      CLI_VERSION: ${{ steps.extract_cli_version.outputs.CLI_VERSION }}
     steps:
       # CHECKOUT PROJECT
       - name: Checkout
@@ -82,12 +85,28 @@ jobs:
 
       # GET TAG NAME
       - name: Generate Tag name
+        id: generate_tag_name
         run: |
+          echo "vscodeTag input: ${{ inputs.vscodeTag }}"
           if [ ${{ inputs.dev }} == true ]; then
-            echo "TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version)" >> $GITHUB_ENV
+            echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
+            TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version prerelease command failed"
+              exit 1
+            fi
           else
-            echo "TAG_NAME=$(npm version minor --no-git-tag-version)" >> $GITHUB_ENV
+            echo "Running npm version minor"
+            TAG_NAME=$(npm version minor --no-git-tag-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version minor command failed"
+              exit 1
+            fi
           fi
+          echo "Generated TAG_NAME: $TAG_NAME"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "::set-output name=TAG_NAME::$TAG_NAME"
+
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
@@ -107,6 +126,15 @@ jobs:
           else
             echo "JS wrapper with version ${JS_VERSION_NAME} not found"
           fi
+
+
+      - name: Extract CLI version
+        id: extract_cli_version
+        run: |
+          CLI_VERSION=$(./node_modules/@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/resources/cx-linux version | grep -Eo '^[0-9]+\.[0-9]+\.[0-9]+')
+          echo "CLI version being packed is $CLI_VERSION"
+          echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=CLI_VERSION::$CLI_VERSION"
 
       # INSTALL VSCE
       - name: Install VSCE
@@ -167,7 +195,7 @@ jobs:
       - name: Push tag
         if: inputs.dev == false
         run: |
-          git pull 
+          git pull
           git tag ${{ env.TAG_NAME }}
           git push --tags
 
@@ -199,3 +227,16 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           PATH: "CHANGELOG.md"
+
+  notify:
+    if: inputs.dev == false
+    needs: release
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
+    with:
+      product_name: VS Code
+      release_version: ${{ needs.release.outputs.TAG_NAME }}
+      cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
+      release_author: "Phoenix Team"
+      release_url: https://github.com/Checkmarx/ast-vscode-extension/releases/tag/${{ needs.release.outputs.TAG_NAME }}
+      jira_product_name: VSCODE
+    secrets: inherit
