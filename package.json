@@ -40,10 +40,17 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        
         "command": "ast-results.viewSettings",
         "category": "ast-results",
         "title": "Settings",
         "icon": "$(gear)"
+      },
+      {
+        "command": "ast-results.login",
+        "title": "Checkmarx: Login to Checkmarx One",
+        "category": "Checkmarx",
+        "icon": "$(sign-in)"
       },
       {
         "command": "ast-results.viewKicsSaveSettings",
@@ -616,6 +623,11 @@
           "when": "view == scaAutoScan"
         },
         {
+          "command": "ast-results.login", 
+          "group": "navigation@0",
+          "when": "view == astResults && !ast-results.isValidCredentials"
+        },
+        {
           "command": "ast-results.createScan",
           "group": "navigation@0",
           "when": "view == astResults && ast-results.createScanButton && !ast-results.cancelScanButton  || view == astResults && !ast-results.createScanButton && !ast-results.cancelScanButton"
@@ -803,7 +815,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Login to Checkmarx](command:ast-results.login)\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -816,7 +828,7 @@
           "checkmarxOne.apiKey": {
             "type": "string",
             "order": 5,
-            "description": "Checkmarx One API KEY for authentication",
+            "markdownDescription": "Checkmarx One API KEY for authentication.\n[Login with browser](command:ast-results.login)",
             "properties": {
               "type": "string",
               "default": ""
