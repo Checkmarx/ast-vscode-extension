@@ -1,30 +1,20 @@
 # CHANGELOG
 
+## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.31.0 -->
+
+## What's Changed
+### Other Changes
+* update js wrapper version by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1039
+* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1040
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.30.0...v2.31.0
+
 ## [v2.30.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.30.0) - 2025-01-28 11:53:44
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.30.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Fix diagnostic markers positioning to highlight specific code (AST-79936) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1030
-* Fix bug add full path of file in scs (AST-76884) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1034
-### New Features 🚀
-* Add pagination (AST-77612) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1021
-### Other Changes
-* Update artifact github action (AST-77702) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1018
-* Set up infra for unit test with first mock and first test (AST-70569) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1020
-* fix test by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1029
-* other/Add test with real data and added command to run pipline (AST-80487) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1031
-* add unit tests for updateProblems function (AST-79936) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1032
-* Added unit tests (AST-80092) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1033
-* Add notify release (AST-000) by @greensd4 in https://github.com/Checkmarx/ast-vscode-extension/pull/1036
-* Update js wrapper version to 0.0.123 - CLI 2.3.12 by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1037
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1038
-
-## New Contributors
-* @greensd4 made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1036
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.29.0...v2.30.0
 
 ## [v2.29.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.29.1-test-release.0) - 2025-01-27 14:55:42
 
