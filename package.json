@@ -945,6 +945,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
+    "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2"
   },
   "overrides": {
