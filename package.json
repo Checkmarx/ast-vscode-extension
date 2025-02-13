@@ -938,13 +938,14 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.123",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.124",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
+    "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2"
   },
   "overrides": {
