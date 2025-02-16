@@ -16,6 +16,7 @@ interface OAuthConfig {
 
 export class AuthService {
     private static instance: AuthService;
+    private server: http.Server | null = null;  
     private constructor() {}
 
     public static getInstance(): AuthService {
@@ -23,6 +24,16 @@ export class AuthService {
             this.instance = new AuthService();
         }
         return this.instance;
+    }
+    private async closeServer(): Promise<void> {
+        if (this.server) {
+            return new Promise((resolve) => {
+                this.server?.close(() => {
+                    this.server = null;
+                    resolve();
+                });
+            });
+        }
     }
 
     private generatePKCE(): { codeVerifier: string; codeChallenge: string } {
@@ -33,6 +44,8 @@ export class AuthService {
     }
 
     public async authenticate(baseUri: string, tenant: string): Promise<string> {
+        await this.closeServer();
+
         const { codeVerifier, codeChallenge } = this.generatePKCE();
         const config: OAuthConfig = {
             clientId: 'ide-integration',
@@ -67,13 +80,14 @@ export class AuthService {
     
             return token;
         } catch (error) {
+            await this.closeServer();
             throw new Error(`Authentication failed: ${error.message}`);
         }
     }
     private startLocalServer(config: OAuthConfig): Promise<http.Server> {
         return new Promise((resolve) => {
-            const server = http.createServer();
-            server.listen(2000, () => resolve(server));
+             this.server = http.createServer();
+            this.server.listen(2000, () => resolve(this.server));
         });
     }
 
