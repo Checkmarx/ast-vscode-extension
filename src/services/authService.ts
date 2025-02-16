@@ -12,6 +12,7 @@ interface OAuthConfig {
     scope: string;
     codeVerifier: string;
     codeChallenge: string;
+    port: number;
 }
 
 export class AuthService {
@@ -72,23 +73,53 @@ export class AuthService {
         }
     }
 
+    private async findAvailablePort(): Promise<number> {
+        const MIN_PORT = 49152;
+        const MAX_PORT = 65535;
+        const maxAttempts = 10;  // הגבלת מספר הניסיונות
+    
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            // בחירת פורט רנדומלי מהטווח
+            const port = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1) + MIN_PORT);
+            
+            try {
+                // בדיקה אם הפורט פנוי
+                await new Promise((resolve, reject) => {
+                    const server = http.createServer();
+                    server.on('error', reject);
+                    server.listen(port, () => {
+                        server.close(() => resolve(true));
+                    });
+                });
+                
+                return port;
+            } catch (error) {
+                // אם הפורט תפוס, נמשיך לניסיון הבא
+                continue;
+            }
+        }
+        
+        throw new Error('Could not find available port after multiple attempts');
+    }
+
     public async authenticate(baseUri: string, tenant: string): Promise<string> {
         await this.closeServer();
         const validation = await this.validateConnection(baseUri, tenant);
         if (!validation.isValid) {
             throw new Error(validation.error);
         }
-        
+        const port = await this.findAvailablePort();
 
         const { codeVerifier, codeChallenge } = this.generatePKCE();
         const config: OAuthConfig = {
             clientId: 'ide-integration',
             authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
             tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
-            redirectUri: `http://localhost:2000/checkmarx1/callback`,
+            redirectUri: `http://localhost:${port}/checkmarx1/callback`,
             scope: 'openid',
             codeVerifier,
             codeChallenge,
+            port
         };
     
         try {
