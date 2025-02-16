@@ -43,8 +43,42 @@ export class AuthService {
         return { codeVerifier, codeChallenge };
     }
 
+    private async validateConnection(baseUri: string, tenant: string): Promise<{ isValid: boolean; error?: string }> {
+        try {
+            // Check if base URI exists
+            const baseCheck = await fetch(baseUri);
+            if (!baseCheck.ok) {
+                return { 
+                    isValid: false, 
+                    error: "Invalid Base URI. Please check your server address."
+                };
+            }
+    
+            // Check if tenant exists
+            const tenantCheck = await fetch(`${baseUri}/auth/realms/${tenant}`);
+            if (tenantCheck.status === 404) {
+                return { 
+                    isValid: false, 
+                    error: `Tenant "${tenant}" not found. Please check your tenant name.`
+                };
+            }
+            
+            return { isValid: true };
+        } catch (error) {
+            return { 
+                isValid: false, 
+                error: "Could not connect to server. Please check your Base URI."
+            };
+        }
+    }
+
     public async authenticate(baseUri: string, tenant: string): Promise<string> {
         await this.closeServer();
+        const validation = await this.validateConnection(baseUri, tenant);
+        if (!validation.isValid) {
+            throw new Error(validation.error);
+        }
+        
 
         const { codeVerifier, codeChallenge } = this.generatePKCE();
         const config: OAuthConfig = {
