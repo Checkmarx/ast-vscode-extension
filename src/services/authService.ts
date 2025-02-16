@@ -76,14 +76,15 @@ export class AuthService {
     private async findAvailablePort(): Promise<number> {
         const MIN_PORT = 49152;
         const MAX_PORT = 65535;
-        const maxAttempts = 10;  // הגבלת מספר הניסיונות
-    
+        const maxAttempts = 10;  // Limit the number of attempts
+
+
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            // בחירת פורט רנדומלי מהטווח
+            // Selecting a random port from the range
             const port = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1) + MIN_PORT);
             
             try {
-                // בדיקה אם הפורט פנוי
+                // Checking if the port is available
                 await new Promise((resolve, reject) => {
                     const server = http.createServer();
                     server.on('error', reject);
@@ -94,7 +95,7 @@ export class AuthService {
                 
                 return port;
             } catch (error) {
-                // אם הפורט תפוס, נמשיך לניסיון הבא
+                // If the port is occupied, we will proceed to the next attempt
                 continue;
             }
         }
@@ -150,9 +151,23 @@ export class AuthService {
         }
     }
     private startLocalServer(config: OAuthConfig): Promise<http.Server> {
-        return new Promise((resolve) => {
-             this.server = http.createServer();
-            this.server.listen(2000, () => resolve(this.server));
+        return new Promise((resolve, reject) => {
+            try {
+                const server = http.createServer();
+                server.on('error', (err) => {
+                    if ((err as any).code === 'EADDRINUSE') {
+                        reject(new Error(`Port ${config.port} is already in use. Please try again in a few moments.`));
+                    } else {
+                        reject(err);
+                    }
+                });
+                
+                server.listen(config.port, () => {
+                    resolve(server);
+                });
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
@@ -171,6 +186,20 @@ export class AuthService {
                 }
             });
         });
+    }
+
+    public async validateApiKey(apiKey: string): Promise<boolean> {
+        // try {
+        //     const response = await fetch('https://example.com/api/validateKey', {
+        //         method: 'GET',
+        //         headers: {
+        //             'Authorization': `Bearer ${apiKey}`
+        //         }
+        //     });
+            return response.ok;  // true if status is 2xx
+        // } catch (error) {
+        //     return false;
+        // }
     }
 
     private async getToken(code: string, config: OAuthConfig): Promise<string> {
@@ -192,6 +221,6 @@ export class AuthService {
         }
 
         const data = await response.json();
-        return data.access_token;
+        return data.refresh_token;
     }
 }

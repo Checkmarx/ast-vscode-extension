@@ -147,15 +147,38 @@ export class AuthenticationWebview {
 
 
 
+
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(async message => {
             if (message.command === 'authenticate') {
                 try {
                     if (message.authMethod === 'oauth') {
+                        // Existing OAuth handling
                         const authService = AuthService.getInstance();
                         await authService.authenticate(message.baseUri, message.tenant);
                         await this._saveBaseUri(message.baseUri);
                         vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
+                        this._panel.dispose();
+
+                    } else if (message.authMethod === 'apiKey') {
+                        // New API Key handling
+                        const authService = AuthService.getInstance();
+
+                        // Validate the API Key using AuthService
+                        const isValid = await authService.validateApiKey(message.apiKey);
+                        if (!isValid) {
+                            vscode.window.showErrorMessage('API Key validation failed. Please check your key.');
+                            return; // Stop here if validation fails
+                        }
+
+                        // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
+                        await vscode.workspace.getConfiguration().update(
+                            'checkmarxOne.apiKey',
+                            message.apiKey,
+                            vscode.ConfigurationTarget.Global
+                        );
+
+                        vscode.window.showInformationMessage('API Key validated and saved successfully!');
                         this._panel.dispose();
                     }
                 } catch (error) {
@@ -164,6 +187,7 @@ export class AuthenticationWebview {
             }
         }, undefined, this._disposables);
     }
+
 
     private async _saveBaseUri(uri: string) {
         if (!uri) {return;}
