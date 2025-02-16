@@ -24,6 +24,7 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
+import { AuthenticationWebview } from './webview/authenticationWebview';
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -214,6 +215,13 @@ export async function activate(context: vscode.ExtensionContext) {
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
+
+  // Register authentication command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.showAuth", () => {
+      AuthenticationWebview.show(context);
+    })
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
