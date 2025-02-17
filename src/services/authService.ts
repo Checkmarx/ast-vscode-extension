@@ -18,11 +18,15 @@ interface OAuthConfig {
 export class AuthService {
     private static instance: AuthService;
     private server: http.Server | null = null;  
-    private constructor() {}
+    private context: vscode.ExtensionContext;
+    private constructor(extensionContext: vscode.ExtensionContext) {
+        this.context = extensionContext;
 
-    public static getInstance(): AuthService {
+    }
+
+    public static getInstance(extensionContext:vscode.ExtensionContext): AuthService {
         if (!this.instance) {
-            this.instance = new AuthService();
+            this.instance = new AuthService(extensionContext);
         }
         return this.instance;
     }
@@ -136,13 +140,10 @@ export class AuthService {
             ));
     
             const code = await this.waitForCode(server);
-            const token = await this.getToken(code, config);
-    
-            await vscode.workspace.getConfiguration().update(
-                'checkmarxOne.apiKey',
-                token,
-                vscode.ConfigurationTarget.Global
-            );
+            const token = await this.getRefreshToken(code, config);
+            await this.saveToken(this.context,token);
+            await this.saveURIAndTenant(this.context, baseUri, tenant);
+           
     
             return token;
         } catch (error) {
@@ -202,7 +203,7 @@ export class AuthService {
         // }
     }
 
-    private async getToken(code: string, config: OAuthConfig): Promise<string> {
+    private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
         const params = new URLSearchParams();
         params.append('grant_type', 'authorization_code');
         params.append('client_id', config.clientId);
@@ -223,4 +224,31 @@ export class AuthService {
         const data = await response.json();
         return data.refresh_token;
     }
+    private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
+        const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
+    
+        const urls = Object.keys(urlMap);
+    
+        if (!urlMap[url]) {
+            if (urls.length >= 10) {
+                delete urlMap[urls[0]];
+            }
+            urlMap[url] = [];
+        }
+    
+        if (!urlMap[url].includes(tenant)) {
+            urlMap[url].push(tenant);
+        }
+    
+        await context.globalState.update("recentURLsAndTenant", urlMap);
+    }
+
+    public async saveToken(context: vscode.ExtensionContext, token: string) {
+        await context.secrets.store("authCredential", token);
+        vscode.window.showInformationMessage("Token saved successfully!");
+    }
+    public async getToken(context: vscode.ExtensionContext): Promise<string | undefined> {
+        return await context.secrets.get("authCredential");
+    }
+
 }

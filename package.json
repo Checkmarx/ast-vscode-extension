@@ -818,14 +818,10 @@
         "id": "ast-results",
         "order": 4,
         "properties": {
-          "checkmarxOne.apiKey": {
-            "type": "string",
+          "checkmarxOne.authentication": {
+            "type": "boolean",
             "order": 5,
-            "description": "Checkmarx One API KEY for authentication",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
+            "markdownDescription": "[Sign in to Checkmarx](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",
@@ -951,7 +947,8 @@
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
     "serialize-javascript": "^6.0.2",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "validator": "^13.12.0"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",

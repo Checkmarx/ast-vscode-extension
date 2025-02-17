@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AuthService } from '../services/authService';
-
+import { isURL } from 'validator';
 export class AuthenticationWebview {
     public static readonly viewType = 'checkmarxAuth';
     private readonly _panel: vscode.WebviewPanel;
@@ -23,10 +23,22 @@ export class AuthenticationWebview {
 
         return new AuthenticationWebview(panel, context);
     }
+    public getTenants(context: vscode.ExtensionContext, url=""): string[] {
+        const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
+        return Object.values(urlMap).flat();
+
+        //TODO: Should return the tenants for the given URL
+        // return urlMap[url] || [];
+    }
+    public getURIs(context: vscode.ExtensionContext): string[] {
+        
+        const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
+        return Object.keys(urlMap);
+    }
 
     private _getWebviewContent(): string {
-        const history = this.context.globalState.get<string[]>(AuthenticationWebview.HISTORY_KEY, []);
-        const options = history.map(uri => `<option value="${uri}">${uri}</option>`).join('');
+        const options = this.getURIs(this.context).map(uri => `<option value="${uri}">${uri}</option>`).join('');
+const tenantOptions = this.getTenants(this.context).map(tenant => `<option value="${tenant}">${tenant}</option>`).join('');
         
         return `<!DOCTYPE html>
         <html>
@@ -103,8 +115,15 @@ export class AuthenticationWebview {
                         ${options}
                     </select>
                     <input type="text" id="baseUri" placeholder="Or enter Base URI manually" class="input-field">
+                    <span id="urlError" style="color: red; font-size: 12px;"></span>
+
+
+                    <select id="tenantDropdown" class="input-field">
+                        <option value="">Select Tenant</option>
+                        ${tenantOptions}
+                    </select>
                     <input type="text" id="tenant" placeholder="Enter Tenant Name" class="input-field">
-                </div>
+               
     
                 <div id="apiKeyForm" class="hidden">
                     <input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="input-field">
@@ -116,7 +135,7 @@ export class AuthenticationWebview {
             <script>
                 const vscode = acquireVsCodeApi();
                 const authButton = document.getElementById('authButton');
-                
+
                 document.querySelectorAll('input[name="authMethod"]').forEach(radio => {
                     radio.addEventListener('change', (e) => {
                         const isOAuth = e.target.value === 'oauth';
@@ -129,7 +148,7 @@ export class AuthenticationWebview {
                 authButton.addEventListener('click', () => {
                     const authMethod = document.querySelector('input[name="authMethod"]:checked').value;
                     const baseUri = document.getElementById('baseUri').value || document.getElementById('baseUriDropdown').value;
-                    const tenant = document.getElementById('tenant').value;
+                    const tenant = document.getElementById('tenant').value || document.getElementById('tenantDropdown').value;
                     const apiKey = document.getElementById('apiKey').value;
                     
                     vscode.postMessage({ 
@@ -140,29 +159,46 @@ export class AuthenticationWebview {
                         apiKey 
                     });
                 });
+                 function isValidUrl() {
+        const baseUriInput = document.getElementById('baseUri').value;
+        vscode.postMessage({ command: 'validateURL', baseUri: baseUriInput });
+    }
+                window.addEventListener('message', (event) => {
+        const message = event.data;
+        if (message.command === 'urlValidationResult') {
+            const errorMessage = document.getElementById('urlError');
+            if (!message.isValid) {
+                errorMessage.textContent = "Invalid URL format";
+            } else {
+                errorMessage.textContent = "";
+            }
+        }
+    });
+        document.getElementById('baseUri').addEventListener('input', isValidUrl);
+
             </script>
         </body>
         </html>`;
     }
 
-
-
-
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(async message => {
+            if (message.command === 'validateURL') {
+                const isValid = isURL(message.baseUri);
+                this._panel.webview.postMessage({ command: 'urlValidationResult', isValid });
+            }
             if (message.command === 'authenticate') {
                 try {
                     if (message.authMethod === 'oauth') {
                         // Existing OAuth handling
-                        const authService = AuthService.getInstance();
+                        const authService = AuthService.getInstance(this.context);
                         await authService.authenticate(message.baseUri, message.tenant);
-                        await this._saveBaseUri(message.baseUri);
                         vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
                         this._panel.dispose();
 
                     } else if (message.authMethod === 'apiKey') {
                         // New API Key handling
-                        const authService = AuthService.getInstance();
+                        const authService = AuthService.getInstance(this.context);
 
                         // Validate the API Key using AuthService
                         const isValid = await authService.validateApiKey(message.apiKey);
@@ -172,11 +208,7 @@ export class AuthenticationWebview {
                         }
 
                         // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
-                        await vscode.workspace.getConfiguration().update(
-                            'checkmarxOne.apiKey',
-                            message.apiKey,
-                            vscode.ConfigurationTarget.Global
-                        );
+                        authService.saveToken(this.context, message.apiKey);
 
                         vscode.window.showInformationMessage('API Key validated and saved successfully!');
                         this._panel.dispose();
