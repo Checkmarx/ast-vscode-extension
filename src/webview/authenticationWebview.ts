@@ -80,6 +80,24 @@ export class AuthenticationWebview {
                 .hidden {
                     display: none;
                 }
+                .message {
+                    margin-top: 10px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    display: none;
+                }
+                
+                .error-message {
+                    background-color: var(--vscode-inputValidation-errorBackground);
+                    border: 1px solid var(--vscode-inputValidation-errorBorder);
+                    color: var(--vscode-inputValidation-errorForeground);
+                }
+                
+                .success-message {
+                    background-color: var(--vscode-inputValidation-infoBackground);
+                    border: 1px solid var(--vscode-inputValidation-infoBorder);
+                    color: var(--vscode-inputValidation-infoForeground);
+                }
             </style>
         </head>
         <body>
@@ -111,11 +129,14 @@ export class AuthenticationWebview {
                 </div>
     
                 <button id="authButton">Sign in to Checkmarx</button>
+                
+                <div id="messageBox" class="message"></div>
             </div>
     
             <script>
                 const vscode = acquireVsCodeApi();
                 const authButton = document.getElementById('authButton');
+                const messageBox = document.getElementById('messageBox');
                 
                 document.querySelectorAll('input[name="authMethod"]').forEach(radio => {
                     radio.addEventListener('change', (e) => {
@@ -140,13 +161,20 @@ export class AuthenticationWebview {
                         apiKey 
                     });
                 });
+
+                // Listening for messages from the extension
+                window.addEventListener('message', event => {
+                    const message = event.data;
+                    
+                    messageBox.textContent = message.message;
+                    messageBox.style.display = 'block';
+                    messageBox.className = 'message ' + 
+                        (message.type === 'validation-error' ? 'error-message' : 'success-message');
+                });
             </script>
         </body>
         </html>`;
     }
-
-
-
 
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(async message => {
@@ -161,33 +189,45 @@ export class AuthenticationWebview {
                         this._panel.dispose();
 
                     } else if (message.authMethod === 'apiKey') {
-                        // New API Key handling
                         const authService = AuthService.getInstance();
-
-                        // Validate the API Key using AuthService
+                        
+                        // Validating the API Key
                         const isValid = await authService.validateApiKey(message.apiKey);
+                        
                         if (!isValid) {
-                            vscode.window.showErrorMessage('API Key validation failed. Please check your key.');
-                            return; // Stop here if validation fails
+                            // Sending an error message to the window
+                            this._panel.webview.postMessage({ 
+                                type: 'validation-error',
+                                message: 'API Key validation failed. Please check your key.'
+                            });
+                            return;
                         }
 
-                        // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
+                        // If valid, saving in the configuration
                         await vscode.workspace.getConfiguration().update(
                             'checkmarxOne.apiKey',
                             message.apiKey,
                             vscode.ConfigurationTarget.Global
                         );
 
-                        vscode.window.showInformationMessage('API Key validated and saved successfully!');
-                        this._panel.dispose();
+                        // Sending a success message to the window
+                        this._panel.webview.postMessage({ 
+                            type: 'validation-success',
+                            message: 'API Key validated successfully!'
+                        });
+
+                        // Closing the window after one second
+                        setTimeout(() => this._panel.dispose(), 1000);
                     }
                 } catch (error) {
-                    vscode.window.showErrorMessage(`Authentication failed: ${error.message}`);
+                    this._panel.webview.postMessage({ 
+                        type: 'validation-error',
+                        message: `Authentication failed: ${error.message}`
+                    });
                 }
             }
         }, undefined, this._disposables);
     }
-
 
     private async _saveBaseUri(uri: string) {
         if (!uri) {return;}

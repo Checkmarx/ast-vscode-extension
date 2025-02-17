@@ -3,6 +3,9 @@ import * as http from 'http';
 import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
 import fetch from 'node-fetch';
+import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { Logs } from '../models/logs';
 
 interface OAuthConfig {
     clientId: string;
@@ -189,17 +192,17 @@ export class AuthService {
     }
 
     public async validateApiKey(apiKey: string): Promise<boolean> {
-        // try {
-        //     const response = await fetch('https://example.com/api/validateKey', {
-        //         method: 'GET',
-        //         headers: {
-        //             'Authorization': `Bearer ${apiKey}`
-        //         }
-        //     });
-            return response.ok;  // true if status is 2xx
-        // } catch (error) {
-        //     return false;
-        // }
+        try {
+            const config = new CxConfig();
+            config.apiKey = apiKey;
+            
+            const cx = new CxWrapper(config);
+            const valid = await cx.authValidate();
+            
+            return valid.exitCode === 0;
+        } catch (error) {
+            return false;
+        }
     }
 
     private async getToken(code: string, config: OAuthConfig): Promise<string> {
