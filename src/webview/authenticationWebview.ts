@@ -6,7 +6,7 @@ export class AuthenticationWebview {
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
     private static readonly HISTORY_KEY = 'checkmarxOne.history'; // Key for storing history
-    
+
     private constructor(panel: vscode.WebviewPanel, private context: vscode.ExtensionContext) {
         this._panel = panel;
         this._panel.webview.html = this._getWebviewContent();
@@ -23,7 +23,7 @@ export class AuthenticationWebview {
 
         return new AuthenticationWebview(panel, context);
     }
-    public getTenants(context: vscode.ExtensionContext, url=""): string[] {
+    public getTenants(context: vscode.ExtensionContext, url = ""): string[] {
         const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
         return Object.values(urlMap).flat();
 
@@ -31,15 +31,15 @@ export class AuthenticationWebview {
         // return urlMap[url] || [];
     }
     public getURIs(context: vscode.ExtensionContext): string[] {
-        
+
         const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
         return Object.keys(urlMap);
     }
 
     private _getWebviewContent(): string {
-        const options = this.getURIs(this.context).map(uri => `<option value="${uri}">${uri}</option>`).join('');
-const tenantOptions = this.getTenants(this.context).map(tenant => `<option value="${tenant}">${tenant}</option>`).join('');
-        
+        const urlOptions = this.getURIs(this.context).map(uri => `<option value="${uri}">${uri}</option>`).join('');
+        const tenantOptions = this.getTenants(this.context).map(tenant => `<option value="${tenant}">${tenant}</option>`).join('');
+
         return `<!DOCTYPE html>
         <html>
         <head>
@@ -92,6 +92,24 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
                 .hidden {
                     display: none;
                 }
+                .message {
+                    margin-top: 10px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    display: none;
+                }
+                
+                .error-message {
+                    background-color: var(--vscode-inputValidation-errorBackground);
+                    border: 1px solid var(--vscode-inputValidation-errorBorder);
+                    color: var(--vscode-inputValidation-errorForeground);
+                }
+                
+                .success-message {
+                    background-color: var(--vscode-inputValidation-infoBackground);
+                    border: 1px solid var(--vscode-inputValidation-infoBorder);
+                    color: var(--vscode-inputValidation-infoForeground);
+                }
             </style>
         </head>
         <body>
@@ -112,7 +130,7 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
                 <div id="oauthForm">
                     <select id="baseUriDropdown" class="input-field">
                         <option value="">Select Base URI</option>
-                        ${options}
+                        ${urlOptions}
                     </select>
                     <input type="text" id="baseUri" placeholder="Or enter Base URI manually" class="input-field">
                     <span id="urlError" style="color: red; font-size: 12px;"></span>
@@ -124,18 +142,21 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
                     </select>
                     <input type="text" id="tenant" placeholder="Enter Tenant Name" class="input-field">
                
-    
+    </div>
                 <div id="apiKeyForm" class="hidden">
                     <input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="input-field">
                 </div>
     
                 <button id="authButton">Sign in to Checkmarx</button>
+                
+                <div id="messageBox" class="message"></div>
             </div>
     
             <script>
                 const vscode = acquireVsCodeApi();
                 const authButton = document.getElementById('authButton');
-
+                const messageBox = document.getElementById('messageBox');
+                
                 document.querySelectorAll('input[name="authMethod"]').forEach(radio => {
                     radio.addEventListener('change', (e) => {
                         const isOAuth = e.target.value === 'oauth';
@@ -163,6 +184,7 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
         const baseUriInput = document.getElementById('baseUri').value;
         vscode.postMessage({ command: 'validateURL', baseUri: baseUriInput });
     }
+        document.getElementById('baseUri').addEventListener('input', isValidUrl)
                 window.addEventListener('message', (event) => {
         const message = event.data;
         if (message.command === 'urlValidationResult') {
@@ -172,10 +194,15 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
             } else {
                 errorMessage.textContent = "";
             }
-        }
-    });
-        document.getElementById('baseUri').addEventListener('input', isValidUrl);
 
+        }else{
+                    
+                    messageBox.textContent = message.message;
+                    messageBox.style.display = 'block';
+                    messageBox.className = 'message ' + 
+                        (message.type === 'validation-error' ? 'error-message' : 'success-message');}
+    });
+        ;
             </script>
         </body>
         </html>`;
@@ -187,7 +214,7 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
                 const isValid = isURL(message.baseUri);
                 this._panel.webview.postMessage({ command: 'urlValidationResult', isValid });
             }
-            if (message.command === 'authenticate') {
+            else if (message.command === 'authenticate') {
                 try {
                     if (message.authMethod === 'oauth') {
                         // Existing OAuth handling
@@ -202,33 +229,36 @@ const tenantOptions = this.getTenants(this.context).map(tenant => `<option value
 
                         // Validate the API Key using AuthService
                         const isValid = await authService.validateApiKey(message.apiKey);
+
                         if (!isValid) {
-                            vscode.window.showErrorMessage('API Key validation failed. Please check your key.');
-                            return; // Stop here if validation fails
+                            // Sending an error message to the window
+                            this._panel.webview.postMessage({
+                                type: 'validation-error',
+                                message: 'API Key validation failed. Please check your key.'
+                            });
+                            return;
                         }
 
                         // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
                         authService.saveToken(this.context, message.apiKey);
 
-                        vscode.window.showInformationMessage('API Key validated and saved successfully!');
-                        this._panel.dispose();
+                        // Sending a success message to the window
+                        this._panel.webview.postMessage({
+                            type: 'validation-success',
+                            message: 'API Key validated successfully!'
+                        });
+
+                        // Closing the window after one second
+                        setTimeout(() => this._panel.dispose(), 1000);
                     }
                 } catch (error) {
-                    vscode.window.showErrorMessage(`Authentication failed: ${error.message}`);
+                    this._panel.webview.postMessage({
+                        type: 'validation-error',
+                        message: `Authentication failed: ${error.message}`
+                    });
                 }
             }
         }, undefined, this._disposables);
-    }
-
-
-    private async _saveBaseUri(uri: string) {
-        if (!uri) {return;}
-        let history = this.context.globalState.get<string[]>(AuthenticationWebview.HISTORY_KEY, []);
-        if (!history.includes(uri)) {
-            history.unshift(uri);
-            if (history.length > 10) {history = history.slice(0, 10);}
-            await this.context.globalState.update(AuthenticationWebview.HISTORY_KEY, history);
-        }
     }
 
     public dispose() {
