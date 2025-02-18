@@ -25,7 +25,10 @@ import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
 
+let globalContext: vscode.ExtensionContext;
+
 export async function activate(context: vscode.ExtensionContext) {
+  globalContext = context;
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
@@ -214,6 +217,10 @@ export async function activate(context: vscode.ExtensionContext) {
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
+}
+
+export function getGlobalContext(): vscode.ExtensionContext {
+  return globalContext;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

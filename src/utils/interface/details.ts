@@ -4,6 +4,7 @@ import * as os from "os";
 import { constants } from "../common/constants";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { messages } from "../common/messages";
+import { getGlobalContext } from "../../extension";
 
 export class Details {
   result: AstResult;
@@ -53,6 +54,8 @@ export class Details {
   }
 
   triage(selectClassname: string) {
+    const context = getGlobalContext();
+    console.log("Global context states:", context.globalState.get("cxStates"));
     const state = constants.state.filter((element) => {
       return !!element.dependency === (this.result.type === constants.sca);
     });

@@ -8,30 +8,38 @@ import {
   getFormattedDateTime,
   getFormattedId,
   formatLabel,
-  getGitBranchName
+  getGitBranchName,
 } from "../utils";
 import { commands } from "../common/commands";
+import { constants, QuickPickPaginationButtons } from "../common/constants";
 import {
-  constants,
-  QuickPickPaginationButtons
-} from "../common/constants";
-import { getFromState, updateState, updateStateError } from "../common/globalState";
+  getFromState,
+  updateState,
+  updateStateError,
+} from "../common/globalState";
 import { CxQuickPickItem } from "./multiStepUtils";
 import { messages } from "../common/messages";
 import { cx } from "../../cx";
+import { getGlobalContext } from "../../extension";
 
 async function createPicker(
   placeholder: string,
   title: string,
-  fetchItems: (params: string, offset: number, pageSize: number) => Promise<CxQuickPickItem[]>,
+  fetchItems: (
+    params: string,
+    offset: number,
+    pageSize: number
+  ) => Promise<CxQuickPickItem[]>,
   handleSelection: (item: CxQuickPickItem) => Promise<void>,
   additionalConstantItem?: any
 ) {
-
   let currentPage = 0;
   const pageSize = 20;
-  let currentFilter = '';
-  const itemsCache = new Map<number, { items: CxQuickPickItem[]; hasNextPage: boolean }>();
+  let currentFilter = "";
+  const itemsCache = new Map<
+    number,
+    { items: CxQuickPickItem[]; hasNextPage: boolean }
+  >();
   let activeRequestId: number | null = null;
   let hasNextPage = false;
   const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
@@ -40,7 +48,7 @@ async function createPicker(
 
   const resetQuickPickState = () => {
     currentPage = 0;
-    currentFilter = '';
+    currentFilter = "";
     itemsCache.clear();
     activeRequestId = null;
   };
@@ -48,51 +56,59 @@ async function createPicker(
   const loadPage = async (page: number, currentFilter: string) => {
     const requestId = Date.now();
     activeRequestId = requestId;
-    
-      try {
-        quickPick.busy = true;
-        const offset = page * pageSize;
 
-        // Fetching a page with one extra item beyond the required size to determine if there are additional pages
-        const items = await fetchItems(currentFilter, offset, pageSize + 1);
+    try {
+      quickPick.busy = true;
+      const offset = page * pageSize;
 
-        if (activeRequestId !== requestId) {
-          return;
-        }
+      // Fetching a page with one extra item beyond the required size to determine if there are additional pages
+      const items = await fetchItems(currentFilter, offset, pageSize + 1);
 
-        hasNextPage = items.length > pageSize;
-
-        const visibleItems = [...(additionalConstantItem ? [additionalConstantItem] : []),
-        ...items.slice(0, pageSize)];
-        itemsCache.set(page, { items: visibleItems, hasNextPage });
-        quickPick.items = visibleItems;
-
-        updatePaginationButtons(hasNextPage, page);
-
-      } catch (error) {
-        vscode.window.showErrorMessage(`Error loading items: ${error}`);
-      } finally {
-        if (activeRequestId === requestId) {
-             quickPick.busy = false;
-             activeRequestId = null;
-          }
+      if (activeRequestId !== requestId) {
+        return;
       }
+
+      hasNextPage = items.length > pageSize;
+
+      const visibleItems = [
+        ...(additionalConstantItem ? [additionalConstantItem] : []),
+        ...items.slice(0, pageSize),
+      ];
+      itemsCache.set(page, { items: visibleItems, hasNextPage });
+      quickPick.items = visibleItems;
+
+      updatePaginationButtons(hasNextPage, page);
+    } catch (error) {
+      vscode.window.showErrorMessage(`Error loading items: ${error}`);
+    } finally {
+      if (activeRequestId === requestId) {
+        quickPick.busy = false;
+        activeRequestId = null;
+      }
+    }
   };
 
-  const updatePaginationButtons = (hasNextPage: boolean, currentPage: number) => {    
+  const updatePaginationButtons = (
+    hasNextPage: boolean,
+    currentPage: number
+  ) => {
     quickPick.buttons = [
       ...(currentPage > 0
-        ? [{
-          iconPath: new vscode.ThemeIcon('arrow-left'),
-          tooltip: QuickPickPaginationButtons.previousPage
-        }]
+        ? [
+            {
+              iconPath: new vscode.ThemeIcon("arrow-left"),
+              tooltip: QuickPickPaginationButtons.previousPage,
+            },
+          ]
         : []),
       ...(hasNextPage
-        ? [{
-          iconPath: new vscode.ThemeIcon('arrow-right'),
-          tooltip: QuickPickPaginationButtons.nextPage
-        }]
-        : [])
+        ? [
+            {
+              iconPath: new vscode.ThemeIcon("arrow-right"),
+              tooltip: QuickPickPaginationButtons.nextPage,
+            },
+          ]
+        : []),
     ];
   };
 
@@ -133,10 +149,22 @@ async function createPicker(
 }
 
 // label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
-export async function projectPicker(context: vscode.ExtensionContext, logs: Logs) {
-
-  const fetchProjects = async (filter: string, offset: number, pageSize: number) => {
-    return await getProjectsPickItemsWithParams(logs, context, filter, pageSize, offset);
+export async function projectPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  const fetchProjects = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ) => {
+    return await getProjectsPickItemsWithParams(
+      logs,
+      context,
+      filter,
+      pageSize,
+      offset
+    );
   };
 
   const handleProjectSelection = async (item: CxQuickPickItem) => {
@@ -144,18 +172,36 @@ export async function projectPicker(context: vscode.ExtensionContext, logs: Logs
       id: item.id,
       name: `${constants.projectLabel} ${item.label}`,
       displayScanId: undefined,
-      scanDatetime: undefined
+      scanDatetime: undefined,
     });
-    updateState(context, constants.branchIdKey, { id: undefined, name: constants.branchLabel, displayScanId: undefined, scanDatetime: undefined });
-    updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
+    updateState(context, constants.branchIdKey, {
+      id: undefined,
+      name: constants.branchLabel,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
+    updateState(context, constants.scanIdKey, {
+      id: undefined,
+      name: constants.scanLabel,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
     await setDefaultBranch(item.id, context, logs);
     await vscode.commands.executeCommand(commands.refreshTree);
   };
 
-  await createPicker(constants.projectPlaceholder, constants.projectPickerTitle, fetchProjects, handleProjectSelection);
+  await createPicker(
+    constants.projectPlaceholder,
+    constants.projectPickerTitle,
+    fetchProjects,
+    handleProjectSelection
+  );
 }
 
-export async function branchPicker(context: vscode.ExtensionContext, logs: Logs) {
+export async function branchPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
   const projectItem = getFromState(context, constants.projectIdKey);
   // Check if project is picked
   if (!projectItem || !projectItem.id) {
@@ -164,38 +210,64 @@ export async function branchPicker(context: vscode.ExtensionContext, logs: Logs)
   }
 
   const gitBranchName = await getGitBranchName();
-  const localBranch = gitBranchName ? {
-    label: constants.localBranch,
-    id: constants.localBranch,
-    alwaysShow: true,
-  } : undefined;
+  const localBranch = gitBranchName
+    ? {
+        label: constants.localBranch,
+        id: constants.localBranch,
+        alwaysShow: true,
+      }
+    : undefined;
 
-
-  const fetchBranches = async (filter: string, offset: number, pageSize: number): Promise<CxQuickPickItem[]> => {
-    return await getBranchsPickItemsWithParams(logs, projectItem.id, context, filter, pageSize, offset);
+  const fetchBranches = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ): Promise<CxQuickPickItem[]> => {
+    return await getBranchsPickItemsWithParams(
+      logs,
+      projectItem.id,
+      context,
+      filter,
+      pageSize,
+      offset
+    );
   };
 
   const handleBranchSelection = async (item: CxQuickPickItem) => {
-
     handleBranchChange(item, context, projectItem, logs);
-
   };
 
-  await createPicker(constants.branchPlaceholder, constants.branchPickerTitle, fetchBranches, handleBranchSelection, localBranch);
+  await createPicker(
+    constants.branchPlaceholder,
+    constants.branchPickerTitle,
+    fetchBranches,
+    handleBranchSelection,
+    localBranch
+  );
 }
-
 
 async function setDefaultBranch(
   projectId: string,
   context: vscode.ExtensionContext,
-  logs: Logs,
+  logs: Logs
 ) {
   try {
     const gitBranchName = await getGitBranchName();
     if (gitBranchName) {
-      const branchList = await cx.getBranchesWithParams(projectId, gitBranchName);
-      const branchName = branchList.length === 0 || branchList[0] !== gitBranchName ? constants.localBranch : branchList[0];
-      handleBranchChange({ label: branchName, id: branchName }, context, { id: projectId }, logs);
+      const branchList = await cx.getBranchesWithParams(
+        projectId,
+        gitBranchName
+      );
+      const branchName =
+        branchList.length === 0 || branchList[0] !== gitBranchName
+          ? constants.localBranch
+          : branchList[0];
+      handleBranchChange(
+        { label: branchName, id: branchName },
+        context,
+        { id: projectId },
+        logs
+      );
     }
   } catch (error) {
     logs.error(`Failed to used in a local branch: ${error}`);
@@ -203,17 +275,27 @@ async function setDefaultBranch(
   }
 }
 
-async function handleBranchChange(item: CxQuickPickItem, context: vscode.ExtensionContext, projectItem, logs: Logs) {
+async function handleBranchChange(
+  item: CxQuickPickItem,
+  context: vscode.ExtensionContext,
+  projectItem,
+  logs: Logs
+) {
   updateState(context, constants.branchIdKey, {
     id: item.id,
     name: `${constants.branchLabel} ${item.label}`,
     displayScanId: undefined,
-    scanDatetime: undefined
+    scanDatetime: undefined,
   });
 
   if (projectItem.id && item.id) {
     if (item.id === constants.localBranch) {
-      updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
+      updateState(context, constants.scanIdKey, {
+        id: undefined,
+        name: constants.scanLabel,
+        displayScanId: undefined,
+        scanDatetime: undefined,
+      });
     } else {
       const scanList = await getScansPickItems(
         logs,
@@ -230,7 +312,12 @@ async function handleBranchChange(item: CxQuickPickItem, context: vscode.Extensi
         });
         await getResultsWithProgress(logs, scanList[0].id);
       } else {
-        updateState(context, constants.scanIdKey, { id: undefined, name: constants.scanLabel, displayScanId: undefined, scanDatetime: undefined });
+        updateState(context, constants.scanIdKey, {
+          id: undefined,
+          name: constants.scanLabel,
+          displayScanId: undefined,
+          scanDatetime: undefined,
+        });
       }
     }
   } else {
@@ -264,7 +351,6 @@ export async function scanPicker(context: vscode.ExtensionContext, logs: Logs) {
       scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
     });
     if (item.id) {
-
       await getResultsWithProgress(logs, item.id);
       await vscode.commands.executeCommand(commands.refreshTree);
       quickPick.hide();
@@ -285,7 +371,7 @@ export async function scanInput(context: vscode.ExtensionContext, logs: Logs) {
 export async function getBranchPickItems(
   logs: Logs,
   projectId: string,
-  context: vscode.ExtensionContext,
+  context: vscode.ExtensionContext
 ) {
   return getBranchsPickItemsWithParams(logs, projectId, context, "", 10000, 0);
 }
@@ -308,9 +394,9 @@ export async function getBranchsPickItemsWithParams(
       try {
         const branches = branchList
           ? branchList.map((label) => ({
-            label: label,
-            id: label,
-          }))
+              label: label,
+              id: label,
+            }))
           : [];
 
         return branches;
@@ -323,7 +409,10 @@ export async function getBranchsPickItemsWithParams(
   );
 }
 
-export async function getProjectsPickItems(logs: Logs, context: vscode.ExtensionContext) {
+export async function getProjectsPickItems(
+  logs: Logs,
+  context: vscode.ExtensionContext
+) {
   return getProjectsPickItemsWithParams(logs, context, "", 10000, 0);
 }
 
@@ -342,12 +431,13 @@ export async function getProjectsPickItemsWithParams(
       });
       progress.report({ message: messages.loadingProjects });
       try {
-
         const params = `name=${filter},limit=${limit},offset=${offset}`;
         const projectList = await cx.getProjectListWithParams(params);
 
-        return projectList.map((label) => ({ label: label.name, id: label.id }));
-
+        return projectList.map((label) => ({
+          label: label.name,
+          id: label.id,
+        }));
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
         vscode.commands.executeCommand(commands.showError);
@@ -355,7 +445,6 @@ export async function getProjectsPickItemsWithParams(
       }
     }
   );
-
 }
 export async function getScansPickItems(
   logs: Logs,
@@ -372,11 +461,11 @@ export async function getScansPickItems(
       try {
         return scanList
           ? scanList.map((label) => ({
-            label: formatLabel(label, scanList),
-            id: label.id,
-            datetime: getFormattedDateTime(label.createdAt),
-            formattedId: getFormattedId(label, scanList)
-          }))
+              label: formatLabel(label, scanList),
+              id: label.id,
+              datetime: getFormattedDateTime(label.createdAt),
+              formattedId: getFormattedId(label, scanList),
+            }))
           : [];
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
@@ -394,6 +483,9 @@ export async function getResultsWithProgress(logs: Logs, scanId: string) {
       token.onCancellationRequested(() => logs.info(messages.cancelLoading));
       progress.report({ message: messages.loadingResults });
       await cx.getResults(scanId);
+      const context = getGlobalContext();
+      const states = await cx.triageGetStates(false);
+      context.globalState.update("cxStates", states.payload);
     }
   );
 }
@@ -419,19 +511,21 @@ export async function loadScanId(
     id: project.id,
     name: `${constants.projectLabel} ${project.name}`,
     displayScanId: undefined,
-    scanDatetime: undefined
+    scanDatetime: undefined,
   });
   updateState(context, constants.branchIdKey, {
     id: scan.branch,
     name: `${constants.branchLabel} ${getProperty(scan, "branch")}`,
     displayScanId: undefined,
-    scanDatetime: undefined
+    scanDatetime: undefined,
   });
   updateState(context, constants.scanIdKey, {
     id: scan.id,
     name: `${constants.scanLabel} ${getScanLabel(scan.createdAt, scan.id)}`,
     displayScanId: scan.id,
-    scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.createdAt)}`,
+    scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(
+      scan.createdAt
+    )}`,
   });
 
   await getResultsWithProgress(logs, scan.id);
