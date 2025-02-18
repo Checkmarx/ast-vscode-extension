@@ -55,7 +55,7 @@ export class Details {
 
   triage(selectClassname: string) {
     const context = getGlobalContext();
-    const customStates = context.globalState.get("cxStates");
+    const customStates = context.globalState.get(constants.customStates);
     const state = constants.state.filter((element) => {
       return !!element.dependency === (this.result.type === constants.sca);
     });

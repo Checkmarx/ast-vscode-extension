@@ -485,7 +485,7 @@ export async function getResultsWithProgress(logs: Logs, scanId: string) {
       await cx.getResults(scanId);
       const context = getGlobalContext();
       const states = await cx.triageGetStates(false);
-      context.globalState.update("cxStates", states.payload);
+      context.globalState.update(constants.customStates, states.payload);
     }
   );
 }

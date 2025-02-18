@@ -130,7 +130,8 @@ export interface CxPlatform {
     scanType: string,
     state: string,
     comment: string,
-    severity: string
+    severity: string,
+    stateId: number
   ): Promise<number>;
 
   /**

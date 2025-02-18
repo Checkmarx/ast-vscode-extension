@@ -342,6 +342,7 @@ export class Cx implements CxPlatform {
     projectId: string,
     similarityId: string,
     scanType: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any[] | undefined> {
     let r = [];
     const config = this.getAstConfiguration();
@@ -364,7 +365,8 @@ export class Cx implements CxPlatform {
     scanType: string,
     state: string,
     comment: string,
-    severity: string
+    severity: string,
+    stateId: number
   ): Promise<number> {
     let r = -1;
     const config = this.getAstConfiguration();
@@ -378,7 +380,8 @@ export class Cx implements CxPlatform {
       scanType,
       state,
       comment,
-      severity.toLowerCase()
+      severity.toLowerCase(),
+      stateId
     );
     if (triage.exitCode === 0) {
       r = triage.exitCode;

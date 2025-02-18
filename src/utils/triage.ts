@@ -12,6 +12,7 @@ import { getLearnMore } from "../sast/learnMore";
 import { TriageCommand } from "../models/triageCommand";
 import { messages } from "./common/messages";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
+import { getStateIdForTriage } from "./utils";
 
 export async function updateResults(
   result: AstResult,
@@ -26,13 +27,17 @@ export async function updateResults(
 
   // Update on cxOne
   const projectId = getFromState(context, constants.projectIdKey).id;
+  const stateId = getStateIdForTriage(result.state);
+  console.log("stateId!!!!!!", stateId);
+
   await cx.triageUpdate(
     projectId,
     result.similarityId,
     result.type,
     result.state,
     comment,
-    result.severity
+    result.severity,
+    stateId
   );
   // Update local results
   const resultHash = result.getResultHash();
@@ -93,9 +98,10 @@ export async function triageSubmit(
   try {
     await updateResults(result, context, data.comment, resultsProvider);
     updateState(context, constants.triageUpdate, {
-      id: true, name: constants.triageUpdate,
+      id: true,
+      name: constants.triageUpdate,
       scanDatetime: "",
-      displayScanId: ""
+      displayScanId: "",
     });
     await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
@@ -104,9 +110,7 @@ export async function triageSubmit(
     if (result.type === "sast") {
       await getLearnMore(logs, context, result, detailsPanel);
     }
-    vscode.window.showInformationMessage(
-      messages.triageSubmitedSuccess
-    );
+    vscode.window.showInformationMessage(messages.triageSubmitedSuccess);
   } catch (error) {
     vscode.window.showErrorMessage(messages.triageError(error));
     return;
