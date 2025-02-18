@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { AuthService } from '../services/authService';
 import { isURL } from 'validator';
+import { getNonce } from '../utils/utils';
 export class AuthenticationWebview {
     public static readonly viewType = 'checkmarxAuth';
     private readonly _panel: vscode.WebviewPanel;
@@ -9,8 +10,12 @@ export class AuthenticationWebview {
 
     private constructor(panel: vscode.WebviewPanel, private context: vscode.ExtensionContext) {
         this._panel = panel;
-        this._panel.webview.html = this._getWebviewContent();
+        this._panel.webview.html = this._getWebviewContent(this._panel.webview);
         this._setWebviewMessageListener(this._panel.webview);
+        const urls = this.getURIs(this.context);
+        this._panel.webview.postMessage({ type: 'setUrls', items: urls });
+        const tenants = this.getTenants(this.context);
+        this._panel.webview.postMessage({ type: 'setTenants', items: tenants });
     }
 
     public static show(context: vscode.ExtensionContext) {
@@ -18,7 +23,7 @@ export class AuthenticationWebview {
             AuthenticationWebview.viewType,
             'Checkmarx One Authentication',
             vscode.ViewColumn.One,
-            { enableScripts: true, retainContextWhenHidden: true }
+            { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [context.extensionUri], }
         );
 
         return new AuthenticationWebview(panel, context);
@@ -36,176 +41,73 @@ export class AuthenticationWebview {
         return Object.keys(urlMap);
     }
 
-    private _getWebviewContent(): string {
-        const urlOptions = this.getURIs(this.context).map(uri => `<option value="${uri}">${uri}</option>`).join('');
-        const tenantOptions = this.getTenants(this.context).map(tenant => `<option value="${tenant}">${tenant}</option>`).join('');
+
+    private _getWebviewContent(webview: vscode.Webview): string {
+        const styleBootStrap = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "media", "bootstrap", "bootstrap.min.css")
+        );
+        const scriptBootStrap = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "media", "bootstrap", "bootstrap.min.js")
+        );
+        const scriptUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "media", "auth.js")
+        );
+        const styleAuth = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "media", "auth.css")
+        );
+        const nonce = getNonce();
 
         return `<!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Checkmarx One Authentication</title>
-            <style>
-                body {
-                    display: flex;
-                    align-items: flex-start;
-                    justify-content: flex-start;
-                    height: 100vh;
-                    background-color: var(--vscode-editor-background);
-                    font-family: var(--vscode-font-family);
-                    color: var(--vscode-foreground);
-                    padding: 20px;
-                }
-                .auth-container {
-                    width: 400px;
-                    padding: 20px;
-                    background: var(--vscode-input-background);
-                    border-radius: 10px;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                    text-align: center;
-                }
-                .radio-group {
-                    display: flex;
-                    justify-content: center;
-                    gap: 15px;
-                    margin-bottom: 15px;
-                }
-                .input-field {
-                    width: 100%;
-                    padding: 8px;
-                    margin-bottom: 10px;
-                    background: var(--vscode-input-background);
-                    color: var(--vscode-input-foreground);
-                    border: 1px solid var(--vscode-input-border);
-                    border-radius: 5px;
-                }
-                button {
-                    width: 100%;
-                    padding: 10px;
-                    background: var(--vscode-button-background);
-                    color: var(--vscode-button-foreground);
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    margin-top: 10px;
-                }
-                .hidden {
-                    display: none;
-                }
-                .message {
-                    margin-top: 10px;
-                    padding: 10px;
-                    border-radius: 5px;
-                    display: none;
-                }
-                
-                .error-message {
-                    background-color: var(--vscode-inputValidation-errorBackground);
-                    border: 1px solid var(--vscode-inputValidation-errorBorder);
-                    color: var(--vscode-inputValidation-errorForeground);
-                }
-                
-                .success-message {
-                    background-color: var(--vscode-inputValidation-infoBackground);
-                    border: 1px solid var(--vscode-inputValidation-infoBorder);
-                    color: var(--vscode-inputValidation-infoForeground);
-                }
-            </style>
-        </head>
-        <body>
-            <div class="auth-container">
-                <h3>Checkmarx One Authentication</h3>
-                
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="authMethod" value="oauth" checked>
-                        By OAuth
-                    </label>
-                    <label>
-                        <input type="radio" name="authMethod" value="apiKey">
-                        By API KEY
-                    </label>
-                </div>
-    
-                <div id="oauthForm">
-                    <select id="baseUriDropdown" class="input-field">
-                        <option value="">Select Base URI</option>
-                        ${urlOptions}
-                    </select>
-                    <input type="text" id="baseUri" placeholder="Or enter Base URI manually" class="input-field">
-                    <span id="urlError" style="color: red; font-size: 12px;"></span>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<link href="${styleBootStrap}" rel="stylesheet">
+	<link href="${styleAuth}" rel="stylesheet">
+	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
+	<title>Checkmarx One Authentication</title>
 
 
-                    <select id="tenantDropdown" class="input-field">
-                        <option value="">Select Tenant</option>
-                        ${tenantOptions}
-                    </select>
-                    <input type="text" id="tenant" placeholder="Enter Tenant Name" class="input-field">
-               
-    </div>
-                <div id="apiKeyForm" class="hidden">
-                    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="input-field">
-                </div>
-    
-                <button id="authButton">Sign in to Checkmarx</button>
-                
-                <div id="messageBox" class="message"></div>
-            </div>
-    
-            <script>
-                const vscode = acquireVsCodeApi();
-                const authButton = document.getElementById('authButton');
-                const messageBox = document.getElementById('messageBox');
-                
-                document.querySelectorAll('input[name="authMethod"]').forEach(radio => {
-                    radio.addEventListener('change', (e) => {
-                        const isOAuth = e.target.value === 'oauth';
-                        document.getElementById('oauthForm').classList.toggle('hidden', !isOAuth);
-                        document.getElementById('apiKeyForm').classList.toggle('hidden', isOAuth);
-                        authButton.textContent = isOAuth ? 'Sign in to Checkmarx' : 'Validate Connection';
-                    });
-                });
-    
-                authButton.addEventListener('click', () => {
-                    const authMethod = document.querySelector('input[name="authMethod"]:checked').value;
-                    const baseUri = document.getElementById('baseUri').value || document.getElementById('baseUriDropdown').value;
-                    const tenant = document.getElementById('tenant').value || document.getElementById('tenantDropdown').value;
-                    const apiKey = document.getElementById('apiKey').value;
-                    
-                    vscode.postMessage({ 
-                        command: 'authenticate', 
-                        authMethod, 
-                        baseUri,
-                        tenant,
-                        apiKey 
-                    });
-                });
-                 function isValidUrl() {
-        const baseUriInput = document.getElementById('baseUri').value;
-        vscode.postMessage({ command: 'validateURL', baseUri: baseUriInput });
-    }
-        document.getElementById('baseUri').addEventListener('input', isValidUrl)
-                window.addEventListener('message', (event) => {
-        const message = event.data;
-        if (message.command === 'urlValidationResult') {
-            const errorMessage = document.getElementById('urlError');
-            if (!message.isValid) {
-                errorMessage.textContent = "Invalid URL format";
-            } else {
-                errorMessage.textContent = "";
-            }
+</head>
 
-        }else{
-                    
-                    messageBox.textContent = message.message;
-                    messageBox.style.display = 'block';
-                    messageBox.className = 'message ' + 
-                        (message.type === 'validation-error' ? 'error-message' : 'success-message');}
-    });
-        ;
-            </script>
-        </body>
-        </html>`;
+<body>
+	<div class="auth-container">
+		<h3>Checkmarx One Authentication</h3>
+		<div class="radio-group">
+			<label>
+				<input type="radio" name="authMethod" value="oauth" checked>
+				By OAuth
+			</label>
+			<label>
+				<input type="radio" name="authMethod" value="apiKey">
+				By API KEY
+			</label>
+		</div>
+
+		<div id="oauthForm" class="container mt-3 position-relative">
+
+			<label for="baseUri" class="form-label">Select Base URI:</label>
+			<input type="text" id="baseUri" class="form-control" placeholder="Type here...">
+			<div id="urls-list" class="autocomplete-items"></div>
+			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
+
+
+			<label for="tenant" class="form-label">Select Tenant:</label>
+			<input type="text" id="tenant" class="form-control" placeholder="Type here...">
+			<div id="tenants-list" class="autocomplete-items"></div>
+		</div>
+		<div id="apiKeyForm" class="hidden">
+			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="input-field">
+		</div>
+
+		<button class="btn btn-primary" id="authButton" disabled>Sign in to Checkmarx</button>
+
+		<div id="messageBox" style="display: none;" class="message"></div>
+	</div>
+
+	<script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>`;
     }
 
     private _setWebviewMessageListener(webview: vscode.Webview) {

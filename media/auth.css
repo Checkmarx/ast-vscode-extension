@@ -1,0 +1,90 @@
+body {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	height: 100vh;
+	background-color: var(--vscode-editor-background);
+	font-family: var(--vscode-font-family);
+	color: var(--vscode-foreground);
+	padding: 20px;
+}
+.auth-container {
+	width: 400px;
+	padding: 20px;
+	background: var(--vscode-input-background);
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	text-align: center;
+}
+.radio-group {
+	display: flex;
+	justify-content: center;
+	gap: 15px;
+	margin-bottom: 15px;
+}
+.input-field {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 10px;
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	border-radius: 5px;
+}
+button {
+	width: 100%;
+	padding: 10px;
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	margin-top: 10px;
+}
+.hidden {
+	display: none;
+}
+.message {
+	margin-top: 10px;
+	padding: 10px;
+	border-radius: 5px;
+	display: none;
+}
+
+.error-message {
+	background-color: var(--vscode-inputValidation-errorBackground);
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	color: var(--vscode-inputValidation-errorForeground);
+}
+
+.success-message {
+	background-color: var(--vscode-inputValidation-infoBackground);
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
+	color: var(--vscode-inputValidation-infoForeground);
+}
+	  .autocomplete-items {
+position: absolute;
+background-color: white;
+border: 1px solid #ddd;
+border-radius: 8px;
+width: 100%;
+max-height: 250px;
+overflow-y: auto;
+z-index: 1000;
+box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+display: none;
+}
+.autocomplete-items .autocomplete-item {
+padding: 10px;
+cursor: pointer;
+display: flex;
+align-items: center;
+transition: background-color 0.2s ease-in-out;
+}
+.autocomplete-items .autocomplete-item:hover {
+background-color: #f8f9fa;
+}
+.autocomplete-items .autocomplete-item i {
+margin-left: 10px;
+color: #0d6efd;
+}
