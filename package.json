@@ -509,7 +509,7 @@
         "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
-      }
+    }
     ],
     "submenus": [
       {
@@ -819,7 +819,7 @@
         "order": 4,
         "properties": {
           "checkmarxOne.authentication": {
-            "type": "boolean",
+            "type":"null",
             "order": 5,
             "markdownDescription": "[Sign in to Checkmarx](command:ast-results.showAuth)"
           },

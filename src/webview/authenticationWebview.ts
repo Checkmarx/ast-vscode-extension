@@ -102,7 +102,7 @@ export class AuthenticationWebview {
 
 		<button class="btn btn-primary" id="authButton" disabled>Sign in to Checkmarx</button>
 
-		<div id="messageBox" style="display: none;" class="message"></div>
+		<div id="messageBox" class="message"></div>
 	</div>
 
 	<script nonce="${nonce}" src="${scriptUri}"></script>
@@ -114,7 +114,7 @@ export class AuthenticationWebview {
         webview.onDidReceiveMessage(async message => {
             if (message.command === 'validateURL') {
                 const isValid = isURL(message.baseUri);
-                this._panel.webview.postMessage({ command: 'urlValidationResult', isValid });
+                this._panel.webview.postMessage({ type: 'urlValidationResult', isValid });
             }
             else if (message.command === 'authenticate') {
                 try {
