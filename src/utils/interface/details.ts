@@ -55,10 +55,16 @@ export class Details {
 
   triage(selectClassname: string) {
     const context = getGlobalContext();
-    console.log("Global context states:", context.globalState.get("cxStates"));
+    const customStates = context.globalState.get("cxStates");
     const state = constants.state.filter((element) => {
       return !!element.dependency === (this.result.type === constants.sca);
     });
+
+    const stateOptions =
+      this.result.type === constants.sast
+        ? this.getSastStateOptions(customStates, state)
+        : this.getDefaultStateOptions(state);
+
     const updateButton =
       this.result.type !== constants.sca
         ? `<button class="submit">Update</button>`
@@ -66,35 +72,52 @@ export class Details {
     const comment =
       this.result.type !== constants.sca
         ? `<div class="comment-container">
-				<textarea placeholder="Comment (optional)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
-			</div>`
+        <textarea placeholder="Comment (optional)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
+      </div>`
         : ``;
 
     return `<div class="ast-triage">
-				<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
-					${constants.status.map((element) => {
+        <select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
+          ${constants.status.map((element) => {
             return `<option id=${element.value} class="${element.class}" ${
               this.result.severity === element.value ? "selected" : ""
-            }>
-									${element.value}	
-								</option>`;
+            }>${element.value}</option>`;
           })}
-				</select>
-				<select id="select_state" class="state">
-					${state.map((element) => {
-            return `<option id=${element.value} ${
-              this.result.state === element.tag ? 'selected="selected"' : ""
-            }>
-											${element.value}	
-										</option>`;
-          })}
-				</select>
-			</div>
-			${comment}
-			${updateButton}
-			</br>`;
+        </select>
+        ${stateOptions}
+      </div>
+      ${comment}
+      ${updateButton}
+      </br>`;
   }
 
+  getSastStateOptions(customStates, state) {
+    return `<select id="select_state" class="state">
+      ${customStates
+        .map((customState) => {
+          const matchedState = state.find(
+            (element) => element.tag === customState.name
+          );
+          return `<option id=${customState.name} ${
+            this.result.state === customState.name ||
+            this.result.state === matchedState?.tag
+              ? 'selected="selected"'
+              : ""
+          }>${matchedState ? matchedState.value : customState.name}</option>`;
+        })
+        .join("")}
+    </select>`;
+  }
+
+  getDefaultStateOptions(state) {
+    return `<select id="select_state" class="state">
+      ${state.map((element) => {
+        return `<option id=${element.value} ${
+          this.result.state === element.tag ? 'selected="selected"' : ""
+        }>${element.value}</option>`;
+      })}
+    </select>`;
+  }
   generalTab(cxPath: vscode.Uri) {
     return `<body>
 				<span class="details">
