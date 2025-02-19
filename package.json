@@ -819,9 +819,9 @@
         "order": 4,
         "properties": {
           "checkmarxOne.authentication": {
-            "type":"null",
+            "type":"object",
             "order": 5,
-            "markdownDescription": "[Sign in to Checkmarx](command:ast-results.showAuth)"
+            "markdownDescription": "## [➡️**Sign in to Checkmarx**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

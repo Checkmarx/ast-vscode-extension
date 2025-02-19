@@ -16,7 +16,6 @@
 				const isOAuth = e.target.value === "oauth";
 				document.getElementById("oauthForm").classList.toggle("hidden", !isOAuth);
 				document.getElementById("apiKeyForm").classList.toggle("hidden", isOAuth);
-				authButton.textContent = isOAuth ? "Sign in to Checkmarx" : "Validate Connection";
 				messageBox.style.display = "none";
 				isBtnDisabled();
 			});
@@ -55,9 +54,10 @@
 
 		window.addEventListener("message", (event) => {
 			const message = event.data;
-			if (message.type === "urlValidationResult" && !message.isValid) {
+			if (message.type === "urlValidationResult" && urlInput.value!=="" && !message.isValid) {
 				errorMessage.textContent = "Invalid URL format";
 				errorMessage.style.display = "block";
+				isBtnDisabled();
 			} else if( message.type === "validation-success"|| message.type === "validation-error") {
 				showMessage(message.message, message.type === "validation-error");}
 		});
@@ -69,7 +69,7 @@
 					inputElement.addEventListener("input", function () {
 						const query = this.value.toLowerCase();
 						listElement.innerHTML = "";
-						errorMessage.style.display = "none";
+						if (validateCallback) errorMessage.style.display = "none";
 						messageBox.style.display = "none";
 
 						if (!query) {
@@ -109,6 +109,7 @@
 				if (event.target !== inputElement) {
 					listElement.innerHTML = "";
 					listElement.style.display = "none";
+					if (validateCallback) validateCallback(inputElement.value);
 					isBtnDisabled();
 				}
 			});

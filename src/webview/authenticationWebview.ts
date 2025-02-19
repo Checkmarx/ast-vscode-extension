@@ -71,42 +71,34 @@ export class AuthenticationWebview {
 </head>
 
 <body>
-	<div class="auth-container">
-		<h3>Checkmarx One Authentication</h3>
-		<div class="radio-group">
-			<label>
-				<input type="radio" name="authMethod" value="oauth" checked>
-				By OAuth
-			</label>
-			<label>
-				<input type="radio" name="authMethod" value="apiKey">
-				By API KEY
-			</label>
-		</div>
-
-		<div id="oauthForm" class="container mt-3 position-relative">
-
-			<label for="baseUri" class="form-label">Select Base URI:</label>
-			<input type="text" id="baseUri" class="form-control" placeholder="Type here...">
-			<div id="urls-list" class="autocomplete-items"></div>
+<div class="auth-container">
+        <div class="auth-form-title">Checkmarx One Authentication</div>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="authMethod" value="oauth" checked> By OAuth
+            </label>
+            <label>
+                <input type="radio" name="authMethod" value="apiKey"> By API KEY
+            </label>
+        </div>
+        <div id="oauthForm" class="auth-form">
+            <label for="baseUri" class="form-label">Select Base URI:</label>
+            <input type="text" id="baseUri" class="auth-input" placeholder="Type here...">
+            <div id="urls-list" class="autocomplete-items"></div>
 			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
 
 
-			<label for="tenant" class="form-label">Select Tenant:</label>
-			<input type="text" id="tenant" class="form-control" placeholder="Type here...">
-			<div id="tenants-list" class="autocomplete-items"></div>
-		</div>
-		<div id="apiKeyForm" class="hidden">
-			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="input-field">
-		</div>
-
-		<button class="btn btn-primary" id="authButton" disabled>Sign in to Checkmarx</button>
-
-		<div id="messageBox" class="message"></div>
-	</div>
-
-	<script nonce="${nonce}" src="${scriptUri}"></script>
-</body>
+            <label for="tenant" class="form-label">Select Tenant:</label>
+            <input type="text" id="tenant" class="auth-input" placeholder="Type here...">
+            <div id="tenants-list" class="autocomplete-items"></div>
+        </div>
+        <div id="apiKeyForm" class="hidden">
+			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="auth-input">
+        </div>
+        <button id="authButton" class="auth-button" disabled>Sign in to Checkmarx</button>
+        <div id="messageBox" class="message"></div>
+    </div>
+    <script nonce="${nonce}" src="${scriptUri}"></script>
 </html>`;
     }
 
