@@ -33,6 +33,12 @@
         "title": "Details"
       },
       {
+        "command": "ast-results.clearApiKey",
+        "title": "Clear API Key",
+        "category": "ast-results",
+        "icon": "$(trash)"
+      },
+      {
         "command": "ast-results.viewResult",
         "category": "ast-results",
         "title": "View",
@@ -813,93 +819,93 @@
       }
     ],
     "configuration": [
-      {
-        "title": "Checkmarx One",
-        "id": "ast-results",
-        "order": 4,
-        "properties": {
-          "checkmarxOne.apiKey": {
-            "type": "string",
-            "order": 5,
-            "description": "Checkmarx One API KEY for authentication",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          "checkmarxOne.additionalParams": {
-            "type": "string",
-            "order": 6,
-            "description": "Additional Parameters",
-            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
-          }
-        }
-      },
-      {
-        "title": "Checkmarx KICS Real-time Scanning",
-        "id": "kics-ast",
-        "order": 1,
-        "properties": {
-          "CheckmarxKICS.Activate KICS Real-time Scanning": {
-            "type": "boolean",
-            "order": 3,
-            "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html)."
-          },
-          "CheckmarxKICS.Additional Parameters": {
-            "type": "string",
-            "order": 4,
-            "default": "",
-            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
-          }
-        }
-      },
-      {
-        "title": "Checkmarx AI Security Champion",
-        "id": "ask-kics",
-        "order": 3,
-        "properties": {
-          "CheckmarxSecurityChampion.key": {
-            "type": "string",
-            "order": 3,
-            "default": "",
-            "markdownDescription": "Api key to connect to OpenAI."
-          },
-          "CheckmarxSecurityChampion.model": {
-            "order": 2,
-            "type": "string",
-            "default": "gpt-3.5-turbo",
-            "markdownDescription": "The model for AI Security Champion to use",
-            "enum": [
-              "gpt-4",
-              "gpt-4-32k",
-              "gpt-3.5-turbo"
-            ],
-            "enumDescriptions": [
-              "gpt-4: (Recommended)",
-              "gpt-3.5-turbo"
-            ]
-          }
-        }
-      },
-      {
-        "title": "Activate ASCA",
-        "id": "asca",
-        "order": 2,
-        "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your file as you code"
-          }
+    {
+      "title": "Checkmarx One",
+      "id": "ast-results",
+      "order": 4,
+      "properties": {
+        "checkmarxOne.apiKey": {
+          "type": "string",
+          "order": 5,
+          "description": "Checkmarx One API KEY for authentication",
+          "default": ""
+        },
+        "checkmarxOne.additionalParams": {
+          "type": "string",
+          "order": 6,
+          "description": "Additional Parameters",
+          "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+          "default": ""
+        },
+        "checkmarxOne.clearApiKey": {
+          "type": "boolean",
+          "order": 7,
+          "description": "Clear the saved API Key from the extension",
+          "default": false
         }
       }
-    ]
+    },
+    {
+      "title": "Checkmarx KICS Real-time Scanning",
+      "id": "kics-ast",
+      "order": 1,
+      "properties": {
+        "CheckmarxKICS.Activate KICS Real-time Scanning": {
+          "type": "boolean",
+          "order": 3,
+          "default": true,
+          "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html)."
+        },
+        "CheckmarxKICS.Additional Parameters": {
+          "type": "string",
+          "order": 4,
+          "default": "",
+          "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
+        }
+      }
+    },
+    {
+      "title": "Checkmarx AI Security Champion",
+      "id": "ask-kics",
+      "order": 3,
+      "properties": {
+        "CheckmarxSecurityChampion.key": {
+          "type": "string",
+          "order": 3,
+          "default": "",
+          "markdownDescription": "Api key to connect to OpenAI."
+        },
+        "CheckmarxSecurityChampion.model": {
+          "order": 2,
+          "type": "string",
+          "default": "gpt-3.5-turbo",
+          "markdownDescription": "The model for AI Security Champion to use",
+          "enum": [
+            "gpt-4",
+            "gpt-4-32k",
+            "gpt-3.5-turbo"
+          ],
+          "enumDescriptions": [
+            "gpt-4: (Recommended)",
+            "gpt-3.5-turbo"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Activate ASCA",
+      "id": "asca",
+      "order": 2,
+      "properties": {
+        "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
+          "type": "boolean",
+          "order": 3,
+          "default": false,
+          "markdownDescription": "Scans your file as you code"
+        }
+      }
+    }
+  ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

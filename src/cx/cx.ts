@@ -17,8 +17,15 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions
     from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import { AuthenticationWebview } from "../webview/authenticationWebview";
 
 export class Cx implements CxPlatform {
+    private context: vscode.ExtensionContext;
+
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
+
     async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
         const cx = new CxWrapper(this.getBaseAstConfiguration());
         let jsonResults = undefined;
@@ -233,7 +240,10 @@ export class Cx implements CxPlatform {
 
 
     getAstConfiguration() {
-        const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+       // const token = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
+        const token = this.context.globalState.get<string>(AuthenticationWebview.API_KEY_HISTORY_KEY, "");
+
+
         if (!token) {
             return undefined;
         }

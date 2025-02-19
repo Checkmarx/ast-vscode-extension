@@ -25,8 +25,10 @@ import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from './webview/authenticationWebview';
+import { initialize } from './cx';
 
 export async function activate(context: vscode.ExtensionContext) {
+  initialize(context);
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
@@ -222,6 +224,46 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context);
     })
   );
+
+  // Register clear API key command (triggered by an action)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ast-results.clearApiKey', async () => {
+      try {
+        await context.globalState.update(AuthenticationWebview.API_KEY_HISTORY_KEY, "");
+        await vscode.workspace.getConfiguration().update(
+          'checkmarxOne.apiKey',
+          "",
+          vscode.ConfigurationTarget.Workspace
+        );
+        vscode.window.showInformationMessage('API Key history has been cleared');
+      } catch (error) {
+        vscode.window.showErrorMessage('Failed to clear API Key history');
+      }
+    })
+  );
+
+  // Listener for settings changes - if the user changes checkmarxOne.clearApiKey to true
+  vscode.workspace.onDidChangeConfiguration(async (e) => {
+    if (e.affectsConfiguration("checkmarxOne.clearApiKey")) {
+      const config = vscode.workspace.getConfiguration("checkmarxOne");
+      const shouldClear = config.get<boolean>("clearApiKey", false);
+      if (shouldClear) {
+        try {
+          await context.globalState.update(AuthenticationWebview.API_KEY_HISTORY_KEY, "");
+          await vscode.workspace.getConfiguration().update(
+            'checkmarxOne.apiKey',
+            "",
+            vscode.ConfigurationTarget.Workspace
+          );
+          vscode.window.showInformationMessage('API Key history has been cleared via settings.');
+          // Resets the setting back to false
+          await config.update("clearApiKey", false, vscode.ConfigurationTarget.Global);
+        } catch (error) {
+          vscode.window.showErrorMessage('Failed to clear API Key history via settings.');
+        }
+      }
+    }
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

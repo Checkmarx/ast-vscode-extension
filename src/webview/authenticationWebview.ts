@@ -6,6 +6,8 @@ export class AuthenticationWebview {
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
     private static readonly HISTORY_KEY = 'checkmarxOne.history'; // Key for storing history
+    public static readonly API_KEY_HISTORY_KEY = 'checkmarxOne.apiKeyHistory';
+
     
     private constructor(panel: vscode.WebviewPanel, private context: vscode.ExtensionContext) {
         this._panel = panel;
@@ -204,11 +206,8 @@ export class AuthenticationWebview {
                         }
 
                         // If valid, saving in the configuration
-                        await vscode.workspace.getConfiguration().update(
-                            'checkmarxOne.apiKey',
-                            message.apiKey,
-                            vscode.ConfigurationTarget.Global
-                        );
+                        await this._saveApiKey(message.apiKey);
+
 
                         // Sending a success message to the window
                         this._panel.webview.postMessage({ 
@@ -238,6 +237,27 @@ export class AuthenticationWebview {
             await this.context.globalState.update(AuthenticationWebview.HISTORY_KEY, history);
         }
     }
+
+
+    private async _saveApiKey(apiKey: string) {
+        await vscode.workspace.getConfiguration().update(
+            'checkmarxOne.apiKey',
+            apiKey,
+            vscode.ConfigurationTarget.Workspace
+        );
+    
+            // Retrieve and log the current API key from globalState before update
+        const currentApiKey = this.context.globalState.get<string>(AuthenticationWebview.API_KEY_HISTORY_KEY, "");
+        console.log("API Key in globalState BEFORE update:", currentApiKey);
+
+        // Save only the latest API key (overwrite any existing value)
+        await this.context.globalState.update(AuthenticationWebview.API_KEY_HISTORY_KEY, apiKey);
+
+        // Retrieve and log the updated API key from globalState after update
+        const updatedApiKey = this.context.globalState.get<string>(AuthenticationWebview.API_KEY_HISTORY_KEY, "");
+        console.log("API Key in globalState AFTER update:", updatedApiKey);
+    }
+    
 
     public dispose() {
         this._panel.dispose();
