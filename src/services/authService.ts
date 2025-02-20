@@ -305,36 +305,25 @@ export class AuthService {
         }
     }
 
-    public async isValidateAndUpdateState(): Promise<boolean> {
-        try {
-            const token = await this.context.secrets.get("authCredential");
-            if (!token) {
-                return false;
-            }
-            return true;
-        } catch (error) {
-            console.error('Validation error:', error);
-            return false;
-        }
-    }
+    // public async isValidateToken(): Promise<boolean> {
+    //     try {
+    //         const token = await this.context.secrets.get("authCredential");
+    //         //TODO: validate token
+    //         if (!token) {
+    //             return false;
+    //         }
+    //         return true;
+    //     } catch (error) {
+    //         console.error('Validation error:', error);
+    //         return false;
+    //     }
+    // }
 
     public async getToken(): Promise<string | undefined> {
         return await this.context.secrets.get("authCredential");
     }
 
     public async logout(): Promise<void> {
-        // Show confirmation dialog
-        const answer = await vscode.window.showWarningMessage(
-            'Are you sure you want to sign out from Checkmarx?',
-            'Yes', 'No'
-        );
-        
-        if (answer !== 'Yes') {
-            return;
-        }
-
-     
-
         // Verify the token was saved
         const savedToken = await this.context.secrets.get("authCredential");
         console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");

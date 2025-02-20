@@ -821,7 +821,7 @@
           "checkmarxOne.authentication": {
             "type":"object",
             "order": 5,
-            "markdownDescription": "## [**Authentication Settings**](command:ast-results.showAuth)"
+            "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

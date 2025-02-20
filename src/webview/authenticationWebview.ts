@@ -14,8 +14,13 @@ export class AuthenticationWebview {
         this._panel.webview.html = this._getWebviewContent(this._panel.webview);
         this._setWebviewMessageListener(this._panel.webview);
 
+        this.initialize();
+    }
+
+    private async initialize() {
+        this._panel.webview.postMessage({ type: 'showLoader' });
         const authService = AuthService.getInstance(this.context);
-        const hasToken = authService.validateAndUpdateState();
+        const hasToken = await authService.validateAndUpdateState();
         this._panel.webview.postMessage({ type: 'setAuthState', isAuthenticated: hasToken });
 
         const urls = this.getURIs(this.context);
@@ -23,6 +28,7 @@ export class AuthenticationWebview {
 
         const tenants = this.getTenants(this.context);
         this._panel.webview.postMessage({ type: 'setTenants', items: tenants });
+        this._panel.webview.postMessage({ type: 'hideLoader' });
     }
 
     public static show(context: vscode.ExtensionContext) {
@@ -63,13 +69,13 @@ export class AuthenticationWebview {
         );
         const loginIcon = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "login.svg"))
-          );
+        );
         const logoutIcon = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "logout.svg"))
-          );
+        );
         const successIcon = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "success.svg"))
-          );
+        );
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -86,7 +92,13 @@ export class AuthenticationWebview {
 </head>
 
 <body>
-<div class="auth-container">
+  
+    <div id="loading">
+		<div class="spinner-border" role="status">
+		  <span class="visually-hidden">Checking authentication...</span>
+		</div>
+	  </div>
+<div id="authContainer" class="auth-container hidden">
         <div class="auth-form-title">Checkmarx One Authentication</div>
         <div id="loginForm">
         <div class="radio-group">
@@ -130,60 +142,68 @@ export class AuthenticationWebview {
             }
             else if (message.command === 'requestLogoutConfirmation') {
                 vscode.window.showWarningMessage(
-                    "Are you sure you want to log out?", 
-                    "Yes", 
+                    "Are you sure you want to log out?",
+                    "Yes",
                     "Cancel"
                 ).then(selection => {
                     if (selection === "Yes") {
                         const authService = AuthService.getInstance(this.context);
-                        authService.logout();  
+                        authService.logout();
                         this._panel.webview.postMessage({ type: 'setAuthState', isAuthenticated: false });
                         vscode.window.showInformationMessage("Logged out successfully.");
                     }
                 });
             }
             else if (message.command === 'authenticate') {
-                try {
-                    if (message.authMethod === 'oauth') {
-                        // Existing OAuth handling
-                        const authService = AuthService.getInstance(this.context);
-                        await authService.authenticate(message.baseUri, message.tenant);
-                        vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
-                        setTimeout(() => this._panel.dispose(), 1000);
-                    } else if (message.authMethod === 'apiKey') {
-                        // New API Key handling
-                        const authService = AuthService.getInstance(this.context);
+                    await vscode.window.withProgress(
+                        {
+                            location: vscode.ProgressLocation.Notification,
+                            title: "Loading to Checkmarx...",
+                            cancellable: false
+                        }, async () => {
 
-                        // Validate the API Key using AuthService
-                        const isValid = await authService.validateApiKey(message.apiKey);
+                            try {
+                                if (message.authMethod === 'oauth') {
+                                    // Existing OAuth handling
+                                    const authService = AuthService.getInstance(this.context);
+                                    await authService.authenticate(message.baseUri, message.tenant);
+                                    vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
+                                    setTimeout(() => this._panel.dispose(), 1000);
+                                } else if (message.authMethod === 'apiKey') {
+                                    // New API Key handling
+                                    const authService = AuthService.getInstance(this.context);
 
-                        if (!isValid) {
-                            // Sending an error message to the window
-                            this._panel.webview.postMessage({
-                                type: 'validation-error',
-                                message: 'API Key validation failed. Please check your key.'
-                            });
-                            return;
-                        }
+                                    // Validate the API Key using AuthService
+                                    const isValid = await authService.validateApiKey(message.apiKey);
 
-                        // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
-                        authService.saveToken(this.context, message.apiKey);
+                                    if (!isValid) {
+                                        // Sending an error message to the window
+                                        this._panel.webview.postMessage({
+                                            type: 'validation-error',
+                                            message: 'API Key validation failed. Please check your key.'
+                                        });
+                                        return;
+                                    }
 
-                        // Sending a success message to the window
-                        this._panel.webview.postMessage({
-                            type: 'validation-success',
-                            message: 'API Key validated successfully!'
+                                    // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
+                                    authService.saveToken(this.context, message.apiKey);
+
+                                    // Sending a success message to the window
+                                    this._panel.webview.postMessage({
+                                        type: 'validation-success',
+                                        message: 'API Key validated successfully!'
+                                    });
+
+                                    // Closing the window after one second
+                                    setTimeout(() => this._panel.dispose(), 1000);
+                                }
+                            } catch (error) {
+                                this._panel.webview.postMessage({
+                                    type: 'validation-error',
+                                    message: `Authentication failed: ${error.message}`
+                                });
+                            }
                         });
-
-                        // Closing the window after one second
-                        setTimeout(() => this._panel.dispose(), 1000);
-                    }
-                } catch (error) {
-                    this._panel.webview.postMessage({
-                        type: 'validation-error',
-                        message: `Authentication failed: ${error.message}`
-                    });
-                }
             }
         }, undefined, this._disposables);
     }

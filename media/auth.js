@@ -71,6 +71,13 @@
 					vscode.postMessage({ command: 'requestLogoutConfirmation' });
 				});
 			}
+			else if (message.type === 'showLoader') {
+				document.getElementById('loading').classList.remove('hidden');
+				document.getElementById('authContainer').classList.add('hidden');
+			} else if (message.type === 'hideLoader') {
+				document.getElementById('loading').classList.add('hidden');
+				document.getElementById('authContainer').classList.remove('hidden');
+			}
 			else if (message.type === "urlValidationResult" && urlInput.value !== "" && !message.isValid) {
 			errorMessage.textContent = "Invalid URL format";
 			errorMessage.style.display = "block";
