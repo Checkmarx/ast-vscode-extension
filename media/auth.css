@@ -51,6 +51,12 @@ body {
 	background: var(--vscode-input-background);
 	color: var(--vscode-input-foreground);
 }
+
+.authenticated-message{
+	display: flex;
+    align-items: center;
+}
+
 .auth-button {
     width: 186px;
     background: var(--vscode-button-background);
@@ -60,7 +66,12 @@ body {
     cursor: pointer;
     margin-top: 40px;
     height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.auth-button svg { path { fill: var(--cx-v2-color-blue-70); }}
 .auth-button:disabled {
     cursor: not-allowed !important;
     opacity: 0.6 !important;

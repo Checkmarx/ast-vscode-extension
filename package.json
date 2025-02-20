@@ -505,10 +505,10 @@
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
       },
-      {
-        "command": "ast-results.showAuth",
+    {
+      "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
-        "category": "Checkmarx"
+      "category": "Checkmarx"
     }
     ],
     "submenus": [
@@ -821,7 +821,7 @@
           "checkmarxOne.authentication": {
             "type":"object",
             "order": 5,
-            "markdownDescription": "## [➡️**Sign in to Checkmarx**](command:ast-results.showAuth)"
+            "markdownDescription": "## [**Authentication Settings**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

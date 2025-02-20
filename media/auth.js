@@ -9,7 +9,8 @@
 		const tenantList = document.getElementById("tenants-list");
 		const errorMessage = document.getElementById("urlError");
 		const apiKeyInput = document.getElementById("apiKey");
-
+		const loginForm = document.getElementById("loginForm");
+		const authenticatedMessage = document.getElementById("authenticatedMessage");
 
 		document.querySelectorAll('input[name="authMethod"]').forEach(radio => {
 			radio.addEventListener("change", (e) => {
@@ -44,7 +45,7 @@
 			const hasApiKey = apiKeyInput.value.trim();
 			authButton.disabled = authMethod === "oauth" ? !(hasValidUrl && hasTenant) : !hasApiKey;
 		}
-		
+
 		function showMessage(text, isError) {
 			messageBox.textContent = text;
 			messageBox.style.display = "block";
@@ -54,68 +55,85 @@
 
 		window.addEventListener("message", (event) => {
 			const message = event.data;
-			if (message.type === "urlValidationResult" && urlInput.value!=="" && !message.isValid) {
-				errorMessage.textContent = "Invalid URL format";
-				errorMessage.style.display = "block";
-				isBtnDisabled();
-			} else if( message.type === "validation-success"|| message.type === "validation-error") {
-				showMessage(message.message, message.type === "validation-error");}
+			if (message.type === 'setAuthState') {
+				const logoutButton = document.getElementById('logoutButton');
+
+				if (message.isAuthenticated) {
+					loginForm.classList.add('hidden');
+					authenticatedMessage.classList.remove('hidden');
+					logoutButton.classList.remove('hidden');
+				} else {
+					loginForm.classList.remove('hidden');
+					authenticatedMessage.classList.add('hidden');
+					logoutButton.classList.add('hidden');
+				}
+				document.getElementById('logoutButton').addEventListener('click', () => {
+					vscode.postMessage({ command: 'requestLogoutConfirmation' });
+				});
+			}
+			else if (message.type === "urlValidationResult" && urlInput.value !== "" && !message.isValid) {
+			errorMessage.textContent = "Invalid URL format";
+			errorMessage.style.display = "block";
+			isBtnDisabled();
+		} else if (message.type === "validation-success" || message.type === "validation-error") {
+			showMessage(message.message, message.type === "validation-error");
+		}
+	});
+
+	function setupAutocomplete(inputElement, listElement, messageType, validateCallback) {
+		window.addEventListener("message", event => {
+			if (event.data.type === messageType) {
+				const items = event.data.items;
+				inputElement.addEventListener("input", function () {
+					const query = this.value.toLowerCase();
+					listElement.innerHTML = "";
+					if (validateCallback) errorMessage.style.display = "none";
+					messageBox.style.display = "none";
+
+					if (!query) {
+						listElement.style.display = "none";
+						isBtnDisabled();
+						return;
+					}
+
+					const filteredItems = items.filter(item => item.toLowerCase().includes(query));
+
+					if (filteredItems.length === 0) {
+						listElement.style.display = "none";
+						if (validateCallback) validateCallback(query);
+						isBtnDisabled();
+						return;
+					}
+
+					listElement.style.display = "block";
+					filteredItems.forEach(item => {
+						const div = document.createElement("div");
+						div.classList.add("autocomplete-item");
+						div.innerHTML = `<i class="fas fa-check-circle"></i> ${item}`;
+						div.addEventListener("click", function () {
+							inputElement.value = item;
+							listElement.innerHTML = "";
+							listElement.style.display = "none";
+							isBtnDisabled();
+						});
+						listElement.appendChild(div);
+					});
+					isBtnDisabled();
+				});
+			}
 		});
 
-		function setupAutocomplete(inputElement, listElement, messageType, validateCallback) {
-			window.addEventListener("message", event => {
-				if (event.data.type === messageType) {
-					const items = event.data.items;
-					inputElement.addEventListener("input", function () {
-						const query = this.value.toLowerCase();
-						listElement.innerHTML = "";
-						if (validateCallback) errorMessage.style.display = "none";
-						messageBox.style.display = "none";
+		document.addEventListener("click", function (event) {
+			if (event.target !== inputElement) {
+				listElement.innerHTML = "";
+				listElement.style.display = "none";
+				if (validateCallback) validateCallback(inputElement.value);
+				isBtnDisabled();
+			}
+		});
+	}
 
-						if (!query) {
-							listElement.style.display = "none";
-							isBtnDisabled();
-							return;
-						}
-
-						const filteredItems = items.filter(item => item.toLowerCase().includes(query));
-						
-						if (filteredItems.length === 0) {
-							listElement.style.display = "none";
-							if (validateCallback) validateCallback(query);
-							isBtnDisabled();
-							return;
-						}
-
-						listElement.style.display = "block";
-						filteredItems.forEach(item => {
-							const div = document.createElement("div");
-							div.classList.add("autocomplete-item");
-							div.innerHTML = `<i class="fas fa-check-circle"></i> ${item}`;
-							div.addEventListener("click", function () {
-								inputElement.value = item;
-								listElement.innerHTML = "";
-								listElement.style.display = "none";
-								isBtnDisabled();
-							});
-							listElement.appendChild(div);
-						});
-						isBtnDisabled();
-					});
-				}
-			});
-
-			document.addEventListener("click", function (event) {
-				if (event.target !== inputElement) {
-					listElement.innerHTML = "";
-					listElement.style.display = "none";
-					if (validateCallback) validateCallback(inputElement.value);
-					isBtnDisabled();
-				}
-			});
-		}
-
-		setupAutocomplete(urlInput, urlsList, "setUrls", query => vscode.postMessage({ command: "validateURL", baseUri: query }));
-		setupAutocomplete(tenantInput, tenantList, "setTenants");
-	});
-})();
+	setupAutocomplete(urlInput, urlsList, "setUrls", query => vscode.postMessage({ command: "validateURL", baseUri: query }));
+	setupAutocomplete(tenantInput, tenantList, "setTenants");
+});
+}) ();

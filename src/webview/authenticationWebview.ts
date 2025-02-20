@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { AuthService } from '../services/authService';
 import { isURL } from 'validator';
 import { getNonce } from '../utils/utils';
+import path = require("path");
 export class AuthenticationWebview {
     public static readonly viewType = 'checkmarxAuth';
     private readonly _panel: vscode.WebviewPanel;
@@ -12,8 +13,14 @@ export class AuthenticationWebview {
         this._panel = panel;
         this._panel.webview.html = this._getWebviewContent(this._panel.webview);
         this._setWebviewMessageListener(this._panel.webview);
+
+        const authService = AuthService.getInstance(this.context);
+        const hasToken = authService.validateAndUpdateState();
+        this._panel.webview.postMessage({ type: 'setAuthState', isAuthenticated: hasToken });
+
         const urls = this.getURIs(this.context);
         this._panel.webview.postMessage({ type: 'setUrls', items: urls });
+
         const tenants = this.getTenants(this.context);
         this._panel.webview.postMessage({ type: 'setTenants', items: tenants });
     }
@@ -41,7 +48,6 @@ export class AuthenticationWebview {
         return Object.keys(urlMap);
     }
 
-
     private _getWebviewContent(webview: vscode.Webview): string {
         const styleBootStrap = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, "media", "bootstrap", "bootstrap.min.css")
@@ -55,6 +61,15 @@ export class AuthenticationWebview {
         const styleAuth = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, "media", "auth.css")
         );
+        const loginIcon = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "login.svg"))
+          );
+        const logoutIcon = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "logout.svg"))
+          );
+        const successIcon = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "success.svg"))
+          );
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -73,6 +88,7 @@ export class AuthenticationWebview {
 <body>
 <div class="auth-container">
         <div class="auth-form-title">Checkmarx One Authentication</div>
+        <div id="loginForm">
         <div class="radio-group">
             <label>
                 <input type="radio" name="authMethod" value="oauth" checked> By OAuth
@@ -95,7 +111,11 @@ export class AuthenticationWebview {
         <div id="apiKeyForm" class="hidden">
 			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="auth-input">
         </div>
-        <button id="authButton" class="auth-button" disabled>Sign in to Checkmarx</button>
+        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
+        </div>
+        
+        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx One</div>
+        <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log-out</button>
         <div id="messageBox" class="message"></div>
     </div>
     <script nonce="${nonce}" src="${scriptUri}"></script>
@@ -108,6 +128,20 @@ export class AuthenticationWebview {
                 const isValid = isURL(message.baseUri);
                 this._panel.webview.postMessage({ type: 'urlValidationResult', isValid });
             }
+            else if (message.command === 'requestLogoutConfirmation') {
+                vscode.window.showWarningMessage(
+                    "Are you sure you want to log out?", 
+                    "Yes", 
+                    "Cancel"
+                ).then(selection => {
+                    if (selection === "Yes") {
+                        const authService = AuthService.getInstance(this.context);
+                        authService.logout();  
+                        this._panel.webview.postMessage({ type: 'setAuthState', isAuthenticated: false });
+                        vscode.window.showInformationMessage("Logged out successfully.");
+                    }
+                });
+            }
             else if (message.command === 'authenticate') {
                 try {
                     if (message.authMethod === 'oauth') {
@@ -115,8 +149,7 @@ export class AuthenticationWebview {
                         const authService = AuthService.getInstance(this.context);
                         await authService.authenticate(message.baseUri, message.tenant);
                         vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
-                        this._panel.dispose();
-
+                        setTimeout(() => this._panel.dispose(), 1000);
                     } else if (message.authMethod === 'apiKey') {
                         // New API Key handling
                         const authService = AuthService.getInstance(this.context);
