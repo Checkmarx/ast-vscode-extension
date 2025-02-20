@@ -25,12 +25,21 @@ import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from './webview/authenticationWebview';
+import { AuthService } from "./services/authService";
+import { initialize } from "./cx";
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Initialize cx first
+  initialize(context);
+
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
   logs.info(messages.pluginRunning);
+
+  // Integrity check on startup
+  const authService = AuthService.getInstance(context);
+  await authService.validateAndUpdateState();
 
   // Status bars creation
   const runScanStatusBar = vscode.window.createStatusBarItem(

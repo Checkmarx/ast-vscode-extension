@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { Logs } from '../models/logs';
+import { initialize, getCx } from '../cx';
 
 interface OAuthConfig {
     clientId: string;
@@ -24,10 +25,10 @@ export class AuthService {
     private context: vscode.ExtensionContext;
     private constructor(extensionContext: vscode.ExtensionContext) {
         this.context = extensionContext;
-
+        initialize(extensionContext);
     }
 
-    public static getInstance(extensionContext:vscode.ExtensionContext): AuthService {
+    public static getInstance(extensionContext: vscode.ExtensionContext): AuthService {
         if (!this.instance) {
             this.instance = new AuthService(extensionContext);
         }
@@ -144,14 +145,19 @@ export class AuthService {
     
             const code = await this.waitForCode(server);
             const token = await this.getRefreshToken(code, config);
-            await this.saveToken(this.context,token);
+            console.log("Got refresh token:", token ? "Token exists" : "No token");
+            
+            await this.saveToken(this.context, token);
+            console.log("Token saved after authentication");
+            
             await this.saveURIAndTenant(this.context, baseUri, tenant);
+            console.log("URI and tenant saved");
            
     
             return token;
         } catch (error) {
-            await this.closeServer();
-            throw new Error(`Authentication failed: ${error.message}`);
+            console.error("Authentication error:", error);
+            throw error;
         }
     }
     private startLocalServer(config: OAuthConfig): Promise<http.Server> {
@@ -159,7 +165,7 @@ export class AuthService {
             try {
                 const server = http.createServer();
                 server.on('error', (err) => {
-                    if ((err as any).code === 'EADDRINUSE') {
+                    if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
                         reject(new Error(`Port ${config.port} is already in use. Please try again in a few moments.`));
                     } else {
                         reject(err);
@@ -247,11 +253,114 @@ export class AuthService {
     }
 
     public async saveToken(context: vscode.ExtensionContext, token: string) {
-        await context.secrets.store("authCredential", token);
-        vscode.window.showInformationMessage("Token saved successfully!");
-    }
-    public async getToken(context: vscode.ExtensionContext): Promise<string | undefined> {
-        return await context.secrets.get("authCredential");
+        console.log("Attempting to save token:", token ? "Token exists" : "No token provided");
+        
+        await this.context.secrets.store("authCredential", token);
+        console.log("Token stored in secrets");
+        
+        // Verify the token was saved
+        const savedToken = await this.context.secrets.get("authCredential");
+        console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
+        
+        const isValid = await this.validateAndUpdateState();
+        console.log("Token validation result:", isValid);
+        
+        if (isValid) {
+            vscode.window.showInformationMessage("Token saved and validated successfully!");
+        } else {
+            vscode.window.showErrorMessage("Token validation failed!");
+        }
     }
 
+    public async validateAndUpdateState(): Promise<boolean> {
+        try {
+            const token = await this.context.secrets.get("authCredential");
+            if (!token) {
+                return false;
+            }
+
+            const isValid = await this.validateApiKey(token);
+            
+            vscode.commands.executeCommand(
+                'setContext',
+                'ast-results.isValidCredentials',
+                isValid
+            );
+
+            if (isValid) {
+                const cx = getCx();
+                const scanEnabled = await cx.isScanEnabled(new Logs(vscode.window.createOutputChannel("Checkmarx")));
+                
+                vscode.commands.executeCommand(
+                    'setContext',
+                    'ast-results.isScanEnabled',
+                    scanEnabled
+                );
+            }
+
+            return isValid;
+        } catch (error) {
+            console.error('Validation error:', error);
+            return false;
+        }
+    }
+
+    public async isValidateAndUpdateState(): Promise<boolean> {
+        try {
+            const token = await this.context.secrets.get("authCredential");
+            if (!token) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Validation error:', error);
+            return false;
+        }
+    }
+
+    public async getToken(): Promise<string | undefined> {
+        return await this.context.secrets.get("authCredential");
+    }
+
+    public async logout(): Promise<void> {
+        // Show confirmation dialog
+        const answer = await vscode.window.showWarningMessage(
+            'Are you sure you want to sign out from Checkmarx?',
+            'Yes', 'No'
+        );
+        
+        if (answer !== 'Yes') {
+            return;
+        }
+
+     
+
+        // Verify the token was saved
+        const savedToken = await this.context.secrets.get("authCredential");
+        console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
+
+        // Delete only the token
+        await this.context.secrets.delete("authCredential");
+
+        // Check and log the current token
+        const aftercurrentToken = await this.getToken();
+        console.log("after remove token after logout:", aftercurrentToken);
+        
+
+
+
+        
+        // // Update UI state to reflect logged out status
+        // await vscode.commands.executeCommand(
+        //     'setContext',
+        //     'ast-results.isValidCredentials',
+        //     false
+        // );
+        
+        // await vscode.commands.executeCommand(
+        //     'setContext',
+        //     'ast-results.isScanEnabled',
+        //     false
+        // );
+    }
 }
