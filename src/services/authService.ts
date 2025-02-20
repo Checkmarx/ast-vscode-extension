@@ -323,18 +323,7 @@ export class AuthService {
     }
 
     public async logout(): Promise<void> {
-        // Show confirmation dialog
-        const answer = await vscode.window.showWarningMessage(
-            'Are you sure you want to sign out from Checkmarx?',
-            'Yes', 'No'
-        );
-        
-        if (answer !== 'Yes') {
-            return;
-        }
-
-     
-
+       
         // Verify the token was saved
         const savedToken = await this.context.secrets.get("authCredential");
         console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
@@ -347,20 +336,13 @@ export class AuthService {
         console.log("after remove token after logout:", aftercurrentToken);
         
 
-
-
+        // Update UI state to reflect logged out status
+        await vscode.commands.executeCommand(
+            'setContext',
+            'ast-results.isValidCredentials',
+            false
+        );
         
-        // // Update UI state to reflect logged out status
-        // await vscode.commands.executeCommand(
-        //     'setContext',
-        //     'ast-results.isValidCredentials',
-        //     false
-        // );
-        
-        // await vscode.commands.executeCommand(
-        //     'setContext',
-        //     'ast-results.isScanEnabled',
-        //     false
-        // );
+  
     }
 }
