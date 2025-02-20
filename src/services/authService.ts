@@ -324,6 +324,7 @@ export class AuthService {
     }
 
     public async logout(): Promise<void> {
+       
         // Verify the token was saved
         const savedToken = await this.context.secrets.get("authCredential");
         console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
@@ -336,20 +337,13 @@ export class AuthService {
         console.log("after remove token after logout:", aftercurrentToken);
         
 
-
-
+        // Update UI state to reflect logged out status
+        await vscode.commands.executeCommand(
+            'setContext',
+            'ast-results.isValidCredentials',
+            false
+        );
         
-        // // Update UI state to reflect logged out status
-        // await vscode.commands.executeCommand(
-        //     'setContext',
-        //     'ast-results.isValidCredentials',
-        //     false
-        // );
-        
-        // await vscode.commands.executeCommand(
-        //     'setContext',
-        //     'ast-results.isScanEnabled',
-        //     false
-        // );
+  
     }
 }
