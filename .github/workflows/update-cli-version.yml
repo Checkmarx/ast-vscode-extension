@@ -38,6 +38,14 @@ jobs:
             exit 1
           fi
 
+          # Remove leading 'v' if present
+          VERSION="${VERSION#v}"
+
+          if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
+            echo "Failed to determine a valid version."
+            exit 1
+          fi
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Update package.json
