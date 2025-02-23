@@ -252,12 +252,12 @@ export class Cx implements CxPlatform {
 
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
-        const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
-        if (!apiKey) {
+        const token = await this.context.secrets.get("authCredential");
+        if (!token) {
             return enabled;
         }
         const config = new CxConfig();
-        config.apiKey = apiKey;
+        config.apiKey = token;
         const cx = new CxWrapper(config);
         try {
             enabled = await cx.ideScansEnabled();
@@ -271,12 +271,12 @@ export class Cx implements CxPlatform {
 
     async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
         let enabled = true;
-        const apiKey = vscode.workspace.getConfiguration("checkmarxOne").get("apiKey") as string;
-        if (!apiKey) {
+        const token = await this.context.secrets.get("authCredential");
+        if (!token) {
             return enabled;
         }
         const config = new CxConfig();
-        config.apiKey = apiKey;
+        config.apiKey = token;
         const cx = new CxWrapper(config);
         try {
             enabled = await cx.guidedRemediationEnabled();

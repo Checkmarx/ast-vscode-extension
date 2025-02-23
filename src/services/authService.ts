@@ -7,6 +7,7 @@ import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { Logs } from '../models/logs';
 import { initialize, getCx } from '../cx';
+import { commands } from "../utils/common/commands";
 
 interface OAuthConfig {
     clientId: string;
@@ -276,11 +277,12 @@ export class AuthService {
         try {
             const token = await this.context.secrets.get("authCredential");
             if (!token) {
+                vscode.commands.executeCommand('setContext', 'ast-results.isValidCredentials', false);
+                vscode.commands.executeCommand('setContext', 'ast-results.isScanEnabled',false);
+                   
                 return false;
             }
-
             const isValid = await this.validateApiKey(token);
-            
             vscode.commands.executeCommand(
                 'setContext',
                 'ast-results.isValidCredentials',
@@ -305,20 +307,6 @@ export class AuthService {
         }
     }
 
-    // public async isValidateToken(): Promise<boolean> {
-    //     try {
-    //         const token = await this.context.secrets.get("authCredential");
-    //         //TODO: validate token
-    //         if (!token) {
-    //             return false;
-    //         }
-    //         return true;
-    //     } catch (error) {
-    //         console.error('Validation error:', error);
-    //         return false;
-    //     }
-    // }
-
     public async getToken(): Promise<string | undefined> {
         return await this.context.secrets.get("authCredential");
     }
@@ -336,14 +324,14 @@ export class AuthService {
         const aftercurrentToken = await this.getToken();
         console.log("after remove token after logout:", aftercurrentToken);
         
+        await this.validateAndUpdateState();
+        await vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.clear); // Clear the results tree after logout
 
-        // Update UI state to reflect logged out status
-        await vscode.commands.executeCommand(
-            'setContext',
-            'ast-results.isValidCredentials',
-            false
-        );
-        
+
+
   
     }
+
+
 }

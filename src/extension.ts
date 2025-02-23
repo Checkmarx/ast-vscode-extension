@@ -199,7 +199,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await executeCheckSettingsChange(kicsStatusBarItem, logs, ascaCommand);
+  await executeCheckSettingsChange(context,kicsStatusBarItem, logs, ascaCommand);
 
   const treeCommand = new TreeCommand(
     context,
