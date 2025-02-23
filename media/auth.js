@@ -47,9 +47,16 @@
 		}
 
 		function showMessage(text, isError) {
-			messageBox.textContent = text;
+			document.getElementById("messageText").textContent = text;
 			messageBox.style.display = "block";
-			messageBox.className = `message ${isError ? "error-message" : "success-message"}`;
+			if (isError) {
+				messageBox.className = "message error-message";
+				document.getElementById("messageErrorIcon").classList.remove('hidden');
+			}
+			else {
+				messageBox.className = "message success-message";
+				document.getElementById("messageSuccessIcon").classList.remove('hidden');
+			}
 		}
 
 
@@ -79,68 +86,68 @@
 				document.getElementById('authContainer').classList.remove('hidden');
 			}
 			else if (message.type === "urlValidationResult" && urlInput.value !== "" && !message.isValid) {
-			errorMessage.textContent = "Invalid URL format";
-			errorMessage.style.display = "block";
-			isBtnDisabled();
-		} else if (message.type === "validation-success" || message.type === "validation-error") {
-			showMessage(message.message, message.type === "validation-error");
-		}
-	});
+				errorMessage.textContent = "Invalid URL format";
+				errorMessage.style.display = "block";
+				isBtnDisabled();
+			} else if (message.type === "validation-success" || message.type === "validation-error") {
+				showMessage(message.message, message.type === "validation-error");
+			}
+		});
 
-	function setupAutocomplete(inputElement, listElement, messageType, validateCallback) {
-		window.addEventListener("message", event => {
-			if (event.data.type === messageType) {
-				const items = event.data.items;
-				inputElement.addEventListener("input", function () {
-					const query = this.value.toLowerCase();
-					listElement.innerHTML = "";
-					if (validateCallback) errorMessage.style.display = "none";
-					messageBox.style.display = "none";
+		function setupAutocomplete(inputElement, listElement, messageType, validateCallback) {
+			window.addEventListener("message", event => {
+				if (event.data.type === messageType) {
+					const items = event.data.items;
+					inputElement.addEventListener("input", function () {
+						const query = this.value.toLowerCase();
+						listElement.innerHTML = "";
+						if (validateCallback) errorMessage.style.display = "none";
+						messageBox.style.display = "none";
 
-					if (!query) {
-						listElement.style.display = "none";
-						isBtnDisabled();
-						return;
-					}
-
-					const filteredItems = items.filter(item => item.toLowerCase().includes(query));
-
-					if (filteredItems.length === 0) {
-						listElement.style.display = "none";
-						if (validateCallback) validateCallback(query);
-						isBtnDisabled();
-						return;
-					}
-
-					listElement.style.display = "block";
-					filteredItems.forEach(item => {
-						const div = document.createElement("div");
-						div.classList.add("autocomplete-item");
-						div.innerHTML = `<i class="fas fa-check-circle"></i> ${item}`;
-						div.addEventListener("click", function () {
-							inputElement.value = item;
-							listElement.innerHTML = "";
+						if (!query) {
 							listElement.style.display = "none";
 							isBtnDisabled();
+							return;
+						}
+
+						const filteredItems = items.filter(item => item.toLowerCase().includes(query));
+
+						if (filteredItems.length === 0) {
+							listElement.style.display = "none";
+							if (validateCallback) validateCallback(query);
+							isBtnDisabled();
+							return;
+						}
+
+						listElement.style.display = "block";
+						filteredItems.forEach(item => {
+							const div = document.createElement("div");
+							div.classList.add("autocomplete-item");
+							div.innerHTML = `<i class="fas fa-check-circle"></i> ${item}`;
+							div.addEventListener("click", function () {
+								inputElement.value = item;
+								listElement.innerHTML = "";
+								listElement.style.display = "none";
+								isBtnDisabled();
+							});
+							listElement.appendChild(div);
 						});
-						listElement.appendChild(div);
+						isBtnDisabled();
 					});
+				}
+			});
+
+			document.addEventListener("click", function (event) {
+				if (event.target !== inputElement) {
+					listElement.innerHTML = "";
+					listElement.style.display = "none";
+					if (validateCallback) validateCallback(inputElement.value);
 					isBtnDisabled();
-				});
-			}
-		});
+				}
+			});
+		}
 
-		document.addEventListener("click", function (event) {
-			if (event.target !== inputElement) {
-				listElement.innerHTML = "";
-				listElement.style.display = "none";
-				if (validateCallback) validateCallback(inputElement.value);
-				isBtnDisabled();
-			}
-		});
-	}
-
-	setupAutocomplete(urlInput, urlsList, "setUrls", query => vscode.postMessage({ command: "validateURL", baseUri: query }));
-	setupAutocomplete(tenantInput, tenantList, "setTenants");
-});
+		setupAutocomplete(urlInput, urlsList, "setUrls", query => vscode.postMessage({ command: "validateURL", baseUri: query }));
+		setupAutocomplete(tenantInput, tenantList, "setTenants");
+	});
 }) ();

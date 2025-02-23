@@ -50,15 +50,16 @@ body {
 	border-radius: 7px;
 	background: var(--vscode-input-background);
 	color: var(--vscode-input-foreground);
+	filter: brightness(1.5);
 }
 
 .authenticated-message{
 	display: flex;
     align-items: center;
+	margin-top: 40px;
 }
 
 .auth-button {
-    width: 186px;
     background: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
     border: none;
@@ -67,8 +68,13 @@ body {
     margin-top: 40px;
     height: 32px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    padding-inline: 15px;
+    font-size: 13px;
+}
+
+.auth-button img {
+    margin-right: 4px;
 }
 
 .auth-button svg { path { fill: var(--cx-v2-color-blue-70); }}
@@ -82,35 +88,35 @@ body {
 }
 
 .message {
-	margin-top: 10px;
+	margin-top: 40px;
 	padding: 10px;
-	border-radius: 5px;
-	display: none;
+	border-radius: 27px;
+	font-size: 16px;
 }
 
 .error-message {
-	background-color: var(--vscode-inputValidation-errorBackground);
-	border: 1px solid var(--vscode-inputValidation-errorBorder);
-	color: var(--vscode-inputValidation-errorForeground);
+    background-color: #5C2E37;
+    color: white;
 }
 
 .success-message {
-	background-color: var(--vscode-debugIcon-startForeground, #28a745); 
-    border: 1px solid var(--vscode-editorGutter-addedBackground, #218838);
+	background-color: #404D3F; 
     color: white;
 }
 
 .autocomplete-items {
 	position: absolute;
-	background-color: white;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	width: 100%;
-	max-height: 250px;
-	overflow-y: auto;
-	z-index: 1000;
-	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-	display: none;
+    background: var(--vscode-input-background);
+    border-radius: 7px;
+    width: 100%;
+    max-height: 190px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    color: #B5B5B5;
+	filter: brightness(1.5);
+	padding:5px;
 }
 
 .autocomplete-items .autocomplete-item {
@@ -119,10 +125,13 @@ body {
 	display: flex;
 	align-items: center;
 	transition: background-color 0.2s ease-in-out;
+	height: 16px;
+	margin: 3px;
+	font-size: 13px;
 }
 
 .autocomplete-items .autocomplete-item:hover {
-	background-color: #f8f9fa;
+	color: white;
 }
 
 .autocomplete-items .autocomplete-item i {
