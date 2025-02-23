@@ -41,7 +41,7 @@ jobs:
             echo "API response received: $API_RESPONSE"
 
             # Extract the latest semantic version tag
-            VERSION=$(echo "$API_RESPONSE" | jq -r '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(split(".") | map(tonumber)) | .[-1]')
+            VERSION=$(gh api repos/CheckmarxDev/ast-cli-javascript-wrapper/releases --jq '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(split(".") | map(tonumber)) | .[-1]')
             echo "Extracted version: $VERSION"
           fi
 
