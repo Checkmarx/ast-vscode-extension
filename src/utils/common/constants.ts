@@ -147,6 +147,7 @@ export const constants = {
 
   // TRIAGE
   triageUpdate: "ast-result-triage",
+  customStates: "cxStates",
 
   // ASCA engine
   errorInstallation: "Failed to run ASCA engine",
@@ -195,7 +196,7 @@ export enum StateLevel {
   notIgnored = "NotIgnored",
   ignored = "Ignored",
 }
-export enum QuickPickPaginationButtons{
+export enum QuickPickPaginationButtons {
   nextPage = "Next Page",
-  previousPage = "Previous Page"
+  previousPage = "Previous Page",
 }
