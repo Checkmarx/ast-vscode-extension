@@ -181,125 +181,28 @@ export class AuthService {
             }
         });
     }
-
-    private getSuccessPageHtml(): string {
-        return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Login Success - Checkmarx</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    margin: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                }
-                .modal {
-                    background: white;
-                    padding: 2rem;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                    width: 90%;
-                    max-width: 500px;
-                    text-align: center;
-                }
-                .close-button {
-                    float: right;
-                    font-size: 24px;
-                    color: #666;
-                    cursor: pointer;
-                    border: none;
-                    background: none;
-                    padding: 0;
-                    margin: -1rem -1rem 0 0;
-                }
-                h1 {
-                    color: #333;
-                    font-size: 24px;
-                    margin: 1rem 0;
-                }
-                .icon-container {
-                    margin: 2rem 0;
-                }
-                .icon {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .folder {
-                    color: #6B4EFF;
-                    font-size: 48px;
-                }
-                .file {
-                    color: #6B4EFF;
-                    font-size: 48px;
-                }
-                .message {
-                    color: #666;
-                    margin: 1rem 0 2rem 0;
-                }
-                .close-btn {
-                    background-color: #4F5CD1;
-                    color: white;
-                    border: none;
-                    padding: 12px 40px;
-                    border-radius: 4px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    transition: background-color 0.3s;
-                }
-                .close-btn:hover {
-                    background-color: #3F4BB1;
-                }
-                .wave-line {
-                    color: #6B4EFF;
-                    font-size: 24px;
-                    margin: 0 10px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="modal">
-                <button class="close-button" onclick="window.close()">×</button>
-                <h1>You're All Set with Checkmarx!</h1>
-                <div class="icon-container">
-                    <div class="icon">
-                        <span class="folder">📁</span>
-                        <span class="wave-line">〰️〰️〰️</span>
-                        <span class="file">📄</span>
-                    </div>
-                </div>
-                <p class="message">You have successfully logged in</p>
-                <button class="close-btn" onclick="window.close()">Close</button>
-            </div>
-        </body>
-        </html>
-        `;
-    }
-
     private waitForCode(server: http.Server): Promise<string> {
         return new Promise((resolve, reject) => {
-            server.on('request', (req, res) => {
-                const url = new URL(req.url!, `http://${req.headers.host}`);
-                const code = url.searchParams.get('code');
-                if (code) {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(this.getSuccessPageHtml());
-                    server.close();
-                    resolve(code);
-                } else {
-                    reject(new Error('No authorization code received'));
-                }
-            });
+          const timeout = setTimeout(() => {
+            server.close();
+            reject(new Error('Timeout waiting for authorization code'));
+          }, 10000); 
+      
+          server.on('request', (req, res) => {
+            clearTimeout(timeout); 
+            const url = new URL(req.url!, `http://${req.headers.host}`);
+            const code = url.searchParams.get('code');
+            if (code) {
+              res.writeHead(200, { 'Content-Type': 'text/html' });
+              res.end(this.getSuccessPageHtml());
+              server.close();
+              resolve(code);
+            } else {
+              reject(new Error('No authorization code received'));
+            }
+          });
         });
-    }
+      }
 
     public async validateApiKey(apiKey: string): Promise<boolean> {
         try {
@@ -430,6 +333,108 @@ export class AuthService {
         
         await this.validateAndUpdateState();
        await vscode.commands.executeCommand(commands.refreshTree);
+    }
+
+    private getSuccessPageHtml(): string {
+        return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login Success - Checkmarx</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                }
+                .modal {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    width: 90%;
+                    max-width: 500px;
+                    text-align: center;
+                }
+                .close-button {
+                    float: right;
+                    font-size: 24px;
+                    color: #666;
+                    cursor: pointer;
+                    border: none;
+                    background: none;
+                    padding: 0;
+                    margin: -1rem -1rem 0 0;
+                }
+                h1 {
+                    color: #333;
+                    font-size: 24px;
+                    margin: 1rem 0;
+                }
+                .icon-container {
+                    margin: 2rem 0;
+                }
+                .icon {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .folder {
+                    color: #6B4EFF;
+                    font-size: 48px;
+                }
+                .file {
+                    color: #6B4EFF;
+                    font-size: 48px;
+                }
+                .message {
+                    color: #666;
+                    margin: 1rem 0 2rem 0;
+                }
+                .close-btn {
+                    background-color: #4F5CD1;
+                    color: white;
+                    border: none;
+                    padding: 12px 40px;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+                }
+                .close-btn:hover {
+                    background-color: #3F4BB1;
+                }
+                .wave-line {
+                    color: #6B4EFF;
+                    font-size: 24px;
+                    margin: 0 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="modal">
+                <button class="close-button" onclick="window.close()">×</button>
+                <h1>You're All Set with Checkmarx!</h1>
+                <div class="icon-container">
+                    <div class="icon">
+                        <span class="folder">📁</span>
+                        <span class="wave-line">〰️〰️〰️</span>
+                        <span class="file">📄</span>
+                    </div>
+                </div>
+                <p class="message">You have successfully logged in</p>
+                <button class="close-btn" onclick="window.close()">Close</button>
+            </div>
+        </body>
+        </html>
+        `;
     }
 
 
