@@ -28,7 +28,6 @@ export async function updateResults(
   // Update on cxOne
   const projectId = getFromState(context, constants.projectIdKey).id;
   const stateId = getStateIdForTriage(result.state);
-  console.log("stateId!!!!!!", stateId);
 
   await cx.triageUpdate(
     projectId,
