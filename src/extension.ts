@@ -24,12 +24,22 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
+import { AuthenticationWebview } from './webview/authenticationWebview';
+import { AuthService } from "./services/authService";
+import { initialize } from "./cx";
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Initialize cx first
+  initialize(context);
+
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
   logs.info(messages.pluginRunning);
+
+  // Integrity check on startup
+  const authService = AuthService.getInstance(context);
+  await authService.validateAndUpdateState();
 
   // Status bars creation
   const runScanStatusBar = vscode.window.createStatusBarItem(
@@ -189,7 +199,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await executeCheckSettingsChange(kicsStatusBarItem, logs, ascaCommand);
+  await executeCheckSettingsChange(context,kicsStatusBarItem, logs, ascaCommand);
 
   const treeCommand = new TreeCommand(
     context,
@@ -214,6 +224,13 @@ export async function activate(context: vscode.ExtensionContext) {
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
+
+  // Register authentication command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.showAuth", () => {
+      AuthenticationWebview.show(context);
+    })
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

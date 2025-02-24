@@ -52,7 +52,7 @@ export class AstResultsProvider extends ResultsProvider {
   async refreshData(): Promise<void> {
     this.showStatusBarItem(messages.commandRunning);
     const treeItem = await this.generateTree();
-    this.data = cx.getAstConfiguration() ? treeItem.children : [];
+    this.data = await cx.getAstConfiguration() ? treeItem.children : [];
     this._onDidChangeTreeData.fire(undefined);
     this.hideStatusBarItem();
   }
