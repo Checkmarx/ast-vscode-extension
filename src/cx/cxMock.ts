@@ -1257,7 +1257,7 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
-  getAstConfiguration() {
+  async getAstConfiguration() {
     const token = vscode.workspace
       .getConfiguration("checkmarxOne")
       .get("apiKey") as string;

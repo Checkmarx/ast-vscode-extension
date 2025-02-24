@@ -268,6 +268,8 @@ export class AuthService {
         
         if (isValid) {
             vscode.window.showInformationMessage("Token saved and validated successfully!");
+            await vscode.commands.executeCommand(commands.refreshTree);
+
         } else {
             vscode.window.showErrorMessage("Token validation failed!");
         }
@@ -325,12 +327,7 @@ export class AuthService {
         console.log("after remove token after logout:", aftercurrentToken);
         
         await this.validateAndUpdateState();
-        await vscode.commands.executeCommand(commands.refreshTree);
-        await vscode.commands.executeCommand(commands.clear); // Clear the results tree after logout
-
-
-
-  
+       await vscode.commands.executeCommand(commands.refreshTree);
     }
 
 
