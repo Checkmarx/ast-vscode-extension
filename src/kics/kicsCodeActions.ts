@@ -9,9 +9,6 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
   private readonly diagnosticCollection: vscode.DiagnosticCollection;
   private readonly fixableResults: [];
   private fixableResultsByLine: [];
-  public static readonly providedCodeActionKinds = [
-    vscode.CodeActionKind.QuickFix,
-  ];
 
   constructor(
     kicsResults,
@@ -53,25 +50,26 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       .concat(
         this.fixableResultsByLine.length > 0 && fixAllResults.length > 1
           ? this.createFixGroupCodeAction(
-            this.fixableResultsByLine,
-            fixAllResults
-          )
+              this.fixableResultsByLine,
+              fixAllResults
+            )
           : []
       )
       .concat(
         fixAllResults.length > 0
           ? this.createFixFileCodeAction(
-            new vscode.Diagnostic(
-              new vscode.Range(
-                new vscode.Position(0, 0),
-                new vscode.Position(0, 0)
+              new vscode.Diagnostic(
+                new vscode.Range(
+                  new vscode.Position(0, 0),
+                  new vscode.Position(0, 0)
+                ),
+                "Quick Fix"
               ),
-              "Quick Fix"
-            ),
-            this.fixableResults
-          )
+              this.fixableResults
+            )
           : []
-      ).concat(this.createAskKICSCodeAction(context)); // Add the fix all action if there is more than one fix in the file
+      )
+      .concat(this.createAskKICSCodeAction(context)); // Add the fix all action if there is more than one fix in the file
   }
 
   // Create individual quick fix
@@ -183,7 +181,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
   }
 
   private createAskKICSCodeAction(
-    context: vscode.CodeActionContext,
+    context: vscode.CodeActionContext
   ): vscode.CodeAction[] {
     // used to be able to use kicsDiagnostic typ without changing the context implementation
     const actions: vscode.CodeAction[] = [];
@@ -192,7 +190,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       const queryName = Object(valueOf).value;
       const action = new vscode.CodeAction(
         `${constants.aiSecurityChampion} ` + queryName,
-        vscode.CodeActionKind.Empty.append('custom')
+        vscode.CodeActionKind.Empty.append("custom")
       );
       const convertedResult = new GptResult(undefined, diagnostic.kicsResult);
 
@@ -200,10 +198,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
         command: commands.gpt,
         title: `${constants.aiSecurityChampion}`,
         tooltip: `This will open an ${constants.aiSecurityChampion} tab for the vulnerability`,
-        arguments: [
-          convertedResult,
-          constants.realtime
-        ],
+        arguments: [convertedResult, constants.realtime],
       };
       action.diagnostics = [diagnostic];
       action.isPreferred = true;
