@@ -103,7 +103,7 @@
 					inputElement.addEventListener("input", function () {
 						const query = this.value.toLowerCase();
 						listElement.innerHTML = "";
-						if (validateCallback) errorMessage.style.display = "none";
+						if (validateCallback) {errorMessage.style.display = "none";}
 						messageBox.style.display = "none";
 
 						if (!query) {
@@ -116,7 +116,7 @@
 
 						if (filteredItems.length === 0) {
 							listElement.style.display = "none";
-							if (validateCallback) validateCallback(query);
+							if (validateCallback) {validateCallback(query);}
 							isBtnDisabled();
 							return;
 						}
@@ -143,7 +143,7 @@
 				if (event.target !== inputElement) {
 					listElement.innerHTML = "";
 					listElement.style.display = "none";
-					if (validateCallback) validateCallback(inputElement.value);
+					if (validateCallback) {validateCallback(inputElement.value);}
 					isBtnDisabled();
 				}
 			});

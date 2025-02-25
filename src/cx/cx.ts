@@ -284,59 +284,58 @@ export class Cx implements CxPlatform {
     return config;
   }
 
-  getAstConfiguration() {
-    const token = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
+
+  async getAstConfiguration() {
+    const token = await this.context.secrets.get("authCredential");
+    console.log("Token from secrets:", token);
+
     if (!token) {
-      return undefined;
+        return undefined;
     }
 
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
-  }
+}
+
 
   async isScanEnabled(logs: Logs): Promise<boolean> {
     let enabled = false;
-    const apiKey = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
-    if (!apiKey) {
-      return enabled;
+    const token = await this.context.secrets.get("authCredential");
+    if (!token) {
+        return enabled;
     }
     const config = new CxConfig();
-    config.apiKey = apiKey;
+    config.apiKey = token;
     const cx = new CxWrapper(config);
     try {
-      enabled = await cx.ideScansEnabled();
+        enabled = await cx.ideScansEnabled();
     } catch (error) {
-      const errMsg = `Error checking tenant configuration: ${error}`;
-      logs.error(errMsg);
-      return enabled;
+        const errMsg = `Error checking tenant configuration: ${error}`;
+        logs.error(errMsg);
+        return enabled;
     }
     return enabled;
-  }
+}
 
-  async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
-    let enabled = true;
-    const apiKey = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
-    if (!apiKey) {
+ 
+async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
+  let enabled = true;
+  const token = await this.context.secrets.get("authCredential");
+  if (!token) {
       return enabled;
-    }
-    const config = new CxConfig();
-    config.apiKey = apiKey;
-    const cx = new CxWrapper(config);
-    try {
+  }
+  const config = new CxConfig();
+  config.apiKey = token;
+  const cx = new CxWrapper(config);
+  try {
       enabled = await cx.guidedRemediationEnabled();
-    } catch (error) {
+  } catch (error) {
       logs.error(error);
       return false;
-    }
-    return enabled;
   }
+  return enabled;
+}
 
   async isSCAScanEnabled(): Promise<boolean> {
     const enabled = true;

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AuthService } from '../services/authService';
-//import { isURL } from 'validator';
+import { isURL } from 'validator';
 import { getNonce } from '../utils/utils';
 import path = require("path");
 export class AuthenticationWebview {
@@ -149,8 +149,7 @@ export class AuthenticationWebview {
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(async message => {
             if (message.command === 'validateURL') {
-             //   const isValid = isURL(message.baseUri);
-             const isValid = true;
+                const isValid = isURL(message.baseUri);
                 this._panel.webview.postMessage({ type: 'urlValidationResult', isValid });
             }
             else if (message.command === 'requestLogoutConfirmation') {

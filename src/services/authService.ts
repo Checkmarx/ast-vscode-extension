@@ -332,7 +332,7 @@ export class AuthService {
         console.log("after remove token after logout:", aftercurrentToken);
         
         await this.validateAndUpdateState();
-       await vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.refreshTree);
     }
 
     private getSuccessPageHtml(): string {
