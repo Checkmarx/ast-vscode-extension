@@ -11,6 +11,7 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 
+
 export interface CxPlatform {
   /**
    * Creates a sca local scan and returns a list of sca
@@ -90,7 +91,7 @@ export interface CxPlatform {
   /**
    * Get the API key from the extension settings to be sent to the cli for authentication.
    */
-  getAstConfiguration(); Promise<CxConfig | undefined>;
+  getAstConfiguration(): Promise<CxConfig | undefined>;
 
   /**
    * Check if the scan from IDE functionality is enabled.
