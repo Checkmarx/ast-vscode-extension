@@ -1,16 +1,20 @@
 # CHANGELOG
 
+## [v2.31.1-2.31.0-pre-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.0-pre-release.0) - 2025-02-25 07:16:01
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-2.31.1-test-release.0...v2.31.1-2.31.0-pre-release.0
+
+## [v2.31.1-2.31.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-test-release.0) - 2025-02-24 14:14:57
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.31.0 -->
-
-## What's Changed
-### Other Changes
-* update js wrapper version by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1039
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1040
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.30.0...v2.31.0
 
 ## [v2.30.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.30.0) - 2025-01-28 11:53:44
 
