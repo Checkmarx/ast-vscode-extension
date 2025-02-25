@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [v2.31.1-test-oauth-v1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-v1.0) - 2025-02-25 16:07:16
+## [v2.31.1-test-oauth-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-v2.0) - 2025-02-25 16:36:34
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
@@ -11,7 +11,7 @@
 * Create triageGetStates and create infr - need to implement in triage … (AST-83453) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1042
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.0...v2.31.1-test-oauth-v1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.0...v2.31.1-test-oauth-v2.0
 
 ### Fix
 
