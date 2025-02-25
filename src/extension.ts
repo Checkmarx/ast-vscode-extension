@@ -28,10 +28,13 @@ import { AuthenticationWebview } from './webview/authenticationWebview';
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
 
+let globalContext: vscode.ExtensionContext;
+
 export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
   initialize(context);
 
+  globalContext = context;
   // Create logs channel and make it visible
   const output = vscode.window.createOutputChannel(constants.extensionFullName);
   const logs = new Logs(output);
@@ -231,6 +234,10 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context);
     })
   );
+}
+
+export function getGlobalContext(): vscode.ExtensionContext {
+  return globalContext;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

@@ -10,6 +10,7 @@ import { CxPlatform } from "./cxPlatform";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
+import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -970,9 +971,11 @@ export class CxMock implements CxPlatform {
       updatedAt: "2023-04-19T09:07:36.846145Z",
     };
   }
-  async getProjectListWithParams(params: string): Promise<CxProject[] | undefined> {
+  async getProjectListWithParams(
+    params: string
+  ): Promise<CxProject[] | undefined> {
     if (params) {
-      if (this.getOffsetValue(params) === '0') {
+      if (this.getOffsetValue(params) === "0") {
         return [
           {
             tags: {
@@ -1143,7 +1146,8 @@ export class CxMock implements CxPlatform {
             name: "test-proj-22",
             createdAt: "2023-04-19T14:15:15.250732Z",
             updatedAt: "2023-04-19T14:15:15.250732Z",
-          }];
+          },
+        ];
       }
       return [
         {
@@ -1194,29 +1198,64 @@ export class CxMock implements CxPlatform {
     ];
   }
   getOffsetValue(params: string) {
-    const items = params.split(',');
-    const offsetParam = items.find(param => param.startsWith('offset='));
-    return offsetParam ? offsetParam.split('=')[1] : null;
+    const items = params.split(",");
+    const offsetParam = items.find((param) => param.startsWith("offset="));
+    return offsetParam ? offsetParam.split("=")[1] : null;
   }
 
   getBranchName(params: string) {
-    return params.split(',')[0];
+    return params.split(",")[0];
   }
 
-  async getBranchesWithParams(projectId: string | undefined, params?: string | undefined): Promise<string[] | undefined> {
+  async getBranchesWithParams(
+    projectId: string | undefined,
+    params?: string | undefined
+  ): Promise<string[] | undefined> {
     if (params) {
       if (this.getBranchName(params) === "main") {
         return ["main"];
       }
-      if (this.getOffsetValue(params) === '0') {
-        return ["main", "branch1", "branch2", "branch3", "branch4", "branch5", "branch6", "branch7", "branch8", "branch9", "branch10", "branch11", "branch12", "branch13", "branch14", "branch15", "branch16", "branch17", "branch18", "branch19", "branch20"];
+      if (this.getOffsetValue(params) === "0") {
+        return [
+          "main",
+          "branch1",
+          "branch2",
+          "branch3",
+          "branch4",
+          "branch5",
+          "branch6",
+          "branch7",
+          "branch8",
+          "branch9",
+          "branch10",
+          "branch11",
+          "branch12",
+          "branch13",
+          "branch14",
+          "branch15",
+          "branch16",
+          "branch17",
+          "branch18",
+          "branch19",
+          "branch20",
+        ];
       }
-      return ["branch21", "branch22", "branch23", "branch24", "branch25", "branch26"];
+      return [
+        "branch21",
+        "branch22",
+        "branch23",
+        "branch24",
+        "branch25",
+        "branch26",
+      ];
     }
     return ["main"];
   }
 
-  async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+  async getScans(
+    projectId: string | undefined,
+    branch: string | undefined
+  ): Promise<CxScan[] | undefined> {
     if (branch === constants.localBranch) {
       return [];
     }
@@ -1287,6 +1326,15 @@ export class CxMock implements CxPlatform {
 
   async triageUpdate(): Promise<number> {
     return 0;
+  }
+
+  async triageGetStates(): Promise<CxCommandOutput> {
+    return {
+      exitCode: 0,
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      payload: [] as any[],
+      status: "",
+    };
   }
 
   async getCodeBashing(): Promise<CxCodeBashing | undefined> {
