@@ -4,24 +4,13 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Change order of create change log file (AST-81771) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1047
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-2.31.0-pre-release.0...v2.31.1-test-release-v3.0
-
-## [v2.31.1-2.31.0-pre-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.0-pre-release.0) - 2025-02-25 07:16:01
+## [v2.31.1-test-main.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-main.0) - 2025-02-25 15:56:46
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-2.31.1-test-release.0...v2.31.1-2.31.0-pre-release.0
-
-## [v2.31.1-2.31.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-test-release.0) - 2025-02-24 14:14:57
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-release-v3.0...v2.31.1-test-main.0
 
 ## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
 
