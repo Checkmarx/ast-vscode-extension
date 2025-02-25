@@ -9,6 +9,8 @@ export const commands = {
   setings: `${constants.extensionName}.viewSettings`,
   isValidCredentials: `${constants.extensionName}.isValidCredentials`,
 
+  showAuth: `${constants.extensionName}.showAuth`,
+
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
 
