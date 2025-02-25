@@ -76,6 +76,9 @@ export class AuthenticationWebview {
         const successIcon = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "success.svg"))
         );
+        const errorIcon = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "error.svg"))
+        );
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -110,14 +113,14 @@ export class AuthenticationWebview {
             </label>
         </div>
         <div id="oauthForm" class="auth-form">
-            <label for="baseUri" class="form-label">Select Base URI:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Type here...">
+            <label for="baseUri" class="form-label">URL:</label>
+            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URI">
             <div id="urls-list" class="autocomplete-items"></div>
 			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
 
 
-            <label for="tenant" class="form-label">Select Tenant:</label>
-            <input type="text" id="tenant" class="auth-input" placeholder="Type here...">
+            <label for="tenant" class="form-label">Tenant Name:</label>
+            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
             <div id="tenants-list" class="autocomplete-items"></div>
         </div>
         <div id="apiKeyForm" class="hidden">
@@ -128,7 +131,16 @@ export class AuthenticationWebview {
         
         <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx One</div>
         <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log-out</button>
-        <div id="messageBox" class="message"></div>
+        <div id="messageBox" class="message">
+        <div id="messageSuccessIcon" class="hidden">
+        <img src="${successIcon}" alt="success"/>
+        </div>
+        <div id="messageErrorIcon" class="hidden">
+
+        <img src="${errorIcon}" alt="error"/>
+        </div>
+        <div id="messageText"></div>
+        </div>
     </div>
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </html>`;
