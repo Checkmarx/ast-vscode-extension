@@ -819,7 +819,7 @@
         "order": 4,
         "properties": {
           "checkmarxOne.authentication": {
-            "type":"object",
+            "type": "",
             "order": 5,
             "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
@@ -947,8 +947,7 @@
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
     "serialize-javascript": "^6.0.2",
-    "tree-kill": "^1.2.2",
-    "validator": "^13.12.0"
+    "tree-kill": "^1.2.2"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
