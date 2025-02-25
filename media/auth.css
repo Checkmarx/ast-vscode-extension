@@ -92,6 +92,9 @@ body {
 	padding: 10px;
 	border-radius: 27px;
 	font-size: 16px;
+	display: flex;
+    align-items: start;
+    gap: 5px;
 }
 
 .error-message {
@@ -102,6 +105,11 @@ body {
 .success-message {
 	background-color: #404D3F; 
     color: white;
+}
+
+.message img {
+    width: 20px;
+    height: 20px;
 }
 
 .autocomplete-items {

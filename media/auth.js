@@ -48,13 +48,15 @@
 
 		function showMessage(text, isError) {
 			document.getElementById("messageText").textContent = text;
-			messageBox.style.display = "block";
+			messageBox.style.display = "flex";
 			if (isError) {
 				messageBox.className = "message error-message";
+				document.getElementById("messageSuccessIcon").classList.add('hidden');
 				document.getElementById("messageErrorIcon").classList.remove('hidden');
 			}
 			else {
 				messageBox.className = "message success-message";
+				document.getElementById("messageErrorIcon").classList.add('hidden');
 				document.getElementById("messageSuccessIcon").classList.remove('hidden');
 			}
 		}
