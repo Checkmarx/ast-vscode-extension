@@ -1,16 +1,23 @@
 # CHANGELOG
 
-## [v2.31.1-test-release-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-release-v3.0) - 2025-02-25 08:19:47
+## [v2.31.1-test-oauth-v1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-v1.0) - 2025-02-25 16:07:16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## [v2.31.1-test-main.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-main.0) - 2025-02-25 15:56:46
+## What's Changed
+### Bug Fixes 🐛
+* Change order of create change log file (AST-81771) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1047
+### Other Changes
+* Create triageGetStates and create infr - need to implement in triage … (AST-83453) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1042
 
-<!-- Release notes generated using configuration in .github/release.yml at main -->
 
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.0...v2.31.1-test-oauth-v1.0
 
+### Fix
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-release-v3.0...v2.31.1-test-main.0
+- general:
+  - fix workflow ([a570b97](https://github.com/Checkmarx/ast-vscode-extension/commit/a570b97c70fc9fa03dfd9b59676cd782223ec025))
+  - fix errors ([b5aeb20](https://github.com/Checkmarx/ast-vscode-extension/commit/b5aeb2028b2b1ee0187120cca7fb167cf0cb14b5))
 
 ## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
 
