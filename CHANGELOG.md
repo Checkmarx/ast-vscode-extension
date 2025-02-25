@@ -1,16 +1,25 @@
 # CHANGELOG
 
-## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
+## [v2.31.1-2.31.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-test-release.0) - 2025-02-24 14:14:57
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.31.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### Other Changes
-* update js wrapper version by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1039
-* Update Version - Automated Changes by @pedrompflopes in https://github.com/Checkmarx/ast-vscode-extension/pull/1040
+* Create triageGetStates and create infr - need to implement in triage … (AST-83453) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1042
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.30.0...v2.31.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.0...v2.31.1-2.31.1-test-release.0
+
+### Fix
+
+- general:
+  - fix workflow ([a570b97](https://github.com/Checkmarx/ast-vscode-extension/commit/a570b97c70fc9fa03dfd9b59676cd782223ec025))
+  - fix errors ([b5aeb20](https://github.com/Checkmarx/ast-vscode-extension/commit/b5aeb2028b2b1ee0187120cca7fb167cf0cb14b5))
+
+## [v2.31.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.0) - 2025-02-13 21:44:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.31.0 -->
 
 ## [v2.30.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.30.0) - 2025-01-28 11:53:44
 
