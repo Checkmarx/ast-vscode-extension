@@ -231,25 +231,11 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register authentication command
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(commands.showAuth, () => {
-        AuthenticationWebview.show(context);
-    }),
-    vscode.commands.registerCommand(commands.setings, () => {
-        const commonCommand = new CommonCommand(context, new Logs(vscode.window.createOutputChannel(constants.extensionFullName)));
-        commonCommand.executeCheckSettings();
-    })
-);
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand(commands.showAuth, () => {
-  //     AuthenticationWebview.show(context);
-  //   })
-  // );
+    vscode.commands.registerCommand("ast-results.showAuth", () => {
+      AuthenticationWebview.show(context);
 
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand("ast-results.showAuth", () => {
-  //     AuthenticationWebview.show(context);
-  //   })
-  // );
+    })
+  );
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {
