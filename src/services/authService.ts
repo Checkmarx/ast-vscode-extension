@@ -383,7 +383,6 @@ export class AuthService {
         const savedToken = await this.context.secrets.get("authCredential");
         console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
 
-        vscode.window.showInformationMessage(`from saveToken token: ${savedToken}`);
 
         
         const isValid = await this.validateAndUpdateState();
@@ -402,7 +401,6 @@ export class AuthService {
         try {
             const token = await this.context.secrets.get("authCredential");
 
-            vscode.window.showInformationMessage(`from validateAndUpdateState token: ${token}`);
 
             if (!token) {
                 vscode.commands.executeCommand('setContext', 'ast-results.isValidCredentials', false);

@@ -170,7 +170,7 @@ export class AuthenticationWebview {
                     await vscode.window.withProgress(
                         {
                             location: vscode.ProgressLocation.Notification,
-                            title: "Loading to Checkmarx...",
+                            title: "Connecting to Checkmarx One...",
                             cancellable: false
                         }, async () => {
 
