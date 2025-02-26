@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.31.1-testv5.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-testv5.0) - 2025-02-25 18:21:40
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v4.0...v2.31.1-testv5.0
+
 ## [v2.31.1-test-v4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v4.0) - 2025-02-25 17:14:41
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
