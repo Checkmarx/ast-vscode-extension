@@ -298,7 +298,6 @@ export class AuthService {
               let data = '';
               res.on('data', chunk => data += chunk);
               res.on('end', () => {
-                // טיפול בהפניות (301, 302, 307, 308)
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
                   const location = res.headers.location;
                   console.log(`Redirect ${res.statusCode} to ${location}`);
@@ -308,12 +307,10 @@ export class AuthService {
                     return;
                   }
       
-                  // בדיקה אם ה-URL הוא יחסי או מוחלט
                   const redirectUrl = /^https?:\/\//i.test(location) 
                     ? location 
                     : `${urlObj.protocol}//${urlObj.host}${location}`;
       
-                  // קריאה רקורסיבית עם ה-URL החדש
                   makeRequest(redirectUrl, postData, redirectCount + 1);
                 }
                 else if (res.statusCode !== 200) {
@@ -351,7 +348,6 @@ export class AuthService {
       
           const postData = params.toString();
           
-          // התחלת התהליך עם ה-URL המקורי
           makeRequest(config.tokenEndpoint, postData, 0);
         });
       }
@@ -386,6 +382,9 @@ export class AuthService {
         // Verify the token was saved
         const savedToken = await this.context.secrets.get("authCredential");
         console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
+
+        vscode.window.showInformationMessage(`from saveToken token: ${savedToken}`);
+
         
         const isValid = await this.validateAndUpdateState();
         console.log("Token validation result:", isValid);
@@ -402,6 +401,9 @@ export class AuthService {
     public async validateAndUpdateState(): Promise<boolean> {
         try {
             const token = await this.context.secrets.get("authCredential");
+
+            vscode.window.showInformationMessage(`from validateAndUpdateState token: ${token}`);
+
             if (!token) {
                 vscode.commands.executeCommand('setContext', 'ast-results.isValidCredentials', false);
                 vscode.commands.executeCommand('setContext', 'ast-results.isScanEnabled',false);
