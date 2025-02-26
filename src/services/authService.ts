@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
+import * as https from 'https';
 import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
-import fetch from 'node-fetch';
 import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { Logs } from '../models/logs';
@@ -53,34 +53,88 @@ export class AuthService {
         return { codeVerifier, codeChallenge };
     }
 
-    private async validateConnection(baseUri: string, tenant: string): Promise<{ isValid: boolean; error?: string }> {
-        try {
-            // Check if base URI exists
-            const baseCheck = await fetch(baseUri);
-            if (!baseCheck.ok) {
-                return { 
-                    isValid: false, 
-                    error: "Invalid Base URI. Please check your server address."
-                };
-            }
-    
-            // Check if tenant exists
-            const tenantCheck = await fetch(`${baseUri}/auth/realms/${tenant}`);
-            if (tenantCheck.status === 404) {
-                return { 
-                    isValid: false, 
-                    error: `Tenant "${tenant}" not found. Please check your tenant name.`
-                };
-            }
-            
-            return { isValid: true };
-        } catch (error) {
-            return { 
-                isValid: false, 
-                error: "Could not connect to server. Please check your Base URI."
-            };
-        }
+
+
+  private async validateConnection(baseUri: string, tenant: string): Promise<{ isValid: boolean; error?: string }> {
+    try {
+      // Basic URL validation
+      const url = new URL(baseUri);
+      
+      if (!url.protocol.startsWith('http')) {
+        return { 
+          isValid: false, 
+          error: "Invalid URL protocol. Please use http:// or https://"
+        };
+      }
+      
+      if (!tenant || tenant.trim() === '') {
+        return {
+          isValid: false,
+          error: "Tenant name cannot be empty"
+        };
+      }
+      
+      // Basic connectivity check to server
+      const isBaseUriValid = await this.checkUrlExists(baseUri);
+      if (!isBaseUriValid) {
+        return { 
+          isValid: false, 
+          error: "Invalid Base URI. Please check your server address."
+        };
+      }
+      
+      // Check if tenant exists
+      const tenantUrl = `${baseUri}/auth/realms/${tenant}`;
+      const isTenantValid = await this.checkUrlExists(tenantUrl);
+      if (!isTenantValid) {
+        return { 
+          isValid: false, 
+          error: `Tenant "${tenant}" not found. Please check your tenant name.`
+        };
+      }
+      
+      return { isValid: true };
+    } catch (error) {
+      return { 
+        isValid: false, 
+        error: "Could not connect to server. Please check your Base URI."
+      };
     }
+  }
+  
+  // Helper function to check if a URL exists
+  private checkUrlExists(urlToCheck: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      const url = new URL(urlToCheck);
+      const options = {
+        method: 'HEAD',
+        hostname: url.hostname,
+        port: url.port || (url.protocol === 'https:' ? 443 : 80),
+        path: url.pathname + url.search,
+        timeout: 5000 // timeout after 5 seconds
+      };
+      
+      const req = (url.protocol === 'https:' ? https : http).request(options, (res) => {
+        // 2xx or 3xx status codes indicate that the resource exists
+        resolve(res.statusCode !== undefined && res.statusCode < 400);
+      });
+      
+      req.on('error', () => {
+        resolve(false);
+      });
+      
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(false);
+      });
+      
+      req.end();
+    });
+  }
+
+
+
+ 
 
     private async findAvailablePort(): Promise<number> {
         const MIN_PORT = 49152;
@@ -219,26 +273,91 @@ export class AuthService {
     }
 
     private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
-        const params = new URLSearchParams();
-        params.append('grant_type', 'authorization_code');
-        params.append('client_id', config.clientId);
-        params.append('code', code);
-        params.append('redirect_uri', config.redirectUri);
-        params.append('code_verifier', config.codeVerifier);
-
-        const response = await fetch(config.tokenEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params.toString()
+        return new Promise((resolve, reject) => {
+          const makeRequest = (url: string, postData: string, redirectCount = 0) => {
+            if (redirectCount > 5) {
+              reject(new Error('Too many redirects'));
+              return;
+            }
+      
+            const urlObj = new URL(url);
+            const options = {
+              hostname: urlObj.hostname,
+              port: urlObj.protocol === 'https:' ? 443 : 80,
+              path: urlObj.pathname + urlObj.search,
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+              }
+            };
+      
+            console.log(`Making request to ${url} (redirect #${redirectCount})`);
+            
+            const req = (urlObj.protocol === 'https:' ? https : http).request(options, (res) => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => {
+                // טיפול בהפניות (301, 302, 307, 308)
+                if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+                  const location = res.headers.location;
+                  console.log(`Redirect ${res.statusCode} to ${location}`);
+                  
+                  if (!location) {
+                    reject(new Error(`Redirect without location header (status ${res.statusCode})`));
+                    return;
+                  }
+      
+                  // בדיקה אם ה-URL הוא יחסי או מוחלט
+                  const redirectUrl = /^https?:\/\//i.test(location) 
+                    ? location 
+                    : `${urlObj.protocol}//${urlObj.host}${location}`;
+      
+                  // קריאה רקורסיבית עם ה-URL החדש
+                  makeRequest(redirectUrl, postData, redirectCount + 1);
+                }
+                else if (res.statusCode !== 200) {
+                  reject(new Error(`Request failed with status ${res.statusCode}`));
+                }
+                else {
+                  try {
+                    const parsedData = JSON.parse(data);
+                    if (!parsedData.refresh_token) {
+                      reject(new Error('Response did not include refresh_token'));
+                      return;
+                    }
+                    resolve(parsedData.refresh_token);
+                  } catch (error) {
+                    reject(new Error(`Failed to parse response: ${error.message}`));
+                  }
+                }
+              });
+            });
+      
+            req.on('error', (error) => {
+              reject(new Error(`Request error: ${error.message}`));
+            });
+      
+            req.write(postData);
+            req.end();
+          };
+      
+          const params = new URLSearchParams();
+          params.append('grant_type', 'authorization_code');
+          params.append('client_id', config.clientId);
+          params.append('code', code);
+          params.append('redirect_uri', config.redirectUri);
+          params.append('code_verifier', config.codeVerifier);
+      
+          const postData = params.toString();
+          
+          // התחלת התהליך עם ה-URL המקורי
+          makeRequest(config.tokenEndpoint, postData, 0);
         });
+      }
 
-        if (!response.ok) {
-            throw new Error(`Token exchange failed: ${response.statusText}`);
-        }
 
-        const data = await response.json();
-        return data.refresh_token;
-    }
+    
     private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
         const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
     
