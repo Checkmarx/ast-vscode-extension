@@ -8,6 +8,14 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-testv5.0...v2.31.1-testv6.0
 
+## [v2.31.1-test6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test6.0) - 2025-02-26 18:34:42
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-0.0.125.0...v2.31.1-test6.0
+
 ## [v2.31.1-test-0.0.125.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-0.0.125.0) - 2025-02-26 15:50:26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
