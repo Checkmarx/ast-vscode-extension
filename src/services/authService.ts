@@ -75,7 +75,7 @@ export class AuthService {
       }
       
       // Basic connectivity check to server
-      const isBaseUriValid = await this.checkUrlExists(baseUri);
+      const isBaseUriValid = await this.checkUrlExists(baseUri, false);
       if (!isBaseUriValid) {
         return { 
           isValid: false, 
@@ -85,7 +85,7 @@ export class AuthService {
       
       // Check if tenant exists
       const tenantUrl = `${baseUri}/auth/realms/${tenant}`;
-      const isTenantValid = await this.checkUrlExists(tenantUrl);
+      const isTenantValid = await this.checkUrlExists(tenantUrl, true);
       if (!isTenantValid) {
         return { 
           isValid: false, 
@@ -103,19 +103,62 @@ export class AuthService {
   }
   
   // Helper function to check if a URL exists
-  private checkUrlExists(urlToCheck: string): Promise<boolean> {
+  private checkUrlExists(urlToCheck: string, isTenantCheck = false, redirectCount = 0): Promise<boolean> {
     return new Promise((resolve) => {
+      const MAX_REDIRECTS = 5;
+      if (redirectCount >= MAX_REDIRECTS) {
+        console.log("Too many redirects, stopping");
+        resolve(false);
+        return;
+      }
+  
       const url = new URL(urlToCheck);
+      // Try GET method if this is already a redirect or we had a 405 before
       const options = {
-        method: 'HEAD',
+        method: redirectCount > 0 ? 'GET' : 'HEAD',
         hostname: url.hostname,
         port: url.port || (url.protocol === 'https:' ? 443 : 80),
         path: url.pathname + url.search,
-        timeout: 5000 // timeout after 5 seconds
+        timeout: 5000
       };
       
       const req = (url.protocol === 'https:' ? https : http).request(options, (res) => {
-        // 2xx or 3xx status codes indicate that the resource exists
+        // For tenant check, specific handling of error codes
+        if (isTenantCheck) {
+          // If status is 404 or 405 for tenant check, return false
+          if (res.statusCode === 404 || res.statusCode === 405) {
+            console.log(`Tenant check failed with status: ${res.statusCode}`);
+            resolve(false);
+            return;
+          }
+        }
+        
+        // Handle redirects
+        if (res.statusCode === 301 || res.statusCode === 302 || 
+            res.statusCode === 303 || res.statusCode === 307 || 
+            res.statusCode === 308) {
+              
+          const location = res.headers.location;
+          if (location) {
+            console.log(`Redirected (${res.statusCode}) to: ${location}`);
+            
+            const redirectUrl = location.startsWith('http') 
+              ? location 
+              : `${url.protocol}//${url.host}${location.startsWith('/') ? '' : '/'}${location}`;
+            
+            return this.checkUrlExists(redirectUrl, isTenantCheck, redirectCount + 1)
+              .then(resolve);
+          }
+        }
+        
+        // If status is 405 and not tenant check, try again with GET method
+        if (res.statusCode === 405 && !isTenantCheck && options.method === 'HEAD') {
+          console.log('Method not allowed (405), retrying with GET');
+          return this.checkUrlExists(urlToCheck, isTenantCheck, redirectCount + 1)
+            .then(resolve);
+        }
+        
+        // If no special cases, use standard success criteria
         resolve(res.statusCode !== undefined && res.statusCode < 400);
       });
       
@@ -131,9 +174,6 @@ export class AuthService {
       req.end();
     });
   }
-
-
-
  
 
     private async findAvailablePort(): Promise<number> {
