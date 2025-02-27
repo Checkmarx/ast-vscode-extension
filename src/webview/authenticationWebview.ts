@@ -177,8 +177,12 @@ export class AuthenticationWebview {
                             try {
                                 if (message.authMethod === 'oauth') {
                                     // Existing OAuth handling
+                                    const baseUri = message.baseUri.trim();
+                                    const tenant = message.tenant.trim();
+
+
                                     const authService = AuthService.getInstance(this.context);
-                                    await authService.authenticate(message.baseUri, message.tenant);
+                                    await authService.authenticate(baseUri, tenant);
                                     vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
                                     setTimeout(() => this._panel.dispose(), 1000);
                                 } else if (message.authMethod === 'apiKey') {

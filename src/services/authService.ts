@@ -240,7 +240,7 @@ export class AuthService {
           const timeout = setTimeout(() => {
             server.close();
             reject(new Error('Timeout waiting for authorization code'));
-          }, 10000); 
+          }, 20000); 
       
           server.on('request', (req, res) => {
             clearTimeout(timeout); 
