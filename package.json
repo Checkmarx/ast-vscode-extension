@@ -808,7 +808,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Login to Checkmarx](command:ast-results.showAuth)\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
