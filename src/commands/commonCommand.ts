@@ -38,11 +38,13 @@ export class CommonCommand {
     );
   }
 
-  public executeCheckSettings() {
+  public async executeCheckSettings() {
+
+   const isConfiguration = await cx.getAstConfiguration() ? true : false;
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      cx.getAstConfiguration() ? true : false
+      isConfiguration 
     );
   }
 
