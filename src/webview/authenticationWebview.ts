@@ -54,31 +54,19 @@ export class AuthenticationWebview {
         return Object.keys(urlMap);
     }
 
-    private _getWebviewContent(webview: vscode.Webview): string {
-        const styleBootStrap = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, "media", "bootstrap", "bootstrap.min.css")
-        );
-        const scriptBootStrap = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, "media", "bootstrap", "bootstrap.min.js")
-        );
-        const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, "media", "auth.js")
-        );
-        const styleAuth = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, "media", "auth.css")
-        );
-        const loginIcon = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "login.svg"))
-        );
-        const logoutIcon = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "logout.svg"))
-        );
-        const successIcon = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "success.svg"))
-        );
-        const errorIcon = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, path.join("media", "icons", "error.svg"))
-        );
+    private setWebUri(...paths: string[]): vscode.Uri {
+        return this._panel.webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...paths));
+    }
+
+    private _getWebviewContent(): string {
+        const styleBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.css");
+        const scriptBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.js");
+        const scriptUri = this.setWebUri("media", "auth.js");
+        const styleAuth = this.setWebUri("media", "auth.css");
+        const loginIcon = this.setWebUri("media", "icons", "login.svg");
+        const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
+        const successIcon = this.setWebUri("media", "icons", "success.svg");
+        const errorIcon = this.setWebUri("media", "icons", "error.svg");
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
