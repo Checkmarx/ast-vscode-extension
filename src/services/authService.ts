@@ -207,54 +207,66 @@ export class AuthService {
     }
 
     public async authenticate(baseUri: string, tenant: string): Promise<string> {
-        await this.closeServer();
-        const validation = await this.validateConnection(baseUri, tenant);
-        if (!validation.isValid) {
-            throw new Error(validation.error);
-        }
-        const port = await this.findAvailablePort();
-
-        const { codeVerifier, codeChallenge } = this.generatePKCE();
-        const config: OAuthConfig = {
-            clientId: 'ide-integration',
-            authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
-            tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
-            redirectUri: `http://localhost:${port}/checkmarx1/callback`,
-            scope: 'openid',
-            codeVerifier,
-            codeChallenge,
-            port
-        };
-    
-        try {
-            const server = await this.startLocalServer(config);
-            vscode.env.openExternal(vscode.Uri.parse(
-                `${config.authEndpoint}?` +
-                `client_id=${config.clientId}&` +
-                `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-                `response_type=code&` +
-                `scope=${config.scope}&` +
-                `code_challenge=${config.codeChallenge}&` +
-                `code_challenge_method=S256`
-            ));
-    
-            const code = await this.waitForCode(server);
-            const token = await this.getRefreshToken(code, config);
-            console.log("Got refresh token:", token ? "Token exists" : "No token");
-            
-            await this.saveToken(this.context, token);
-            console.log("Token saved after authentication");
-            
-            await this.saveURIAndTenant(this.context, baseUri, tenant);
-            console.log("URI and tenant saved");
-           
-    
-            return token;
-        } catch (error) {
-            console.error("Authentication error:", error);
-            throw error;
-        }
-    }
+      await this.closeServer();
+      const validation = await this.validateConnection(baseUri, tenant);
+      if (!validation.isValid) {
+          throw new Error(validation.error);
+      }
+      const port = await this.findAvailablePort();
+  
+      const { codeVerifier, codeChallenge } = this.generatePKCE();
+      const config: OAuthConfig = {
+          clientId: 'ide-integration',
+          authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
+          tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
+          redirectUri: `http://localhost:${port}/checkmarx1/callback`,
+          scope: 'openid',
+          codeVerifier,
+          codeChallenge,
+          port
+      };
+  
+      try {
+          const server = await this.startLocalServer(config);
+          vscode.env.openExternal(vscode.Uri.parse(
+              `${config.authEndpoint}?` +
+              `client_id=${config.clientId}&` +
+              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+              `response_type=code&` +
+              `scope=${config.scope}&` +
+              `code_challenge=${config.codeChallenge}&` +
+              `code_challenge_method=S256`
+          ));
+  
+          // Now we get both the code and response object
+          const { code, res } = await this.waitForCode(server);
+          const token = await this.getRefreshToken(code, config);
+          console.log("Got refresh token:", token ? "Token exists" : "No token");
+          
+          // Save token and validate
+          await this.saveToken(this.context, token);
+          console.log("Token saved after authentication");
+          
+          // Check if validation was successful before showing success page
+          const isValid = await this.validateAndUpdateState();
+          
+          if (isValid) {
+              // Only show success page if token is valid
+              res.end(this.getSuccessPageHtml());
+          } else {
+              // Show error page if token validation failed
+              res.end(this.getErrorPageHtml("Token validation failed. Please try again."));
+          }
+          
+          await this.saveURIAndTenant(this.context, baseUri, tenant);
+          console.log("URI and tenant saved");
+  
+          return token;
+      } catch (error) {
+          console.error("Authentication error:", error);
+          throw error;
+      }
+  }
     private startLocalServer(config: OAuthConfig): Promise<http.Server> {
         return new Promise((resolve, reject) => {
             try {
@@ -275,28 +287,37 @@ export class AuthService {
             }
         });
     }
-    private waitForCode(server: http.Server): Promise<string> {
-        return new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
+    private waitForCode(server: http.Server): Promise<{code: string, res: http.ServerResponse}> {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          server.close();
+          reject(new Error('Timeout waiting for authorization code'));
+        }, 20000); 
+    
+        server.on('request', (req, res) => {
+          clearTimeout(timeout); 
+          const url = new URL(req.url!, `http://${req.headers.host}`);
+          const code = url.searchParams.get('code');
+          
+          if (code) {
+            // Don't end the response yet - just prepare headers
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            
+            // Only close the server, keep the response open
             server.close();
-            reject(new Error('Timeout waiting for authorization code'));
-          }, 20000); 
-      
-          server.on('request', (req, res) => {
-            clearTimeout(timeout); 
-            const url = new URL(req.url!, `http://${req.headers.host}`);
-            const code = url.searchParams.get('code');
-            if (code) {
-              res.writeHead(200, { 'Content-Type': 'text/html' });
-              res.end(this.getSuccessPageHtml());
-              server.close();
-              resolve(code);
-            } else {
-              reject(new Error('No authorization code received'));
-            }
-          });
+            
+            // Return both code and response object
+            resolve({ code, res });
+          } else {
+            // For error cases, we can end the response immediately
+            res.writeHead(400, { 'Content-Type': 'text/html' });
+            res.end('<html><body><h1>Error: No authorization code received</h1></body></html>');
+            server.close();
+            reject(new Error('No authorization code received'));
+          }
         });
-      }
+      });
+    }
 
     public async validateApiKey(apiKey: string): Promise<boolean> {
         try {
@@ -595,6 +616,86 @@ export class AuthService {
         </html>
         `;
     }
-
-
+    private getErrorPageHtml(errorMessage: string): string {
+      return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Login Failed - Checkmarx</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: rgba(0, 0, 0, 0.5);
+                  margin: 0;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 100vh;
+              }
+              .modal {
+                  background: white;
+                  padding: 2rem;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                  width: 90%;
+                  max-width: 500px;
+                  text-align: center;
+              }
+              .close-button {
+                  float: right;
+                  font-size: 24px;
+                  color: #666;
+                  cursor: pointer;
+                  border: none;
+                  background: none;
+                  padding: 0;
+                  margin: -1rem -1rem 0 0;
+              }
+              h1 {
+                  color: #333;
+                  font-size: 24px;
+                  margin: 1rem 0;
+              }
+              .icon-container {
+                  margin: 2rem 0;
+              }
+              .error-icon {
+                  font-size: 48px;
+                  color: #FF4D4F;
+              }
+              .message {
+                  color: #666;
+                  margin: 1rem 0 2rem 0;
+              }
+              .close-btn {
+                  background-color: #4F5CD1;
+                  color: white;
+                  border: none;
+                  padding: 12px 40px;
+                  border-radius: 4px;
+                  font-size: 16px;
+                  cursor: pointer;
+                  transition: background-color 0.3s;
+              }
+              .close-btn:hover {
+                  background-color: #3F4BB1;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="modal">
+              <button class="close-button" onclick="window.close()">×</button>
+              <h1>Authentication Failed</h1>
+              <div class="icon-container">
+                  <span class="error-icon">❌</span>
+              </div>
+              <p class="message">${errorMessage}</p>
+              <button class="close-btn" onclick="window.close()">Close</button>
+          </div>
+      </body>
+      </html>
+      `;
+    }
 }

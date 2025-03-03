@@ -183,7 +183,6 @@ export class AuthenticationWebview {
 
                                     const authService = AuthService.getInstance(this.context);
                                     await authService.authenticate(baseUri, tenant);
-                                    vscode.window.showInformationMessage('Successfully authenticated with Checkmarx One!');
                                     setTimeout(() => this._panel.dispose(), 1000);
                                 } else if (message.authMethod === 'apiKey') {
                                     // New API Key handling
