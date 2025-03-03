@@ -504,6 +504,11 @@
         "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
+      },
+      {
+        "command": "ast-results.filterDynamic",
+        "title": "Filter Results",
+        "category": "ast-results"
       }
     ],
     "submenus": [
@@ -585,6 +590,10 @@
           "command": "ast-results.filterIgnored",
           "group": "navigation@2",
           "when": "!ast-results-Ignored"
+        },
+        {
+          "command": "ast-results.filterDynamic",
+          "when": "ast-results.hasFilter"
         }
       ],
       "view/item/context": [
