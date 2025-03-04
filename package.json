@@ -355,150 +355,6 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
-        "command": "ast-results.filterNotExploitableActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterUrgentActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterProposedActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterConfirmedActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterToConfirmActive",
-        "category": "ast-results",
-        "title": "✓ Filter: To Vonfirm",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterToVerifyActive",
-        "category": "ast-results",
-        "title": "✓ Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterNotIgnoredActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterIgnoredActive",
-        "category": "ast-results",
-        "title": "✓ Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterNotExploitable",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterUrgent",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterProposed",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterConfirmed",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterToConfirm",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: To Confirm",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterToVerify",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterNotIgnored",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterIgnored",
-        "category": "ast-results",
-        "title": "­­­ ­­ ­ ­ ­Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials && view == astResults"
-      },
-      {
-        "command": "ast-results.filterNotExploitables",
-        "category": "ast-results",
-        "title": "Filter: Not Exploitable",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterUrgents",
-        "category": "ast-results",
-        "title": "Filter: Urgent",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterProposeds",
-        "category": "ast-results",
-        "title": "Filter: Proposed Not Exploitable",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterConfirmeds",
-        "category": "ast-results",
-        "title": "Filter: Confirmed",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterToConfirms",
-        "category": "ast-results",
-        "title": "Filter: To Confirm",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterToVerifies",
-        "category": "ast-results",
-        "title": "Filter: To Verify",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterIgnoreds",
-        "category": "ast-results",
-        "title": "Filter: Ignored",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
-        "command": "ast-results.filterNotIgnoreds",
-        "category": "ast-results",
-        "title": "Filter: Not Ignored",
-        "enablement": "ast-results.isValidCredentials"
-      },
-      {
         "command": "ast-results.createSCAScan",
         "category": "ast-results",
         "title": "Run SCA Realtime Scan",
@@ -507,8 +363,9 @@
       },
       {
         "command": "ast-results.filterDynamic",
-        "title": "Filter Results",
-        "category": "ast-results"
+        "title": "Filter",
+        "category": "ast-results",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
       }
     ],
     "submenus": [
@@ -521,76 +378,7 @@
     ],
     "menus": {
       "ast-results.filterBy": [
-        {
-          "command": "ast-results.filterNotExploitableActive",
-          "group": "navigation@3",
-          "when": "ast-results-NotExploitable"
-        },
-        {
-          "command": "ast-results.filterProposedActive",
-          "group": "navigation@5",
-          "when": "ast-results-Proposed"
-        },
-        {
-          "command": "ast-results.filterConfirmedActive",
-          "group": "navigation@1",
-          "when": "ast-results-Confirmed"
-        },
-        {
-          "command": "ast-results.filterToVerifyActive",
-          "group": "navigation@6",
-          "when": "ast-results-ToVerify"
-        },
-        {
-          "command": "ast-results.filterUrgentActive",
-          "group": "navigation@7",
-          "when": "ast-results-Urgent"
-        },
-        {
-          "command": "ast-results.filterNotIgnoredActive",
-          "group": "navigation@4",
-          "when": "ast-results-NotIgnored"
-        },
-        {
-          "command": "ast-results.filterIgnoredActive",
-          "group": "navigation@2",
-          "when": "ast-results-Ignored"
-        },
-        {
-          "command": "ast-results.filterNotExploitable",
-          "group": "navigation@3",
-          "when": "!ast-results-NotExploitable"
-        },
-        {
-          "command": "ast-results.filterProposed",
-          "group": "navigation@5",
-          "when": "!ast-results-Proposed"
-        },
-        {
-          "command": "ast-results.filterConfirmed",
-          "group": "navigation@1",
-          "when": "!ast-results-Confirmed"
-        },
-        {
-          "command": "ast-results.filterToVerify",
-          "group": "navigation@6",
-          "when": "!ast-results-ToVerify"
-        },
-        {
-          "command": "ast-results.filterUrgent",
-          "group": "navigation@7",
-          "when": "!ast-results-Urgent"
-        },
-        {
-          "command": "ast-results.filterNotIgnored",
-          "group": "navigation@4",
-          "when": "!ast-results-NotIgnored"
-        },
-        {
-          "command": "ast-results.filterIgnored",
-          "group": "navigation@2",
-          "when": "!ast-results-Ignored"
-        },
+       
         {
           "command": "ast-results.filterDynamic",
           "when": "ast-results.hasFilter"
