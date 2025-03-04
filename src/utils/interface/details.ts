@@ -358,7 +358,7 @@ export class Details {
 		<div class="inner-body">
 		<div>
 	<div class="container" style="padding:0;width:100 !important;">
-		<div class="card" style="border:none;margin-bottom:1em;background:transparent;">
+		<div class="card" style="border:none;margin-bottom:1em;background:transparent;color:var(--vscode-editor-foreground);">
 			<div class="card-body" style="padding:0">
 				<div class="row">
 					<div class="col">
@@ -382,7 +382,7 @@ export class Details {
 				<div class="row" style="padding:0.6em">
 					<div id="accordion" style="width:100%">
 						<div class="card" style="background:transparent;">
-							<div class="card-header" id="headingOne" style="padding:0!important">
+							<div class="card-header" id="headingOne" style="padding:0!important;color:var(--vscode-editor-foreground);">
 								<h5 class="mb-0">import { messages } from '../common/messages';
 
 									<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"

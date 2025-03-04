@@ -240,7 +240,7 @@
 		thinkID = parseInt(thinkID);
 		let html =
 			`
-			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;">
+			<div id="think-${thinkID}" class="card" style="border:none;background:transparent;margin-bottom:1em;color:var(--vscode-editor-foreground);">
                <div class="card-body">
                   <div class="row">
                     <div class="col" id="aiSecurityChampionImageDiv-${thinkID}"> AI Security Champion </div>
@@ -270,7 +270,7 @@
 		id = parseInt(id);
         let html =
 			`
-			<div class="card" style="border:none;background:transparent;margin-bottom:1em;">
+			<div class="card" style="border:none;background:transparent;margin-bottom:1em;color:var(--vscode-editor-foreground);">
                <div class="card-body">
                   <div class="row">
                      <div class="col" id="messageGptContainerIconDiv-${id}"> AI Security Champion </div>
@@ -301,7 +301,7 @@
 	function messageUserContainer(message) {
 		var cardDiv = document.createElement('div');
 		cardDiv.setAttribute('class','card');
-		cardDiv.setAttribute('style','border:none;background:#6769725c;margin-top:0.5em;');
+		cardDiv.setAttribute('style','border:none;background:#6769725c;margin-top:0.5em;color:var(--vscode-editor-foreground);');
 		var cardBodyDiv = document.createElement('div');
 		cardBodyDiv.setAttribute('class','card-body');
 		var imageRowDiv = document.createElement('div');
