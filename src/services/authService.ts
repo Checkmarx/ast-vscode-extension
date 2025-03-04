@@ -323,11 +323,12 @@ export class AuthService {
         try {
             const config = new CxConfig();
             config.apiKey = apiKey;
-            
-            const cx = new CxWrapper(config);
-            const valid = await cx.authValidate();
-            
-            return valid.exitCode === 0;
+
+            const cx = getCx();
+            const logs = new Logs(vscode.window.createOutputChannel("Checkmarx"));
+            const valid = await cx.authValidate(logs);
+            return valid;
+
         } catch (error) {
             return false;
         }

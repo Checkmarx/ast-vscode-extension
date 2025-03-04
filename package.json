@@ -52,6 +52,10 @@
         "icon": "$(gear)"
       },
       {
+        "command": "ast-results.mockTokenTest",
+        "title": "Mock Token Test"
+      },
+      {
         "command": "ast-results.refreshTree",
         "category": "ast-results",
         "title": "Refresh tree",
