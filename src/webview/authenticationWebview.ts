@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { AuthService } from '../services/authService';
 import { isURL } from 'validator';
 import { getNonce } from '../utils/utils';
-import path = require("path");
 export class AuthenticationWebview {
     public static readonly viewType = 'checkmarxAuth';
     private readonly _panel: vscode.WebviewPanel;
@@ -11,7 +10,7 @@ export class AuthenticationWebview {
 
     private constructor(panel: vscode.WebviewPanel, private context: vscode.ExtensionContext) {
         this._panel = panel;
-        this._panel.webview.html = this._getWebviewContent(this._panel.webview);
+        this._panel.webview.html = this._getWebviewContent();
         this._setWebviewMessageListener(this._panel.webview);
 
         this.initialize();
