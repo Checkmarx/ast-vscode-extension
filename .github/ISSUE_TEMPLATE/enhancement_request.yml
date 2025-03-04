@@ -1,0 +1,54 @@
+# Centralized GitHub Issue Templates for Enhancement Requests (.github/ISSUE_TEMPLATE/enhancement_request.yml)
+name: Enhancement Request
+description: Suggest a new feature or improvement.
+title: "[Enhancement]: "
+labels: ["enhancement", "feature-request"]
+projects: ["octo-org/1", "octo-org/44"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest an enhancement!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: what-problem
+    attributes:
+      label: What problem does this solve?
+      description: Explain the problem this feature would address.
+      placeholder: Tell us about the problem!
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How do you think this should be implemented?
+      placeholder: Describe your idea in detail.
+    validations:
+      required: true
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Importance Level
+      description: How important is this enhancement to you?
+      options:
+        - Nice to have
+        - Important
+        - Critical
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any other context, related issues, or screenshots to support your request.

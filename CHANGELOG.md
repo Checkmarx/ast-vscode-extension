@@ -1,14 +1,62 @@
 # CHANGELOG
 
-## [v2.31.1-2.31.0-pre-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.0-pre-release.0) - 2025-02-25 07:16:01
+## [v2.31.1-test-13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-13.0) - 2025-02-27 11:11:40
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-2.31.1-test-release.0...v2.31.1-2.31.0-pre-release.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-9.0...v2.31.1-test-13.0
 
-## [v2.31.1-2.31.1-test-release.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-test-release.0) - 2025-02-24 14:14:57
+## [v2.31.1-test-9.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-9.0) - 2025-02-26 20:05:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-8.0...v2.31.1-test-9.0
+
+## [v2.31.1-test-8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-8.0) - 2025-02-26 19:08:42
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-7.0...v2.31.1-test-8.0
+
+## [v2.31.1-test-7.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-7.0) - 2025-02-26 19:02:58
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-0.0.125.0...v2.31.1-test-7.0
+
+## [v2.31.1-test-0.0.125.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-0.0.125.0) - 2025-02-26 15:50:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-testv6.0...v2.31.1-test-0.0.125.0
+
+## [v2.31.1-testv5.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-testv5.0) - 2025-02-25 18:21:40
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v4.0...v2.31.1-testv5.0
+
+## [v2.31.1-test-v4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v4.0) - 2025-02-25 17:14:41
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-oauth-v2.0...v2.31.1-test-v4.0
+
+## [v2.31.1-test-oauth-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-v2.0) - 2025-02-25 16:36:34
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 

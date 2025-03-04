@@ -7,6 +7,8 @@ on:
         description: "Specify a version (e.g., 0.0.124). Leave empty for the latest official version."
         required: false
         default: ""
+  repository_dispatch:
+    types: [js-wrapper-version-update]
 
 jobs:
   update-js-wrapper:

@@ -1,0 +1,77 @@
+# Centralized GitHub Issue Templates for Bug Reports (.github/ISSUE_TEMPLATE/bug_report.yml)
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels: ["bug"]
+projects: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of our software are you running?
+      placeholder: Enter the version number
+    validations:
+      required: true
+  - type: dropdown
+    id: os-version
+    attributes:
+      label: Operating System & Version
+      description: Select your OS and version
+      options:
+        - Windows 7
+        - Windows 8
+        - Windows 10
+        - Windows 11
+        - macOS Big Sur
+        - macOS Monterey
+        - macOS Ventura
+        - macOS Sonoma
+        - Ubuntu 18.04
+        - Ubuntu 20.04
+        - Ubuntu 22.04
+        - Debian 10
+        - Debian 11
+        - Fedora 36
+        - Fedora 37
+        - Arch Linux (Latest)
+        - Red Hat Enterprise Linux 8
+        - Red Hat Enterprise Linux 9
+        - openSUSE Leap 15
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: os-other
+    attributes:
+      label: Specify Other OS Version
+      description: If you selected "Other," please specify your OS and version.
+      placeholder: Enter your OS and version
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
