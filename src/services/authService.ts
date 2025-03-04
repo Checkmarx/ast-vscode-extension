@@ -321,9 +321,8 @@ export class AuthService {
 
     public async validateApiKey(apiKey: string): Promise<boolean> {
         try {
-            const config = new CxConfig();
-            config.apiKey = apiKey;
-
+         
+            await this.context.secrets.store("authCredential", apiKey);
             const cx = getCx();
             const logs = new Logs(vscode.window.createOutputChannel("Checkmarx"));
             const valid = await cx.authValidate(logs);
