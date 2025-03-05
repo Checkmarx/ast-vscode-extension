@@ -3,8 +3,6 @@ import * as http from 'http';
 import * as https from 'https';
 import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
-import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { Logs } from '../models/logs';
 import { initialize, getCx } from '../cx';
 import { commands } from "../utils/common/commands";

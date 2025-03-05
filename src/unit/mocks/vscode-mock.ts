@@ -85,6 +85,12 @@ const mock = {
         createDiagnosticCollection: () => mockDiagnosticCollection
     },
 
+    secrets: {
+        get: sinon.stub().resolves("valid-api-key"),
+        store: sinon.stub().resolves(undefined),
+        delete: sinon.stub().resolves(undefined),
+    },
+
     DiagnosticSeverity: {
         Error: 0,
         Warning: 1,
@@ -141,7 +147,6 @@ const mock = {
         })
     },
 
-    // 🔹 **תוספת של TreeItem**
     TreeItem: class {
         label: string;
         collapsibleState: any;
@@ -161,6 +166,6 @@ const mock = {
 
 mockRequire("vscode", mock);
 
-export { mockDiagnosticCollection, resetMocks };
+export { mock, mockDiagnosticCollection, resetMocks };
 export const getCommandsExecuted = () => commandsExecuted;
 export const clearCommandsExecuted = () => { commandsExecuted = []; };
