@@ -27,11 +27,7 @@ import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from './webview/authenticationWebview';
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
-// Import dotenv to load environment variables
-import dotenv from "dotenv";
 
-// Load environment variables from .env file
-dotenv.config();
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -241,27 +237,12 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
   
-  // Register the mock token command to save a fake API Key (for UI tests)
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
-      const authService = AuthService.getInstance(context);
-      await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");
-      await authService.validateAndUpdateState();
-    })
-  );
-  // Register a command to save the real API Key from the environment (for E2E tests)
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.saveRealTokenTest", async () => {
-      const authService = AuthService.getInstance(context);
-      const apiKey = process.env.CX_APIKEY;
-      if (!apiKey) {
-        console.error("CX_APIKEY environment variable is not set");
-        throw new Error("CX_APIKEY environment variable is not set");
-      }
-      await authService.saveToken(context, apiKey);
-      await authService.validateAndUpdateState();
-    })
-  );
+  vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
+    const authService = AuthService.getInstance(context);
+    await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");
+    console.log(">> Mock token has been saved to secrets"); // שורת לוג
+    await authService.validateAndUpdateState();
+  });
 
 
   

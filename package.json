@@ -56,10 +56,6 @@
         "title": "Mock Token Test"
       },
       {
-        "command": "ast-results.saveRealTokenTest",
-        "title": "E2E Token Test"
-      },
-      {
         "command": "ast-results.refreshTree",
         "category": "ast-results",
         "title": "Refresh tree",
