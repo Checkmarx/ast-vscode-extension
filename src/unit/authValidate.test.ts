@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
-import { cx } from "../cx";
+import { initialize, getCx } from "../cx";
 import { Logs } from "../models/logs";
+import * as mockVscode from "./mocks/vscode-mock";
 
 describe("Cx - authValidate", () => {
   let logs: Logs;
-
+  let mockContext: any;
 
   beforeEach(() => {
     const mockOutputChannel = {
@@ -17,7 +17,7 @@ describe("Cx - authValidate", () => {
       hide: () => {},
       dispose: () => {},
       replace: () => {},
-      name: "Test"
+      name: "Test",
     };
 
     logs = {
@@ -26,15 +26,20 @@ describe("Cx - authValidate", () => {
       output: mockOutputChannel,
       log: () => {},
       warn: () => {},
-      show: () => {}
+      show: () => {},
     } as Logs;
+
+    mockContext = {
+      subscriptions: [],
+      secrets: mockVscode.mock.secrets, 
+    };
+
+    initialize(mockContext);
   });
 
   it("should return true when authentication is successful", async () => {
-    // Using valid API key from vscode mock
+    const cx = getCx(); 
     const result = await cx.authValidate(logs);
     expect(result).to.be.true;
   });
-
-  
-}); 
+});

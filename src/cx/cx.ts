@@ -18,6 +18,12 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 
 export class Cx implements CxPlatform {
+    private context: vscode.ExtensionContext;
+
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
+  
   async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
     const cx = new CxWrapper(this.getBaseAstConfiguration());
     let jsonResults = undefined;
@@ -39,7 +45,7 @@ export class Cx implements CxPlatform {
     conversationId?: string
   ) {
     const resultsFilePath = getResultsFilePath();
-    const cx = new CxWrapper(this.getAstConfiguration());
+    const cx = new CxWrapper(await this.getAstConfiguration());
     const gptToken = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptSettingsKey) as string;
@@ -72,7 +78,7 @@ export class Cx implements CxPlatform {
     severity: string,
     queryName: string
   ) {
-    const cx = new CxWrapper(this.getAstConfiguration());
+    const cx = new CxWrapper(await this.getAstConfiguration());
     const gptToken = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptSettingsKey) as string;
@@ -119,7 +125,7 @@ export class Cx implements CxPlatform {
     branchName: string,
     sourcePath: string
   ) {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -148,7 +154,7 @@ export class Cx implements CxPlatform {
   }
 
   async scanCancel(scanId: string) {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -161,7 +167,7 @@ export class Cx implements CxPlatform {
   }
 
   async getResults(scanId: string | undefined) {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -179,7 +185,7 @@ export class Cx implements CxPlatform {
   }
 
   async getScan(scanId: string | undefined): Promise<CxScan | undefined> {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return undefined;
     }
@@ -194,7 +200,7 @@ export class Cx implements CxPlatform {
   async getProject(
     projectId: string | undefined
   ): Promise<CxProject | undefined> {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return undefined;
     }
@@ -210,7 +216,7 @@ export class Cx implements CxPlatform {
     params: string
   ): Promise<CxProject[] | undefined> {
     let r = [];
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -230,7 +236,7 @@ export class Cx implements CxPlatform {
     params?: string | undefined
   ): Promise<string[] | undefined> {
     let r = [];
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -254,7 +260,7 @@ export class Cx implements CxPlatform {
     branch: string | undefined
   ): Promise<CxScan[] | undefined> {
     let r = [];
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -278,59 +284,58 @@ export class Cx implements CxPlatform {
     return config;
   }
 
-  getAstConfiguration() {
-    const token = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
+
+  async getAstConfiguration() {
+    const token = await this.context.secrets.get("authCredential");
+    console.log("Token from secrets:", token);
+
     if (!token) {
-      return undefined;
+        return undefined;
     }
 
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
-  }
+}
+
 
   async isScanEnabled(logs: Logs): Promise<boolean> {
     let enabled = false;
-    const apiKey = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
-    if (!apiKey) {
-      return enabled;
+    const token = await this.context.secrets.get("authCredential");
+    if (!token) {
+        return enabled;
     }
     const config = new CxConfig();
-    config.apiKey = apiKey;
+    config.apiKey = token;
     const cx = new CxWrapper(config);
     try {
-      enabled = await cx.ideScansEnabled();
+        enabled = await cx.ideScansEnabled();
     } catch (error) {
-      const errMsg = `Error checking tenant configuration: ${error}`;
-      logs.error(errMsg);
-      return enabled;
+        const errMsg = `Error checking tenant configuration: ${error}`;
+        logs.error(errMsg);
+        return enabled;
     }
     return enabled;
-  }
+}
 
-  async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
-    let enabled = true;
-    const apiKey = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
-    if (!apiKey) {
+ 
+async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
+  let enabled = true;
+  const token = await this.context.secrets.get("authCredential");
+  if (!token) {
       return enabled;
-    }
-    const config = new CxConfig();
-    config.apiKey = apiKey;
-    const cx = new CxWrapper(config);
-    try {
+  }
+  const config = new CxConfig();
+  config.apiKey = token;
+  const cx = new CxWrapper(config);
+  try {
       enabled = await cx.guidedRemediationEnabled();
-    } catch (error) {
+  } catch (error) {
       logs.error(error);
       return false;
-    }
-    return enabled;
   }
+  return enabled;
+}
 
   async isSCAScanEnabled(): Promise<boolean> {
     const enabled = true;
@@ -345,7 +350,7 @@ export class Cx implements CxPlatform {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any[] | undefined> {
     let r = [];
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -369,7 +374,7 @@ export class Cx implements CxPlatform {
     stateId: number
   ): Promise<number> {
     let r = -1;
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return r;
     }
@@ -392,7 +397,7 @@ export class Cx implements CxPlatform {
   }
 
   async triageGetStates(all: boolean): Promise<CxCommandOutput> {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
     const states = await cx.triageGetStates(all);
     if (states.exitCode === 0) {
@@ -405,7 +410,7 @@ export class Cx implements CxPlatform {
     language: string,
     queryName: string
   ): Promise<CxCodeBashing | undefined> {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       throw new Error("Configuration error");
     }
@@ -432,7 +437,7 @@ export class Cx implements CxPlatform {
     queryId: string,
     resultNodes: SastNode[]
   ) {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       throw new Error("Configuration error");
     }
@@ -480,7 +485,7 @@ export class Cx implements CxPlatform {
     packages: string,
     packageVersion: string
   ) {
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       throw new Error("Configuration error");
     }
@@ -528,7 +533,7 @@ export class Cx implements CxPlatform {
     queryID: string
   ): Promise<CxLearnMoreDescriptions[] | undefined> {
     let r = [];
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
@@ -552,7 +557,7 @@ export class Cx implements CxPlatform {
   }
 
   async installAsca(): Promise<CxAsca> {
-    let config = this.getAstConfiguration();
+    let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
@@ -573,7 +578,7 @@ export class Cx implements CxPlatform {
   }
 
   async scanAsca(sourcePath: string): Promise<CxAsca> {
-    let config = this.getAstConfiguration();
+    let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
@@ -588,14 +593,11 @@ export class Cx implements CxPlatform {
 
   async authValidate(logs: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
-    const authSuccessMsg = "Successfully authenticated to Checkmarx One server";
-    const config = this.getAstConfiguration();
+    const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
     try {
       const valid = await cx.authValidate();
       if (valid.exitCode === 0) {
-        logs.info(authSuccessMsg);
-        vscode.window.showInformationMessage(authSuccessMsg);
         return true;
       } else {
         logs.error(`${authFailedMsg}: ${valid.status}`);

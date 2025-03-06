@@ -15,7 +15,7 @@ import {
   CX_KICS_NAME,
 } from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
-import { API_KEY } from "./utils/envs";
+
 import { constants } from "../utils/common/constants";
 
 describe("Extension settings tests", () => {
@@ -24,16 +24,24 @@ describe("Extension settings tests", () => {
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(8000);
+    this.timeout(15000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();
+    // Hide the bottom bar to prevent interference with tests
     await bottomBar.toggle(false);
+
+    // Inject a mock token into secrets before running tests using the new command
+    await bench.executeCommand("ast-results.mockTokenTest");
+    // Short delay to allow the extension state to update
+    await new Promise((res) => setTimeout(res, 2000));
   });
 
   after(async () => {
     await new EditorView().closeAllEditors();
   });
+
+  
 
   it("open settings and check if are empty", async () => {
     await waitStatusBar();
@@ -44,18 +52,6 @@ describe("Extension settings tests", () => {
     expect(settings).to.be.undefined;
   });
 
-  it("should set the settings and check if values are populated", async function () {
-    settingsEditor = await bench.openSettings();
-    const apiKeyVal = await settingsEditor.findSetting(
-      CX_API_KEY_SETTINGS,
-      CX_CATETORY
-    );
-    // Set setting value
-    await apiKeyVal.setValue(API_KEY);
-    // Validate settings
-    const apiKey = await apiKeyVal.getValue();
-    expect(apiKey).to.equal(API_KEY);
-  });
 
   it("should check kics real-time scan enablement on settings", async function () {
     const settingsWizard = await bench.openSettings();
