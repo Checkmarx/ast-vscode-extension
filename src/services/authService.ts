@@ -239,9 +239,7 @@ export class AuthService {
           // Now we get both the code and response object
           const { code, res } = await this.waitForCode(server);
           const token = await this.getRefreshToken(code, config);
-          console.log("Got refresh token:", token ? "Token exists" : "No token");
-          
-          // Save token and validate
+          // Save token 
           await this.saveToken(this.context, token);
           console.log("Token saved after authentication");
           
@@ -433,26 +431,17 @@ export class AuthService {
     }
 
     public async saveToken(context: vscode.ExtensionContext, token: string) {
-        console.log("Attempting to save token:", token ? "Token exists" : "No token provided");
         
         await this.context.secrets.store("authCredential", token);
         console.log("Token stored in secrets");
-        
-        // Verify the token was saved
-        const savedToken = await this.context.secrets.get("authCredential");
-        console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
-
-
-        
         const isValid = await this.validateAndUpdateState();
         console.log("Token validation result:", isValid);
         
         if (isValid) {
-            vscode.window.showInformationMessage("Token saved and validated successfully!");
+            vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
             await vscode.commands.executeCommand(commands.refreshTree);
-
         } else {
-            vscode.window.showErrorMessage("Token validation failed!");
+            vscode.window.showErrorMessage("Failed to authenticate to Checkmarx One server!");
         }
     }
 
@@ -497,17 +486,8 @@ export class AuthService {
     }
 
     public async logout(): Promise<void> {
-       
-        // Verify the token was saved
-        const savedToken = await this.context.secrets.get("authCredential");
-        console.log("Verification - Retrieved token:", savedToken ? "Token exists" : "No token found");
-
         // Delete only the token
         await this.context.secrets.delete("authCredential");
-
-        // Check and log the current token
-        const aftercurrentToken = await this.getToken();
-        console.log("after remove token after logout:", aftercurrentToken);
         
         await this.validateAndUpdateState();
         await vscode.commands.executeCommand(commands.refreshTree);

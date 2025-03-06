@@ -593,14 +593,11 @@ async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
 
   async authValidate(logs: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
-    const authSuccessMsg = "Successfully authenticated to Checkmarx One server";
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
     try {
       const valid = await cx.authValidate();
       if (valid.exitCode === 0) {
-        logs.info(authSuccessMsg);
-        vscode.window.showInformationMessage(authSuccessMsg);
         return true;
       } else {
         logs.error(`${authFailedMsg}: ${valid.status}`);
