@@ -509,11 +509,11 @@
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
       },
-    {
-      "command": "ast-results.showAuth",
+      {
+        "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
-      "category": "Checkmarx"
-    }
+        "category": "Checkmarx"
+      }
     ],
     "submenus": [
       {
@@ -932,6 +932,7 @@
     "eslint-config-prettier": "^9.1.0",
     "mocha": "10.3.0",
     "mock-require": "^3.0.3",
+    "nock": "^14.0.1",
     "nyc": "^17.1.0",
     "sinon": "^19.0.2",
     "ts-node": "^10.9.2",
