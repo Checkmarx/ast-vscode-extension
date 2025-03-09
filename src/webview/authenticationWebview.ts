@@ -93,14 +93,14 @@ export class AuthenticationWebview {
         <div id="loginForm">
         <div class="radio-group">
             <label>
-                <input type="radio" name="authMethod" value="oauth" checked> By OAuth
+                <input type="radio" name="authMethod" value="oauth" checked> OAuth
             </label>
             <label>
-                <input type="radio" name="authMethod" value="apiKey"> By API KEY
+                <input type="radio" name="authMethod" value="apiKey">API KEY
             </label>
         </div>
         <div id="oauthForm" class="auth-form">
-            <label for="baseUri" class="form-label">URL:</label>
+            <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
             <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URI">
             <div id="urls-list" class="autocomplete-items"></div>
 			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>

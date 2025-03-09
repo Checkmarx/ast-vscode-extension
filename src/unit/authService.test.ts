@@ -58,7 +58,7 @@ describe("AuthService Tests", () => {
 
       const result = await (authService as any).validateConnection("https://nonexistent-url.com", "tenant");
       expect(result.isValid).to.be.false;
-      expect(result.error).to.equal("Invalid Base URI. Please check your server address.");
+      expect(result.error).to.equal("Please check the server address of your Checkmarx One environment.");
     });
 
     it("should fail when tenant does not exist", async () => {

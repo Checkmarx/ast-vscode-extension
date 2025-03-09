@@ -77,7 +77,7 @@ export class AuthService {
       if (!isBaseUriValid) {
         return { 
           isValid: false, 
-          error: "Invalid Base URI. Please check your server address."
+          error: "Please check the server address of your Checkmarx One environment."
         };
       }
       
