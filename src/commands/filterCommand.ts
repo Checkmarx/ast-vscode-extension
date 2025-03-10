@@ -1,16 +1,21 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import {
-  commands
-} from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import {
   SeverityLevel,
   StateLevel,
-  constants
+  constants,
 } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
 import { updateStateFilter } from "../utils/common/globalState";
+import { getGlobalContext } from "../extension";
 
+interface StateItem {
+  id: number;
+  name: string;
+  type: string;
+}
+type StateName = string;
 export class FilterCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
@@ -25,6 +30,37 @@ export class FilterCommand {
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
+
+  private allStates: StateName[] = this.getDynamicStates();
+
+  private getDynamicStates(): StateName[] {
+    const rawStates =
+      getGlobalContext().globalState.get<StateItem[]>(constants.customStates) ||
+      [];
+    return rawStates.map((item) => item.name);
+  }
+
+  private getDefaultFilterValue(state: StateName): boolean {
+    const defaultValues: { [key: string]: boolean } = {
+      NOT_EXPLOITABLE: false,
+      PROPOSED_NOT_EXPLOITABLE: false,
+      CONFIRMED: true,
+      TO_VERIFY: true,
+      URGENT: true,
+    };
+    return defaultValues[state] ?? true;
+  }
+
+  private getFilterKey(state: StateName): string {
+    const words = state
+      .split("_")
+      .map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      );
+    const capitalizedState = words.join("");
+    return `ast-results-${capitalizedState}`;
+  }
+
   constructor(context: vscode.ExtensionContext, logs: Logs) {
     this.context = context;
     this.logs = logs;
@@ -44,43 +80,55 @@ export class FilterCommand {
     this.registerFilterMediumCommand();
     this.registerFilterLowCommand();
     this.registerFilterInfoCommand();
-    this.registerFilterNotExploitableCommand();
-    this.registerFilterProposedCommand();
-    this.registerFilterConfirmedCommand();
-    this.registerFilterToVerifyCommand();
-    this.registerFilterUrgentCommand();
-    this.registerFilterNotIgnoredCommand();
-    this.registerFilterIgnoredCommand();
+    // this.registerFilterNotExploitableCommand();
+    // this.registerFilterProposedCommand();
+    // this.registerFilterConfirmedCommand();
+    // this.registerFilterToVerifyCommand();
+    // this.registerFilterUrgentCommand();
+    // this.registerFilterNotIgnoredCommand();
+    // this.registerFilterIgnoredCommand();
   }
 
   public async initializeFilters() {
     this.logs.info(messages.initilizeSeverities);
 
-    const critical = this.context.globalState.get<boolean>(constants.criticalFilter) ?? true;
+    const critical =
+      this.context.globalState.get<boolean>(constants.criticalFilter) ?? true;
     this.updateSeverities(SeverityLevel.critical, critical);
     await updateStateFilter(this.context, constants.criticalFilter, critical);
 
-    const high = this.context.globalState.get<boolean>(constants.highFilter) ?? true;
+    const high =
+      this.context.globalState.get<boolean>(constants.highFilter) ?? true;
     this.updateSeverities(SeverityLevel.high, high);
     await updateStateFilter(this.context, constants.highFilter, high);
 
-    const medium = this.context.globalState.get<boolean>(constants.mediumFilter) ?? true;
+    const medium =
+      this.context.globalState.get<boolean>(constants.mediumFilter) ?? true;
     this.updateSeverities(SeverityLevel.medium, medium);
     await updateStateFilter(this.context, constants.mediumFilter, medium);
 
-    const low = this.context.globalState.get<boolean>(constants.lowFilter) ?? true;
+    const low =
+      this.context.globalState.get<boolean>(constants.lowFilter) ?? true;
     this.updateSeverities(SeverityLevel.low, low);
     await updateStateFilter(this.context, constants.lowFilter, low);
 
-    const info = this.context.globalState.get<boolean>(constants.infoFilter) ?? true;
+    const info =
+      this.context.globalState.get<boolean>(constants.infoFilter) ?? true;
     this.updateSeverities(SeverityLevel.info, info);
     await updateStateFilter(this.context, constants.infoFilter, info);
 
     this.logs.info(messages.initializeState);
+
+    /*
     const notExploitable =
-      this.context.globalState.get<boolean>(constants.notExploitableFilter) ?? false;
+      this.context.globalState.get<boolean>(constants.notExploitableFilter) ??
+      false;
     this.updateState(StateLevel.notExploitable, notExploitable);
-    await updateStateFilter(this.context, constants.notExploitableFilter, notExploitable);
+    await updateStateFilter(
+      this.context,
+      constants.notExploitableFilter,
+      notExploitable
+    );
 
     const proposed =
       this.context.globalState.get<boolean>(constants.proposedFilter) ?? false;
@@ -97,22 +145,35 @@ export class FilterCommand {
     this.updateState(StateLevel.toVerify, toVerify);
     await updateStateFilter(this.context, constants.toVerifyFilter, toVerify);
 
-    const urgent = this.context.globalState.get<boolean>(constants.urgentFilter) ?? true;
+    const urgent =
+      this.context.globalState.get<boolean>(constants.urgentFilter) ?? true;
     this.updateState(StateLevel.urgent, urgent);
     await updateStateFilter(this.context, constants.urgentFilter, urgent);
 
     const notIgnored =
       this.context.globalState.get<boolean>(constants.notIgnoredFilter) ?? true;
     this.updateState(StateLevel.notIgnored, notIgnored);
-    await updateStateFilter(this.context, constants.notIgnoredFilter, notIgnored);
+    await updateStateFilter(
+      this.context,
+      constants.notIgnoredFilter,
+      notIgnored
+    );
 
     const ignored =
-      this.context.globalState.get<boolean>(constants.ignoredFilter) ?? true;
+    this.context.globalState.get<boolean>(constants.ignoredFilter) ?? true;
     this.updateState(StateLevel.ignored, ignored);
     await updateStateFilter(this.context, constants.ignoredFilter, ignored);
+    */
+    for (const state of this.allStates) {
+      const filterKey = this.getFilterKey(state);
+      const isActive =
+        this.context.globalState.get<boolean>(filterKey) ??
+        this.getDefaultFilterValue(state);
+      this.updateState(state, isActive);
+      await updateStateFilter(this.context, filterKey, isActive);
+    }
     await vscode.commands.executeCommand(commands.refreshTree);
   }
-
 
   private registerFilterCriticalCommand() {
     this.context.subscriptions.push(
@@ -312,283 +373,280 @@ export class FilterCommand {
     );
   }
 
-  private registerFilterNotExploitableCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotExploitable,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notExploitable,
-            constants.notExploitableFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotExploitableActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notExploitable,
-            constants.notExploitableFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotExploitableCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notExploitable,
-            constants.notExploitableFilter
-          )
-      )
-    );
-  }
+  // private registerFilterNotExploitableCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotExploitable,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notExploitable,
+  //           constants.notExploitableFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotExploitableActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notExploitable,
+  //           constants.notExploitableFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotExploitableCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notExploitable,
+  //           constants.notExploitableFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterProposedCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterProposed,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.proposed,
-            constants.proposedFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterProposedActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.proposed,
-            constants.proposedFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterProposedCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.proposed,
-            constants.proposedFilter
-          )
-      )
-    );
-  }
+  // private registerFilterProposedCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterProposed,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.proposed,
+  //           constants.proposedFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterProposedActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.proposed,
+  //           constants.proposedFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterProposedCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.proposed,
+  //           constants.proposedFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterConfirmedCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterConfirmed,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.confirmed,
-            constants.confirmedFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterConfirmedActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.confirmed,
-            constants.confirmedFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterConfirmedCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.confirmed,
-            constants.confirmedFilter
-          )
-      )
-    );
-  }
+  // private registerFilterConfirmedCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterConfirmed,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.confirmed,
+  //           constants.confirmedFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterConfirmedActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.confirmed,
+  //           constants.confirmedFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterConfirmedCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.confirmed,
+  //           constants.confirmedFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterToVerifyCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterToVerify,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.toVerify,
-            constants.toVerifyFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterToVerifyActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.toVerify,
-            constants.toVerifyFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterToVerifyCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.toVerify,
-            constants.toVerifyFilter
-          )
-      )
-    );
-  }
+  // private registerFilterToVerifyCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterToVerify,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.toVerify,
+  //           constants.toVerifyFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterToVerifyActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.toVerify,
+  //           constants.toVerifyFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterToVerifyCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.toVerify,
+  //           constants.toVerifyFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterUrgentCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterUrgent,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.urgent,
-            constants.urgentFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterUrgentActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.urgent,
-            constants.urgentFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterUrgentCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.urgent,
-            constants.urgentFilter
-          )
-      )
-    );
-  }
+  // private registerFilterUrgentCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterUrgent,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.urgent,
+  //           constants.urgentFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterUrgentActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.urgent,
+  //           constants.urgentFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterUrgentCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.urgent,
+  //           constants.urgentFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterNotIgnoredCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotIgnored,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notIgnored,
-            constants.notIgnoredFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotIgnoredActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notIgnored,
-            constants.notIgnoredFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterNotIgnoredCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.notIgnored,
-            constants.notIgnoredFilter
-          )
-      )
-    );
-  }
+  // private registerFilterNotIgnoredCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotIgnored,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notIgnored,
+  //           constants.notIgnoredFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotIgnoredActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notIgnored,
+  //           constants.notIgnoredFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterNotIgnoredCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.notIgnored,
+  //           constants.notIgnoredFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private registerFilterIgnoredCommand() {
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterIgnored,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.ignored,
-            constants.ignoredFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterIgnoredActive,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.ignored,
-            constants.ignoredFilter
-          )
-      )
-    );
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        commands.filterIgnoredCommand,
-        async () =>
-          await this.filterState(
-            this.logs,
-            this.context,
-            StateLevel.ignored,
-            constants.ignoredFilter
-          )
-      )
-    );
-  }
+  // private registerFilterIgnoredCommand() {
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterIgnored,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.ignored,
+  //           constants.ignoredFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterIgnoredActive,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.ignored,
+  //           constants.ignoredFilter
+  //         )
+  //     )
+  //   );
+  //   this.context.subscriptions.push(
+  //     vscode.commands.registerCommand(
+  //       commands.filterIgnoredCommand,
+  //       async () =>
+  //         await this.filterState(
+  //           this.logs,
+  //           this.context,
+  //           StateLevel.ignored,
+  //           constants.ignoredFilter
+  //         )
+  //     )
+  //   );
+  // }
 
-  private updateSeverities(
-    activeSeverities: SeverityLevel,
-    include: boolean
-  ) {
+  private updateSeverities(activeSeverities: SeverityLevel, include: boolean) {
     const currentIncluded = this.activeSeverities.includes(activeSeverities);
     if (include && !currentIncluded) {
       this.activeSeverities = this.activeSeverities.concat([activeSeverities]);
@@ -599,11 +657,8 @@ export class FilterCommand {
       });
     }
   }
-
-  private updateState(
-    activeStates: StateLevel,
-    include: boolean
-  ) {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  private updateState(activeStates: any, include: boolean) {
     const currentIncluded = this.activeStates.includes(activeStates);
     if (include && !currentIncluded) {
       this.activeStates = this.activeStates.concat([activeStates]);
@@ -632,7 +687,7 @@ export class FilterCommand {
   private async filterState(
     logs: Logs,
     context: vscode.ExtensionContext,
-    activeStates: StateLevel,
+    activeStates: StateName,
     filter: string
   ) {
     logs.info(messages.filterResults(activeStates));
