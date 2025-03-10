@@ -6,13 +6,11 @@ export class AuthenticationWebview {
     public static readonly viewType = 'checkmarxAuth';
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
-    private static readonly HISTORY_KEY = 'checkmarxOne.history'; // Key for storing history
 
     private constructor(panel: vscode.WebviewPanel, private context: vscode.ExtensionContext) {
         this._panel = panel;
         this._panel.webview.html = this._getWebviewContent();
         this._setWebviewMessageListener(this._panel.webview);
-
         this.initialize();
     }
 
@@ -166,8 +164,6 @@ export class AuthenticationWebview {
                                     // Existing OAuth handling
                                     const baseUri = message.baseUri.trim();
                                     const tenant = message.tenant.trim();
-
-
                                     const authService = AuthService.getInstance(this.context);
                                     await authService.authenticate(baseUri, tenant);
                                     setTimeout(() => this._panel.dispose(), 1000);
