@@ -13,6 +13,12 @@ import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 
 export class CxMock implements CxPlatform {
+  private context: vscode.ExtensionContext;
+
+  constructor(context?: vscode.ExtensionContext) {
+    this.context = context;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async scaScanCreate(): Promise<CxScaRealtime[] | any> {
     return [
@@ -1290,18 +1296,20 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
-  getAstConfiguration() {
-    const token = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
+
+  async getAstConfiguration() {
+    const token = await this.context.secrets.get("authCredential");
+    console.log("Token from secrets:", token);
+
     if (!token) {
-      return undefined;
+        return undefined;
     }
 
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
-  }
+}
+
 
   async isScanEnabled(): Promise<boolean> {
     return true;
@@ -1364,9 +1372,9 @@ export class CxMock implements CxPlatform {
         queryDescriptionId: "Reflected_XSS_All_Clients",
         resultDescription:
           "The method @DestinationMethod embeds untrusted data in generated output with @DestinationElement, at line @DestinationLine of @DestinationFile. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input @SourceElement, which is read by the @SourceMethod method at line @SourceLine of @SourceFile. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
-        risk: "A successful XSS exploit would allow an attacker to rewrite web pages and insert malicious scripts which would alter the intended output. This could include HTML fragments, CSS styling rules, arbitrary JavaScript, or references to third party code. An attacker could use this to steal users' passwords, collect personal data such as credit card details, provide false information, or run malware. From the victim’s point of view, this is performed by the genuine website, and the victim would blame the site for incurred damage.\n\nThe attacker could use social engineering to cause the user to send the website modified input, which will be returned in the requested web page.\n\n",
+        risk: "A successful XSS exploit would allow an attacker to rewrite web pages and insert malicious scripts which would alter the intended output. This could include HTML fragments, CSS styling rules, arbitrary JavaScript, or references to third party code. An attacker could use this to steal users' passwords, collect personal data such as credit card details, provide false information, or run malware. From the victim's point of view, this is performed by the genuine website, and the victim would blame the site for incurred damage.\n\nThe attacker could use social engineering to cause the user to send the website modified input, which will be returned in the requested web page.\n\n",
         cause:
-          "The application creates web pages that include untrusted data, whether from user input, the application’s database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
+          "The application creates web pages that include untrusted data, whether from user input, the application's database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
         generalRecommendations:
           '*   Fully encode all dynamic data, regardless of source, before embedding it in output.\r\n*   Encoding should be context-sensitive. For example:\r\n    *   HTML encoding for HTML content\r\n    *   HTML Attribute encoding for data output to attribute values\r\n    *   JavaScript encoding for server-generated JavaScript\r\n*   It is recommended to use the platform-provided encoding functionality, or known security libraries for encoding output.\r\n*   Implement a Content Security Policy (CSP) with explicit whitelists for the application\'s resources only. \r\n*   As an extra layer of protection, validate all untrusted data, regardless of source (note this is not a replacement for encoding). Validation should be based on a whitelist: accept only data fitting a specified structure, rather than reject bad patterns. Check for:\r\n    *   Data type\r\n    *   Size\r\n    *   Range\r\n    *   Format\r\n    *   Expected values\r\n*   In the `Content-Type` HTTP response header, explicitly define character encoding (charset) for the entire page. \r\n*   Set the `HTTPOnly` flag on the session cookie for "Defense in Depth", to prevent any successful XSS exploits from stealing the cookie.\n*   Consider that many native PHP methods for sanitizing values, such as htmlspecialchars and htmlentities, do not inherently encode values for Javascript contexts and ignore certain enclosure characters such as apostrophe (\'), quotes (") and backticks (\\`). Always consider the output context of inputs before choosing either of these functions as sanitizers.',
         samples: [

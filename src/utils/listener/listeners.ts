@@ -10,6 +10,7 @@ import {cx} from "../../cx";
 import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
 import {messages} from "../common/messages";
 import {AscaCommand} from "../../commands/ascaCommand";
+import {AuthService} from "../../services/authService";
 
 export async function getBranchListener(
     context: vscode.ExtensionContext,
@@ -182,15 +183,18 @@ export async function gitExtensionListener(
 }
 
 export async function executeCheckSettingsChange(
+    context: vscode.ExtensionContext,
     kicsStatusBarItem: vscode.StatusBarItem,
     logs: Logs,
     ascaCommand: AscaCommand
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
+        const authService = AuthService.getInstance(context);
+        const isValid = await authService.validateAndUpdateState();
         vscode.commands.executeCommand(
             commands.setContext,
             commands.isValidCredentials,
-            cx.getAstConfiguration() ? true : false
+            isValid
         );
         vscode.commands.executeCommand(
             commands.setContext,
@@ -208,15 +212,7 @@ export async function executeCheckSettingsChange(
         const ascaEffected = event.affectsConfiguration(
             `${constants.CheckmarxAsca}.${constants.ActivateAscaAutoScanning}`
         );
-        const apikeyEffected = event.affectsConfiguration(
-            "checkmarxOne.apiKey"
-        );
-        
-        if (apikeyEffected) {
-            await cx.authValidate(logs);
-        }
-              
-        if (ascaEffected || apikeyEffected) {
+        if (ascaEffected) {
             await ascaCommand.registerAsca();
         }
     });

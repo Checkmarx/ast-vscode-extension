@@ -9,6 +9,8 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+
 
 export interface CxPlatform {
   /**
@@ -89,7 +91,7 @@ export interface CxPlatform {
   /**
    * Get the API key from the extension settings to be sent to the cli for authentication.
    */
-  getAstConfiguration();
+  getAstConfiguration(): Promise<CxConfig | undefined>;
 
   /**
    * Check if the scan from IDE functionality is enabled.

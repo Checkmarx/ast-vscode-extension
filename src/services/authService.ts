@@ -1,0 +1,679 @@
+import * as vscode from 'vscode';
+import * as http from 'http';
+import * as https from 'https';
+import * as crypto from 'crypto';
+import { URL, URLSearchParams } from 'url';
+import { Logs } from '../models/logs';
+import { initialize, getCx } from '../cx';
+import { commands } from "../utils/common/commands";
+
+interface OAuthConfig {
+    clientId: string;
+    authEndpoint: string;
+    tokenEndpoint: string;
+    redirectUri: string;
+    scope: string;
+    codeVerifier: string;
+    codeChallenge: string;
+    port: number;
+}
+
+export class AuthService {
+    private static instance: AuthService;
+    private server: http.Server | null = null;  
+    private context: vscode.ExtensionContext;
+    private constructor(extensionContext: vscode.ExtensionContext) {
+        this.context = extensionContext;
+        initialize(extensionContext);
+    }
+
+    public static getInstance(extensionContext: vscode.ExtensionContext): AuthService {
+        if (!this.instance) {
+            this.instance = new AuthService(extensionContext);
+        }
+        return this.instance;
+    }
+    private async closeServer(): Promise<void> {
+        if (this.server) {
+            return new Promise((resolve) => {
+                this.server?.close(() => {
+                    this.server = null;
+                    resolve();
+                });
+            });
+        }
+    }
+
+    private generatePKCE(): { codeVerifier: string; codeChallenge: string } {
+        const codeVerifier = crypto.randomBytes(64).toString('hex');
+        const hashed = crypto.createHash('sha256').update(codeVerifier).digest('base64');
+        const codeChallenge = hashed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        return { codeVerifier, codeChallenge };
+    }
+
+
+
+  private async validateConnection(baseUri: string, tenant: string): Promise<{ isValid: boolean; error?: string }> {
+    try {
+      // Basic URL validation
+      const url = new URL(baseUri);
+      
+      if (!url.protocol.startsWith('http')) {
+        return { 
+          isValid: false, 
+          error: "Invalid URL protocol. Please use http:// or https://"
+        };
+      }
+      
+      if (!tenant || tenant.trim() === '') {
+        return {
+          isValid: false,
+          error: "Tenant name cannot be empty"
+        };
+      }
+      
+      // Basic connectivity check to server
+      const isBaseUriValid = await this.checkUrlExists(baseUri, false);
+      if (!isBaseUriValid) {
+        return { 
+          isValid: false, 
+          error: "Please check the server address of your Checkmarx One environment."
+        };
+      }
+      
+      // Check if tenant exists
+      const tenantUrl = `${baseUri}/auth/realms/${tenant}`;
+      const isTenantValid = await this.checkUrlExists(tenantUrl, true);
+      if (!isTenantValid) {
+        return { 
+          isValid: false, 
+          error: `Tenant "${tenant}" not found. Please check your tenant name.`
+        };
+      }
+      
+      return { isValid: true };
+    } catch (error) {
+      return { 
+        isValid: false, 
+        error: "Could not connect to server. Please check your Base URI."
+      };
+    }
+  }
+  
+  // Helper function to check if a URL exists
+  private checkUrlExists(urlToCheck: string, isTenantCheck = false, redirectCount = 0): Promise<boolean> {
+    return new Promise((resolve) => {
+      const MAX_REDIRECTS = 5;
+      if (redirectCount >= MAX_REDIRECTS) {
+        console.log("Too many redirects, stopping");
+        resolve(false);
+        return;
+      }
+  
+      const url = new URL(urlToCheck);
+      // Try GET method if this is already a redirect or we had a 405 before
+      const options = {
+        method: redirectCount > 0 ? 'GET' : 'HEAD',
+        hostname: url.hostname,
+        port: url.port || (url.protocol === 'https:' ? 443 : 80),
+        path: url.pathname + url.search,
+        timeout: 5000
+      };
+      
+      const req = (url.protocol === 'https:' ? https : http).request(options, (res) => {
+        // For tenant check, specific handling of error codes
+        if (isTenantCheck) {
+          // If status is 404 or 405 for tenant check, return false
+          if (res.statusCode === 404 || res.statusCode === 405) {
+            console.log(`Tenant check failed with status: ${res.statusCode}`);
+            resolve(false);
+            return;
+          }
+        }
+        
+        // Handle redirects
+        if (res.statusCode === 301 || res.statusCode === 302 || 
+            res.statusCode === 303 || res.statusCode === 307 || 
+            res.statusCode === 308) {
+              
+          const location = res.headers.location;
+          if (location) {
+            console.log(`Redirected (${res.statusCode}) to: ${location}`);
+            
+            const redirectUrl = location.startsWith('http') 
+              ? location 
+              : `${url.protocol}//${url.host}${location.startsWith('/') ? '' : '/'}${location}`;
+            
+            return this.checkUrlExists(redirectUrl, isTenantCheck, redirectCount + 1)
+              .then(resolve);
+          }
+        }
+        
+        // If status is 405 and not tenant check, try again with GET method
+        if (res.statusCode === 405 && !isTenantCheck && options.method === 'HEAD') {
+          console.log('Method not allowed (405), retrying with GET');
+          return this.checkUrlExists(urlToCheck, isTenantCheck, redirectCount + 1)
+            .then(resolve);
+        }
+        
+        // If no special cases, use standard success criteria
+        resolve(res.statusCode !== undefined && res.statusCode < 400);
+      });
+      
+      req.on('error', () => {
+        resolve(false);
+      });
+      
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(false);
+      });
+      
+      req.end();
+    });
+  }
+ 
+
+    private async findAvailablePort(): Promise<number> {
+        const MIN_PORT = 49152;
+        const MAX_PORT = 65535;
+        const maxAttempts = 10;  // Limit the number of attempts
+
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            // Selecting a random port from the range
+            const port = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1) + MIN_PORT);
+            
+            try {
+                // Checking if the port is available
+                await new Promise((resolve, reject) => {
+                    const server = http.createServer();
+                    server.on('error', reject);
+                    server.listen(port, () => {
+                        server.close(() => resolve(true));
+                    });
+                });
+                
+                return port;
+            } catch (error) {
+                // If the port is occupied, we will proceed to the next attempt
+                continue;
+            }
+        }
+        
+        throw new Error('Could not find available port after multiple attempts');
+    }
+
+    public async authenticate(baseUri: string, tenant: string): Promise<string> {
+      await this.closeServer();
+      const validation = await this.validateConnection(baseUri, tenant);
+      if (!validation.isValid) {
+          throw new Error(validation.error);
+      }
+      const port = await this.findAvailablePort();
+  
+      const { codeVerifier, codeChallenge } = this.generatePKCE();
+      const config: OAuthConfig = {
+          clientId: 'ide-integration',
+          authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
+          tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
+          redirectUri: `http://localhost:${port}/checkmarx1/callback`,
+          scope: 'openid',
+          codeVerifier,
+          codeChallenge,
+          port
+      };
+  
+      try {
+          const server = await this.startLocalServer(config);
+          vscode.env.openExternal(vscode.Uri.parse(
+              `${config.authEndpoint}?` +
+              `client_id=${config.clientId}&` +
+              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+              `response_type=code&` +
+              `scope=${config.scope}&` +
+              `code_challenge=${config.codeChallenge}&` +
+              `code_challenge_method=S256`
+          ));
+  
+          // Now we get both the code and response object
+          const { code, res } = await this.waitForCode(server);
+          const token = await this.getRefreshToken(code, config);
+          // Save token 
+          await this.saveToken(this.context, token);
+          console.log("Token saved after authentication");
+          
+          // Check if validation was successful before showing success page
+          const isValid = await this.validateAndUpdateState();
+          
+          if (isValid) {
+              // Only show success page if token is valid
+              res.end(this.getSuccessPageHtml());
+          } else {
+              // Show error page if token validation failed
+              res.end(this.getErrorPageHtml("Token validation failed. Please try again."));
+          }
+          
+          await this.saveURIAndTenant(this.context, baseUri, tenant);
+          console.log("URI and tenant saved");
+  
+          return token;
+      } catch (error) {
+          console.error("Authentication error:", error);
+          throw error;
+      }
+  }
+    private startLocalServer(config: OAuthConfig): Promise<http.Server> {
+        return new Promise((resolve, reject) => {
+            try {
+                const server = http.createServer();
+                server.on('error', (err) => {
+                    if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+                        reject(new Error(`Port ${config.port} is already in use. Please try again in a few moments.`));
+                    } else {
+                        reject(err);
+                    }
+                });
+                
+                server.listen(config.port, () => {
+                    resolve(server);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    private waitForCode(server: http.Server): Promise<{code: string, res: http.ServerResponse}> {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          server.close();
+          reject(new Error('Timeout waiting for authorization code'));
+        }, 20000); 
+    
+        server.on('request', (req, res) => {
+          clearTimeout(timeout); 
+          const url = new URL(req.url!, `http://${req.headers.host}`);
+          const code = url.searchParams.get('code');
+          
+          if (code) {
+            // Don't end the response yet - just prepare headers
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            
+            // Only close the server, keep the response open
+            server.close();
+            
+            // Return both code and response object
+            resolve({ code, res });
+          } else {
+            // For error cases, we can end the response immediately
+            res.writeHead(400, { 'Content-Type': 'text/html' });
+            res.end('<html><body><h1>Error: No authorization code received</h1></body></html>');
+            server.close();
+            reject(new Error('No authorization code received'));
+          }
+        });
+      });
+    }
+
+    public async validateApiKey(apiKey: string): Promise<boolean> {
+        try {
+         
+            await this.context.secrets.store("authCredential", apiKey);
+            const cx = getCx();
+            const logs = new Logs(vscode.window.createOutputChannel("Checkmarx"));
+            const valid = await cx.authValidate(logs);
+            return valid;
+
+        } catch (error) {
+            return false;
+        }
+    }
+
+    private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
+        return new Promise((resolve, reject) => {
+          const makeRequest = (url: string, postData: string, redirectCount = 0) => {
+            if (redirectCount > 5) {
+              reject(new Error('Too many redirects'));
+              return;
+            }
+      
+            const urlObj = new URL(url);
+            const options = {
+              hostname: urlObj.hostname,
+              port: urlObj.protocol === 'https:' ? 443 : 80,
+              path: urlObj.pathname + urlObj.search,
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+              }
+            };
+      
+            console.log(`Making request to ${url} (redirect #${redirectCount})`);
+            
+            const req = (urlObj.protocol === 'https:' ? https : http).request(options, (res) => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => {
+                if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+                  const location = res.headers.location;
+                  console.log(`Redirect ${res.statusCode} to ${location}`);
+                  
+                  if (!location) {
+                    reject(new Error(`Redirect without location header (status ${res.statusCode})`));
+                    return;
+                  }
+      
+                  const redirectUrl = /^https?:\/\//i.test(location) 
+                    ? location 
+                    : `${urlObj.protocol}//${urlObj.host}${location}`;
+      
+                  makeRequest(redirectUrl, postData, redirectCount + 1);
+                }
+                else if (res.statusCode !== 200) {
+                  reject(new Error(`Request failed with status ${res.statusCode}`));
+                }
+                else {
+                  try {
+                    const parsedData = JSON.parse(data);
+                    if (!parsedData.refresh_token) {
+                      reject(new Error('Response did not include refresh_token'));
+                      return;
+                    }
+                    resolve(parsedData.refresh_token);
+                  } catch (error) {
+                    reject(new Error(`Failed to parse response: ${error.message}`));
+                  }
+                }
+              });
+            });
+      
+            req.on('error', (error) => {
+              reject(new Error(`Request error: ${error.message}`));
+            });
+      
+            req.write(postData);
+            req.end();
+          };
+      
+          const params = new URLSearchParams();
+          params.append('grant_type', 'authorization_code');
+          params.append('client_id', config.clientId);
+          params.append('code', code);
+          params.append('redirect_uri', config.redirectUri);
+          params.append('code_verifier', config.codeVerifier);
+      
+          const postData = params.toString();
+          
+          makeRequest(config.tokenEndpoint, postData, 0);
+        });
+      }
+
+
+    
+    private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
+        const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
+    
+        const urls = Object.keys(urlMap);
+    
+        if (!urlMap[url]) {
+            if (urls.length >= 10) {
+                delete urlMap[urls[0]];
+            }
+            urlMap[url] = [];
+        }
+    
+        if (!urlMap[url].includes(tenant)) {
+            urlMap[url].push(tenant);
+        }
+    
+        await context.globalState.update("recentURLsAndTenant", urlMap);
+    }
+
+    public async saveToken(context: vscode.ExtensionContext, token: string) {
+        
+        await this.context.secrets.store("authCredential", token);
+        console.log("Token stored in secrets");
+        const isValid = await this.validateAndUpdateState();
+        console.log("Token validation result:", isValid);
+        
+        if (isValid) {
+            vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
+            await vscode.commands.executeCommand(commands.refreshTree);
+        } else {
+            vscode.window.showErrorMessage("Failed to authenticate to Checkmarx One server!");
+        }
+    }
+
+    public async validateAndUpdateState(): Promise<boolean> {
+        try {
+            const token = await this.context.secrets.get("authCredential");
+
+
+            if (!token) {
+                vscode.commands.executeCommand('setContext', 'ast-results.isValidCredentials', false);
+                vscode.commands.executeCommand('setContext', 'ast-results.isScanEnabled',false);
+                   
+                return false;
+            }
+            const isValid = await this.validateApiKey(token);
+            vscode.commands.executeCommand(
+                'setContext',
+                'ast-results.isValidCredentials',
+                isValid
+            );
+
+            if (isValid) {
+                const cx = getCx();
+                const scanEnabled = await cx.isScanEnabled(new Logs(vscode.window.createOutputChannel("Checkmarx")));
+                
+                vscode.commands.executeCommand(
+                    'setContext',
+                    'ast-results.isScanEnabled',
+                    scanEnabled
+                );
+            }
+
+            return isValid;
+        } catch (error) {
+            console.error('Validation error:', error);
+            return false;
+        }
+    }
+
+    public async getToken(): Promise<string | undefined> {
+        return await this.context.secrets.get("authCredential");
+    }
+
+    public async logout(): Promise<void> {
+        // Delete only the token
+        await this.context.secrets.delete("authCredential");
+        
+        await this.validateAndUpdateState();
+        await vscode.commands.executeCommand(commands.refreshTree);
+    }
+
+    private getSuccessPageHtml(): string {
+        return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login Success - Checkmarx</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                }
+                .modal {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    width: 90%;
+                    max-width: 500px;
+                    text-align: center;
+                }
+                .close-button {
+                    float: right;
+                    font-size: 24px;
+                    color: #666;
+                    cursor: pointer;
+                    border: none;
+                    background: none;
+                    padding: 0;
+                    margin: -1rem -1rem 0 0;
+                }
+                h1 {
+                    color: #333;
+                    font-size: 24px;
+                    margin: 1rem 0;
+                }
+                .icon-container {
+                    margin: 2rem 0;
+                }
+                .icon {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .folder {
+                    color: #6B4EFF;
+                    font-size: 48px;
+                }
+                .file {
+                    color: #6B4EFF;
+                    font-size: 48px;
+                }
+                .message {
+                    color: #666;
+                    margin: 1rem 0 2rem 0;
+                }
+                .close-btn {
+                    background-color: #4F5CD1;
+                    color: white;
+                    border: none;
+                    padding: 12px 40px;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+                }
+                .close-btn:hover {
+                    background-color: #3F4BB1;
+                }
+                .wave-line {
+                    color: #6B4EFF;
+                    font-size: 24px;
+                    margin: 0 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="modal">
+                <button class="close-button" onclick="window.close()">×</button>
+                <h1>You're All Set with Checkmarx!</h1>
+                <div class="icon-container">
+                    <div class="icon">
+                        <span class="folder">📁</span>
+                        <span class="wave-line">〰️〰️〰️</span>
+                        <span class="file">📄</span>
+                    </div>
+                </div>
+                <p class="message">You have successfully logged in</p>
+                <button class="close-btn" onclick="window.close()">Close</button>
+            </div>
+        </body>
+        </html>
+        `;
+    }
+    private getErrorPageHtml(errorMessage: string): string {
+      return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Login Failed - Checkmarx</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: rgba(0, 0, 0, 0.5);
+                  margin: 0;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 100vh;
+              }
+              .modal {
+                  background: white;
+                  padding: 2rem;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                  width: 90%;
+                  max-width: 500px;
+                  text-align: center;
+              }
+              .close-button {
+                  float: right;
+                  font-size: 24px;
+                  color: #666;
+                  cursor: pointer;
+                  border: none;
+                  background: none;
+                  padding: 0;
+                  margin: -1rem -1rem 0 0;
+              }
+              h1 {
+                  color: #333;
+                  font-size: 24px;
+                  margin: 1rem 0;
+              }
+              .icon-container {
+                  margin: 2rem 0;
+              }
+              .error-icon {
+                  font-size: 48px;
+                  color: #FF4D4F;
+              }
+              .message {
+                  color: #666;
+                  margin: 1rem 0 2rem 0;
+              }
+              .close-btn {
+                  background-color: #4F5CD1;
+                  color: white;
+                  border: none;
+                  padding: 12px 40px;
+                  border-radius: 4px;
+                  font-size: 16px;
+                  cursor: pointer;
+                  transition: background-color 0.3s;
+              }
+              .close-btn:hover {
+                  background-color: #3F4BB1;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="modal">
+              <button class="close-button" onclick="window.close()">×</button>
+              <h1>Authentication Failed</h1>
+              <div class="icon-container">
+                  <span class="error-icon">❌</span>
+              </div>
+              <p class="message">${errorMessage}</p>
+              <button class="close-btn" onclick="window.close()">Close</button>
+          </div>
+      </body>
+      </html>
+      `;
+    }
+}

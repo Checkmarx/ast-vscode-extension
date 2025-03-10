@@ -2,13 +2,13 @@ import { expect } from "chai";
 import "./mocks/vscode-mock";
 import { CommonCommand } from "../commands/commonCommand";
 import { Logs } from "../models/logs";
-import * as vscode from "vscode";
+
 import { getCommandsExecuted, clearCommandsExecuted } from "./mocks/vscode-mock";
 
 describe("CommonCommand", () => {
   let commonCommand: CommonCommand;
   let logs: Logs;
-  let mockContext: vscode.ExtensionContext;
+  let mockContext: any;
 
   beforeEach(() => {
     clearCommandsExecuted();
@@ -40,8 +40,8 @@ describe("CommonCommand", () => {
   });
 
   describe("executeCheckSettings", () => {
-    it("should execute setContext command with correct parameters", () => {
-      commonCommand.executeCheckSettings();
+    it("should execute setContext command with correct parameters", async() => {
+      await commonCommand.executeCheckSettings();
       expect(getCommandsExecuted()).to.include("setContext");
     });
   });

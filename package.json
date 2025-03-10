@@ -52,6 +52,10 @@
         "icon": "$(gear)"
       },
       {
+        "command": "ast-results.mockTokenTest",
+        "title": "Mock Token Test"
+      },
+      {
         "command": "ast-results.refreshTree",
         "category": "ast-results",
         "title": "Refresh tree",
@@ -504,6 +508,11 @@
         "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
+      },
+      {
+        "command": "ast-results.showAuth",
+        "title": "Checkmarx: Show Authentication",
+        "category": "Checkmarx"
       }
     ],
     "submenus": [
@@ -813,14 +822,10 @@
         "id": "ast-results",
         "order": 4,
         "properties": {
-          "checkmarxOne.apiKey": {
-            "type": "string",
+          "checkmarxOne.authentication": {
+            "type": "",
             "order": 5,
-            "description": "Checkmarx One API KEY for authentication",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
+            "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",
@@ -927,6 +932,7 @@
     "eslint-config-prettier": "^9.1.0",
     "mocha": "10.3.0",
     "mock-require": "^3.0.3",
+    "nock": "^14.0.1",
     "nyc": "^17.1.0",
     "sinon": "^19.0.2",
     "ts-node": "^10.9.2",
@@ -938,7 +944,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.124",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.125",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
@@ -946,7 +952,8 @@
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
     "serialize-javascript": "^6.0.2",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "validator": "^13.12.0"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
