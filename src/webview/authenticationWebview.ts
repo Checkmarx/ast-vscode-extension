@@ -96,12 +96,12 @@ export class AuthenticationWebview {
                 <input type="radio" name="authMethod" value="oauth" checked> OAuth
             </label>
             <label>
-                <input type="radio" name="authMethod" value="apiKey">API KEY
+                <input type="radio" name="authMethod" value="apiKey">API Key
             </label>
         </div>
         <div id="oauthForm" class="auth-form">
             <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URI">
+            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
             <div id="urls-list" class="autocomplete-items"></div>
 			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
 
@@ -111,7 +111,7 @@ export class AuthenticationWebview {
             <div id="tenants-list" class="autocomplete-items"></div>
         </div>
         <div id="apiKeyForm" class="hidden">
-			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API KEY" class="auth-input">
+			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
         </div>
         <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
         </div>
