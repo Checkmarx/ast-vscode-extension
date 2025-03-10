@@ -1,16 +1,14 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import {
-  commands
-} from "../utils/common/commands";
+import { commands } from "../utils/common/commands";
 import {
   SeverityLevel,
   StateLevel,
-  constants
+  constants,
 } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
 import { updateStateFilter } from "../utils/common/globalState";
-
+import { getGlobalContext } from "../extension";
 export class FilterCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
@@ -19,15 +17,74 @@ export class FilterCommand {
     SeverityLevel.high,
     SeverityLevel.medium,
   ];
-  private activeStates: StateLevel[] = [
+  private activeStates: string[] = [
     StateLevel.confirmed,
     StateLevel.toVerify,
     StateLevel.urgent,
     StateLevel.notIgnored,
   ];
+  private customStates: string[];
+
   constructor(context: vscode.ExtensionContext, logs: Logs) {
     this.context = context;
     this.logs = logs;
+    this.loadCustomStates();
+  }
+
+  private createStateObjects(state: string) {
+    const formattedState = state.charAt(0).toUpperCase() + state.slice(1);
+    const baseCommand = `${constants.extensionName}.filter${formattedState}`;
+    const activeCommand = `${constants.extensionName}.filter${formattedState}Active`;
+    const pluralCommand = `${constants.extensionName}.filter${formattedState}s`;
+
+    return [
+      {
+        command: activeCommand,
+        category: "ast-results",
+        title: `✓ Filter: ${formattedState}`,
+        enablement: "ast-results.isValidCredentials && view == astResults",
+      },
+      {
+        command: baseCommand,
+        category: "ast-results",
+        title: `Filter: ${formattedState}`,
+        enablement: "ast-results.isValidCredentials && view == astResults",
+      },
+      {
+        command: pluralCommand,
+        category: "ast-results",
+        title: `Filter: ${formattedState}`,
+        enablement: "ast-results.isValidCredentials",
+      },
+      {
+        command: activeCommand,
+        group: "navigation@1",
+        when: `ast-results-${formattedState}`,
+      },
+      {
+        command: baseCommand,
+        group: "navigation@1",
+        when: `!ast-results-${formattedState}`,
+      },
+    ];
+  }
+
+  private loadCustomStates() {
+    const context = getGlobalContext();
+    const allStates: { name: string }[] =
+      context.globalState.get<{ name: string }[]>("cxStates") || [];
+
+    const existingStates = new Set([
+      constants.state[3].tag,
+      constants.state[0].tag,
+      constants.state[1].tag,
+      constants.state[2].tag,
+      constants.state[4].tag,
+    ]);
+
+    this.customStates = allStates
+      .map((state) => state.name)
+      .filter((stateName) => !existingStates.has(stateName));
   }
 
   public getAtiveSeverities() {
@@ -51,36 +108,48 @@ export class FilterCommand {
     this.registerFilterUrgentCommand();
     this.registerFilterNotIgnoredCommand();
     this.registerFilterIgnoredCommand();
+    this.registerCustomStateFilters();
   }
 
   public async initializeFilters() {
     this.logs.info(messages.initilizeSeverities);
 
-    const critical = this.context.globalState.get<boolean>(constants.criticalFilter) ?? true;
+    const critical =
+      this.context.globalState.get<boolean>(constants.criticalFilter) ?? true;
     this.updateSeverities(SeverityLevel.critical, critical);
     await updateStateFilter(this.context, constants.criticalFilter, critical);
 
-    const high = this.context.globalState.get<boolean>(constants.highFilter) ?? true;
+    const high =
+      this.context.globalState.get<boolean>(constants.highFilter) ?? true;
     this.updateSeverities(SeverityLevel.high, high);
     await updateStateFilter(this.context, constants.highFilter, high);
 
-    const medium = this.context.globalState.get<boolean>(constants.mediumFilter) ?? true;
+    const medium =
+      this.context.globalState.get<boolean>(constants.mediumFilter) ?? true;
     this.updateSeverities(SeverityLevel.medium, medium);
     await updateStateFilter(this.context, constants.mediumFilter, medium);
 
-    const low = this.context.globalState.get<boolean>(constants.lowFilter) ?? true;
+    const low =
+      this.context.globalState.get<boolean>(constants.lowFilter) ?? true;
     this.updateSeverities(SeverityLevel.low, low);
     await updateStateFilter(this.context, constants.lowFilter, low);
 
-    const info = this.context.globalState.get<boolean>(constants.infoFilter) ?? true;
+    const info =
+      this.context.globalState.get<boolean>(constants.infoFilter) ?? true;
     this.updateSeverities(SeverityLevel.info, info);
     await updateStateFilter(this.context, constants.infoFilter, info);
 
     this.logs.info(messages.initializeState);
+
     const notExploitable =
-      this.context.globalState.get<boolean>(constants.notExploitableFilter) ?? false;
+      this.context.globalState.get<boolean>(constants.notExploitableFilter) ??
+      false;
     this.updateState(StateLevel.notExploitable, notExploitable);
-    await updateStateFilter(this.context, constants.notExploitableFilter, notExploitable);
+    await updateStateFilter(
+      this.context,
+      constants.notExploitableFilter,
+      notExploitable
+    );
 
     const proposed =
       this.context.globalState.get<boolean>(constants.proposedFilter) ?? false;
@@ -97,22 +166,36 @@ export class FilterCommand {
     this.updateState(StateLevel.toVerify, toVerify);
     await updateStateFilter(this.context, constants.toVerifyFilter, toVerify);
 
-    const urgent = this.context.globalState.get<boolean>(constants.urgentFilter) ?? true;
+    const urgent =
+      this.context.globalState.get<boolean>(constants.urgentFilter) ?? true;
     this.updateState(StateLevel.urgent, urgent);
     await updateStateFilter(this.context, constants.urgentFilter, urgent);
 
     const notIgnored =
       this.context.globalState.get<boolean>(constants.notIgnoredFilter) ?? true;
     this.updateState(StateLevel.notIgnored, notIgnored);
-    await updateStateFilter(this.context, constants.notIgnoredFilter, notIgnored);
+    await updateStateFilter(
+      this.context,
+      constants.notIgnoredFilter,
+      notIgnored
+    );
 
     const ignored =
       this.context.globalState.get<boolean>(constants.ignoredFilter) ?? true;
     this.updateState(StateLevel.ignored, ignored);
     await updateStateFilter(this.context, constants.ignoredFilter, ignored);
+
+    this.customStates.forEach(async (state) => {
+      const formattedState = state.charAt(0).toUpperCase() + state.slice(1);
+      const filterKey = `ast-results-${formattedState}`;
+      const stateFilter =
+        this.context.globalState.get<boolean>(filterKey) ?? false;
+      this.updateState(formattedState, stateFilter);
+      await updateStateFilter(this.context, filterKey, stateFilter);
+    });
+
     await vscode.commands.executeCommand(commands.refreshTree);
   }
-
 
   private registerFilterCriticalCommand() {
     this.context.subscriptions.push(
@@ -585,10 +668,54 @@ export class FilterCommand {
     );
   }
 
-  private updateSeverities(
-    activeSeverities: SeverityLevel,
-    include: boolean
-  ) {
+  private registerCustomStateFilters() {
+    this.customStates.forEach((state) => {
+      const formattedState = state.charAt(0).toUpperCase() + state.slice(1);
+      const filterCommand = `${constants.extensionName}.filter${formattedState}`;
+      const commandFilter = `${constants.extensionName}-${formattedState}`;
+      const activeCommand = `${constants.extensionName}.filter${formattedState}Active`;
+      const commandS = `${constants.extensionName}.filter${formattedState}s`;
+      this.context.subscriptions.push(
+        vscode.commands.registerCommand(
+          filterCommand,
+          async () =>
+            await this.filterState(
+              this.logs,
+              this.context,
+              formattedState,
+              commandFilter
+            )
+        )
+      );
+      //
+      this.context.subscriptions.push(
+        vscode.commands.registerCommand(
+          activeCommand,
+          async () =>
+            await this.filterState(
+              this.logs,
+              this.context,
+              formattedState,
+              commandFilter
+            )
+        )
+      );
+      this.context.subscriptions.push(
+        vscode.commands.registerCommand(
+          commandS,
+          async () =>
+            await this.filterState(
+              this.logs,
+              this.context,
+              formattedState,
+              commandFilter
+            )
+        )
+      );
+    });
+  }
+
+  private updateSeverities(activeSeverities: SeverityLevel, include: boolean) {
     const currentIncluded = this.activeSeverities.includes(activeSeverities);
     if (include && !currentIncluded) {
       this.activeSeverities = this.activeSeverities.concat([activeSeverities]);
@@ -600,10 +727,7 @@ export class FilterCommand {
     }
   }
 
-  private updateState(
-    activeStates: StateLevel,
-    include: boolean
-  ) {
+  private updateState(activeStates: string, include: boolean) {
     const currentIncluded = this.activeStates.includes(activeStates);
     if (include && !currentIncluded) {
       this.activeStates = this.activeStates.concat([activeStates]);
@@ -632,7 +756,7 @@ export class FilterCommand {
   private async filterState(
     logs: Logs,
     context: vscode.ExtensionContext,
-    activeStates: StateLevel,
+    activeStates: string,
     filter: string
   ) {
     logs.info(messages.filterResults(activeStates));
