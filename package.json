@@ -374,11 +374,14 @@
         "label": "Filter",
         "icon": "$(filter)",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "id": "ast-results.filterBy.items",
+        "label": "Filter Options"
       }
     ],
     "menus": {
       "ast-results.filterBy": [
-       
         {
           "command": "ast-results.filterDynamic",
           "when": "ast-results.hasFilter"
