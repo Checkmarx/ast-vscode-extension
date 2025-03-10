@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.31.1-test26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test26.0) - 2025-03-09 11:04:14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-15.0...v2.31.1-test26.0
+
 ## [v2.31.1-test-15.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-15.0) - 2025-03-06 09:03:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -7,34 +15,6 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-ely-14.0...v2.31.1-test-15.0
-
-## [v2.31.1-test-ely-14.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-ely-14.0) - 2025-03-04 12:49:15
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## [v2.31.1-test-13.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-13.0) - 2025-02-27 11:11:40
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-9.0...v2.31.1-test-13.0
-
-## [v2.31.1-test-9.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-9.0) - 2025-02-26 20:05:08
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-8.0...v2.31.1-test-9.0
-
-## [v2.31.1-test-8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-8.0) - 2025-02-26 19:08:42
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-7.0...v2.31.1-test-8.0
 
 ## [v2.31.1-test-7.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-7.0) - 2025-02-26 19:02:58
 
