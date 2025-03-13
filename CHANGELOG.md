@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.31.1-test-axios.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios.0) - 2025-03-10 13:09:30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Feature/elchanan/implement oauth2 ide authentication (AST-83466) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1046
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test26.0...v2.31.1-test-axios.0
+
 ## [v2.31.1-test26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test26.0) - 2025-03-09 11:04:14
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
