@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.31.1-test-axios2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios2.0) - 2025-03-13 08:57:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-axios.0...v2.31.1-test-axios2.0
+
+## [v2.31.1-test-axios.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios.0) - 2025-03-10 13:09:30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.31.1-test26.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test26.0) - 2025-03-09 11:04:14
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
