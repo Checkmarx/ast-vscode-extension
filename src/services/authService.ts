@@ -106,10 +106,7 @@ export class AuthService {
 private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
   try {
     const response = await axios.head(urlToCheck, {
-      timeout: 10000,
-      headers: {
-        'User-Agent': 'curl/7.68.0',
-      }
+      timeout: 5000
     });
 
     if (isTenantCheck && (response.status === 404 || response.status === 405)) {
