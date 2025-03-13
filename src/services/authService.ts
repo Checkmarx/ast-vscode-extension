@@ -115,12 +115,15 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
     }
 
     return response.status < 400;
-  } catch (error: any) {
-    if (error.response) {
-      console.log(`Request failed with status ${error.response.status}`);
-      return false;
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError.response) {
+        console.log(`Request failed with status ${axiosError.response.status}`);
+        return false;
+      }
     }
-    console.log(`Request error: ${error.message}`);
+    console.log(`Request error: ${error instanceof Error ? error.message : String(error)}`);
     return false;
   }
 }
