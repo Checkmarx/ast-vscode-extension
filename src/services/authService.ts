@@ -6,6 +6,8 @@ import { URL, URLSearchParams } from 'url';
 import { Logs } from '../models/logs';
 import { initialize, getCx } from '../cx';
 import { commands } from "../utils/common/commands";
+import axios from 'axios';
+
 
 interface OAuthConfig {
     clientId: string;
@@ -101,77 +103,31 @@ export class AuthService {
   }
   
   // Helper function to check if a URL exists
-  private checkUrlExists(urlToCheck: string, isTenantCheck = false, redirectCount = 0): Promise<boolean> {
-    return new Promise((resolve) => {
-      const MAX_REDIRECTS = 5;
-      if (redirectCount >= MAX_REDIRECTS) {
-        console.log("Too many redirects, stopping");
-        resolve(false);
-        return;
+private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
+  try {
+    const response = await axios.head(urlToCheck, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'curl/7.68.0',
       }
-  
-      const url = new URL(urlToCheck);
-      // Try GET method if this is already a redirect or we had a 405 before
-      const options = {
-        method: redirectCount > 0 ? 'GET' : 'HEAD',
-        hostname: url.hostname,
-        port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: url.pathname + url.search,
-        timeout: 5000
-      };
-      
-      const req = (url.protocol === 'https:' ? https : http).request(options, (res) => {
-        // For tenant check, specific handling of error codes
-        if (isTenantCheck) {
-          // If status is 404 or 405 for tenant check, return false
-          if (res.statusCode === 404 || res.statusCode === 405) {
-            console.log(`Tenant check failed with status: ${res.statusCode}`);
-            resolve(false);
-            return;
-          }
-        }
-        
-        // Handle redirects
-        if (res.statusCode === 301 || res.statusCode === 302 || 
-            res.statusCode === 303 || res.statusCode === 307 || 
-            res.statusCode === 308) {
-              
-          const location = res.headers.location;
-          if (location) {
-            console.log(`Redirected (${res.statusCode}) to: ${location}`);
-            
-            const redirectUrl = location.startsWith('http') 
-              ? location 
-              : `${url.protocol}//${url.host}${location.startsWith('/') ? '' : '/'}${location}`;
-            
-            return this.checkUrlExists(redirectUrl, isTenantCheck, redirectCount + 1)
-              .then(resolve);
-          }
-        }
-        
-        // If status is 405 and not tenant check, try again with GET method
-        if (res.statusCode === 405 && !isTenantCheck && options.method === 'HEAD') {
-          console.log('Method not allowed (405), retrying with GET');
-          return this.checkUrlExists(urlToCheck, isTenantCheck, redirectCount + 1)
-            .then(resolve);
-        }
-        
-        // If no special cases, use standard success criteria
-        resolve(res.statusCode !== undefined && res.statusCode < 400);
-      });
-      
-      req.on('error', () => {
-        resolve(false);
-      });
-      
-      req.on('timeout', () => {
-        req.destroy();
-        resolve(false);
-      });
-      
-      req.end();
     });
+
+    if (isTenantCheck && (response.status === 404 || response.status === 405)) {
+      console.log(`Tenant check failed with status: ${response.status}`);
+      return false;
+    }
+
+    return response.status < 400;
+  } catch (error: any) {
+    if (error.response) {
+      console.log(`Request failed with status ${error.response.status}`);
+      return false;
+    }
+    console.log(`Request error: ${error.message}`);
+    return false;
   }
+}
+
  
 
     private async findAvailablePort(): Promise<number> {
@@ -494,106 +450,98 @@ export class AuthService {
     }
 
     private getSuccessPageHtml(): string {
-        return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Login Success - Checkmarx</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    margin: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                }
-                .modal {
-                    background: white;
-                    padding: 2rem;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                    width: 90%;
-                    max-width: 500px;
-                    text-align: center;
-                }
-                .close-button {
-                    float: right;
-                    font-size: 24px;
-                    color: #666;
-                    cursor: pointer;
-                    border: none;
-                    background: none;
-                    padding: 0;
-                    margin: -1rem -1rem 0 0;
-                }
-                h1 {
-                    color: #333;
-                    font-size: 24px;
-                    margin: 1rem 0;
-                }
-                .icon-container {
-                    margin: 2rem 0;
-                }
-                .icon {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .folder {
-                    color: #6B4EFF;
-                    font-size: 48px;
-                }
-                .file {
-                    color: #6B4EFF;
-                    font-size: 48px;
-                }
-                .message {
-                    color: #666;
-                    margin: 1rem 0 2rem 0;
-                }
-                .close-btn {
-                    background-color: #4F5CD1;
-                    color: white;
-                    border: none;
-                    padding: 12px 40px;
-                    border-radius: 4px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    transition: background-color 0.3s;
-                }
-                .close-btn:hover {
-                    background-color: #3F4BB1;
-                }
-                .wave-line {
-                    color: #6B4EFF;
-                    font-size: 24px;
-                    margin: 0 10px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="modal">
-                <button class="close-button" onclick="window.close()">×</button>
-                <h1>You're All Set with Checkmarx!</h1>
-                <div class="icon-container">
-                    <div class="icon">
-                        <span class="folder">📁</span>
-                        <span class="wave-line">〰️〰️〰️</span>
-                        <span class="file">📄</span>
-                    </div>
-                </div>
-                <p class="message">You have successfully logged in</p>
-                <button class="close-btn" onclick="window.close()">Close</button>
-            </div>
-        </body>
-        </html>
-        `;
-    }
+      return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Login Success - Checkmarx</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: rgba(0, 0, 0, 0.5);
+                  margin: 0;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 100vh;
+              }
+              .modal {
+                  background: white;
+                  padding: 2rem;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                  width: 90%;
+                  max-width: 500px;
+                  text-align: center;
+              }
+              .close-button {
+                  float: right;
+                  font-size: 24px;
+                  color: #666;
+                  cursor: pointer;
+                  border: none;
+                  background: none;
+                  padding: 0;
+                  margin: -1rem -1rem 0 0;
+              }
+              h1 {
+                  color: #333;
+                  font-size: 24px;
+                  margin: 1rem 0;
+              }
+              .icon-container {
+                  margin: 2rem 0;
+              }
+              .icon {
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  gap: 10px;
+              }
+              .folder {
+                  color: #6B4EFF;
+                  font-size: 48px;
+              }
+              .file {
+                  color: #6B4EFF;
+                  font-size: 48px;
+              }
+              .message {
+                  color: #666;
+                  margin: 1rem 0 2rem 0;
+              }
+              .success-note {
+                  color: #4F5CD1;
+                  font-size: 16px;
+                  margin: 2rem 0;
+              }
+              .wave-line {
+                  color: #6B4EFF;
+                  font-size: 24px;
+                  margin: 0 10px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="modal">
+              <button class="close-button" onclick="window.close()">×</button>
+              <h1>You're All Set with Checkmarx!</h1>
+              <div class="icon-container">
+                  <div class="icon">
+                      <span class="folder">📁</span>
+                      <span class="wave-line">〰️〰️〰️</span>
+                      <span class="file">📄</span>
+                  </div>
+              </div>
+              <p class="message">You have successfully logged in</p>
+              <p class="success-note">You can now close this window.</p>
+          </div>
+      </body>
+      </html>
+      `;
+  }
     private getErrorPageHtml(errorMessage: string): string {
       return `
       <!DOCTYPE html>
