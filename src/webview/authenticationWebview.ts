@@ -28,7 +28,13 @@ export class AuthenticationWebview {
   private async initialize() {
     this._panel.webview.postMessage({ type: "showLoader" });
     const authService = AuthService.getInstance(this.context);
-    const hasToken = await authService.validateAndUpdateState();
+    let hasToken = false;
+
+    try {
+      hasToken = await authService.validateAndUpdateState();
+    } catch (error) {
+      console.error("Error validating authentication state:", error);
+    }
     this._panel.webview.postMessage({
       type: "setAuthState",
       isAuthenticated: hasToken,
