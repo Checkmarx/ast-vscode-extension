@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.31.1-test-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v3.0) - 2025-03-16 08:54:09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Fix tabs with singleton (Ast-86808) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1064
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-axios2.0...v2.31.1-test-v3.0
+
 ## [v2.31.1-test-axios2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios2.0) - 2025-03-13 08:57:04
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
