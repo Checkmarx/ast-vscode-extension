@@ -91,48 +91,50 @@ describe("AuthService Tests", () => {
   });
 
   describe("checkUrlExists", () => {
-    it("should return true if HEAD request returns status < 400", async () => {
-      // @ts-ignore - Ignoring type issues with axios mock response
-      const axiosHeadStub = sandbox.stub(axios, 'head').resolves({ 
+    it("should return true if GET request returns status < 400", async () => {
+      const axiosGetStub = sandbox.stub(axios, 'get').resolves({ 
         status: 200,
-        // Adding minimal properties to satisfy the type checker
         data: {},
         statusText: 'OK',
         headers: {},
         config: { url: 'https://valid-url.com' }
       });
+
       const result = await (authService as any).checkUrlExists("https://valid-url.com");
+      
       expect(result).to.be.true;
-      expect(axiosHeadStub.calledWith("https://valid-url.com", { timeout: 5000 })).to.be.true;
+      expect(axiosGetStub.calledWith("https://valid-url.com", { timeout: 5000 })).to.be.true;
     });
 
-    it("should return false if HEAD request returns status >= 400", async () => {
-      // @ts-ignore - Ignoring type issues with axios mock response
-      sandbox.stub(axios, 'head').resolves({ 
+    it("should return false if GET request returns status >= 400", async () => {
+      sandbox.stub(axios, 'get').resolves({ 
         status: 404,
         data: {},
         statusText: 'Not Found',
         headers: {},
         config: { url: 'https://valid-url.com' }
       });
+
       const result = await (authService as any).checkUrlExists("https://valid-url.com");
+      
       expect(result).to.be.false;
     });
 
-    it("should return false for tenant check if status is 404 or 405", async () => {
-      // @ts-ignore - Ignoring type issues with axios mock response
-      sandbox.stub(axios, 'head').resolves({ 
+    it("should return false for tenant check if GET returns status 404 or 405", async () => {
+      sandbox.stub(axios, 'get').resolves({ 
         status: 404,
         data: {},
         statusText: 'Not Found',
         headers: {},
         config: { url: 'https://valid-url.com/auth/realms/tenant' }
       });
+
       const result = await (authService as any).checkUrlExists("https://valid-url.com/auth/realms/tenant", true);
+      
       expect(result).to.be.false;
     });
 
-    it("should return false if request fails with error", async () => {
+    it("should return false if GET request fails with an error", async () => {
       const error = new Error('Network Error') as any;
       error.response = { 
         status: 500,
@@ -141,17 +143,20 @@ describe("AuthService Tests", () => {
         headers: {},
         config: { url: 'https://valid-url.com' }
       };
-      sandbox.stub(axios, 'head').rejects(error);
+      sandbox.stub(axios, 'get').rejects(error);
       
       const result = await (authService as any).checkUrlExists("https://valid-url.com");
+      
       expect(result).to.be.false;
     });
 
-    it("should return false if request fails without response", async () => {
-      sandbox.stub(axios, 'head').rejects(new Error('Network Error'));
+    it("should return false if GET request fails without response", async () => {
+      sandbox.stub(axios, 'get').rejects(new Error('Network Error'));
       
       const result = await (authService as any).checkUrlExists("https://valid-url.com");
+      
       expect(result).to.be.false;
     });
-  });
+});
+
 });
