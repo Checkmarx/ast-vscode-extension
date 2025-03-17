@@ -105,7 +105,7 @@ export class AuthService {
   // Helper function to check if a URL exists
 private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
   try {
-    const response = await axios.head(urlToCheck, {
+    const response = await axios.get(urlToCheck, {
       timeout: 5000
     });
 
@@ -535,8 +535,8 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
                       <span class="file">📄</span>
                   </div>
               </div>
-              <p class="message">You have successfully logged in</p>
-              <p class="success-note">You can now close this window.</p>
+              <p class="message">You're Connected to Checkmarx!</p>
+              <p class="success-note">You can close this window</p>
           </div>
       </body>
       </html>
