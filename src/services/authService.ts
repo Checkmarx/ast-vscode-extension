@@ -536,7 +536,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
                   </div>
               </div>
               <p class="message">You're Connected to Checkmarx!</p>
-              <p class="success-note">You can close this window</p>
+              <p class="message">You can close this window</p>
           </div>
       </body>
       </html>
