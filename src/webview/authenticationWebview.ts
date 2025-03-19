@@ -154,7 +154,8 @@ export class AuthenticationWebview {
             <div id="tenants-list" class="autocomplete-items"></div>
         </div>
         <div id="apiKeyForm" class="hidden">
-			<input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
+          <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
+			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
         </div>
         <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
         </div>
