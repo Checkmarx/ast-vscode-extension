@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.31.1-v4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-v4.0) - 2025-03-17 09:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v3.0...v2.31.1-v4.0
+
+## [v2.31.1-test-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v3.0) - 2025-03-16 08:54:09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.31.1-test-axios2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios2.0) - 2025-03-13 08:57:04
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -51,14 +63,6 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v4.0...v2.31.1-testv5.0
-
-## [v2.31.1-test-v4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v4.0) - 2025-02-25 17:14:41
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-oauth-v2.0...v2.31.1-test-v4.0
 
 ## [v2.31.1-test-oauth-v2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-v2.0) - 2025-02-25 16:36:34
 

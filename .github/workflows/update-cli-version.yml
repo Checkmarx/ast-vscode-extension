@@ -93,7 +93,7 @@ jobs:
       if: env.changes == 'true'
       uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c #v6
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.AUTOMATION_TOKEN }}
         commit-message: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
         title: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
         body: |
