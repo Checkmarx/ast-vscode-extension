@@ -19,7 +19,7 @@ export async function waitForElementToAppear(
     }
   }
 
-  export async function waitForInputBoxToOpen(maxRetries = 20, retryDelay = 500) {
+  export async function waitForInputBoxToOpen(maxRetries = 30, retryDelay = 800) {
     for (let i = 0; i < maxRetries; i++) {
       try {
         const input = await InputBox.create();
