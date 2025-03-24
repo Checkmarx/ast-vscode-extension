@@ -226,4 +226,6 @@ export interface CxPlatform {
   scanAsca(sourcePath: string): Promise<CxAsca>;
 
   authValidate(logs: Logs): Promise<boolean>;
+
+  getRiskManagementResults(projectId: string): Promise<object | undefined>;
 }

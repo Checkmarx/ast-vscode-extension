@@ -1299,16 +1299,15 @@ export class CxMock implements CxPlatform {
 
   async getAstConfiguration() {
     const token = await this.context.secrets.get("authCredential");
-    console.log("Token from secrets:", token);
 
     if (!token) {
-        return undefined;
+      return undefined;
     }
 
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
-}
+  }
 
 
   async isScanEnabled(): Promise<boolean> {
@@ -1458,4 +1457,13 @@ export class CxMock implements CxPlatform {
   async authValidate(): Promise<boolean> {
     return true;
   }
+
+  public getRiskManagementResults(projectId: string): Promise<object> {
+    // implementation of the method
+    return new Promise((resolve, reject) => {
+      // mock implementation
+      resolve({});
+    });
+  }
+
 }

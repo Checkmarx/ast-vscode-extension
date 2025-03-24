@@ -794,6 +794,11 @@
           "name": "Software Composition Analysis (SCA)"
         },
         {
+          "id": "risksMeneg",
+          "type": "webview",
+          "name": "Checkmarx ASPM Results"
+        },
+        {
           "id": "docAndFeedback",
           "type": "tree",
           "name": "Documentation & Feedback"
@@ -944,7 +949,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.125",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "v0.0.127-rc.0",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",

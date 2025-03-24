@@ -1,0 +1,150 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.custom-header {
+    text-align: left;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    filter: brightness(1.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    height: 34px;
+    font-size: 11px;
+}
+
+.app-header {
+    text-align: left;
+    color: var(--vscode-input-foreground);
+    padding: 10px;
+    width: 100%;
+    height: 34px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.result {
+    cursor: pointer;
+    height: 22px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    column-gap: 6px;
+}
+
+.result:hover {
+    background: var(--vscode-input-background);
+    filter: brightness(1.2);
+}
+
+.results{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 244px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ditales {
+    cursor: not-allowed;
+    font-size: 13px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+.ditales div {
+    display: flex;
+    gap: 5px;
+}
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%; 
+    vertical-align: top;
+}
+
+.index {
+    margin-right: 10px;
+}
+
+.app-name {
+    margin-right: 10px;
+    flex-grow: 1;
+    font-size: 13px;
+}
+
+.results-count {
+    margin-right: 10px;
+    color: #bbb;
+}
+
+.risk-score {
+    padding: 3px 10px 3px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+}
+
+.critical-risk {
+    color: #BB2A31D9;
+    border: 1px solid #BB2A31D9; 
+}
+
+.high-risk {
+    color: #F8788FE5;
+    border: 1px solid #F8788FE5; 
+}
+
+.medium-risk {
+    color: #E7984999;
+    border: 1px solid #E7984999; 
+}
+
+.low-risk {
+    color: #93949999;
+    border: 1px solid #93949999; 
+}
+
+.custom-header::after {
+    display: none !important;
+}
+
+.custom-header:focus,
+.custom-header:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+button:hover {
+    background: var(--vscode-input-background);
+    filter: brightness(1.5);
+
+}
+
+.disabled-result {
+    cursor: not-allowed;
+}
+svg{
+    vertical-align: text-top;
+}
