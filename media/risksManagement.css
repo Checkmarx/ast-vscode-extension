@@ -63,9 +63,10 @@ body {
     text-overflow: ellipsis;
     max-width: 100%;
 }
-.ditales div {
-    display: flex;
-    gap: 5px;
+
+.codicon{
+    vertical-align: text-bottom;
+    padding-right: 6px;
 }
 
 .ellipsis {
@@ -116,8 +117,8 @@ body {
 }
 
 .low-risk {
-    color: #93949999;
-    border: 1px solid #93949999; 
+    color: #419128;
+    border: 1px solid #419128; 
 }
 
 .custom-header::after {

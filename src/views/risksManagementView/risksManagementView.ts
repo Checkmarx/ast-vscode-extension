@@ -34,7 +34,7 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
         }
         const webview = this._view.webview;
         if (!project && !scan) {
-            this._view.webview.html = this.getWebviewContent(webview, undefined, undefined, false);
+            this._view.webview.html = this.getWebviewContent(undefined, undefined, false);
             return;
 
         }
@@ -43,7 +43,7 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
         const scanToDisplay = exctarctData(scan.displayScanId, "Scan:");
         const riskManagementResults = await this._risksManagementService.getRiskManagementResults(project.id, scanToDisplay);
 
-        this._view.webview.html = this.getWebviewContent(webview, projectToDisplay, scanToDisplay, isLatestScan, riskManagementResults);
+        this._view.webview.html = this.getWebviewContent(projectToDisplay, scanToDisplay, isLatestScan, riskManagementResults);
             this._view.webview.postMessage({
                 command: 'getRiskManagementResults',
                 data: riskManagementResults
@@ -55,21 +55,17 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
         );
     }
 
-    private getWebviewContent(webview: vscode.Webview, projectName: string, scan: string, isLatestScan: boolean, applications: { applicationNameIDMap: any[] }): string {
+    private getWebviewContent(projectName: string, scan: string, isLatestScan: boolean, applications: { applicationNameIDMap: any[] }): string {
         const styleResetUri = this.setWebUri("media", "reset.css");
         const styleVSCodeUri = this.setWebUri("media", "vscode.css");
         const styleMainUri = this.setWebUri("media", "main.css");
         const scriptUri = this.setWebUri("media", "risksManagement.js");
         const styleUri = this.setWebUri("media", "risksManagement.css");
         const unionIcon = this.setWebUri("media", "icons", "union.svg");
-        const styleBootStrap = this.setWebUri(
-            "media",
-            "bootstrap",
-            "bootstrap.min.css"
-        );
-        const scriptBootStrap = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.js")
-        );
+        const codiconsUri =this.setWebUri('node_modules', '@vscode/codicons', 'dist', 'codicon.css');
+        const popperUri = this.setWebUri('node_modules', '@popperjs/core', 'dist', 'umd', 'popper.min.js');
+        const styleBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.css");
+        const scriptBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.js");
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -83,33 +79,32 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
 	<link href="${styleMainUri}" rel="stylesheet">
 	<link href="${styleBootStrap}" rel="stylesheet">
 	<link href="${styleUri}" rel="stylesheet">
-	<link href="https://microsoft.github.io/vscode-codicons/dist/codicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="${codiconsUri}">
 
 	<title>Risks Management</title>
 </head>
 
 <body>
-	${!projectName && !scan ? `<div>
-		No project selected.
+	${!projectName || !scan || !isLatestScan ? `<div>
+		The ASPM risks are unavailable because you haven't selected the latest scan of the project.
 	</div>` :
-	`${!isLatestScan ? `<div>
-		ASPM results are only available for latest scan.
-	</div>` :
-	`<div class="ditales" data-bs-toggle="tooltip" data-bs-placement="top"
-		title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
-
+	`<div class="ditales"
+    data-bs-toggle="tooltip" data-bs-placement="top"
+	title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
+	
 		<div class="ellipsis"><i class="codicon codicon-project"></i>Project: ${projectName ?? ""}</div>
-		<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""}
-	</div>
+		<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""}</div>
 	</div>
 	<div class="app-header">
 		<img src="${unionIcon}"/> ${applications.applicationNameIDMap.length} Applications
 	</div>
 	<div class="accordion" id="applicationsContainer"></div>
-	`}`}
+	`}
 	<script nonce="${nonce}" src="${scriptUri}">
 		const vscode = acquireVsCodeApi();
-	</script>
+</script>
+<script src=${popperUri}></script>
+
 	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
 
 </body>
