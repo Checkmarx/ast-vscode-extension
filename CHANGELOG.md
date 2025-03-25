@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.31.1-oath-main.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oath-main.0) - 2025-03-25 13:10:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Refactor AuthService to use Axios instead of HTTP module by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1063
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-daniel-oauth-4.0...v2.31.1-oath-main.0
+
 ## [v2.31.1-daniel-oauth-4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-daniel-oauth-4.0) - 2025-03-25 12:09:00
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
