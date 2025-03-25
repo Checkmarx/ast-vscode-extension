@@ -924,6 +924,7 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/axios": "^0.9.36",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
     "@types/node": "^22.9.0",
@@ -951,6 +952,7 @@
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
+    "axios": "^1.8.3",
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.127",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
