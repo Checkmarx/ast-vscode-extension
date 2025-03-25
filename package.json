@@ -922,7 +922,7 @@
     "@types/axios": "^0.9.36",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.13.13",
     "@types/sinon": "^17.0.3",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
