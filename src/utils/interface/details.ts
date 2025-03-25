@@ -99,7 +99,7 @@ export class Details {
             (element) => element.tag === customState.name
           );
           return `<option id=${customState.name} ${
-            this.result.state === customState.name ||
+            this.result.state?.toLowerCase() === customState.name ||
             this.result.state === matchedState?.tag
               ? 'selected="selected"'
               : ""
