@@ -1,24 +1,16 @@
 # CHANGELOG
 
-## [v2.31.1-daniel-oauth-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-daniel-oauth-2.0) - 2025-03-24 11:54:54
+## [v2.31.1-daniel-oauth-3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-daniel-oauth-3.0) - 2025-03-25 11:53:56
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Fix choose custom states (AST-84553) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1066
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.127 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1072
 
-## New Contributors
-* @ast-phoenix made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1072
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-v4.0...v2.31.1-daniel-oauth-2.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-daniel-oauth-2.0...v2.31.1-daniel-oauth-3.0
 
-### Fix
+## [v2.31.1-daniel-oauth-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-daniel-oauth-2.0) - 2025-03-24 11:54:54
 
-- general:
-  - fix choose custom states (#1066) ([29c6dd6](https://github.com/Checkmarx/ast-vscode-extension/commit/29c6dd602a944905b3095e7f3f196cd6aaa25e95)) ([#1066](https://github.com/Checkmarx/ast-vscode-extension/pull/1066))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.31.1-v4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-v4.0) - 2025-03-17 09:58:15
 
