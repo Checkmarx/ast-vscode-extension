@@ -39,7 +39,8 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
       this._view.webview.html = this.getWebviewContent(
         undefined,
         undefined,
-        false
+        false,
+        { applicationNameIDMap: [] }
       );
       return;
     }
@@ -50,16 +51,13 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
     const projectToDisplay = exctarctData(project.name, "Project:");
     const scanToDisplay = exctarctData(scan.displayScanId, "Scan:");
     const riskManagementResults =
-      await this._risksManagementService.getRiskManagementResults(
-        project.id,
-        scanToDisplay
-      );
+      await this._risksManagementService.getRiskManagementResults(project.id);
 
     this._view.webview.html = this.getWebviewContent(
       projectToDisplay,
       scanToDisplay,
       isLatestScan,
-      riskManagementResults
+      riskManagementResults as { applicationNameIDMap: any[] }
     );
     this._view.webview.postMessage({
       command: "getRiskManagementResults",
@@ -146,7 +144,7 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
 
  <hr class="separator" />
    <div class="filter-section">
-  <div class="filter-title"><i class="codicon codicon-shield"></i>Vulnerability Type:</div>
+  <div class="filter-title"><i class="codicon"></i>Vulnerability Type:</div>
   <div class="filter-buttons-wrapper">
     <div class="filter-buttons" id="typeFilters"></div>
   </div>
