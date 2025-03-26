@@ -135,14 +135,17 @@ export class AuthenticationWebview {
         <div class="auth-form-title">Checkmarx One Authentication</div>
         <div id="loginForm">
         <div class="radio-group">
-            <label>
+        
+            <label style="display: none;">
                 <input type="radio" name="authMethod" value="oauth" checked> OAuth
             </label>
+      
             <label>
-                <input type="radio" name="authMethod" value="apiKey">API Key
+                <input type="radio" name="authMethod" value="apiKey" checked >API Key
             </label>
         </div>
-        <div id="oauthForm" class="auth-form">
+
+        <div style="display: none;" id="oauthForm" class="auth-form">
             <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
             <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
             <div id="urls-list" class="autocomplete-items"></div>
@@ -153,7 +156,9 @@ export class AuthenticationWebview {
             <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
             <div id="tenants-list" class="autocomplete-items"></div>
         </div>
-        <div id="apiKeyForm" class="hidden">
+
+             <!-- (We need to return it to the next div ) (class="hidden">)   -->
+        <div id="apiKeyForm"   
           <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
         </div>
