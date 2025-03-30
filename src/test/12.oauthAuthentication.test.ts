@@ -67,18 +67,15 @@ it("should open OAuth authentication panel and verify UI elements", retryTest(as
 		  
 		  // Switch back to main frame before clicking logout
 		  await webView.switchBack();
-		  console.log("Switched back to main frame");
 		  
 		  // Switch back to WebView frame to click the logout button
 		  await webView.switchToFrame(5000);
-		  console.log("Switched back to WebView");
 		  
 		  await logoutElements[0].click();
 		  console.log("Clicked logout button");
 		  
 		  // Switch back to main frame to handle the dialog
 		  await webView.switchBack();
-		  console.log("Switched back to main frame before handling dialog");
 		  await sleep(3000); // Longer wait time
 		  
 		  // Try all possible confirmation methods and log detailed information
@@ -86,7 +83,6 @@ it("should open OAuth authentication panel and verify UI elements", retryTest(as
 		  
 		  // Switch back to WebView
 		  await webView.switchToFrame(5000);
-		  console.log("Switched back to WebView after handling dialog");
 		}
 	  } else {
 		console.log("Logout button not found - user is likely already logged out");
@@ -103,7 +99,6 @@ it("should open OAuth authentication panel and verify UI elements", retryTest(as
 	} finally {
 	  try {
 		await webView.switchBack();
-		console.log("Switched back to main VS Code context");
 	  } catch (switchError) {
 		console.log("Error switching back:", switchError);
 	  }
@@ -117,9 +112,7 @@ it("should open OAuth authentication panel and verify UI elements", retryTest(as
   }, 3));
   
 // Optimized function for handling logout confirmation
-async function handleLogoutConfirmation(driver) {
-	console.log("Handling logout confirmation...");
-	
+async function handleLogoutConfirmation(driver) {	
 	try {
 	  // Search directly for notifications - this is the approach that works
 	  const notifications = await driver.findElements(By.className("notification-toast"));
