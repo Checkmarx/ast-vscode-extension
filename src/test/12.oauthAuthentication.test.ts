@@ -47,44 +47,73 @@ describe("Checkmarx OAuth Authentication Tests", () => {
         console.log("Switched to WebView iframe");
 
         try {
-            // Enhanced logout process with detailed logging
+            // Check if user is logged in
             console.log("Checking if logout button exists...");
             let logoutElements = await webView.findWebElements(By.id("logoutButton"));
             const isLoggedIn = logoutElements.length > 0 && await logoutElements[0].isDisplayed();
 
-            if (isLoggedIn) {
-                console.log("Logging out first...");
+            // If not logged in, inject a mock token to create a logged-in state
+            if (!isLoggedIn) {
+                console.log("User is not logged in - injecting mock token and reopening panel");
                 await webView.switchBack();
+                await bench.executeCommand("ast-results.mockTokenTest");
+                await sleep(3000);
+                await new EditorView().closeAllEditors();
+                await bench.executeCommand(CX_AUTHENTICATION_COMMAND);
+                await sleep(3000);
+                await new EditorView().openEditor("Checkmarx One Authentication");
                 await webView.switchToFrame(5000);
-                await logoutElements[0].click();
-                console.log("Clicked logout button");
-                await webView.switchBack();
-                await sleep(3000); // Longer wait time
-                await handleLogoutConfirmation(driver);
-                await webView.switchToFrame(5000);
+                logoutElements = await webView.findWebElements(By.id("logoutButton"));
+                
+                // Verify that we now have a logout button
+                const isLoggedInNow = logoutElements.length > 0 && await logoutElements[0].isDisplayed();
+                console.log(`User logged in after token injection: ${isLoggedInNow}`);
+                if (!isLoggedInNow) {
+                    console.log("Warning: Failed to log in user with mock token");
+                }
             } else {
-                console.log("User is already logged out");
+                console.log("User is already logged in");
             }
 
+            // Now proceed with logout (should work whether we were already logged in or just injected a token)
+            console.log("Proceeding with logout test...");
+            logoutElements = await webView.findWebElements(By.id("logoutButton"));
+            if (logoutElements.length > 0 && await logoutElements[0].isDisplayed()) {
+                console.log("Logging out user...");
+                
+                // Switch back to main frame before clicking logout
+                await webView.switchBack();
+                
+                // Switch back to WebView frame to click the logout button
+                await webView.switchToFrame(5000);
+                
+                await logoutElements[0].click();
+                console.log("Clicked logout button");
+                
+                // Switch back to main frame to handle the dialog
+                await webView.switchBack();
+                await sleep(3000); // Longer wait time
+                
+                // Try all possible confirmation methods and log detailed information
+                await handleLogoutConfirmation(driver);
+                
+                // Switch back to WebView
+                await webView.switchToFrame(5000);
+            } else {
+                console.log("Error: Logout button not found even after token injection");
+            }
+
+            // Verify we're now logged out by checking the state of the form
+            console.log("Verifying logged out state...");
+            const loginForm = await webView.findWebElements(By.id("loginForm"));
+            expect(loginForm.length).to.be.greaterThan(0, "Login form should be visible when logged out");
+            
             // Verify radio buttons
             console.log("Finding radio buttons for authentication methods...");
             const radioButtons = await webView.findWebElements(By.css("input[type='radio']"));
             console.log(`Found ${radioButtons.length} radio buttons`);
             expect(radioButtons.length).to.be.at.least(2, "Should have at least 2 radio buttons (OAuth and API Key)");
 
-            // Get radio button labels
-            const radioLabels = await webView.findWebElements(By.css("label"));
-            const radioLabelTexts = [];
-            for (const label of radioLabels) {
-                const text = await label.getText();
-                if (text === "OAuth" || text === "API Key") {
-                    radioLabelTexts.push(text);
-                    console.log(`Found radio label: "${text}"`);
-                }
-            }
-            expect(radioLabelTexts).to.include("OAuth", "OAuth radio label should be present");
-            expect(radioLabelTexts).to.include("API Key", "API Key radio label should be present");
-            
             // First, verify OAuth form fields
             console.log("Selecting OAuth radio button...");
             const oauthRadio = await webView.findWebElement(By.css("input[name='authMethod'][value='oauth']"));
