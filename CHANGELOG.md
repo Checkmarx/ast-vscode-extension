@@ -1,15 +1,16 @@
 # CHANGELOG
 
-## [v2.31.1-aspm-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-aspm-test-1.0) - 2025-03-26 09:30:55
+## [v2.31.1-oath-latest.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oath-latest.0) - 2025-03-27 13:32:03
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Put oauth in comment (AST-00000) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1078
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-aspm.0...v2.31.1-aspm-test-1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-aspm-test-1.0...v2.31.1-oath-latest.0
+
+## [v2.31.1-aspm-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-aspm-test-1.0) - 2025-03-26 09:30:55
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.31.1-test-aspm.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-aspm.0) - 2025-03-25 13:13:36
 
