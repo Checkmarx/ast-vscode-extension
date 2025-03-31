@@ -48,30 +48,10 @@
     });
 
     function openVulnerabilityDetails(result) {
-        // const details = `
-        //             <div>${result.name}</div>
-        //             <p><strong>Type:</strong> ${result.type}</p>
-        //             <p><strong>State:</strong> ${result.state}</p>
-        //             <p><strong>Engine:</strong> ${result.engine}</p>
-        //             <p><strong>Severity:</strong> ${result.severity}</p>
-        //             <p><strong>Risk Score:</strong> ${result.riskScore}</p>
-        //             <p><strong>Created At:</strong> ${result.createdAt}</p>
-        //             <p><strong>Hash:</strong> ${result.hash}</p>
-        //         `;
-        // const newWindow = window.open("", "_blank", "width=500,height=500");
-        // newWindow.document.write(`
-        //             <!DOCTYPE html>
-        //             <html lang="en">
-        //             <head>
-        //                 <meta charset="UTF-8">
-        //                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        //                 <title>${result.name} - Details</title>
-        //                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        //             </head>
-        //             <body class="p-3">
-        //                 ${details}
-        //             </body>
-        //             </html>`);
+        vscode.postMessage({
+            command: 'openVulnerabilityDetails',
+            result: result
+        });
     }
 
     function getRiskName(score) {
@@ -163,6 +143,9 @@
 
     function renderApplications(results) {
         const container = document.getElementById("applicationsContainer");
+        if (!container) {
+            return;
+        }
         container.innerHTML = "";
 
         results.applicationNameIDMap.forEach((app, index) => {
@@ -172,34 +155,40 @@
             const appElement = document.createElement("div");
 
             const matchingResults = results.results.map((result) => {
+
                 const matchedScore = result.applicationsScores.find(s => s.applicationID === app.applicationID)?.score;
-
                 const isSCA = result.engine.toLowerCase() === "sca";
-                const onClickHandler = isSCA
-                    ? ""
-                    : `onclick="openVulnerabilityDetails(${JSON.stringify(result).replace(
-                        /"/g,
-                        "&quot;"
-                    )})"`;
-                const tooltip = isSCA
-                    ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"'
-                    : "";
+                const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
 
-                return `
-        <div class="result ${isSCA ? "disabled-result" : ""
-                    }" ${onClickHandler} ${tooltip}>
-            <span class="risk-score ${{
+                const resultElement = document.createElement("div");
+                resultElement.className = `result${isSCA ? " disabled-result" : ""}`;
+                resultElement.setAttribute("data-tooltip", tooltip);
+
+                resultElement.innerHTML = `
+                        <span class="risk-score ${{
                         critical: "critical-risk",
                         high: "high-risk",
                         medium: "medium-risk",
                         low: "low-risk",
                     }[result.severity] || ""
                     }">
-    <span>${icons[result.severity]}</span> <span>${matchedScore !== 0 ? matchedScore : result.riskScore}</span> 
-</span>
-           <span class="ellipsis"> ${result.name}</span>
-        </div>
-    `;
+                            <span>${icons[result.severity]}</span> 
+                            <span>${matchedScore !== 0 ? matchedScore : result.riskScore}</span> 
+                        </span>
+                        <span class="ellipsis"> ${result.name}</span>
+                    `;
+
+                // הוספת event listener רק אם זה לא SCA
+                if (!isSCA) {
+                    resultElement.addEventListener("click", () => {
+                        vscode.postMessage({
+                            command: "openVulnerabilityDetails",
+                            result: result,
+                        });
+                    });
+                }
+
+                return resultElement;
             });
 
             appElement.innerHTML = `
@@ -222,10 +211,12 @@
 
             const resultsContainer = appElement.querySelector(".results");
 
-            resultsContainer.innerHTML = matchingResults.join("");
+            resultsContainer.innerHTML = ""; // Clear previous content
+            matchingResults.forEach(element => resultsContainer.appendChild(element));
+
 
             if (index === results.applicationNameIDMap.length - 1) {
-                resultsContainer.style.maxHeight = "unset"; 
+                resultsContainer.style.maxHeight = "unset";
             }
 
             container.appendChild(appElement);

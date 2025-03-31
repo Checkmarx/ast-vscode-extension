@@ -156,6 +156,8 @@ svg {
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 hr.separator {
@@ -231,10 +233,11 @@ svg {
     color: filtef;
 }
 
-.loading{
+.loading {
     display: flex;
     justify-content: center;
 }
+
 .error-message {
     background-color: #5C2E37;
     color: white;

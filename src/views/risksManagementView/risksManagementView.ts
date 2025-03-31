@@ -1,68 +1,113 @@
 import * as vscode from "vscode";
-import { getNonce } from "../../utils/utils";
+import { getNonce, getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { RisksManagementService } from "./risksManagementService";
-import { Item } from "../../utils/common/globalState";
+import { getFromState, Item } from "../../utils/common/globalState";
+import { commands } from "../../utils/common/commands";
+import { AstResultsProvider } from "../resultsView/astResultsProvider";
+import { AstResult } from "../../models/results";
+import { constants } from "../../utils/common/constants";
 
 export class RisksManagementView implements vscode.WebviewViewProvider {
-    private _view?: vscode.WebviewView;
-    private _risksManagementService: RisksManagementService;
+    private view?: vscode.WebviewView;
+    private risksManagementService: RisksManagementService;
+    private cxResults: any;
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private readonly context: vscode.ExtensionContext
     ) {
-        this._risksManagementService = RisksManagementService.getInstance(
+        this.risksManagementService = RisksManagementService.getInstance(
             this.context
         );
     }
 
-    public resolveWebviewView(
+    public async resolveWebviewView(
         webviewView: vscode.WebviewView,
-        _context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken
     ) {
-        this._view = webviewView;
+        this.view = webviewView;
 
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
         };
 
-        this.updateContent();
+        webviewView.webview.onDidReceiveMessage(async (message) => {
+            switch (message.command) {
+                case 'openVulnerabilityDetails':
+                    const hash = message.result.hash;
+                    const type = message.result.engine;
+                    const result = await this.findResultByHash(hash, type);
+                    if (result) {
+                        const astResult = new AstResult(result);
+                        // if (!astResult || !astResult.typeLabel) {
+                        //   return;
+                        // }
+                        await vscode.commands.executeCommand(
+                            commands.newDetails,
+                            astResult
+                        );
+                    } else {
+                        vscode.window.showErrorMessage('Result not found');
+                    }
+                    break;
+            }
+        });
+        const resultJsonPath = getResultsFilePath();
+        const scan = getFromState(this.context, constants.scanIdKey);
+        this.cxResults = await readResultsFromFile(resultJsonPath, scan?.id);
+        const projectItem = getFromState(this.context, constants.projectIdKey);
+
+        this.updateContent(projectItem, scan, this.cxResults);
     }
 
-    public async updateContent(project?: Item, scan?: Item) {
-        if (!this._view) {
+    
+
+    private async findResultByHash(hash: string, type): Promise<any> {
+        if (type === constants.sast) {
+            return this.cxResults.find(result => result.data.resultHash === hash);
+        }
+        if (type === constants.kics) {
+            return this.cxResults.find(result => result.id === hash);
+        }
+    }
+
+    public async updateContent(project?: Item, scan?: Item, cxResults?: any) {
+        if (!this.view) {
             return;
         }
-        this._view.webview.postMessage({ command: "showLoader" });
-
+        this.view.webview.postMessage({ command: "showLoader" });
+        this.cxResults = cxResults;
         if (!project && !scan) {
-            this._view.webview.html = this.getWebviewContent(
+            this.view.webview.html = this.getWebviewContent(
                 undefined,
                 undefined,
                 false,
                 { applicationNameIDMap: [] }
             );
-            this._view.webview.postMessage({ command: "hideLoader" });
+            this.view.webview.postMessage({ command: "hideLoader" });
             return;
         }
         try {
-            const isLatestScan = await this._risksManagementService.checkIfLatestScan(
+            const isLatestScan = await this.risksManagementService.checkIfLatestScan(
                 project.id,
                 scan.id
             );
             const projectToDisplay = exctarctData(project.name, "Project:");
             const scanToDisplay = exctarctData(scan.displayScanId, "Scan:");
             const riskManagementResults =
-                await this._risksManagementService.getRiskManagementResults(project.id);
-
-            this._view.webview.html = this.getWebviewContent(
+                await this.risksManagementService.getRiskManagementResults(project.id);
+if (riskManagementResults === undefined) {
+    console.log("Error: No results found for the given project ID.");
+    
+                return;
+    
+}
+            this.view.webview.html = this.getWebviewContent(
                 projectToDisplay,
                 scanToDisplay,
                 isLatestScan,
                 riskManagementResults as { applicationNameIDMap: any[] }
             );
-            this._view.webview.postMessage({
+            this.view.webview.postMessage({
                 command: "getRiskManagementResults",
                 data: riskManagementResults,
             });
@@ -72,7 +117,7 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
             const errorIcon = this.setWebUri("media", "icons", "error.svg");
             const styleUri = this.setWebUri("media", "risksManagement.css");
 
-            this._view.webview.html = `<!DOCTYPE html>
+            this.view.webview.html = `<!DOCTYPE html>
             <html>
             <head>
                 <link href="${styleUri}" rel="stylesheet">
@@ -86,18 +131,14 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
             </body>
             </html>`;
         } finally {
-            this._view.webview.postMessage({ command: "hideLoader" });
+            this.view.webview.postMessage({ command: "hideLoader" });
         }
 
-        //         case applicationNameIDMap not empty but result is empty ,display:
-        //         ASPM does not hold result data for this project
 
-        // case applicationNameIDMap empty ,display:
-        //         this project is not assotiated with any application in the ASPM
 
     }
     private setWebUri(...paths: string[]): vscode.Uri {
-        return this._view.webview.asWebviewUri(
+        return this.view.webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, ...paths)
         );
     }
@@ -106,7 +147,10 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
         projectName: string,
         scan: string,
         isLatestScan: boolean,
-        applications: { applicationNameIDMap: any[] }
+        ASPMResults: {
+            results: any;
+            applicationNameIDMap: any[]
+        }
     ): string {
         const styleResetUri = this.setWebUri("media", "reset.css");
         const styleVSCodeUri = this.setWebUri("media", "vscode.css");
@@ -165,14 +209,20 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
 	${!projectName || !scan || !isLatestScan ? `<div class="no-results-message">
 		ASPM data is only shown when the most recent scan of a project is selected in the Checkmarx One Results tab
 	</div>` :
-                `<div class="ditales"
+                ASPMResults.applicationNameIDMap.length === 0 ? `<div class="no-results-message">
+        This project is not associated with any application in the ASPM
+    </div>` :
+                    ASPMResults.applicationNameIDMap.length > 0 && ASPMResults.results.length === 0 ? `<div class="no-results-message">
+        ASPM does not hold result data for this project
+    </div>` :
+                        `<div class="ditales"
     data-bs-toggle="tooltip" data-bs-placement="auto"
 	title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
 	
 		<div class="ellipsis"><i class="codicon codicon-project"></i>Project: ${projectName ?? ""
-                }</div>
+                        }</div>
 		<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""
-                }</div>
+                        }</div>
 	</div>
 
 
@@ -185,8 +235,8 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
 </div>
   
 	<div class="app-header">
-		<img src="${unionIcon}"/> ${applications.applicationNameIDMap.length
-                } Applications
+		<img src="${unionIcon}"/> ${ASPMResults.applicationNameIDMap.length
+                        } Applications
 	</div>
 	<div class="accordion" id="applicationsContainer"></div>
 	`}</div>

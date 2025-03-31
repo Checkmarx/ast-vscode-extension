@@ -34,9 +34,9 @@ export class AstResultsProvider extends ResultsProvider {
   ) {
     super(context, statusBarItem);
     this.loadedResults = undefined;
-    
+
     this.risksManagementView = new RisksManagementView(context.extensionUri, context);
-    
+
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         'risksMeneg',
@@ -97,20 +97,18 @@ export class AstResultsProvider extends ResultsProvider {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan?.id) {
         this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan?.id)
-            .catch((error) => {
-              this.logs.error(`Error reading results: ${error.message}`);
-              return undefined;
-            });
-            
-      // Update the risks management webview with project info
-      const projectItem = getFromState(this.context, constants.projectIdKey);
-        this.risksManagementView.updateContent(projectItem,this.scan);
-      
+          .catch((error) => {
+            this.logs.error(`Error reading results: ${error.message}`);
+            return undefined;
+          });
+
+
+
       }
       // otherwise the results must be cleared
       else {
         this.loadedResults = undefined;
-        this.risksManagementView.updateContent(undefined,undefined);
+        this.risksManagementView.updateContent(undefined, undefined, undefined);
 
       }
     }
@@ -125,6 +123,11 @@ export class AstResultsProvider extends ResultsProvider {
 
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
+
+      // Update the risks management webview with project info
+      const projectItem = getFromState(this.context, constants.projectIdKey);
+      this.risksManagementView.updateContent(projectItem, this.scan, this.loadedResults);
+
       const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);
 
@@ -133,12 +136,12 @@ export class AstResultsProvider extends ResultsProvider {
       }
 
       const treeItem = this.groupBy(
-          this.loadedResults,
-          this.groupByCommand.activeGroupBy,
-          this.scan?.id,
-          this.diagnosticCollection,
-          this.filterCommand.getAtiveSeverities(),
-          this.filterCommand.getActiveStates()
+        this.loadedResults,
+        this.groupByCommand.activeGroupBy,
+        this.scan?.id,
+        this.diagnosticCollection,
+        this.filterCommand.getAtiveSeverities(),
+        this.filterCommand.getActiveStates()
       );
       treeItem.label = "Scan"; // `${constants.scanLabel}`;
 
