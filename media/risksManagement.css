@@ -75,7 +75,7 @@ body {
 
 .results-count {
     margin-right: 10px;
-    color: #bbb;
+    opacity: 0.7;
 }
 
 .risk-score {
@@ -167,6 +167,13 @@ hr.separator {
     margin-bottom: 6px;
 }
 
+hr.separator-vertical {
+    border: none;
+    height: 10px;
+    width: 1px;
+    background-color: var(--cx-main-color);
+}
+
 .filter-section {
     display: flex;
     align-items: flex-start;
@@ -230,7 +237,7 @@ svg {
 }
 
 .no-results-message {
-    color: filtef;
+    opacity: 0.7;
 }
 
 .loading {
@@ -251,4 +258,50 @@ svg {
 
 .error-message img {
     margin-bottom: -2.24px;
+}
+.sort-menu-container {
+    position: relative;
+}
+
+.sort-button {
+    background: transparent;
+    color: var(--cx-main-color);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    padding: 0px;
+}
+
+.sort-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--vscode-input-background);
+    border: 1px solid #3f3f3f;
+    border-radius: 4px;
+    z-index: 1000;
+    width: 150px;
+    display: none;
+}
+
+.sort-menu.show {
+    display: block;
+}
+
+.sort-option {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--cx-main-color);
+}
+
+.sort-option:hover {
+    background: var(--vscode-input-background);
+    filter: brightness(1.2);
+}
+
+.sort-display-option {
+    opacity: 0.7;
 }

@@ -7,6 +7,9 @@
             '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1.99067 2.18481C3.27904 2.0892 4.54817 1.64712 5.65857 0.858561C5.8624 0.713813 6.13757 0.713813 6.3414 0.858561C7.4518 1.64712 8.72093 2.0892 10.0093 2.18481C10.3037 2.20666 10.5437 2.44729 10.54 2.74247C10.4536 9.51946 8.70871 10.2136 6.21672 11.2049L6.19899 11.212C6.07146 11.2627 5.92851 11.2627 5.80098 11.212L5.78325 11.2049C3.29126 10.2136 1.54636 9.51946 1.46 2.74247C1.45624 2.44729 1.69628 2.20666 1.99067 2.18481Z" fill="#F9AE4D"/> <path d="M3.65576 3.80813H4.77072L5.94831 6.68112H5.99842L7.17601 3.80813H8.29097V8.08421H7.41404V5.301H7.37854L6.27194 8.06333H5.67479L4.56819 5.29056H4.53269V8.08421H3.65576V3.80813Z" fill="white"/> </svg>',
         low: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1.99069 2.18481C3.27906 2.0892 4.54818 1.64712 5.65859 0.858561C5.86241 0.713813 6.13759 0.713813 6.34141 0.858561C7.45182 1.64712 8.72094 2.0892 10.0093 2.18481C10.3037 2.20666 10.5437 2.44729 10.54 2.74247C10.4536 9.51946 8.70873 10.2136 6.21674 11.2049L6.199 11.212C6.07147 11.2627 5.92853 11.2627 5.801 11.212L5.78327 11.2049C3.29127 10.2136 1.54638 9.51946 1.46002 2.74247C1.45626 2.44729 1.6963 2.20666 1.99069 2.18481Z" fill="#419128"/> <path d="M4.70366 8.08421V3.80813H5.60773V7.33882H7.44093V8.08421H4.70366Z" fill="white"/> </svg>',
     };
+
+    let currentSortMethod = 'score';
+
     console.log("Risks Management script loaded");
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -18,15 +21,84 @@
             renderTypeFilters(rawTypes, displayNames, previousState.results);
             document.getElementById("loading").classList.add("hidden");
         }
+
+        setupSortMenu();
     });
 
+    function setupSortMenu() {
+        const sortButton = document.getElementById('sortButton');
+        const sortMenu = document.getElementById('sortMenu');
+        const currentSortText = document.getElementById('currentSort');
+        if (!sortButton) {
+            return;
+        }
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sortButton.contains(e.target)) {
+                sortMenu.classList.remove('show');
+            }
+        });
 
+        // Toggle menu
+        sortButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sortMenu.classList.toggle('show');
+            addIconToActiveOption(); // Add this line
+        });
+        const sortDisplayName = {
+            score: "Score",
+            az: "A-Z",
+            za: "Z-A"
+        }
+        // Handle sort options
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const sortType = option.dataset.sort;
+                currentSortMethod = sortType;
+                currentSortText.innerHTML = `<span class="sort-display-option">Sort By: </span> ${sortDisplayName[sortType]}`;
+                // currentSortText.textContent = ``;
+
+                sortMenu.classList.remove('show');
+
+                const results = vscode.getState()?.results;
+                if (results) {
+                    results.applicationNameIDMap = sortApplications(results.applicationNameIDMap, sortType);
+                    renderApplications(results);
+                }
+            });
+        });
+    }
+    function addIconToActiveOption() {
+        document.querySelectorAll('.sort-option').forEach(option => {
+            if (option.dataset.sort === currentSortMethod) {
+                option.innerHTML = `<span style="display: flex; justify-content: space-between;"><span>${option.textContent.replace('✓', '').trim()}</span><span>✓</span></span>`;
+            } else {
+                option.textContent = option.textContent.replace('✓', '').trim();
+            }
+        });
+    }
+
+    function sortApplications(applications, sortType) {
+        return [...applications].sort((a, b) => {
+            switch (sortType) {
+                case 'score':
+                    return b.score - a.score;
+                case 'az':
+                    return a.applicationName.localeCompare(b.applicationName);
+                case 'za':
+                    return b.applicationName.localeCompare(a.applicationName);
+                default:
+                    return 0;
+            }
+        });
+    }
 
     window.addEventListener("message", (event) => {
         const message = event.data;
         switch (message.command) {
             case "getRiskManagementResults": {
                 const results = message.data;
+                results.applicationNameIDMap = sortApplications(results.applicationNameIDMap, currentSortMethod);
                 renderApplications(results);
 
                 const { rawTypes, displayNames } = extractFilterValues(results);
@@ -148,37 +220,33 @@
         }
         container.innerHTML = "";
 
-        results.applicationNameIDMap.forEach((app, index) => {
+        const sortedApplications = sortApplications(results.applicationNameIDMap, currentSortMethod);
+
+        sortedApplications.forEach((app, index) => {
             const appID = "collapse" + index;
             const isFirst = index === 0 ? "show" : "";
 
             const appElement = document.createElement("div");
 
             const matchingResults = results.results.map((result) => {
-
                 const matchedScore = result.applicationsScores.find(s => s.applicationID === app.applicationID)?.score;
                 const isSCA = result.engine.toLowerCase() === "sca";
                 const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
 
                 const resultElement = document.createElement("div");
                 resultElement.className = `result${isSCA ? " disabled-result" : ""}`;
-                resultElement.setAttribute("data-tooltip", tooltip);
+
+                let score = matchedScore || result.riskScore;
+                score = Number.isInteger(score) ? score + '.0' : score;
 
                 resultElement.innerHTML = `
-                        <span class="risk-score ${{
-                        critical: "critical-risk",
-                        high: "high-risk",
-                        medium: "medium-risk",
-                        low: "low-risk",
-                    }[result.severity] || ""
-                    }">
-                            <span>${icons[result.severity]}</span> 
-                            <span>${matchedScore !== 0 ? matchedScore : result.riskScore}</span> 
-                        </span>
-                        <span class="ellipsis"> ${result.name}</span>
-                    `;
+                    <span class="risk-score ${result.severity}-risk">
+                        <span>${icons[result.severity]}</span> 
+                        <span>${score}</span> 
+                    </span>
+                    <span class="ellipsis" ${isSCA ? tooltip : ""}> ${result.name}</span>
+                `;
 
-                // הוספת event listener רק אם זה לא SCA
                 if (!isSCA) {
                     resultElement.addEventListener("click", () => {
                         vscode.postMessage({
@@ -190,39 +258,36 @@
 
                 return resultElement;
             });
+            const score = Number.isInteger(app.score) ? app.score + '.0' : app.score;
 
             appElement.innerHTML = `
-                        <div>
-                            <button class="collapsed custom-header" type="button" data-bs-toggle="collapse" data-bs-target="#${appID}">
-                                <span class="index">${index + 1}</span>
-                                <span class="app-name ellipsis">${app.applicationName
-                }</span>
-                                <span class="results-count" data-bs-toggle="tooltip" data-bs-placement="top" title ="Number of risks">${matchingResults.length
-                }</span>
-                <span class="risk-score ${getRiskName(app.score)}-risk">
-    <span>${icons[getRiskName(app.score)]}</span> <span>${app.score}</span>
-</span>
-                            </button>
-                        </div>
-                        <div id="${appID}" class="accordion-collapse collapse ${isFirst}" data-bs-parent="#applicationsContainer">
-                            <div class="accordion-body results"></div>
-                        </div>
-                    `;
+                <div>
+                    <button class="collapsed custom-header" type="button" data-bs-toggle="collapse" data-bs-target="#${appID}">
+                        <span class="index">${index + 1}</span>
+                        <span class="app-name ellipsis">${app.applicationName}</span>
+                        <span class="results-count" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of risks">${matchingResults.length}</span>
+                        <span class="risk-score ${getRiskName(app.score)}-risk">
+                            <span>${icons[getRiskName(score)]}</span> <span>${score}</span>
+                        </span>
+                    </button>
+                </div>
+                <div id="${appID}" class="accordion-collapse collapse ${isFirst}" data-bs-parent="#applicationsContainer">
+                    <div class="accordion-body results"></div>
+                </div>
+            `;
 
             const resultsContainer = appElement.querySelector(".results");
-
-            resultsContainer.innerHTML = ""; // Clear previous content
+            resultsContainer.innerHTML = "";
             matchingResults.forEach(element => resultsContainer.appendChild(element));
-
 
             if (index === results.applicationNameIDMap.length - 1) {
                 resultsContainer.style.maxHeight = "unset";
             }
 
             container.appendChild(appElement);
-
-            enableBootstrapTooltips();
         });
+
+        enableBootstrapTooltips();
     }
 
     function enableBootstrapTooltips() {

@@ -158,6 +158,7 @@ if (riskManagementResults === undefined) {
         const scriptUri = this.setWebUri("media", "risksManagement.js");
         const styleUri = this.setWebUri("media", "risksManagement.css");
         const unionIcon = this.setWebUri("media", "icons", "union.svg");
+        const sortIcon = this.setWebUri("media", "icons", "sort.svg");
         const codiconsUri = this.setWebUri(
             "node_modules",
             "@vscode/codicons",
@@ -235,9 +236,22 @@ if (riskManagementResults === undefined) {
 </div>
   
 	<div class="app-header">
-		<img src="${unionIcon}"/> ${ASPMResults.applicationNameIDMap.length
-                        } Applications
-	</div>
+    <img src="${unionIcon}"/> ${ASPMResults.applicationNameIDMap.length} Applications
+ <hr class="separator-vertical" />
+    <div class="sort-menu-container">
+        <button class="sort-button" id="sortButton">
+            <img src="${sortIcon}"/>
+            <span id="currentSort">Sort By: Score</span>
+            <i class="codicon codicon-chevron-down"></i>
+        </button>
+        <div class="sort-menu" id="sortMenu">
+            <div class="sort-option" data-sort="score">Aplication Risk Score</div>
+            <div class="sort-option" data-sort="az">Aplication Name A-Z</div>
+            <div class="sort-option" data-sort="za">Aplication Name Z-A</div>
+        </div>
+    </div>
+</div>
+
 	<div class="accordion" id="applicationsContainer"></div>
 	`}</div>
 	<script nonce="${nonce}">
