@@ -3,7 +3,6 @@ import { getNonce, getResultsFilePath, readResultsFromFile } from "../../utils/u
 import { RisksManagementService } from "./risksManagementService";
 import { getFromState, Item } from "../../utils/common/globalState";
 import { commands } from "../../utils/common/commands";
-import { AstResultsProvider } from "../resultsView/astResultsProvider";
 import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
 
@@ -38,9 +37,6 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
                     const result = await this.findResultByHash(hash, type);
                     if (result) {
                         const astResult = new AstResult(result);
-                        // if (!astResult || !astResult.typeLabel) {
-                        //   return;
-                        // }
                         await vscode.commands.executeCommand(
                             commands.newDetails,
                             astResult
@@ -59,7 +55,7 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
         this.updateContent(projectItem, scan, this.cxResults);
     }
 
-    
+
 
     private async findResultByHash(hash: string, type): Promise<any> {
         if (type === constants.sast) {
@@ -81,7 +77,10 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
                 undefined,
                 undefined,
                 false,
-                { applicationNameIDMap: [] }
+                {
+                    applicationNameIDMap: [],
+                    results: undefined
+                }
             );
             this.view.webview.postMessage({ command: "hideLoader" });
             return;
@@ -95,17 +94,17 @@ export class RisksManagementView implements vscode.WebviewViewProvider {
             const scanToDisplay = exctarctData(scan.displayScanId, "Scan:");
             const riskManagementResults =
                 await this.risksManagementService.getRiskManagementResults(project.id);
-if (riskManagementResults === undefined) {
-    console.log("Error: No results found for the given project ID.");
-    
+            if (riskManagementResults === undefined) {
+                console.log("Error: No results found for the given project ID.");
+
                 return;
-    
-}
+
+            }
             this.view.webview.html = this.getWebviewContent(
                 projectToDisplay,
                 scanToDisplay,
                 isLatestScan,
-                riskManagementResults as { applicationNameIDMap: any[] }
+                riskManagementResults as { results: any; applicationNameIDMap: any[]; }
             );
             this.view.webview.postMessage({
                 command: "getRiskManagementResults",
