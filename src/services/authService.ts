@@ -530,7 +530,6 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </head>
       <body>
           <div class="modal">
-              <button class="close-button" onclick="window.close()">×</button>
               <h1>You're All Set with Checkmarx!</h1>
               <div class="icon-container">
                   <div class="icon">
@@ -616,13 +615,11 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </head>
       <body>
           <div class="modal">
-              <button class="close-button" onclick="window.close()">×</button>
               <h1>Authentication Failed</h1>
               <div class="icon-container">
                   <span class="error-icon">❌</span>
               </div>
               <p class="message">${errorMessage}</p>
-              <button class="close-btn" onclick="window.close()">Close</button>
           </div>
       </body>
       </html>
