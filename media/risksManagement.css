@@ -13,9 +13,8 @@ body {
 
 .custom-header {
     text-align: left;
-    background: var(--vscode-input-background);
+    background: var(--vscode-textPreformat-background);
     color: var(--cx-main-color);
-    filter: brightness(1.2);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -37,8 +36,7 @@ body {
 }
 
 .result:hover {
-    background: var(--vscode-input-background);
-    filter: brightness(1.2);
+    background: var(--vscode-textPreformat-background);
 }
 
 .results {
@@ -134,6 +132,11 @@ button:hover {
 
 svg {
     vertical-align: text-top;
+    color: var(--cx-main-color);
+}
+
+.sort-button svg {
+    vertical-align: top;
 }
 
 .ditales {
@@ -298,8 +301,7 @@ svg {
 }
 
 .sort-option:hover {
-    background: var(--vscode-input-background);
-    filter: brightness(1.2);
+    background: var(--vscode-textPreformat-background);
 }
 
 .sort-display-option {

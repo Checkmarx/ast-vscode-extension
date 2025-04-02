@@ -214,11 +214,16 @@
     }
 
     function renderApplications(results) {
-        const container = document.getElementById("applicationsContainer");
+         const container = document.getElementById("applicationsContainer");
         if (!container) {
             return;
         }
+
+        window.requestAnimationFrame(() => {
+       
         container.innerHTML = "";
+
+        const fragment = document.createDocumentFragment();
 
         const sortedApplications = sortApplications(results.applicationNameIDMap, currentSortMethod);
 
@@ -226,68 +231,93 @@
             const appID = "collapse" + index;
             const isFirst = index === 0 ? "show" : "";
 
-            const appElement = document.createElement("div");
-
-            const matchingResults = results.results.map((result) => {
-                const matchedScore = result.applicationsScores.find(s => s.applicationID === app.applicationID)?.score;
-                const isSCA = result.engine.toLowerCase() === "sca";
-                const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
-
-                const resultElement = document.createElement("div");
-                resultElement.className = `result${isSCA ? " disabled-result" : ""}`;
-
-                let score = matchedScore || result.riskScore;
-                score = Number.isInteger(score) ? score + '.0' : score;
-
-                resultElement.innerHTML = `
-                    <span class="risk-score ${result.severity}-risk">
-                        <span>${icons[result.severity]}</span> 
-                        <span>${score}</span> 
-                    </span>
-                    <span class="ellipsis" ${isSCA ? tooltip : ""}> ${result.name}</span>
-                `;
-
-                if (!isSCA) {
-                    resultElement.addEventListener("click", () => {
-                        vscode.postMessage({
-                            command: "openVulnerabilityDetails",
-                            result: result,
-                        });
-                    });
-                }
-
-                return resultElement;
-            });
-            const score = Number.isInteger(app.score) ? app.score + '.0' : app.score;
-
-            appElement.innerHTML = `
-                <div>
-                    <button class="collapsed custom-header" type="button" data-bs-toggle="collapse" data-bs-target="#${appID}">
-                        <span class="index">${index + 1}</span>
-                        <span class="app-name ellipsis">${app.applicationName}</span>
-                        <span class="results-count" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of risks">${matchingResults.length}</span>
-                        <span class="risk-score ${getRiskName(app.score)}-risk">
-                            <span>${icons[getRiskName(score)]}</span> <span>${score}</span>
-                        </span>
-                    </button>
-                </div>
-                <div id="${appID}" class="accordion-collapse collapse ${isFirst}" data-bs-parent="#applicationsContainer">
-                    <div class="accordion-body results"></div>
-                </div>
-            `;
-
+            const matchingResults = createMatchingResults(results, app);
+            
+            const appElement = createAppElement(app, index, appID, isFirst, matchingResults.length);
             const resultsContainer = appElement.querySelector(".results");
             resultsContainer.innerHTML = "";
+
+
             matchingResults.forEach(element => resultsContainer.appendChild(element));
 
             if (index === results.applicationNameIDMap.length - 1) {
                 resultsContainer.style.maxHeight = "unset";
             }
 
-            container.appendChild(appElement);
+            fragment.appendChild(appElement);
         });
-
+        container.appendChild(fragment);
         enableBootstrapTooltips();
+    });
+    }
+
+    function createAppElement(app, index, appID, isFirst, matchingResultsLenght) {
+        const appElement = document.createElement("div");
+
+        appElement.innerHTML = `
+            <div>
+                <button class="collapsed custom-header" type="button" data-bs-toggle="collapse" data-bs-target="#${appID}">
+                    <span class="index">${index + 1}</span>
+                    <span class="app-name ellipsis">${app.applicationName}</span>
+                    <span class="results-count" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of risks">${matchingResultsLenght}</span>
+                    <span class="risk-score ${getRiskName(app.score)}-risk">
+                        <span>${icons[getRiskName(app.score)]}</span> <span>${formatScore(app.score)}</span>
+                    </span>
+                </button>
+            </div>
+            <div id="${appID}" class="accordion-collapse collapse ${isFirst}" data-bs-parent="#applicationsContainer">
+                <div class="accordion-body results"></div>
+            </div>
+        `;
+        return appElement;
+    }
+
+    function createMatchingResults(results, app) {
+        return results.results.map((result) => {
+            const matchedScore = getMatchedScore(result, app.applicationID);
+            
+            const isSCA = result.engine.toLowerCase() === "sca";
+            const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
+
+            const resultElement = createResultElement(result, matchedScore, isSCA, tooltip);
+
+            if (!isSCA) {
+                resultElement.addEventListener("click", () => {
+                    vscode.postMessage({
+                        command: "openVulnerabilityDetails",
+                        result: result,
+                    });
+                });
+            }
+
+            return resultElement;
+        });
+    }
+
+    function getMatchedScore(result, applicationID) {
+        const matchedScore = result.applicationsScores.find(s => s.applicationID === applicationID)?.score;
+        return matchedScore || result.riskScore;
+    }
+
+    function createResultElement(result, score, isSCA, tooltip) {
+        const resultElement = document.createElement("div");
+        resultElement.className = `result${isSCA ? " disabled-result" : ""}`;
+
+        score = formatScore(score);
+
+        resultElement.innerHTML = `
+            <span class="risk-score ${result.severity}-risk">
+                <span>${icons[result.severity]}</span> 
+                <span>${score}</span> 
+            </span>
+            <span class="ellipsis" ${isSCA ? tooltip : ""}> ${result.name}</span>
+        `;
+        return resultElement;
+
+    }
+
+    function formatScore(score) {
+        return Number.isInteger(score) ? score + '.0' : score;
     }
 
     function enableBootstrapTooltips() {
