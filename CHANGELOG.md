@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.31.1-2.31.1-ASMP-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-ASMP-demo.0) - 2025-03-31 14:17:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-oath-latest.0...v2.31.1-2.31.1-ASMP-demo.0
+
 ## [v2.31.1-oath-latest.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oath-latest.0) - 2025-03-27 13:32:03
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
