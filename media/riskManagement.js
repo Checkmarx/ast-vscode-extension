@@ -10,8 +10,6 @@
 
     let currentSortMethod = 'score';
 
-    console.log("Risks Management script loaded");
-
     window.addEventListener("DOMContentLoaded", () => {
         const previousState = vscode.getState();
 
@@ -49,7 +47,7 @@
             score: "Score",
             az: "A-Z",
             za: "Z-A"
-        }
+        };
         // Handle sort options
         document.querySelectorAll('.sort-option').forEach(option => {
             option.addEventListener('click', () => {
@@ -108,12 +106,12 @@
             }
             case 'showLoader': {
                 document.getElementById("loading").classList.remove("hidden");
-                document.getElementById("risksManagementContainer").classList.add("hidden");
+                document.getElementById("riskManagementContainer").classList.add("hidden");
                 break;
             }
             case 'hideLoader': {
                 document.getElementById("loading").classList.add("hidden");
-                document.getElementById("risksManagementContainer").classList.remove("hidden");
+                document.getElementById("riskManagementContainer").classList.remove("hidden");
                 break;
             }
         }
@@ -214,41 +212,41 @@
     }
 
     function renderApplications(results) {
-         const container = document.getElementById("applicationsContainer");
+        const container = document.getElementById("applicationsContainer");
         if (!container) {
             return;
         }
 
         window.requestAnimationFrame(() => {
-       
-        container.innerHTML = "";
 
-        const fragment = document.createDocumentFragment();
+            container.innerHTML = "";
 
-        const sortedApplications = sortApplications(results.applicationNameIDMap, currentSortMethod);
+            const fragment = document.createDocumentFragment();
 
-        sortedApplications.forEach((app, index) => {
-            const appID = "collapse" + index;
-            const isFirst = index === 0 ? "show" : "";
+            const sortedApplications = sortApplications(results.applicationNameIDMap, currentSortMethod);
 
-            const matchingResults = createMatchingResults(results, app);
-            
-            const appElement = createAppElement(app, index, appID, isFirst, matchingResults.length);
-            const resultsContainer = appElement.querySelector(".results");
-            resultsContainer.innerHTML = "";
+            sortedApplications.forEach((app, index) => {
+                const appID = "collapse" + index;
+                const isFirst = index === 0 ? "show" : "";
+
+                const matchingResults = createMatchingResults(results, app);
+
+                const appElement = createAppElement(app, index, appID, isFirst, matchingResults.length);
+                const resultsContainer = appElement.querySelector(".results");
+                resultsContainer.innerHTML = "";
 
 
-            matchingResults.forEach(element => resultsContainer.appendChild(element));
+                matchingResults.forEach(element => resultsContainer.appendChild(element));
 
-            if (index === results.applicationNameIDMap.length - 1) {
-                resultsContainer.style.maxHeight = "unset";
-            }
+                if (index === results.applicationNameIDMap.length - 1) {
+                    resultsContainer.style.maxHeight = "unset";
+                }
 
-            fragment.appendChild(appElement);
+                fragment.appendChild(appElement);
+            });
+            container.appendChild(fragment);
+            enableBootstrapTooltips();
         });
-        container.appendChild(fragment);
-        enableBootstrapTooltips();
-    });
     }
 
     function createAppElement(app, index, appID, isFirst, matchingResultsLenght) {
@@ -275,7 +273,7 @@
     function createMatchingResults(results, app) {
         return results.results.map((result) => {
             const matchedScore = getMatchedScore(result, app.applicationID);
-            
+
             const isSCA = result.engine.toLowerCase() === "sca";
             const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
 

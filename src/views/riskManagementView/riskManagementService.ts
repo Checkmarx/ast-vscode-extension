@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 import { cx } from '../../cx/index';
 
-export class RisksManagementService {
-    private static instance: RisksManagementService;
+export class riskManagementService {
+    private static instance: riskManagementService;
     private context: vscode.ExtensionContext;
     private constructor(extensionContext: vscode.ExtensionContext) {
         this.context = extensionContext;
     }
 
-    public static getInstance(extensionContext: vscode.ExtensionContext): RisksManagementService {
+    public static getInstance(extensionContext: vscode.ExtensionContext): riskManagementService {
         if (!this.instance) {
-            this.instance = new RisksManagementService(extensionContext);
+            this.instance = new riskManagementService(extensionContext);
         }
         return this.instance;
     }

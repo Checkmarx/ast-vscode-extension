@@ -16,13 +16,13 @@ import { messages } from "../../utils/common/messages";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
-import { RisksManagementView } from '../risksManagementView/risksManagementView';
+import { riskManagementView } from '../riskManagementView/riskManagementView';
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
   public loadedResults: CxResult[];
   private scan: Item | undefined;
-  private risksManagementView: RisksManagementView;
+  private riskManagementView: riskManagementView;
 
   constructor(
     protected readonly context: vscode.ExtensionContext,
@@ -35,12 +35,12 @@ export class AstResultsProvider extends ResultsProvider {
     super(context, statusBarItem);
     this.loadedResults = undefined;
 
-    this.risksManagementView = new RisksManagementView(context.extensionUri, context);
+    this.riskManagementView = new riskManagementView(context.extensionUri, context);
 
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
-        'risksMeneg',
-        this.risksManagementView
+        'riskManagement',
+        this.riskManagementView
       )
     );
 
@@ -108,7 +108,7 @@ export class AstResultsProvider extends ResultsProvider {
       // otherwise the results must be cleared
       else {
         this.loadedResults = undefined;
-        this.risksManagementView.updateContent(undefined, undefined, undefined);
+        this.riskManagementView.updateContent(undefined, undefined, undefined);
 
       }
     }
@@ -126,7 +126,7 @@ export class AstResultsProvider extends ResultsProvider {
 
       // Update the risks management webview with project info
       const projectItem = getFromState(this.context, constants.projectIdKey);
-      this.risksManagementView.updateContent(projectItem, this.scan, this.loadedResults);
+      this.riskManagementView.updateContent(projectItem, this.scan, this.loadedResults);
 
       const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);
