@@ -68,9 +68,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         if (type === constants.sast) {
             return this.cxResults.find(result => result.data.resultHash === hash);
         }
-        if (type === constants.kics) {
-            return this.cxResults.find(result => result.id === hash);
-        }
     }
 
     public async updateContent(project?: Item, scan?: Item, cxResults?: CxResult[]) {

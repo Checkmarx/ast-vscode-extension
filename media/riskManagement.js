@@ -274,12 +274,12 @@
         return results.results.map((result) => {
             const matchedScore = getMatchedScore(result, app.applicationID);
 
-            const isSCA = result.engine.toLowerCase() === "sca";
-            const tooltip = isSCA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
+            const isNA = result.engine.toLowerCase() === "sca" || result.engine.toLowerCase() === "kics";
+            const tooltip = isNA ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"' : "";
 
-            const resultElement = createResultElement(result, matchedScore, isSCA, tooltip);
+            const resultElement = createResultElement(result, matchedScore, isNA, tooltip);
 
-            if (!isSCA) {
+            if (!isNA) {
                 resultElement.addEventListener("click", () => {
                     vscode.postMessage({
                         command: "openVulnerabilityDetails",
