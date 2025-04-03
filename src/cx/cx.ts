@@ -18,12 +18,12 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 
 export class Cx implements CxPlatform {
-    private context: vscode.ExtensionContext;
+  private context: vscode.ExtensionContext;
 
-    constructor(context: vscode.ExtensionContext) {
-        this.context = context;
-    }
-  
+  constructor(context: vscode.ExtensionContext) {
+    this.context = context;
+  }
+
   async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
     const cx = new CxWrapper(this.getBaseAstConfiguration());
     let jsonResults = undefined;
@@ -257,14 +257,16 @@ export class Cx implements CxPlatform {
 
   async getScans(
     projectId: string | undefined,
-    branch: string | undefined
+    branch: string | undefined,
+    limit = 10000,
+    statuses = "Completed"
   ): Promise<CxScan[] | undefined> {
     let r = [];
     const config = await this.getAstConfiguration();
     if (!config) {
       return [];
     }
-    const filter = `project-id=${projectId},branch=${branch},limit=10000,statuses=Completed`;
+    const filter = `project-id=${projectId},${branch ? `branch=${branch},` : ""}limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
@@ -287,55 +289,54 @@ export class Cx implements CxPlatform {
 
   async getAstConfiguration() {
     const token = await this.context.secrets.get("authCredential");
-    console.log("Token from secrets:", token);
 
     if (!token) {
-        return undefined;
+      return undefined;
     }
 
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
-}
+  }
 
 
   async isScanEnabled(logs: Logs): Promise<boolean> {
     let enabled = false;
     const token = await this.context.secrets.get("authCredential");
     if (!token) {
-        return enabled;
+      return enabled;
     }
     const config = new CxConfig();
     config.apiKey = token;
     const cx = new CxWrapper(config);
     try {
-        enabled = await cx.ideScansEnabled();
+      enabled = await cx.ideScansEnabled();
     } catch (error) {
-        const errMsg = `Error checking tenant configuration: ${error}`;
-        logs.error(errMsg);
-        return enabled;
+      const errMsg = `Error checking tenant configuration: ${error}`;
+      logs.error(errMsg);
+      return enabled;
     }
     return enabled;
-}
-
- 
-async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
-  let enabled = true;
-  const token = await this.context.secrets.get("authCredential");
-  if (!token) {
-      return enabled;
   }
-  const config = new CxConfig();
-  config.apiKey = token;
-  const cx = new CxWrapper(config);
-  try {
+
+
+  async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
+    let enabled = true;
+    const token = await this.context.secrets.get("authCredential");
+    if (!token) {
+      return enabled;
+    }
+    const config = new CxConfig();
+    config.apiKey = token;
+    const cx = new CxWrapper(config);
+    try {
       enabled = await cx.guidedRemediationEnabled();
-  } catch (error) {
+    } catch (error) {
       logs.error(error);
       return false;
+    }
+    return enabled;
   }
-  return enabled;
-}
 
   async isSCAScanEnabled(): Promise<boolean> {
     const enabled = true;
@@ -609,5 +610,18 @@ async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
       vscode.window.showErrorMessage(authFailedMsg);
       return false;
     }
+  }
+
+  async getRiskManagementResults(projectId: string): Promise<object | undefined> {
+    const config = await this.getAstConfiguration();
+    const cx = new CxWrapper(config);
+    const applications = await cx.riskManagementResults(projectId);
+    let r = [];
+    if (applications.payload) {
+      r = applications.payload;
+    } else {
+      throw new Error(applications.status);
+    }
+    return r;
   }
 }
