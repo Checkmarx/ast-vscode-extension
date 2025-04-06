@@ -68,7 +68,7 @@ export class GptView implements vscode.WebviewViewProvider {
 			vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
 		);
 		const scriptJquery = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.0.min.js")
+			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.1.min.js")
 		);
 		const styleResetUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
