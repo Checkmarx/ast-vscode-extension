@@ -89,7 +89,7 @@ export class AstResultsProvider extends ResultsProvider {
     this.diagnosticCollection.clear();
     // createBaseItems
     let treeItems = this.createRootItems();
-    // get scanID from state
+    // get scan from state
     this.scan = getFromState(this.context, constants.scanIdKey);
     const fromTriage = getFromState(this.context, constants.triageUpdate)?.id;
     // Case we come from triage we want to use the loaded results wich were modified in triage

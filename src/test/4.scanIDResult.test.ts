@@ -8,7 +8,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize } from "./utils/utils";
+import { getDetailsView, getResults, initialize, sleep } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
@@ -50,6 +50,10 @@ describe("Scan ID load results test", () => {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     let result = await getResults(sastNode);
+    sleep(5000);
+    if (!result) {
+      result = await getResults(sastNode);
+    }
     let resultName = await result[0].getLabel();
     await result[0].click();
     // Open details view
@@ -73,7 +77,11 @@ describe("Scan ID load results test", () => {
 
   it("should click on details Learn More tab", async function () {
     // Open details view
-    const detailsView = await getDetailsView();
+    sleep(5000)
+    let detailsView = await getDetailsView();
+    if (!detailsView) {
+      detailsView = await getDetailsView();
+    }
     // Find Learn More Tab
     let learnTab = await detailsView.findWebElement(By.id(LEARN_MORE_LABEL));
     while (learnTab === undefined) {
