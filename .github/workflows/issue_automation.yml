@@ -2,15 +2,25 @@ name: Issue automation
 
 on:
   issues:
-    types: [opened]
+    types: [opened, closed]
 
 jobs:
   notify_jira:
+    if: github.event.action == 'opened'
     name: Notify Jira
     uses: Checkmarx/plugins-release-workflow/.github/workflows/jira_notify.yml@main
     with:
       title: ${{ github.event.issue.title }}
       body: ${{ github.event.issue.body }}
       html_url: ${{ github.event.issue.html_url }}
+      repo: ${{ github.event.repository.full_name }}
+    secrets: inherit
+
+  close_jira:
+    if: github.event.action == 'closed'
+    name: Close Jira
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/jira_close.yml@main
+    with:
+      issue_number: ${{ github.event.issue.number }}
       repo: ${{ github.event.repository.full_name }}
     secrets: inherit
