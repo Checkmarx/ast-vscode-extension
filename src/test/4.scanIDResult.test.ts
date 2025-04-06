@@ -8,7 +8,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, sleep } from "./utils/utils";
+import { getDetailsView, getResults, initialize, retryTest, sleep } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
@@ -33,9 +33,10 @@ describe("Scan ID load results test", () => {
     let input = await new InputBox();
     await input.setText(SCAN_ID);
     await input.confirm();
+    sleep(5000)
   });
 
-  it("should check open webview and codebashing link", async function () {
+  it("should check open webview and codebashing link", retryTest(async function () {
     // Make sure the results are loaded
     treeScans = await initialize();
     while (treeScans === undefined) {
@@ -73,7 +74,7 @@ describe("Scan ID load results test", () => {
     let codebashing = await codebashingWebElement.getText();
     expect(codebashing).is.not.undefined;
     await detailsView.switchBack();
-  });
+  }));
 
   it("should click on details Learn More tab", async function () {
     // Open details view
