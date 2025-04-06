@@ -794,7 +794,7 @@
           "name": "Software Composition Analysis (SCA)"
         },
         {
-          "id": "risksMeneg",
+          "id": "riskManagement",
           "type": "webview",
           "name": "Checkmarx ASPM Results"
         },
