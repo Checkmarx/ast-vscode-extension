@@ -196,7 +196,6 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
             server.close();
             return ""; 
           }
-          // Now we get both the code and response object
           const { code, res } = await this.waitForCode(server);
           const token = await this.getRefreshToken(code, config);
           // Save token 

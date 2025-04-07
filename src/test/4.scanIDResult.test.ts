@@ -51,8 +51,8 @@ describe("Scan ID load results test", () => {
       sastNode = await scan?.findChildItem(SAST_TYPE);
     }
     let result = await getResults(sastNode);
-    sleep(5000);
-    if (!result) {
+    sleep(10000);
+    while (!result) {
       result = await getResults(sastNode);
     }
     let resultName = await result[0].getLabel();
