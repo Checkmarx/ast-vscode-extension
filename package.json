@@ -953,7 +953,7 @@
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.127",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.128",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
@@ -967,7 +967,8 @@
   "overrides": {
     "prebuild-install": "^7.1.1",
     "bluebird": "^3.7.2",
-    "xml2js": "^0.6.2"
+    "xml2js": "^0.6.2",
+    "tar-fs": "^2.1.2"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
