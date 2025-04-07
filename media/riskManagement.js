@@ -54,7 +54,6 @@
                 const sortType = option.dataset.sort;
                 currentSortMethod = sortType;
                 currentSortText.innerHTML = `<span class="sort-display-option">Sort By: </span> ${sortDisplayName[sortType]}`;
-                // currentSortText.textContent = ``;
 
                 sortMenu.classList.remove('show');
 
@@ -124,18 +123,7 @@
         });
     }
 
-    function getRiskName(score) {
-        if (score === 10) {
-            return "critical";
-        }
-        if (score >= 7) {
-            return "high";
-        }
-        if (score >= 3) {
-            return "medium";
-        }
-        return "low";
-    }
+    function getRiskName(score) { return score === 10 ? "critical" : score >= 7  ? "high" : score >= 3  ? "medium" : "low"; }
 
     function renderTypeFilters(rawTypes, displayNames, results) {
         const container = document.getElementById("typeFilters");

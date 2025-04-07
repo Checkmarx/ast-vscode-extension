@@ -108,7 +108,7 @@ export class AstResultsProvider extends ResultsProvider {
       // otherwise the results must be cleared
       else {
         this.loadedResults = undefined;
-        this.riskManagementView.updateContent(undefined, undefined, undefined);
+        this.riskManagementView.updateContent();
 
       }
     }
@@ -125,8 +125,8 @@ export class AstResultsProvider extends ResultsProvider {
     if (this.loadedResults !== undefined) {
 
       // Update the risks management webview with project info
-      const projectItem = getFromState(this.context, constants.projectIdKey);
-      this.riskManagementView.updateContent(projectItem, this.scan, this.loadedResults);
+      const project = getFromState(this.context, constants.projectIdKey);
+      this.riskManagementView.updateContent({ project, scan: this.scan, cxResults: this.loadedResults });
 
       const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);

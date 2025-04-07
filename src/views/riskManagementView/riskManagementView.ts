@@ -38,9 +38,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         const resultJsonPath = getResultsFilePath();
         const scan = getFromState(this.context, constants.scanIdKey);
         this.cxResults = await readResultsFromFile(resultJsonPath, scan?.id);
-        const projectItem = getFromState(this.context, constants.projectIdKey);
+        const project = getFromState(this.context, constants.projectIdKey);
 
-        this.updateContent(projectItem, scan, this.cxResults);
+        this.updateContent({project, scan, cxResults: this.cxResults});
     }
 
     private async handleMessage(message: { command: string; result?: { hash: string; engine: string } }): Promise<void> {
@@ -70,7 +70,13 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         }
     }
 
-    public async updateContent(project?: Item, scan?: Item, cxResults?: CxResult[]) {
+    public async updateContent(options?: {
+        project?: Item;
+        scan?: Item;
+        cxResults?: CxResult[];
+      }) {
+        const { project, scan, cxResults } = options || {};
+      
         if (!this.view) {
             return;
         }
