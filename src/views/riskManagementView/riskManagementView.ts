@@ -85,7 +85,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         const styleUri = this.setWebUri("media", "riskManagement.css");
 
         if (!(await this.isAuthenticated())) {
-            this.showAuthError(styleUri);
+            this.showMessage(styleUri, "Authentication to Chrckmarx One is required in order to get ASPM results");
             return;
         }
 
@@ -126,6 +126,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
                 data: riskManagementResults,
             });
         } catch (error) {
+            const notAvailableMessage = "Risk management results are currently unavailable for your tenant";
+            if (error.message.includes(notAvailableMessage)) {
+                this.showMessage(styleUri, notAvailableMessage);
+                return;
+            }
             this.showError(errorIcon, styleUri);
             ;
         } finally {
@@ -159,7 +164,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         return !!token;
     }
 
-    private showAuthError(styleUri) {
+    private showMessage(styleUri, message) {
         this.view.webview.html = `<!DOCTYPE html>
          <html>
            <head>
@@ -167,7 +172,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
            </head>
          <body>
              <div class="no-results-message">
-                 Authentication to Chrckmarx One is required in order to get ASPM results 
+                 ${message} 
              </div>
          </body>
          </html>`;
