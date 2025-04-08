@@ -1,17 +1,16 @@
 # CHANGELOG
 
-## [v2.31.1-test-oauth-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-logout.0) - 2025-04-07 15:03:20
+## [v2.31.1-test-oauth-logout-v1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-logout-v1.0) - 2025-04-08 06:55:37
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.128 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1086
-### Other Changes
-* Fix vulnerabilities by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1087
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-2.31.1-ASMP-demo.0...v2.31.1-test-oauth-logout.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-oauth-logout.0...v2.31.1-test-oauth-logout-v1.0
+
+## [v2.31.1-test-oauth-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-logout.0) - 2025-04-07 15:03:20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.31.1-2.31.1-ASMP-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-2.31.1-ASMP-demo.0) - 2025-03-31 14:17:31
 
