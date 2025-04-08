@@ -29,6 +29,7 @@
     });
 
     authButton.addEventListener("click", () => {
+      messageBox.style.display = "none";
 
       vscode.postMessage({
         command: "authenticate",
