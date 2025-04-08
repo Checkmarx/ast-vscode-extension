@@ -174,7 +174,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
           authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
           tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
           redirectUri: `http://localhost:${port}/checkmarx1/callback`,
-          scope: 'openid',
+          scope: 'openid offline_access', 
           codeVerifier,
           codeChallenge,
           port
@@ -182,16 +182,20 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
   
       try {
           const server = await this.startLocalServer(config);
-          vscode.env.openExternal(vscode.Uri.parse(
-              `${config.authEndpoint}?` +
-              `client_id=${config.clientId}&` +
-              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-              `response_type=code&` +
-              `scope=${config.scope}&` +
-              `code_challenge=${config.codeChallenge}&` +
-              `code_challenge_method=S256`
-          ));
-  
+    
+          const authUrl = `${config.authEndpoint}?` +
+           `client_id=${config.clientId}&` +
+           `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+           `response_type=code&` +
+           `scope=${config.scope}&` +
+           `code_challenge=${config.codeChallenge}&` +
+           `code_challenge_method=S256`;
+          
+           const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
+          if (!opened) {
+            server.close();
+            return ""; 
+          }
           // Now we get both the code and response object
           const { code, res } = await this.waitForCode(server);
           const token = await this.getRefreshToken(code, config);
@@ -526,7 +530,6 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </head>
       <body>
           <div class="modal">
-              <button class="close-button" onclick="window.close()">×</button>
               <h1>You're All Set with Checkmarx!</h1>
               <div class="icon-container">
                   <div class="icon">
@@ -612,13 +615,11 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </head>
       <body>
           <div class="modal">
-              <button class="close-button" onclick="window.close()">×</button>
               <h1>Authentication Failed</h1>
               <div class="icon-container">
                   <span class="error-icon">❌</span>
               </div>
               <p class="message">${errorMessage}</p>
-              <button class="close-btn" onclick="window.close()">Close</button>
           </div>
       </body>
       </html>

@@ -240,7 +240,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
     await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");
-    console.log(">> Mock token has been saved to secrets"); // שורת לוג
+    console.log(">> Mock token has been saved to secrets"); 
     await authService.validateAndUpdateState();
   });
 
