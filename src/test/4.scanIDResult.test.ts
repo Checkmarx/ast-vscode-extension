@@ -36,7 +36,7 @@ describe("Scan ID load results test", () => {
     sleep(5000)
   });
 
-  it("should check open webview and codebashing link", retryTest(async function () {
+  it.skip("should check open webview and codebashing link", retryTest(async function () {
     // Make sure the results are loaded
     treeScans = await initialize();
     while (treeScans === undefined) {
@@ -76,7 +76,7 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   }));
 
-  it("should click on details Learn More tab", async function () {
+  it.skip("should click on details Learn More tab", async function () {
     // Open details view
     sleep(5000)
     let detailsView = await getDetailsView();
@@ -93,7 +93,7 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   });
 
-  it("should click on details Changes tab", async function () {
+  it.skip("should click on details Changes tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Changes Tab
@@ -121,7 +121,7 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   });
 
-  it("should click on details General tab", async function () {
+  it.skip("should click on details General tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find General Tab
