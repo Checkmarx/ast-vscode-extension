@@ -138,7 +138,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         this._extensionUri,
         "media",
         "jquery",
-        "jquery-3.7.0.min.js"
+        "jquery-3.7.1.min.js"
       )
     );
     const scriptBootStrap = webview.asWebviewUri(

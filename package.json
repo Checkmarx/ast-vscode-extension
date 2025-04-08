@@ -794,6 +794,11 @@
           "name": "Software Composition Analysis (SCA)"
         },
         {
+          "id": "riskManagement",
+          "type": "webview",
+          "name": "Checkmarx ASPM Results"
+        },
+        {
           "id": "docAndFeedback",
           "type": "tree",
           "name": "Documentation & Feedback"
@@ -945,6 +950,8 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.128",
     "copyfiles": "2.4.1",

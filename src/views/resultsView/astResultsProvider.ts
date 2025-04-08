@@ -6,7 +6,7 @@ import {
 } from "../../utils/common/constants";
 import { getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { Logs } from "../../models/logs";
-import { getFromState, updateState } from "../../utils/common/globalState";
+import { getFromState, Item, updateState } from "../../utils/common/globalState";
 import { cx } from "../../cx";
 import { commands } from "../../utils/common/commands";
 import { TreeItem } from "../../utils/tree/treeItem";
@@ -16,11 +16,13 @@ import { messages } from "../../utils/common/messages";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
+import { riskManagementView } from '../riskManagementView/riskManagementView';
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
   public loadedResults: CxResult[];
-  private scan: string | undefined;
+  private scan: Item | undefined;
+  private riskManagementView: riskManagementView;
 
   constructor(
     protected readonly context: vscode.ExtensionContext,
@@ -32,6 +34,16 @@ export class AstResultsProvider extends ResultsProvider {
   ) {
     super(context, statusBarItem);
     this.loadedResults = undefined;
+
+    this.riskManagementView = new riskManagementView(context.extensionUri, context);
+
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        'riskManagement',
+        this.riskManagementView
+      )
+    );
+
     // Syncing with AST everytime the extension gets opened
     this.openRefreshData()
       .then(() => logs.info(messages.dataRefreshed));
@@ -77,22 +89,27 @@ export class AstResultsProvider extends ResultsProvider {
     this.diagnosticCollection.clear();
     // createBaseItems
     let treeItems = this.createRootItems();
-    // get scanID from state
-    this.scan = getFromState(this.context, constants.scanIdKey)?.id;
+    // get scan from state
+    this.scan = getFromState(this.context, constants.scanIdKey);
     const fromTriage = getFromState(this.context, constants.triageUpdate)?.id;
     // Case we come from triage we want to use the loaded results wich were modified in triage
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
-      if (this.scan) {
-        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan)
-            .catch((error) => {
-              this.logs.error(`Error reading results: ${error.message}`);
-              return undefined;
-            });
+      if (this.scan?.id) {
+        this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan?.id)
+          .catch((error) => {
+            this.logs.error(`Error reading results: ${error.message}`);
+            return undefined;
+          });
+
+
+
       }
       // otherwise the results must be cleared
       else {
         this.loadedResults = undefined;
+        this.riskManagementView.updateContent();
+
       }
     }
     // Case we come from triage we must update the state to load results from the correct place
@@ -106,7 +123,12 @@ export class AstResultsProvider extends ResultsProvider {
 
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
-      const newItem = new TreeItem(`${getFromState(this.context, constants.scanIdKey).scanDatetime}`, constants.calendarItem);
+
+      // Update the risks management webview with project info
+      const project = getFromState(this.context, constants.projectIdKey);
+      this.riskManagementView.updateContent({ project, scan: this.scan, cxResults: this.loadedResults });
+
+      const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);
 
       if (this.loadedResults.length !== 0) {
@@ -114,12 +136,12 @@ export class AstResultsProvider extends ResultsProvider {
       }
 
       const treeItem = this.groupBy(
-          this.loadedResults,
-          this.groupByCommand.activeGroupBy,
-          this.scan,
-          this.diagnosticCollection,
-          this.filterCommand.getAtiveSeverities(),
-          this.filterCommand.getActiveStates()
+        this.loadedResults,
+        this.groupByCommand.activeGroupBy,
+        this.scan?.id,
+        this.diagnosticCollection,
+        this.filterCommand.getAtiveSeverities(),
+        this.filterCommand.getActiveStates()
       );
       treeItem.label = "Scan"; // `${constants.scanLabel}`;
 
@@ -149,5 +171,4 @@ export class AstResultsProvider extends ResultsProvider {
       )
     ];
   }
-
 }
