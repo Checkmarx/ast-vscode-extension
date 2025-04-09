@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [v2.31.1-test-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v3.0) - 2025-03-16 08:54:09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.31.1-test-oauth-logout-v1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-oauth-logout-v1.0) - 2025-04-08 06:55:37
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -79,10 +83,6 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v3.0...v2.31.1-v4.0
-
-## [v2.31.1-test-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v3.0) - 2025-03-16 08:54:09
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.31.1-test-axios2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-axios2.0) - 2025-03-13 08:57:04
 
