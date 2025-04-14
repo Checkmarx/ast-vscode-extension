@@ -307,8 +307,6 @@ export class Cx implements CxPlatform {
       return enabled;
     }
    
-   
-    //const config = new CxConfig();
     const config = await this.getAstConfiguration();
     if (!config) {
       return enabled;
@@ -325,14 +323,13 @@ export class Cx implements CxPlatform {
     return enabled;
   }
 
-
   async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
     let enabled = true;
     const token = await this.context.secrets.get("authCredential");
     if (!token) {
       return enabled;
     }
-   // const config = new CxConfig();
+
     const config = await this.getAstConfiguration();
     if (!config) {
       return enabled;
