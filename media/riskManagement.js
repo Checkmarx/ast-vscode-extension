@@ -23,6 +23,7 @@
     }
 
     setupSortMenu();
+    setupFilterMenu();
   });
 
   function setupSortMenu() {
@@ -42,16 +43,8 @@
     // Toggle menu
     sortButton.addEventListener("click", (e) => {
       e.stopPropagation();
-      const isOpen = sortMenu.classList.toggle("show");
+      sortMenu.classList.toggle("show");
       addIconToActiveOption();
-
-      // if (isOpen && currentSortMethod) {
-      //   sortButton.classList.add("active-sort");
-      // }
-      // if (!isOpen && currentSortMethod) {
-      //   sortButton.classList.remove("active-sort");
-      //   sortButton.classList.add("disable-menu ");
-      // }
     });
     // Handle sort options
     document.querySelectorAll(".sort-option").forEach((option) => {
@@ -115,6 +108,7 @@
 
         const { rawTypes, displayNames } = extractFilterValues(results);
         renderTypeFilters(rawTypes, displayNames, results);
+        renderVulnerabilityTypeFilters(rawTypes, displayNames);
         vscode.setState({ results });
         break;
       }
@@ -190,6 +184,30 @@
 
       container.appendChild(button);
       buttons.push(button);
+    }
+  }
+
+  function renderVulnerabilityTypeFilters(rawTypes, displayNames) {
+    const submenu = document.getElementById("submenu-vuln-type");
+    if (!submenu) {
+      return;
+    }
+
+    submenu.innerHTML = "";
+    const allItem = document.createElement("div");
+    allItem.classList.add("filter-option");
+    allItem.innerHTML = `
+      <input type="checkbox" id="vuln-all" />
+      <label for="vuln-all">All Types</label>
+    `;
+    submenu.appendChild(allItem);
+    for (let i = 0; i < rawTypes.length; i++) {
+      const item = document.createElement("div");
+      item.classList.add("sort-option");
+      const id = `vuln-${rawTypes[i]}`;
+      item.innerHTML = `<input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
+                        <label for="${id}">${displayNames[i]}</label>`;
+      submenu.appendChild(item);
     }
   }
 
@@ -386,13 +404,23 @@
       }
     });
 
-    document.getElementById("cancelFilters").addEventListener("click", () => {
+    document.getElementById("cancelFilter").addEventListener("click", () => {
       filterMenu.classList.remove("show");
+    });
+
+    document.querySelectorAll(".filter-category").forEach((category) => {
+      category.addEventListener("click", () => {
+        const key = category.dataset.toggle;
+        const submenu = document.getElementById(`submenu-${key}`);
+        submenu.classList.toggle("hidden");
+        category.textContent = submenu.classList.contains("hidden")
+          ? `▸ ${category.textContent.trim().replace(/^▾|▸/, "")}`
+          : `▾ ${category.textContent.trim().replace(/^▾|▸/, "")}`;
+      });
     });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     enableBootstrapTooltips();
-    setupFilterMenu();
   });
 })();

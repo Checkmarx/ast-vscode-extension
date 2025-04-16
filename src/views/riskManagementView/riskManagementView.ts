@@ -304,11 +304,35 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 					</div>
 				</div>
         <hr class="separator-vertical" />
-        
+
         <div class="sort-wrapper">
       <button class="icon-button" id="filterButton" title="Filter">
         ${ICONS.filter}
       </button>
+      <!-- Try add compoennt -->
+      <div class="filter-menu" id="filterMenu">
+  <div class="filter-title-option">FILTER BY</div>
+
+  <div class="filter-category" data-toggle="vuln-type">
+  › Vulnerability Type
+  </div>
+  <div class="filter-submenu hidden" id="submenu-vuln-type"></div>
+
+  <div class="filter-category" data-toggle="traits">
+  › Additional Trait
+  </div>
+  <div class="filter-submenu hidden" id="submenu-traits"></div>
+
+  <hr class="filter-separator" />
+
+  <div class="filter-actions">
+    <button id="cancelFilter" class="filter-btn cancel">Cancel</button>
+    <button id="applyFilter" class="filter-btn apply">Apply</button>
+  </div>
+</div>
+
+      <!-- Try add compoennt -->
+
     </div>
   </div>
 </div>

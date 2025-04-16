@@ -286,6 +286,10 @@ svg {
   display: block;
 }
 
+.filter-menu.show {
+  display: block;
+}
+
 .sort-option {
   padding: 6px 12px;
   cursor: pointer;
@@ -324,4 +328,129 @@ hr.separator-vertical {
   height: 10px;
   width: 1px;
   background-color: var(--cx-main-color);
+}
+
+/* FILTER MENU WRAPPER */
+.filter-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--vscode-input-background);
+  border: 1px solid #3f3f3f;
+  border-radius: 4px;
+  z-index: 1000;
+  width: 150px;
+  display: none;
+}
+/* 1) FILTER BY TITLE - כמו sort-title */
+.filter-title-option {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--cx-main-color);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* 2) CATEGORY TOGGLES - כמו sort-option */
+.filter-category {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--cx-main-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.filter-category:hover {
+  background-color: var(--vscode-textPreformat-background);
+}
+
+/* 3) SUBMENU - checkbox wrapper */
+.filter-submenu {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px;
+}
+.filter-submenu.hidden {
+  display: none;
+}
+.filter-submenu label {
+  font-size: 11px;
+  color: var(--cx-main-color);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 4) HORIZONTAL LINE */
+.filter-separator {
+  border: none;
+  height: 1px;
+  background-color: var(--cx-main-color);
+  opacity: 0.3;
+  margin: 6px 0;
+}
+
+/* 5) FOOTER ACTION BUTTONS */
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  gap: 8px;
+}
+
+.filter-btn {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.filter-btn.cancel {
+  background: transparent;
+  color: var(--cx-main-color);
+  border: 1px solid transparent;
+}
+
+.filter-btn.apply {
+  background: transparent;
+  color: var(--cx-main-color);
+  border: 1px solid var(--cx-main-color);
+}
+.filter-btn.apply:hover {
+  background: var(--vscode-textPreformat-background);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--cx-main-color);
+}
+
+.filter-option input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #777;
+  border-radius: 3px;
+  background: var(--vscode-input-background);
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.filter-option input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--cx-main-color);
+  border-width: 0 2px 2px 0;
 }
