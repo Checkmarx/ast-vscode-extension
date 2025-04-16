@@ -203,7 +203,7 @@
     submenu.appendChild(allItem);
     for (let i = 0; i < rawTypes.length; i++) {
       const item = document.createElement("div");
-      item.classList.add("sort-option");
+      item.classList.add("filter-option");
       const id = `vuln-${rawTypes[i]}`;
       item.innerHTML = `<input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
                         <label for="${id}">${displayNames[i]}</label>`;
@@ -413,9 +413,10 @@
         const key = category.dataset.toggle;
         const submenu = document.getElementById(`submenu-${key}`);
         submenu.classList.toggle("hidden");
+        const label = category.textContent.trim().replace(/^[›⌄]/, "").trim();
         category.textContent = submenu.classList.contains("hidden")
-          ? `▸ ${category.textContent.trim().replace(/^▾|▸/, "")}`
-          : `▾ ${category.textContent.trim().replace(/^▾|▸/, "")}`;
+          ? `› ${label}`
+          : `⌄ ${label}`;
       });
     });
   }
