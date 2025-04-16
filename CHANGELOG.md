@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.31.1-oauth-bug-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oauth-bug-fix.0) - 2025-04-16 08:45:23
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-0...v2.31.1-oauth-bug-fix.0
+
 ## [v2.31.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-0) - 2025-04-09 08:38:16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
