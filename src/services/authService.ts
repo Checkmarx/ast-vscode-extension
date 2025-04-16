@@ -176,7 +176,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
           authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
           tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
           redirectUri: `http://localhost:${port}/checkmarx1/callback`,
-          scope: 'openid',
+          scope: 'openid offline_access',
           codeVerifier,
           codeChallenge,
           port
@@ -184,19 +184,19 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
   
       try {
           const server = await this.startLocalServer(config);
-    
+
           const authUrl = `${config.authEndpoint}?` +
-           `client_id=${config.clientId}&` +
-           `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-           `response_type=code&` +
-           `scope=${config.scope}&` +
-           `code_challenge=${config.codeChallenge}&` +
-           `code_challenge_method=S256`;
-          
-           const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
+              `client_id=${config.clientId}&` +
+              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+              `response_type=code&` +
+              `scope=${config.scope}&` +
+              `code_challenge=${config.codeChallenge}&` +
+              `code_challenge_method=S256`;
+
+          const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
           if (!opened) {
-            server.close();
-            return ""; 
+              server.close();
+              return "";
           }
           const { code, res } = await this.waitForCode(server);
           const token = await this.getRefreshToken(code, config);
