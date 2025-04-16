@@ -430,3 +430,30 @@ hr.separator-vertical {
   color: var(--cx-main-color);
   padding: 6px 12px;
 }
+
+.filter-submenu input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background-color: var(--vscode-input-background);
+  border: 2px solid #a0a0a0;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+}
+
+.filter-submenu input[type="checkbox"]:checked {
+  background-color: #2b77d2;
+  border-color: #2b77d2;
+}
+
+.filter-submenu input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: -1px;
+  left: 2px;
+}

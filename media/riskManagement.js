@@ -18,6 +18,8 @@
       const { rawTypes, displayNames } = extractFilterValues(
         previousState.results
       );
+      const uniqueTraits = extractTraits(previousState.results);
+      renderTraitFilters(uniqueTraits);
       renderTypeFilters(rawTypes, displayNames, previousState.results);
       document.getElementById("loading").classList.add("hidden");
     }
@@ -44,6 +46,7 @@
     sortButton.addEventListener("click", (e) => {
       e.stopPropagation();
       sortMenu.classList.toggle("show");
+      document.getElementById("filterMenu").classList.remove("show");
       addIconToActiveOption();
     });
     // Handle sort options
@@ -194,6 +197,7 @@
     }
 
     submenu.innerHTML = "";
+
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
     allItem.innerHTML = `
@@ -201,14 +205,45 @@
       <label for="vuln-all">All Types</label>
     `;
     submenu.appendChild(allItem);
+
+    const allCheckbox = allItem.querySelector("input");
+    const individualCheckboxes = [];
+
+    allCheckbox.checked = true; // ✅ סימון ברירת מחדל
+
     for (let i = 0; i < rawTypes.length; i++) {
       const item = document.createElement("div");
       item.classList.add("filter-option");
-      const id = `vuln-${rawTypes[i]}`;
-      item.innerHTML = `<input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
-                        <label for="${id}">${displayNames[i]}</label>`;
+
+      const id = `vuln-${rawTypes[i].replace(/\s+/g, "-")}`;
+      item.innerHTML = `
+        <input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
+        <label for="${id}">${displayNames[i]}</label>
+      `;
       submenu.appendChild(item);
+
+      const cb = item.querySelector("input");
+      cb.checked = true; // ✅ סימון ברירת מחדל
+      individualCheckboxes.push(cb);
     }
+
+    allCheckbox.addEventListener("change", (e) => {
+      const isChecked = e.target.checked;
+      individualCheckboxes.forEach((cb) => {
+        cb.checked = isChecked;
+      });
+    });
+
+    individualCheckboxes.forEach((cb) => {
+      cb.addEventListener("change", () => {
+        if (!cb.checked) {
+          allCheckbox.checked = false;
+        } else {
+          const allChecked = individualCheckboxes.every((cb) => cb.checked);
+          allCheckbox.checked = allChecked;
+        }
+      });
+    });
   }
 
   function extractFilterValues(results) {
@@ -396,11 +431,13 @@
     filterButton.addEventListener("click", (e) => {
       e.stopPropagation();
       filterMenu.classList.toggle("show");
+      document.getElementById("sortMenu").classList.remove("show");
     });
 
     document.addEventListener("click", (e) => {
       if (!filterMenu.contains(e.target) && !filterButton.contains(e.target)) {
         filterMenu.classList.remove("show");
+        document.getElementById("sortMenu").classList.remove("show");
       }
     });
 
@@ -420,6 +457,120 @@
       });
     });
   }
+
+  function extractTraits(results) {
+    const traitsSet = new Set();
+
+    results.results.forEach((r) => {
+      if (r.traits && typeof r.traits === "object") {
+        Object.values(r.traits).forEach((t) => traitsSet.add(t));
+      }
+    });
+
+    return Array.from(traitsSet);
+  }
+
+  function renderTraitFilters(traits) {
+    const submenu = document.getElementById("submenu-traits");
+    if (!submenu) {
+      return;
+    }
+
+    submenu.innerHTML = "";
+
+    const allItem = document.createElement("div");
+    allItem.classList.add("filter-option");
+    allItem.innerHTML = `
+      <input type="checkbox" id="trait-all" />
+      <label for="trait-all">All Traits</label>
+    `;
+    submenu.appendChild(allItem);
+
+    const allCheckbox = allItem.querySelector("input");
+    const individualCheckboxes = [];
+
+    allCheckbox.checked = true; // ✅ סימון ברירת מחדל
+
+    traits.forEach((trait) => {
+      const div = document.createElement("div");
+      div.className = "filter-option";
+
+      const id = `trait-${trait.replace(/\s+/g, "-")}`;
+      div.innerHTML = `
+        <input type="checkbox" id="${id}" data-value="${trait}" />
+        <label for="${id}">${trait}</label>
+      `;
+      submenu.appendChild(div);
+
+      const cb = div.querySelector("input");
+      cb.checked = true; // ✅ סימון ברירת מחדל
+      individualCheckboxes.push(cb);
+    });
+
+    allCheckbox.addEventListener("change", (e) => {
+      const isChecked = e.target.checked;
+      individualCheckboxes.forEach((cb) => {
+        cb.checked = isChecked;
+      });
+    });
+
+    individualCheckboxes.forEach((cb) => {
+      cb.addEventListener("change", () => {
+        if (!cb.checked) {
+          allCheckbox.checked = false;
+        } else {
+          const allChecked = individualCheckboxes.every((cb) => cb.checked);
+          allCheckbox.checked = allChecked;
+        }
+      });
+    });
+  }
+
+  function applyFilterSelections(results) {
+    const selectedTypes = Array.from(
+      document.querySelectorAll(
+        "#submenu-vuln-type input[type='checkbox']:checked"
+      )
+    )
+      .filter((cb) => cb.id !== "vuln-all")
+      .map((cb) => cb.dataset.type);
+
+    const selectedTraits = Array.from(
+      document.querySelectorAll(
+        "#submenu-traits input[type='checkbox']:checked"
+      )
+    )
+      .filter((cb) => cb.id !== "trait-all")
+      .map((cb) => cb.dataset.value);
+
+    if (selectedTypes.length === 0 && selectedTraits.length === 0) {
+      renderApplications({ ...results, results: [] });
+      return;
+    }
+
+    const filteredResults = {
+      ...results,
+      results: results.results.filter((r) => {
+        const typeMatch =
+          selectedTypes.length === 0 || selectedTypes.includes(r.type);
+        const traitValues = r.traits ? Object.values(r.traits) : [];
+        const traitMatch =
+          selectedTraits.length === 0 ||
+          traitValues.some((val) => selectedTraits.includes(val));
+        return typeMatch && traitMatch;
+      }),
+    };
+
+    renderApplications(filteredResults);
+  }
+
+  document.getElementById("applyFilter").addEventListener("click", () => {
+    const state = vscode.getState();
+    if (state?.results) {
+      applyFilterSelections(state.results);
+      document.getElementById("filterMenu").classList.remove("show");
+    }
+  });
 
   document.addEventListener("DOMContentLoaded", function () {
     enableBootstrapTooltips();
