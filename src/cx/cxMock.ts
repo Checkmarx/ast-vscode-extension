@@ -1309,6 +1309,10 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
+  async isValidConfiguration(): Promise<boolean> {
+    return await this.getAstConfiguration() !== undefined;
+  }
+
 
   async isScanEnabled(): Promise<boolean> {
     return true;
