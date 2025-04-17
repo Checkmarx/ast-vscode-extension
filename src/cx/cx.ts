@@ -16,6 +16,7 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import { AuthService } from "../services/authService";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -297,6 +298,21 @@ export class Cx implements CxPlatform {
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
+  }
+  
+  async isValidConfiguration(): Promise<boolean> {
+    const token = await this.context.secrets.get("authCredential");
+
+    if (!token) {
+      return false;
+    }
+    const isValidToken = await AuthService.getInstance(this.context).validateApiKey(token);
+    if (!isValidToken) {
+      return false;
+    }
+    const config = this.getBaseAstConfiguration();
+    config.apiKey = token;
+    return true;
   }
 
 
@@ -592,7 +608,7 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async authValidate(logs: Logs): Promise<boolean> {
+  async authValidate(logs?: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
@@ -601,12 +617,12 @@ export class Cx implements CxPlatform {
       if (valid.exitCode === 0) {
         return true;
       } else {
-        logs.error(`${authFailedMsg}: ${valid.status}`);
+        logs?.error(`${authFailedMsg}: ${valid.status}`);
         vscode.window.showErrorMessage(authFailedMsg);
         return false;
       }
     } catch (error) {
-      logs.error(`${authFailedMsg}: ${error}`);
+      logs?.error(`${authFailedMsg}: ${error}`);
       vscode.window.showErrorMessage(authFailedMsg);
       return false;
     }

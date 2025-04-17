@@ -189,7 +189,7 @@ export async function executeCheckSettingsChange(
     ascaCommand: AscaCommand
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
-        const authService = AuthService.getInstance(context);
+        const authService = AuthService.getInstance(context, logs);
         const isValid = await authService.validateAndUpdateState();
         vscode.commands.executeCommand(
             commands.setContext,

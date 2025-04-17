@@ -130,12 +130,8 @@
         tenantInput.value = "";
         authButton.disabled = true;
         document
-          .querySelector('input[name="authMethod"][value="apiKey"]')
+          .querySelector('input[name="authMethod"][value="apikey"]')
           .dispatchEvent(new Event("change"));
-        // //
-        // document
-        //   .querySelector('input[name="authMethod"][value="oauth"]')
-        //   .dispatchEvent(new Event("change"));
       }
     });
 
