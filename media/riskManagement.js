@@ -32,24 +32,39 @@
     const sortButton = document.getElementById("sortButton");
     const sortMenu = document.getElementById("sortMenu");
     const currentSortText = document.getElementById("currentSort");
-    if (!sortButton) {
+    const filterMenu = document.getElementById("filterMenu");
+    const filterButton = document.getElementById("filterButton");
+    const filterBadge = document.getElementById("filterBadge");
+
+    if (!sortButton || !sortMenu) {
       return;
     }
-    // Close menu when clicking outside
+
+    sortButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = sortMenu.classList.toggle("show");
+
+      filterMenu.classList.remove("show");
+      filterButton.classList.remove("filter-open");
+      if (filterBadge) {
+        filterBadge.classList.remove("hidden");
+      }
+
+      sortButton.classList.toggle("active", isOpen);
+      addIconToActiveOption();
+    });
+
     document.addEventListener("click", (e) => {
-      if (!sortButton.contains(e.target)) {
+      if (!sortButton.contains(e.target) && !sortMenu.contains(e.target)) {
         sortMenu.classList.remove("show");
+        sortButton.classList.remove("active");
       }
     });
 
-    // Toggle menu
-    sortButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      sortMenu.classList.toggle("show");
-      document.getElementById("filterMenu").classList.remove("show");
-      addIconToActiveOption();
-    });
-    // Handle sort options
+    function updateHasSelectionClass() {
+      sortButton.classList.add("has-selection");
+    }
+
     document.querySelectorAll(".sort-option").forEach((option) => {
       const sortType = option.dataset.sort;
       if (!sortType) {
@@ -57,8 +72,8 @@
       }
 
       option.addEventListener("click", () => {
-        const sortType = option.dataset.sort;
         currentSortMethod = sortType;
+        updateHasSelectionClass();
 
         const results = vscode.getState()?.results;
         if (results) {
@@ -68,9 +83,15 @@
           );
           renderApplications(results);
         }
+
+        sortMenu.classList.remove("show");
+        sortButton.classList.remove("active");
       });
     });
+
+    updateHasSelectionClass();
   }
+
   function addIconToActiveOption() {
     document.querySelectorAll(".sort-option").forEach((option) => {
       if (option.dataset.sort === currentSortMethod) {
@@ -112,6 +133,7 @@
         const { rawTypes, displayNames } = extractFilterValues(results);
         renderTypeFilters(rawTypes, displayNames, results);
         renderVulnerabilityTypeFilters(rawTypes, displayNames);
+        updateFilterBadge();
         vscode.setState({ results });
         break;
       }
@@ -209,7 +231,7 @@
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = true; // ✅ סימון ברירת מחדל
+    allCheckbox.checked = true;
 
     for (let i = 0; i < rawTypes.length; i++) {
       const item = document.createElement("div");
@@ -223,7 +245,7 @@
       submenu.appendChild(item);
 
       const cb = item.querySelector("input");
-      cb.checked = true; // ✅ סימון ברירת מחדל
+      cb.checked = true;
       individualCheckboxes.push(cb);
     }
 
@@ -423,6 +445,9 @@
   function setupFilterMenu() {
     const filterButton = document.getElementById("filterButton");
     const filterMenu = document.getElementById("filterMenu");
+    const filterBadge = document.getElementById("filterBadge");
+    const sortMenu = document.getElementById("sortMenu");
+    const sortButton = document.getElementById("sortButton");
 
     if (!filterButton || !filterMenu) {
       return;
@@ -430,19 +455,33 @@
 
     filterButton.addEventListener("click", (e) => {
       e.stopPropagation();
-      filterMenu.classList.toggle("show");
-      document.getElementById("sortMenu").classList.remove("show");
+      const isOpen = filterMenu.classList.toggle("show");
+
+      filterButton.classList.toggle("filter-open", isOpen);
+      if (filterBadge) {
+        filterBadge.classList.toggle("hidden", isOpen);
+      }
+
+      sortMenu.classList.remove("show");
+      sortButton.classList.remove("active");
     });
 
     document.addEventListener("click", (e) => {
       if (!filterMenu.contains(e.target) && !filterButton.contains(e.target)) {
         filterMenu.classList.remove("show");
-        document.getElementById("sortMenu").classList.remove("show");
+        filterButton.classList.remove("filter-open");
+        if (filterBadge) {
+          filterBadge.classList.remove("hidden");
+        }
       }
     });
 
     document.getElementById("cancelFilter").addEventListener("click", () => {
       filterMenu.classList.remove("show");
+      filterButton.classList.remove("filter-open");
+      if (filterBadge) {
+        filterBadge.classList.remove("hidden");
+      }
     });
 
     document.querySelectorAll(".filter-category").forEach((category) => {
@@ -543,6 +582,27 @@
       .filter((cb) => cb.id !== "trait-all")
       .map((cb) => cb.dataset.value);
 
+    const totalSelected = selectedTypes.length + selectedTraits.length;
+    const filterButton = document.getElementById("filterButton");
+    let badge = filterButton.querySelector(".filter-badge");
+
+    if (totalSelected > 0) {
+      filterButton.classList.add("has-selection");
+
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "filter-badge";
+        filterButton.appendChild(badge);
+      }
+
+      badge.textContent = totalSelected;
+    } else {
+      filterButton.classList.remove("has-selection");
+      if (badge) {
+        badge.remove();
+      }
+    }
+
     if (selectedTypes.length === 0 && selectedTraits.length === 0) {
       renderApplications({ ...results, results: [] });
       return;
@@ -573,8 +633,42 @@
     if (state?.results) {
       applyFilterSelections(state.results);
       document.getElementById("filterMenu").classList.remove("show");
+      document.getElementById("filterButton").classList.remove("filter-open");
+      updateFilterBadge();
     }
   });
+
+  function updateFilterBadge() {
+    const selectedTypes = document.querySelectorAll(
+      "#submenu-vuln-type input[type='checkbox']:checked"
+    );
+    const selectedTraits = document.querySelectorAll(
+      "#submenu-traits input[type='checkbox']:checked"
+    );
+
+    const count =
+      [...selectedTypes].filter((cb) => cb.id !== "vuln-all").length +
+      [...selectedTraits].filter((cb) => cb.id !== "trait-all").length;
+
+    const badge = document.getElementById("filterBadge");
+    const isFilterOpen = document
+      .getElementById("filterMenu")
+      .classList.contains("show");
+
+    if (badge) {
+      badge.innerHTML = `<div>${count}</div>`;
+      badge.classList.toggle("hidden", isFilterOpen);
+    }
+
+    const filterButton = document.getElementById("filterButton");
+    if (filterButton) {
+      if (count > 0) {
+        filterButton.classList.add("has-selection");
+      } else {
+        filterButton.classList.remove("has-selection");
+      }
+    }
+  }
 
   document.addEventListener("DOMContentLoaded", function () {
     enableBootstrapTooltips();
