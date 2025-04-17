@@ -123,7 +123,10 @@ export class riskManagementView implements vscode.WebviewViewProvider {
       const projectToDisplay = this.extractData(project.name, "Project:");
       const scanToDisplay = this.extractData(scan.displayScanId, "Scan:");
       const riskManagementResults =
-        await this.riskManagementService.getRiskManagementResults(project.id);
+        await this.riskManagementService.getRiskManagementResults(
+          project.id,
+          scan.id
+        );
       this.view.webview.html = this.getWebviewContent(
         projectToDisplay,
         scanToDisplay,
