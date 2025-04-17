@@ -121,20 +121,17 @@
       } else if (message.type === "clearFields") {
         document.querySelector(
           'input[name="authMethod"][value="oauth"]'
-        ).checked = true;
+        ).checked = false;
         document.querySelector(
           'input[name="authMethod"][value="apiKey"]'
-        ).checked = false;
+        ).checked = true;
         apiKeyInput.value = "";
         urlInput.value = "";
         tenantInput.value = "";
         authButton.disabled = true;
         document
-          .querySelector('input[name="authMethod"][value="oauth"]')
+          .querySelector('input[name="authMethod"][value="apikey"]')
           .dispatchEvent(new Event("change"));
-        // document
-        //   .querySelector('input[name="authMethod"][value="oauth"]')
-        //   .dispatchEvent(new Event("change"));
       }
     });
 
