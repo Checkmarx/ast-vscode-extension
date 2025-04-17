@@ -227,5 +227,5 @@ export interface CxPlatform {
 
   authValidate(logs: Logs): Promise<boolean>;
 
-  getRiskManagementResults(projectId: string): Promise<object | undefined>;
+  getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined>;
 }

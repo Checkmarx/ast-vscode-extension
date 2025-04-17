@@ -1296,7 +1296,6 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
-
   async getAstConfiguration() {
     const token = await this.context.secrets.get("authCredential");
 
@@ -1310,9 +1309,8 @@ export class CxMock implements CxPlatform {
   }
 
   async isValidConfiguration(): Promise<boolean> {
-    return await this.getAstConfiguration() !== undefined;
+    return (await this.getAstConfiguration()) !== undefined;
   }
-
 
   async isScanEnabled(): Promise<boolean> {
     return true;
@@ -1462,142 +1460,149 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
-  public getRiskManagementResults(projectId: string): Promise<{ projectID: string; scanID: string; applicationNameIDMap: any[]; results: any[] }> {
+  public getRiskManagementResults(
+    projectId: string,
+    scanId: string
+  ): Promise<{
+    projectID: string;
+    scanID: string;
+    applicationNameIDMap: any[];
+    results: any[];
+  }> {
     return Promise.resolve({
       projectID: "1",
       scanID: "1",
       applicationNameIDMap: [
-      {
-        applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
-        applicationName: "test1",
-        score: 7
-      },
-      {
-        applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
-        applicationName: "abcTest2",
-        score: 7.3
-      },
-      {
-        applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
-        applicationName: "Test3",
-        score: 7.3
-      },
-      {
-        applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
-        applicationName: "zTest4",
-        score: 7.4
-      },
-      {
-        applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
-        applicationName: "zTest5",
-        score: 7.4
-      }
+        {
+          applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+          applicationName: "test1",
+          score: 7,
+        },
+        {
+          applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+          applicationName: "abcTest2",
+          score: 7.3,
+        },
+        {
+          applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+          applicationName: "Test3",
+          score: 7.3,
+        },
+        {
+          applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+          applicationName: "zTest4",
+          score: 7.4,
+        },
+        {
+          applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+          applicationName: "zTest5",
+          score: 7.4,
+        },
       ],
       results: [
-      {
-        id: "00e592de-0bc4-46da-8ce8-739b8fa91e34",
-        name: "Cxadcc9e15-660b",
-        hash: "V9nPpvBHoh1aF66qIFS/AZ/62YI5qZjLnNUSoapIlbk=",
-        type: "directPackage",
-        state: "new",
-        engine: "sca",
-        severity: "high",
-        riskScore: 8.7,
-        enrichmentSources: {},
-        createdAt: "2025-04-01T09:38:29Z",
-        applicationsScores: [
         {
-          applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
-          score: 4.4
+          id: "00e592de-0bc4-46da-8ce8-739b8fa91e34",
+          name: "Cxadcc9e15-660b",
+          hash: "V9nPpvBHoh1aF66qIFS/AZ/62YI5qZjLnNUSoapIlbk=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 4.4,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 3,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 4.2,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8.5,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 4.2,
+            },
+          ],
         },
         {
-          applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
-          score: 3
+          id: "01e03512-d58b-4f9a-838f-18507d1acd3a",
+          name: "Cx28bd7545-eb30",
+          hash: "Llgxx8kRAGBRADIjVKlepWrlfVq4DWzFH/iy8+hfeRw=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 5.2,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 7.5,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 8.6,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 7.6,
+            },
+          ],
         },
         {
-          applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
-          score: 4.2
+          id: "0a293a7e-af26-4126-8e70-9a79d41043b4",
+          name: "Cx9c42b5fe-7ada",
+          hash: "IdkIDsf/5XU9p8pZI87bjSIfrhhXOVGIHh7jWWcl2/w=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 5.2,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 7,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 6.7,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8.5,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 4,
+            },
+          ],
         },
-        {
-          applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
-          score: 8.5
-        },
-        {
-          applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
-          score: 4.2
-        }
-        ]
-      },
-      {
-        id: "01e03512-d58b-4f9a-838f-18507d1acd3a",
-        name: "Cx28bd7545-eb30",
-        hash: "Llgxx8kRAGBRADIjVKlepWrlfVq4DWzFH/iy8+hfeRw=",
-        type: "directPackage",
-        state: "new",
-        engine: "sca",
-        severity: "high",
-        riskScore: 8.7,
-        enrichmentSources: {},
-        createdAt: "2025-04-01T09:38:29Z",
-        applicationsScores: [
-        {
-          applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
-          score: 5.2
-        },
-        {
-          applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
-          score: 7.5
-        },
-        {
-          applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
-          score: 8.6
-        },
-        {
-          applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
-          score: 8
-        },
-        {
-          applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
-          score: 7.6
-        }
-        ]
-      },
-      {
-        id: "0a293a7e-af26-4126-8e70-9a79d41043b4",
-        name: "Cx9c42b5fe-7ada",
-        hash: "IdkIDsf/5XU9p8pZI87bjSIfrhhXOVGIHh7jWWcl2/w=",
-        type: "directPackage",
-        state: "new",
-        engine: "sca",
-        severity: "high",
-        riskScore: 8.7,
-        enrichmentSources: {},
-        createdAt: "2025-04-01T09:38:29Z",
-        applicationsScores: [
-        {
-          applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
-          score: 5.2
-        },
-        {
-          applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
-          score: 7
-        },
-        {
-          applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
-          score: 6.7
-        },
-        {
-          applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
-          score: 8.5
-        },
-        {
-          applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
-          score: 4
-        }
-        ]
-      }
-      ]
+      ],
     });
   }
-
 }
