@@ -280,13 +280,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 			</div>
 
 			<hr class="separator" />
-			<div class="filter-section">
-				<div class="filter-title"><i class="codicon"></i>Vulnerability Type:</div>
-				<div class="filter-buttons-wrapper">
-					<div class="filter-buttons" id="typeFilters"></div>
-				</div>
-			</div>
-
 			<div class="app-header">
 				<span>${ICONS.union}</span> ${ASPMResults.applicationNameIDMap.length}
 				Applications

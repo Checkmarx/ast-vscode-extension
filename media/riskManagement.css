@@ -4,7 +4,6 @@
 
 body {
   font-family: Arial, sans-serif;
-  padding: 20px;
 }
 
 .hidden {
@@ -168,13 +167,6 @@ hr.separator {
   height: 1px;
   background-color: var(--cx-main-color);
   margin-bottom: 6px;
-}
-
-.filter-section {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  flex-wrap: nowrap;
 }
 
 .filter-title {

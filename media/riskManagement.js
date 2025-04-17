@@ -489,7 +489,7 @@
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = true; // ✅ סימון ברירת מחדל
+    allCheckbox.checked = false;
 
     traits.forEach((trait) => {
       const div = document.createElement("div");
@@ -503,7 +503,7 @@
       submenu.appendChild(div);
 
       const cb = div.querySelector("input");
-      cb.checked = true; // ✅ סימון ברירת מחדל
+      cb.checked = false;
       individualCheckboxes.push(cb);
     });
 
@@ -551,13 +551,17 @@
     const filteredResults = {
       ...results,
       results: results.results.filter((r) => {
-        const typeMatch =
-          selectedTypes.length === 0 || selectedTypes.includes(r.type);
+        const typeMatch = selectedTypes.includes(r.type);
+
         const traitValues = r.traits ? Object.values(r.traits) : [];
-        const traitMatch =
-          selectedTraits.length === 0 ||
-          traitValues.some((val) => selectedTraits.includes(val));
-        return typeMatch && traitMatch;
+        const traitMatch = traitValues.some((val) =>
+          selectedTraits.includes(val)
+        );
+
+        const hasTypeFilter = selectedTypes.length > 0;
+        const hasTraitFilter = selectedTraits.length > 0;
+
+        return (hasTypeFilter && typeMatch) || (hasTraitFilter && traitMatch);
       }),
     };
 
