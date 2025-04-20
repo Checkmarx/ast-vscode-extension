@@ -303,7 +303,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
         <div class="sort-wrapper">
       <button class="filter-button" id="filterButton" title="Filter">
-      <span>${ICONS.filter}</span>
+      <span class="center-badge">${ICONS.filter}</span>
        <span id="filterBadge" class="filter-badge hidden">
     <div>0</div>
   </span>
