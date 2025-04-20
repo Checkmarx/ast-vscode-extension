@@ -628,16 +628,17 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async getRiskManagementResults(projectId: string): Promise<object | undefined> {
+  async getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined> {
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
-    const applications = await cx.riskManagementResults(projectId);
+    const applications = await cx.riskManagementResults(projectId,scanId);
     let r = [];
     if (applications.payload) {
       r = applications.payload;
     } else {
       throw new Error(applications.status);
     }
+    
     return r;
   }
 }

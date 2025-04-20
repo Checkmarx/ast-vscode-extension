@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v2.31.1-Final-beta-aspm.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-beta-aspm.0) - 2025-04-17 14:53:37
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Fix OAuth Small Bugs by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1098
+### Other Changes
+* Change design aspm- Filters and Sort by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1099
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-oauth-bug-fix.0...v2.31.1-Final-beta-aspm.0
+
 ## [v2.31.1-oauth-bug-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oauth-bug-fix.0) - 2025-04-16 08:45:23
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

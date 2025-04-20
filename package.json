@@ -791,7 +791,7 @@
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Software Composition Analysis (SCA)"
+          "name": "Checkmarx SCA Realtime Scanner"
         },
         {
           "id": "riskManagement",

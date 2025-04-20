@@ -1,309 +1,502 @@
 :root {
-    --cx-main-color: var(--vscode-input-foreground);
+  --cx-main-color: var(--vscode-input-foreground);
 }
 
 body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
 .custom-header {
-    text-align: left;
-    background: var(--vscode-textPreformat-background);
-    color: var(--cx-main-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 8px;
-    padding: 10px;
-    width: 100%;
-    cursor: pointer;
-    height: 34px;
-    font-size: 11px;
+  text-align: left;
+  background: var(--vscode-textPreformat-background);
+  color: var(--cx-main-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+  height: 34px;
+  font-size: 11px;
 }
 
 .result {
-    cursor: pointer;
-    height: 22px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    column-gap: 6px;
+  cursor: pointer;
+  height: 22px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
 }
 
 .result:hover {
-    background: var(--vscode-textPreformat-background);
+  background: var(--vscode-textPreformat-background);
 }
 
 .results {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    max-height: 244px;
-    overflow-y: auto;
-    overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 244px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .codicon {
-    vertical-align: text-bottom;
-    padding-right: 6px;
+  vertical-align: text-bottom;
+  padding-right: 6px;
 }
 
 .ellipsis {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    vertical-align: top;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  vertical-align: top;
 }
 
 .index {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 .app-name {
-    margin-right: 10px;
-    flex-grow: 1;
-    font-size: 13px;
+  margin-right: 10px;
+  flex-grow: 1;
+  font-size: 13px;
 }
 
 .results-count {
-    margin-right: 10px;
-    opacity: 0.7;
+  margin-right: 10px;
+  opacity: 0.7;
 }
 
 .risk-score {
-    padding: 3px 10px 3px 6px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    height: 22px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
 }
 
 .critical-risk {
-    color: #bb2a31d9;
-    border: 1px solid #bb2a31d9;
+  color: #bb2a31d9;
+  border: 1px solid #bb2a31d9;
 }
 
 .high-risk {
-    color: #f8788fe5;
-    border: 1px solid #f8788fe5;
+  color: #f8788fe5;
+  border: 1px solid #f8788fe5;
 }
 
 .medium-risk {
-    color: #e7984999;
-    border: 1px solid #e7984999;
+  color: #e7984999;
+  border: 1px solid #e7984999;
 }
 
 .low-risk {
-    color: #419128;
-    border: 1px solid #419128;
+  color: #419128;
+  border: 1px solid #419128;
 }
 
 .custom-header::after {
-    display: none !important;
+  display: none !important;
 }
 
 .custom-header:focus,
 .custom-header:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 button:hover {
-    background: var(--vscode-input-background);
-    filter: brightness(1.5);
+  background: var(--vscode-input-background);
+  filter: brightness(1.5);
 }
 
 .disabled-result {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 svg {
-    vertical-align: text-top;
-    color: var(--cx-main-color);
+  vertical-align: text-top;
+  color: var(--cx-main-color);
 }
 
 .sort-button svg {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 .ditales {
-    cursor: not-allowed;
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+  cursor: not-allowed;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .app-header {
-    text-align: left;
-    color: var(--cx-main-color);
-    padding: 10px;
-    width: 100%;
-    height: 34px;
-    font-size: 13px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+  text-align: left;
+  color: var(--cx-main-color);
+  padding: 10px;
+  width: 100%;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 hr.separator {
-    border: none;
-    height: 1px;
-    background-color: var(--cx-main-color);
-    margin-bottom: 6px;
-}
-
-hr.separator-vertical {
-    border: none;
-    height: 10px;
-    width: 1px;
-    background-color: var(--cx-main-color);
-}
-
-.filter-section {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    flex-wrap: nowrap;
+  border: none;
+  height: 1px;
+  background-color: var(--cx-main-color);
+  margin-bottom: 6px;
 }
 
 .filter-title {
-    color: var(--cx-main-color);
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    flex-shrink: 0;
+  color: var(--cx-main-color);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-buttons-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    flex: 1;
-    gap: 6px;
-    min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
 }
 
 .filter-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    flex: 1;
-    justify-content: flex-start;
-    min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
 }
 
 .filter-buttons button {
-    max-width: 100%;
-    width: auto;
-    border: 1px solid #3f3f3f;
-    background-color: transparent;
-    color: var(--cx-main-color);
-    border-radius: 16px;
-    padding: 2px 12px;
-    font-size: 11px;
-    font-family: "Inter", sans-serif;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    white-space: nowrap;
-    font-weight: 400;
-    opacity: 0.7;
+  max-width: 100%;
+  width: auto;
+  border: 1px solid #3f3f3f;
+  background-color: transparent;
+  color: var(--cx-main-color);
+  border-radius: 16px;
+  padding: 2px 12px;
+  font-size: 11px;
+  font-family: "Inter", sans-serif;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  font-weight: 400;
+  opacity: 0.7;
 }
 
 .filter-buttons button.selected {
-    max-width: 100%;
-    width: auto;
-    color: var(--cx-main-color);
-    font-weight: 500;
-    opacity: 1;
-    border-color: var(--cx-main-color);
+  max-width: 100%;
+  width: auto;
+  color: var(--cx-main-color);
+  font-weight: 500;
+  opacity: 1;
+  border-color: var(--cx-main-color);
 }
 
 svg {
-    vertical-align: text-top;
+  vertical-align: text-top;
 }
 
 .no-results-message {
-    opacity: 0.7;
+  opacity: 0.7;
 }
 
 .loading {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .error-message {
-    background-color: #5C2E37;
-    color: white;
-    padding: 3px;
-    border-radius: 27px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  background-color: #5c2e37;
+  color: white;
+  padding: 3px;
+  border-radius: 27px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .error-message img {
-    margin-bottom: -2.24px;
+  margin-bottom: -2.24px;
 }
 .sort-menu-container {
-    position: relative;
+  position: relative;
 }
 
 .sort-button {
-    background: transparent;
-    color: var(--cx-main-color);
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    padding: 0px;
+  background: transparent;
+  color: var(--cx-main-color);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  padding: 0px;
 }
 
 .sort-menu {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: var(--vscode-input-background);
-    border: 1px solid #3f3f3f;
-    border-radius: 4px;
-    z-index: 1000;
-    width: 150px;
-    display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--vscode-input-background);
+  border: 1px solid #3f3f3f;
+  border-radius: 4px;
+  z-index: 1000;
+  width: 150px;
+  display: none;
 }
 
 .sort-menu.show {
-    display: block;
+  display: block;
+}
+
+.filter-menu.show {
+  display: block;
 }
 
 .sort-option {
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 11px;
-    color: var(--cx-main-color);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--cx-main-color);
 }
 
 .sort-option:hover {
-    background: var(--vscode-textPreformat-background);
+  background: var(--vscode-textPreformat-background);
 }
 
 .sort-display-option {
-    opacity: 0.7;
+  opacity: 0.7;
+}
+
+.sort-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.sort-title {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+hr.separator-vertical {
+  border: none;
+  height: 10px;
+  width: 1px;
+  background-color: var(--cx-main-color);
+}
+
+.filter-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--vscode-input-background);
+  border: 1px solid #3f3f3f;
+  border-radius: 4px;
+  z-index: 1000;
+  width: 200px;
+  display: none;
+}
+.filter-title-option {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--cx-main-color);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.filter-category {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--cx-main-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.filter-category:hover {
+  background-color: var(--vscode-textPreformat-background);
+}
+
+.filter-submenu {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px;
+}
+.filter-submenu.hidden {
+  display: none;
+}
+.filter-submenu label {
+  font-size: 11px;
+  color: var(--cx-main-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-separator {
+  border: none;
+  height: 1px;
+  background-color: var(--cx-main-color);
+  opacity: 0.3;
+  margin: 6px 0;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  gap: 8px;
+}
+
+.filter-btn {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.filter-btn.cancel {
+  background: transparent;
+  color: var(--cx-main-color);
+  border: 1px solid transparent;
+}
+
+.filter-btn.apply {
+  background: transparent;
+  color: var(--cx-main-color);
+  border: 1px solid var(--cx-main-color);
+}
+.filter-btn.apply:hover {
+  background: var(--vscode-textPreformat-background);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--cx-main-color);
+  padding: 6px 12px;
+}
+
+.filter-submenu input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background-color: var(--vscode-input-background);
+  border: 2px solid #a0a0a0;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+}
+
+.filter-submenu input[type="checkbox"]:checked {
+  background-color: #2b77d2;
+  border-color: #2b77d2;
+}
+
+.filter-submenu input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: -1px;
+  left: 2px;
+}
+
+.filter-button {
+  vertical-align: top;
+  background: transparent;
+  color: var(--cx-main-color);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  padding: 0px;
+}
+
+.sort-button.has-selection svg {
+  color: #2b77d2;
+}
+
+.sort-button.active {
+  background-color: #2b77d2;
+  color: white;
+}
+
+.app-icons .sort-wrapper .sort-button.active svg {
+  color: white;
+}
+
+.filter-button.filter-open {
+  background-color: #2b77d2;
+  color: white;
+}
+
+.filter-badge.hidden {
+  display: none;
+}
+
+.filter-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #2b77d2;
+  color: white;
+  font-size: 10px;
+  border-radius: 50%;
+  height: 12px;
+  min-width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-badge div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
