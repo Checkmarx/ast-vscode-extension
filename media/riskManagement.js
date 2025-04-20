@@ -214,13 +214,16 @@
       individualCheckboxes.forEach((cb) => {
         cb.checked = isChecked;
       });
+      updateFilterCounts();
     });
 
     individualCheckboxes.forEach((cb) => {
       cb.addEventListener("change", () => {
         allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
       });
     });
+    updateFilterCounts();
   }
 
   function extractFilterValues(results) {
@@ -441,8 +444,6 @@
   }
 
   function extractTraits(results) {
-    console.log("results", results);
-
     const traitsSet = new Set();
 
     results.results.forEach((r) => {
@@ -450,7 +451,6 @@
         Object.values(r.traits).forEach((t) => traitsSet.add(t));
       }
     });
-    console.log("results1", Array.from(traitsSet));
     return Array.from(traitsSet);
   }
 
@@ -502,13 +502,16 @@
       individualCheckboxes.forEach((cb) => {
         cb.checked = isChecked;
       });
+      updateFilterCounts();
     });
 
     individualCheckboxes.forEach((cb) => {
       cb.addEventListener("change", () => {
         allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
       });
     });
+    updateFilterCounts();
   }
 
   function applyFilterSelections(results) {
@@ -564,6 +567,26 @@
       document.getElementById("filterButton").classList.remove("filter-open");
     }
   });
+
+  function updateFilterCounts() {
+    const vulnCheckboxes = Array.from(
+      document.querySelectorAll("#submenu-vuln-type input[type='checkbox']")
+    ).filter((cb) => cb.id !== "vuln-all");
+
+    const traitCheckboxes = Array.from(
+      document.querySelectorAll("#submenu-traits input[type='checkbox']")
+    ).filter((cb) => cb.id !== "trait-all");
+
+    const vulnCount = vulnCheckboxes.filter((cb) => cb.checked).length;
+    const traitCount = traitCheckboxes.filter((cb) => cb.checked).length;
+
+    document.querySelector(
+      '[data-toggle="vuln-type"] .filter-count'
+    ).textContent = `(${vulnCount})`;
+    document.querySelector(
+      '[data-toggle="traits"] .filter-count'
+    ).textContent = `(${traitCount})`;
+  }
 
   document.addEventListener("DOMContentLoaded", function () {
     enableBootstrapTooltips();

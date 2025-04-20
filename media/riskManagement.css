@@ -351,7 +351,7 @@ hr.separator-vertical {
   cursor: pointer;
 }
 .filter-category .chevron {
-  font-size: 14px;
+  font-size: 13px;
   transition: transform 0.2s ease;
 }
 
@@ -361,6 +361,11 @@ hr.separator-vertical {
 
 .filter-category:hover {
   background-color: var(--vscode-textPreformat-background);
+}
+
+.filter-count {
+  opacity: 0.7;
+  margin-left: 3px;
 }
 
 .filter-submenu {
@@ -424,6 +429,7 @@ hr.separator-vertical {
   cursor: pointer;
   color: var(--cx-main-color);
   padding: 6px 12px;
+  line-height: 1;
 }
 
 .filter-button {
@@ -479,8 +485,9 @@ hr.separator-vertical {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 34px;
-  height: 18px;
+  width: 24px;
+  height: 12px;
+  border-radius: 12px;
   margin-left: auto;
 }
 
@@ -497,27 +504,27 @@ hr.separator-vertical {
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: #ccc;
+  background-color: #d7d8db;
   transition: 0.3s;
-  border-radius: 18px;
+  border-radius: 12px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
-  left: 2px;
-  bottom: 2px;
+  height: 9.6px;
+  width: 9.6px;
+  left: 1.2px;
+  bottom: 1.2px;
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
 }
 
 .toggle-switch input:checked + .slider {
-  background-color: #2b77d2;
+  background-color: #3376cd;
 }
 
 .toggle-switch input:checked + .slider:before {
-  transform: translateX(16px);
+  transform: translateX(12px);
 }

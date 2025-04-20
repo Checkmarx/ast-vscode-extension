@@ -311,6 +311,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   <div class="filter-category" data-toggle="vuln-type">
    <span class="chevron">›</span>
   <span class="category-label">Vulnerability Type</span>
+   <span class="filter-count"></span>
 </div>
 
   <div class="filter-submenu hidden" id="submenu-vuln-type"></div>
@@ -318,6 +319,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
  <div class="filter-category" data-toggle="traits">
    <span class="chevron">›</span>
   <span class="category-label">Additional Trait</span>
+   <span class="filter-count"></span>
 </div>
 
   <div class="filter-submenu hidden" id="submenu-traits"></div>
