@@ -20,7 +20,7 @@
       );
       const uniqueTraits = extractTraits(previousState.results);
       renderTraitFilters(uniqueTraits);
-      renderTypeFilters(rawTypes, displayNames, previousState.results);
+      renderVulnerabilityTypeFilters(rawTypes, displayNames);
       document.getElementById("loading").classList.add("hidden");
     }
 
@@ -34,7 +34,6 @@
     const currentSortText = document.getElementById("currentSort");
     const filterMenu = document.getElementById("filterMenu");
     const filterButton = document.getElementById("filterButton");
-    const filterBadge = document.getElementById("filterBadge");
 
     if (!sortButton || !sortMenu) {
       return;
@@ -46,9 +45,6 @@
 
       filterMenu.classList.remove("show");
       filterButton.classList.remove("filter-open");
-      if (filterBadge) {
-        filterBadge.classList.remove("hidden");
-      }
 
       sortButton.classList.toggle("active", isOpen);
       addIconToActiveOption();
@@ -131,9 +127,10 @@
         renderApplications(results);
 
         const { rawTypes, displayNames } = extractFilterValues(results);
-        renderTypeFilters(rawTypes, displayNames, results);
         renderVulnerabilityTypeFilters(rawTypes, displayNames);
-        updateFilterBadge();
+        const uniqueTraits = extractTraits(results);
+        renderTraitFilters(uniqueTraits);
+
         vscode.setState({ results });
         break;
       }
@@ -170,48 +167,6 @@
       ? "medium"
       : "low";
   }
-
-  function renderTypeFilters(rawTypes, displayNames, results) {
-    const container = document.getElementById("typeFilters");
-    if (!container) {
-      return;
-    }
-
-    container.innerHTML = "";
-    const buttons = [];
-
-    const allButton = document.createElement("button");
-    allButton.textContent = "All";
-    allButton.classList.add("selected");
-    allButton.onclick = () => {
-      buttons.forEach((btn) => btn.classList.remove("selected"));
-      allButton.classList.add("selected");
-      renderApplications(results);
-    };
-    container.appendChild(allButton);
-    buttons.push(allButton);
-
-    for (let i = 0; i < rawTypes.length; i++) {
-      const button = document.createElement("button");
-      button.textContent = displayNames[i];
-      const typeValue = rawTypes[i];
-
-      button.onclick = () => {
-        buttons.forEach((btn) => btn.classList.remove("selected"));
-        button.classList.add("selected");
-
-        const filteredResults = {
-          ...results,
-          results: results.results.filter((r) => r.type === typeValue),
-        };
-        renderApplications(filteredResults);
-      };
-
-      container.appendChild(button);
-      buttons.push(button);
-    }
-  }
-
   function renderVulnerabilityTypeFilters(rawTypes, displayNames) {
     const submenu = document.getElementById("submenu-vuln-type");
     if (!submenu) {
@@ -222,30 +177,35 @@
 
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
+    allItem.style.justifyContent = "space-between";
     allItem.innerHTML = `
-      <input type="checkbox" id="vuln-all" />
-      <label for="vuln-all">All Types</label>
+      <label class="ellipsis" for="vuln-all"><b>Show All</b></label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="vuln-all" checked />
+        <span class="slider"></span>
+      </label>
     `;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = true;
-
     for (let i = 0; i < rawTypes.length; i++) {
+      const id = `vuln-${rawTypes[i].replace(/\s+/g, "-")}`;
       const item = document.createElement("div");
       item.classList.add("filter-option");
+      item.style.justifyContent = "space-between";
 
-      const id = `vuln-${rawTypes[i].replace(/\s+/g, "-")}`;
       item.innerHTML = `
-        <input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
-        <label for="${id}">${displayNames[i]}</label>
+        <label class="ellipsis" for="${id}">${displayNames[i]}</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="${id}" data-type="${rawTypes[i]}" checked />
+          <span class="slider"></span>
+        </label>
       `;
       submenu.appendChild(item);
 
       const cb = item.querySelector("input");
-      cb.checked = true;
       individualCheckboxes.push(cb);
     }
 
@@ -258,12 +218,7 @@
 
     individualCheckboxes.forEach((cb) => {
       cb.addEventListener("change", () => {
-        if (!cb.checked) {
-          allCheckbox.checked = false;
-        } else {
-          const allChecked = individualCheckboxes.every((cb) => cb.checked);
-          allCheckbox.checked = allChecked;
-        }
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
       });
     });
   }
@@ -445,7 +400,6 @@
   function setupFilterMenu() {
     const filterButton = document.getElementById("filterButton");
     const filterMenu = document.getElementById("filterMenu");
-    const filterBadge = document.getElementById("filterBadge");
     const sortMenu = document.getElementById("sortMenu");
     const sortButton = document.getElementById("sortButton");
 
@@ -458,10 +412,6 @@
       const isOpen = filterMenu.classList.toggle("show");
 
       filterButton.classList.toggle("filter-open", isOpen);
-      if (filterBadge) {
-        filterBadge.classList.toggle("hidden", isOpen);
-      }
-
       sortMenu.classList.remove("show");
       sortButton.classList.remove("active");
     });
@@ -470,34 +420,29 @@
       if (!filterMenu.contains(e.target) && !filterButton.contains(e.target)) {
         filterMenu.classList.remove("show");
         filterButton.classList.remove("filter-open");
-        if (filterBadge) {
-          filterBadge.classList.remove("hidden");
-        }
       }
     });
 
     document.getElementById("cancelFilter").addEventListener("click", () => {
       filterMenu.classList.remove("show");
       filterButton.classList.remove("filter-open");
-      if (filterBadge) {
-        filterBadge.classList.remove("hidden");
-      }
     });
 
     document.querySelectorAll(".filter-category").forEach((category) => {
       category.addEventListener("click", () => {
         const key = category.dataset.toggle;
         const submenu = document.getElementById(`submenu-${key}`);
+
+        const isOpening = submenu.classList.contains("hidden");
         submenu.classList.toggle("hidden");
-        const label = category.textContent.trim().replace(/^[›⌄]/, "").trim();
-        category.textContent = submenu.classList.contains("hidden")
-          ? `› ${label}`
-          : `⌄ ${label}`;
+        category.classList.toggle("expanded", isOpening);
       });
     });
   }
 
   function extractTraits(results) {
+    console.log("results", results);
+
     const traitsSet = new Set();
 
     results.results.forEach((r) => {
@@ -505,7 +450,7 @@
         Object.values(r.traits).forEach((t) => traitsSet.add(t));
       }
     });
-
+    console.log("results1", Array.from(traitsSet));
     return Array.from(traitsSet);
   }
 
@@ -519,25 +464,31 @@
 
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
+    allItem.style.justifyContent = "space-between";
     allItem.innerHTML = `
-      <input type="checkbox" id="trait-all" />
-      <label for="trait-all">All Traits</label>
+      <label class="ellipsis" for="trait-all"><b>Show All</b></label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="trait-all" />
+        <span class="slider"></span>
+      </label>
     `;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = false;
-
     traits.forEach((trait) => {
+      const id = `trait-${trait.replace(/\s+/g, "-")}`;
       const div = document.createElement("div");
       div.className = "filter-option";
+      div.style.justifyContent = "space-between";
 
-      const id = `trait-${trait.replace(/\s+/g, "-")}`;
       div.innerHTML = `
-        <input type="checkbox" id="${id}" data-value="${trait}" />
-        <label for="${id}">${trait}</label>
+        <label class="ellipsis" for="${id}">${trait}</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="${id}" data-value="${trait}" />
+          <span class="slider"></span>
+        </label>
       `;
       submenu.appendChild(div);
 
@@ -555,12 +506,7 @@
 
     individualCheckboxes.forEach((cb) => {
       cb.addEventListener("change", () => {
-        if (!cb.checked) {
-          allCheckbox.checked = false;
-        } else {
-          const allChecked = individualCheckboxes.every((cb) => cb.checked);
-          allCheckbox.checked = allChecked;
-        }
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
       });
     });
   }
@@ -582,26 +528,8 @@
       .filter((cb) => cb.id !== "trait-all")
       .map((cb) => cb.dataset.value);
 
-    const totalSelected = selectedTypes.length + selectedTraits.length;
     const filterButton = document.getElementById("filterButton");
-    let badge = filterButton.querySelector(".filter-badge");
-
-    if (totalSelected > 0) {
-      filterButton.classList.add("has-selection");
-
-      if (!badge) {
-        badge = document.createElement("span");
-        badge.className = "filter-badge";
-        filterButton.appendChild(badge);
-      }
-
-      badge.textContent = totalSelected;
-    } else {
-      filterButton.classList.remove("has-selection");
-      if (badge) {
-        badge.remove();
-      }
-    }
+    filterButton.classList.remove("has-selection");
 
     if (selectedTypes.length === 0 && selectedTraits.length === 0) {
       renderApplications({ ...results, results: [] });
@@ -634,41 +562,8 @@
       applyFilterSelections(state.results);
       document.getElementById("filterMenu").classList.remove("show");
       document.getElementById("filterButton").classList.remove("filter-open");
-      updateFilterBadge();
     }
   });
-
-  function updateFilterBadge() {
-    const selectedTypes = document.querySelectorAll(
-      "#submenu-vuln-type input[type='checkbox']:checked"
-    );
-    const selectedTraits = document.querySelectorAll(
-      "#submenu-traits input[type='checkbox']:checked"
-    );
-
-    const count =
-      [...selectedTypes].filter((cb) => cb.id !== "vuln-all").length +
-      [...selectedTraits].filter((cb) => cb.id !== "trait-all").length;
-
-    const badge = document.getElementById("filterBadge");
-    const isFilterOpen = document
-      .getElementById("filterMenu")
-      .classList.contains("show");
-
-    if (badge) {
-      badge.innerHTML = `<div>${count}</div>`;
-      badge.classList.toggle("hidden", isFilterOpen);
-    }
-
-    const filterButton = document.getElementById("filterButton");
-    if (filterButton) {
-      if (count > 0) {
-        filterButton.classList.add("has-selection");
-      } else {
-        filterButton.classList.remove("has-selection");
-      }
-    }
-  }
 
   document.addEventListener("DOMContentLoaded", function () {
     enableBootstrapTooltips();
