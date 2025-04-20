@@ -13,20 +13,63 @@
   window.addEventListener("DOMContentLoaded", () => {
     const previousState = vscode.getState();
 
-    if (previousState?.results) {
-      renderApplications(previousState.results);
-      const { rawTypes, displayNames } = extractFilterValues(
-        previousState.results
+    const { rawTypes, displayNames } = extractFilterValues(
+      previousState?.results
+    );
+    renderVulnerabilityTypeFilters(rawTypes, displayNames);
+
+    const uniqueTraits = extractTraits(previousState?.results);
+    renderTraitFilters(uniqueTraits);
+
+    if (previousState?.filteredResults) {
+      restoreFilterSelections(
+        previousState.selectedTypes,
+        previousState.selectedTraits
       );
-      const uniqueTraits = extractTraits(previousState.results);
-      renderTraitFilters(uniqueTraits);
-      renderVulnerabilityTypeFilters(rawTypes, displayNames);
-      document.getElementById("loading").classList.add("hidden");
+      renderApplications(previousState.filteredResults);
+    } else if (previousState?.results) {
+      renderApplications(previousState.results);
     }
+
+    document.getElementById("loading").classList.add("hidden");
 
     setupSortMenu();
     setupFilterMenu();
   });
+
+  function restoreFilterSelections(selectedTypes = [], selectedTraits = []) {
+    selectedTypes.forEach((type) => {
+      const checkbox = document.querySelector(
+        `#submenu-vuln-type input[data-type="${type}"]`
+      );
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
+
+    selectedTraits.forEach((trait) => {
+      const checkbox = document.querySelector(
+        `#submenu-traits input[data-value="${trait}"]`
+      );
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
+
+    const allVuln = document.getElementById("vuln-all");
+    const individualVulns = document.querySelectorAll(
+      "#submenu-vuln-type input[type='checkbox']:not(#vuln-all)"
+    );
+    allVuln.checked = Array.from(individualVulns).every((cb) => cb.checked);
+
+    const allTraits = document.getElementById("trait-all");
+    const individualTraits = document.querySelectorAll(
+      "#submenu-traits input[type='checkbox']:not(#trait-all)"
+    );
+    allTraits.checked = Array.from(individualTraits).every((cb) => cb.checked);
+
+    updateFilterCounts();
+  }
 
   function setupSortMenu() {
     const sortButton = document.getElementById("sortButton");
@@ -175,13 +218,16 @@
 
     submenu.innerHTML = "";
 
+    const state = vscode.getState();
+    const selectedTypes = state?.selectedTypes;
+
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
     allItem.style.justifyContent = "space-between";
     allItem.innerHTML = `
       <label class="ellipsis" for="vuln-all"><b>Show All</b></label>
       <label class="toggle-switch">
-        <input type="checkbox" id="vuln-all" checked />
+        <input type="checkbox" id="vuln-all" />
         <span class="slider"></span>
       </label>
     `;
@@ -191,23 +237,34 @@
     const individualCheckboxes = [];
 
     for (let i = 0; i < rawTypes.length; i++) {
-      const id = `vuln-${rawTypes[i].replace(/\s+/g, "-")}`;
+      const rawType = rawTypes[i];
+      const displayName = displayNames[i];
+      const id = `vuln-${rawType.replace(/\s+/g, "-")}`;
+
       const item = document.createElement("div");
       item.classList.add("filter-option");
       item.style.justifyContent = "space-between";
-
       item.innerHTML = `
-        <label class="ellipsis" for="${id}">${displayNames[i]}</label>
+        <label class="ellipsis" for="${id}">${displayName}</label>
         <label class="toggle-switch">
-          <input type="checkbox" id="${id}" data-type="${rawTypes[i]}" checked />
+          <input type="checkbox" id="${id}" data-type="${rawType}" />
           <span class="slider"></span>
         </label>
       `;
       submenu.appendChild(item);
 
       const cb = item.querySelector("input");
+
+      if (selectedTypes === undefined) {
+        cb.checked = true;
+      } else {
+        cb.checked = selectedTypes.includes(rawType);
+      }
+
       individualCheckboxes.push(cb);
     }
+
+    allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
 
     allCheckbox.addEventListener("change", (e) => {
       const isChecked = e.target.checked;
@@ -223,6 +280,7 @@
         updateFilterCounts();
       });
     });
+
     updateFilterCounts();
   }
 
@@ -535,6 +593,12 @@
     filterButton.classList.remove("has-selection");
 
     if (selectedTypes.length === 0 && selectedTraits.length === 0) {
+      vscode.setState({
+        results,
+        filteredResults: { ...results, results: [] },
+        selectedTypes: [],
+        selectedTraits: [],
+      });
       renderApplications({ ...results, results: [] });
       return;
     }
@@ -555,6 +619,13 @@
         return (hasTypeFilter && typeMatch) || (hasTraitFilter && traitMatch);
       }),
     };
+
+    vscode.setState({
+      results,
+      filteredResults,
+      selectedTypes,
+      selectedTraits,
+    });
 
     renderApplications(filteredResults);
   }
