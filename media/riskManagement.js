@@ -217,7 +217,6 @@
     }
 
     submenu.innerHTML = "";
-
     const state = vscode.getState();
     const selectedTypes = state?.selectedTypes;
 
@@ -229,8 +228,7 @@
       <label class="toggle-switch">
         <input type="checkbox" id="vuln-all" />
         <span class="slider"></span>
-      </label>
-    `;
+      </label>`;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
@@ -249,36 +247,33 @@
         <label class="toggle-switch">
           <input type="checkbox" id="${id}" data-type="${rawType}" />
           <span class="slider"></span>
-        </label>
-      `;
+        </label>`;
       submenu.appendChild(item);
 
       const cb = item.querySelector("input");
-
-      if (selectedTypes === undefined) {
-        cb.checked = true;
-      } else {
-        cb.checked = selectedTypes.includes(rawType);
-      }
+      cb.checked =
+        selectedTypes === undefined || selectedTypes.includes(rawType);
+      cb.addEventListener("change", () => {
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
+        const state = vscode.getState();
+        if (state?.results) {
+          applyFilterSelections(state.results);
+        }
+      });
 
       individualCheckboxes.push(cb);
     }
 
     allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
-
     allCheckbox.addEventListener("change", (e) => {
       const isChecked = e.target.checked;
-      individualCheckboxes.forEach((cb) => {
-        cb.checked = isChecked;
-      });
+      individualCheckboxes.forEach((cb) => (cb.checked = isChecked));
       updateFilterCounts();
-    });
-
-    individualCheckboxes.forEach((cb) => {
-      cb.addEventListener("change", () => {
-        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
-        updateFilterCounts();
-      });
+      const state = vscode.getState();
+      if (state?.results) {
+        applyFilterSelections(state.results);
+      }
     });
 
     updateFilterCounts();
@@ -484,11 +479,6 @@
       }
     });
 
-    document.getElementById("cancelFilter").addEventListener("click", () => {
-      filterMenu.classList.remove("show");
-      filterButton.classList.remove("filter-open");
-    });
-
     document.querySelectorAll(".filter-category").forEach((category) => {
       category.addEventListener("click", () => {
         const key = category.dataset.toggle;
@@ -516,16 +506,16 @@
     const submenu = document.getElementById("submenu-traits");
     const category = document.querySelector('[data-toggle="traits"]');
 
-    // ✅ הסתרה מוחלטת אם אין traits בכלל
     if (!traits || traits.length === 0) {
       submenu?.classList.add("hidden");
       category?.classList.add("hidden");
       return;
     }
 
-    // ✅ הצגה מחדש אם יש traits
-    submenu.classList.remove("hidden");
+    // ✅ ודא שהקטגוריה תתחיל סגורה
+    submenu.classList.add("hidden");
     category.classList.remove("hidden");
+    category.classList.remove("expanded");
 
     submenu.innerHTML = "";
 
@@ -537,8 +527,7 @@
       <label class="toggle-switch">
         <input type="checkbox" id="trait-all" />
         <span class="slider"></span>
-      </label>
-    `;
+      </label>`;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
@@ -555,28 +544,31 @@
         <label class="toggle-switch">
           <input type="checkbox" id="${id}" data-value="${trait}" />
           <span class="slider"></span>
-        </label>
-      `;
+        </label>`;
       submenu.appendChild(div);
 
       const cb = div.querySelector("input");
       cb.checked = false;
+      cb.addEventListener("change", () => {
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
+        const state = vscode.getState();
+        if (state?.results) {
+          applyFilterSelections(state.results);
+        }
+      });
+
       individualCheckboxes.push(cb);
     });
 
     allCheckbox.addEventListener("change", (e) => {
       const isChecked = e.target.checked;
-      individualCheckboxes.forEach((cb) => {
-        cb.checked = isChecked;
-      });
+      individualCheckboxes.forEach((cb) => (cb.checked = isChecked));
       updateFilterCounts();
-    });
-
-    individualCheckboxes.forEach((cb) => {
-      cb.addEventListener("change", () => {
-        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
-        updateFilterCounts();
-      });
+      const state = vscode.getState();
+      if (state?.results) {
+        applyFilterSelections(state.results);
+      }
     });
 
     updateFilterCounts();
@@ -639,15 +631,6 @@
 
     renderApplications(filteredResults);
   }
-
-  document.getElementById("applyFilter").addEventListener("click", () => {
-    const state = vscode.getState();
-    if (state?.results) {
-      applyFilterSelections(state.results);
-      document.getElementById("filterMenu").classList.remove("show");
-      document.getElementById("filterButton").classList.remove("filter-open");
-    }
-  });
 
   function updateFilterCounts() {
     const vulnCheckboxes = Array.from(
