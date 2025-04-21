@@ -17,6 +17,8 @@ import * as os from "os";
 import { GptResult } from "../models/gptResult";
 import { cx } from "../cx";
 
+const SYSTEM_NOT_FIND_PATH_ERROR = "The system cannot find the path specified.";
+
 export class WebViewCommand {
   private thinkID: number;
   context: vscode.ExtensionContext;
@@ -334,7 +336,6 @@ export class WebViewCommand {
           await this.startSastGpt(
             "Start chat",
             username,
-            detailsDetachedView.getAskKicsUserIcon(),
             detailsDetachedView.getAskKicsIcon(),
             gptResult
           );
@@ -429,6 +430,10 @@ export class WebViewCommand {
       result.vulnerabilityName
     )
       .then((messages) => {
+
+        if(messages[0].responses[0].includes("Please ensure that you have opened the correct workspace or the relevant file.")){
+          throw new Error(constants.gptFileNotInWorkspaceError);
+        }
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
@@ -492,6 +497,9 @@ export class WebViewCommand {
       this.conversationId
     )
       .then((messages) => {
+        if(messages[0].responses[0].includes(SYSTEM_NOT_FIND_PATH_ERROR)){
+          throw new Error(constants.gptFileNotInWorkspaceError);
+        }
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
@@ -526,7 +534,6 @@ export class WebViewCommand {
   async startSastGpt(
     userMessage: string,
     user: string,
-    userKicsIcon,
     kicsIcon,
     result: GptResult
   ) {
@@ -554,6 +561,10 @@ export class WebViewCommand {
 
     cx.runSastGpt(userMessage, result.filename, result.resultID, "")
       .then((messages) => {
+        if(messages[0].responses[0].includes(SYSTEM_NOT_FIND_PATH_ERROR)){
+          throw new Error(constants.gptFileNotInWorkspaceError);
+        }
+
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
@@ -580,7 +591,7 @@ export class WebViewCommand {
             user: `${constants.aiSecurityChampion}`,
           },
           thinkID: this.thinkID,
-          icon: kicsIcon,
+          icon: "https://" + kicsIcon.authority + kicsIcon.path,
         });
       });
   }

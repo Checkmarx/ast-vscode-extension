@@ -54,7 +54,10 @@ export class Cx implements CxPlatform {
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
     const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
+
+    if (!filePackageObjectList|| filePackageObjectList.length <= 0) {
+       throw new Error(constants.gptFileNotInWorkspaceError);
+    }
       const answer = await cx.sastChat(
         gptToken,
         filePath,
@@ -69,7 +72,7 @@ export class Cx implements CxPlatform {
       } else {
         throw new Error(answer.status);
       }
-    }
+    
   }
 
   async runGpt(
@@ -87,7 +90,9 @@ export class Cx implements CxPlatform {
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
     const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
+    if (!filePackageObjectList|| filePackageObjectList.length <= 0) {
+      throw new Error(constants.gptFileNotInWorkspaceError);
+    }
       const answer = await cx.kicsChat(
         gptToken,
         filePath,
@@ -103,7 +108,6 @@ export class Cx implements CxPlatform {
       } else {
         throw new Error(answer.status);
       }
-    }
   }
 
   async mask(filePath: string) {
