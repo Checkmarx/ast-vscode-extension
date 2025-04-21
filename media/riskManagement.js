@@ -514,9 +514,18 @@
 
   function renderTraitFilters(traits) {
     const submenu = document.getElementById("submenu-traits");
-    if (!submenu) {
+    const category = document.querySelector('[data-toggle="traits"]');
+
+    // ✅ הסתרה מוחלטת אם אין traits בכלל
+    if (!traits || traits.length === 0) {
+      submenu?.classList.add("hidden");
+      category?.classList.add("hidden");
       return;
     }
+
+    // ✅ הצגה מחדש אם יש traits
+    submenu.classList.remove("hidden");
+    category.classList.remove("hidden");
 
     submenu.innerHTML = "";
 
@@ -569,6 +578,7 @@
         updateFilterCounts();
       });
     });
+
     updateFilterCounts();
   }
 
