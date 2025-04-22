@@ -22,25 +22,23 @@
     const uniqueTraits = extractTraits(previousState?.results);
     renderTraitFilters(uniqueTraits);
 
-    if (previousState?.filteredResults) {
-      restoreFilterSelections(
-        previousState.selectedTypes,
-        previousState.selectedTraits
-      );
+    const dataToRender =
+      previousState?.filteredResults ?? previousState?.results;
 
-      previousState.filteredResults.applicationNameIDMap = sortApplications(
-        previousState.filteredResults.applicationNameIDMap,
+    if (dataToRender) {
+      dataToRender.applicationNameIDMap = sortApplications(
+        dataToRender.applicationNameIDMap,
         currentSortMethod
       );
 
-      renderApplications(previousState.filteredResults);
-    } else if (previousState?.results) {
-      previousState.results.applicationNameIDMap = sortApplications(
-        previousState.results.applicationNameIDMap,
-        currentSortMethod
-      );
+      if (previousState?.filteredResults) {
+        restoreFilterSelections(
+          previousState.selectedTypes,
+          previousState.selectedTraits
+        );
+      }
 
-      renderApplications(previousState.results);
+      renderApplications(dataToRender);
     }
 
     document.getElementById("loading").classList.add("hidden");
