@@ -12,6 +12,7 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     const previousState = vscode.getState();
+    currentSortMethod = previousState?.currentSortMethod || "score";
 
     const { rawTypes, displayNames } = extractFilterValues(
       previousState?.results
@@ -26,8 +27,19 @@
         previousState.selectedTypes,
         previousState.selectedTraits
       );
+
+      previousState.filteredResults.applicationNameIDMap = sortApplications(
+        previousState.filteredResults.applicationNameIDMap,
+        currentSortMethod
+      );
+
       renderApplications(previousState.filteredResults);
     } else if (previousState?.results) {
+      previousState.results.applicationNameIDMap = sortApplications(
+        previousState.results.applicationNameIDMap,
+        currentSortMethod
+      );
+
       renderApplications(previousState.results);
     }
 
@@ -113,14 +125,20 @@
       option.addEventListener("click", () => {
         currentSortMethod = sortType;
         updateHasSelectionClass();
+        const state = vscode.getState();
+        vscode.setState({ ...state, currentSortMethod });
 
-        const results = vscode.getState()?.results;
-        if (results) {
-          results.applicationNameIDMap = sortApplications(
-            results.applicationNameIDMap,
+        const sourceResults =
+          state?.filteredResults !== undefined
+            ? state.filteredResults
+            : state.results;
+
+        if (sourceResults) {
+          sourceResults.applicationNameIDMap = sortApplications(
+            sourceResults.applicationNameIDMap,
             sortType
           );
-          renderApplications(results);
+          renderApplications(sourceResults);
         }
 
         sortMenu.classList.remove("show");
@@ -174,7 +192,7 @@
         const uniqueTraits = extractTraits(results);
         renderTraitFilters(uniqueTraits);
 
-        vscode.setState({ results });
+        vscode.setState({ results, currentSortMethod });
         break;
       }
       case "showLoader": {
@@ -512,7 +530,6 @@
       return;
     }
 
-    // ✅ ודא שהקטגוריה תתחיל סגורה
     submenu.classList.add("hidden");
     category.classList.remove("hidden");
     category.classList.remove("expanded");
@@ -600,6 +617,7 @@
         filteredResults: { ...results, results: [] },
         selectedTypes: [],
         selectedTraits: [],
+        currentSortMethod,
       });
       renderApplications({ ...results, results: [] });
       return;
@@ -627,6 +645,7 @@
       filteredResults,
       selectedTypes,
       selectedTraits,
+      currentSortMethod,
     });
 
     renderApplications(filteredResults);

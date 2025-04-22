@@ -317,7 +317,7 @@ svg {
 
 hr.separator-vertical {
   border: none;
-  height: 10px;
+  height: 12px;
   width: 1px;
   background-color: var(--cx-main-color);
 }
