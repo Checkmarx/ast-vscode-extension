@@ -17,8 +17,6 @@ import * as os from "os";
 import { GptResult } from "../models/gptResult";
 import { cx } from "../cx";
 
-const SYSTEM_NOT_FIND_PATH_ERROR = "The system cannot find the path specified.";
-
 export class WebViewCommand {
   private thinkID: number;
   context: vscode.ExtensionContext;
@@ -497,7 +495,7 @@ export class WebViewCommand {
       this.conversationId
     )
       .then((messages) => {
-        if(messages[0].responses[0].includes(SYSTEM_NOT_FIND_PATH_ERROR)){
+        if(messages[0].responses[0].includes(constants.systemNotFindPathError)){
           throw new Error(constants.gptFileNotInWorkspaceError);
         }
         this.conversationId = messages[0].conversationId;
@@ -561,7 +559,7 @@ export class WebViewCommand {
 
     cx.runSastGpt(userMessage, result.filename, result.resultID, "")
       .then((messages) => {
-        if(messages[0].responses[0].includes(SYSTEM_NOT_FIND_PATH_ERROR)){
+        if(messages[0].responses[0].includes(constants.systemNotFindPathError)){
           throw new Error(constants.gptFileNotInWorkspaceError);
         }
 
