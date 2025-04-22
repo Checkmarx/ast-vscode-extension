@@ -47,24 +47,20 @@
     setupFilterMenu();
   });
 
-  function restoreFilterSelections(selectedTypes = [], selectedTraits = []) {
-    selectedTypes.forEach((type) => {
+  function checkSavedSelections(selectorPrefix, selectedValues, dataAttr) {
+    selectedValues.forEach((value) => {
       const checkbox = document.querySelector(
-        `#submenu-vuln-type input[data-type="${type}"]`
+        `${selectorPrefix} input[${dataAttr}="${value}"]`
       );
       if (checkbox) {
         checkbox.checked = true;
       }
     });
+  }
 
-    selectedTraits.forEach((trait) => {
-      const checkbox = document.querySelector(
-        `#submenu-traits input[data-value="${trait}"]`
-      );
-      if (checkbox) {
-        checkbox.checked = true;
-      }
-    });
+  function restoreFilterSelections(selectedTypes = [], selectedTraits = []) {
+    checkSavedSelections("#submenu-vuln-type", selectedTypes, "data-type");
+    checkSavedSelections("#submenu-traits", selectedTraits, "data-value");
 
     const allVuln = document.getElementById("vuln-all");
     const individualVulns = document.querySelectorAll(
