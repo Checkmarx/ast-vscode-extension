@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.31.1-Final-Version-ASPM-Filters.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-Version-ASPM-Filters.0) - 2025-04-21 07:16:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-Final-beta-ASPM-Filter-component.0...v2.31.1-Final-Version-ASPM-Filters.0
+
 ## [v2.31.1-Final-beta-aspm.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-beta-aspm.0) - 2025-04-17 14:53:37
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
