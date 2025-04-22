@@ -12,21 +12,70 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     const previousState = vscode.getState();
+    currentSortMethod = previousState?.currentSortMethod || "score";
 
-    if (previousState?.results) {
-      renderApplications(previousState.results);
-      const { rawTypes, displayNames } = extractFilterValues(
-        previousState.results
+    const { rawTypes, displayNames } = extractFilterValues(
+      previousState?.results
+    );
+    renderVulnerabilityTypeFilters(rawTypes, displayNames);
+
+    const uniqueTraits = extractTraits(previousState?.results);
+    renderTraitFilters(uniqueTraits);
+
+    const dataToRender =
+      previousState?.filteredResults ?? previousState?.results;
+
+    if (dataToRender) {
+      dataToRender.applicationNameIDMap = sortApplications(
+        dataToRender.applicationNameIDMap,
+        currentSortMethod
       );
-      const uniqueTraits = extractTraits(previousState.results);
-      renderTraitFilters(uniqueTraits);
-      renderTypeFilters(rawTypes, displayNames, previousState.results);
-      document.getElementById("loading").classList.add("hidden");
+
+      if (previousState?.filteredResults) {
+        restoreFilterSelections(
+          previousState.selectedTypes,
+          previousState.selectedTraits
+        );
+      }
+
+      renderApplications(dataToRender);
     }
+
+    document.getElementById("loading").classList.add("hidden");
 
     setupSortMenu();
     setupFilterMenu();
   });
+
+  function checkSavedSelections(selectorPrefix, selectedValues, dataAttr) {
+    selectedValues.forEach((value) => {
+      const checkbox = document.querySelector(
+        `${selectorPrefix} input[${dataAttr}="${value}"]`
+      );
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
+  }
+
+  function restoreFilterSelections(selectedTypes = [], selectedTraits = []) {
+    checkSavedSelections("#submenu-vuln-type", selectedTypes, "data-type");
+    checkSavedSelections("#submenu-traits", selectedTraits, "data-value");
+
+    const allVuln = document.getElementById("vuln-all");
+    const individualVulns = document.querySelectorAll(
+      "#submenu-vuln-type input[type='checkbox']:not(#vuln-all)"
+    );
+    allVuln.checked = Array.from(individualVulns).every((cb) => cb.checked);
+
+    const allTraits = document.getElementById("trait-all");
+    const individualTraits = document.querySelectorAll(
+      "#submenu-traits input[type='checkbox']:not(#trait-all)"
+    );
+    allTraits.checked = Array.from(individualTraits).every((cb) => cb.checked);
+
+    updateFilterCounts();
+  }
 
   function setupSortMenu() {
     const sortButton = document.getElementById("sortButton");
@@ -34,7 +83,6 @@
     const currentSortText = document.getElementById("currentSort");
     const filterMenu = document.getElementById("filterMenu");
     const filterButton = document.getElementById("filterButton");
-    const filterBadge = document.getElementById("filterBadge");
 
     if (!sortButton || !sortMenu) {
       return;
@@ -46,9 +94,6 @@
 
       filterMenu.classList.remove("show");
       filterButton.classList.remove("filter-open");
-      if (filterBadge) {
-        filterBadge.classList.remove("hidden");
-      }
 
       sortButton.classList.toggle("active", isOpen);
       addIconToActiveOption();
@@ -74,14 +119,20 @@
       option.addEventListener("click", () => {
         currentSortMethod = sortType;
         updateHasSelectionClass();
+        const state = vscode.getState();
+        vscode.setState({ ...state, currentSortMethod });
 
-        const results = vscode.getState()?.results;
-        if (results) {
-          results.applicationNameIDMap = sortApplications(
-            results.applicationNameIDMap,
+        const sourceResults =
+          state?.filteredResults !== undefined
+            ? state.filteredResults
+            : state.results;
+
+        if (sourceResults) {
+          sourceResults.applicationNameIDMap = sortApplications(
+            sourceResults.applicationNameIDMap,
             sortType
           );
-          renderApplications(results);
+          renderApplications(sourceResults);
         }
 
         sortMenu.classList.remove("show");
@@ -131,10 +182,11 @@
         renderApplications(results);
 
         const { rawTypes, displayNames } = extractFilterValues(results);
-        renderTypeFilters(rawTypes, displayNames, results);
         renderVulnerabilityTypeFilters(rawTypes, displayNames);
-        updateFilterBadge();
-        vscode.setState({ results });
+        const uniqueTraits = extractTraits(results);
+        renderTraitFilters(uniqueTraits);
+
+        vscode.setState({ results, currentSortMethod });
         break;
       }
       case "showLoader": {
@@ -170,48 +222,6 @@
       ? "medium"
       : "low";
   }
-
-  function renderTypeFilters(rawTypes, displayNames, results) {
-    const container = document.getElementById("typeFilters");
-    if (!container) {
-      return;
-    }
-
-    container.innerHTML = "";
-    const buttons = [];
-
-    const allButton = document.createElement("button");
-    allButton.textContent = "All";
-    allButton.classList.add("selected");
-    allButton.onclick = () => {
-      buttons.forEach((btn) => btn.classList.remove("selected"));
-      allButton.classList.add("selected");
-      renderApplications(results);
-    };
-    container.appendChild(allButton);
-    buttons.push(allButton);
-
-    for (let i = 0; i < rawTypes.length; i++) {
-      const button = document.createElement("button");
-      button.textContent = displayNames[i];
-      const typeValue = rawTypes[i];
-
-      button.onclick = () => {
-        buttons.forEach((btn) => btn.classList.remove("selected"));
-        button.classList.add("selected");
-
-        const filteredResults = {
-          ...results,
-          results: results.results.filter((r) => r.type === typeValue),
-        };
-        renderApplications(filteredResults);
-      };
-
-      container.appendChild(button);
-      buttons.push(button);
-    }
-  }
-
   function renderVulnerabilityTypeFilters(rawTypes, displayNames) {
     const submenu = document.getElementById("submenu-vuln-type");
     if (!submenu) {
@@ -219,53 +229,66 @@
     }
 
     submenu.innerHTML = "";
+    const state = vscode.getState();
+    const selectedTypes = state?.selectedTypes;
 
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
+    allItem.style.justifyContent = "space-between";
     allItem.innerHTML = `
-      <input type="checkbox" id="vuln-all" />
-      <label for="vuln-all">All Types</label>
-    `;
+      <label class="ellipsis" for="vuln-all"><b>Show All</b></label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="vuln-all" />
+        <span class="slider"></span>
+      </label>`;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = true;
-
     for (let i = 0; i < rawTypes.length; i++) {
+      const rawType = rawTypes[i];
+      const displayName = displayNames[i];
+      const id = `vuln-${rawType.replace(/\s+/g, "-")}`;
+
       const item = document.createElement("div");
       item.classList.add("filter-option");
-
-      const id = `vuln-${rawTypes[i].replace(/\s+/g, "-")}`;
+      item.style.justifyContent = "space-between";
       item.innerHTML = `
-        <input type="checkbox" id="${id}" data-type="${rawTypes[i]}" />
-        <label for="${id}">${displayNames[i]}</label>
-      `;
+        <label class="ellipsis" for="${id}">${displayName}</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="${id}" data-type="${rawType}" />
+          <span class="slider"></span>
+        </label>`;
       submenu.appendChild(item);
 
       const cb = item.querySelector("input");
-      cb.checked = true;
+      cb.checked =
+        selectedTypes === undefined || selectedTypes.includes(rawType);
+      cb.addEventListener("change", () => {
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
+        const state = vscode.getState();
+        if (state?.results) {
+          applyFilterSelections(state.results);
+        }
+      });
+
       individualCheckboxes.push(cb);
     }
 
+    allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
     allCheckbox.addEventListener("change", (e) => {
       const isChecked = e.target.checked;
-      individualCheckboxes.forEach((cb) => {
-        cb.checked = isChecked;
-      });
+      individualCheckboxes.forEach((cb) => (cb.checked = isChecked));
+      updateFilterCounts();
+      const state = vscode.getState();
+      if (state?.results) {
+        applyFilterSelections(state.results);
+      }
     });
 
-    individualCheckboxes.forEach((cb) => {
-      cb.addEventListener("change", () => {
-        if (!cb.checked) {
-          allCheckbox.checked = false;
-        } else {
-          const allChecked = individualCheckboxes.every((cb) => cb.checked);
-          allCheckbox.checked = allChecked;
-        }
-      });
-    });
+    updateFilterCounts();
   }
 
   function extractFilterValues(results) {
@@ -445,7 +468,6 @@
   function setupFilterMenu() {
     const filterButton = document.getElementById("filterButton");
     const filterMenu = document.getElementById("filterMenu");
-    const filterBadge = document.getElementById("filterBadge");
     const sortMenu = document.getElementById("sortMenu");
     const sortButton = document.getElementById("sortButton");
 
@@ -458,10 +480,6 @@
       const isOpen = filterMenu.classList.toggle("show");
 
       filterButton.classList.toggle("filter-open", isOpen);
-      if (filterBadge) {
-        filterBadge.classList.toggle("hidden", isOpen);
-      }
-
       sortMenu.classList.remove("show");
       sortButton.classList.remove("active");
     });
@@ -470,17 +488,6 @@
       if (!filterMenu.contains(e.target) && !filterButton.contains(e.target)) {
         filterMenu.classList.remove("show");
         filterButton.classList.remove("filter-open");
-        if (filterBadge) {
-          filterBadge.classList.remove("hidden");
-        }
-      }
-    });
-
-    document.getElementById("cancelFilter").addEventListener("click", () => {
-      filterMenu.classList.remove("show");
-      filterButton.classList.remove("filter-open");
-      if (filterBadge) {
-        filterBadge.classList.remove("hidden");
       }
     });
 
@@ -488,11 +495,10 @@
       category.addEventListener("click", () => {
         const key = category.dataset.toggle;
         const submenu = document.getElementById(`submenu-${key}`);
+
+        const isOpening = submenu.classList.contains("hidden");
         submenu.classList.toggle("hidden");
-        const label = category.textContent.trim().replace(/^[›⌄]/, "").trim();
-        category.textContent = submenu.classList.contains("hidden")
-          ? `› ${label}`
-          : `⌄ ${label}`;
+        category.classList.toggle("expanded", isOpening);
       });
     });
   }
@@ -505,64 +511,78 @@
         Object.values(r.traits).forEach((t) => traitsSet.add(t));
       }
     });
-
     return Array.from(traitsSet);
   }
 
   function renderTraitFilters(traits) {
     const submenu = document.getElementById("submenu-traits");
-    if (!submenu) {
+    const category = document.querySelector('[data-toggle="traits"]');
+
+    if (!traits || traits.length === 0) {
+      submenu?.classList.add("hidden");
+      category?.classList.add("hidden");
       return;
     }
+
+    submenu.classList.add("hidden");
+    category.classList.remove("hidden");
+    category.classList.remove("expanded");
 
     submenu.innerHTML = "";
 
     const allItem = document.createElement("div");
     allItem.classList.add("filter-option");
+    allItem.style.justifyContent = "space-between";
     allItem.innerHTML = `
-      <input type="checkbox" id="trait-all" />
-      <label for="trait-all">All Traits</label>
-    `;
+      <label class="ellipsis" for="trait-all"><b>Show All</b></label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="trait-all" />
+        <span class="slider"></span>
+      </label>`;
     submenu.appendChild(allItem);
 
     const allCheckbox = allItem.querySelector("input");
     const individualCheckboxes = [];
 
-    allCheckbox.checked = false;
-
     traits.forEach((trait) => {
+      const id = `trait-${trait.replace(/\s+/g, "-")}`;
       const div = document.createElement("div");
       div.className = "filter-option";
+      div.style.justifyContent = "space-between";
 
-      const id = `trait-${trait.replace(/\s+/g, "-")}`;
       div.innerHTML = `
-        <input type="checkbox" id="${id}" data-value="${trait}" />
-        <label for="${id}">${trait}</label>
-      `;
+        <label class="ellipsis" for="${id}">${trait}</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="${id}" data-value="${trait}" />
+          <span class="slider"></span>
+        </label>`;
       submenu.appendChild(div);
 
       const cb = div.querySelector("input");
       cb.checked = false;
+      cb.addEventListener("change", () => {
+        allCheckbox.checked = individualCheckboxes.every((cb) => cb.checked);
+        updateFilterCounts();
+        const state = vscode.getState();
+        if (state?.results) {
+          applyFilterSelections(state.results);
+        }
+      });
+
       individualCheckboxes.push(cb);
     });
 
     allCheckbox.addEventListener("change", (e) => {
       const isChecked = e.target.checked;
-      individualCheckboxes.forEach((cb) => {
-        cb.checked = isChecked;
-      });
+      individualCheckboxes.forEach((cb) => (cb.checked = isChecked));
+      updateFilterCounts();
+      const state = vscode.getState();
+      if (state?.results) {
+        applyFilterSelections(state.results);
+      }
     });
 
-    individualCheckboxes.forEach((cb) => {
-      cb.addEventListener("change", () => {
-        if (!cb.checked) {
-          allCheckbox.checked = false;
-        } else {
-          const allChecked = individualCheckboxes.every((cb) => cb.checked);
-          allCheckbox.checked = allChecked;
-        }
-      });
-    });
+    updateFilterCounts();
   }
 
   function applyFilterSelections(results) {
@@ -582,28 +602,17 @@
       .filter((cb) => cb.id !== "trait-all")
       .map((cb) => cb.dataset.value);
 
-    const totalSelected = selectedTypes.length + selectedTraits.length;
     const filterButton = document.getElementById("filterButton");
-    let badge = filterButton.querySelector(".filter-badge");
-
-    if (totalSelected > 0) {
-      filterButton.classList.add("has-selection");
-
-      if (!badge) {
-        badge = document.createElement("span");
-        badge.className = "filter-badge";
-        filterButton.appendChild(badge);
-      }
-
-      badge.textContent = totalSelected;
-    } else {
-      filterButton.classList.remove("has-selection");
-      if (badge) {
-        badge.remove();
-      }
-    }
+    filterButton.classList.remove("has-selection");
 
     if (selectedTypes.length === 0 && selectedTraits.length === 0) {
+      vscode.setState({
+        results,
+        filteredResults: { ...results, results: [] },
+        selectedTypes: [],
+        selectedTraits: [],
+        currentSortMethod,
+      });
       renderApplications({ ...results, results: [] });
       return;
     }
@@ -625,49 +634,35 @@
       }),
     };
 
+    vscode.setState({
+      results,
+      filteredResults,
+      selectedTypes,
+      selectedTraits,
+      currentSortMethod,
+    });
+
     renderApplications(filteredResults);
   }
 
-  document.getElementById("applyFilter").addEventListener("click", () => {
-    const state = vscode.getState();
-    if (state?.results) {
-      applyFilterSelections(state.results);
-      document.getElementById("filterMenu").classList.remove("show");
-      document.getElementById("filterButton").classList.remove("filter-open");
-      updateFilterBadge();
-    }
-  });
+  function updateFilterCounts() {
+    const vulnCheckboxes = Array.from(
+      document.querySelectorAll("#submenu-vuln-type input[type='checkbox']")
+    ).filter((cb) => cb.id !== "vuln-all");
 
-  function updateFilterBadge() {
-    const selectedTypes = document.querySelectorAll(
-      "#submenu-vuln-type input[type='checkbox']:checked"
-    );
-    const selectedTraits = document.querySelectorAll(
-      "#submenu-traits input[type='checkbox']:checked"
-    );
+    const traitCheckboxes = Array.from(
+      document.querySelectorAll("#submenu-traits input[type='checkbox']")
+    ).filter((cb) => cb.id !== "trait-all");
 
-    const count =
-      [...selectedTypes].filter((cb) => cb.id !== "vuln-all").length +
-      [...selectedTraits].filter((cb) => cb.id !== "trait-all").length;
+    const vulnCount = vulnCheckboxes.filter((cb) => cb.checked).length;
+    const traitCount = traitCheckboxes.filter((cb) => cb.checked).length;
 
-    const badge = document.getElementById("filterBadge");
-    const isFilterOpen = document
-      .getElementById("filterMenu")
-      .classList.contains("show");
-
-    if (badge) {
-      badge.innerHTML = `<div>${count}</div>`;
-      badge.classList.toggle("hidden", isFilterOpen);
-    }
-
-    const filterButton = document.getElementById("filterButton");
-    if (filterButton) {
-      if (count > 0) {
-        filterButton.classList.add("has-selection");
-      } else {
-        filterButton.classList.remove("has-selection");
-      }
-    }
+    document.querySelector(
+      '[data-toggle="vuln-type"] .filter-count'
+    ).textContent = `(${vulnCount})`;
+    document.querySelector(
+      '[data-toggle="traits"] .filter-count'
+    ).textContent = `(${traitCount})`;
   }
 
   document.addEventListener("DOMContentLoaded", function () {
