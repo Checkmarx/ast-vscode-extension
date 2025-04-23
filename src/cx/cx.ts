@@ -47,14 +47,10 @@ export class Cx implements CxPlatform {
   ) {
     const resultsFilePath = getResultsFilePath();
     const cx = new CxWrapper(await this.getAstConfiguration());
-    const gptToken = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptSettingsKey) as string;
-    const gptEngine = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
+    const { gptToken, gptEngine } = this.getGptConfig();
+     
+      this.validateWorkspaceFolders();
+
       const answer = await cx.sastChat(
         gptToken,
         filePath,
@@ -69,7 +65,7 @@ export class Cx implements CxPlatform {
       } else {
         throw new Error(answer.status);
       }
-    }
+    
   }
 
   async runGpt(
@@ -80,30 +76,45 @@ export class Cx implements CxPlatform {
     queryName: string
   ) {
     const cx = new CxWrapper(await this.getAstConfiguration());
+    const { gptToken, gptEngine } = this.getGptConfig();
+
+    this.validateWorkspaceFolders();
+
+    const answer = await cx.kicsChat(
+      gptToken,
+      filePath,
+      line,
+      severity,
+      queryName,
+      message,
+      null,
+      gptEngine
+    );
+    if (answer.payload && answer.exitCode === 0) {
+      return answer.payload;
+    } else {
+      throw new Error(answer.status);
+    }
+  }
+
+  private validateWorkspaceFolders() {
+    const filePackageObjectList = vscode.workspace.workspaceFolders;
+
+    if (!filePackageObjectList || filePackageObjectList.length <= 0) {
+      throw new Error(constants.gptFileNotInWorkspaceError);
+    }
+  }
+
+   getGptConfig(): { gptToken: string; gptEngine: string } {
     const gptToken = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptSettingsKey) as string;
+  
     const gptEngine = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
-      const answer = await cx.kicsChat(
-        gptToken,
-        filePath,
-        line,
-        severity,
-        queryName,
-        message,
-        null,
-        gptEngine
-      );
-      if (answer.payload && answer.exitCode === 0) {
-        return answer.payload;
-      } else {
-        throw new Error(answer.status);
-      }
-    }
+  
+    return { gptToken, gptEngine };
   }
 
   async mask(filePath: string) {

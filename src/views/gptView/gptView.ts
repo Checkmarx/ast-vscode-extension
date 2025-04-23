@@ -144,7 +144,7 @@ export class GptView implements vscode.WebviewViewProvider {
         <div id="main_div">
         <div class="container-fluid">
 		<div class="container" style="padding:0;width:100 !important;">
-		<div class="card" style="border:none;margin-bottom:1em;background:transparent;">
+		<div class="card" style="border:none;margin-bottom:1em;background:transparent;color:var(--vscode-editor-foreground);">
                <div class="card-body" style="padding:0">
                   <div class="row">
                      <div class="col">
