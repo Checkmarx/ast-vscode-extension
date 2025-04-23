@@ -53,11 +53,9 @@ export class Cx implements CxPlatform {
     const gptEngine = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
+     
+      this.validateWorkspaceFolders();
 
-    if (!filePackageObjectList|| filePackageObjectList.length <= 0) {
-       throw new Error(constants.gptFileNotInWorkspaceError);
-    }
       const answer = await cx.sastChat(
         gptToken,
         filePath,
@@ -89,10 +87,9 @@ export class Cx implements CxPlatform {
     const gptEngine = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (!filePackageObjectList|| filePackageObjectList.length <= 0) {
-      throw new Error(constants.gptFileNotInWorkspaceError);
-    }
+
+      this.validateWorkspaceFolders();
+
       const answer = await cx.kicsChat(
         gptToken,
         filePath,
@@ -108,6 +105,14 @@ export class Cx implements CxPlatform {
       } else {
         throw new Error(answer.status);
       }
+  }
+
+  private validateWorkspaceFolders() {
+    const filePackageObjectList = vscode.workspace.workspaceFolders;
+
+    if (!filePackageObjectList || filePackageObjectList.length <= 0) {
+      throw new Error(constants.gptFileNotInWorkspaceError);
+    }
   }
 
   async mask(filePath: string) {
