@@ -141,6 +141,7 @@ export const constants = {
   gptCommandName: "CheckmarxSecurityChampion",
   gptSettingsKey: "key",
   gptEngineKey: "model",
+  systemNotFindPathError: "The system cannot find the path specified.",
   gptFileNotInWorkspaceError: "AI Security Champion can't advise you about this vulnerability because the file where the vulnerability was identified isn't open in your VS Code workspace.",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",

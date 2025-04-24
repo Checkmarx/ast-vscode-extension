@@ -317,7 +317,7 @@ svg {
 
 hr.separator-vertical {
   border: none;
-  height: 10px;
+  height: 12px;
   width: 1px;
   background-color: var(--cx-main-color);
 }
@@ -342,21 +342,35 @@ hr.separator-vertical {
 }
 
 .filter-category {
-  padding: 6px 12px;
-  font-size: 11px;
-  color: var(--cx-main-color);
-  cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  padding: 8px 12px;
+  color: var(--cx-main-color);
+  cursor: pointer;
 }
+.filter-category .chevron {
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+
+.filter-category.expanded .chevron {
+  transform: rotate(90deg);
+}
+
 .filter-category:hover {
   background-color: var(--vscode-textPreformat-background);
+}
+
+.filter-count {
+  opacity: 0.7;
+  margin-left: 1px;
 }
 
 .filter-submenu {
   display: flex;
   flex-direction: column;
-  padding: 4px 12px;
 }
 .filter-submenu.hidden {
   display: none;
@@ -415,33 +429,7 @@ hr.separator-vertical {
   cursor: pointer;
   color: var(--cx-main-color);
   padding: 6px 12px;
-}
-
-.filter-submenu input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  background-color: var(--vscode-input-background);
-  border: 2px solid #a0a0a0;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  outline: none;
-}
-
-.filter-submenu input[type="checkbox"]:checked {
-  background-color: #2b77d2;
-  border-color: #2b77d2;
-}
-
-.filter-submenu input[type="checkbox"]:checked::after {
-  content: "✓";
-  color: white;
-  font-size: 10px;
-  position: absolute;
-  top: -1px;
-  left: 2px;
+  line-height: 1;
 }
 
 .filter-button {
@@ -453,7 +441,7 @@ hr.separator-vertical {
   font-size: 11px;
   display: flex;
   align-items: center;
-  padding: 0px;
+  padding: 3px;
 }
 
 .sort-button.has-selection svg {
@@ -474,29 +462,69 @@ hr.separator-vertical {
   color: white;
 }
 
-.filter-badge.hidden {
-  display: none;
-}
-
-.filter-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: #2b77d2;
-  color: white;
-  font-size: 10px;
-  border-radius: 50%;
-  height: 12px;
-  min-width: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .filter-badge div {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+.center-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-submenu label[for="vuln-all"],
+.filter-submenu label[for="trait-all"] {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 12px;
+  border-radius: 12px;
+  margin-left: auto;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #b0b3b8;
+  transition: 0.3s;
+  border-radius: 12px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 9.6px;
+  width: 9.6px;
+  left: 1.2px;
+  bottom: 1.2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: #3376cd;
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(12px);
 }
