@@ -400,28 +400,17 @@
     return results.results.map((result) => {
       const matchedScore = getMatchedScore(result, app.applicationID);
 
-      const isNA =
-        result.engine.toLowerCase() === "sca" ||
-        result.engine.toLowerCase() === "kics";
-      const tooltip = isNA
-        ? 'title="Coming soon..." data-bs-toggle="tooltip" data-bs-placement="top"'
-        : "";
-
       const resultElement = createResultElement(
         result,
         matchedScore,
-        isNA,
-        tooltip
       );
 
-      if (!isNA) {
         resultElement.addEventListener("click", () => {
           vscode.postMessage({
             command: "openVulnerabilityDetails",
             result: result,
           });
         });
-      }
 
       return resultElement;
     });
@@ -434,9 +423,9 @@
     return matchedScore || result.riskScore;
   }
 
-  function createResultElement(result, score, isSCA, tooltip) {
+  function createResultElement(result, score) {
     const resultElement = document.createElement("div");
-    resultElement.className = `result${isSCA ? " disabled-result" : ""}`;
+    resultElement.className = "result";
 
     score = formatScore(score);
 
@@ -445,7 +434,7 @@
                 <span>${icons[result.severity]}</span> 
                 <span>${score}</span> 
             </span>
-            <span class="ellipsis" ${isSCA ? tooltip : ""}> ${
+            <span class="ellipsis"> ${
       result.name
     }</span>
         `;
