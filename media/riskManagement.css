@@ -125,10 +125,6 @@ button:hover {
   filter: brightness(1.5);
 }
 
-.disabled-result {
-  cursor: not-allowed;
-}
-
 svg {
   vertical-align: text-top;
   color: var(--cx-main-color);

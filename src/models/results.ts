@@ -27,6 +27,7 @@ export class AstResult extends CxResult {
   language = "";
   description = "";
   descriptionHTML = "";
+  alternateId = "";
   similarityId = "";
   declare data: any;
   state = "";
@@ -60,6 +61,7 @@ export class AstResult extends CxResult {
         : result.vulnerabilityDetails.cveName,
       result.id,
       result.status,
+      result.alternateId,
       result.similarityId,
       result.state,
       result.severity,
