@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.31.1-v2.31.1-Final-Oauth.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-v2.31.1-Final-Oauth.0) - 2025-04-28 11:15:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-ASMP-open-details.0...v2.31.1-v2.31.1-Final-Oauth.0
+
+## [v2.31.1-ASMP-open-details.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-ASMP-open-details.0) - 2025-04-23 13:11:05
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.31.1-Final-Version-ASPM-Filters.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-Version-ASPM-Filters.0) - 2025-04-21 07:16:10
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
