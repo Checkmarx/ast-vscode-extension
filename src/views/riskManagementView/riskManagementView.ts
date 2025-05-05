@@ -46,13 +46,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
   private async handleMessage(message: {
     command: string;
-    result?: { hash: string; engine: string };
+    result?: { hash: string };
   }): Promise<void> {
     switch (message.command) {
       case "openVulnerabilityDetails": {
-        const hash = message.result.hash;
-        const type = message.result.engine;
-        const result = this.findResultByHash(hash, type);
+        const result = this.findResultByHash(message.result.hash);
         if (result) {
           const astResult = new AstResult(result);
           await vscode.commands.executeCommand(commands.newDetails, astResult);
@@ -64,10 +62,8 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     }
   }
 
-  private findResultByHash(hash: string, type: string): CxResult | undefined {
-    if (type === constants.sast) {
-      return this.cxResults.find((result) => result.data.resultHash === hash);
-    }
+  private findResultByHash(hash: string): CxResult | undefined {
+    return this.cxResults.find((result) => result.alternateId === hash);
   }
 
   public async updateContent(options?: {
