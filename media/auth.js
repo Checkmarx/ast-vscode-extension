@@ -86,6 +86,7 @@
           loginForm.classList.add("hidden");
           authenticatedMessage.classList.remove("hidden");
           logoutButton.classList.remove("hidden");
+          messageBox.style.display = "none";
         } else {
           loginForm.classList.remove("hidden");
           authenticatedMessage.classList.add("hidden");
