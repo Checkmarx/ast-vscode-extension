@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## [v2.32.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.32.0) - 2025-05-05 11:26:12
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.32.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Change order of create change log file (AST-81771) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1047
+* Add color to the text(AST-83670) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1056
+* Fix choose custom states (AST-84553) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1066
+* Refactor AuthService to use Axios instead of HTTP module by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1063
+* Fix OAuth Small Bugs by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1098
+* New design filter in ASPM section by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1103
+* Adds error handling for file not found in workspace (AST-68623) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1105
+### New Features 🚀
+* Feature/elchanan/implement oauth2 ide authentication (AST-83466) by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1046
+* Add ASPM results section. by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1071
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.127 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1072
+* Update AST CLI JavaScript Wrapper to version 0.0.128 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1086
+### Other Changes
+* Create triageGetStates and create infr - need to implement in triage … (AST-83453) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1042
+* Fix tabs with singleton (Ast-86808) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1064
+* Put oauth in comment (AST-00000) by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1078
+* Fix vulnerabilities by @AlvoBen in https://github.com/Checkmarx/ast-vscode-extension/pull/1087
+* Change design aspm- Filters and Sort by @Korjen97 in https://github.com/Checkmarx/ast-vscode-extension/pull/1099
+* Add an AlternateID field to enable opening the vulnerability details. (AST-94450) by @sarahCx in https://github.com/Checkmarx/ast-vscode-extension/pull/1108
+* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1115
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.0...v2.32.0
+
 ## [v2.31.1-v2.31.1-Final-Oauth.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-v2.31.1-Final-Oauth.0) - 2025-04-28 11:15:18
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
