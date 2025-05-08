@@ -17,6 +17,7 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { AuthService } from "../services/authService";
+import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -616,6 +617,20 @@ export class Cx implements CxPlatform {
       return scans.payload[0];
     } else {
       return this.getAscaError(scans.status, "Fail to call ASCA scan");
+    }
+  }
+
+  async scanOSS(sourcePath: string): Promise<CxOssResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+    const cx = new CxWrapper(config);
+    const scans = await cx.scanOSS(sourcePath);//TODO: repleace with scanOss
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      // return this.getAscaError(scans.status, "Fail to call ASCA scan");
     }
   }
 

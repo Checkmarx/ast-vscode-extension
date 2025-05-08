@@ -1,3 +1,5 @@
+import { RealtimeScannerCommand } from "../../commands/realtimeScannerCommand";
+
 export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
@@ -159,6 +161,14 @@ export const constants = {
   ascaEngineName: "ASCA",
   ActivateAscaAutoScanning: "Activate ASCA",
   CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
+
+  activateRealtimeScanner: "Activate OSS-Realtime",
+  realtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
+  realtimeScannerStart: "Realtime Scanner Engine started",
+  realtimeScannerDisabled: "Realtime Scanner Engine disabled",
+  realtimeScannerEngineName: "RealtimeScanner",
+  realtimeScannerDirectory: "Cx-realtime-scanner",
+  errorScanRealtime: "failed to handle Realtime scan",
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

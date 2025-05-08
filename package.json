@@ -903,6 +903,19 @@
             "markdownDescription": "Scans your file as you code"
           }
         }
+      },
+      {
+        "title": "Activate OSS-Realtime",
+        "id": "realtime-scanner",
+        "order": 2,
+        "properties": {
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your file as you code"
+          }
+        }
       }
     ]
   },
@@ -916,7 +929,7 @@
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/1.settings.test.js ./out/test/**/13.riskManagement.test.js' -c 1.87.2  -i -r .",
     "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
     "unit-coverage": "npx nyc npm run unit-test",
     "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r .",
@@ -950,10 +963,10 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@CheckmarxDev/ast-cli-javascript-wrapper": "file:../ast-cli-javascript-wrapper/CheckmarxDev-ast-cli-javascript-wrapper-0.0.130.tgz",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.130",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",

@@ -11,6 +11,7 @@ import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
 import {messages} from "../common/messages";
 import {AscaCommand} from "../../commands/ascaCommand";
 import {AuthService} from "../../services/authService";
+import { RealtimeScannerCommand } from "../../commands/realtimeScannerCommand";
 
 export async function getBranchListener(
     context: vscode.ExtensionContext,
@@ -187,6 +188,7 @@ export async function executeCheckSettingsChange(
     kicsStatusBarItem: vscode.StatusBarItem,
     logs: Logs,
     ascaCommand: AscaCommand
+    realtimeScannerCommand: RealtimeScannerCommand
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
         const authService = AuthService.getInstance(context, logs);
@@ -215,5 +217,12 @@ export async function executeCheckSettingsChange(
         if (ascaEffected) {
             await ascaCommand.registerAsca();
         }
+        const realtimeScannerEffected = event.affectsConfiguration(
+            `${constants.realtimeScanner}.${constants.activateRealtimeScanner}`
+        );
+        if (realtimeScannerEffected) {
+            await realtimeScannerCommand.registerRealtimeScanner();
+        }
+        //TODO: add real time scan
     });
 }

@@ -27,6 +27,7 @@ import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from './webview/authenticationWebview';
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
+import { RealtimeScannerCommand } from "./commands/realtimeScannerCommand";
 
 let globalContext: vscode.ExtensionContext;
 
@@ -191,6 +192,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   const ascaCommand = new AscaCommand(context, logs);
   ascaCommand.registerAsca();
+
+  const realtimeScannerCommand = new RealtimeScannerCommand(context, logs);
+realtimeScannerCommand.registerRealtimeScanner();
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
   commonCommand.registerSettings();
@@ -202,7 +206,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await executeCheckSettingsChange(context,kicsStatusBarItem, logs, ascaCommand);
+  await executeCheckSettingsChange(context,kicsStatusBarItem, logs, ascaCommand, realtimeScannerCommand);
 
   const treeCommand = new TreeCommand(
     context,

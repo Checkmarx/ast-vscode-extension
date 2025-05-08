@@ -3,7 +3,6 @@ import { cx } from "../cx";
 import fs from "fs";
 import path from "path";
 import * as os from "os";
-import { error } from "console";
 import { Logs } from "../models/logs";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { constants } from "../utils/common/constants";
