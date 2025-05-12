@@ -187,7 +187,7 @@ export async function executeCheckSettingsChange(
     context: vscode.ExtensionContext,
     kicsStatusBarItem: vscode.StatusBarItem,
     logs: Logs,
-    ascaCommand: AscaCommand
+    ascaCommand: AscaCommand,
     realtimeScannerCommand: RealtimeScannerCommand
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {

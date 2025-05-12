@@ -6,13 +6,14 @@ import {
 } from "../services/realtimeScannerService";
 import { constants } from "../utils/common/constants";
 
-let timeout = null;
 
 export class RealtimeScannerCommand {
-  context: vscode.ExtensionContext;
-  logs: Logs;
-  onDidChangeTextDocument: vscode.Disposable;
-  constructor(context: vscode.ExtensionContext, logs: Logs) {
+	context: vscode.ExtensionContext;
+	logs: Logs;
+	onDidChangeTextDocument: vscode.Disposable;
+	private timeouts = new Map<string, NodeJS.Timeout>();
+  
+	constructor(context: vscode.ExtensionContext, logs: Logs) {
 	this.context = context;
 	this.logs = logs;
   }
@@ -20,11 +21,12 @@ export class RealtimeScannerCommand {
 	console.log("registerRealtimeScanner");
 	try {
 	  const realtimeScannerActive = vscode.workspace
-		.getConfiguration(constants.realtimeScanner)
+		.
+		getConfiguration(constants.realtimeScanner)
 		.get(constants.activateRealtimeScanner) as boolean;
 	  if (realtimeScannerActive) {
 		console.log("realtimeScannerActive", realtimeScannerActive);
-		
+		this.installAsca();
 		await this.registerScanOnChangeText();
 		this.logs.info(constants.realtimeScannerStart);
 	  } else {
@@ -52,22 +54,29 @@ export class RealtimeScannerCommand {
 	}
   }
   // Debounce function
+
   public debounce(func, wait) {
-	const context = this;
 	console.log("onDidChangeTextDocument");
-	return function (...args) {
+	return (event: vscode.TextDocumentChangeEvent) => {
 	  try {
+		const docUri = event.document.uri.toString();
+		const existingTimeout = this.timeouts.get(docUri);
+		if (existingTimeout) {
+		  clearTimeout(existingTimeout);
+		}
+
 		const later = () => {
-		  clearTimeout(timeout);
-		  func.apply(context, args);
+		  this.timeouts.delete(docUri);
+		  func.apply(this, [event]);
 		};
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
+
+		const timeout = setTimeout(later, wait);
+		this.timeouts.set(docUri, timeout);
 	  } catch (error) {
 		console.error(error);
 	  }
 	};
-  }
+}
 
   public registerScanOnChangeText() {
 	this.context.subscriptions.push(this.onDidChangeTextDocument);
