@@ -7,36 +7,37 @@ import { Logs } from "../models/logs";
 import { constants } from "../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
-
+import { createHash } from 'crypto';
 
 
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection(
   constants.realtimeScannerEngineName
 );
 
-let diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
+const diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 
 const decorationTypes = {
 	malicious: vscode.window.createTextEditorDecorationType({
 	  overviewRulerColor: 'red',
 	  overviewRulerLane: vscode.OverviewRulerLane.Left,
 	  textDecoration: 'underline red wavy',
+	  gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', '..', 'media', 'icons', 'malicious.svg')), 
 	  after: {
-		contentText: ' ❌ Malicious',
+		contentIconPath: path.join(__dirname, '..', '..', 'media', 'icons', 'success.svg'),
 		color: 'red',
 		margin: '0 0 0 1em'
 	  }
 	}),
 	ok: vscode.window.createTextEditorDecorationType({
+		gutterIconPath: path.join(__dirname, '..', '..', 'media', 'icons', 'circle-check.svg'),
 	  after: {
 		contentText: ' ✅ OK',
-		contentIconPath: path.join(__dirname, '..', '..', 'media', 'icons', 'success.svg'),
 		color: 'green',
 		margin: '0 0 0 1em'
 	  }
 	}),
 	unknown: vscode.window.createTextEditorDecorationType({
-		gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', '..', 'media', 'icons', 'success.svg')),
+		gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', '..', 'media', 'icons', 'question-mark.svg')),
 		gutterIconSize: 'contain',
 	// 	before: {
 	// 	contentIconPath: path.join(__dirname, '..', '..', 'media', 'icons', 'success.svg'),
@@ -47,45 +48,9 @@ const decorationTypes = {
 	})
   };
 
-// export async function scanOSS(document: vscode.TextDocument, logs: Logs) {
-
-//   if (ignoreFiles(document))
-// 	{return;}
-//   try {
-// 	// SAVE TEMP FILE
-// 	const filePath = saveTempFile(
-// 	  path.basename(document.uri.fsPath),
-// 	  document.getText()
-// 	);
-// 	// RUN ASCA SCAN
-// 	logs.info("Start Realtime scan On File: " + document.uri.fsPath);
-// 	const scanResults = await cx.scanOSS(filePath);
-// 	// DELETE TEMP FILE
-// 	deleteFile(filePath); 
-// 	console.info("file %s deleted", filePath);
-// 	// HANDLE ERROR
-// 	// if (scanResult.error) {
-// 	//   logs.warn(
-// 	// 	"Realtime Scanner Warning: " +
-// 	// 	  (scanResult.error.description ?? scanResult.error)
-// 	//   );
-// 	//   return;
-// 	// }
-// 	// VIEW PROBLEMS
-// 	// logs.info(
-// 	//   scanResult.scanDetails.length +
-// 	// 	" security best practice violations were found in " +
-// 	// 	document.uri.fsPath
-// 	// );
-// 	updateProblems(scanResults, document.uri);
-//   } catch (error) {
-// 	console.error(error);
-// 	logs.error(constants.errorScanRealtime);
-//   }
-// }
 
 export async function scanOSS(document: vscode.TextDocument, logs: Logs) {
-	if (ignoreFiles(document)) return;
+	if (isIgnoredFile(document)) return;
   
 	const originalFilePath = document.uri.fsPath;
 	const tempSubFolder = getTempSubFolderPath(document);
@@ -101,7 +66,7 @@ export async function scanOSS(document: vscode.TextDocument, logs: Logs) {
 	  
 	  const scanResults = await cx.scanOSS(mainTempPath);
 
-	updateProblems(scanResults, document.uri);
+	updateProblems(scanResults, document.uri);//display in the problems section only malicious    
   
 	} catch (error) {
 		console.error(error);
@@ -112,14 +77,13 @@ export async function scanOSS(document: vscode.TextDocument, logs: Logs) {
   }
   
 
-function ignoreFiles(document: vscode.TextDocument): boolean {
+function isIgnoredFile(document: vscode.TextDocument): boolean {
   // ignore vscode system files
   if(document.uri.scheme !== 'file')
   {return true;}
 
    // List of allowed file names
-   const allowedManifestFilesNames = [
-    "csproj",//TODO: add support for csproj files
+   const allowedManifestFileNames = [
     "directory.packages.props",
     "packages.config",
     "pom.xml",
@@ -127,13 +91,17 @@ function ignoreFiles(document: vscode.TextDocument): boolean {
     "requirements.txt",
     "go.mod"
   ];
+  const allowedFileExtensions = [
+	"csproj",
+  ];
 
   const fileName = path.basename(document.uri.fsPath).toLowerCase();
-  if (!allowedManifestFilesNames.includes(fileName)) {
-    return true;
-  }
+const fileExtension = path.extname(document.uri.fsPath).toLowerCase().replace('.', ''); 
+if (allowedManifestFileNames.includes(fileName) || allowedFileExtensions.includes(fileExtension)) {
+	return false; 
+ }
 
-  return false;
+  return true;
   
 }
 
@@ -152,8 +120,7 @@ function createTempFolder(folderPath: string) {
   function getTempSubFolderPath(document: vscode.TextDocument): string {
 	const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || '';
 	const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
-	const sanitized = sanitizePath(relativePath);
-	return path.join(os.tmpdir(), constants.realtimeScannerDirectory, sanitized);
+	return path.join(os.tmpdir(), constants.realtimeScannerDirectory, toSafeTempFileName(relativePath));
   }
   
   function saveMainManifestFile(tempFolder: string, originalFilePath: string, content: string): string {
@@ -174,14 +141,17 @@ function createTempFolder(folderPath: string) {
 	fs.copyFileSync(companionOriginalPath, companionTempPath);
 	return companionTempPath;
   }
-  
-  function sanitizePath(p: string): string {
-	return p.replace(/[/\\:?<>|"]/g, '_');
+  function toSafeTempFileName(relativePath: string): string {
+	const baseName = path.basename(relativePath);
+	// const prefix = sanitizeName(baseName.substring(0, 30)); // קידומת מתוך השם המקורי
+	const hash = createHash('sha256').update(relativePath).digest('hex').substring(0, 16);
+	return `${baseName}-${hash}.tmp`;
   }
+
   
   function getCompanionFileName(fileName: string): string {
 	if (fileName === 'package.json') return 'package-lock.json';
-	if (fileName === 'pom.xml') return 'pom.lock';
+	if (fileName.includes('.csproj')) return 'packages.lock.json';//TODO: check it
 	return '';
   }
   
@@ -197,7 +167,6 @@ export function updateProblems(scanResults: CxOssResult [], uri: vscode.Uri) {
 const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString());
 if (!editor) return;
 
-const diagnostics: vscode.Diagnostic[] = [];
 
 const maliciousDecorations: vscode.DecorationOptions[] = [];
 const okDecorations: vscode.DecorationOptions[] = [];
@@ -234,35 +203,17 @@ for (const result of scanResults) {
 
   diagnostics.push(new vscode.Diagnostic(range, message, severity));
 }
+diagnosticsMap.set(uri.fsPath, diagnostics);
+diagnosticsMap.forEach((diagnostics, uri) => {
+    const vscodeUri = vscode.Uri.file(uri);
+    diagnosticCollection.set(vscodeUri, diagnostics);
+  });
 
-// עדכון הדיאגנוסטיקות במסמך
-diagnosticCollection.set(uri, diagnostics);
+// diagnosticCollection.set(uri, diagnostics);
 
-// הוספת הקישוטים לעריכה
 editor.setDecorations(decorationTypes.malicious, maliciousDecorations);
 editor.setDecorations(decorationTypes.ok, okDecorations);
 editor.setDecorations(decorationTypes.unknown, unknownDecorations);
 }
 
-// function saveTempFile(fileName: string, content: string): string | null {
-//   try {
-// 	const tempDir = os.tmpdir();
-// 	const tempFilePath = path.join(tempDir, constants.realtimeScannerDirectory, fileName);
-// 	fs.writeFileSync(tempFilePath, content);
-// 	console.info("Temp file was saved in: " + tempFilePath);
-// 	return tempFilePath;
-//   } catch (error) {
-// 	console.error("Failed to save temporary file:", error);
-// 	return null;
-//   }
-// }
 
-
-
-// function deleteFile(filePath: string) {
-//   try {
-// 	fs.unlinkSync(filePath);
-//   } catch (error) {
-// 	// when the file sent again before it come back...
-//   }
-// }
