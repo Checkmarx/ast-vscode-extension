@@ -160,6 +160,23 @@ export const constants = {
   ActivateAscaAutoScanning: "Activate ASCA",
   CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
 
+  activateOssRealtimeScanner: "Activate OSS-Realtime",
+  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
+  ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
+  ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
+  ossRealtimeScannerEngineName: "RealtimeOssScanner",
+  ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
+  errorOssScanRealtime: "failed to handle Realtime scan",
+  supportedManifestFilePatterns: [
+   "**/directory.packages.props",
+   "**/packages.config",
+   "**/pom.xml",
+   "**/package.json",
+   "**/requirements.txt",
+   "**/go.mod",
+   "**/*.csproj"
+  ],
+  
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
   mediumSeverity: "MEDIUM",
