@@ -903,6 +903,19 @@
             "markdownDescription": "Scans your file as you code"
           }
         }
+      },
+      {
+        "title": "Activate OSS-Realtime",
+        "id": "realtime-scanner",
+        "order": 2,
+        "properties": {
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your file as you code"
+          }
+        }
       }
     ]
   },
