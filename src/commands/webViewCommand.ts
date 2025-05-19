@@ -17,8 +17,6 @@ import * as os from "os";
 import { GptResult } from "../models/gptResult";
 import { cx } from "../cx";
 
-const SYSTEM_NOT_FIND_PATH_ERROR = "The system cannot find the path specified.";
-
 export class WebViewCommand {
   private thinkID: number;
   context: vscode.ExtensionContext;
