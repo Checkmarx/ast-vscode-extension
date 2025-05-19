@@ -1,16 +1,20 @@
 # CHANGELOG
 
-## [v2.33.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.33.0) - 2025-05-06 07:37:39
+## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
 
-<!-- Release notes generated using configuration in .github/release.yml at v2.33.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.34.0 -->
 
 ## What's Changed
 ### Other Changes
-* Uncomment Oauth by @elchananarb in https://github.com/Checkmarx/ast-vscode-extension/pull/1113
-* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1121
+* Fix Checkmarx spelling (AST-95926) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1128
+* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1129
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.32.0...v2.33.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.33.0...v2.34.0
+
+## [v2.33.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.33.0) - 2025-05-06 07:37:39
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.33.0 -->
 
 ## [v2.32.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.32.0) - 2025-05-05 11:26:12
 
