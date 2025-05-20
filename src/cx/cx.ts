@@ -620,13 +620,13 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async scanOss(sourcePath: string): Promise<CxOssResult[]> {
+  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.scanOss(sourcePath);
+    const scans = await cx.ossScanResults(sourcePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {

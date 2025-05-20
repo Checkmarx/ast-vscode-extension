@@ -70,7 +70,7 @@ export class OssScannerService extends BaseScannerService {
       
       logs.info("Start Realtime scan On File: " + originalFilePath);
       
-      const scanResults = await cx.scanOss(mainTempPath);
+      const scanResults = await cx.ossScanResults(mainTempPath);
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
       
     } catch (error) {
@@ -132,8 +132,7 @@ export class OssScannerService extends BaseScannerService {
           severity = vscode.DiagnosticSeverity.Error;
           message = `Malicious package detected: ${result.packageName}@${result.version}`;
           maliciousDecorations.push({ range });
-      diagnostics.push(new vscode.Diagnostic(range, message, severity));
-          
+          diagnostics.push(new vscode.Diagnostic(range, message, severity));
           break;
         case CxManifestStatus.ok:
           okDecorations.push({ range });

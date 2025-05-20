@@ -1457,7 +1457,7 @@ export class CxMock implements CxPlatform {
     return new CxAsca();
   }
  
-  async scanOss(sourcePath: string): Promise<CxOssResult[]> {
+  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
     return [];
   }
 

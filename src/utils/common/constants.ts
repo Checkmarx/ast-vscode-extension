@@ -166,7 +166,7 @@ export const constants = {
   ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
   ossRealtimeScannerEngineName: "RealtimeOssScanner",
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
-  errorOssScanRealtime: "failed to handle Realtime scan",
+  errorOssScanRealtime: "failed to handle OSS Realtime scan",
   supportedManifestFilePatterns: [
    "**/directory.packages.props",
    "**/packages.config",
