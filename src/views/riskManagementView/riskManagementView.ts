@@ -83,7 +83,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     if (!(await this.isAuthenticated())) {
       this.showMessage(
         styleUri,
-        "Authentication to Chrckmarx One is required in order to get ASPM results"
+        "Authentication to Checkmarx One is required in order to get ASPM results"
       );
       return;
     }
