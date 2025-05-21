@@ -27,6 +27,8 @@ import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from './webview/authenticationWebview';
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
+import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
+import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 
 let globalContext: vscode.ExtensionContext;
 
@@ -191,6 +193,18 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   const ascaCommand = new AscaCommand(context, logs);
   ascaCommand.registerAsca();
+
+  const configManager = new ConfigurationManager();
+  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
+  await scannerRegistry.activateAllScanners();
+  const configListener = configManager.registerConfigChangeListener((section) => {
+    const ossEffected = section(`${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`);
+    if (ossEffected) {
+        scannerRegistry.getScanner("oss")?.register();
+    }
+  });
+  context.subscriptions.push(configListener);
+
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
   commonCommand.registerSettings();
