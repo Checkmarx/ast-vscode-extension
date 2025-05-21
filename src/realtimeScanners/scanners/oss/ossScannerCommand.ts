@@ -17,7 +17,7 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
   
   protected async initializeScanner(): Promise<void> {
-    this.registerScanOnChangeText();
+    (this.scannerService as OssScannerService).initializeScanner();
     await this.scanAllManifestFilesInWorkspace();
   }
 
@@ -34,4 +34,8 @@ export class OssScannerCommand extends BaseScannerCommand {
         }
       }
     }
+    public async dispose(): Promise<void> {
+    await super.dispose();
+    (this.scannerService as OssScannerService).dispose();
+   }
 }

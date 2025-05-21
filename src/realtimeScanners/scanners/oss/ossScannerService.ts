@@ -13,20 +13,25 @@ import { minimatch } from "minimatch";
 export class OssScannerService extends BaseScannerService {
   private decorationTypes = {
     malicious: vscode.window.createTextEditorDecorationType({
-      overviewRulerColor: 'red',
-      overviewRulerLane: vscode.OverviewRulerLane.Left,
       gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', '..','..','..', 'media', 'icons', 'malicious.svg')), 
+      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
     }),
     ok: vscode.window.createTextEditorDecorationType({
       gutterIconPath: path.join(__dirname, '..', '..','..','..', 'media', 'icons', 'circle-check.svg'),
+      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
     }),
     unknown: vscode.window.createTextEditorDecorationType({
       gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', '..', '..','..', 'media', 'icons', 'question-mark.svg')),
-      gutterIconSize: 'contain'
+      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
     })
   };
 
   private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
+  private maliciousDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
+  private okDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
+  private unknownDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
+  private documentOpenListener: vscode.Disposable | undefined;
+  private editorChangeListener: vscode.Disposable | undefined;
 
   constructor() {
     const config: IScannerConfig = {
@@ -40,7 +45,45 @@ export class OssScannerService extends BaseScannerService {
     
     super(config);
   }
+
+  public async initializeScanner(): Promise<void> {
+    this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(this.onDocumentOpen.bind(this));
+    this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(this.onEditorChange.bind(this)); 
+  }
+   private onDocumentOpen(document: vscode.TextDocument): void {
+    if (this.matchesManifestPattern(document.uri.fsPath)) {
+      this.applyDecorations(document.uri);
+    }
+  }
   
+  private onEditorChange(editor: vscode.TextEditor | undefined): void {
+    if (editor && this.matchesManifestPattern(editor.document.uri.fsPath)) {
+      this.applyDecorations(editor.document.uri);
+    }
+  }
+ 
+  private applyDecorations(uri: vscode.Uri): void {
+    const filePath = uri.fsPath;
+    const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString());
+    
+    if (editor) {
+      const maliciousDecorations = this.maliciousDecorationsMap.get(filePath) || [];
+      const okDecorations = this.okDecorationsMap.get(filePath) || [];
+      const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
+      
+      editor.setDecorations(this.decorationTypes.malicious, maliciousDecorations);
+      editor.setDecorations(this.decorationTypes.ok, okDecorations);
+      editor.setDecorations(this.decorationTypes.unknown, unknownDecorations);
+    }
+  }
+
+  private applyDiagnostics(): void {
+    this.diagnosticsMap.forEach((diagnostics, filePath) => {
+      const vscodeUri = vscode.Uri.file(filePath);
+      this.diagnosticCollection.set(vscodeUri, diagnostics);
+    });
+  }
+
   matchesManifestPattern(filePath: string): boolean {
    const normalizedPath = filePath.replace(/\\/g, '/');
    return constants.supportedManifestFilePatterns.some(pattern => minimatch(normalizedPath, pattern));
@@ -58,13 +101,13 @@ export class OssScannerService extends BaseScannerService {
     if (!this.shouldScanFile(document)) {
       return;
     }
-    
+
     const originalFilePath = document.uri.fsPath;
+    
     const tempSubFolder = this.getTempSubFolderPath(document, constants.ossRealtimeScannerDirectory);
     
     try {
       this.createTempFolder(tempSubFolder);
-      
       const mainTempPath = this.saveMainManifestFile(tempSubFolder, originalFilePath, document.getText());
       this.saveCompanionFile(tempSubFolder, originalFilePath);
       
@@ -74,13 +117,24 @@ export class OssScannerService extends BaseScannerService {
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
       
     } catch (error) {
+      this.storeAndApplyResults(originalFilePath, document.uri, [], [], [], []);
       console.error(error);
       logs.error(this.config.errorMessage);
     } finally {
       this.deleteTempFolder(tempSubFolder);
     }
   }
+
+  private storeAndApplyResults(filePath: string, uri: vscode.Uri, diagnostics: vscode.Diagnostic[], maliciousDecorations: vscode.DecorationOptions[], okDecorations: vscode.DecorationOptions[], unknownDecorations: vscode.DecorationOptions[]): void {
+    this.diagnosticsMap.set(filePath, diagnostics);
+    this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
+    this.okDecorationsMap.set(filePath, okDecorations);
+    this.unknownDecorationsMap.set(filePath, unknownDecorations);
   
+    this.applyDiagnostics();
+    this.applyDecorations(uri);
+  }
+
   private saveMainManifestFile(tempFolder: string, originalFilePath: string, content: string): string {
     const fileName = path.basename(originalFilePath);
     const tempFilePath = path.join(tempFolder, fileName);
@@ -143,31 +197,26 @@ export class OssScannerService extends BaseScannerService {
         default:
           continue;
       }
-      
     }
-    this.diagnosticsMap.set(filePath, diagnostics);
     
-    this.applyDiagnostics();
-
-    const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString());
-    if (editor) { 
-      editor.setDecorations(this.decorationTypes.malicious, maliciousDecorations);
-      editor.setDecorations(this.decorationTypes.ok, okDecorations);
-      editor.setDecorations(this.decorationTypes.unknown, unknownDecorations);
-    }
+    this.storeAndApplyResults(filePath, uri, diagnostics, maliciousDecorations, okDecorations, unknownDecorations);
   }
 
-   private applyDiagnostics(): void {
-    console.log("applyDiagnostics", this.diagnosticsMap);
-    
-    this.diagnosticsMap.forEach((diagnostics, filePath) => {
-      const vscodeUri = vscode.Uri.file(filePath);
-      this.diagnosticCollection.set(vscodeUri, diagnostics);
-    });
-  }
-
-   public async clearProblems(): Promise<void> {
+  public async clearProblems(): Promise<void> {
     await super.clearProblems();
     this.diagnosticsMap.clear();
+    this.maliciousDecorationsMap.clear();
+    this.okDecorationsMap.clear();
+    this.unknownDecorationsMap.clear();
+  }
+
+  public dispose(): void {
+    if (this.documentOpenListener) {
+      this.documentOpenListener.dispose();
+    }
+    
+    if (this.editorChangeListener) {
+      this.editorChangeListener.dispose();
+    }
   }
 }
