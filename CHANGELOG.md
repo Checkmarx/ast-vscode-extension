@@ -1,16 +1,16 @@
 # CHANGELOG
 
+## [v2.34.1-oss-realtime-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-oss-realtime-demo.0) - 2025-05-19 09:19:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.34.1-oss-realtime-demo.0
+
 ## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.34.0 -->
-
-## What's Changed
-### Other Changes
-* Fix Checkmarx spelling (AST-95926) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1128
-* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1129
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.33.0...v2.34.0
 
 ## [v2.33.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.33.0) - 2025-05-06 07:37:39
 
