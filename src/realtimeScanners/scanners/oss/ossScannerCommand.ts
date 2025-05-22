@@ -21,7 +21,6 @@ export class OssScannerCommand extends BaseScannerCommand {
     (this.scannerService as OssScannerService).initializeScanner();
     await this.scanAllManifestFilesInWorkspace();
 
-    //
     vscode.languages.registerHoverProvider(
       { scheme: "file" },
       {
@@ -32,22 +31,25 @@ export class OssScannerCommand extends BaseScannerCommand {
           if (!message) {
             return;
           }
+          // const range = new vscode.Range(position.line, 0, position.line, 1000); // כיסוי כל השורה
 
+          const space = " ";
           const md = new vscode.MarkdownString();
-          md.appendMarkdown(`**🚨 Malicious Package Detected**\n\n`);
-          md.appendMarkdown(`| \`${message}\` | **Checkmarx ⟢** |\n`);
-          md.appendMarkdown(`|----------------|-------------------|\n\n`);
 
           md.appendMarkdown(
-            `[💡 Fix in Chat](command:cx.fixInChat)    [🔍 View Details](command:cx.viewDetails)    [🚫 Ignore](command:cx.ignore)`
+            `**🚨 Malicious Package Detected${space.repeat(30)}cxAI ⟢**\n\n`
           );
+          md.appendMarkdown(`\`${message}\`\n\n`);
+          md.appendMarkdown(
+            `[💡 Fix in Chat](command:cx.fixInChat) [🔍 View Details](command:cx.viewDetails) [🚫 Ignore](command:cx.ignore)`
+          );
+
           md.isTrusted = true;
 
           return new vscode.Hover(md);
         },
       }
     );
-    //
   }
 
   private async scanAllManifestFilesInWorkspace() {
