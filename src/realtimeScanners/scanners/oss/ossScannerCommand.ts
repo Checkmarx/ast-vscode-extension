@@ -37,9 +37,8 @@ export class OssScannerCommand extends BaseScannerCommand {
           const md = new vscode.MarkdownString();
 
           md.appendMarkdown(
-            `**🚨 Malicious Package Detected${space.repeat(30)}cxAI ⟢**\n\n`
+            `**🚨 Malicious Package${space.repeat(40)}cxAI ⟢**\n\n`
           );
-          md.appendMarkdown(`\`${message}\`\n\n`);
           md.appendMarkdown(
             `[💡 Fix in Chat](command:cx.fixInChat) [🔍 View Details](command:cx.viewDetails) [🚫 Ignore](command:cx.ignore)`
           );
