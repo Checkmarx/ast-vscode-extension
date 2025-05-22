@@ -62,7 +62,7 @@ export abstract class BaseScannerCommand implements IScannerCommand {
         this.onDidChangeTextDocument = undefined;
   }
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
-      this.debounce(this.onTextChange.bind(this), 2000)
+      this.debounce(this.onTextChange.bind(this), 1000)
     );
     this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
