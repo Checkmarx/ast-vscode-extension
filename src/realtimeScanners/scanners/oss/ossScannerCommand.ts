@@ -37,12 +37,16 @@ export class OssScannerCommand extends BaseScannerCommand {
           const md = new vscode.MarkdownString();
           md.supportHtml = true;
           md.appendMarkdown(
-            `**🚨 Malicious Package${space.repeat(
+            `Malicious Package${space.repeat(
               40
-            )}<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" /> CxAI**\n\n`
+            )}<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" style="vertical-align:baseline;" /> CxAI\n\n`
           );
           md.appendMarkdown(
-            `[💡 Fix in Chat](command:cx.fixInChat) [🔍 View Details](command:cx.viewDetails) [🚫 Ignore](command:cx.ignore)`
+            `[ Fix in Chat](command:cx.fixInChat)${space.repeat(
+              3
+            )}[ View Details](command:cx.viewDetails)${space.repeat(
+              3
+            )}[ Ignore](command:cx.ignore)`
           );
 
           md.isTrusted = true;
