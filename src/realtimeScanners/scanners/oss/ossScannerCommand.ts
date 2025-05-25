@@ -27,8 +27,15 @@ export class OssScannerCommand extends BaseScannerCommand {
         provideHover: (document, position) => {
           const key = `${document.uri.fsPath}:${position.line}`;
           const ossScanner = this.scannerService as any;
+          const filePath = document.uri.fsPath;
           const message = ossScanner.hoverMessages?.get(key);
-          if (!message) {
+          const diagnostics: vscode.Diagnostic[] =
+            ossScanner.diagnosticsMap?.get(filePath) || [];
+          const hasDiagnostic = diagnostics.some(
+            (d) => d.range.start.line === position.line
+          );
+
+          if (!message || !hasDiagnostic) {
             return;
           }
           // const range = new vscode.Range(position.line, 0, position.line, 1000 ;
