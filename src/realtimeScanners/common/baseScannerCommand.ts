@@ -32,9 +32,9 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       const isActive = this.configManager.isScannerActive(this.config);
       
       if (isActive) {
-        await this.initializeScanner();
-        await this.registerScanOnChangeText();
         this.logs.info(this.config.enabledMessage);
+        await this.initializeScanner();
+        // await this.registerScanOnChangeText();
       } else {
         await this.dispose();
         this.logs.info(this.config.disabledMessage);

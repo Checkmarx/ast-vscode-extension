@@ -10,6 +10,13 @@ import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/
 import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
 import { minimatch } from "minimatch";
 
+interface HoverData {
+  packageName: string;
+  version: string;
+  status: CxManifestStatus;
+  vulnerabilities?: Array<{cve: string, description: string, severity: string}>;
+}
+
 export class OssScannerService extends BaseScannerService {
   private decorationTypes = {
     malicious: vscode.window.createTextEditorDecorationType({
@@ -67,7 +74,7 @@ export class OssScannerService extends BaseScannerService {
   };
 
   private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
-  private hoverMessages: Map<string, string> = new Map();
+  private hoverMessages: Map<string, HoverData> = new Map();
   private maliciousDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
   private okDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
   private unknownDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
@@ -273,10 +280,10 @@ export class OssScannerService extends BaseScannerService {
         new vscode.Position(result.lineStart, result.startIndex),
         new vscode.Position(result.lineEnd, result.endIndex)
       );
+      const key = `${uri.fsPath}:${range.start.line}`;
 
       let severity: vscode.DiagnosticSeverity;
       let message: string;
-
       switch (result.status) {
         case CxManifestStatus.malicious:
           {
@@ -284,8 +291,12 @@ export class OssScannerService extends BaseScannerService {
             message = `Malicious package detected: ${result.packageName}@${result.version}`;
             maliciousDecorations.push({ range });
             diagnostics.push(new vscode.Diagnostic(range, message, severity));
-            const key = `${uri.fsPath}:${range.start.line}`;
-            this.hoverMessages.set(key, message);
+            
+            this.hoverMessages.set(key, {
+              packageName: result.packageName,
+              version: result.version,
+              status: result.status
+            });
           }
           break;
         case CxManifestStatus.ok:
@@ -296,27 +307,51 @@ export class OssScannerService extends BaseScannerService {
           break;
         case CxManifestStatus.critical:
           severity = vscode.DiagnosticSeverity.Error;
-          message = `Critical package detected: ${result.packageName}@${result.version}`;
+          message = `Critical-risk package: ${result.packageName}@${result.version}`;
           diagnostics.push(new vscode.Diagnostic(range, message, severity));
           criticalDecorations.push({ range });
+          this.hoverMessages.set(key, {
+            packageName: result.packageName,
+            version: result.version,
+            status: result.status,
+            vulnerabilities: result.vulnerabilities
+          });
           break;
         case CxManifestStatus.high:
           severity = vscode.DiagnosticSeverity.Error;
-          message = `High package detected: ${result.packageName}@${result.version}`;
+          message = `High-risk package: ${result.packageName}@${result.version}`;
           diagnostics.push(new vscode.Diagnostic(range, message, severity));
           highDecorations.push({ range });
+          this.hoverMessages.set(key, {
+            packageName: result.packageName,
+            version: result.version,
+            status: result.status,
+            vulnerabilities: result.vulnerabilities
+          });
           break;
         case CxManifestStatus.medium:
           severity = vscode.DiagnosticSeverity.Error;
-          message = `Medium package detected: ${result.packageName}@${result.version}`;
+          message = `Medium-risk package: ${result.packageName}@${result.version}`;
           diagnostics.push(new vscode.Diagnostic(range, message, severity));
           mediumDecorations.push({ range });
+          this.hoverMessages.set(key, {
+            packageName: result.packageName,
+            version: result.version,
+            status: result.status,
+            vulnerabilities: result.vulnerabilities
+          });
           break;
         case CxManifestStatus.low:
           severity = vscode.DiagnosticSeverity.Error;
-          message = `Low package detected: ${result.packageName}@${result.version}`;
+          message = `High-risk package: ${result.packageName}@${result.version}`;
           diagnostics.push(new vscode.Diagnostic(range, message, severity));
           lowDecorations.push({ range });
+          this.hoverMessages.set(key, {
+            packageName: result.packageName,
+            version: result.version,
+            status: result.status,
+            vulnerabilities: result.vulnerabilities
+          });
           break;
         default:
           continue;
