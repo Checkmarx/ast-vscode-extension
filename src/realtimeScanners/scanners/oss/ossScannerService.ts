@@ -4,18 +4,11 @@ import fs from "fs";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
 import { cx } from "../../../cx";
-import { IScannerConfig } from "../../common/types";
+import { HoverData, IScannerConfig } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
 import { minimatch } from "minimatch";
-
-interface HoverData {
-  packageName: string;
-  version: string;
-  status: CxManifestStatus;
-  vulnerabilities?: Array<{cve: string, description: string, severity: string}>;
-}
 
 export class OssScannerService extends BaseScannerService {
   private decorationTypes = {

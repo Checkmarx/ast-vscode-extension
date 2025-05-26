@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
+import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
 
 export interface IScannerConfig {
   engineName: string;
@@ -21,4 +22,11 @@ export interface IScannerService {
 export interface IScannerCommand {
   register(): Promise<void>;
   dispose(): Promise<void>;
+}
+
+export interface HoverData {
+  packageName: string;
+  version: string;
+  status: CxManifestStatus;
+  vulnerabilities?: Array<{cve: string, description: string, severity: string}>;
 }
