@@ -28,12 +28,12 @@ export abstract class BaseScannerService implements IScannerService {
   shouldScanFile(document: vscode.TextDocument): boolean {
     const filePath = document.uri.fsPath.replace(/\\/g, "/");
 
-    if (filePath.includes("/node_modules/")) {
+    if (filePath.includes("/node_modules/") || document.uri.scheme !== "file") {
       return false;
     }
-    return document.uri.scheme === "file";
-  }
 
+    return true;
+  }
   // Common utility methods
   protected createTempFolder(folderPath: string): void {
     fs.mkdirSync(folderPath, { recursive: true });
