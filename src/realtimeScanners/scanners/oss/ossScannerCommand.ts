@@ -91,16 +91,16 @@ export class OssScannerCommand extends BaseScannerCommand {
               md.appendMarkdown(`**Vulnerabilities:**\n`);
               md.appendMarkdown(`( `);
               if (vulnCounts.critical > 0) {
-                md.appendMarkdown(`• ${vulnCounts.critical} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/critical_untoggle.png" width="11" height="11" style="vertical-align:baseline;" />\n`);
+                md.appendMarkdown(`• ${vulnCounts.critical} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/critical_untoggle.png" width="10" height="12" style="vertical-align:baseline;" />\n`);
               }
               if (vulnCounts.high > 0) {
-                md.appendMarkdown(`• ${vulnCounts.high} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/high_untoggle.png" width="11" height="11" style="vertical-align:baseline;" /> \n`);
+                md.appendMarkdown(`• ${vulnCounts.high} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/high_untoggle.png" width="10" height="12" style="vertical-align:baseline;" /> \n`);
               }
               if (vulnCounts.medium > 0) {
-                md.appendMarkdown(`• ${vulnCounts.medium} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/medium_untoggle.png" width="11" height="11" style="vertical-align:baseline;" /> \n`);
+                md.appendMarkdown(`• ${vulnCounts.medium} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/medium_untoggle.png" width="10" height="12" style="vertical-align:baseline;" /> \n`);
               }
               if (vulnCounts.low > 0) {
-                md.appendMarkdown(`• ${vulnCounts.low} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/low_untoggle.png" width="11" height="11" style="vertical-align:baseline;" /> \n`);
+                md.appendMarkdown(`• ${vulnCounts.low} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/low_untoggle.png" width="10" height="12" style="vertical-align:baseline;" /> \n`);
               }
               md.appendMarkdown(`)`);
               
