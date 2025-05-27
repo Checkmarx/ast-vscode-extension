@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as http from 'http';
 import * as https from 'https';
 import * as crypto from 'crypto';
-import { URL, URLSearchParams } from 'url';
-import { Logs } from '../models/logs';
-import { initialize, getCx } from '../cx';
-import { commands } from "../utils/common/commands";
+import {URL, URLSearchParams} from 'url';
+import {Logs} from '../models/logs';
+import {getCx, initialize} from '../cx';
+import {commands} from "../utils/common/commands";
 import axios from 'axios';
 
 
@@ -23,15 +23,17 @@ interface OAuthConfig {
 export class AuthService {
     private static instance: AuthService;
     private server: http.Server | null = null;  
-    private context: vscode.ExtensionContext;
-    private constructor(extensionContext: vscode.ExtensionContext) {
-        this.context = extensionContext;
-        initialize(extensionContext);
-    }
+    private readonly context: vscode.ExtensionContext;
+    private readonly logs: Logs | undefined;
+    private constructor(extensionContext: vscode.ExtensionContext, logs?: Logs) {
+      this.logs = logs;
+      this.context = extensionContext;
+      initialize(extensionContext);
+  }
 
-    public static getInstance(extensionContext: vscode.ExtensionContext): AuthService {
+    public static getInstance(extensionContext: vscode.ExtensionContext, logs?: Logs): AuthService {
         if (!this.instance) {
-            this.instance = new AuthService(extensionContext);
+            this.instance = new AuthService(extensionContext, logs);
         }
         return this.instance;
     }
@@ -174,7 +176,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
           authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
           tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
           redirectUri: `http://localhost:${port}/checkmarx1/callback`,
-          scope: 'openid',
+          scope: 'openid offline_access',
           codeVerifier,
           codeChallenge,
           port
@@ -182,19 +184,19 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
   
       try {
           const server = await this.startLocalServer(config);
-    
+
           const authUrl = `${config.authEndpoint}?` +
-           `client_id=${config.clientId}&` +
-           `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-           `response_type=code&` +
-           `scope=${config.scope}&` +
-           `code_challenge=${config.codeChallenge}&` +
-           `code_challenge_method=S256`;
-          
-           const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
+              `client_id=${config.clientId}&` +
+              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+              `response_type=code&` +
+              `scope=${config.scope}&` +
+              `code_challenge=${config.codeChallenge}&` +
+              `code_challenge_method=S256`;
+
+          const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
           if (!opened) {
-            server.close();
-            return ""; 
+              server.close();
+              return "";
           }
           const { code, res } = await this.waitForCode(server);
           const token = await this.getRefreshToken(code, config);
@@ -247,7 +249,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
         const timeout = setTimeout(() => {
           server.close();
           reject(new Error('Timeout waiting for authorization code'));
-        }, 20000); 
+        }, 60000); // 60 seconds timeout
     
         server.on('request', (req, res) => {
           clearTimeout(timeout); 
@@ -279,9 +281,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
          
             await this.context.secrets.store("authCredential", apiKey);
             const cx = getCx();
-            const logs = new Logs(vscode.window.createOutputChannel("Checkmarx"));
-            const valid = await cx.authValidate(logs);
-            return valid;
+            return await cx.authValidate(this.logs);
 
         } catch (error) {
             return false;
@@ -399,8 +399,6 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
         if (isValid) {
             vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
             await vscode.commands.executeCommand(commands.refreshTree);
-        } else {
-            vscode.window.showErrorMessage("Failed to authenticate to Checkmarx One server!");
         }
     }
 
@@ -410,25 +408,32 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
 
 
             if (!token) {
-                vscode.commands.executeCommand('setContext', 'ast-results.isValidCredentials', false);
-                vscode.commands.executeCommand('setContext', 'ast-results.isScanEnabled',false);
-                   
+                vscode.commands.executeCommand(
+                    commands.setContext,
+                    commands.isValidCredentials,
+                    false
+                );
+                vscode.commands.executeCommand(
+                    commands.setContext,
+                    commands.isScanEnabled,
+                    false
+                );
                 return false;
             }
             const isValid = await this.validateApiKey(token);
             vscode.commands.executeCommand(
-                'setContext',
-                'ast-results.isValidCredentials',
+                commands.setContext,
+                commands.isValidCredentials,
                 isValid
             );
 
             if (isValid) {
                 const cx = getCx();
-                const scanEnabled = await cx.isScanEnabled(new Logs(vscode.window.createOutputChannel("Checkmarx")));
+                const scanEnabled = await cx.isScanEnabled(this.logs);
                 
                 vscode.commands.executeCommand(
-                    'setContext',
-                    'ast-results.isScanEnabled',
+                    commands.setContext,
+                    commands.isScanEnabled,
                     scanEnabled
                 );
             }

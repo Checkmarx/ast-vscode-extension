@@ -1,5 +1,81 @@
 # CHANGELOG
 
+## [v2.34.1-oss-realtime-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-oss-realtime-demo.0) - 2025-05-19 09:19:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.34.1-oss-realtime-demo.0
+
+## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.34.0 -->
+
+## [v2.33.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.33.0) - 2025-05-06 07:37:39
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.33.0 -->
+
+## [v2.32.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.32.0) - 2025-05-05 11:26:12
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.32.0 -->
+
+## [v2.31.1-v2.31.1-Final-Oauth.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-v2.31.1-Final-Oauth.0) - 2025-04-28 11:15:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-ASMP-open-details.0...v2.31.1-v2.31.1-Final-Oauth.0
+
+## [v2.31.1-ASMP-open-details.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-ASMP-open-details.0) - 2025-04-23 13:11:05
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.31.1-Final-Version-ASPM-Filters.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-Version-ASPM-Filters.0) - 2025-04-21 07:16:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-Final-beta-ASPM-Filter-component.0...v2.31.1-Final-Version-ASPM-Filters.0
+
+## [v2.31.1-ASPM-FINAL.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-ASPM-FINAL.0) - 2025-04-21 11:08:58
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-Final-Version-ASPM-Filters.0...v2.31.1-ASPM-FINAL.0
+
+## [v2.31.1-Final-beta-aspm.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-beta-aspm.0) - 2025-04-17 14:53:37
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.31.1-Final-beta-ASPM-Filter-component.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-Final-beta-ASPM-Filter-component.0) - 2025-04-17 14:56:34
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-Final-beta-aspm.0...v2.31.1-Final-beta-ASPM-Filter-component.0
+
+## [v2.31.1-oauth-bug-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-oauth-bug-fix.0) - 2025-04-16 08:45:23
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-0...v2.31.1-oauth-bug-fix.0
+
+## [v2.31.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-0) - 2025-04-09 08:38:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.31.1-test-v3.0...v2.31.1-0
+
 ## [v2.31.1-test-v3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.31.1-test-v3.0) - 2025-03-16 08:54:09
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

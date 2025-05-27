@@ -41,7 +41,7 @@ export async function activate(context: vscode.ExtensionContext) {
   logs.info(messages.pluginRunning);
 
   // Integrity check on startup
-  const authService = AuthService.getInstance(context);
+  const authService = AuthService.getInstance(context, logs);
   await authService.validateAndUpdateState();
 
   // Status bars creation
@@ -232,7 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("ast-results.showAuth", () => {
-      AuthenticationWebview.show(context);
+      AuthenticationWebview.show(context, logs);
 
     })
   );

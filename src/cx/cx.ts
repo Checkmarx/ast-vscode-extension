@@ -16,6 +16,7 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import { AuthService } from "../services/authService";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -46,14 +47,10 @@ export class Cx implements CxPlatform {
   ) {
     const resultsFilePath = getResultsFilePath();
     const cx = new CxWrapper(await this.getAstConfiguration());
-    const gptToken = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptSettingsKey) as string;
-    const gptEngine = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
+    const { gptToken, gptEngine } = this.getGptConfig();
+     
+      this.validateWorkspaceFolders();
+
       const answer = await cx.sastChat(
         gptToken,
         filePath,
@@ -68,7 +65,7 @@ export class Cx implements CxPlatform {
       } else {
         throw new Error(answer.status);
       }
-    }
+    
   }
 
   async runGpt(
@@ -79,30 +76,45 @@ export class Cx implements CxPlatform {
     queryName: string
   ) {
     const cx = new CxWrapper(await this.getAstConfiguration());
+    const { gptToken, gptEngine } = this.getGptConfig();
+
+    this.validateWorkspaceFolders();
+
+    const answer = await cx.kicsChat(
+      gptToken,
+      filePath,
+      line,
+      severity,
+      queryName,
+      message,
+      null,
+      gptEngine
+    );
+    if (answer.payload && answer.exitCode === 0) {
+      return answer.payload;
+    } else {
+      throw new Error(answer.status);
+    }
+  }
+
+  private validateWorkspaceFolders() {
+    const filePackageObjectList = vscode.workspace.workspaceFolders;
+
+    if (!filePackageObjectList || filePackageObjectList.length <= 0) {
+      throw new Error(constants.gptFileNotInWorkspaceError);
+    }
+  }
+
+   getGptConfig(): { gptToken: string; gptEngine: string } {
     const gptToken = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptSettingsKey) as string;
+  
     const gptEngine = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
-    const filePackageObjectList = vscode.workspace.workspaceFolders;
-    if (filePackageObjectList.length > 0) {
-      const answer = await cx.kicsChat(
-        gptToken,
-        filePath,
-        line,
-        severity,
-        queryName,
-        message,
-        null,
-        gptEngine
-      );
-      if (answer.payload && answer.exitCode === 0) {
-        return answer.payload;
-      } else {
-        throw new Error(answer.status);
-      }
-    }
+  
+    return { gptToken, gptEngine };
   }
 
   async mask(filePath: string) {
@@ -297,6 +309,21 @@ export class Cx implements CxPlatform {
     const config = this.getBaseAstConfiguration();
     config.apiKey = token;
     return config;
+  }
+  
+  async isValidConfiguration(): Promise<boolean> {
+    const token = await this.context.secrets.get("authCredential");
+
+    if (!token) {
+      return false;
+    }
+    const isValidToken = await AuthService.getInstance(this.context).validateApiKey(token);
+    if (!isValidToken) {
+      return false;
+    }
+    const config = this.getBaseAstConfiguration();
+    config.apiKey = token;
+    return true;
   }
 
 
@@ -598,7 +625,7 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async authValidate(logs: Logs): Promise<boolean> {
+  async authValidate(logs?: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
@@ -607,27 +634,28 @@ export class Cx implements CxPlatform {
       if (valid.exitCode === 0) {
         return true;
       } else {
-        logs.error(`${authFailedMsg}: ${valid.status}`);
+        logs?.error(`${authFailedMsg}: ${valid.status}`);
         vscode.window.showErrorMessage(authFailedMsg);
         return false;
       }
     } catch (error) {
-      logs.error(`${authFailedMsg}: ${error}`);
+      logs?.error(`${authFailedMsg}: ${error}`);
       vscode.window.showErrorMessage(authFailedMsg);
       return false;
     }
   }
 
-  async getRiskManagementResults(projectId: string): Promise<object | undefined> {
+  async getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined> {
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
-    const applications = await cx.riskManagementResults(projectId);
+    const applications = await cx.riskManagementResults(projectId,scanId);
     let r = [];
     if (applications.payload) {
       r = applications.payload;
     } else {
       throw new Error(applications.status);
     }
+    
     return r;
   }
 }

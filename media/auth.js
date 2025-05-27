@@ -86,6 +86,7 @@
           loginForm.classList.add("hidden");
           authenticatedMessage.classList.remove("hidden");
           logoutButton.classList.remove("hidden");
+          messageBox.style.display = "none";
         } else {
           loginForm.classList.remove("hidden");
           authenticatedMessage.classList.add("hidden");
@@ -121,21 +122,17 @@
       } else if (message.type === "clearFields") {
         document.querySelector(
           'input[name="authMethod"][value="oauth"]'
-        ).checked = false;
+        ).checked = true;
         document.querySelector(
           'input[name="authMethod"][value="apiKey"]'
-        ).checked = true;
+        ).checked = false;
         apiKeyInput.value = "";
         urlInput.value = "";
         tenantInput.value = "";
         authButton.disabled = true;
         document
-          .querySelector('input[name="authMethod"][value="apiKey"]')
+          .querySelector('input[name="authMethod"][value="oauth"]')
           .dispatchEvent(new Event("change"));
-        // //
-        // document
-        //   .querySelector('input[name="authMethod"][value="oauth"]')
-        //   .dispatchEvent(new Event("change"));
       }
     });
 

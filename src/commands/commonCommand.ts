@@ -40,12 +40,19 @@ export class CommonCommand {
 
   public async executeCheckSettings() {
 
-   const isConfiguration = await cx.getAstConfiguration() ? true : false;
+   const isConfiguration = await cx.isValidConfiguration();
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
       isConfiguration 
     );
+
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isScaScanEnabled,
+      true);
+
+      this.executeCheckScanEnabled();
   }
 
   public async executeCheckScanEnabled() {

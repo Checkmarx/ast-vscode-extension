@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx One",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.31.0",
+  "version": "2.34.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
@@ -791,7 +791,7 @@
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Software Composition Analysis (SCA)"
+          "name": "Checkmarx SCA Realtime Scanner"
         },
         {
           "id": "riskManagement",
@@ -817,7 +817,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.kics.io/latest/integrations_auto_scanning_visual_studio).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -853,7 +853,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://checkmarx.com/resource/documents/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-realtime-scanning.html)."
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
@@ -953,7 +953,7 @@
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.128",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.130",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
