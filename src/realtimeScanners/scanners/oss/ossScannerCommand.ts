@@ -91,10 +91,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     const severityDisplayItems = Object.entries(counts)
       .filter(([_, count]) => count > 0)
       .map(([sev, count]) =>
-      `• ${count} <img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${icons[sev as keyof typeof icons]}" width="10" height="12"/>`
+      `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${icons[sev as keyof typeof icons]}" width="10" height="11" style="vertical-align: -12px;"/> (${count})`
     );
 
-    return `**Vulnerabilities:**\n(\n${severityDisplayItems.join("\n")}\n)\n\n`;
+    return `**Vulnerabilities:**\n${severityDisplayItems.join("\n")}\n\n\n`;
   }
   
   private async scanAllManifestFilesInWorkspace() {

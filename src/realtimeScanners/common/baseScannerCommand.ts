@@ -34,7 +34,6 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       if (isActive) {
         this.logs.info(this.config.enabledMessage);
         await this.initializeScanner();
-        // await this.registerScanOnChangeText();
       } else {
         await this.dispose();
         this.logs.info(this.config.disabledMessage);
@@ -57,10 +56,10 @@ export abstract class BaseScannerCommand implements IScannerCommand {
   protected abstract initializeScanner(): Promise<void>;
   
   protected registerScanOnChangeText(): void {
-      if (this.onDidChangeTextDocument) {
-        this.onDidChangeTextDocument.dispose();
-        this.onDidChangeTextDocument = undefined;
-  }
+    if (this.onDidChangeTextDocument) {
+     this.onDidChangeTextDocument.dispose();
+     this.onDidChangeTextDocument = undefined;
+    }
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
       this.debounce(this.onTextChange.bind(this), 1000)
     );
@@ -68,6 +67,10 @@ export abstract class BaseScannerCommand implements IScannerCommand {
   }
   
   protected onTextChange(event: vscode.TextDocumentChangeEvent): void {
+    if (!event.contentChanges.length) {
+      return; 
+    }
+
     try {
       this.scannerService.scan(event.document, this.logs);
     } catch (error) {

@@ -187,7 +187,7 @@ export class OssScannerService extends BaseScannerService {
     } catch (error) {
       this.storeAndApplyResults(originalFilePath, document.uri, [], [], [], [], [], [], [], []);
       console.error(error);
-      logs.error(this.config.errorMessage);
+      logs.error(this.config.errorMessage + `: ${error.message}`);
     } finally {
       this.deleteTempFolder(tempSubFolder);
     }
