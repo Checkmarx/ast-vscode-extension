@@ -271,7 +271,7 @@ async function setDefaultBranch(
     }
   } catch (error) {
     logs.error(`Failed to used in a local branch: ${error}`);
-    vscode.window.showErrorMessage("Failed to used in a local branch");
+    vscode.window.showErrorMessage(`Failed to used in a local branch: ${error}`);
   }
 }
 
