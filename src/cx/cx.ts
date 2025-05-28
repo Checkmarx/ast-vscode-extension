@@ -334,7 +334,10 @@ export class Cx implements CxPlatform {
     if (!token) {
       return enabled;
     }
-    const config = new CxConfig();
+    const config = await this.getAstConfiguration();
+    if (!config) {
+      return enabled;
+    }
     config.apiKey = token;
     const cx = new CxWrapper(config);
     try {
@@ -354,7 +357,10 @@ export class Cx implements CxPlatform {
     if (!token) {
       return enabled;
     }
-    const config = new CxConfig();
+    const config = await this.getAstConfiguration();
+    if (!config) {
+      return enabled;
+    }
     config.apiKey = token;
     const cx = new CxWrapper(config);
     try {
