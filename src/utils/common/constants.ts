@@ -176,6 +176,12 @@ export const constants = {
    "**/go.mod",
    "**/*.csproj"
   ],
+  ossIcons : {
+    critical: "critical_untoggle.png",
+    high: "high_untoggle.png",
+    medium: "medium_untoggle.png",
+    low: "low_untoggle.png",
+  },
   
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

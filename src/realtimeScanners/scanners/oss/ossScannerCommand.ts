@@ -46,13 +46,14 @@ export class OssScannerCommand extends BaseScannerCommand {
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
     const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
-
+   
+    md.appendMarkdown("Short description of the package\n\n");
     if (hoverData.status === CxManifestStatus.malicious) {
       md.appendMarkdown(this.badge("Malicious Package"));
-      md.appendMarkdown(pkg);
+      // md.appendMarkdown(pkg);
     } else if (this.isVulnerableStatus(hoverData.status)) {
       md.appendMarkdown(this.badge(`${hoverData.status.toString()} Vulnerability Package`));
-      md.appendMarkdown(pkg);
+      // md.appendMarkdown(pkg);
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }
     md.appendMarkdown(buttons);
@@ -70,8 +71,9 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private badge(text: string): string {
-    const ai = `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" style="vertical-align:baseline;" /> CxAI`;
-    return `${text}${" ".repeat(35)}${ai}\n\n`;
+return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`
+    // const ai = `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" style="vertical-align:baseline;" /> CxAI`;
+    // return `${text}${" ".repeat(35)}${ai}\n\n`;
   }
 
    private renderVulnCounts(vulnerabilities: Array<{ severity: string }>): string {
@@ -81,20 +83,13 @@ export class OssScannerCommand extends BaseScannerCommand {
       if (counts[sev as keyof typeof counts] !== undefined) counts[sev as keyof typeof counts]++;
     }
 
-    const icons = {
-      critical: "critical_untoggle.png",
-      high: "high_untoggle.png",
-      medium: "medium_untoggle.png",
-      low: "low_untoggle.png",
-    };
-
     const severityDisplayItems = Object.entries(counts)
       .filter(([_, count]) => count > 0)
       .map(([sev, count]) =>
-      `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${icons[sev as keyof typeof icons]}" width="10" height="11" style="vertical-align: -12px;"/> (${count})`
+      `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]}" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
     );
 
-    return `**Vulnerabilities:**\n${severityDisplayItems.join("\n")}\n\n\n`;
+    return `${severityDisplayItems.join("")}\n\n\n`;
   }
   
   private async scanAllManifestFilesInWorkspace() {
