@@ -10,6 +10,7 @@ import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 
 
 export interface CxPlatform {
@@ -224,6 +225,8 @@ export interface CxPlatform {
    * @param sourcePath the edited file sent to the ASCA engine
    */
   scanAsca(sourcePath: string): Promise<CxAsca>;
+
+  ossScanResults(sourcePath: string): Promise<CxOssResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 
