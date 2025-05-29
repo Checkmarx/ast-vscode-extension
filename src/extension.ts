@@ -24,6 +24,8 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
+import { CopilotChatCommand } from "./commands/copilotChatCommand";
+import { DebugCommand } from "./commands/debugCommand";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Create logs channel and make it visible
@@ -208,6 +210,48 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register pickers command
   const pickerCommand = new PickerCommand(context, logs, astResultsProvider);
   pickerCommand.registerPickerCommands();
+    // Register Copilot Chat integration command
+  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  copilotChatCommand.registerCopilotChatCommand();
+  
+  // Register a test command to debug the Copilot Chat integration
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ast-results.testCopilotChatIntegration', async () => {
+      try {
+        logs.info("Testing Copilot Chat integration");
+        
+        // Create a dummy tree item with vulnerability data
+        const dummyVulnerability = {
+          queryName: "Test Vulnerability",
+          label: "Test Vulnerability",
+          severity: "HIGH",
+          language: "JavaScript",
+          type: "SAST",
+          fileName: "test.js",
+          description: "This is a test vulnerability to check if the Copilot Chat integration is working."
+        };
+        
+        // Try to execute the openCopilotChat command directly
+        logs.info("Executing openCopilotChat command with dummy data");
+        await vscode.commands.executeCommand('ast-results.openCopilotChat', {
+          contextValue: 'vulnerability-item',
+          label: 'Test Vulnerability',
+          result: dummyVulnerability
+        });
+        
+        logs.info("Test completed successfully");
+        vscode.window.showInformationMessage("Copilot Chat integration test completed. Check the output panel for details.");
+      } catch (error) {
+        logs.error(`Error testing Copilot Chat integration: ${error}`);
+        vscode.window.showErrorMessage(`Copilot Chat integration test failed: ${error}`);
+      }
+    })
+  );
+
+  // Register debug command for troubleshooting
+  const debugCommand = new DebugCommand(context, logs);
+  debugCommand.registerDebugCommand();
+
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
   // Registe Kics remediation command

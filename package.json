@@ -26,8 +26,19 @@
     "*"
   ],
   "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
+  "contributes": {    "commands": [
+      {
+        "command": "ast-results.testCopilotChatIntegration",
+        "category": "ast-results",
+        "title": "Test Copilot Chat Integration"
+      },
+      {
+        "command": "ast-results.openCopilotChat",
+        "category": "ast-results",
+        "title": "Ask Copilot About Vulnerability",
+        "icon": "$(comment-discussion)",
+        "enablement": "ast-results.isValidCredentials"
+      },
       {
         "command": "ast-results.newDetails",
         "title": "Details"
@@ -504,6 +515,10 @@
         "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
         "enablement": "ast-results.isSCAScanEnabled"
+      },
+      {
+        "command": "ast-results.openCopilotChatWithQuery",
+        "title": "Open Copilot Chat with Query"
       }
     ],
     "submenus": [
@@ -586,8 +601,17 @@
           "group": "navigation@2",
           "when": "!ast-results-Ignored"
         }
-      ],
-      "view/item/context": [
+      ],      "view/item/context": [
+        {
+          "command": "ast-results.openCopilotChat",
+          "group": "inline@1",
+          "when": "viewItem == vulnerability-item"
+        },
+        {
+          "command": "ast-results.debugTreeItem",
+          "group": "inline@2",
+          "when": "viewItem == vulnerability-item"
+        },
         {
           "command": "ast-results.projectPick",
           "group": "inline@3",

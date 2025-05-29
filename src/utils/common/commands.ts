@@ -12,6 +12,8 @@ export const commands = {
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
 
+  openCopilotChat: `${constants.extensionName}.openCopilotChat`,
+
   filterCriticalToggle: `${constants.extensionName}.filterCritical_toggle`,
   filterCriticalUntoggle: `${constants.extensionName}.filterCritical_untoggle`,
   filterCritical: `${constants.extensionName}.filterCritical`,

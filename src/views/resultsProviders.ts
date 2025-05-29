@@ -125,11 +125,20 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     issueLevel: string[],
     stateLevel: string[]
   ) {
-    const obj = new AstResult(rawObj);
-    if (!obj || !obj.typeLabel) {
+    const obj = new AstResult(rawObj);    if (!obj || !obj.typeLabel) {
       return;
-    }
-    const item = new TreeItem(obj.label.replaceAll("_", " "), undefined, obj);
+    }    // Always set the context value to vulnerability-item for items with a result property
+    // This ensures they can be interacted with via the context menu
+    const item = new TreeItem(
+      obj.label.replaceAll("_", " "), 
+      constants.vulnerabilityItem, 
+      obj
+    );
+    
+    // Debug: Log the TreeItem's contextValue
+    console.log(`TreeItem created with contextValue: ${item.contextValue}, label: ${item.label}`);
+    console.log(`TreeItem has result: ${item.result !== undefined}`);
+    
     let node;
     // Verify the current severity filters applied
     if (issueLevel.length > 0) {
@@ -146,13 +155,14 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
             folder,
             map
           );
-        }
-        node = groups.reduce(
+        }        node = groups.reduce(
           (previousValue: TreeItem, currentValue: string) =>
             this.reduceGroups(obj, previousValue, currentValue),
           tree
         );
         node.children?.push(item);
+        // Debug: Log the node structure
+        console.log(`Added item to node. Node children count: ${node.children?.length}`);
       }
     }
   }
