@@ -50,6 +50,7 @@ export const constants = {
   requestChangesItem: "requestChanges-item",
   mailItem: "mail-item",
   calendarItem: "calendar-item",
+  vulnerabilityItem: "vulnerability-item",
   resultsFileName: "ast-results",
   resultsFileExtension: "json",
   status: [
@@ -159,12 +160,28 @@ export const constants = {
   ascaEngineName: "ASCA",
   ActivateAscaAutoScanning: "Activate ASCA",
   CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
-
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
   mediumSeverity: "MEDIUM",
   lowSeverity: "LOW",
-  infoSeverity: "INFO",
+  infoSeverity: "INFO",  // Copilot integration
+  copilotChatExtensionId: "GitHub.copilot-chat",
+  copilotShowCommand: "github.copilot.chat.show",
+  copilotFocusCommand: "github.copilot.chat.focus",
+  copilotSendRequestCommand: "github.copilot.chat.sendRequest",
+  // Modern way to open Copilot Chat with a query
+  copilotNewChatOpenWithQueryCommand: "workbench.action.chat.newChat",
+  copilotChatOpenWithQueryCommand: "workbench.action.chat.open",
+  // Cursor IDE specific commands
+  cursorChatOpenCommand: "cursor.openChat",
+  cursorChatSendCommand: "cursor.chat.submit",
+  cursorComposerCommand: "composer.startComposerPrompt",
+  cursorComposerMessage: "composer.fixerrormessage",
+  // Alternative ways to open Cursor chat
+  cursorComposerSender: "composer.sendToAgent",
+  // cursorComposerSender: "notebook.cell.chat.accept",
+
+  cursorChatAlternativeCommand: "workbench.action.terminal.sendSequence",
 };
 
 export enum GroupBy {

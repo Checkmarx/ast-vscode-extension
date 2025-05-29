@@ -29,6 +29,8 @@ import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
 
 let globalContext: vscode.ExtensionContext;
+import { CopilotChatCommand } from "./commands/copilotChatCommand";
+import { DebugCommand } from "./commands/debugCommand";
 
 export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
@@ -221,6 +223,15 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register pickers command
   const pickerCommand = new PickerCommand(context, logs, astResultsProvider);
   pickerCommand.registerPickerCommands();
+
+  // Register Copilot Chat integration command
+  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  copilotChatCommand.registerCopilotChatCommand();
+
+  // Register debug command for troubleshooting
+  const debugCommand = new DebugCommand(context, logs);
+  debugCommand.registerDebugCommand();
+
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
   // Registe Kics remediation command
@@ -236,16 +247,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
     })
   );
-  
+
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
     await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");
-    console.log(">> Mock token has been saved to secrets"); 
+    console.log(">> Mock token has been saved to secrets");
     await authService.validateAndUpdateState();
   });
 
 
-  
+
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {
