@@ -26,6 +26,7 @@
   <summary>Table of Contents</summary>
   <ol> 
     <li><a href="#overview">Overview</a></li>
+    <li><a href="#Checkmarx One Results">Checkmarx One Results</a></li>
     <li><a href="#key-features">Key Features</a></li>
     <li><a href="#how-to-videos">How To Videos</a></li>
     <li><a href="#prerequisites">Prerequisites</a></li>
@@ -34,7 +35,7 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#Feedback">Contact</a></li>
+    <li><a href="#Feedback">Feedback</a></li>
   </ol>
 </details>
 
