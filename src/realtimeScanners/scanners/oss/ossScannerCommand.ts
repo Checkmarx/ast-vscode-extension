@@ -7,6 +7,9 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
 import path from "path";
+import { commands } from "../../../utils/common/commands";
+import { isCursorIDE } from "../../../utils/utils";
+import { HoverData } from "../../common/types";
 
 export class OssScannerCommand extends BaseScannerCommand {
   constructor(
@@ -38,7 +41,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     scanner: any
   ) {
     const key = `${document.uri.fsPath}:${position.line}`;
-    const hoverData = scanner.hoverMessages?.get(key);
+    const hoverData: HoverData = scanner.hoverMessages?.get(key);
     const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
     const hasDiagnostic = diagnostics.some(
       (d) => d.range.start.line === position.line
@@ -53,8 +56,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
-    const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
-
+    const isCursor = isCursorIDE(); 
+    const args = encodeURIComponent(JSON.stringify([hoverData]));
+    const buttons = `[ Fix with Cx & ${isCursor? "Cursor": "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
+   
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
 
     md.appendMarkdown("Short description of the package\n\n");

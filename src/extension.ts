@@ -29,6 +29,7 @@ import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
 import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
+import { CopilotChatCommand } from "./commands/openAIChatCommand";
 
 let globalContext: vscode.ExtensionContext;
 
@@ -259,10 +260,12 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  copilotChatCommand.registerCopilotChatCommand();
+
+ 
   context.subscriptions.push(
     vscode.commands.registerCommand("cx.fixInChat", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Fix in Chat clicked!");
     }),
     vscode.commands.registerCommand("cx.viewDetails", () => {
       //Change to real logic

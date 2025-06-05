@@ -188,6 +188,10 @@ export const constants = {
   mediumSeverity: "MEDIUM",
   lowSeverity: "LOW",
   infoSeverity: "INFO",
+  
+  copilotChatExtensionId: "GitHub.copilot-chat",
+  copilotNewChatOpenWithQueryCommand: "workbench.action.chat.newChat",
+  copilotChatOpenWithQueryCommand: "workbench.action.chat.open",
 };
 
 export enum GroupBy {
