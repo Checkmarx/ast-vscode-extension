@@ -903,6 +903,19 @@
             "markdownDescription": "Scans your file as you code"
           }
         }
+      },
+      {
+        "title": "Activate OSS-Realtime",
+        "id": "realtime-scanner",
+        "order": 2,
+        "properties": {
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your manifest files as you code"
+          }
+        }
       }
     ]
   },
@@ -953,13 +966,14 @@
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.130",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.131",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
     "jsonstream-ts": "^1.3.6",
+    "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
     "validator": "^13.12.0"
@@ -968,7 +982,7 @@
     "prebuild-install": "^7.1.1",
     "bluebird": "^3.7.2",
     "xml2js": "^0.6.2",
-    "tar-fs": "^2.1.2"
+    "tar-fs": "^2.1.3"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
