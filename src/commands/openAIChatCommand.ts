@@ -97,9 +97,12 @@ export class CopilotChatCommand {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData) => {
                 try {
-                    const question = `Can you explain this ${item.status} severity security vulnerability: "${item.packageName}" in version "${item.version}"?
-                    ${item.vulnerabilities && item.vulnerabilities.length > 0 ? `It has the following vulnerabilities: ${item.vulnerabilities.map(v => `${v.cve} (${v.severity}) - ${v.description}`).join(', ')}` : ''} 
-                    How can I fix it in my code?`;
+                    const question = `I found a suspicious or malicious package in my code: ${item.packageName}@${item.version}.
+Please:
+Search online for a secure and reliable replacement for this package.
+Replace the package in the codebase accordingly (including package.json, import statements, etc.).
+Refactor any affected code so that everything works with the new package.
+Fix any compilation or runtime issues that result from this change.`
 
                     if (isCursorIDE()) {
                         await this.handleCursorIDE(question);
