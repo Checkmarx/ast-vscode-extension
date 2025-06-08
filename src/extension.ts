@@ -263,20 +263,6 @@ export async function activate(context: vscode.ExtensionContext) {
   const copilotChatCommand = new CopilotChatCommand(context, logs);
   copilotChatCommand.registerCopilotChatCommand();
 
- 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("cx.fixInChat", () => {
-    }),
-    vscode.commands.registerCommand("cx.viewDetails", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("View Details clicked!");
-    }),
-    vscode.commands.registerCommand("cx.ignore", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Ignore clicked!");
-    })
-  );
-
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
     await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");

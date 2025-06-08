@@ -58,7 +58,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
     const isCursor = isCursorIDE(); 
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = `[ Fix with Cx & ${isCursor? "Cursor": "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
+    const buttons = `[ Fix with Cx & ${isCursor? "Cursor": "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
    
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
 

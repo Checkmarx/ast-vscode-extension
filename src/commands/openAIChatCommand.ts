@@ -6,7 +6,7 @@ import { AstResult } from "../models/results";
 import { spawn } from "child_process";
 import { isCursorIDE } from "../utils/utils";
 import { HoverData } from "../realtimeScanners/common/types";
-    
+
 enum Platform {
     WINDOWS = 'win32',
     MAC = 'darwin',
@@ -35,15 +35,9 @@ export class CopilotChatCommand {
         spawn('osascript', ['-e', script]);
     }
 
-    // private pressEnterLinux() {
-    //     spawn('xdotool', ['key', 'Return']);
-    // }
-
-
-
     private async pressEnter(): Promise<void> {
         const platform = process.platform as Platform;
-        
+
         try {
             switch (platform) {
                 case Platform.WINDOWS:
@@ -59,21 +53,31 @@ export class CopilotChatCommand {
             this.logs.error(`Failed to press Enter on platform ${platform}: ${error}`);
             throw error;
         }
-    }
-
-    private async handleCursorIDE(question: string): Promise<void> {
+    } private async handleCursorIDE(question: string): Promise<void> {
         try {
+            // Save original clipboard content
             const originalClipboard = await vscode.env.clipboard.readText();
-            await vscode.env.clipboard.writeText(question);
 
+            // Close any existing chat tab first
             await vscode.commands.executeCommand("composer.closeComposerTab");
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait for tab to close
 
+            // Copy the question to clipboard
+            await vscode.env.clipboard.writeText(question);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait for clipboard
+
+            // Open new chat
             await vscode.commands.executeCommand("composer.newAgentChat");
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for chat to open
+
             await vscode.commands.executeCommand("aichat.newfollowupaction");
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for chat to be ready
+
             try {
                 await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
-                this.pressEnter();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait for paste
+                await this.pressEnter();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait before restoring clipboard
                 await vscode.env.clipboard.writeText(originalClipboard);
 
             } catch (pasteErr) {
@@ -93,42 +97,55 @@ export class CopilotChatCommand {
         }
     }
 
+    private async openChatWithPrompt(question: string): Promise<void> {
+
+        if (isCursorIDE()) {
+            await this.handleCursorIDE(question);
+            return;
+        }
+        const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
+        if (!copilotChatExtension) {
+            const installOption = "Install Copilot Chat";
+            const choice = await vscode.window.showErrorMessage(
+                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
+                installOption
+            );
+            if (choice === installOption) {
+                await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
+            }
+            return;
+        } await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
+        await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` })
+    }
+
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData) => {
+                const question = `I found a potentially malicious or untrusted package in my code: ${item.packageName}@${item.version}.
+I want you to help me replace it with a safe and actively maintained alternative.
+Please follow this interactive flow:
+Search online and suggest a trusted replacement package.
+Before making any changes, explain what the replacement is and why it’s a good choice.
+Ask for confirmation before continuing.
+Once I approve, update only this specific package in the codebase — including import statements and usage.
+If any compilation or runtime issues arise, ask before applying automated fixes.`
                 try {
-                    const question = `I found a suspicious or malicious package in my code: ${item.packageName}@${item.version}.
-Please:
-Search online for a secure and reliable replacement for this package.
-Replace the package in the codebase accordingly (including package.json, import statements, etc.).
-Refactor any affected code so that everything works with the new package.
-Fix any compilation or runtime issues that result from this change.`
+                    await this.openChatWithPrompt(question);
 
-                    if (isCursorIDE()) {
-                        await this.handleCursorIDE(question);
-                        return;
-                    }
-                    const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
-
-                    if (!copilotChatExtension) {//??
-                        // Copilot Chat not installed - show installation message
-                        const installOption = "Install Copilot Chat";
-                        const choice = await vscode.window.showErrorMessage(
-                            "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                            installOption
-                        );
-
-                        if (choice === installOption) {
-                            // Open the extension in marketplace
-                            await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
-                        }
-                        return;
-                    }
-
-                    await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
-                    await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand,
-                        { query: `${question}` }
-                    );
+                } catch (error) {
+                    this.logs.error(`Error opening Chat: ${error}`);
+                    vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
+                }
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
+                let question = `Show all details about the package ${item.packageName}@${item.version}. Explain why it is flagged, what are the risks, and what remediation steps are recommended. Present the information in a clear, actionable way for a developer.`;
+                item.vulnerabilities?.forEach(vuln => {
+                    question += `\n\nVulnerability: ${vuln.cve}\nDescription: ${vuln.description}\nSeverity: ${vuln.severity}`;
+                });
+                try {
+                    await this.openChatWithPrompt(question);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
