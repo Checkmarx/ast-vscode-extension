@@ -64,7 +64,7 @@ export class CopilotChatCommand {
 
             await vscode.commands.executeCommand("composer.newAgentChat");
             await vscode.commands.executeCommand("aichat.newfollowupaction");
-
+            await new Promise(resolve => setTimeout(resolve, 100));
             try {
                 await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
                 await this.pressEnter();
