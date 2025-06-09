@@ -7,10 +7,15 @@
     window.addEventListener("message", (event) => {
       const message = event.data;
       if (message.type === "setAiFeatureState") {
+        const loader = document.getElementById("aiFeatureLoader");
         const icon = document.getElementById("aiFeatureIcon");
-        if (!icon) {
+
+        if (!icon || !loader) {
           return;
         }
+
+        loader.style.display = "none";
+        icon.classList.remove("hidden");
 
         const checkIconPath = icon.getAttribute("data-check") || "";
         const uncheckIconPath = icon.getAttribute("data-uncheck") || "";
@@ -19,8 +24,6 @@
           "src",
           message.enabled ? checkIconPath : uncheckIconPath
         );
-
-        icon.style.visibility = "visible";
       }
     });
   });

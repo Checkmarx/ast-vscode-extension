@@ -11,6 +11,15 @@ export class WelcomeWebview {
       { enableScripts: true }
     );
 
+    const bootstrapCssUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "bootstrap",
+        "bootstrap.min.css"
+      )
+    );
+
     const scannerImgUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(
         context.extensionUri,
@@ -56,7 +65,9 @@ export class WelcomeWebview {
         <title>Welcome</title>
         <meta http-equiv="Content-Security-Policy"
               content="default-src 'none'; style-src 'unsafe-inline' ${panel.webview.cspSource}; script-src 'nonce-${nonce}'; img-src https: data: vscode-resource:;">
+        <link href="${bootstrapCssUri}" rel="stylesheet">
         <link rel="stylesheet" href="${cssUri}">
+
       </head>
       <body>
         <div class="welcome-container">
@@ -71,15 +82,24 @@ export class WelcomeWebview {
 
             <div class="feature-card" id="aiFeatureCard">
               <div class="card-header">
-               <img
-  id="aiFeatureIcon"
-  class="status-icon"
-  src=""
-  data-check="${checkPngUri}"
-  data-uncheck="${uncheckPngUri}"
-  alt="AI status icon"
-  style="visibility: hidden"
-/>
+               <div class="status-icon" id="aiFeatureWrapper">
+  <div
+    id="aiFeatureLoader"
+    class="spinner-border spinner-border-sm text-info"
+    role="status"
+    style="width: 16px; height: 16px;"
+  >
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <img
+    id="aiFeatureIcon"
+    class="status-icon-img hidden"
+    src=""
+    data-check="${checkPngUri}"
+    data-uncheck="${uncheckPngUri}"
+    alt="AI status icon"
+  />
+</div>
                 <span class="card-title">Code Smarter with AI</span>
               </div>
               <ul class="card-list">
