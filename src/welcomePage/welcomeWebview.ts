@@ -61,7 +61,6 @@ export class WelcomeWebview {
                 <li>See suggested fixes for vulnerabilities across open source, config, and code.</li>
                 <li>Fix faster with intelligent, context-aware remediation inside your IDE.</li>
               </ul>
-              <p class="tip-text">Tip: turn On/Off with opt/alt +c</p>
             </div>
 
             <ul class="main-feature-list">
