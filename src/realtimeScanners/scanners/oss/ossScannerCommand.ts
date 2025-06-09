@@ -56,9 +56,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
 
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
+    const isMalicious = hoverData.status === CxManifestStatus.malicious;
 
     md.appendMarkdown("Short description of the package\n\n");
-    if (hoverData.status === CxManifestStatus.malicious) {
+    if (isMalicious) {
       md.appendMarkdown(this.badge("Malicious Package") + "<br>");
     } else if (isVulnerable) {
       md.appendMarkdown(
@@ -66,9 +67,12 @@ export class OssScannerCommand extends BaseScannerCommand {
           "<br>"
       );
     }
-    md.appendMarkdown(`${"&nbsp;".repeat(94)}${buttons}<br>`);
+    md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+    }
+    if (isMalicious) {
+      md.appendMarkdown(this.renderMaliciousIcon());
     }
 
     return new vscode.Hover(md);
@@ -87,6 +91,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
     // const ai = `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" style="vertical-align:baseline;" /> CxAI`;
     // return `${text}${" ".repeat(35)}${ai}\n\n`;
+  }
+
+  private renderMaliciousIcon(): string {
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="10" height="11" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(
