@@ -7,15 +7,20 @@
     window.addEventListener("message", (event) => {
       const message = event.data;
       if (message.type === "setAiFeatureState") {
-        const aiFeatureIcon = document.getElementById("aiFeatureIcon");
-
-        if (message.enabled) {
-          aiFeatureIcon.classList.remove("off");
-          aiFeatureIcon.classList.add("on");
-        } else {
-          aiFeatureIcon.classList.remove("on");
-          aiFeatureIcon.classList.add("off");
+        const icon = document.getElementById("aiFeatureIcon");
+        if (!icon) {
+          return;
         }
+
+        const checkIconPath = icon.getAttribute("data-check") || "";
+        const uncheckIconPath = icon.getAttribute("data-uncheck") || "";
+
+        icon.setAttribute(
+          "src",
+          message.enabled ? checkIconPath : uncheckIconPath
+        );
+
+        icon.style.visibility = "visible";
       }
     });
   });

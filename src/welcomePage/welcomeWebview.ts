@@ -20,6 +20,24 @@ export class WelcomeWebview {
       )
     );
 
+    const checkPngUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "tabler-icon-check.png"
+      )
+    );
+
+    const uncheckPngUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "tabler-icon-uncheck.png"
+      )
+    );
+
     const cssUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
     );
@@ -53,7 +71,15 @@ export class WelcomeWebview {
 
             <div class="feature-card" id="aiFeatureCard">
               <div class="card-header">
-                <span id="aiFeatureIcon" class="status-icon off"></span>
+               <img
+  id="aiFeatureIcon"
+  class="status-icon"
+  src=""
+  data-check="${checkPngUri}"
+  data-uncheck="${uncheckPngUri}"
+  alt="AI status icon"
+  style="visibility: hidden"
+/>
                 <span class="card-title">Code Smarter with AI</span>
               </div>
               <ul class="card-list">
