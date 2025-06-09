@@ -84,15 +84,7 @@ export class WelcomeWebview {
     panel.webview.onDidReceiveMessage(async (message) => {
       if (message.type === "getAiFeatureState") {
         try {
-          const config = await cx.getAstConfiguration();
-          let isEnabled = false;
-
-          if (Array.isArray(config)) {
-            const aiEntry = config.find(
-              (item) => item.key === "scan.config.plugins.aiMcpServer"
-            );
-            isEnabled = aiEntry?.value === "true";
-          }
+          const isEnabled = await cx.isAiMcpServerEnabled();
 
           panel.webview.postMessage({
             type: "setAiFeatureState",
