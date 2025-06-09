@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Add malicous png by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1151
+* Fix oss real time cards by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1152
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-fix-with-AI.0...v2.34.1-open-AI-chat.0
+
 ## [v2.34.1-oss-realtime-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-oss-realtime-demo.0) - 2025-05-19 09:19:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -11,21 +23,6 @@
 ## [v2.34.1-fix-with-AI.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-fix-with-AI.0) - 2025-06-05 13:41:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Bug Fixes 🐛
-* bug/Enabled scan button with usage of proxy (AST-93304) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1097
-### New Features 🚀
-* Add icons to oss (AST-97472) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1140
-* Add error throw message to the static message (AST-98289) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1134
-* Oss Scanner (AST-95367) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1126
-### Other Changes
-* Add correct link in 2 places (AST-95576) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1133
-* add png in media folder to use as link by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1136
-* Add img for AI card(AST-95367) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1145
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.34.1-fix-with-AI.0
 
 ## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
 
