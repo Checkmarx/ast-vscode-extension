@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants } from "../utils/common/constants";
-import { AstResult } from "../models/results";
 import { spawn } from "child_process";
 import { isCursorIDE } from "../utils/utils";
 import { HoverData } from "../realtimeScanners/common/types";
@@ -53,33 +52,24 @@ export class CopilotChatCommand {
             this.logs.error(`Failed to press Enter on platform ${platform}: ${error}`);
             throw error;
         }
-    } private async handleCursorIDE(question: string): Promise<void> {
+    }
+
+    private async handleCursorIDE(question: string): Promise<void> {
         try {
-            // Save original clipboard content
             const originalClipboard = await vscode.env.clipboard.readText();
 
-            // Close any existing chat tab first
             await vscode.commands.executeCommand("composer.closeComposerTab");
-            await new Promise(resolve => setTimeout(resolve, 500)); // Wait for tab to close
 
-            // Copy the question to clipboard
             await vscode.env.clipboard.writeText(question);
-            await new Promise(resolve => setTimeout(resolve, 500)); // Wait for clipboard
 
-            // Open new chat
             await vscode.commands.executeCommand("composer.newAgentChat");
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for chat to open
-
             await vscode.commands.executeCommand("aichat.newfollowupaction");
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for chat to be ready
 
             try {
                 await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
-                await new Promise(resolve => setTimeout(resolve, 500)); // Wait for paste
                 await this.pressEnter();
-                await new Promise(resolve => setTimeout(resolve, 500)); // Wait before restoring clipboard
-                await vscode.env.clipboard.writeText(originalClipboard);
 
+                await vscode.env.clipboard.writeText(originalClipboard);
             } catch (pasteErr) {
                 this.logs.error(`Failed to programmatically paste: ${pasteErr}`);
                 try {
@@ -114,24 +104,27 @@ export class CopilotChatCommand {
                 await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
             }
             return;
-        } await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
+        } 
+        await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` })
     }
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData) => {
-                const question = `I found a potentially malicious or untrusted package in my code: ${item.packageName}@${item.version}.
-I want you to help me replace it with a safe and actively maintained alternative.
-Please follow this interactive flow:
-Search online and suggest a trusted replacement package.
-Before making any changes, explain what the replacement is and why it’s a good choice.
-Ask for confirmation before continuing.
-Once I approve, update only this specific package in the codebase — including import statements and usage.
-If any compilation or runtime issues arise, ask before applying automated fixes.`
+                const question = `You are the Checkmarx Security Assistant for npm; target dependency ${item.packageName} @ ${item.version}. Invoke the internal AlternativePackageFinder, which returns JSON objects (action, package, version, reason). 
+                If the result contains exactly one object whose action is "upgrade," pin that version in package.json (never touch package-lock.json), 
+                update first-party code as described below, then output a summary formatted as a bullet list (each line starts with "-"): "Upgraded ${item.packageName} to <version> – <reason>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". 
+                Otherwise, show one interactive prompt that lists every remediation path as a bullet list where each line is "- <Action>: <package>@<version> – <reason>" (Action is "Upgrade" or "Replace"),
+                 followed by the sentence "Please select the option you would like me to apply." and wait for the user's choice. 
+                 After a choice, pin the selected version in package.json, scan first-party source code (ignore node_modules), 
+                 update every require/import of the old package, adapt API usage, insert clear TODO comments where manual edits are needed, 
+                 run offline compile or type checks, and silently patch first-party code until the build passes. T
+                 hen print a final summary, formatted as a bullet list: "Fix applied: <chosen fix>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". 
+                 Always abort and warn if no safe option exists or malicious indicators persist. Every message and summary must explicitly state that it is provided by the Checkmarx Security Assistant.`
+                
                 try {
                     await this.openChatWithPrompt(question);
-
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
