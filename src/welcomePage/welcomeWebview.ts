@@ -130,10 +130,11 @@ export class WelcomeWebview {
       if (message.type === "getAiFeatureState") {
         try {
           const isEnabled = await cx.isAiMcpServerEnabled();
+          const safeEnabled = isEnabled === true;
 
           panel.webview.postMessage({
             type: "setAiFeatureState",
-            enabled: isEnabled,
+            enabled: safeEnabled,
           });
         } catch (e) {
           console.error("Error retrieving AI state:", e);
