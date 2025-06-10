@@ -1,6 +1,5 @@
 (function () {
   const vscode = acquireVsCodeApi();
-
   let currentState = false;
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -16,10 +15,21 @@
       if (!currentState) {
         return;
       }
+
       checkIcon.classList.add("hidden");
       uncheckIcon.classList.remove("hidden");
       currentState = false;
       vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
+    });
+
+    uncheckIcon.addEventListener("click", () => {
+      if (!currentState) {
+        return;
+      }
+
+      checkIcon.classList.remove("hidden");
+      uncheckIcon.classList.add("hidden");
+      vscode.postMessage({ type: "setOssRealtimeEnabled", value: true });
     });
 
     window.addEventListener("message", (event) => {
@@ -29,17 +39,22 @@
 
         if (message.enabled) {
           currentState = true;
-          checkIcon.classList.remove("hidden");
-          uncheckIcon.classList.add("hidden");
           checkIcon.style.cursor = "pointer";
-          vscode.postMessage({ type: "setOssRealtimeEnabled", value: true });
+          uncheckIcon.style.cursor = "pointer";
+
+          if (message.ossSetting) {
+            checkIcon.classList.remove("hidden");
+            uncheckIcon.classList.add("hidden");
+          } else {
+            checkIcon.classList.add("hidden");
+            uncheckIcon.classList.remove("hidden");
+          }
         } else {
           currentState = false;
           checkIcon.classList.add("hidden");
+          uncheckIcon.classList.remove("hidden");
           aiBoxInfo.classList.remove("hidden");
           aiFeatureBoxWrapper.classList.remove("hidden");
-          uncheckIcon.classList.remove("hidden");
-          vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
         }
       }
     });

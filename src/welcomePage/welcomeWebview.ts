@@ -3,7 +3,7 @@ import { getNonce } from "../utils/utils";
 import { cx } from "../cx";
 
 export class WelcomeWebview {
-  public static show(context: vscode.ExtensionContext) {
+  public static async show(context: vscode.ExtensionContext) {
     const panel = vscode.window.createWebviewPanel(
       "checkmarxWelcome",
       "Welcome to Checkmarx",
@@ -65,6 +65,11 @@ export class WelcomeWebview {
     );
 
     const nonce = getNonce();
+
+    const configKey =
+      "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime";
+    const config = vscode.workspace.getConfiguration();
+    const isOssEnabled = config.get<boolean>(configKey, false);
 
     panel.webview.html = `
       <!DOCTYPE html>
@@ -147,27 +152,42 @@ export class WelcomeWebview {
       </body>
       </html>
     `;
+
     panel.webview.onDidReceiveMessage(async (message) => {
       if (message.type === "getAiFeatureState") {
         try {
           const isEnabled = await cx.isAiMcpServerEnabled();
           const safeEnabled = isEnabled === true;
 
+          const isOssEnabledNow = vscode.workspace
+            .getConfiguration()
+            .get<boolean>(configKey, false);
+
           panel.webview.postMessage({
             type: "setAiFeatureState",
             enabled: safeEnabled,
+            ossSetting: safeEnabled ? isOssEnabledNow : false,
           });
+
+          if (!safeEnabled && isOssEnabled) {
+            const config = vscode.workspace.getConfiguration();
+            await config.update(
+              configKey,
+              false,
+              vscode.ConfigurationTarget.Global
+            );
+          }
         } catch (e) {
           console.error("Error retrieving AI state:", e);
           panel.webview.postMessage({
             type: "setAiFeatureState",
             enabled: false,
+            ossSetting: false,
           });
         }
       }
+
       if (message.type === "setOssRealtimeEnabled") {
-        const configKey =
-          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime";
         const config = vscode.workspace.getConfiguration();
         config.update(
           configKey,
