@@ -56,9 +56,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
 
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
+    const isMalicious = hoverData.status === CxManifestStatus.malicious;
 
     md.appendMarkdown("Short description of the package\n\n");
-    if (hoverData.status === CxManifestStatus.malicious) {
+    if (isMalicious) {
       md.appendMarkdown(this.badge("Malicious Package") + "<br>");
     } else if (isVulnerable) {
       md.appendMarkdown(
@@ -70,7 +71,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }
-    if (hoverData.status === CxManifestStatus.malicious) {
+    if (isMalicious) {
       md.appendMarkdown(this.renderMaliciousIcon());
     }
 
@@ -93,7 +94,7 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private renderMaliciousIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.svg" width="10" height="11" style="vertical-align: -12px;"/>`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="10" height="11" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(

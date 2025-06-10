@@ -24,9 +24,11 @@ import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackVi
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { AscaCommand } from "./commands/ascaCommand";
-import { AuthenticationWebview } from './webview/authenticationWebview';
+import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
+import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
+import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 
 let globalContext: vscode.ExtensionContext;
 
@@ -191,6 +193,22 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   const ascaCommand = new AscaCommand(context, logs);
   ascaCommand.registerAsca();
+
+  const configManager = new ConfigurationManager();
+  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
+  await scannerRegistry.activateAllScanners();
+  const configListener = configManager.registerConfigChangeListener(
+    (section) => {
+      const ossEffected = section(
+        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
+      );
+      if (ossEffected) {
+        scannerRegistry.getScanner("oss")?.register();
+      }
+    }
+  );
+  context.subscriptions.push(configListener);
+
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
   commonCommand.registerSettings();
@@ -202,7 +220,12 @@ export async function activate(context: vscode.ExtensionContext) {
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change
-  await executeCheckSettingsChange(context,kicsStatusBarItem, logs, ascaCommand);
+  await executeCheckSettingsChange(
+    context,
+    kicsStatusBarItem,
+    logs,
+    ascaCommand
+  );
 
   const treeCommand = new TreeCommand(
     context,
@@ -233,19 +256,30 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ast-results.showAuth", () => {
       AuthenticationWebview.show(context, logs);
-
     })
   );
-  
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("cx.fixInChat", () => {
+      //Change to real logic
+      vscode.window.showInformationMessage("Fix in Chat clicked!");
+    }),
+    vscode.commands.registerCommand("cx.viewDetails", () => {
+      //Change to real logic
+      vscode.window.showInformationMessage("View Details clicked!");
+    }),
+    vscode.commands.registerCommand("cx.ignore", () => {
+      //Change to real logic
+      vscode.window.showInformationMessage("Ignore clicked!");
+    })
+  );
+
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
     await authService.saveToken(context, "FAKE_TOKEN_FROM_TEST");
-    console.log(">> Mock token has been saved to secrets"); 
+    console.log(">> Mock token has been saved to secrets");
     await authService.validateAndUpdateState();
   });
-
-
-  
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {

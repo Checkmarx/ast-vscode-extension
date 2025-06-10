@@ -17,6 +17,7 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { AuthService } from "../services/authService";
+import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -651,6 +652,19 @@ export class Cx implements CxPlatform {
     }
   }
 
+  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+    const cx = new CxWrapper(config);
+    const scans = await cx.ossScanResults(sourcePath);
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
   async authValidate(logs?: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
     const config = await this.getAstConfiguration();

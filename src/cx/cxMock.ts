@@ -11,6 +11,7 @@ import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAs
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1458,6 +1459,10 @@ export class CxMock implements CxPlatform {
 
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
+  }
+ 
+  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+    return [];
   }
 
   async authValidate(): Promise<boolean> {

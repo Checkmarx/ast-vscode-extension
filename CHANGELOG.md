@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-oss-realtime-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-oss-realtime-demo.0) - 2025-05-19 09:19:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -7,6 +11,10 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.34.1-oss-realtime-demo.0
+
+## [v2.34.1-fix-with-AI.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-fix-with-AI.0) - 2025-06-05 13:41:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
 
