@@ -1,29 +1,39 @@
 (function () {
   const vscode = acquireVsCodeApi();
 
+  let currentState = false;
+
   window.addEventListener("DOMContentLoaded", () => {
     vscode.postMessage({ type: "getAiFeatureState" });
+
+    const checkIcon = document.getElementById("aiFeatureCheckIcon");
+    const uncheckIcon = document.getElementById("aiFeatureUncheckIcon");
+    const loader = document.getElementById("aiFeatureLoader");
+
+    checkIcon.addEventListener("click", () => {
+      if (!currentState) {
+        return;
+      }
+      checkIcon.classList.add("hidden");
+      uncheckIcon.classList.remove("hidden");
+      currentState = false;
+    });
 
     window.addEventListener("message", (event) => {
       const message = event.data;
       if (message.type === "setAiFeatureState") {
-        const loader = document.getElementById("aiFeatureLoader");
-        const icon = document.getElementById("aiFeatureIcon");
+        loader.classList.add("hidden");
 
-        if (!icon || !loader) {
-          return;
+        if (message.enabled) {
+          currentState = true;
+          checkIcon.classList.remove("hidden");
+          uncheckIcon.classList.add("hidden");
+          checkIcon.style.cursor = "pointer";
+        } else {
+          currentState = false;
+          checkIcon.classList.add("hidden");
+          uncheckIcon.classList.remove("hidden");
         }
-
-        loader.style.display = "none";
-        icon.classList.remove("hidden");
-
-        const checkIconPath = icon.getAttribute("data-check") || "";
-        const uncheckIconPath = icon.getAttribute("data-uncheck") || "";
-
-        icon.setAttribute(
-          "src",
-          message.enabled ? checkIconPath : uncheckIconPath
-        );
       }
     });
   });

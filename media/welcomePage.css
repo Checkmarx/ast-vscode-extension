@@ -89,6 +89,10 @@ h1 {
   display: block;
 }
 
+.status-icon-img.clickable {
+  cursor: pointer;
+}
+
 .card-title {
   color: #fff;
   font-family: Inter, sans-serif;
