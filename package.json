@@ -903,7 +903,7 @@
             "markdownDescription": "Scans your file as you code"
           }
         }
-      },
+      },      
       {
         "title": "Activate OSS-Realtime",
         "id": "realtime-scanner",
@@ -914,6 +914,19 @@
             "order": 3,
             "default": false,
             "markdownDescription": "Scans your manifest files as you code"
+          }
+        }
+      },
+      {
+        "title": "Activate Secret Detection Realtime",
+        "id": "secret-scanner",
+        "order": 5,
+        "properties": {
+          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 1,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
           }
         }
       }

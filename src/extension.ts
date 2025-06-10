@@ -204,9 +204,16 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (ossEffected) {
         scannerRegistry.getScanner("oss")?.register();
+        return
       }
+      const secretEffected = section(
+        `${constants.secretScanner}.${constants.activateSecretScanner}`
+      );
+      if (secretEffected) {
+        scannerRegistry.getScanner("secret")?.register();
+        return; 
     }
-  );
+  });
   context.subscriptions.push(configListener);
 
   // Register Settings
