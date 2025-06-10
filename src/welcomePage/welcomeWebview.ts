@@ -148,6 +148,16 @@ export class WelcomeWebview {
           });
         }
       }
+      if (message.type === "setOssRealtimeEnabled") {
+        const configKey =
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime";
+        const config = vscode.workspace.getConfiguration();
+        config.update(
+          configKey,
+          message.value,
+          vscode.ConfigurationTarget.Global
+        );
+      }
     });
   }
 }

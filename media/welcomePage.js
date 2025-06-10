@@ -17,6 +17,7 @@
       checkIcon.classList.add("hidden");
       uncheckIcon.classList.remove("hidden");
       currentState = false;
+      vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
     });
 
     window.addEventListener("message", (event) => {
@@ -29,9 +30,11 @@
           checkIcon.classList.remove("hidden");
           uncheckIcon.classList.add("hidden");
           checkIcon.style.cursor = "pointer";
+          vscode.postMessage({ type: "setOssRealtimeEnabled", value: true });
         } else {
           currentState = false;
           checkIcon.classList.add("hidden");
+
           uncheckIcon.classList.remove("hidden");
         }
       }
