@@ -39,6 +39,7 @@
           aiBoxInfo.classList.remove("hidden");
           aiFeatureBoxWrapper.classList.remove("hidden");
           uncheckIcon.classList.remove("hidden");
+          vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
         }
       }
     });

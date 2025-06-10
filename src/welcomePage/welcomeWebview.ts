@@ -139,7 +139,7 @@ export class WelcomeWebview {
           </div>
 
           <div class="right-section">
-            <img src="${scannerImgUri}" alt="AI Example" class="illustration" />
+            <img src="${scannerImgUri}" alt="AI Example" />
           </div>
         </div>
 

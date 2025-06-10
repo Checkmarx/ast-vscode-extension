@@ -19,17 +19,8 @@ body {
 }
 
 .right-section {
-  flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 6px;
-}
-
-.illustration {
-  width: 100%;
-  max-width: 600px;
-  border-radius: 1em;
+  padding: 40.508px 32.908px 122.765px 10.125px;
 }
 
 h1 {
