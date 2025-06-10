@@ -59,7 +59,7 @@ h1 {
   background-color: #2a2a2a;
   padding: 18px;
   width: 410px;
-  height: 247px;
+  min-height: auto;
   border-radius: 10px;
   border: 1px solid #444;
   box-sizing: border-box;
@@ -146,4 +146,12 @@ h1 {
 
 .hidden {
   display: none;
+}
+
+.ai-feature-box-wrapper {
+  margin-top: 26px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 7px;
 }

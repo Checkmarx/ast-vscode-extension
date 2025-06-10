@@ -9,6 +9,8 @@
     const checkIcon = document.getElementById("aiFeatureCheckIcon");
     const uncheckIcon = document.getElementById("aiFeatureUncheckIcon");
     const loader = document.getElementById("aiFeatureLoader");
+    const aiBoxInfo = document.getElementById("aiFeatureStatusBox");
+    const aiFeatureBoxWrapper = document.getElementById("aiFeatureBoxWrapper");
 
     checkIcon.addEventListener("click", () => {
       if (!currentState) {
@@ -34,7 +36,8 @@
         } else {
           currentState = false;
           checkIcon.classList.add("hidden");
-
+          aiBoxInfo.classList.remove("hidden");
+          aiFeatureBoxWrapper.classList.remove("hidden");
           uncheckIcon.classList.remove("hidden");
         }
       }

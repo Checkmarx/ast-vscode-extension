@@ -29,6 +29,15 @@ export class WelcomeWebview {
       )
     );
 
+    const aiBoxinfo = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "cxAIError.svg"
+      )
+    );
+
     const checkSvgUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(
         context.extensionUri,
@@ -111,6 +120,14 @@ export class WelcomeWebview {
                 <li>See suggested fixes for vulnerabilities across open source, config, and code.</li>
                 <li>Fix faster with intelligent, context-aware remediation inside your IDE.</li>
               </ul>
+              <div class="ai-feature-box-wrapper hidden" id="aiFeatureBoxWrapper">
+               <img
+      id="aiFeatureStatusBox"
+    class="hidden"
+    src="${aiBoxinfo}"
+    alt="AI Feature Box"
+  />
+  </div>
             </div>
 
             <ul class="main-feature-list">
