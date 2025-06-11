@@ -33,7 +33,7 @@ export class OssScannerService extends BaseScannerService {
     medium: this.createDecoration("medium_untoggle.svg"),
     low: this.createDecoration("low_untoggle.svg"),
     underline: vscode.window.createTextEditorDecorationType({
-      textDecoration: "underline wavy red",
+      textDecoration: "underline wavy #f14c4c",
       rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
     }),
   };
@@ -453,8 +453,9 @@ export class OssScannerService extends BaseScannerService {
     if (addDiagnostic) {
       decorations.push({ range });
       diagnostics.push(new vscode.Diagnostic(range, message, severity));
+    } else {
+      iconDecorations.push({ range });
     }
-    iconDecorations.push({ range });
 
     const key = `${uri.fsPath}:${range.start.line}`;
     hoverMessages.set(key, {
