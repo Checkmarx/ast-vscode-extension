@@ -269,12 +269,14 @@ export class OssScannerService extends BaseScannerService {
     const lowDecorations: vscode.DecorationOptions[] = [];
 
     for (const result of scanResults) {
-      for (const location of result.locations) {
+      for (let i = 0; i < result.locations.length; i++) {
+        const location = result.locations[i];
         const range = new vscode.Range(
           new vscode.Position(location.line, location.startIndex),
           new vscode.Position(location.line, location.endIndex)
         );
         const key = `${uri.fsPath}:${range.start.line}`;
+        const addDiagnostic = i === 0;
 
         switch (result.status) {
           case CxManifestStatus.malicious:
@@ -286,11 +288,14 @@ export class OssScannerService extends BaseScannerService {
               uri,
               result,
               vscode.DiagnosticSeverity.Error,
-              "Malicious package detected"
+              "Malicious package detected",
+              addDiagnostic
             );
             break;
           case CxManifestStatus.ok:
-            okDecorations.push({ range });
+            if (addDiagnostic) {
+              okDecorations.push({ range });
+            }
             break;
           case CxManifestStatus.unknown:
             unknownDecorations.push({ range });
@@ -304,7 +309,8 @@ export class OssScannerService extends BaseScannerService {
               uri,
               result,
               vscode.DiagnosticSeverity.Error,
-              "Critical-risk package"
+              "Critical-risk package",
+              addDiagnostic
             );
             break;
           case CxManifestStatus.high:
@@ -316,7 +322,8 @@ export class OssScannerService extends BaseScannerService {
               uri,
               result,
               vscode.DiagnosticSeverity.Error,
-              "High-risk package"
+              "High-risk package",
+              addDiagnostic
             );
             break;
           case CxManifestStatus.medium:
@@ -328,7 +335,8 @@ export class OssScannerService extends BaseScannerService {
               uri,
               result,
               vscode.DiagnosticSeverity.Error,
-              "Medium-risk package"
+              "Medium-risk package",
+              addDiagnostic
             );
             break;
           case CxManifestStatus.low:
@@ -340,7 +348,8 @@ export class OssScannerService extends BaseScannerService {
               uri,
               result,
               vscode.DiagnosticSeverity.Error,
-              "Low-risk package"
+              "Low-risk package",
+              addDiagnostic
             );
             break;
           default:
@@ -370,11 +379,14 @@ export class OssScannerService extends BaseScannerService {
     uri: vscode.Uri,
     result: CxOssResult,
     severity: vscode.DiagnosticSeverity,
-    messagePrefix: string
+    messagePrefix: string,
+    addDiagnostic: boolean
   ): void {
     const message = `${messagePrefix}: ${result.packageName}@${result.version}`;
     diagnostics.push(new vscode.Diagnostic(range, message, severity));
-    decorations.push({ range });
+    if (addDiagnostic) {
+      decorations.push({ range });
+    }
 
     const key = `${uri.fsPath}:${range.start.line}`;
     hoverMessages.set(key, {
