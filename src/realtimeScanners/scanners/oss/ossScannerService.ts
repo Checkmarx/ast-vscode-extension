@@ -207,6 +207,11 @@ export class OssScannerService extends BaseScannerService {
         [],
         [],
         [],
+        [],
+        [],
+        [],
+        [],
+        [],
         []
       );
       console.error(error);
