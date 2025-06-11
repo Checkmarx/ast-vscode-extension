@@ -11,14 +11,16 @@ import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/
 import { minimatch } from "minimatch";
 
 export class OssScannerService extends BaseScannerService {
-  
-  private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
-  return vscode.window.createTextEditorDecorationType({
+  private createDecoration(
+    iconName: string,
+    size: string = "auto"
+  ): vscode.TextEditorDecorationType {
+    return vscode.window.createTextEditorDecorationType({
       gutterIconPath: vscode.Uri.file(
         path.join(__dirname, "..", "..", "..", "..", "media", "icons", iconName)
       ),
       rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
-      gutterIconSize: size
+      gutterIconSize: size,
     });
   }
 
@@ -29,19 +31,24 @@ export class OssScannerService extends BaseScannerService {
     critical: this.createDecoration("critical_untoggle.svg", "12px"),
     high: this.createDecoration("high_untoggle.svg"),
     medium: this.createDecoration("medium_untoggle.svg"),
-    low: this.createDecoration("low_untoggle.svg")
+    low: this.createDecoration("low_untoggle.svg"),
   };
-
 
   private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
   private hoverMessages: Map<string, HoverData> = new Map();
-  private maliciousDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
+  private maliciousDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
   private okDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private unknownDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private criticalDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private highDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private mediumDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private lowDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
+  private unknownDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
+  private criticalDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
+  private highDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
+  private mediumDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
+  private lowDecorationsMap: Map<string, vscode.DecorationOptions[]> =
+    new Map();
 
   private documentOpenListener: vscode.Disposable | undefined;
   private editorChangeListener: vscode.Disposable | undefined;
@@ -89,12 +96,16 @@ export class OssScannerService extends BaseScannerService {
         this.maliciousDecorationsMap.get(filePath) || [];
       const okDecorations = this.okDecorationsMap.get(filePath) || [];
       const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
-      const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
+      const criticalDecorations =
+        this.criticalDecorationsMap.get(filePath) || [];
       const highDecorations = this.highDecorationsMap.get(filePath) || [];
       const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
       const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
-      
-      editor.setDecorations(this.decorationTypes.malicious, maliciousDecorations);
+
+      editor.setDecorations(
+        this.decorationTypes.malicious,
+        maliciousDecorations
+      );
       editor.setDecorations(this.decorationTypes.ok, okDecorations);
       editor.setDecorations(this.decorationTypes.unknown, unknownDecorations);
       editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
@@ -152,7 +163,18 @@ export class OssScannerService extends BaseScannerService {
       const scanResults = await cx.ossScanResults(mainTempPath);
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
-      this.storeAndApplyResults(originalFilePath, document.uri, [], [], [], [], [], [], [], []);
+      this.storeAndApplyResults(
+        originalFilePath,
+        document.uri,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      );
       console.error(error);
       logs.error(this.config.errorMessage + `: ${error.message}`);
     } finally {
@@ -160,7 +182,18 @@ export class OssScannerService extends BaseScannerService {
     }
   }
 
-  private storeAndApplyResults(filePath: string, uri: vscode.Uri, diagnostics: vscode.Diagnostic[], maliciousDecorations: vscode.DecorationOptions[], okDecorations: vscode.DecorationOptions[], unknownDecorations: vscode.DecorationOptions[], criticalDecorations: vscode.DecorationOptions[], highDecorations: vscode.DecorationOptions[], mediumDecorations: vscode.DecorationOptions[], lowDecorations: vscode.DecorationOptions[]): void {
+  private storeAndApplyResults(
+    filePath: string,
+    uri: vscode.Uri,
+    diagnostics: vscode.Diagnostic[],
+    maliciousDecorations: vscode.DecorationOptions[],
+    okDecorations: vscode.DecorationOptions[],
+    unknownDecorations: vscode.DecorationOptions[],
+    criticalDecorations: vscode.DecorationOptions[],
+    highDecorations: vscode.DecorationOptions[],
+    mediumDecorations: vscode.DecorationOptions[],
+    lowDecorations: vscode.DecorationOptions[]
+  ): void {
     this.diagnosticsMap.set(filePath, diagnostics);
     this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
     this.okDecorationsMap.set(filePath, okDecorations);
@@ -169,7 +202,7 @@ export class OssScannerService extends BaseScannerService {
     this.highDecorationsMap.set(filePath, highDecorations);
     this.mediumDecorationsMap.set(filePath, mediumDecorations);
     this.lowDecorationsMap.set(filePath, lowDecorations);
-  
+
     this.applyDiagnostics();
     this.applyDecorations(uri);
   }
@@ -222,7 +255,7 @@ export class OssScannerService extends BaseScannerService {
   updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
     const scanResults = problems as unknown as CxOssResult[];
     const filePath = uri.fsPath;
-    
+
     const diagnostics: vscode.Diagnostic[] = [];
 
     this.diagnosticCollection.delete(uri);
@@ -234,87 +267,99 @@ export class OssScannerService extends BaseScannerService {
     const highDecorations: vscode.DecorationOptions[] = [];
     const mediumDecorations: vscode.DecorationOptions[] = [];
     const lowDecorations: vscode.DecorationOptions[] = [];
-    
+
     for (const result of scanResults) {
-      const range = new vscode.Range(
-        new vscode.Position(result.lineStart, result.startIndex),
-        new vscode.Position(result.lineEnd, result.endIndex)
-      );
-      const key = `${uri.fsPath}:${range.start.line}`;
-    
-      switch (result.status) {
-        case CxManifestStatus.malicious:
-          this.handleProblemStatus(
-            diagnostics,
-            maliciousDecorations,
-            this.hoverMessages,
-            range,
-            uri,
-            result,
-            vscode.DiagnosticSeverity.Error,
-            "Malicious package detected"
-          );
-          break;
-        case CxManifestStatus.ok:
-          okDecorations.push({ range });
-          break;
-        case CxManifestStatus.unknown:
-          unknownDecorations.push({ range });
-          break;
-        case CxManifestStatus.critical:
-          this.handleProblemStatus(
-            diagnostics,
-            criticalDecorations,
-            this.hoverMessages,
-            range,
-            uri,
-            result,
-            vscode.DiagnosticSeverity.Error,
-            "Critical-risk package"
-          );
-          break;
-        case CxManifestStatus.high:
-          this.handleProblemStatus(
-            diagnostics,
-            highDecorations,
-            this.hoverMessages,
-            range,
-            uri,
-            result,
-            vscode.DiagnosticSeverity.Error,
-            "High-risk package"
-          );
-          break;
-        case CxManifestStatus.medium:
-          this.handleProblemStatus(
-            diagnostics,
-            mediumDecorations,
-            this.hoverMessages,
-            range,
-            uri,
-            result,
-            vscode.DiagnosticSeverity.Error,
-            "Medium-risk package"
-          );
-          break;
-        case CxManifestStatus.low:
-          this.handleProblemStatus(
-            diagnostics,
-            lowDecorations,
-            this.hoverMessages,
-            range,
-            uri,
-            result,
-            vscode.DiagnosticSeverity.Error,
-            "Low-risk package"
-          );
-          break;
-        default:
-          continue;
+      for (const location of result.locations) {
+        const range = new vscode.Range(
+          new vscode.Position(location.line, location.startIndex),
+          new vscode.Position(location.line, location.endIndex)
+        );
+        const key = `${uri.fsPath}:${range.start.line}`;
+
+        switch (result.status) {
+          case CxManifestStatus.malicious:
+            this.handleProblemStatus(
+              diagnostics,
+              maliciousDecorations,
+              this.hoverMessages,
+              range,
+              uri,
+              result,
+              vscode.DiagnosticSeverity.Error,
+              "Malicious package detected"
+            );
+            break;
+          case CxManifestStatus.ok:
+            okDecorations.push({ range });
+            break;
+          case CxManifestStatus.unknown:
+            unknownDecorations.push({ range });
+            break;
+          case CxManifestStatus.critical:
+            this.handleProblemStatus(
+              diagnostics,
+              criticalDecorations,
+              this.hoverMessages,
+              range,
+              uri,
+              result,
+              vscode.DiagnosticSeverity.Error,
+              "Critical-risk package"
+            );
+            break;
+          case CxManifestStatus.high:
+            this.handleProblemStatus(
+              diagnostics,
+              highDecorations,
+              this.hoverMessages,
+              range,
+              uri,
+              result,
+              vscode.DiagnosticSeverity.Error,
+              "High-risk package"
+            );
+            break;
+          case CxManifestStatus.medium:
+            this.handleProblemStatus(
+              diagnostics,
+              mediumDecorations,
+              this.hoverMessages,
+              range,
+              uri,
+              result,
+              vscode.DiagnosticSeverity.Error,
+              "Medium-risk package"
+            );
+            break;
+          case CxManifestStatus.low:
+            this.handleProblemStatus(
+              diagnostics,
+              lowDecorations,
+              this.hoverMessages,
+              range,
+              uri,
+              result,
+              vscode.DiagnosticSeverity.Error,
+              "Low-risk package"
+            );
+            break;
+          default:
+            continue;
+        }
       }
     }
-    
-    this.storeAndApplyResults(filePath, uri, diagnostics, maliciousDecorations, okDecorations, unknownDecorations, criticalDecorations, highDecorations, mediumDecorations, lowDecorations);
+    this.storeAndApplyResults(
+      filePath,
+      uri,
+      diagnostics,
+      maliciousDecorations,
+      okDecorations,
+      unknownDecorations,
+      criticalDecorations,
+      highDecorations,
+      mediumDecorations,
+      lowDecorations
+    );
   }
 
   private handleProblemStatus(
@@ -336,7 +381,7 @@ export class OssScannerService extends BaseScannerService {
       packageName: result.packageName,
       version: result.version,
       status: result.status,
-      vulnerabilities: result.vulnerabilities
+      vulnerabilities: result.vulnerabilities,
     });
   }
 
