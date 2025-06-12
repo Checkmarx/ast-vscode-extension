@@ -102,6 +102,10 @@ export class AuthenticationWebview {
     );
   }
 
+  private async markFirstWelcomeAsShown() {
+    await this.context.globalState.update("cxFirstWelcome", true);
+  }
+
   private _getWebviewContent(): string {
     const styleBootStrap = this.setWebUri(
       "media",
@@ -237,8 +241,9 @@ export class AuthenticationWebview {
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
                   await authService.authenticate(baseUri, tenant);
-                  setTimeout(() => {
+                  setTimeout(async () => {
                     this._panel.dispose();
+                    await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context);
                   }, 1000);
                 } else if (message.authMethod === "apiKey") {
@@ -269,8 +274,9 @@ export class AuthenticationWebview {
                     message: "API Key validated successfully!",
                   });
 
-                  setTimeout(() => {
+                  setTimeout(async () => {
                     this._panel.dispose();
+                    await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context);
                     setTimeout(() => {
                       this._panel.webview.postMessage({
