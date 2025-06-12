@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Welcoma Page by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1150
+### Other Changes
+* Fix locations of oss real time by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1156
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-open-AI-chat.0...v2.34.1-welcome-with-chat.0
+
 ## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
