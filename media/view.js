@@ -364,9 +364,21 @@
 				html += riskSection(description.risk);
 				html += causeSection(description.cause);
 				html += recommendationSection(description.generalRecommendations);
+				// Dynamically add CWE link if available
+            if (result.cweId) {
+                html += `
+                    <div class="learn-section">
+                        <p>
+                            <strong>Learn more about this vulnerability:</strong>
+                            <a href="https://cwe.mitre.org/data/definitions/${result.cweId}.html" target="_blank" rel="noopener noreferrer">
+                                CWE-${result.cweId}
+                            </a>
+                        </p>
+                    </div>
+                `;
 			}
 		}
-		else {
+	} else {
 			html +=
 				`
 				<div class="history-container">
