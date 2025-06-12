@@ -1320,6 +1320,10 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
+  async isAiMcpServerEnabled(): Promise<boolean> {
+    return true;
+  }
+
   async isSCAScanEnabled(): Promise<boolean> {
     return true;
   }
