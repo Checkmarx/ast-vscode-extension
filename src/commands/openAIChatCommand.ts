@@ -1,16 +1,12 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
-import { constants } from "../utils/common/constants";
+import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import { isCursorIDE } from "../utils/utils";
 import { HoverData } from "../realtimeScanners/common/types";
 
-enum Platform {
-    WINDOWS = 'win32',
-    MAC = 'darwin',
-    LINUX = 'linux'
-}
+
 
 export class CopilotChatCommand {
     context: vscode.ExtensionContext;

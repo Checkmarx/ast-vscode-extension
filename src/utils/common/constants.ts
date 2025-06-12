@@ -194,6 +194,11 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.open",
 };
 
+export enum Platform {
+    WINDOWS = 'win32',
+    MAC = 'darwin',
+}
+
 export enum GroupBy {
   fileName = "fileName",
   severity = "severity",
