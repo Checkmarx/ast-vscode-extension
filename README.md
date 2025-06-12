@@ -14,7 +14,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/Checkmarx/ast-vscode-extension">
-    <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/xIcon.jpg" alt="Logo" width="80" height="80" />
+    <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/cx-icon-logo.png" alt="Logo" width="80" height="80" />
   </a>
   <h3 align="center">VS Code Extension</h3>
   <p align="center">
@@ -64,7 +64,7 @@ The extension enables you to navigate from a vulnerability to the relevant sourc
 ![Running a Scan from the IDE](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif "Running a Scan from the IDE")
 
 **GIF - Loading and Viewing Results**
-![Loading and Viewing Results](https://checkmarx.com/resource/documents/en/image/164fe2f63cec51.gif "Loading and Viewing Results")
+![Loading and Viewing Results](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif "Loading and Viewing Results")
 
 ### Key Features
 
