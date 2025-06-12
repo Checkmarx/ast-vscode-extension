@@ -91,7 +91,7 @@ export class SecretScannerService extends BaseScannerService {
 				document.getText()
 			);
 			const scanResults = await cx.secretsScanResults(tempPath);
-			this.updateProblems<CxSecretsResult>(scanResults, document.uri);
+			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
