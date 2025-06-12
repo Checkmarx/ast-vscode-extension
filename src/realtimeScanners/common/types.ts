@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
-import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export interface IScannerConfig {
   engineName: string;
@@ -27,6 +27,6 @@ export interface IScannerCommand {
 export interface HoverData {
   packageName: string;
   version: string;
-  status: CxManifestStatus;
+  status: CxRealtimeEngineStatus;
   vulnerabilities?: Array<{cve: string, description: string, severity: string}>;
 }

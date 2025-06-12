@@ -5,28 +5,15 @@ import { IScannerConfig } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import { minimatch } from "minimatch";
 import path from "path";
-
-type Location = {//TODO: Replace with cx wrapper type
-	startLine: number;
-	endLine: number;
-	startColumn: number;
-	endColumn: number;
-}
-
-type SecretProblem = {//TODO: Replace with cx wrapper type
-	title: string;
-	description: string;
-	filePath: string;
-	severity: 'critical' | 'high' | 'medium' | 'low';
-	locations: Location[];
-};
-
+import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { cx } from "../../../cx";
+import fs from "fs";
 export class SecretScannerService extends BaseScannerService {
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
 	private criticalDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private highDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private mediumDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
-	private lowDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -44,8 +31,7 @@ export class SecretScannerService extends BaseScannerService {
 	private decorationTypes = {
 		critical: this.createDecoration("critical_untoggle.svg", "12px"),
 		high: this.createDecoration("high_untoggle.svg"),
-		medium: this.createDecoration("medium_untoggle.svg"),
-		low: this.createDecoration("low_untoggle.svg")
+		medium: this.createDecoration("medium_untoggle.svg")
 	};
 
 	constructor() {
@@ -75,6 +61,16 @@ export class SecretScannerService extends BaseScannerService {
 		return true
 	}
 
+  private saveFile(
+	tempFolder: string,
+	originalFilePath: string,
+	content: string
+  ): string {
+	const fileName = path.basename(originalFilePath);
+	const tempFilePath = path.join(tempFolder, fileName);
+	fs.writeFileSync(tempFilePath, content);
+	return tempFilePath;
+  }
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
 		if (!this.shouldScanFile(document)) {
 			return;
@@ -83,84 +79,54 @@ export class SecretScannerService extends BaseScannerService {
 		const filePath = document.uri.fsPath;
 		logs.info("Scanning for secrets in file: " + filePath);
 
-		try {//TODO: call a real secret scanning from cx
-			const text = document.getText();
-			const problems: SecretProblem[] = [];
-
-			const lines = text.split("\n");
-			lines.forEach((line, index) => {
-				const lowerLine = line.toLowerCase();
-				if (lowerLine.includes("secret")) {
-					// Simulated severity based on content
-					let severity: SecretProblem['severity'] = 'low';
-					let title = "Generic Secret Found";
-					let description = "A potential secret was found in the code";
-
-					if (lowerLine.includes("password") || lowerLine.includes("key")) {
-						severity = 'critical';
-						title = "Critical Security Key Found";
-						description = "A potential password or security key was detected";
-					} else if (lowerLine.includes("token")) {
-						severity = 'high';
-						title = "High Risk Token Found";
-						description = "A potential access token was detected";
-					} else if (lowerLine.includes("credential")) {
-						severity = 'medium';
-						title = "Credential Found";
-						description = "A potential credential was detected";
-					}
-
-					problems.push({
-						title,
-						description,
-						filePath: document.uri.fsPath,
-						severity,
-						locations: [{
-							startLine: index,
-							endLine: index,
-							startColumn: line.indexOf(line.trim()),
-							endColumn: line.indexOf(line.trim()) + line.trim().length
-						}]
-					});
-				}
-			});
-
-			this.updateProblems(problems, document.uri);
+		try {
+			const tempFolder = this.getTempSubFolderPath(
+				document,
+				constants.secretScannerDirectory
+			);
+			this.createTempFolder(tempFolder);
+			const tempPath = this.saveFile(
+				tempFolder,
+				filePath,
+				document.getText()
+			);
+			const scanResults = await cx.secretsScanResults(tempPath);
+			this.updateProblems<CxSecretsResult>(scanResults, document.uri);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
+		} finally {
+			this.deleteTempFolder(constants.secretScannerDirectory);
 		}
 	}
 
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
-		const secretProblems = problems as SecretProblem[];
+		const secretProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
 
 		const diagnostics: vscode.Diagnostic[] = [];
 		const criticalDecorations: vscode.DecorationOptions[] = [];
 		const highDecorations: vscode.DecorationOptions[] = [];
 		const mediumDecorations: vscode.DecorationOptions[] = [];
-		const lowDecorations: vscode.DecorationOptions[] = [];
 
 		for (const problem of secretProblems) {
 			if (problem.locations.length === 0) continue;
 
 			const location = problem.locations[0];
-			const range = new vscode.Range(
-				new vscode.Position(location.startLine, location.startColumn),
-				new vscode.Position(location.endLine, location.endColumn)
-			);
-
 			const severityMap = {
 				critical: vscode.DiagnosticSeverity.Error,
 				high: vscode.DiagnosticSeverity.Error,
-				medium: vscode.DiagnosticSeverity.Warning,
-				low: vscode.DiagnosticSeverity.Information
+				medium: vscode.DiagnosticSeverity.Warning
 			};
+
+			const range = new vscode.Range(
+				new vscode.Position(location.line, location.startIndex),
+				new vscode.Position(location.line, location.endIndex)
+			);
 
 			const diagnostic = new vscode.Diagnostic(
 				range,
-				`${problem.title}\n${problem.description}`,
+				`${problem.title}:${problem.description}`,
 				severityMap[problem.severity]
 			);
 
@@ -168,28 +134,24 @@ export class SecretScannerService extends BaseScannerService {
 
 			const decoration = { range };
 			switch (problem.severity) {
-				case 'critical': //Maybe use in CxManifestStatus Enum, and rename this class.
+				case CxRealtimeEngineStatus.critical:
 					criticalDecorations.push(decoration);
 					break;
-				case 'high':
+				case CxRealtimeEngineStatus.high:
 					highDecorations.push(decoration);
 					break;
-				case 'medium':
+				case CxRealtimeEngineStatus.medium:
 					mediumDecorations.push(decoration);
-					break;
-				case 'low':
-					lowDecorations.push(decoration);
 					break;
 			}
 		}
 
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
-		
+
 		this.criticalDecorations.set(filePath, criticalDecorations);
 		this.highDecorations.set(filePath, highDecorations);
 		this.mediumDecorations.set(filePath, mediumDecorations);
-		this.lowDecorations.set(filePath, lowDecorations);
 
 		this.applyDecorations(uri);
 	}
@@ -200,7 +162,6 @@ export class SecretScannerService extends BaseScannerService {
 		this.criticalDecorations.clear();
 		this.highDecorations.clear();
 		this.mediumDecorations.clear();
-		this.lowDecorations.clear();
 	}
 	public dispose(): void {
 		Object.values(this.decorationTypes).forEach(decoration => decoration.dispose());
@@ -247,11 +208,9 @@ export class SecretScannerService extends BaseScannerService {
 		const criticalDecorations = this.criticalDecorations.get(filePath) || [];
 		const highDecorations = this.highDecorations.get(filePath) || [];
 		const mediumDecorations = this.mediumDecorations.get(filePath) || [];
-		const lowDecorations = this.lowDecorations.get(filePath) || [];
 
 		editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
 		editor.setDecorations(this.decorationTypes.high, highDecorations);
 		editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
-		editor.setDecorations(this.decorationTypes.low, lowDecorations);
 	}
 }

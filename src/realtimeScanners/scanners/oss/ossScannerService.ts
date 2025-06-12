@@ -7,7 +7,7 @@ import { cx } from "../../../cx";
 import { HoverData, IScannerConfig } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
-import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 
 export class OssScannerService extends BaseScannerService {
@@ -335,7 +335,7 @@ export class OssScannerService extends BaseScannerService {
         const addDiagnostic = i === 0;
 
         switch (result.status) {
-          case CxManifestStatus.malicious:
+          case CxRealtimeEngineStatus.malicious:
             this.handleProblemStatus(
               diagnostics,
               maliciousDecorations,
@@ -349,15 +349,15 @@ export class OssScannerService extends BaseScannerService {
               maliciousIconDecorations
             );
             break;
-          case CxManifestStatus.ok:
+          case CxRealtimeEngineStatus.ok:
             if (addDiagnostic) {
               okDecorations.push({ range });
             }
             break;
-          case CxManifestStatus.unknown:
+          case CxRealtimeEngineStatus.unknown:
             unknownDecorations.push({ range });
             break;
-          case CxManifestStatus.critical:
+          case CxRealtimeEngineStatus.critical:
             this.handleProblemStatus(
               diagnostics,
               criticalDecorations,
@@ -371,7 +371,7 @@ export class OssScannerService extends BaseScannerService {
               criticalIconDecorations
             );
             break;
-          case CxManifestStatus.high:
+          case CxRealtimeEngineStatus.high:
             this.handleProblemStatus(
               diagnostics,
               highDecorations,
@@ -385,7 +385,7 @@ export class OssScannerService extends BaseScannerService {
               highIconDecorations
             );
             break;
-          case CxManifestStatus.medium:
+          case CxRealtimeEngineStatus.medium:
             this.handleProblemStatus(
               diagnostics,
               mediumDecorations,
@@ -399,7 +399,7 @@ export class OssScannerService extends BaseScannerService {
               mediumIconDecorations
             );
             break;
-          case CxManifestStatus.low:
+          case CxRealtimeEngineStatus.low:
             this.handleProblemStatus(
               diagnostics,
               lowDecorations,

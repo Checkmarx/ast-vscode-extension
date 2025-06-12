@@ -5,7 +5,7 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { OssScannerService } from "./ossScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
-import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import path from "path";
 
 export class OssScannerCommand extends BaseScannerCommand {
@@ -56,7 +56,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
 
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
-    const isMalicious = hoverData.status === CxManifestStatus.malicious;
+    const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
 
     md.appendMarkdown("Short description of the package\n\n");
     if (isMalicious) {
@@ -78,12 +78,12 @@ export class OssScannerCommand extends BaseScannerCommand {
     return new vscode.Hover(md);
   }
 
-  private isVulnerableStatus(status: CxManifestStatus): boolean {
+  private isVulnerableStatus(status: CxRealtimeEngineStatus): boolean {
     return [
-      CxManifestStatus.critical,
-      CxManifestStatus.high,
-      CxManifestStatus.medium,
-      CxManifestStatus.low,
+      CxRealtimeEngineStatus.critical,
+      CxRealtimeEngineStatus.high,
+      CxRealtimeEngineStatus.medium,
+      CxRealtimeEngineStatus.low,
     ].includes(status);
   }
 
