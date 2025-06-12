@@ -157,10 +157,25 @@ export class WelcomeWebview {
             .getConfiguration()
             .get<boolean>(configKey, false);
 
+          const isFirstVisit = context.globalState.get<boolean>(
+            "cxFirstWelcome",
+            false
+          );
+
+          if (isFirstVisit && safeEnabled && !isOssEnabled) {
+            await config.update(
+              configKey,
+              true,
+              vscode.ConfigurationTarget.Global
+            );
+            isOssEnabled = true;
+          }
+
           panel.webview.postMessage({
             type: "setAiFeatureState",
             enabled: safeEnabled,
-            ossSetting: safeEnabled ? isOssEnabled : false,
+            ossSetting:
+              isFirstVisit && safeEnabled ? true : safeEnabled && isOssEnabled,
           });
 
           if (!safeEnabled && isOssEnabled) {
