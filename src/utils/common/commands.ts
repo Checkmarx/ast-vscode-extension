@@ -114,5 +114,7 @@ export const commands = {
   setContext: "setContext",
 
   openSettings: "workbench.action.openSettings",
-  openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`
+  openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`,
+  openAIChat: `${constants.extensionName}.fixWithAIChat`,
+  viewDetails: `${constants.extensionName}.viewPackageDetails`
 };

@@ -263,3 +263,11 @@ export function getStateIdForTriage(selectedStateName: string): number {
   );
   return matchedCustom.id;
 }
+
+export function isCursorIDE(): boolean {
+  const appName = vscode.env.appName || '';
+  if (appName.toLowerCase().includes('cursor')) {
+    return true;
+  }
+  return false;
+}
