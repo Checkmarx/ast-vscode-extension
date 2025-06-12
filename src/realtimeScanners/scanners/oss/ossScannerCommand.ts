@@ -24,13 +24,19 @@ export class OssScannerCommand extends BaseScannerCommand {
     const scanner = this.scannerService as OssScannerService;
     scanner.initializeScanner();
 
-    vscode.languages.registerHoverProvider(
+    if (this.hoverProviderDisposable) {
+      this.hoverProviderDisposable.dispose();
+    }
+
+    this.hoverProviderDisposable = vscode.languages.registerHoverProvider(
       { scheme: "file" },
       { provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
     );
 
     await this.scanAllManifestFilesInWorkspace();
   }
+
+  private hoverProviderDisposable: vscode.Disposable | undefined;
 
   private getHover(
     document: vscode.TextDocument,
@@ -136,5 +142,6 @@ export class OssScannerCommand extends BaseScannerCommand {
   public async dispose(): Promise<void> {
     await super.dispose();
     (this.scannerService as OssScannerService).dispose();
+    this.hoverProviderDisposable?.dispose();
   }
 }
