@@ -406,6 +406,7 @@
       );
 
         resultElement.addEventListener("click", () => {
+          debugger;
           vscode.postMessage({
             command: "openVulnerabilityDetails",
             result: result,
