@@ -33,9 +33,10 @@
 	justify-self: left;
 }
 .header-risk-score {
-	font-size: 1em;
+	font-size: 1.2em;
+	border-radius: 4px;
     font-weight: bold;
-	margin-left: 1%;
+	margin-left: 0.5%;
 }
 
 .critical-risk {
