@@ -32,6 +32,31 @@
 	flex: 40;
 	justify-self: left;
 }
+.header-risk-score {
+	font-size: 1em;
+    font-weight: bold;
+	margin-left: 1%;
+}
+
+.critical-risk {
+  color: #bb2a31d9;
+  border: 1px solid #bb2a31d9;
+}
+
+.high-risk {
+  color: #f8788fe5;
+  border: 1px solid #f8788fe5;
+}
+
+.medium-risk {
+  color: #e7984999;
+  border: 1px solid #e7984999;
+}
+
+.low-risk {
+  color: #419128;
+  border: 1px solid #419128;
+}
 
 .body-sca {
 	height: 100%;
