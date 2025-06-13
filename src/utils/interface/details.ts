@@ -28,6 +28,9 @@ export class Details {
 				<div class="header-item-title">
 					<h2 id="cx_title">
 						<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
+						${
+					this.result.label ?  `<span class="header-risk-score ${this.getRiskName(9.2)}-risk" style="padding:2px">9.2</span>` : ""
+				}
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
@@ -130,6 +133,38 @@ export class Details {
 						${this.result.getHtmlDetails(cxPath)}
 					</tbody>
 				</table>	
+	  			<hr class="division">
+				<div style="border:0">
+				<div style="display: inline-block;position: relative;">
+					<p class="header-content">
+						Additional trait
+					</p>
+				</div>
+				<div class="card-content">
+						<table class="package-table" id="package-table-${0 + 1}">
+						<tbody>
+						<tr>
+							<td>
+								<div>
+								<div style="display: inline-block">
+									Suspected Malware
+								</div>
+								</div>
+							</td>
+							</tr>
+							<tr>
+							<td>
+								<div>
+								<div style="display: inline-block">
+									Exploitable Path
+								</div>
+								</div>
+							</td>
+							</tr>
+						</tbody>
+						</table>
+				</div>
+				</div>
 			</body>`;
   }
 
@@ -139,6 +174,16 @@ export class Details {
 					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
 				</span>
 				</body>`;
+  }
+
+  getRiskName(score) {
+    return score === 10
+      ? "critical"
+      : score >= 7
+      ? "high"
+      : score >= 3
+      ? "medium"
+      : "low";
   }
 
   scaView(
@@ -157,6 +202,9 @@ export class Details {
 			<body class="body-sca">
 			<div class="header">
 				<img alt="icon" class="header-severity" src="${severityPath}" />
+				${
+					this.result.label ?  `<p class="header-risk-score ${this.getRiskName(9.2)}-risk">9.2</p>` : ""
+				}
 				<p class="header-title">
 					${this.result.label}
 				</p>

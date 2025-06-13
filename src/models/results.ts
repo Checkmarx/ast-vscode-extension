@@ -721,7 +721,7 @@ export class AstResult extends CxResult {
       </div>
             `
         }
-    <div class="card" style="border:0">
+    <div class="card" >
       <p class="header-content">
         References
       </p>
@@ -729,6 +729,37 @@ export class AstResult extends CxResult {
         ${result.scaReferences()}
       </div>
     </div>
+    <div class="card" style="border:0">
+      <div style="display: inline-block;position: relative;">
+          <p class="header-content">
+            Additional trait
+          </p>
+      </div>
+      <div class="card-content">
+            <table class="package-table" id="package-table-${0 + 1}">
+              <tbody>
+              <tr>
+                  <td>
+                    <div>
+                      <div style="display: inline-block">
+                        Suspected Malware
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                      <div style="display: inline-block">
+                        Exploitable Path
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+      </div>
+  </div>
   </div>
       `
           : `
