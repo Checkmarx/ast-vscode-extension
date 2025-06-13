@@ -38,6 +38,9 @@ export class AstResult extends CxResult {
   secretDetectionNode: SCSSecretDetectionNode | undefined;
   cweId: string | undefined;
   packageIdentifier: string;
+  riskScore: number = 0;
+  traits: { [key: string]: string } = {};
+
   declare vulnerabilityDetails: CxVulnerabilityDetails;
 
   setSeverity(severity: string) {
@@ -73,7 +76,9 @@ export class AstResult extends CxResult {
       result.data,
       result.comments,
       result.vulnerabilityDetails,
-      result.descriptionHTML
+      result.descriptionHTML,
+      result.riskScore,
+      result.traits
     );
     this.id = result.id;
     this.type = result.scaType ? "sca" : result.type;
@@ -97,6 +102,8 @@ export class AstResult extends CxResult {
     this.queryName = result.data.queryName;
     this.queryId = result.data.queryId;
     this.vulnerabilityDetails = result.vulnerabilityDetails;
+    this.riskScore = result.riskScore;
+    this.traits = result.traits;
 
     this.handleFileNameAndLine(result);
 
@@ -531,6 +538,29 @@ export class AstResult extends CxResult {
     return html;
   }
 
+  public getHtmlAdditionaltrait(result: { traits: Record<string, string> }): string {
+      if (Object.keys(result.traits).length > 0) {
+        const rows = Object.entries(result.traits)
+          .map((value) =>
+            `<tr><td><div><div style="display: inline-block">${value[1]}</div></div></td></tr>`
+          )
+          .join("");
+
+        return `
+          <table class="package-table" id="package-table-1">
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+
+    return `
+      <div style="margin:15px 15px 15px 28px;"><p style="margin:25px;font-size:0.9em">
+        No additional trait available
+      </p></div>
+    `;
+  }
+
+
   public scaReferences() {
     let html = "";
     if (this.scaNode.packageData) {
@@ -721,7 +751,7 @@ export class AstResult extends CxResult {
       </div>
             `
         }
-    <div class="card" >
+    <div class="card" ${result.traits !== undefined ? "" : `style="border:0"`}>
       <p class="header-content">
         References
       </p>
@@ -729,37 +759,18 @@ export class AstResult extends CxResult {
         ${result.scaReferences()}
       </div>
     </div>
-    <div class="card" style="border:0">
-      <div style="display: inline-block;position: relative;">
-          <p class="header-content">
-            Additional trait
-          </p>
-      </div>
-      <div class="card-content">
-            <table class="package-table" id="package-table-${0 + 1}">
-              <tbody>
-              <tr>
-                  <td>
-                    <div>
-                      <div style="display: inline-block">
-                        Suspected Malware
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <div>
-                      <div style="display: inline-block">
-                        Exploitable Path
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-      </div>
-  </div>
+    ${result.traits !== undefined ? 
+        `<div class="card" style="border:0">
+          <div style="display: inline-block;position: relative;">
+              <p class="header-content">
+                Additional trait
+              </p>
+          </div>
+          <div class="card-content">
+                ${result.getHtmlAdditionaltrait(result)}
+          </div>
+      </div>`
+      : ""} 
   </div>
       `
           : `

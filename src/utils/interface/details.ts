@@ -29,7 +29,7 @@ export class Details {
 					<h2 id="cx_title">
 						<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
 						${
-					this.result.label ?  `<span class="header-risk-score ${this.getRiskName(9.2)}-risk" style="padding:2px">9.2</span>` : ""
+					this.result.riskScore ?  `<span class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk" style="padding:2px">${this.result.riskScore.toFixed(1)}</span>` : ""
 				}
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
@@ -132,39 +132,18 @@ export class Details {
 					<tbody>
 						${this.result.getHtmlDetails(cxPath)}
 					</tbody>
-				</table>	
-	  			<hr class="division">
+				</table>
+				${this.result.traits !== undefined ? `<hr class="division">
 				<div style="border:0">
-				<div style="display: inline-block;position: relative;">
-					<p class="header-content">
-						Additional trait
-					</p>
-				</div>
-				<div class="card-content">
-						<table class="package-table" id="package-table-${0 + 1}">
-						<tbody>
-						<tr>
-							<td>
-								<div>
-								<div style="display: inline-block">
-									Suspected Malware
-								</div>
-								</div>
-							</td>
-							</tr>
-							<tr>
-							<td>
-								<div>
-								<div style="display: inline-block">
-									Exploitable Path
-								</div>
-								</div>
-							</td>
-							</tr>
-						</tbody>
-						</table>
-				</div>
-				</div>
+					<div style="display: inline-block;position: relative;">
+						<p class="header-content">
+							Additional trait
+						</p>
+					</div>
+					<div class="card-content">
+							${this.result.getHtmlAdditionaltrait(this.result)}
+					</div>
+				</div>` : ""}
 			</body>`;
   }
 
@@ -203,7 +182,7 @@ export class Details {
 			<div class="header">
 				<img alt="icon" class="header-severity" src="${severityPath}" />
 				${
-					this.result.label ?  `<p class="header-risk-score ${this.getRiskName(9.2)}-risk">9.2</p>` : ""
+					this.result.riskScore ?  `<p class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""
 				}
 				<p class="header-title">
 					${this.result.label}
