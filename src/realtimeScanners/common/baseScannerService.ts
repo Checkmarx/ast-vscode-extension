@@ -43,6 +43,16 @@ export abstract class BaseScannerService implements IScannerService {
     fs.mkdirSync(folderPath, { recursive: true });
   }
 
+  protected deleteTempFile(filePath: string): void {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (err) {
+      console.warn("Failed to delete temp file:", err);
+    }
+  }
+
   protected deleteTempFolder(folderPath: string): void {
     try {
       fs.rmSync(folderPath, { recursive: true, force: true });
@@ -55,22 +65,13 @@ export abstract class BaseScannerService implements IScannerService {
     document: vscode.TextDocument,
     baseTempDir: string
   ): string {
-    const workspaceFolder =
-      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || "";
-    const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
-    return path.join(
-      os.tmpdir(),
-      baseTempDir,
-      this.toSafeTempFileName(relativePath)
-    );
+    return path.join(os.tmpdir(), baseTempDir);
   }
 
-  protected toSafeTempFileName(relativePath: string): string {
-    const baseName = path.basename(relativePath);
-    const hash = createHash("sha256")
-      .update(relativePath)
+  protected generateFileHash(input: string): string {
+    return createHash("sha256")
+      .update(input)
       .digest("hex")
       .substring(0, 16);
-    return `${baseName}-${hash}.tmp`;
   }
 }
