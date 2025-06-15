@@ -57,7 +57,7 @@ export class SecretsScannerService extends BaseScannerService {
 		) {
 			return false;
 		}
-		return true
+		return true;
 	}
 
 	private saveFile(
@@ -82,9 +82,8 @@ export class SecretsScannerService extends BaseScannerService {
 		const filePath = document.uri.fsPath;
 		logs.info("Scanning for secrets in file: " + filePath);
 
-		const tempFolder = this.getTempSubFolderPath(//TODO:fix this problem
-			constants.secretsScannerDirectory
-		);
+		const tempFolder = this.getTempSubFolderPath(document, constants.secretsScannerDirectory);
+
 		let tempFilePath: string | undefined;
 
 		try {
@@ -114,7 +113,7 @@ export class SecretsScannerService extends BaseScannerService {
 		const mediumDecorations: vscode.DecorationOptions[] = [];
 
 		for (const problem of secretsProblems) {
-			if (problem.locations.length === 0) continue;
+			if (problem.locations.length === 0) { continue; }
 
 			const location = problem.locations[0];
 			const severityMap = {

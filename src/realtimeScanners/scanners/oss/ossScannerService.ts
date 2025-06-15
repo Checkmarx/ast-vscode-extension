@@ -444,7 +444,7 @@ export class OssScannerService extends BaseScannerService {
     result: CxOssResult,
     severity: vscode.DiagnosticSeverity,
     messagePrefix: string,
-    addDiagnostic: boolean,  
+    addDiagnostic: boolean,
     iconDecorations?: vscode.DecorationOptions[]
   ): void {
     const message = `${messagePrefix}: ${result.packageName}@${result.version}`;
@@ -488,7 +488,7 @@ export class OssScannerService extends BaseScannerService {
     document: vscode.TextDocument,
     baseTempDir: string
   ): string {
-    const baseTempPath = super.getTempSubFolderPath(baseTempDir);//DOTO: fix this problem
+    const baseTempPath = super.getTempSubFolderPath(document, baseTempDir);
     const workspaceFolder =
       vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || "";
     const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
