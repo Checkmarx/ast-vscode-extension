@@ -1,16 +1,16 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerCommand } from "../../common/baseScannerCommand";
-import { SecretScannerService } from "./secretScannerService";
+import { SecretsScannerService } from "./secretsScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 
-export class SecretScannerCommand extends BaseScannerCommand {
+export class SecretsScannerCommand extends BaseScannerCommand {
 	constructor(
 		context: vscode.ExtensionContext,
 		logs: Logs,
 		configManager: ConfigurationManager
 	) {
-		const scannerService = new SecretScannerService();
+		const scannerService = new SecretsScannerService();
 		super(context, logs, scannerService.config, scannerService, configManager);
 		this.debounceStrategy = "global";
 	}
@@ -21,6 +21,6 @@ export class SecretScannerCommand extends BaseScannerCommand {
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as SecretScannerService).dispose();
+		(this.scannerService as SecretsScannerService).dispose();
 	}
 }

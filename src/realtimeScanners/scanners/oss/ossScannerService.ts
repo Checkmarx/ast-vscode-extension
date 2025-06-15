@@ -177,7 +177,6 @@ export class OssScannerService extends BaseScannerService {
     }
 
     const originalFilePath = document.uri.fsPath;
-
     const tempSubFolder = this.getTempSubFolderPath(
       document,
       constants.ossRealtimeScannerDirectory
@@ -436,7 +435,6 @@ export class OssScannerService extends BaseScannerService {
       lowIconDecorations
     );
   }
-
   private handleProblemStatus(
     diagnostics: vscode.Diagnostic[],
     decorations: vscode.DecorationOptions[],
@@ -446,13 +444,15 @@ export class OssScannerService extends BaseScannerService {
     result: CxOssResult,
     severity: vscode.DiagnosticSeverity,
     messagePrefix: string,
-    addDiagnostic: boolean,
+    addDiagnostic: boolean,  
     iconDecorations?: vscode.DecorationOptions[]
   ): void {
     const message = `${messagePrefix}: ${result.packageName}@${result.version}`;
     if (addDiagnostic) {
       decorations.push({ range });
-      diagnostics.push(new vscode.Diagnostic(range, message, severity));
+      const diagnostic = new vscode.Diagnostic(range, message, severity);
+      diagnostic.source = 'CxAI';
+      diagnostics.push(diagnostic);
     } else {
       iconDecorations.push({ range });
     }
@@ -482,5 +482,22 @@ export class OssScannerService extends BaseScannerService {
     if (this.editorChangeListener) {
       this.editorChangeListener.dispose();
     }
+  }
+
+  protected getTempSubFolderPath(
+    document: vscode.TextDocument,
+    baseTempDir: string
+  ): string {
+    const baseTempPath = super.getTempSubFolderPath(baseTempDir);//DOTO: fix this problem
+    const workspaceFolder =
+      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || "";
+    const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
+    return path.join(baseTempPath, this.toSafeTempFileName(relativePath));
+  }
+
+  private toSafeTempFileName(relativePath: string): string {
+    const baseName = path.basename(relativePath);
+    const hash = this.generateFileHash(relativePath);
+    return `${baseName}-${hash}.tmp`;
   }
 }

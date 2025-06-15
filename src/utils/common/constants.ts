@@ -160,14 +160,14 @@ export const constants = {
   ActivateAscaAutoScanning: "Activate ASCA",
   CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
 
-  // Secret Scanner
-  activateSecretScanner: "Activate Secret Detection Realtime",
-  secretScanner: "Checkmarx Secret Detection Realtime Scanner",
-  secretScannerStart: "Secret Detection Scanner Engine started",
-  secretScannerDisabled: "Secret Detection Scanner Engine disabled",
-  secretScannerEngineName: "SecretScanner",
-  secretScannerDirectory: "Cx-secret-realtime-scanner",
-  errorSecretScanRealtime: "Failed to handle Secret Detection scan",
+  // Secrets Scanner
+  activateSecretsScanner: "Activate Secret Detection Realtime",
+  secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
+  secretsScannerStart: "Secret Detection Scanner Engine started",
+  secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
+  secretsScannerEngineName: "SecretScanner",
+  secretsScannerDirectory: "Cx-secret-realtime-scanner",
+  errorSecretsScanRealtime: "Failed to handle Secret Detection scan",
 
   // OSS Scanner
   activateOssRealtimeScanner: "Activate OSS-Realtime",

@@ -9,7 +9,7 @@ import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { cx } from "../../../cx";
 import fs from "fs";
-export class SecretScannerService extends BaseScannerService {
+export class SecretsScannerService extends BaseScannerService {
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
 	private criticalDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private highDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
@@ -36,12 +36,12 @@ export class SecretScannerService extends BaseScannerService {
 
 	constructor() {
 		const config: IScannerConfig = {
-			engineName: constants.secretScannerEngineName,
-			configSection: constants.secretScanner,
-			activateKey: constants.activateSecretScanner,
-			enabledMessage: constants.secretScannerStart,
-			disabledMessage: constants.secretScannerDisabled,
-			errorMessage: constants.errorSecretScanRealtime,
+			engineName: constants.secretsScannerEngineName,
+			configSection: constants.secretsScanner,
+			activateKey: constants.activateSecretsScanner,
+			enabledMessage: constants.secretsScannerStart,
+			disabledMessage: constants.secretsScannerDisabled,
+			errorMessage: constants.errorSecretsScanRealtime,
 		};
 		super(config);
 	}
@@ -57,20 +57,23 @@ export class SecretScannerService extends BaseScannerService {
 		) {
 			return false;
 		}
-
 		return true
 	}
 
-  private saveFile(
-	tempFolder: string,
-	originalFilePath: string,
-	content: string
-  ): string {
-	const fileName = path.basename(originalFilePath);
-	const tempFilePath = path.join(tempFolder, fileName);
-	fs.writeFileSync(tempFilePath, content);
-	return tempFilePath;
-  }
+	private saveFile(
+		tempFolder: string,
+		originalFilePath: string,
+		content: string
+	): string {
+		const originalExt = path.extname(originalFilePath);
+		const baseName = path.basename(originalFilePath, originalExt);
+		const hash = this.generateFileHash(originalFilePath);
+		const tempFileName = `${baseName}-${hash}${originalExt}`;
+		const tempFilePath = path.join(tempFolder, tempFileName);
+		fs.writeFileSync(tempFilePath, content);
+		return tempFilePath;
+	}
+
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
 		if (!this.shouldScanFile(document)) {
 			return;
@@ -79,29 +82,30 @@ export class SecretScannerService extends BaseScannerService {
 		const filePath = document.uri.fsPath;
 		logs.info("Scanning for secrets in file: " + filePath);
 
+		const tempFolder = this.getTempSubFolderPath(//TODO:fix this problem
+			constants.secretsScannerDirectory
+		);
+		let tempFilePath: string | undefined;
+
 		try {
-			const tempFolder = this.getTempSubFolderPath(
-				document,
-				constants.secretScannerDirectory
-			);
 			this.createTempFolder(tempFolder);
-			const tempPath = this.saveFile(
+			tempFilePath = this.saveFile(
 				tempFolder,
 				filePath,
 				document.getText()
 			);
-			const scanResults = await cx.secretsScanResults(tempPath);
+			const scanResults = await cx.secretsScanResults(tempFilePath);
 			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
 		} finally {
-			this.deleteTempFolder(constants.secretScannerDirectory);
+			this.deleteTempFile(tempFilePath);
 		}
 	}
 
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
-		const secretProblems = problems as CxSecretsResult[];
+		const secretsProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
 
 		const diagnostics: vscode.Diagnostic[] = [];
@@ -109,7 +113,7 @@ export class SecretScannerService extends BaseScannerService {
 		const highDecorations: vscode.DecorationOptions[] = [];
 		const mediumDecorations: vscode.DecorationOptions[] = [];
 
-		for (const problem of secretProblems) {
+		for (const problem of secretsProblems) {
 			if (problem.locations.length === 0) continue;
 
 			const location = problem.locations[0];
@@ -122,13 +126,12 @@ export class SecretScannerService extends BaseScannerService {
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),
 				new vscode.Position(location.line, location.endIndex)
-			);
-
-			const diagnostic = new vscode.Diagnostic(
+			); const diagnostic = new vscode.Diagnostic(
 				range,
 				`${problem.title}:${problem.description}`,
 				severityMap[problem.severity]
 			);
+			diagnostic.source = 'CxAI';
 
 			diagnostics.push(diagnostic);
 
@@ -164,8 +167,6 @@ export class SecretScannerService extends BaseScannerService {
 		this.mediumDecorations.clear();
 	}
 	public dispose(): void {
-		Object.values(this.decorationTypes).forEach(decoration => decoration.dispose());
-
 		if (this.documentOpenListener) {
 			this.documentOpenListener.dispose();
 		}
