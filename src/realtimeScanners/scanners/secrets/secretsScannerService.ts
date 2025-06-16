@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
@@ -17,6 +18,8 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
+	public secretsHoverData: Map<string, any> = new Map();
+
 
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
 		return vscode.window.createTextEditorDecorationType({
@@ -107,10 +110,14 @@ export class SecretsScannerService extends BaseScannerService {
 		const secretsProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
 
+
+
 		const diagnostics: vscode.Diagnostic[] = [];
 		const criticalDecorations: vscode.DecorationOptions[] = [];
 		const highDecorations: vscode.DecorationOptions[] = [];
 		const mediumDecorations: vscode.DecorationOptions[] = [];
+
+
 
 		for (const problem of secretsProblems) {
 			if (problem.locations.length === 0) { continue; }
@@ -121,13 +128,24 @@ export class SecretsScannerService extends BaseScannerService {
 				high: vscode.DiagnosticSeverity.Error,
 				medium: vscode.DiagnosticSeverity.Warning
 			};
+			const key = `${filePath}:${location.line}`;
+			this.secretsHoverData.set(key, {
+				title: problem.title,
+				description: problem.description,
+				severity: problem.severity,
+				location: {
+					line: location.line,
+					startIndex: location.startIndex,
+					endIndex: location.endIndex
+				}
+			});
 
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),
 				new vscode.Position(location.line, location.endIndex)
 			); const diagnostic = new vscode.Diagnostic(
 				range,
-				`${problem.title}:${problem.description}`,
+				`Secrets have been detected::${problem.title}`,
 				severityMap[problem.severity]
 			);
 			diagnostic.source = 'CxAI';
