@@ -66,11 +66,12 @@ export class OssScannerCommand extends BaseScannerCommand {
 
     md.appendMarkdown("Short description of the package\n\n");
     if (isMalicious) {
+      md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
       md.appendMarkdown(this.badge("Malicious Package") + "<br>");
     } else if (isVulnerable) {
       md.appendMarkdown(
         this.badge(`${hoverData.status.toString()} Vulnerability Package`) +
-          "<br>"
+        "<br>"
       );
     }
     md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
@@ -95,8 +96,10 @@ export class OssScannerCommand extends BaseScannerCommand {
 
   private badge(text: string): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
-    // const ai = `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/0279575cbb18d727a9d704f3113f46b3fac80c80/media/cxAI.png" width="11" height="11" style="vertical-align:baseline;" /> CxAI`;
-    // return `${text}${" ".repeat(35)}${ai}\n\n`;
+  }
+
+  private renderMaliciousFinding(): string {
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/Itay/newSecretsCards/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
   }
 
   private renderMaliciousIcon(): string {
@@ -118,8 +121,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       .filter(([_, count]) => count > 0)
       .map(
         ([sev, count]) =>
-          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${
-            constants.ossIcons[sev as keyof typeof constants.ossIcons]
+          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
           }" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
       );
 

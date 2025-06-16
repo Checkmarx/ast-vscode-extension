@@ -179,7 +179,7 @@ export const constants = {
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
   supportedManifestFilePatterns: [
-    "**/directory.packages.props",
+    "**/Directory.Packages.props",
     "**/packages.config",
     "**/pom.xml",
     "**/package.json",
