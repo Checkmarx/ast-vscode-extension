@@ -28,6 +28,7 @@ export class Details {
 				<div class="header-item-title">
 					<h2 id="cx_title">
 						<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
+						${this.result.riskScore ? `<span class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk" style="padding:2px">${this.result.riskScore.toFixed(1)}</span>` : ""}
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
@@ -130,6 +131,17 @@ export class Details {
 						${this.result.getHtmlDetails(cxPath)}
 					</tbody>
 				</table>	
+				${this.result.traits !== undefined ? `<hr class="division">
+				<div style="border:0">
+					<div style="display: inline-block;position: relative;">
+						<p class="header-content">
+							Additional trait
+						</p>
+					</div>
+					<div class="card-content">
+							${this.result.getHtmlAdditionaltrait(this.result)}
+					</div>
+				</div>` : ""}
 			</body>`;
   }
 
@@ -139,7 +151,17 @@ export class Details {
 					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
 				</span>
 				</body>`;
-  }
+	}
+
+	getRiskName(score) {
+		return score === 10
+			? "critical"
+			: score >= 7
+				? "high"
+				: score >= 3
+					? "medium"
+					: "low";
+	}
 
   scaView(
     severityPath,
@@ -157,6 +179,7 @@ export class Details {
 			<body class="body-sca">
 			<div class="header">
 				<img alt="icon" class="header-severity" src="${severityPath}" />
+				${this.result.riskScore ? `<p class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""}
 				<p class="header-title">
 					${this.result.label}
 				</p>
