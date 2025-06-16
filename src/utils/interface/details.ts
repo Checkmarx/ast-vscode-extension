@@ -7,42 +7,41 @@ import { messages } from "../common/messages";
 import { getGlobalContext } from "../../extension";
 
 export class Details {
-  result: AstResult;
-  context: vscode.ExtensionContext;
-  iAIEnabled: boolean;
-  masked?: CxMask;
+	result: AstResult;
+	context: vscode.ExtensionContext;
+	iAIEnabled: boolean;
+	masked?: CxMask;
 
-  constructor(
-    result: AstResult,
-    context: vscode.ExtensionContext,
-    iAIEnabled: boolean
-  ) {
-    this.result = result;
-    this.context = context;
-    this.iAIEnabled = iAIEnabled;
-  }
+	constructor(
+		result: AstResult,
+		context: vscode.ExtensionContext,
+		iAIEnabled: boolean
+	) {
+		this.result = result;
+		this.context = context;
+		this.iAIEnabled = iAIEnabled;
+	}
 
-  header(severityPath: vscode.Uri) {
-    return `
+	header(severityPath: vscode.Uri) {
+		return `
 			<div class="header-container">
 				<div class="header-item-title">
 					<h2 id="cx_title">
 						<img class="logo" src="${severityPath}" alt="CxLogo" id="logo_img" />
-						${
-					this.result.riskScore ?  `<span class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk" style="padding:2px">${this.result.riskScore.toFixed(1)}</span>` : ""
-				}
+						${this.result.riskScore ? `<span class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk" style="padding:2px">${this.result.riskScore.toFixed(1)}</span>` : ""
+			}
 						${this.result.label.replaceAll("_", " ")}
 					</h2>
 				</div>
 			</div>
 			<hr class="division"/>
 			`;
-  }
+	}
 
-  changes(selectClassname): string {
-    return (
-      this.triage(selectClassname) +
-      `
+	changes(selectClassname): string {
+		return (
+			this.triage(selectClassname) +
+			`
 			<div id="history-container-loader">
 				<center>
 					<p class="history-container-loader">
@@ -53,76 +52,73 @@ export class Details {
 				</center>
 			</div>
 			`
-    );
-  }
+		);
+	}
 
-  triage(selectClassname: string) {
-    const context = getGlobalContext();
-    const customStates = context.globalState.get(constants.customStates);
-    const state = constants.state.filter((element) => {
-      return !!element.dependency === (this.result.type === constants.sca);
-    });
+	triage(selectClassname: string) {
+		const context = getGlobalContext();
+		const customStates = context.globalState.get(constants.customStates);
+		const state = constants.state.filter((element) => {
+			return !!element.dependency === (this.result.type === constants.sca);
+		});
 
-    const stateOptions =
-      this.result.type === constants.sast
-        ? this.getSastStateOptions(customStates, state)
-        : this.getDefaultStateOptions(state);
+		const stateOptions =
+			this.result.type === constants.sast
+				? this.getSastStateOptions(customStates, state)
+				: this.getDefaultStateOptions(state);
 
-    const updateButton =
-      this.result.type !== constants.sca
-        ? `<button class="submit">Update</button>`
-        : ``;
-    const comment =
-      this.result.type !== constants.sca
-        ? `<div class="comment-container">
+		const updateButton =
+			this.result.type !== constants.sca
+				? `<button class="submit">Update</button>`
+				: ``;
+		const comment =
+			this.result.type !== constants.sca
+				? `<div class="comment-container">
         <textarea placeholder="Comment (optional)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
       </div>`
-        : ``;
+				: ``;
 
-    return `<div class="ast-triage">
+		return `<div class="ast-triage">
         <select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
           ${constants.status.map((element) => {
-            return `<option id=${element.value} class="${element.class}" ${
-              this.result.severity === element.value ? "selected" : ""
-            }>${element.value}</option>`;
-          })}
+			return `<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? "selected" : ""
+				}>${element.value}</option>`;
+		})}
         </select>
         ${stateOptions}
       </div>
       ${comment}
       ${updateButton}
       </br>`;
-  }
+	}
 
-  getSastStateOptions(customStates, state) {
-    return `<select id="select_state" class="state">
+	getSastStateOptions(customStates, state) {
+		return `<select id="select_state" class="state">
       ${customStates
-        .map((customState) => {
-          const matchedState = state.find(
-            (element) => element.tag === customState.name
-          );
-          return `<option id=${customState.name} ${
-            this.result.state?.toLowerCase() === customState.name ||
-            this.result.state === matchedState?.tag
-              ? 'selected="selected"'
-              : ""
-          }>${matchedState ? matchedState.value : customState.name}</option>`;
-        })
-        .join("")}
+				.map((customState) => {
+					const matchedState = state.find(
+						(element) => element.tag === customState.name
+					);
+					return `<option id=${customState.name} ${this.result.state?.toLowerCase() === customState.name ||
+						this.result.state === matchedState?.tag
+						? 'selected="selected"'
+						: ""
+						}>${matchedState ? matchedState.value : customState.name}</option>`;
+				})
+				.join("")}
     </select>`;
-  }
+	}
 
-  getDefaultStateOptions(state) {
-    return `<select id="select_state" class="state">
+	getDefaultStateOptions(state) {
+		return `<select id="select_state" class="state">
       ${state.map((element) => {
-        return `<option id=${element.value} ${
-          this.result.state === element.tag ? 'selected="selected"' : ""
-        }>${element.value}</option>`;
-      })}
+			return `<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""
+				}>${element.value}</option>`;
+		})}
     </select>`;
-  }
-  generalTab(cxPath: vscode.Uri) {
-    return `<body>
+	}
+	generalTab(cxPath: vscode.Uri) {
+		return `<body>
 				<span class="details">
 					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
 					${this.result.data.value ? this.result.getKicsValues() : ""}
@@ -145,76 +141,74 @@ export class Details {
 					</div>
 				</div>` : ""}
 			</body>`;
-  }
+	}
 
-  secretDetectiongeneralTab() {
-    return `<body>
+	secretDetectiongeneralTab() {
+		return `<body>
 				<span>
 					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
 				</span>
 				</body>`;
-  }
+	}
 
-  getRiskName(score) {
-    return score === 10
-      ? "critical"
-      : score >= 7
-      ? "high"
-      : score >= 3
-      ? "medium"
-      : "low";
-  }
+	getRiskName(score) {
+		return score === 10
+			? "critical"
+			: score >= 7
+				? "high"
+				: score >= 3
+					? "medium"
+					: "low";
+	}
 
-  scaView(
-    severityPath,
-    scaAtackVector,
-    scaComplexity,
-    scaAuthentication,
-    scaConfidentiality,
-    scaIntegrity,
-    scaAvailability,
-    scaUpgrade,
-    scaUrl: vscode.Uri,
-    type?: string
-  ) {
-    return `
+	scaView(
+		severityPath,
+		scaAtackVector,
+		scaComplexity,
+		scaAuthentication,
+		scaConfidentiality,
+		scaIntegrity,
+		scaAvailability,
+		scaUpgrade,
+		scaUrl: vscode.Uri,
+		type?: string
+	) {
+		return `
 			<body class="body-sca">
 			<div class="header">
 				<img alt="icon" class="header-severity" src="${severityPath}" />
-				${
-					this.result.riskScore ?  `<p class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""
-				}
+				${this.result.riskScore ? `<p class="header-risk-score ${this.getRiskName(this.result.riskScore)}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""
+			}
 				<p class="header-title">
 					${this.result.label}
 				</p>
 				<p class="header-name">
-					${
-            this.result.scaNode.packageIdentifier
-              ? this.result.scaNode.packageIdentifier
-              : ""
-          }
+					${this.result.scaNode.packageIdentifier
+				? this.result.scaNode.packageIdentifier
+				: ""
+			}
 				</p>
 			</div>
 			<div class="content">
 				${this.result.scaContent(
-          this.result,
-          scaUpgrade,
-          scaUrl,
-          scaAtackVector,
-          scaComplexity,
-          scaAuthentication,
-          scaConfidentiality,
-          scaIntegrity,
-          scaAvailability,
-          type
-        )}
+				this.result,
+				scaUpgrade,
+				scaUrl,
+				scaAtackVector,
+				scaComplexity,
+				scaAuthentication,
+				scaConfidentiality,
+				scaIntegrity,
+				scaAvailability,
+				type
+			)}
 			</div>
 		</body>			
 		`;
-  }
+	}
 
-  detailsTab() {
-    return `
+	detailsTab() {
+		return `
 			<div>
 				<div id="learn-container-loader">
 					<center>
@@ -227,113 +221,104 @@ export class Details {
 				</div>
 			</div>
 			`;
-  }
+	}
 
-  secretDetectionDetailsRemediationTab() {
-    const remediation = this.result.data?.remediation;
+	secretDetectionDetailsRemediationTab() {
+		const remediation = this.result.data?.remediation;
 
-    if (!remediation) {
-      return `<div>${messages.noRemediationExamplesTab}</div>`;
-    }
+		if (!remediation) {
+			return `<div>${messages.noRemediationExamplesTab}</div>`;
+		}
 
-    return `
+		return `
 	  <div>
 		${remediation ? `<p>${remediation}</p>` : ""}
 	  </div>
 	`;
-  }
+	}
 
-  secretDetectionDetailsDescriptionTab() {
-    const ruleDescription = this.result.data?.ruleDescription;
+	secretDetectionDetailsDescriptionTab() {
+		const ruleDescription = this.result.data?.ruleDescription;
 
-    if (!ruleDescription) {
-      return `<div>${messages.noDescriptionTab}</div>`;
-    }
+		if (!ruleDescription) {
+			return `<div>${messages.noDescriptionTab}</div>`;
+		}
 
-    return `
+		return `
 	  <div>
 	  ${ruleDescription ? `<p>${ruleDescription}</p>` : ""}
 	  </div>
 	`;
-  }
+	}
 
-  // Generic tab component
-  tab(
-    tab1Content: string,
-    tab2Content: string,
-    tab3Content: string,
-    tab1Label: string,
-    tab2Label: string,
-    tab3Label: string,
-    tab4Label: string,
-    tab5Content: string,
-    tab6Label: string,
-    tab6Content: string
-  ) {
-    return `${
-      tab1Label !== ""
-        ? `<input type="radio" name="tabs" id="general-tab" checked />
+	// Generic tab component
+	tab(
+		tab1Content: string,
+		tab2Content: string,
+		tab3Content: string,
+		tab1Label: string,
+		tab2Label: string,
+		tab3Label: string,
+		tab4Label: string,
+		tab5Content: string,
+		tab6Label: string,
+		tab6Content: string
+	) {
+		return `${tab1Label !== ""
+			? `<input type="radio" name="tabs" id="general-tab" checked />
 			<label for="general-tab" id="general-label">
 				${tab1Label}
 			</label>`
-        : ""
-    }
-			${
-        tab2Label !== ""
-          ? `<input type="radio" name="tabs" id="learn-tab" />
+			: ""
+			}
+			${tab2Label !== ""
+				? `<input type="radio" name="tabs" id="learn-tab" />
 			<label for="learn-tab" id="learn-label">
 				${tab2Label}
 			</label>`
-          : ""
-      }
-			${
-        tab4Label !== ""
-          ? `<input type="radio" name="tabs" id="code-tab" />
+				: ""
+			}
+			${tab4Label !== ""
+				? `<input type="radio" name="tabs" id="code-tab" />
 			<label for="code-tab" id="code-label">
 				${tab4Label}
 			</label>`
-          : ""
-      }
-			${
-        tab6Label !== ""
-          ? `<input type="radio" name="tabs" id="ai-tab" />
+				: ""
+			}
+			${tab6Label !== ""
+				? `<input type="radio" name="tabs" id="ai-tab" />
 			<label for="ai-tab" id="ai-label">
 				${tab6Label}
 			</label>`
-          : ""
-      }
-			${
-        tab3Label !== ""
-          ? `<input type="radio" name="tabs" id="changes-tab" />
+				: ""
+			}
+			${tab3Label !== ""
+				? `<input type="radio" name="tabs" id="changes-tab" />
 		<label for="changes-tab" id="changes-label">
 			${tab3Label}
 		</label>`
-          : ""
-      }
-			${
-        tab1Content !== ""
-          ? `<div class="tab general">
+				: ""
+			}
+			${tab1Content !== ""
+				? `<div class="tab general">
 			${tab1Content}
 			</div>`
-          : ""
-      }
-			${
-        tab2Content !== ""
-          ? `<div class="tab learn">
+				: ""
+			}
+			${tab2Content !== ""
+				? `<div class="tab learn">
 			${tab2Content}
 			</div>`
-          : ""
-      }
-			${
-        tab3Content !== ""
-          ? `<div class="tab changes">
+				: ""
+			}
+			${tab3Content !== ""
+				? `<div class="tab changes">
 			${tab3Content}
 		</div>`
-          : ""
-      }
-		${
-      tab5Content !== ""
-        ? `<div class="tab code">
+				: ""
+			}
+		${tab5Content !== ""
+				? `<div class="tab code">
 		<div id="tab-code">
 			<pre class="pre-code">
 				<code id="code">
@@ -342,20 +327,19 @@ export class Details {
 			</pre>
 		</div>
 	</div>`
-        : ""
-    }
-			${
-        tab6Content !== ""
-          ? `<div class="tab ai">
+				: ""
+			}
+			${tab6Content !== ""
+				? `<div class="tab ai">
 					${tab6Content}
 				  </div>`
-          : ""
-      }
+				: ""
+			}
 			`;
-  }
-  guidedRemediationSastTab(kicsIcon, masked: CxMask) {
-    this.masked = masked;
-    return `
+	}
+	guidedRemediationSastTab(kicsIcon, masked: CxMask) {
+		this.masked = masked;
+		return `
 		<div class="inner-body-sast" id="innerBodySast" style="min-height: 80vh;display: flex;justify-content: center;align-items: center;">
 		<button id="startSastChat" class="start-sast-chat">
 			<div class="row">
@@ -373,15 +357,15 @@ export class Details {
 		</button>
 		</div>
 		`;
-  }
+	}
 
-  guidedRemediationTab(kicsIcon, masked: CxMask) {
-    // TODO: try to make it generic to be used by the tab and the webview
-    this.masked = masked;
-    const userInfo = os.userInfo();
-    // Access the username
-    const username = userInfo.username;
-    return `
+	guidedRemediationTab(kicsIcon, masked: CxMask) {
+		// TODO: try to make it generic to be used by the tab and the webview
+		this.masked = masked;
+		const userInfo = os.userInfo();
+		// Access the username
+		const username = userInfo.username;
+		return `
 		<div class="inner-body">
 		<div>
 	<div class="container" style="padding:0;width:100 !important;">
@@ -398,9 +382,8 @@ export class Details {
 				<div class="row" style="margin-top:0.8em">
 					<div class="col">
 						<p>Welcome ${username}!</p>
-						<p>”${
-              constants.aiSecurityChampion
-            }” harnesses the power of AI to help you to understand the
+						<p>”${constants.aiSecurityChampion
+			}” harnesses the power of AI to help you to understand the
 							vulnerabilities in your code, and resolve them quickly and easily.</p>
 						<p style="margin-bottom:0">We protect your sensitive data by anonymizing the source file
 							before sending data to GPT.</p>
@@ -415,11 +398,10 @@ export class Details {
 									<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"
 										aria-expanded="true" aria-controls="collapseOne"
 										style="color:var(--vscode-editor-foreground);text-align:left">
-										Masked Secrets ${
-                      this.masked && this.masked.maskedSecrets
-                        ? "(" + this.masked.maskedSecrets.length + ")"
-                        : ""
-                    }
+										Masked Secrets ${this.masked && this.masked.maskedSecrets
+				? "(" + this.masked.maskedSecrets.length + ")"
+				: ""
+			}
 									</button>
 								</h5>
 							</div>
@@ -495,9 +477,8 @@ export class Details {
 		<div class="row" style="margin-top:1em">
 			<div class="col">
 				<p style="color:#676972;font-size:12px">
-					”${
-            constants.aiSecurityChampion
-          }” will only answer questions that are relevant to this IaC file and its
+					”${constants.aiSecurityChampion
+			}” will only answer questions that are relevant to this IaC file and its
 					results.The responses are generated by OpenAI's GPT. The content may contain inaccuracies. Use
 					your judgement in determining how to utilize this information.
 				</p>
@@ -539,31 +520,31 @@ export class Details {
 </button>
 </div>
 		`;
-  }
+	}
 
-  generateMaskedSection(): string {
-    let html = "";
-    if (
-      this.masked &&
-      this.masked.maskedSecrets &&
-      this.masked.maskedSecrets.length > 0
-    ) {
-      for (let i = 0; i < this.masked.maskedSecrets.length; i++) {
-        html +=
-          "<p>Secret: " +
-          this.masked.maskedSecrets[i].secret +
-          "<br/>" +
-          "Masked: " +
-          this.masked.maskedSecrets[i].masked
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;") +
-          "<br/>Line: " +
-          this.masked.maskedSecrets[i].line +
-          "</p>";
-      }
-    } else {
-      html += "No secrets were detected and masked";
-    }
-    return html;
-  }
+	generateMaskedSection(): string {
+		let html = "";
+		if (
+			this.masked &&
+			this.masked.maskedSecrets &&
+			this.masked.maskedSecrets.length > 0
+		) {
+			for (let i = 0; i < this.masked.maskedSecrets.length; i++) {
+				html +=
+					"<p>Secret: " +
+					this.masked.maskedSecrets[i].secret +
+					"<br/>" +
+					"Masked: " +
+					this.masked.maskedSecrets[i].masked
+						.replaceAll("<", "&lt;")
+						.replaceAll(">", "&gt;") +
+					"<br/>Line: " +
+					this.masked.maskedSecrets[i].line +
+					"</p>";
+			}
+		} else {
+			html += "No secrets were detected and masked";
+		}
+		return html;
+	}
 }
