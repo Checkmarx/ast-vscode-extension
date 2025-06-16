@@ -160,29 +160,40 @@ export const constants = {
   ActivateAscaAutoScanning: "Activate ASCA",
   CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
 
+  // Secrets Scanner
+  activateSecretsScanner: "Activate Secret Detection Realtime",
+  secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
+  secretsScannerStart: "Secret Detection Scanner Engine started",
+  secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
+  secretsScannerEngineName: "SecretScanner",
+  secretsScannerDirectory: "Cx-secret-realtime-scanner",
+  errorSecretsScanRealtime: "Failed to handle Secret Detection scan",
+
+  // OSS Scanner
   activateOssRealtimeScanner: "Activate OSS-Realtime",
   ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
   ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
   ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
   ossRealtimeScannerEngineName: "RealtimeOssScanner",
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
-  errorOssScanRealtime: "failed to handle OSS Realtime scan",
+  errorOssScanRealtime: "Failed to handle OSS Realtime scan",
+
   supportedManifestFilePatterns: [
-   "**/directory.packages.props",
-   "**/packages.config",
-   "**/pom.xml",
-   "**/package.json",
-   "**/requirements.txt",
-   "**/go.mod",
-   "**/*.csproj"
+    "**/Directory.Packages.props",
+    "**/packages.config",
+    "**/pom.xml",
+    "**/package.json",
+    "**/requirements.txt",
+    "**/go.mod",
+    "**/*.csproj"
   ],
-  ossIcons : {
+  ossIcons: {
     critical: "critical_untoggle.png",
     high: "high_untoggle.png",
     medium: "medium_untoggle.png",
     low: "low_untoggle.png",
   },
-  
+
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
   mediumSeverity: "MEDIUM",
