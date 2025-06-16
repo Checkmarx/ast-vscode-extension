@@ -8,15 +8,16 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
+## [v2.34.1-SecretsCards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-SecretsCards.0) - 2025-06-12 13:02:06
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## What's Changed
 ### Other Changes
-* Display CWE reference link in Learn More section (AST-95343) by @cx-atish-jadhav in https://github.com/Checkmarx/ast-vscode-extension/pull/1159
-* Fix sync tenant settings with welcome and oss settings by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1162
+* Fix duplicated Markdown hovers by disposing old hover providers on OSS scanner restart by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1163
 
-## New Contributors
-* @cx-atish-jadhav made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1159
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-welcome-with-chat.0...v2.34.1-secrets-scanner.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-secrets-scanner.0...v2.34.1-SecretsCards.0
 
 ## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
 
