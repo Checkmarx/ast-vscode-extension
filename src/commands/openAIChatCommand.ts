@@ -4,7 +4,7 @@ import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import { isCursorIDE } from "../utils/utils";
-import { HoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 
 
 
@@ -100,16 +100,25 @@ export class CopilotChatCommand {
                 await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
             }
             return;
-        } 
+        }
         await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
-        await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` })
+        await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+    }
+
+    public isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
+        return 'title' in item && 'description' in item && 'severity' in item;
     }
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData) => {
-                const question = `You are the Checkmarx Security Assistant for npm; target dependency ${item.packageName} @ ${item.version}. Invoke the internal AlternativePackageFinder, which returns JSON objects (action, package, version, reason). \nIf the result contains exactly one object whose action is "upgrade," pin that version in package.json (never touch package-lock.json), \nupdate first-party code as described below, then output a summary formatted as a bullet list (each line starts with "-"): "Upgraded ${item.packageName} to <version> – <reason>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nOtherwise, show one interactive prompt that lists every remediation path as a bullet list where each line is "- <Action>: <package>@<version> – <reason>" (Action is "Upgrade" or "Replace"),\nfollowed by the sentence "Please select the option you would like me to apply." and wait for the user's choice. \nAfter a choice, pin the selected version in package.json, scan first-party source code (ignore node_modules), \nupdate every require/import of the old package, adapt API usage, insert clear TODO comments where manual edits are needed, \nrun offline compile or type checks, and silently patch first-party code until the build passes. \nThen print a final summary, formatted as a bullet list: "Fix applied: <chosen fix>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nAlways abort and warn if no safe option exists or malicious indicators persist. Every message and summary must explicitly state that it is provided by the Checkmarx Security Assistant.`
-                
+            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
+                let question = '';
+                if (this.isSecretsHoverData(item)) {
+
+                    question = `A secret has been detected: "${item.title}".\n\n${item.description}\n\nPlease identify the appropriate way to remediate or secure this secret, and apply the fix automatically where possible.`;
+                } else {
+                    question = `You are the Checkmarx Security Assistant for npm; target dependency ${item.packageName} @ ${item.version}. Invoke the internal AlternativePackageFinder, which returns JSON objects (action, package, version, reason). \nIf the result contains exactly one object whose action is "upgrade," pin that version in package.json (never touch package-lock.json), \nupdate first-party code as described below, then output a summary formatted as a bullet list (each line starts with "-"): "Upgraded ${item.packageName} to <version> – <reason>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nOtherwise, show one interactive prompt that lists every remediation path as a bullet list where each line is "- <Action>: <package>@<version> – <reason>" (Action is "Upgrade" or "Replace"),\nfollowed by the sentence "Please select the option you would like me to apply." and wait for the user's choice. \nAfter a choice, pin the selected version in package.json, scan first-party source code (ignore node_modules), \nupdate every require/import of the old package, adapt API usage, insert clear TODO comments where manual edits are needed, \nrun offline compile or type checks, and silently patch first-party code until the build passes. \nThen print a final summary, formatted as a bullet list: "Fix applied: <chosen fix>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nAlways abort and warn if no safe option exists or malicious indicators persist. Every message and summary must explicitly state that it is provided by the Checkmarx Security Assistant.`;
+                }
                 try {
                     await this.openChatWithPrompt(question);
                 } catch (error) {
