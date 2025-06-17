@@ -205,9 +205,16 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (ossEffected) {
         scannerRegistry.getScanner("oss")?.register();
+        return
       }
-    }
-  );
+      const secretsEffected = section(
+        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
+      );
+      if (secretsEffected) {
+        scannerRegistry.getScanner("secrets")?.register();
+        return;
+      }
+    });
   context.subscriptions.push(configListener);
 
   // Register Settings
@@ -276,4 +283,4 @@ export function getGlobalContext(): vscode.ExtensionContext {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate() {}
+export function deactivate() { }

@@ -18,6 +18,7 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { AuthService } from "../services/authService";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -659,6 +660,20 @@ export class Cx implements CxPlatform {
     }
     const cx = new CxWrapper(config);
     const scans = await cx.ossScanResults(sourcePath);
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
+
+  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+    const cx = new CxWrapper(config);
+    const scans = await cx.secretsScanResults(sourcePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {

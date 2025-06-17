@@ -7,7 +7,7 @@ import { cx } from "../../../cx";
 import { HoverData, IScannerConfig } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
-import { CxManifestStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxManifestStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 
 export class OssScannerService extends BaseScannerService {
@@ -177,7 +177,6 @@ export class OssScannerService extends BaseScannerService {
     }
 
     const originalFilePath = document.uri.fsPath;
-
     const tempSubFolder = this.getTempSubFolderPath(
       document,
       constants.ossRealtimeScannerDirectory
@@ -335,7 +334,7 @@ export class OssScannerService extends BaseScannerService {
         const addDiagnostic = i === 0;
 
         switch (result.status) {
-          case CxManifestStatus.malicious:
+          case CxRealtimeEngineStatus.malicious:
             this.handleProblemStatus(
               diagnostics,
               maliciousDecorations,
@@ -349,15 +348,15 @@ export class OssScannerService extends BaseScannerService {
               maliciousIconDecorations
             );
             break;
-          case CxManifestStatus.ok:
+          case CxRealtimeEngineStatus.ok:
             if (addDiagnostic) {
               okDecorations.push({ range });
             }
             break;
-          case CxManifestStatus.unknown:
+          case CxRealtimeEngineStatus.unknown:
             unknownDecorations.push({ range });
             break;
-          case CxManifestStatus.critical:
+          case CxRealtimeEngineStatus.critical:
             this.handleProblemStatus(
               diagnostics,
               criticalDecorations,
@@ -371,7 +370,7 @@ export class OssScannerService extends BaseScannerService {
               criticalIconDecorations
             );
             break;
-          case CxManifestStatus.high:
+          case CxRealtimeEngineStatus.high:
             this.handleProblemStatus(
               diagnostics,
               highDecorations,
@@ -385,7 +384,7 @@ export class OssScannerService extends BaseScannerService {
               highIconDecorations
             );
             break;
-          case CxManifestStatus.medium:
+          case CxRealtimeEngineStatus.medium:
             this.handleProblemStatus(
               diagnostics,
               mediumDecorations,
@@ -399,7 +398,7 @@ export class OssScannerService extends BaseScannerService {
               mediumIconDecorations
             );
             break;
-          case CxManifestStatus.low:
+          case CxRealtimeEngineStatus.low:
             this.handleProblemStatus(
               diagnostics,
               lowDecorations,
@@ -436,7 +435,6 @@ export class OssScannerService extends BaseScannerService {
       lowIconDecorations
     );
   }
-
   private handleProblemStatus(
     diagnostics: vscode.Diagnostic[],
     decorations: vscode.DecorationOptions[],
@@ -452,7 +450,9 @@ export class OssScannerService extends BaseScannerService {
     const message = `${messagePrefix}: ${result.packageName}@${result.version}`;
     if (addDiagnostic) {
       decorations.push({ range });
-      diagnostics.push(new vscode.Diagnostic(range, message, severity));
+      const diagnostic = new vscode.Diagnostic(range, message, severity);
+      diagnostic.source = 'CxAI';
+      diagnostics.push(diagnostic);
     } else {
       iconDecorations.push({ range });
     }
@@ -482,5 +482,22 @@ export class OssScannerService extends BaseScannerService {
     if (this.editorChangeListener) {
       this.editorChangeListener.dispose();
     }
+  }
+
+  protected getTempSubFolderPath(
+    document: vscode.TextDocument,
+    baseTempDir: string
+  ): string {
+    const baseTempPath = super.getTempSubFolderPath(document, baseTempDir);
+    const workspaceFolder =
+      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || "";
+    const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
+    return path.join(baseTempPath, this.toSafeTempFileName(relativePath));
+  }
+
+  private toSafeTempFileName(relativePath: string): string {
+    const baseName = path.basename(relativePath);
+    const hash = this.generateFileHash(relativePath);
+    return `${baseName}-${hash}.tmp`;
   }
 }

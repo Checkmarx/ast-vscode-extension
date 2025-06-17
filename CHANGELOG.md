@@ -1,17 +1,27 @@
 # CHANGELOG
 
-## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
+## [v2.34.1-aspm-riskscore-traits.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits.0) - 2025-06-17 07:02:32
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### New Features 🚀
-* Welcoma Page by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1150
-### Other Changes
-* Fix locations of oss real time by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1156
+* Add Secret Detection Realtime Scanner (AST-99451) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1154
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-open-AI-chat.0...v2.34.1-welcome-with-chat.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-SecretsCards.0...v2.34.1-aspm-riskscore-traits.0
+
+## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-secrets-scanner.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-secrets-scanner.0) - 2025-06-12 11:15:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-SecretsCards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-SecretsCards.0) - 2025-06-12 13:02:06
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
 
