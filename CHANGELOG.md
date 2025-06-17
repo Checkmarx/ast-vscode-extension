@@ -12,6 +12,14 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits.0...v2.34.1-OpenChatUpdatedFromMain.0
 
+## [v2.34.1-OpenChatFromSecrets.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatFromSecrets.0) - 2025-06-17 10:10:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatUpdatedFromMain.0...v2.34.1-OpenChatFromSecrets.0
+
 ## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
