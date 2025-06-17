@@ -95,7 +95,7 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private badge(text: string): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/> `;
   }
 
   private renderMaliciousFinding(): string {
