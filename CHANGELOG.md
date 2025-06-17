@@ -4,12 +4,13 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### New Features 🚀
-* Add Secret Detection Realtime Scanner (AST-99451) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1154
+## [v2.34.1-OpenChatUpdatedFromMain.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatUpdatedFromMain.0) - 2025-06-17 07:09:12
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-SecretsCards.0...v2.34.1-aspm-riskscore-traits.0
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits.0...v2.34.1-OpenChatUpdatedFromMain.0
 
 ## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
 
