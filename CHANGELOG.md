@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatFromSecrets.0...v2.34.1-cwe-atish.0
+
 ## [v2.34.1-aspm-riskscore-traits.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits.0) - 2025-06-17 07:02:32
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
