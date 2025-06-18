@@ -145,7 +145,7 @@ export class SecretsScannerService extends BaseScannerService {
 				new vscode.Position(location.line, location.endIndex)
 			); const diagnostic = new vscode.Diagnostic(
 				range,
-				`Secrets have been detected::${problem.title}`,
+				`Secrets have been detected:${problem.title}`,
 				severityMap[problem.severity]
 			);
 			diagnostic.source = 'CxAI';
@@ -192,6 +192,17 @@ export class SecretsScannerService extends BaseScannerService {
 			this.editorChangeListener.dispose();
 		}
 	}
+
+	public clearScanData(uri: vscode.Uri): void {
+		const filePath = uri.fsPath;
+		this.diagnosticsMap.delete(filePath);
+		this.diagnosticCollection.delete(uri);
+		this.secretsHoverData.delete(filePath);
+		this.criticalDecorations.delete(filePath);
+		this.highDecorations.delete(filePath);
+		this.mediumDecorations.delete(filePath);
+	}
+
 
 	public async initializeScanner(): Promise<void> {
 		this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(

@@ -37,6 +37,19 @@ export class OssScannerCommand extends BaseScannerCommand {
     );
 
     await this.scanAllManifestFilesInWorkspace();
+
+    vscode.workspace.onDidRenameFiles(async (event) => {
+      const scanner = this.scannerService as OssScannerService;
+
+      for (const { oldUri, newUri } of event.files) {
+        scanner.clearScanData(oldUri);
+
+        const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
+        if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
+          await scanner.scan(reopenedDoc, this.logs);
+        }
+      }
+    });
   }
 
   private hoverProviderDisposable: vscode.Disposable | undefined;
@@ -62,10 +75,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
-    const isCursor = isCursorIDE(); 
+    const isCursor = isCursorIDE();
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = `[ Fix with Cx & ${isCursor? "Cursor": "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
-   
+    const buttons = `[ Fix with Cx & ${isCursor ? "Cursor" : "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
+
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
 
@@ -100,11 +113,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private badge(text: string): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/> `;
   }
 
   private renderMaliciousFinding(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/Itay/newSecretsCards/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
   }
 
   private renderMaliciousIcon(): string {

@@ -94,6 +94,14 @@ export class OssScannerService extends BaseScannerService {
     }
   }
 
+  public clearScanData(uri: vscode.Uri): void {
+    const filePath = uri.fsPath;
+    this.diagnosticsMap.delete(filePath);
+    this.diagnosticCollection.delete(uri);
+    this.hoverMessages.delete(filePath);
+    this.maliciousDecorationsMap.delete(filePath);
+  }
+
   private onEditorChange(editor: vscode.TextEditor | undefined): void {
     if (editor && this.matchesManifestPattern(editor.document.uri.fsPath)) {
       this.applyDecorations(editor.document.uri);
