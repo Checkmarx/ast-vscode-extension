@@ -135,9 +135,26 @@ export class Details {
 
   secretDetectiongeneralTab() {
     return `<body>
-				<span>
-					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
-				</span>
+		<tr>
+          <td style="background:var(--vscode-editor-background)">
+          <td>
+              <div>
+				<div class="bfl-title">
+				${this.result.data.ruleName} has detected secret for file  
+                        <a href="#" 
+                        class="ast-node"
+                        id="ast-node-0"
+                        data-filename="${this.result.data.filename}" 
+                        data-line="${this.result.data.line}" 
+                        data-column="${0}"
+						data-length="${1}"
+                      >
+				${this.result.data.filename}
+                      </a>
+                    </div>
+                </div>
+              </td>
+            </tr>
 				</body>`;
   }
 
