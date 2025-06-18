@@ -34,15 +34,15 @@ function switchToBranch(branchName: string) {
 
 }
 
-describe.skip("Using a local branch if Git exists", () => {
-    let bench: Workbench;
-    let treeScans: CustomTreeSection;
-    let driver: WebDriver;
-    let originalBranch: string | undefined;
-    let gitExistedBefore: boolean;
+describe("Using a local branch if Git exists", () => {
+	let bench: Workbench;
+	let treeScans: CustomTreeSection;
+	let driver: WebDriver;
+	let originalBranch: string | undefined;
+	let gitExistedBefore: boolean;
 
-    before(async function () {
-        this.timeout(300000);
+	before(async function () {
+		this.timeout(300000);
 
 		const branchName = "branch-not-exist-in-cx";
 		// check if git repository exists
