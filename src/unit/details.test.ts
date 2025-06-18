@@ -119,7 +119,7 @@ describe("Details", () => {
   describe("secretDetectiongeneralTab", () => {
     it("should generate secret detection general tab", () => {
       const html = details.secretDetectiongeneralTab();
-      expect(html).to.include("Test description");
+      expect(html).to.include("has detected secret for file");
     });
   });
 
