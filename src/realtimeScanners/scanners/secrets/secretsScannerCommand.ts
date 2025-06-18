@@ -39,6 +39,16 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 			{ provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
 		);
 
+		vscode.workspace.onDidRenameFiles(async (event) => {
+			for (const { oldUri, newUri } of event.files) {
+				scanner.clearScanData(oldUri);
+
+				const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
+				if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
+					await scanner.scan(reopenedDoc, this.logs);
+				}
+			}
+		});
 	}
 
 
@@ -83,7 +93,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 	}
 
 	private renderSecretsIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/Itay/newSecretsCards/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
