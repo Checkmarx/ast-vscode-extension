@@ -29,6 +29,7 @@ import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
 import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
+import { CopilotChatCommand } from "./commands/openAIChatCommand";
 
 let globalContext: vscode.ExtensionContext;
 
@@ -266,20 +267,8 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("cx.fixInChat", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Fix in Chat clicked!");
-    }),
-    vscode.commands.registerCommand("cx.viewDetails", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("View Details clicked!");
-    }),
-    vscode.commands.registerCommand("cx.ignore", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Ignore clicked!");
-    })
-  );
+  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  copilotChatCommand.registerCopilotChatCommand();
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

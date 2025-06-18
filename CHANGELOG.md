@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatFromSecrets.0...v2.34.1-cwe-atish.0
+
+## [v2.34.1-aspm-riskscore-traits.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits.0) - 2025-06-17 07:02:32
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-OpenChatUpdatedFromMain.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatUpdatedFromMain.0) - 2025-06-17 07:09:12
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits.0...v2.34.1-OpenChatUpdatedFromMain.0
+
+## [v2.34.1-OpenChatFromSecrets.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatFromSecrets.0) - 2025-06-17 10:10:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatUpdatedFromMain.0...v2.34.1-OpenChatFromSecrets.0
+
 ## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -11,13 +39,6 @@
 ## [v2.34.1-SecretsCards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-SecretsCards.0) - 2025-06-12 13:02:06
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Other Changes
-* Fix duplicated Markdown hovers by disposing old hover providers on OSS scanner restart by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1163
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-secrets-scanner.0...v2.34.1-SecretsCards.0
 
 ## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
 
