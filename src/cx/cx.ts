@@ -207,7 +207,12 @@ export class Cx implements CxPlatform {
     }
     const cx = new CxWrapper(config);
     const scan = await cx.scanShow(scanId);
-    return scan.payload[0];
+    if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
+      return scan.payload[0];
+    }
+    else {
+      vscode.window.showErrorMessage(scan.status);
+    }
   }
 
   async getProject(
@@ -281,7 +286,7 @@ export class Cx implements CxPlatform {
     }
     const filter = `project-id=${projectId},${
       branch ? `branch=${branch},` : ""
-    }limit=${limit},statuses=${statuses}`;
+      }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {

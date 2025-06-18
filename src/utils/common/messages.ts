@@ -18,7 +18,7 @@ export const messages = {
   scanBranchNotMatch:
     "Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?",
   scanProjectNotMatch:
-      "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
+    "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanCheckStart:
     "Scan initiation started. Checking if scan is eligible to be initiated...",
   scanCompletedLoadResults: (status, scanID) =>
@@ -62,6 +62,7 @@ export const messages = {
   projectNotFound: "Project not found",
   projectIdUndefined: "Project ID is undefined.",
   scanIdNotFound: "ScanId not found",
+  scanIdIncorrectFormat: "Invalid scan id format.",
   scanIdUndefined: "Scan ID is undefined.",
   cancelLoading: "Canceled loading",
   loadingBranches: "Loading branches",

@@ -22,6 +22,8 @@ import { messages } from "../common/messages";
 import { cx } from "../../cx";
 import { getGlobalContext } from "../../extension";
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function createPicker(
   placeholder: string,
   title: string,
@@ -95,19 +97,19 @@ async function createPicker(
     quickPick.buttons = [
       ...(currentPage > 0
         ? [
-            {
-              iconPath: new vscode.ThemeIcon("arrow-left"),
-              tooltip: QuickPickPaginationButtons.previousPage,
-            },
-          ]
+          {
+            iconPath: new vscode.ThemeIcon("arrow-left"),
+            tooltip: QuickPickPaginationButtons.previousPage,
+          },
+        ]
         : []),
       ...(hasNextPage
         ? [
-            {
-              iconPath: new vscode.ThemeIcon("arrow-right"),
-              tooltip: QuickPickPaginationButtons.nextPage,
-            },
-          ]
+          {
+            iconPath: new vscode.ThemeIcon("arrow-right"),
+            tooltip: QuickPickPaginationButtons.nextPage,
+          },
+        ]
         : []),
     ];
   };
@@ -212,10 +214,10 @@ export async function branchPicker(
   const gitBranchName = await getGitBranchName();
   const localBranch = gitBranchName
     ? {
-        label: constants.localBranch,
-        id: constants.localBranch,
-        alwaysShow: true,
-      }
+      label: constants.localBranch,
+      id: constants.localBranch,
+      alwaysShow: true,
+    }
     : undefined;
 
   const fetchBranches = async (
@@ -394,9 +396,9 @@ export async function getBranchsPickItemsWithParams(
       try {
         const branches = branchList
           ? branchList.map((label) => ({
-              label: label,
-              id: label,
-            }))
+            label: label,
+            id: label,
+          }))
           : [];
 
         return branches;
@@ -461,11 +463,11 @@ export async function getScansPickItems(
       try {
         return scanList
           ? scanList.map((label) => ({
-              label: formatLabel(label, scanList),
-              id: label.id,
-              datetime: getFormattedDateTime(label.createdAt),
-              formattedId: getFormattedId(label, scanList),
-            }))
+            label: formatLabel(label, scanList),
+            id: label.id,
+            datetime: getFormattedDateTime(label.createdAt),
+            formattedId: getFormattedId(label, scanList),
+          }))
           : [];
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
@@ -495,9 +497,13 @@ export async function loadScanId(
   scanId: string,
   logs: Logs
 ) {
+
+  if (scanId && !uuidPattern.test(scanId.trim())) {
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    return;
+  }
   const scan = await getScanWithProgress(logs, scanId);
-  if (!scan?.id || !scan?.projectID) {
-    vscode.window.showErrorMessage(messages.scanIdNotFound);
+  if (!scan) {
     return;
   }
 
