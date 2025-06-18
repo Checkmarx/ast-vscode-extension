@@ -131,13 +131,15 @@ export class Details {
 	}
 
 	secretDetectiongeneralTab() {
+		const ruleName = this.result?.data?.ruleName || "";
+		const ruleNameLower = ruleName.toLowerCase();
 		return `<body>
-		<tr>
+				<tr>
           <td style="background:var(--vscode-editor-background)">
           <td>
               <div>
 				<div class="bfl-title">
-				${this.result.data.ruleName.toLowerCase()} has detected secret for file  
+				${ruleNameLower} has detected secret for file  
                         <a href="#" 
                         class="ast-node"
                         id="ast-node-0"
