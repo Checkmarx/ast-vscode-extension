@@ -16,6 +16,8 @@ import {
   CX_SELECT_SCAN,
   PROJECT_KEY_TREE,
   BRANCH_KEY_TREE,
+  CX_LOOK_SCAN,
+  SCAN_KEY_TREE
 } from "../test/utils/constants";
 import {
   CX_TEST_PROJECT_NAME,
@@ -162,4 +164,61 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(branch).is.not.undefined;
     });
   });
+
+ describe("Checkmarx - Search Scan by Scan ID", () => {
+  let bench: Workbench;
+
+  before(async function () {
+    this.timeout(60000);
+    bench = new Workbench();
+    await bench.executeCommand(CX_CLEAR); // Clears previous state, optional
+  });
+
+  it("should display the correct scan tree after searching by scan ID", async function () {
+    this.timeout(150000);
+
+    // Step 1: Select the project
+    await bench.executeCommand(CX_SELECT_PROJECT);
+    await sleep(500); // Wait for UI stability
+    const projectInput = await waitForInputBoxToOpen();
+    const projectName = await selectItem(projectInput, CX_TEST_PROJECT_NAME);
+
+    // Step 2: Select the branch
+    await bench.executeCommand(CX_SELECT_BRANCH);
+    await sleep(500);
+    const branchInput = await waitForInputBoxToOpen();
+    const branchName = await selectItem(branchInput, CX_TEST_BRANCH_NAME);
+
+    // Step 3: Look up scan by scan ID
+    await bench.executeCommand(CX_LOOK_SCAN);
+    await sleep(500);
+    const scanInputBox = await waitForInputBoxToOpen();
+    await scanInputBox.setText(CX_TEST_SCAN_NAME); // UUID like '11c909fb-3941-48ac-...'
+    await scanInputBox.confirm();
+
+    // Step 4: Wait for scan tree to load
+    const treeScans = await initialize();
+
+    // Step 5: Validate scan node appears
+    const scanNode = await waitForElementToAppear(treeScans, SCAN_KEY_TREE + CX_TEST_SCAN_NAME);
+    expect(scanNode).to.not.be.undefined;
+
+    // Step 6: Validate project and branch nodes appear
+    const projectNode = await waitForElementToAppear(treeScans, PROJECT_KEY_TREE + projectName);
+    expect(projectNode).to.not.be.undefined;
+
+    const branchNode = await waitForElementToAppear(treeScans, BRANCH_KEY_TREE + branchName);
+    expect(branchNode).to.not.be.undefined;
+
+    // Optional: Verify severity text (e.g. CRITICAL count)
+    const criticalText = await scanNode.getText();
+    expect(criticalText).to.include('CRITICAL');
+    expect(criticalText).to.match(/\bCRITICAL:\s*\d+/);
+
+    // Optional: Verify search icon is attached (if accessible via label or class)
+    const searchIcons = await scanNode.findElements(By.css('.codicon-search'));
+    expect(searchIcons.length).to.be.greaterThan(0);
+  });
+});
+  
 });
