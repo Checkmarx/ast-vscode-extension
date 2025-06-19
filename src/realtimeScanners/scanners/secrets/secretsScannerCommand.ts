@@ -5,6 +5,10 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { SecretsScannerService } from "./secretsScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
+import { commands } from "../../../utils/common/commands";
+import { isCursorIDE } from "../../../utils/utils";
+import { SecretsHoverData } from "../../common/types";
+
 
 export class SecretsScannerCommand extends BaseScannerCommand {
 	constructor(
@@ -35,6 +39,16 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 			{ provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
 		);
 
+		vscode.workspace.onDidRenameFiles(async (event) => {
+			for (const { oldUri, newUri } of event.files) {
+				scanner.clearScanData(oldUri);
+
+				const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
+				if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
+					await scanner.scan(reopenedDoc, this.logs);
+				}
+			}
+		});
 	}
 
 
@@ -53,13 +67,15 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		if (!hasDiagnostic) {
 			return;
 		}
-		const hoverData = scanner.secretsHoverData.get(key);
+		const hoverData: SecretsHoverData = scanner.secretsHoverData.get(key);
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
+		const isCursor = isCursorIDE();
+		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
 
-		const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
+		const buttons = `[ Fix with Cx & ${isCursor ? "Cursor" : "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
 
 
 		md.appendMarkdown(`${hoverData.description}\n\n`);
@@ -77,7 +93,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 	}
 
 	private renderSecretsIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/Itay/newSecretsCards/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
 	}
 
 	private renderSeverityIcon(severity: string): string {

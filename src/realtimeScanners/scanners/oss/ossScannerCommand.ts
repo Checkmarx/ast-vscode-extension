@@ -7,6 +7,9 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import path from "path";
+import { commands } from "../../../utils/common/commands";
+import { isCursorIDE } from "../../../utils/utils";
+import { HoverData } from "../../common/types";
 
 export class OssScannerCommand extends BaseScannerCommand {
   constructor(
@@ -34,6 +37,19 @@ export class OssScannerCommand extends BaseScannerCommand {
     );
 
     await this.scanAllManifestFilesInWorkspace();
+
+    vscode.workspace.onDidRenameFiles(async (event) => {
+      const scanner = this.scannerService as OssScannerService;
+
+      for (const { oldUri, newUri } of event.files) {
+        scanner.clearScanData(oldUri);
+
+        const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
+        if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
+          await scanner.scan(reopenedDoc, this.logs);
+        }
+      }
+    });
   }
 
   private hoverProviderDisposable: vscode.Disposable | undefined;
@@ -44,7 +60,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     scanner: any
   ) {
     const key = `${document.uri.fsPath}:${position.line}`;
-    const hoverData = scanner.hoverMessages?.get(key);
+    const hoverData: HoverData = scanner.hoverMessages?.get(key);
     const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
     const hasDiagnostic = diagnostics.some(
       (d) => d.range.start.line === position.line
@@ -59,7 +75,9 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
-    const buttons = `[ Fix with Cx & Copilot](command:cx.fixInChat)  [ View Cx Package Details](command:cx.viewDetails)  [ Ignore Cx Package](command:cx.ignore)`;
+    const isCursor = isCursorIDE();
+    const args = encodeURIComponent(JSON.stringify([hoverData]));
+    const buttons = `[ Fix with Cx & ${isCursor ? "Cursor" : "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
 
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
@@ -95,11 +113,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private badge(text: string): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/> `;
   }
 
   private renderMaliciousFinding(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/Itay/newSecretsCards/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
   }
 
   private renderMaliciousIcon(): string {
