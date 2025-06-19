@@ -10,6 +10,46 @@ import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 
+
+export class QuickFixInlineProvider implements vscode.CodeActionProvider {
+  provideCodeActions(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    context: vscode.CodeActionContext,
+    token: vscode.CancellationToken
+  ): vscode.CodeAction[] {
+    const actions: vscode.CodeAction[] = [];
+
+    for (const diagnostic of context.diagnostics) {
+      if (diagnostic.source !== "CxAI") {
+        continue;
+      }
+
+      const kind = vscode.CodeActionKind.Refactor.append("Checkmarx AI");
+
+      const fixAction = new vscode.CodeAction("Fix with CxAI", kind);
+      fixAction.command = {
+        command: "cx.fixWithAI",
+        title: "Fix with CxAI",
+        arguments: [diagnostic],
+      };
+
+      const viewAction = new vscode.CodeAction("View Cx Package Details", kind);
+      viewAction.command = {
+        command: "cx.viewDetails",
+        title: "View Cx Package Details",
+        arguments: [diagnostic],
+      };
+      actions.push(fixAction, viewAction);
+
+    }
+
+
+    return actions;
+  }
+}
+
+
 export class OssScannerService extends BaseScannerService {
   private createDecoration(
     iconName: string,
@@ -87,7 +127,17 @@ export class OssScannerService extends BaseScannerService {
     this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
       this.onEditorChange.bind(this)
     );
+
+
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: "file" },
+      new QuickFixInlineProvider(),
+      {
+        providedCodeActionKinds: [vscode.CodeActionKind.Refactor],
+      }
+    );
   }
+
   private onDocumentOpen(document: vscode.TextDocument): void {
     if (this.matchesManifestPattern(document.uri.fsPath)) {
       this.applyDecorations(document.uri);
@@ -162,6 +212,7 @@ export class OssScannerService extends BaseScannerService {
       const vscodeUri = vscode.Uri.file(filePath);
       this.diagnosticCollection.set(vscodeUri, diagnostics);
     });
+
   }
 
   matchesManifestPattern(filePath: string): boolean {

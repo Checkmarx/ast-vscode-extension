@@ -28,10 +28,14 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "ast-results.newDetails",
-        "title": "Details"
-      },
+        {
+      "command": "cx.fixWithAI",
+      "title": "Fix with CxAI"
+    },
+    {
+    "command": "cx.viewDetails",
+    "title": "View Cx Package Details"
+  },
       {
         "command": "ast-results.viewResult",
         "category": "ast-results",
