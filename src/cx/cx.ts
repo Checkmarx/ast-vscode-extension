@@ -286,7 +286,7 @@ export class Cx implements CxPlatform {
     }
     const filter = `project-id=${projectId},${
       branch ? `branch=${branch},` : ""
-      }limit=${limit},statuses=${statuses}`;
+    }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
