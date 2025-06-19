@@ -283,3 +283,7 @@ export function buildCommandButtons(args: string): string {
     `<a href="command:cx.ignore" title="">Ignore Cx Package</a>`
   );
 }
+
+export function renderCxAiBadge(): string {
+  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
+}

@@ -5,7 +5,7 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { SecretsScannerService } from "./secretsScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
-import { buildCommandButtons } from "../../../utils/utils";
+import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { SecretsHoverData } from "../../common/types";
 
 
@@ -76,16 +76,12 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 
 		md.appendMarkdown(`${hoverData.description}\n\n`);
 		md.appendMarkdown(this.renderSecretsIcon() + "<br>");
-		md.appendMarkdown(this.badge("Secrets") + "<br>");
+		md.appendMarkdown(renderCxAiBadge() + "<br>");
 
 		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
 
 		return new vscode.Hover(md);
-	}
-
-	private badge(text: string): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/>`;
 	}
 
 	private renderSecretsIcon(): string {

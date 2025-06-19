@@ -6,7 +6,7 @@ import { OssScannerService } from "./ossScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
-import { buildCommandButtons } from "../../../utils/utils";
+import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
 
 export class OssScannerCommand extends BaseScannerCommand {
@@ -81,10 +81,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.appendMarkdown("Short description of the package\n\n");
     if (isMalicious) {
       md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
-      md.appendMarkdown(this.badge("Malicious Package") + "<br>");
+      md.appendMarkdown(renderCxAiBadge() + "<br>");
     } else if (isVulnerable) {
       md.appendMarkdown(
-        this.badge(`${hoverData.status.toString()} Vulnerability Package`) +
+        renderCxAiBadge() +
         "<br>"
       );
     }
@@ -108,9 +108,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     ].includes(status);
   }
 
-  private badge(text: string): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png"  style="vertical-align: -12px;"/> `;
-  }
+
 
   private renderMaliciousFinding(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
