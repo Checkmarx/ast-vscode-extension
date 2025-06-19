@@ -11,13 +11,14 @@ mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
     }
 
     async scanShow(scanId: string) {
-      if (scanId === "1") {
+      if (scanId === "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9") {
         return {
+          exitCode: 0,
           payload: [
             {
               tags: {},
               groups: undefined,
-              id: "1",
+              id: "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9",
               projectID: "2588deba-1751-4afc-b7e3-db71727a1edd",
               status: "Completed",
               createdAt: "2023-04-19T10:07:37.628413+01:00",
@@ -30,8 +31,9 @@ mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
         };
       } else {
         return {
-          status: "Scan not found",
+          status: "Failed showing a scan: scan not found.",
           payload: [],
+          exitCode: 1,
         };
       }
     }
