@@ -193,14 +193,17 @@ describe("Checkmarx VS Code Extension Tests", () => {
     await bench.executeCommand(CX_LOOK_SCAN);
     await sleep(500);
     const scanInputBox = await waitForInputBoxToOpen();
-    await scanInputBox.setText(CX_TEST_SCAN_NAME); // UUID like '11c909fb-3941-48ac-...'
+    await scanInputBox.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7"); // UUID like '11c909fb-3941-48ac-...'
     await scanInputBox.confirm();
 
     // Step 4: Wait for scan tree to load
     const treeScans = await initialize();
 
     // Step 5: Validate scan node appears
-    const scanNode = await waitForElementToAppear(treeScans, SCAN_KEY_TREE + CX_TEST_SCAN_NAME);
+    console.log(treeScans);
+    const scanNode = await waitForElementToAppear(treeScans, SCAN_KEY_TREE + "e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
+    console.log(scanNode);
+
     expect(scanNode).to.not.be.undefined;
 
     // Step 6: Validate project and branch nodes appear
