@@ -455,6 +455,7 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
         
         await this.validateAndUpdateState();
         await vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.clear);
     }
 
     private getSuccessPageHtml(): string {
