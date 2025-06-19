@@ -205,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (ossEffected) {
         scannerRegistry.getScanner("oss")?.register();
-        return
+        return;
       }
       const secretsEffected = section(
         `${constants.secretsScanner}.${constants.activateSecretsScanner}`
@@ -276,6 +276,22 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log(">> Mock token has been saved to secrets");
     await authService.validateAndUpdateState();
   });
+
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("cx.fixWithAI", (diagnostic) => {
+      vscode.window.showInformationMessage(
+        `Fixing issue: ${diagnostic.message}`
+      );
+    })
+  );
+
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("cx.viewDetails", (diagnostic) => {
+      vscode.window.showInformationMessage(`Viewing details for: ${diagnostic?.message ?? 'no message'}`);
+    })
+  );
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {
