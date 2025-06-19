@@ -212,6 +212,7 @@ export class Cx implements CxPlatform {
     }
     else {
       vscode.window.showErrorMessage(scan.status);
+      return;
     }
   }
 
