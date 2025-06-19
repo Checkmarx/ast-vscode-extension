@@ -46,11 +46,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
   private async handleMessage(message: {
     command: string;
-    result?: { hash: string };
+    result?: { hash: string, riskScore: number, traits: { [key: string]: string } };
   }): Promise<void> {
     switch (message.command) {
       case "openVulnerabilityDetails": {
-        const result = this.findResultByHash(message.result.hash);
+        const result = this.findResultByHash(message.result.hash, message.result.riskScore, message.result.traits);
         if (result) {
           const astResult = new AstResult(result);
           await vscode.commands.executeCommand(commands.newDetails, astResult);
@@ -62,8 +62,13 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     }
   }
 
-  private findResultByHash(hash: string): CxResult | undefined {
-    return this.cxResults.find((result) => result.alternateId === hash);
+  private findResultByHash(hash: string, riskScore: number, traits: { [key: string]: string } = {}): CxResult | undefined {
+    const result = this.cxResults.find((result) => result.alternateId === hash);
+    if (result) {
+      result.riskScore = riskScore;
+      result.traits = traits;
+    }
+    return result;
   }
 
   public async updateContent(options?: {
@@ -245,31 +250,29 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 			</div>
 		</div>
 		<div id="riskManagementContainer">
-			${
-        !projectName || !scan || !isLatestScan
-          ? `<div class="no-results-message">
+			${!projectName || !scan || !isLatestScan
+        ? `<div class="no-results-message">
 				ASPM data is only shown when the most recent scan of a project is selected
 				in the Checkmarx One Results tab
 			</div>`
-          : ASPMResults.applicationNameIDMap.length === 0
+        : ASPMResults.applicationNameIDMap.length === 0
           ? `<div
 				class="no-results-message">
 				This project is not associated with any application in the ASPM
 			</div>`
           : ASPMResults.applicationNameIDMap.length > 0 &&
             ASPMResults.results.length === 0
-          ? `<div class="no-results-message">
+            ? `<div class="no-results-message">
 				ASPM does not hold result data for this project
 			</div>`
-          : `<div class="ditales"
+            : `<div class="ditales"
 				data-bs-toggle="tooltip" data-bs-placement="auto"
 				title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
 
 				<div class="ellipsis"><i class="codicon codicon-project"></i>Project:
 					${projectName ?? ""}</div>
-				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${
-          scan ?? ""
-        }</div>
+				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""
+            }</div>
 			</div>
 
 			<hr class="separator" />
