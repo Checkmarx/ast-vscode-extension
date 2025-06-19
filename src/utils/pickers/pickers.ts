@@ -499,7 +499,7 @@ export async function loadScanId(
 ) {
 
   if (scanId && !uuidPattern.test(scanId.trim())) {
-    //vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
     return;
   }
   const scan = await getScanWithProgress(logs, scanId);
