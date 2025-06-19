@@ -5,8 +5,7 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { SecretsScannerService } from "./secretsScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
-import { commands } from "../../../utils/common/commands";
-import { isCursorIDE } from "../../../utils/utils";
+import { buildCommandButtons } from "../../../utils/utils";
 import { SecretsHoverData } from "../../common/types";
 
 
@@ -71,12 +70,9 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
-		const isCursor = isCursorIDE();
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-
-		const buttons = `[ Fix with Cx & ${isCursor ? "Cursor" : "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
-
+		const buttons = buildCommandButtons(args);
 
 		md.appendMarkdown(`${hoverData.description}\n\n`);
 		md.appendMarkdown(this.renderSecretsIcon() + "<br>");

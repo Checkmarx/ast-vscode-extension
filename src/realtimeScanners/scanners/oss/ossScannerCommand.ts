@@ -6,9 +6,7 @@ import { OssScannerService } from "./ossScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
-import path from "path";
-import { commands } from "../../../utils/common/commands";
-import { isCursorIDE } from "../../../utils/utils";
+import { buildCommandButtons } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
 
 export class OssScannerCommand extends BaseScannerCommand {
@@ -75,10 +73,8 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
-    const isCursor = isCursorIDE();
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = `[ Fix with Cx & ${isCursor ? "Cursor" : "Copilot"} ](command:${commands.openAIChat}?${args})  [ View Cx Package Details](command:${commands.viewDetails}?${args})  [ Ignore Cx Package](command:cx.ignore)`;
-
+    const buttons = buildCommandButtons(args);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
 

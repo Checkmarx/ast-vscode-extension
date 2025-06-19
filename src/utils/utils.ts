@@ -9,6 +9,8 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
+import { commands } from "./common/commands";
+
 
 export function getProperty(
   o: AstResult | CxScan,
@@ -270,4 +272,14 @@ export function isCursorIDE(): boolean {
     return true;
   }
   return false;
+}
+
+export function buildCommandButtons(args: string): string {
+  const isCursor = isCursorIDE();
+
+  return (
+    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with Cx & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
+    `<a href="command:${commands.viewDetails}?${args}" title="">View Cx Package Details</a>  ` +
+    `<a href="command:cx.ignore" title="">Ignore Cx Package</a>`
+  );
 }
