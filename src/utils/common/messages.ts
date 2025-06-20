@@ -62,6 +62,7 @@ export const messages = {
   projectNotFound: "Project not found",
   projectIdUndefined: "Project ID is undefined.",
   scanIdNotFound: "ScanId not found",
+  scanIdIncorrectFormat: "Invalid scan id format.",
   scanIdUndefined: "Scan ID is undefined.",
   cancelLoading: "Canceled loading",
   loadingBranches: "Loading branches",

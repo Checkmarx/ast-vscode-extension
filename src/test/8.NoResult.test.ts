@@ -33,7 +33,7 @@ describe("Scan ID load results test", () => {
     it("should load results from scan ID", async function () {
         await bench.executeCommand(CX_LOOK_SCAN);
         let input = await new InputBox();
-        await input.setText("2");
+        await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
         await input.confirm();
     });
 

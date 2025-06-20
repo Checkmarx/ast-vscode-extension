@@ -162,4 +162,5 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(branch).is.not.undefined;
     });
   });
+  
 });

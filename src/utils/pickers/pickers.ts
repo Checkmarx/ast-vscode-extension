@@ -22,6 +22,8 @@ import { messages } from "../common/messages";
 import { cx } from "../../cx";
 import { getGlobalContext } from "../../extension";
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function createPicker(
   placeholder: string,
   title: string,
@@ -495,9 +497,13 @@ export async function loadScanId(
   scanId: string,
   logs: Logs
 ) {
+
+  if (scanId && !uuidPattern.test(scanId.trim())) {
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    return;
+  }
   const scan = await getScanWithProgress(logs, scanId);
-  if (!scan?.id || !scan?.projectID) {
-    vscode.window.showErrorMessage(messages.scanIdNotFound);
+  if (!scan) {
     return;
   }
 
