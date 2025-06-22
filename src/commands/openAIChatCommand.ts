@@ -3,7 +3,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE } from "../utils/utils";
+import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
 import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 
 
@@ -107,15 +107,13 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
-    public isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
-        return 'title' in item && 'description' in item && 'severity' in item;
-    }
+
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
                 let question = '';
-                if (this.isSecretsHoverData(item)) {
+                if (isSecretsHoverData(item)) {
 
                     question = `A secret has been detected: "${item.title}".\n\n${item.description}\n\nPlease identify the appropriate way to remediate or secure this secret, and apply the fix automatically where possible.`;
                 } else {
@@ -131,10 +129,17 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
-                let question = `Show all details about the package ${item.packageName}@${item.version}. Explain why it is flagged, what are the risks, and what remediation steps are recommended. Present the information in a clear, actionable way for a developer.`;
-                item.vulnerabilities?.forEach(vuln => {
-                    question += `\n\nVulnerability: ${vuln.cve}\nDescription: ${vuln.description}\nSeverity: ${vuln.severity}`;
-                });
+                let question = '';
+
+                if (isSecretsHoverData(item)) {
+                    question = `A secret was detected in the code: "${item.title}".\n\n${item.description}\n\nExplain what this secret might expose, why it is a risk, and how to remediate or securely handle it.`;
+                } else {
+                    question = `Show all details about the package ${item.packageName}@${item.version}. Explain why it is flagged, what are the risks, and what remediation steps are recommended. Present the information in a clear, actionable way for a developer.`;
+
+                    item.vulnerabilities?.forEach(vuln => {
+                        question += `\n\nVulnerability: ${vuln.cve}\nDescription: ${vuln.description}\nSeverity: ${vuln.severity}`;
+                    });
+                }
                 try {
                     await this.openChatWithPrompt(question);
                 } catch (error) {
