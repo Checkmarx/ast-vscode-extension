@@ -30,7 +30,7 @@ import { initialize } from "./cx";
 import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
-
+import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -205,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (ossEffected) {
         scannerRegistry.getScanner("oss")?.register();
-        return
+        return;
       }
       const secretsEffected = section(
         `${constants.secretsScanner}.${constants.activateSecretsScanner}`
@@ -276,6 +276,17 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log(">> Mock token has been saved to secrets");
     await authService.validateAndUpdateState();
   });
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: "file" },
+      new CxCodeActionProvider(),
+      {
+        providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+      }
+    )
+  );
+
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {
