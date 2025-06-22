@@ -1,18 +1,20 @@
 # CHANGELOG
 
-## [v2.34.1-ScanId-invalid-input.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ScanId-invalid-input.0) - 2025-06-19 11:30:45
+## [v2.34.1-IncludedExplainSecrets_RightClickProblems.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IncludedExplainSecrets_RightClickProblems.0) - 2025-06-22 14:11:52
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### New Features 🚀
-* Open AI chat from card (AST-97474) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1153
 ### Other Changes
-* Fix stale Problems on file rename by clearing and rescanning in OSS & Secrets scanners (AST-101132) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1172
-* Refactor: remove OSS hover tooltips and extract shared button rendering by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1180
+* Add explain button for secrets cards (AST-101321) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1184
+* Finish support right click in problems (AST-97475) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1185
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-cwe-atish.0...v2.34.1-ScanId-invalid-input.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-ScanId-invalid-input.0...v2.34.1-IncludedExplainSecrets_RightClickProblems.0
+
+## [v2.34.1-ScanId-invalid-input.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ScanId-invalid-input.0) - 2025-06-19 11:30:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
 
