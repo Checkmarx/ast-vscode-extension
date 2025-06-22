@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import * as vscode from "vscode";
 import * as path from "path";
 import fs from "fs";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
 import { cx } from "../../../cx";
-import { HoverData, IScannerConfig } from "../../common/types";
+import { HoverData, IScannerConfig, CxDiagnosticData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
@@ -460,6 +462,16 @@ export class OssScannerService extends BaseScannerService {
       decorations.push({ range });
       const diagnostic = new vscode.Diagnostic(range, message, severity);
       diagnostic.source = 'CxAI';
+
+      (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
+        cxType: "oss",
+        item: {
+          packageName: result.packageName,
+          version: result.version,
+          status: result.status,
+          vulnerabilities: result.vulnerabilities
+        }
+      };
       diagnostics.push(diagnostic);
     } else {
       iconDecorations.push({ range });

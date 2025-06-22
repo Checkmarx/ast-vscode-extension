@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
-import { IScannerConfig } from "../../common/types";
+import { IScannerConfig, CxDiagnosticData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import { minimatch } from "minimatch";
 import path from "path";
@@ -149,6 +149,14 @@ export class SecretsScannerService extends BaseScannerService {
 				severityMap[problem.severity]
 			);
 			diagnostic.source = 'CxAI';
+			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
+				cxType: 'secrets',
+				item: {
+					title: problem.title,
+					description: problem.description,
+					severity: problem.severity
+				}
+			};
 
 			diagnostics.push(diagnostic);
 
