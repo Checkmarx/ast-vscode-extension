@@ -24,7 +24,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			const item = data.item as HoverData | SecretsHoverData;
 
 			const isCursor = isCursorIDE();
-			const fixWithCxButton = `Fix with Cx & ${isCursor ? "Cursor" : "Copilot"}`;
+			const fixWithCxButton = `Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}`;
 
 			const fixAction = new vscode.CodeAction(
 				fixWithCxButton,
@@ -37,7 +37,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			};
 
 			const explainAction = new vscode.CodeAction(
-				data.cxType === "secrets" ? "Cx Explain" : "View Cx Package Details",
+				data.cxType === "secrets" ? "CxAI Explain" : "View CxAI Package Details",
 				vscode.CodeActionKind.QuickFix
 			);
 			explainAction.command = {
