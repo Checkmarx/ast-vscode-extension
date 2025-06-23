@@ -42,3 +42,8 @@ export interface SecretsHoverData {
     endIndex: number;
   };
 }
+
+export interface CxDiagnosticData {
+  cxType: "oss" | "secrets";
+  item: HoverData | SecretsHoverData;
+}

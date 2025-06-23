@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [v2.34.1-IncludedExplainSecrets_RightClickProblems.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IncludedExplainSecrets_RightClickProblems.0) - 2025-06-22 14:11:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Add explain button for secrets cards (AST-101321) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1184
+* Finish support right click in problems (AST-97475) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1185
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-ScanId-invalid-input.0...v2.34.1-IncludedExplainSecrets_RightClickProblems.0
+
+## [v2.34.1-ScanId-invalid-input.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ScanId-invalid-input.0) - 2025-06-19 11:30:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
