@@ -1,4 +1,4 @@
-<img src="media/checkmarx_logo.png">
+<img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/PluginBanner.jpg">
 <br />
 <div align="center">
 
@@ -14,7 +14,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/Checkmarx/ast-vscode-extension">
-    <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/cx-icon-logo.png" alt="Logo" width="80" height="80" />
+    <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/cx_x_icon.png" alt="Logo" width="80" height="80" />
   </a>
   <h3 align="center">VS Code Extension</h3>
   <p align="center">
@@ -32,9 +32,9 @@
     <li><a href="#kics-realtime-scanner">KICS Realtime Scanner</a></li>
     <li><a href="#checkmarx-sca-realtime-scanner">Checkmarx SCA Realtime Scanner</a></li>
     <li><a href="#initial-setup">Initial Setup</a></li>
-    <li><a href="#feedback">Feedback</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
+    <li><a href="#feedback">Feedback</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -161,9 +161,6 @@ This tool enables VS Code users to initiate SCA scans directly from their VS Cod
 **GIF - Installing and Setting up the Extension**
 ![Installing and Setting up the Extension](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif "Installing and Setting up the Extension")
 
-## Feedback
-We’d love to hear your feedback! If you come across a bug or have a feature request, please let us know by submitting an issue in [GitHub Issues](https://github.com/Checkmarx/ast-vscode-extension/issues).
-
 ## Contributing
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
@@ -175,6 +172,10 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 ## License
 
 Distributed under the [Apache 2.0](LICENSE). See `LICENSE` for more information.
+
+<!-- FEEDBACK -->
+## Feedback
+We’d love to hear your feedback! If you come across a bug or have a feature request, please let us know by submitting an issue in [GitHub Issues](https://github.com/Checkmarx/ast-vscode-extension/issues).
 
 <!-- CONTACT -->
 ## Contact
