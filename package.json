@@ -990,8 +990,7 @@
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
-    "validator": "^13.12.0",
-    "lodash": "4.17.21"
+    "validator": "^13.12.0"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
