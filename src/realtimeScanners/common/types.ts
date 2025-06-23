@@ -25,6 +25,7 @@ export interface IScannerCommand {
 }
 
 export interface HoverData {
+  packageManager: string;
   packageName: string;
   version: string;
   status: CxRealtimeEngineStatus;
