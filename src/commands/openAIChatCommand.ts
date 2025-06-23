@@ -5,7 +5,7 @@ import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
 import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
-import { SCA_PROMPT } from "../realtimeScanners/scanners/prompts";
+import { SCA_PROMPT, SECRET_REMEDIATION_PROMPT } from "../realtimeScanners/scanners/prompts";
 
 
 
@@ -116,7 +116,7 @@ export class CopilotChatCommand {
                 let question = '';
                 if (isSecretsHoverData(item)) {
 
-                    question = `A secret has been detected: "${item.title}".\n\n${item.description}\n\nPlease identify the appropriate way to remediate or secure this secret, and apply the fix automatically where possible.`;
+                    question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else {
                     question = SCA_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
