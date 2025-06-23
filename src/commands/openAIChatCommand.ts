@@ -118,7 +118,7 @@ export class CopilotChatCommand {
 
                     question = `A secret has been detected: "${item.title}".\n\n${item.description}\n\nPlease identify the appropriate way to remediate or secure this secret, and apply the fix automatically where possible.`;
                 } else {
-                    question = SCA_PROMPT(item.packageName, item.version, item.packageManager, item.status);
+                    question = SCA_PROMPT(item.packageName, item.version, item.packageManager);
                 }
                 try {
                     await this.openChatWithPrompt(question);
