@@ -1,18 +1,19 @@
 # CHANGELOG
 
-## [v2.34.1-2.34.1-prompt2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt2.0) - 2025-06-23 10:58:52
+## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### New Features 🚀
-* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1189
-### Other Changes
-* Replace cx to cxAI by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1187
-* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1188
+* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1190
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompt.0...v2.34.1-2.34.1-prompt2.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompt2.0...v2.34.1-2.34.1-prompts3.0
+
+## [v2.34.1-2.34.1-prompt2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt2.0) - 2025-06-23 10:58:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-prompt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt.0) - 2025-06-23 09:19:58
 
