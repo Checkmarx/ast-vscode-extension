@@ -118,7 +118,7 @@ export class CopilotChatCommand {
 
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else {
-                    question = SCA_PROMPT(item.packageName, item.version, item.packageManager, item.status);
+                    question = SCA_PROMPT(item.packageName, item.version, item.packageManager);
                 }
                 try {
                     await this.openChatWithPrompt(question);
