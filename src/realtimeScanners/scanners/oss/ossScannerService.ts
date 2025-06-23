@@ -340,7 +340,6 @@ export class OssScannerService extends BaseScannerService {
           new vscode.Position(location.line, location.startIndex),
           new vscode.Position(location.line, location.endIndex)
         );
-        const key = `${uri.fsPath}:${range.start.line}`;
         const addDiagnostic = i === 0;
 
         switch (result.status) {
@@ -466,6 +465,7 @@ export class OssScannerService extends BaseScannerService {
       (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
         cxType: "oss",
         item: {
+          packageManager: result.packageManager,
           packageName: result.packageName,
           version: result.version,
           status: result.status,
@@ -479,6 +479,7 @@ export class OssScannerService extends BaseScannerService {
 
     const key = `${uri.fsPath}:${range.start.line}`;
     hoverMessages.set(key, {
+      packageManager: result.packageManager,
       packageName: result.packageName,
       version: result.version,
       status: result.status,
