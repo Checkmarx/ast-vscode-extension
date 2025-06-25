@@ -11,7 +11,7 @@
 .header-content {
 	margin-left: 10px;
 	margin-top: 0;
-	padding-top: 25px;
+	padding-top: 15px;
 	font-size: 1.3em;
 }
 
@@ -37,6 +37,15 @@
 	border-radius: 4px;
     font-weight: bold;
 	margin-left: 0.5%;
+}
+
+.tab.general .card-content div {
+	margin: 0px !important;
+    margin-left: 10px !important;
+}
+
+.tab.general .card-content p {
+	margin-bottom: 0rem !important;
 }
 
 .critical-risk {
