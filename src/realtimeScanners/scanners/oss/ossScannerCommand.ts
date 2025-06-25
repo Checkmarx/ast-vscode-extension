@@ -77,8 +77,6 @@ export class OssScannerCommand extends BaseScannerCommand {
     const buttons = buildCommandButtons(args, false);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
-
-    md.appendMarkdown("Short description of the package\n\n");
     if (isMalicious) {
       md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
       md.appendMarkdown(renderCxAiBadge() + "<br>");
