@@ -168,15 +168,10 @@ Explain why this secret is a security risk:
 
 3. REMEDIATION STRATEGY
 
-Follow these steps:
-
-- Remove the secret from source code.
-- Create a \`.env\` file if it doesn't exist.
-- Add: \`SECRET_NAME=\` (leave blank or move the value, depending on safety).
-- Replace secret usage in code with: \`process.env.SECRET_NAME\` (or platform equivalent).
-- Ensure \`.env\` is listed in \`.gitignore\`.
-- Insert a TODO comment where applicable:
-  - "TODO: Rotate and securely store \`SECRET_NAME\` in a secrets manager."
+- Parse the \`remediation_steps\` array from the server response.
+- For each step in \`remediation_steps\`, apply the described action exactly, in order.
+- For code or configuration changes, modify the relevant files and document the changes.
+- For steps that cannot be automated, document them in the remediation summary as TODOs or recommendations.
 
 ---
 
@@ -199,6 +194,10 @@ If the code is type-checked or compiled:
 ---
 
 6. OUTPUT FORMAT
+
+- Dynamically generate the remediation summary based on the actual steps taken and files modified, rather than using only the static template below.
+- Include the \`best_practices\` array from the response in the remediation summary output for user awareness.
+- Ensure the remediation summary includes the \`severity\` and \`description\` fields from the response to provide context and urgency.
 
 \`\`\`markdown
 ### ${AGENT_NAME} Security Assistant - Secret Remediation Summary
@@ -230,6 +229,12 @@ If the code is type-checked or compiled:
 - [ ] Add real secret value to .env or CI/CD secret manager
 - [ ] Revoke exposed secret if still active
 - [ ] Store secret in vault (e.g., AWS Secrets Manager, Vault, GitHub Actions)
+
+**Best Practices:**
+- (List each item from the \`best_practices\` array here)
+
+**Description:**
+- (Include the \`description\` field from the response here)
 
 \`\`\`
 
