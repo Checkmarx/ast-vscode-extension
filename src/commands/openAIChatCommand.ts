@@ -5,8 +5,12 @@ import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
 import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
-import { SCA_PROMPT, SECRET_REMEDIATION_PROMPT } from "../realtimeScanners/scanners/prompts";
-
+import {
+    SCA_EXPLANATION_PROMPT,
+    SCA_REMEDIATION_PROMPT,
+    SECRET_REMEDIATION_PROMPT,
+    SECRETS_EXPLANATION_PROMPT
+} from "../realtimeScanners/scanners/prompts";
 
 
 export class CopilotChatCommand {
@@ -17,6 +21,7 @@ export class CopilotChatCommand {
         this.context = context;
         this.logs = logs;
     }
+
     private pressEnterWindows() {
         const script = `
         Add-Type -AssemblyName System.Windows.Forms
@@ -109,16 +114,14 @@ export class CopilotChatCommand {
     }
 
 
-
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
                 let question = '';
                 if (isSecretsHoverData(item)) {
-
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else {
-                    question = SCA_PROMPT(item.packageName, item.version, item.packageManager, item.status);
+                    question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
                 try {
                     await this.openChatWithPrompt(question);
@@ -133,13 +136,9 @@ export class CopilotChatCommand {
                 let question = '';
 
                 if (isSecretsHoverData(item)) {
-                    question = `A secret was detected in the code: "${item.title}".\n\n${item.description}\n\nExplain what this secret might expose, why it is a risk, and how to remediate or securely handle it.`;
+                    question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
                 } else {
-                    question = `Show all details about the package ${item.packageName}@${item.version}. Explain why it is flagged, what are the risks, and what remediation steps are recommended. Present the information in a clear, actionable way for a developer.`;
-
-                    item.vulnerabilities?.forEach(vuln => {
-                        question += `\n\nVulnerability: ${vuln.cve}\nDescription: ${vuln.description}\nSeverity: ${vuln.severity}`;
-                    });
+                    question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
                 try {
                     await this.openChatWithPrompt(question);
