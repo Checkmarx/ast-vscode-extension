@@ -547,8 +547,8 @@ export class AstResult extends CxResult {
     }
 
     return `
-      <div style="margin:15px 15px 15px 28px;"><p style="margin:25px;font-size:0.9em">
-        No additional trait available
+      <div style="margin:15px 15px 15px 28px"><p>
+            No additional trait available
       </p></div>
     `;
   }
@@ -563,9 +563,9 @@ export class AstResult extends CxResult {
             </a>&nbsp&nbsp`;
       });
     } else {
-      html += `<p style="margin:25px;font-size:0.9em">
+      html += `<div><p>
             No references available 
-          </p>`;
+          </p></div>`;
     }
     return html;
   }
