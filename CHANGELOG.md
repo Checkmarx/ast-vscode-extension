@@ -1,15 +1,25 @@
 # CHANGELOG
 
-## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
+## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### New Features 🚀
-* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1190
+### Other Changes
+* remove description from oss package by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1193
+* add explanation prompts for SCA and secrets remediation (AST-99101) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1194
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompt2.0...v2.34.1-2.34.1-prompts3.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompts3.0...v2.34.1-2.34.1-prompts4.0
+
+### Feature
+
+- prompts:
+  - add explanation prompts for SCA and secrets remediation (#1194) ([53324bf](https://github.com/Checkmarx/ast-vscode-extension/commit/53324bfb341080a8ee6bdb4d16c27f7988a6a3e8)) ([#1194](https://github.com/Checkmarx/ast-vscode-extension/pull/1194))
+
+## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-prompt2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt2.0) - 2025-06-23 10:58:52
 
