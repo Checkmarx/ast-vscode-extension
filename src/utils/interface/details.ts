@@ -134,11 +134,34 @@ export class Details {
   }
 
   secretDetectiongeneralTab() {
-    return `<body>
-				<span>
-					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
-				</span>
-				</body>`;
+		let description = this.result.description;
+		const startIndex = description.indexOf('/');
+		const filePath = description.slice(startIndex);
+		if (startIndex !== -1) {
+			description = description.slice(0, startIndex);
+		}
+	return `<body>
+				<tr>
+					<td style="background:var(--vscode-editor-background)">
+					<td>
+						<div>
+							<div class="bfl-title">
+								${description} 
+								<a href="#" 
+									class="ast-node"
+									id="ast-node-0"
+									data-filename="${this.result.data.filename}" 
+									data-line="${this.result.data.line}" 
+									data-column="${0}"
+									data-length="${1}"
+								>
+								${filePath}
+								</a>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</body>`;
   }
 
   scaView(
