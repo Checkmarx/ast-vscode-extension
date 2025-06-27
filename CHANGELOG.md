@@ -1,21 +1,21 @@
 # CHANGELOG
 
-## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
+## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### Other Changes
-* remove description from oss package by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1193
-* add explanation prompts for SCA and secrets remediation (AST-99101) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1194
+* Align VS code behavior with Eclipse when scan is not found (AST-99730) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
 
+## New Contributors
+* @cx-rah-pid made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompts3.0...v2.34.1-2.34.1-prompts4.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompts4.0...v2.34.1-v2.34.0-Fix-InfoCard-logout.0
 
-### Feature
+## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
 
-- prompts:
-  - add explanation prompts for SCA and secrets remediation (#1194) ([53324bf](https://github.com/Checkmarx/ast-vscode-extension/commit/53324bfb341080a8ee6bdb4d16c27f7988a6a3e8)) ([#1194](https://github.com/Checkmarx/ast-vscode-extension/pull/1194))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
 
