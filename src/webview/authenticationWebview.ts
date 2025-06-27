@@ -4,6 +4,7 @@ import { isURL } from "validator";
 import { getNonce } from "../utils/utils";
 import { Logs } from "../models/logs";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
+import { WebViewCommand } from "../commands/webViewCommand";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -11,14 +12,16 @@ export class AuthenticationWebview {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private readonly logs: Logs | undefined;
-
+  private webview: WebViewCommand;
   private constructor(
     panel: vscode.WebviewPanel,
     private context: vscode.ExtensionContext,
-    logs?: Logs
+    logs?: Logs,
+    webview?: WebViewCommand
   ) {
     this.logs = logs;
     this._panel = panel;
+    this.webview = webview;
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
@@ -54,7 +57,7 @@ export class AuthenticationWebview {
     this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
-  public static show(context: vscode.ExtensionContext, logs?: Logs) {
+  public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
     if (AuthenticationWebview.currentPanel) {
       AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
       return;
@@ -72,10 +75,12 @@ export class AuthenticationWebview {
     AuthenticationWebview.currentPanel = new AuthenticationWebview(
       panel,
       context,
-      logs
+      logs,
+      webViewCommand
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public getTenants(context: vscode.ExtensionContext, url = ""): string[] {
     const urlMap =
       context.globalState.get<{ [key: string]: string[] }>(
@@ -216,6 +221,7 @@ export class AuthenticationWebview {
               if (selection === "Yes") {
                 const authService = AuthService.getInstance(this.context);
                 authService.logout();
+                this.webview.removedetailsPanel();
                 this._panel.webview.postMessage({ type: "clearFields" });
                 this._panel.webview.postMessage({
                   type: "setAuthState",
