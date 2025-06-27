@@ -40,6 +40,13 @@ export class WebViewCommand {
     this.conversationId = "";
   }
 
+  public removedetailsPanel() {
+    if (this.detailsPanel) {
+      this.detailsPanel?.dispose();
+      this.detailsPanel = undefined;
+    }
+  }
+
   public registerNewDetails() {
     const newDetails = vscode.commands.registerCommand(
       commands.newDetails,
@@ -124,9 +131,9 @@ export class WebViewCommand {
           masked = await cx.mask(result.filename);
           this.logs.info(
             `Masked Secrets by ${constants.aiSecurityChampion}: ` +
-              (masked && masked.maskedSecrets
-                ? masked.maskedSecrets.length
-                : "0")
+            (masked && masked.maskedSecrets
+              ? masked.maskedSecrets.length
+              : "0")
           );
         } catch (error) {
           this.logs.info(error);
@@ -430,7 +437,7 @@ export class WebViewCommand {
       .then((messages) => {
 
         this.handleSystemNotFindPathError(messages[0].responses[0], "Please ensure that you have opened the correct workspace or the relevant file.");
-        
+
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({

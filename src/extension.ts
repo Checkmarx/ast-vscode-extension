@@ -263,7 +263,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("ast-results.showAuth", () => {
-      AuthenticationWebview.show(context, logs);
+      AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
 
