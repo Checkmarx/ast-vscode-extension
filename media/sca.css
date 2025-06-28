@@ -33,10 +33,14 @@
 	justify-self: left;
 }
 .header-risk-score {
-	font-size: 1.2em;
+	font-size: 1.3em;
 	border-radius: 4px;
     font-weight: bold;
 	margin-left: 0.5%;
+}
+
+#cx_title .header-risk-score{
+	font-size: 0.9em;
 }
 
 .tab.general .card-content div {

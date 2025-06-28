@@ -46,11 +46,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
   private async handleMessage(message: {
     command: string;
-    result?: { hash: string ,riskScore: number, traits: { [key: string]: string } };
+    result?: { hash: string, riskScore: number, severity: string, traits: { [key: string]: string } };
   }): Promise<void> {
     switch (message.command) {
       case "openVulnerabilityDetails": {
-        const result = this.findResultByHash(message.result.hash,message.result.riskScore,message.result.traits);
+        const result = this.findResultByHash(message.result.hash, message.result.riskScore, message.result.severity, message.result.traits);
         if (result) {
           const astResult = new AstResult(result);
           await vscode.commands.executeCommand(commands.newDetails, astResult);
@@ -62,11 +62,12 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     }
   }
 
-  private findResultByHash(hash: string,riskScore:number,traits: { [key: string]: string } = {}): CxResult | undefined {
-    const result  = this.cxResults.find((result) => result.alternateId === hash);
+  private findResultByHash(hash: string, riskScore: number, severity1: string, traits: { [key: string]: string } = {}): CxResult | undefined {
+    const result = this.cxResults.find((result) => result.alternateId === hash);
     if (result) {
       result.riskScore = riskScore;
       result.traits = traits;
+      result.severity = severity1.toUpperCase();
     }
     return result;
   }
