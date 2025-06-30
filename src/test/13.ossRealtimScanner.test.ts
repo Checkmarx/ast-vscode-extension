@@ -16,6 +16,7 @@ import { retryTest } from "./utils/utils";
 import { expect } from "chai";
 import * as path from "path";
 import * as fsp from "fs/promises";
+import { constants } from "../utils/common/constants";
 
 describe("OSS Scanner Tests", () => {
     let bench: Workbench;
@@ -27,6 +28,18 @@ describe("OSS Scanner Tests", () => {
         bench = new Workbench();
         driver = VSBrowser.instance.driver;
         editorView = new EditorView();
+        
+        // Enable OSS realtime scanner in settings
+        const settingsEditor = await bench.openSettings();
+        const ossCheckbox = await settingsEditor.findSetting(
+            constants.activateOssRealtimeScanner,
+            constants.ossRealtimeScanner
+        );
+        await ossCheckbox.setValue(true);
+        
+        // Close settings by closing all editors
+        await editorView.closeAllEditors();
+        
         await bench.executeCommand(VS_OPEN_FOLDER);
 		this.timeout(30000);
     });
@@ -72,7 +85,7 @@ describe("OSS Scanner Tests", () => {
                 }))
             ).filter(Boolean);
 
-            // expect(maliciousMarkers.length).to.be.greaterThan(0);
+            expect(maliciousMarkers.length).to.be.greaterThan(0);
             expect(scaVulnerabilityMarkers.length).to.be.greaterThan(0);
        
 		}));
