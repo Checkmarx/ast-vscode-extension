@@ -5,7 +5,12 @@ import {
   VSBrowser,
   WebDriver,
   By,
-  WebView
+  WebView,
+  InputBox,
+  TextEditor,
+  BottomBarPanel,
+  MarkerType,
+  SettingsEditor
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { initialize } from "../test/utils/utils";
@@ -27,6 +32,10 @@ import {
   waitForInputBoxToOpen,
   selectItem,
 } from "./utils/utils";
+
+import { constants } from "../utils/common/constants";
+import * as path from "path";
+import * as fsp from "fs/promises";
 
 // Load environment variables
 dotenv.config();
@@ -160,6 +169,60 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       const branch = await waitForElementToAppear(treeScans, BRANCH_KEY_TREE + branchName);
       expect(branch).is.not.undefined;
+    });
+  });
+
+  describe("OSS Scanner E2E Integration", () => {
+    before(async function () {
+      this.timeout(60000);
+      // Enable OSS realtime scanner in settings
+      console.log("Enabling OSS scanner for E2E tests...");
+      const settingsEditor = await bench.openSettings();
+      const ossCheckbox = await settingsEditor.findSetting(
+        constants.activateOssRealtimeScanner,
+        constants.ossRealtimeScanner
+      );
+      await ossCheckbox.setValue(true);
+      console.log("OSS scanner enabled");
+      
+      // Close settings
+      await new EditorView().closeAllEditors();
+    });
+
+    it("should scan package.json and detect security issues", async function () {
+      this.timeout(120000);
+      console.log("Starting OSS scanner E2E test...");
+
+      const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
+      
+      await bench.executeCommand("workbench.action.files.openFile");
+      const input = await InputBox.create();
+      await input.setText(packageJsonPath);
+      await input.confirm();
+
+      await sleep(5000);
+
+      const editorView = new EditorView();
+      const editor = await editorView.openEditor("package.json") as TextEditor;
+      expect(editor).to.not.be.undefined;
+
+      const bottomBar = new BottomBarPanel();
+      await bottomBar.toggle(true);
+      const problemsView = await bottomBar.openProblemsView();
+
+      await sleep(5000);
+
+      const markers = await problemsView.getAllMarkers(MarkerType.Error);
+      console.log(`Found ${markers.length} security markers`);
+      
+      const allMarkerTexts = await Promise.all(markers.map(async (marker) => {
+        return await marker.getText();
+      }));
+      console.log("Security markers:", allMarkerTexts);
+
+      expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
+      
+      console.log("OSS scanner E2E test completed successfully");
     });
   });
   
