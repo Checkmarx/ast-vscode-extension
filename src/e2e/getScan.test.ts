@@ -193,7 +193,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       this.timeout(120000);
       console.log("Starting OSS scanner E2E test...");
 
-      const packageJsonPath = path.join(__dirname, "resources", "menifastFiles", "package.json");
+      const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
       console.log(`Package.json path: ${packageJsonPath}`);
       
       await bench.executeCommand("workbench.action.files.openFile");
@@ -225,7 +225,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
       
-      console.log("OSS scanner E2E test completed");
+      console.log("OSS scanner E2E test completed successfully");
     });
   });
   
