@@ -65,9 +65,17 @@ describe("OSS Scanner Tests", () => {
                 }))
             ).filter(Boolean);
 
+            const scaVulnerabilityMarkers = (
+                await Promise.all(markers.map(async (marker) => {
+                    const text = await marker.getText();
+                    return text.includes("High-risk package") || text.includes("vulnerability detected") ? marker : null;
+                }))
+            ).filter(Boolean);
+
             expect(maliciousMarkers.length).to.be.greaterThan(0);
-            //add check sca vulnerability
-        }));
+            expect(scaVulnerabilityMarkers.length).to.be.greaterThan(0);
+       
+		}));
 
         it.skip("should scan file on content change and generate problems", retryTest(async function () {
             const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
