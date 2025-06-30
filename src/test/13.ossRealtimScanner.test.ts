@@ -36,7 +36,7 @@ describe("OSS Scanner Tests", () => {
             constants.ossRealtimeScanner
         );
         await ossCheckbox.setValue(true);
-        
+        console.log(ossCheckbox);
         // Close settings by closing all editors
         await editorView.closeAllEditors();
         
