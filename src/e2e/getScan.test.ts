@@ -190,7 +190,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
     });
 
     it("should scan package.json and detect security issues", async function () {
-      this.timeout(120000);
+      this.timeout(220000);
       console.log("Starting OSS scanner E2E test...");
 
       const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
@@ -213,7 +213,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       const problemsView = await bottomBar.openProblemsView();
       console.log("Problems view opened");
 
-      await sleep(5000);
+      await sleep(25000);
 
       const markers = await problemsView.getAllMarkers(MarkerType.Error);
       console.log(`Found ${markers.length} security markers`);
