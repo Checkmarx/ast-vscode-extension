@@ -1,17 +1,19 @@
 # CHANGELOG
 
-## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
+## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Other Changes
-* Align VS code behavior with Eclipse when scan is not found (AST-99730) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
+### New Features 🚀
+* Open new Copilot chat on Agent mode(AST-100673) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1196
 
-## New Contributors
-* @cx-rah-pid made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-prompts4.0...v2.34.1-v2.34.0-Fix-InfoCard-logout.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-v2.34.0-Fix-InfoCard-logout.0...v2.34.1-aspm-riskscore-traits-1.0
+
+## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
 
