@@ -109,7 +109,7 @@ export class CopilotChatCommand {
             }
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
+        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 

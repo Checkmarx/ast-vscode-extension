@@ -199,15 +199,15 @@ export const constants = {
   mediumSeverity: "MEDIUM",
   lowSeverity: "LOW",
   infoSeverity: "INFO",
-  
+
   copilotChatExtensionId: "GitHub.copilot-chat",
-  copilotNewChatOpenWithQueryCommand: "workbench.action.chat.newChat",
-  copilotChatOpenWithQueryCommand: "workbench.action.chat.open",
+  copilotNewChatOpen: "workbench.action.chat.newChat",
+  copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
 };
 
 export enum Platform {
-    WINDOWS = 'win32',
-    MAC = 'darwin',
+  WINDOWS = 'win32',
+  MAC = 'darwin',
 }
 
 export enum GroupBy {
