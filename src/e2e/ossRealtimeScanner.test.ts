@@ -88,6 +88,14 @@ describe("OSS Scanner E2E Tests", () => {
 
 			const bottomBar = new BottomBarPanel();
 			await bottomBar.toggle(true);
+			
+			// Open output section first for debugging
+			console.log("Opening output section for debugging...");
+			const outputView = await bottomBar.openOutputView();
+			await sleep(2000);
+			console.log("Output section opened");
+			expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
+
 			const problemsView = await bottomBar.openProblemsView();
 			console.log("Problems view opened");
 
