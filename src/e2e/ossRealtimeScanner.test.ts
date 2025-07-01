@@ -62,6 +62,7 @@ describe("OSS Scanner E2E Tests", () => {
       const folderInput = await InputBox.create();
       await folderInput.setText(folderPath);
       await folderInput.confirm();
+		console.log("OSS Scanner E2E tests setup completed");
       await sleep(3000);
 		await initialize();
 	});
@@ -73,6 +74,24 @@ describe("OSS Scanner E2E Tests", () => {
 	});
 
 	describe("Real-time OSS Scanning E2E", () => {
+
+				it("should verify OSS scanner is enabled in settings", async function () {
+			this.timeout(60000);
+			console.log("Verifying OSS scanner settings...");
+
+			const settingsEditor = await bench.openSettings();
+			const ossCheckbox = await settingsEditor.findSetting(
+				constants.activateOssRealtimeScanner,
+				constants.ossRealtimeScanner
+			);
+
+			const isEnabled = await ossCheckbox.getValue();
+			expect(isEnabled).to.be.true;
+			console.log("OSS scanner is properly enabled in settings");
+
+			await editorView.closeAllEditors();
+		});
+
 		it("should scan package.json file on open and show security diagnostics", async function () {
 			this.timeout(120000);
 
@@ -172,22 +191,6 @@ describe("OSS Scanner E2E Tests", () => {
 		});
 	});
 
-	describe("OSS Scanner Settings Verification", () => {
-		it("should verify OSS scanner is enabled in settings", async function () {
-			this.timeout(60000);
-			console.log("Verifying OSS scanner settings...");
 
-			const settingsEditor = await bench.openSettings();
-			const ossCheckbox = await settingsEditor.findSetting(
-				constants.activateOssRealtimeScanner,
-				constants.ossRealtimeScanner
-			);
-
-			const isEnabled = await ossCheckbox.getValue();
-			expect(isEnabled).to.be.true;
-			console.log("OSS scanner is properly enabled in settings");
-
-			await editorView.closeAllEditors();
-		});
-	});
+	// });
 });
