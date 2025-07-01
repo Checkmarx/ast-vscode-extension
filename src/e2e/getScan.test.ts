@@ -172,105 +172,62 @@ describe("Checkmarx VS Code Extension Tests", () => {
     });
   });
 
-  describe("OSS Scanner E2E Integration", () => {
-    before(async function () {
-      this.timeout(60000);
-      // Enable OSS realtime scanner in settings
-      console.log("Enabling OSS scanner for E2E tests...");
-      const settingsEditor = await bench.openSettings();
-      const ossCheckbox = await settingsEditor.findSetting(
-        constants.activateOssRealtimeScanner,
-        constants.ossRealtimeScanner
-      );
-      await ossCheckbox.setValue(true);
-      console.log("OSS scanner enabled");
+  // describe("OSS Scanner E2E Integration", () => {
+  //   before(async function () {
+  //     this.timeout(60000);
+  //     // Enable OSS realtime scanner in settings
+  //     console.log("Enabling OSS scanner for E2E tests...");
+  //     const settingsEditor = await bench.openSettings();
+  //     const ossCheckbox = await settingsEditor.findSetting(
+  //       constants.activateOssRealtimeScanner,
+  //       constants.ossRealtimeScanner
+  //     );
+  //     await ossCheckbox.setValue(true);
+  //     console.log("OSS scanner enabled");
 
-      // Close settings
-      await new EditorView().closeAllEditors();
-    });
+  //     // Close settings
+  //     await new EditorView().closeAllEditors();
+  //   });
 
-    it("should scan package.json and detect security issues", async function () {
-      this.timeout(220000);
-      console.log("Starting OSS scanner E2E test...");
+  //   it("should scan package.json and detect security issues", async function () {
+  //     this.timeout(220000);
 
-      const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
-      console.log(`Package.json path: ${packageJsonPath}`);
+  //     const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
 
-      // First, open the explorer and navigate to the menifastFiles folder
-      console.log("Opening explorer and navigating to menifastFiles folder...");
+  //     await bench.executeCommand("workbench.view.explorer");
+  //     await sleep(2000);
 
-      // Open the file explorer
-      await bench.executeCommand("workbench.view.explorer");
-      await sleep(2000);
+  //     const folderPath = path.join(__dirname, "menifastFiles");
 
-      // Open the folder containing the package.json file
-      const folderPath = path.join(__dirname, "menifastFiles");
-      console.log(`Opening folder: ${folderPath}`);
+  //     await bench.executeCommand("workbench.action.files.openFolder");
+  //     const folderInput = await InputBox.create();
+  //     await folderInput.setText(folderPath);
+  //     await folderInput.confirm();
+  //     await sleep(3000);
 
-      await bench.executeCommand("workbench.action.files.openFolder");
-      const folderInput = await InputBox.create();
-      await folderInput.setText(folderPath);
-      await folderInput.confirm();
-      await sleep(3000);
-      console.log("Folder opened in explorer");
+  //     await bench.executeCommand("workbench.action.files.openFile");
+  //     const input = await InputBox.create();
+  //     await input.setText(packageJsonPath);
+  //     await input.confirm();
 
-      // Now open the package.json file from the explorer
-      console.log("Opening package.json file from explorer...");
-      await bench.executeCommand("workbench.action.files.openFile");
-      const input = await InputBox.create();
-      await input.setText(packageJsonPath);
-      await input.confirm();
+  //     await sleep(5000);
 
-      await sleep(5000);
+  //     const editorView = new EditorView();
+  //     const editor = await editorView.openEditor("package.json") as TextEditor;
+  //     expect(editor).to.not.be.undefined;
 
-      const editorView = new EditorView();
-      const editor = await editorView.openEditor("package.json") as TextEditor;
-      expect(editor).to.not.be.undefined;
-      console.log("Editor opened successfully");
+  //     await sleep(15000);
+  //     const bottomBar = new BottomBarPanel();
+  //     await bottomBar.toggle(true);
 
-      await sleep(15000);
-      const bottomBar = new BottomBarPanel();
-      await bottomBar.toggle(true);
-      console.log("Opening output section for debugging...");
-      // const outputView = await bottomBar.openOutputView();
-      // await sleep(2000);
-      // console.log("Output section opened");
+  //     const problemsView = await bottomBar.openProblemsView();
 
-      // Try to select Checkmarx output channel
-      // try {
-      //   console.log("Attempting to select Checkmarx output channel...");
-      //   await outputView.selectChannel("Checkmarx");
-      //   await sleep(1000);
-      //   console.log("Selected Checkmarx output channel");
+  //     await sleep(25000);
 
-      //   // Get the output text
-      //   const outputText = await outputView.getText();
-      //   console.log("Checkmarx Output:");
-      //   console.log("================");
-      //   console.log(outputText);
-      //   console.log("================");
-      // } catch (error) {
-      //   console.log("Could not select Checkmarx channel, trying to get available channels...");
-      // }
+  //     const markers = await problemsView.getAllMarkers(MarkerType.Error);
+  //     expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
 
-
-      const problemsView = await bottomBar.openProblemsView();
-      console.log("Problems view opened");
-
-      await sleep(25000);
-
-      const markers = await problemsView.getAllMarkers(MarkerType.Error);
-      console.log(`Found ${markers.length} security markers`);
-
-      const allMarkerTexts = await Promise.all(markers.map(async (marker) => {
-        return await marker.getText();
-      }));
-      console.log("Security markers:", allMarkerTexts);
-
-      expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
-
-      console.log("OSS scanner E2E test completed successfully");
-    });
-  });
+  //   });
+  // });
 
 });

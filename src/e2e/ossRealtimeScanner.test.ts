@@ -44,20 +44,16 @@ describe("OSS Scanner E2E Tests", () => {
 		editorView = new EditorView();
 
 		// Enable OSS realtime scanner in settings
-		console.log("Opening settings to enable OSS scanner...");
 		const settingsEditor = await bench.openSettings();
 		const ossCheckbox = await settingsEditor.findSetting(
 			constants.activateOssRealtimeScanner,
 			constants.ossRealtimeScanner
 		);
 		await ossCheckbox.setValue(true);
-		console.log("OSS scanner enabled in settings");
 
-		// Close settings by closing all editors
 		await editorView.closeAllEditors();
 
 		await initialize();
-		console.log("OSS Scanner E2E tests setup completed");
 	});
 
 	after(async () => {
@@ -69,46 +65,26 @@ describe("OSS Scanner E2E Tests", () => {
 	describe("Real-time OSS Scanning E2E", () => {
 		it("should scan package.json file on open and show security diagnostics", async function () {
 			this.timeout(120000);
-			console.log("Starting package.json security scan test...");
 
-			// Use a test package.json file with known vulnerabilities
 			const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
-			console.log(`Opening package.json from: ${packageJsonPath}`);
 
 			await bench.executeCommand("workbench.action.files.openFile");
 			const input = await InputBox.create();
 			await input.setText(packageJsonPath);
 			await input.confirm();
 
-			await sleep(5000); // Give more time for file processing
+			await sleep(5000); 
 
 			const editor = await editorView.openEditor("package.json") as TextEditor;
 			expect(editor).to.not.be.undefined;
-			console.log("Package.json file opened successfully");
 
 			const bottomBar = new BottomBarPanel();
 			await bottomBar.toggle(true);
 			
-			// Open output section first for debugging
-			console.log("Opening output section for debugging...");
-			const outputView = await bottomBar.openOutputView();
-			await sleep(2000);
-			console.log("Output section opened");
-			expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
-
 			const problemsView = await bottomBar.openProblemsView();
-			console.log("Problems view opened");
-
-			await sleep(5000); // Wait for scanner to process
+			await sleep(5000);
 
 			const markers = await problemsView.getAllMarkers(MarkerType.Error);
-			console.log(`Total markers found: ${markers.length}`);
-
-			// Debug: Log all marker texts for troubleshooting
-			const allMarkerTexts = await Promise.all(markers.map(async (marker) => {
-				return await marker.getText();
-			}));
-			console.log("All marker texts:", allMarkerTexts);
 
 			expect(markers.length).to.be.greaterThan(0, "Expected to find error markers from OSS scanner");
 
@@ -122,21 +98,13 @@ describe("OSS Scanner E2E Tests", () => {
 			const scaVulnerabilityMarkers = (
 				await Promise.all(markers.map(async (marker) => {
 					const text = await marker.getText();
-					return text.includes("High-risk package") ||
-						text.includes("vulnerability detected") ||
-						text.includes("vulnerability") ||
-						text.includes("SCA") ? marker : null;
+					return text.includes("High-risk package")
 				}))
 			).filter(Boolean);
+//add critical, high, medium
 
-			console.log(`Found ${maliciousMarkers.length} malicious markers`);
-			console.log(`Found ${scaVulnerabilityMarkers.length} SCA vulnerability markers`);
-
-			// Check for either malicious packages or SCA vulnerabilities
-			const hasSecurityIssues = maliciousMarkers.length > 0 || scaVulnerabilityMarkers.length > 0;
-			expect(hasSecurityIssues, "Expected to find either malicious packages or SCA vulnerabilities").to.be.true;
-
-			console.log("Package.json security scan test completed successfully");
+			expect(maliciousMarkers.length, "Expected to find at least one malicious package marker").to.be.greaterThan(0);
+			expect(scaVulnerabilityMarkers.length, "Expected to find at least one SCA vulnerability marker").to.be.greaterThan(0);
 		});
 
 		it("should scan file on content change and generate problems", async function () {
