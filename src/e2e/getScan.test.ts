@@ -208,8 +208,15 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(editor).to.not.be.undefined;
       console.log("Editor opened successfully");
 
+      await sleep(25000);
       const bottomBar = new BottomBarPanel();
-      await bottomBar.toggle(true);
+			await bottomBar.toggle(true);
+          console.log("Opening output section for debugging...");
+            const outputView = await bottomBar.openOutputView();
+            await sleep(2000);
+            console.log("Output section opened");
+            expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
+
       const problemsView = await bottomBar.openProblemsView();
       console.log("Problems view opened");
 
