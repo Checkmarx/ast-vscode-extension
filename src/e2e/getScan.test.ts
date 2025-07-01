@@ -208,7 +208,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(editor).to.not.be.undefined;
       console.log("Editor opened successfully");
 
-      await sleep(25000);
+      await sleep(150000);
       const bottomBar = new BottomBarPanel();
       await bottomBar.toggle(true);
       console.log("Opening output section for debugging...");
@@ -231,32 +231,6 @@ describe("Checkmarx VS Code Extension Tests", () => {
         console.log("================");
       } catch (error) {
         console.log("Could not select Checkmarx channel, trying to get available channels...");
-        try {
-          const channels = await outputView.getChannelNames();
-          console.log("Available output channels:", channels);
-
-          // Try to find a Checkmarx-related channel
-          const checkmarxChannel = channels.find(channel =>
-            channel.toLowerCase().includes('checkmarx') ||
-            channel.toLowerCase().includes('oss') ||
-            channel.toLowerCase().includes('scanner')
-          );
-
-          if (checkmarxChannel) {
-            console.log(`Found Checkmarx-related channel: ${checkmarxChannel}`);
-            await outputView.selectChannel(checkmarxChannel);
-            await sleep(1000);
-            const outputText = await outputView.getText();
-            console.log(`${checkmarxChannel} Output:`);
-            console.log("================");
-            console.log(outputText);
-            console.log("================");
-          } else {
-            console.log("No Checkmarx-related channels found");
-          }
-        } catch (innerError) {
-          console.log("Error getting channel information:", innerError.message);
-        }
       }
 
       expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
