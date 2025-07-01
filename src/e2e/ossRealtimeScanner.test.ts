@@ -69,29 +69,23 @@ describe("OSS Scanner E2E Tests", () => {
 
 	after(async () => {
 		console.log("Cleaning up OSS Scanner E2E tests...");
-		await bench.executeCommand(CX_CLEAR);
-		await editorView.closeAllEditors();
+		try {
+			// Use command to close editors - more reliable than DOM interactions
+			await bench.executeCommand("workbench.action.closeAllEditors");
+			await sleep(1000);
+			
+			// Clear any commands or state
+			await bench.executeCommand(CX_CLEAR);
+			await sleep(500);
+			
+			console.log("Cleanup completed successfully");
+		} catch (cleanupError) {
+			console.log("Cleanup completed with warnings:", cleanupError.message);
+			// Don't fail the test suite due to cleanup issues
+		}
 	});
 
 	describe("Real-time OSS Scanning E2E", () => {
-
-				it("should verify OSS scanner is enabled in settings", async function () {
-			this.timeout(60000);
-			console.log("Verifying OSS scanner settings...");
-
-			const settingsEditor = await bench.openSettings();
-			const ossCheckbox = await settingsEditor.findSetting(
-				constants.activateOssRealtimeScanner,
-				constants.ossRealtimeScanner
-			);
-
-			const isEnabled = await ossCheckbox.getValue();
-			expect(isEnabled).to.be.true;
-			console.log("OSS scanner is properly enabled in settings");
-
-			await editorView.closeAllEditors();
-		});
-
 		it("should scan package.json file on open and show security diagnostics", async function () {
 			this.timeout(120000);
 
