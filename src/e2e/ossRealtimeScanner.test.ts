@@ -53,6 +53,16 @@ describe("OSS Scanner E2E Tests", () => {
 
 		await editorView.closeAllEditors();
 
+		await bench.executeCommand("workbench.view.explorer");
+      await sleep(2000);
+
+      const folderPath = path.join(__dirname, "menifastFiles");
+
+      await bench.executeCommand("workbench.action.files.openFolder");
+      const folderInput = await InputBox.create();
+      await folderInput.setText(folderPath);
+      await folderInput.confirm();
+      await sleep(3000);
 		await initialize();
 	});
 
@@ -66,7 +76,7 @@ describe("OSS Scanner E2E Tests", () => {
 		it("should scan package.json file on open and show security diagnostics", async function () {
 			this.timeout(120000);
 
-			const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
+			const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
 
 			await bench.executeCommand("workbench.action.files.openFile");
 			const input = await InputBox.create();
@@ -111,7 +121,7 @@ describe("OSS Scanner E2E Tests", () => {
 			this.timeout(120000);
 			console.log("Starting dynamic content change scan test...");
 
-			const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
+			const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
 			const originalContent = await fsp.readFile(packageJsonPath, "utf8");
 			console.log("Original package.json content loaded");
 
