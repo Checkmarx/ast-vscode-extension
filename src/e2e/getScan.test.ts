@@ -49,7 +49,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let bench: Workbench;
   let driver: WebDriver;
 
-  it("Authentication: should authenticate using API key and verify button state", async function() {
+  it("Authentication: should authenticate using API key and verify button state", async function () {
     this.timeout(120000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
@@ -73,7 +73,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       // Find and select the API key radio button option
       const radioButtons = await webview.findWebElements(By.css("input[type='radio']"));
       console.log(`Found ${radioButtons.length} radio buttons`);
-      
+
       if (radioButtons.length >= 2) {
         const apiKeyRadio = radioButtons[1];
         await apiKeyRadio.click();
@@ -96,11 +96,11 @@ describe("Checkmarx VS Code Extension Tests", () => {
           const state = await authButton.getAttribute("disabled");
           return state !== "true";
         }, 5000, "Auth button did not become enabled");
-        
+
         // Verify that the auth button is now enabled
         disabledAttr = await authButton.getAttribute("disabled");
         expect(disabledAttr).to.not.equal("true", "Auth button should be enabled after API key entry");
-        
+
         // Click the auth button
         await authButton.click();
         console.log("Clicked 'Sign in' button");
@@ -184,7 +184,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       );
       await ossCheckbox.setValue(true);
       console.log("OSS scanner enabled");
-      
+
       // Close settings
       await new EditorView().closeAllEditors();
     });
@@ -195,7 +195,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
       console.log(`Package.json path: ${packageJsonPath}`);
-      
+
       await bench.executeCommand("workbench.action.files.openFile");
       const input = await InputBox.create();
       await input.setText(packageJsonPath);
@@ -210,12 +210,56 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       await sleep(25000);
       const bottomBar = new BottomBarPanel();
-			await bottomBar.toggle(true);
-          console.log("Opening output section for debugging...");
-            const outputView = await bottomBar.openOutputView();
-            await sleep(2000);
-            console.log("Output section opened");
-            expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
+      await bottomBar.toggle(true);
+      console.log("Opening output section for debugging...");
+      const outputView = await bottomBar.openOutputView();
+      await sleep(2000);
+      console.log("Output section opened");
+
+      // Try to select Checkmarx output channel
+      try {
+        console.log("Attempting to select Checkmarx output channel...");
+        await outputView.selectChannel("Checkmarx");
+        await sleep(1000);
+        console.log("Selected Checkmarx output channel");
+
+        // Get the output text
+        const outputText = await outputView.getText();
+        console.log("Checkmarx Output:");
+        console.log("================");
+        console.log(outputText);
+        console.log("================");
+      } catch (error) {
+        console.log("Could not select Checkmarx channel, trying to get available channels...");
+        try {
+          const channels = await outputView.getChannelNames();
+          console.log("Available output channels:", channels);
+
+          // Try to find a Checkmarx-related channel
+          const checkmarxChannel = channels.find(channel =>
+            channel.toLowerCase().includes('checkmarx') ||
+            channel.toLowerCase().includes('oss') ||
+            channel.toLowerCase().includes('scanner')
+          );
+
+          if (checkmarxChannel) {
+            console.log(`Found Checkmarx-related channel: ${checkmarxChannel}`);
+            await outputView.selectChannel(checkmarxChannel);
+            await sleep(1000);
+            const outputText = await outputView.getText();
+            console.log(`${checkmarxChannel} Output:`);
+            console.log("================");
+            console.log(outputText);
+            console.log("================");
+          } else {
+            console.log("No Checkmarx-related channels found");
+          }
+        } catch (innerError) {
+          console.log("Error getting channel information:", innerError.message);
+        }
+      }
+
+      expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
 
       const problemsView = await bottomBar.openProblemsView();
       console.log("Problems view opened");
@@ -224,16 +268,16 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       const markers = await problemsView.getAllMarkers(MarkerType.Error);
       console.log(`Found ${markers.length} security markers`);
-      
+
       const allMarkerTexts = await Promise.all(markers.map(async (marker) => {
         return await marker.getText();
       }));
       console.log("Security markers:", allMarkerTexts);
 
       expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
-      
+
       console.log("OSS scanner E2E test completed successfully");
     });
   });
-  
+
 });
