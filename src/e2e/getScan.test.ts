@@ -196,6 +196,26 @@ describe("Checkmarx VS Code Extension Tests", () => {
       const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
       console.log(`Package.json path: ${packageJsonPath}`);
 
+      // First, open the explorer and navigate to the menifastFiles folder
+      console.log("Opening explorer and navigating to menifastFiles folder...");
+      
+      // Open the file explorer
+      await bench.executeCommand("workbench.view.explorer");
+      await sleep(2000);
+      
+      // Open the folder containing the package.json file
+      const folderPath = path.join(__dirname, "menifastFiles");
+      console.log(`Opening folder: ${folderPath}`);
+      
+      await bench.executeCommand("workbench.action.files.openFolder");
+      const folderInput = await InputBox.create();
+      await folderInput.setText(folderPath);
+      await folderInput.confirm();
+      await sleep(3000);
+      console.log("Folder opened in explorer");
+
+      // Now open the package.json file from the explorer
+      console.log("Opening package.json file from explorer...");
       await bench.executeCommand("workbench.action.files.openFile");
       const input = await InputBox.create();
       await input.setText(packageJsonPath);
