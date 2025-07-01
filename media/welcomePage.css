@@ -1,0 +1,148 @@
+body {
+  background-color: #1e1e1e;
+  color: white;
+  font-family: Inter, sans-serif;
+  margin: 0;
+  padding: 147px 185.081px 190px 156px;
+  box-sizing: border-box;
+}
+
+.welcome-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 2em;
+}
+
+.left-section {
+  flex: 1;
+  margin-top: -56px;
+}
+
+.right-section {
+  display: flex;
+  padding: 40.508px 32.908px 122.765px 10.125px;
+}
+
+h1 {
+  color: #fff;
+  font-family: Inter, sans-serif;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 500;
+  margin-bottom: 35px;
+}
+
+.subtitle-wrapper {
+  width: 404px;
+  min-height: 38px;
+  margin-bottom: 35px;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.feature-card {
+  background-color: #2a2a2a;
+  padding: 18px;
+  width: 410px;
+  min-height: auto;
+  border-radius: 10px;
+  border: 1px solid #444;
+  box-sizing: border-box;
+  margin-bottom: 46px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.status-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon-img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.status-icon-img.clickable {
+  cursor: pointer;
+}
+
+.card-title {
+  color: #fff;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.card-list {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0;
+  margin-bottom: 1em;
+}
+
+.card-list li {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  margin-bottom: 26px;
+}
+
+.card-list li:last-child {
+  margin-bottom: 0;
+}
+
+.tip-text {
+  font-size: 13px;
+  font-family: Inter, sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 18px;
+  font-weight: 500;
+}
+
+.main-feature-list {
+  list-style-type: disc;
+  padding-left: calc(1.5em + 17px);
+  margin-top: 1em;
+}
+
+.main-feature-list li {
+  color: #fff;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  margin-bottom: 30px;
+}
+
+.hidden {
+  display: none;
+}
+
+.ai-feature-box-wrapper {
+  margin-top: 26px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 7px;
+}

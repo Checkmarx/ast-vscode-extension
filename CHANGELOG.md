@@ -1,5 +1,88 @@
 # CHANGELOG
 
+## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Open new Copilot chat on Agent mode(AST-100673) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1196
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-v2.34.0-Fix-InfoCard-logout.0...v2.34.1-aspm-riskscore-traits-1.0
+
+## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompt2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt2.0) - 2025-06-23 10:58:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt.0) - 2025-06-23 09:19:58
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-IncludedExplainSecrets_RightClickProblems.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IncludedExplainSecrets_RightClickProblems.0) - 2025-06-22 14:11:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-ScanId-invalid-input.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ScanId-invalid-input.0) - 2025-06-19 11:30:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatFromSecrets.0...v2.34.1-cwe-atish.0
+
+## [v2.34.1-aspm-riskscore-traits.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits.0) - 2025-06-17 07:02:32
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-OpenChatUpdatedFromMain.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatUpdatedFromMain.0) - 2025-06-17 07:09:12
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits.0...v2.34.1-OpenChatUpdatedFromMain.0
+
+## [v2.34.1-OpenChatFromSecrets.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenChatFromSecrets.0) - 2025-06-17 10:10:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenChatUpdatedFromMain.0...v2.34.1-OpenChatFromSecrets.0
+
+## [v2.34.1-welcome-with-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-welcome-with-chat.0) - 2025-06-12 08:03:05
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-secrets-scanner.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-secrets-scanner.0) - 2025-06-12 11:15:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-SecretsCards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-SecretsCards.0) - 2025-06-12 13:02:06
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-open-AI-chat.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-open-AI-chat.0) - 2025-06-09 08:44:44
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-oss-realtime-demo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-oss-realtime-demo.0) - 2025-05-19 09:19:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -7,6 +90,10 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.34.1-oss-realtime-demo.0
+
+## [v2.34.1-fix-with-AI.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-fix-with-AI.0) - 2025-06-05 13:41:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.0) - 2025-05-19 09:19:07
 

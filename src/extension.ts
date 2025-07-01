@@ -29,7 +29,8 @@ import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
 import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
-
+import { CopilotChatCommand } from "./commands/openAIChatCommand";
+import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -204,9 +205,16 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (ossEffected) {
         scannerRegistry.getScanner("oss")?.register();
+        return;
       }
-    }
-  );
+      const secretsEffected = section(
+        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
+      );
+      if (secretsEffected) {
+        scannerRegistry.getScanner("secrets")?.register();
+        return;
+      }
+    });
   context.subscriptions.push(configListener);
 
   // Register Settings
@@ -255,24 +263,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("ast-results.showAuth", () => {
-      AuthenticationWebview.show(context, logs);
+      AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("cx.fixInChat", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Fix in Chat clicked!");
-    }),
-    vscode.commands.registerCommand("cx.viewDetails", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("View Details clicked!");
-    }),
-    vscode.commands.registerCommand("cx.ignore", () => {
-      //Change to real logic
-      vscode.window.showInformationMessage("Ignore clicked!");
-    })
-  );
+  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  copilotChatCommand.registerCopilotChatCommand();
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
@@ -280,6 +276,17 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log(">> Mock token has been saved to secrets");
     await authService.validateAndUpdateState();
   });
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: "file" },
+      new CxCodeActionProvider(),
+      {
+        providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+      }
+    )
+  );
+
 }
 
 export function getGlobalContext(): vscode.ExtensionContext {
@@ -287,4 +294,4 @@ export function getGlobalContext(): vscode.ExtensionContext {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate() {}
+export function deactivate() { }

@@ -916,6 +916,19 @@
             "markdownDescription": "Scans your manifest files as you code"
           }
         }
+      },
+      {
+        "title": "Activate Secret Detection Realtime",
+        "id": "secret-scanner",
+        "order": 2,
+        "properties": {
+          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          }
+        }
       }
     ]
   },
@@ -949,7 +962,7 @@
     "codecov": "^3.8.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "mocha": "10.3.0",
+    "mocha": "^10.8.2",
     "mock-require": "^3.0.3",
     "nock": "^14.0.1",
     "nyc": "^17.1.0",
@@ -963,15 +976,16 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.135",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.131",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
+    "install": "^0.13.0",
     "jsonstream-ts": "^1.3.6",
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",

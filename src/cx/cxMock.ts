@@ -12,6 +12,7 @@ import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1320,6 +1321,10 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
+  async isAiMcpServerEnabled(): Promise<boolean> {
+    return true;
+  }
+
   async isSCAScanEnabled(): Promise<boolean> {
     return true;
   }
@@ -1458,6 +1463,10 @@ export class CxMock implements CxPlatform {
   }
  
   async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+    return [];
+  }
+ 
+  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
     return [];
   }
 

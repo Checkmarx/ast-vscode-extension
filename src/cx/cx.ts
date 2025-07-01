@@ -18,6 +18,7 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { AuthService } from "../services/authService";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 
 export class Cx implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -49,24 +50,23 @@ export class Cx implements CxPlatform {
     const resultsFilePath = getResultsFilePath();
     const cx = new CxWrapper(await this.getAstConfiguration());
     const { gptToken, gptEngine } = this.getGptConfig();
-     
-      this.validateWorkspaceFolders();
 
-      const answer = await cx.sastChat(
-        gptToken,
-        filePath,
-        resultsFilePath,
-        resultId,
-        message,
-        conversationId ? conversationId : "",
-        gptEngine
-      );
-      if (answer.payload && answer.exitCode === 0) {
-        return answer.payload;
-      } else {
-        throw new Error(answer.status);
-      }
-    
+    this.validateWorkspaceFolders();
+
+    const answer = await cx.sastChat(
+      gptToken,
+      filePath,
+      resultsFilePath,
+      resultId,
+      message,
+      conversationId ? conversationId : "",
+      gptEngine
+    );
+    if (answer.payload && answer.exitCode === 0) {
+      return answer.payload;
+    } else {
+      throw new Error(answer.status);
+    }
   }
 
   async runGpt(
@@ -106,15 +106,15 @@ export class Cx implements CxPlatform {
     }
   }
 
-   getGptConfig(): { gptToken: string; gptEngine: string } {
+  getGptConfig(): { gptToken: string; gptEngine: string } {
     const gptToken = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptSettingsKey) as string;
-  
+
     const gptEngine = vscode.workspace
       .getConfiguration(constants.gptCommandName)
       .get(constants.gptEngineKey) as string;
-  
+
     return { gptToken, gptEngine };
   }
 
@@ -207,7 +207,13 @@ export class Cx implements CxPlatform {
     }
     const cx = new CxWrapper(config);
     const scan = await cx.scanShow(scanId);
-    return scan.payload[0];
+    if (scan.payload && scan.payload.length > 0 && scan.exitCode === 0) {
+      return scan.payload[0];
+    }
+    else {
+      vscode.window.showErrorMessage(scan.status);
+      return;
+    }
   }
 
   async getProject(
@@ -279,7 +285,9 @@ export class Cx implements CxPlatform {
     if (!config) {
       return [];
     }
-    const filter = `project-id=${projectId},${branch ? `branch=${branch},` : ""}limit=${limit},statuses=${statuses}`;
+    const filter = `project-id=${projectId},${
+      branch ? `branch=${branch},` : ""
+    }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
@@ -299,7 +307,6 @@ export class Cx implements CxPlatform {
     return config;
   }
 
-
   async getAstConfiguration() {
     const token = await this.context.secrets.get("authCredential");
 
@@ -311,14 +318,16 @@ export class Cx implements CxPlatform {
     config.apiKey = token;
     return config;
   }
-  
+
   async isValidConfiguration(): Promise<boolean> {
     const token = await this.context.secrets.get("authCredential");
 
     if (!token) {
       return false;
     }
-    const isValidToken = await AuthService.getInstance(this.context).validateApiKey(token);
+    const isValidToken = await AuthService.getInstance(
+      this.context
+    ).validateApiKey(token);
     if (!isValidToken) {
       return false;
     }
@@ -326,7 +335,6 @@ export class Cx implements CxPlatform {
     config.apiKey = token;
     return true;
   }
-
 
   async isScanEnabled(logs: Logs): Promise<boolean> {
     let enabled = false;
@@ -350,7 +358,6 @@ export class Cx implements CxPlatform {
     return enabled;
   }
 
-
   async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
     let enabled = true;
     const token = await this.context.secrets.get("authCredential");
@@ -369,6 +376,32 @@ export class Cx implements CxPlatform {
       logs.error(error);
       return false;
     }
+    return enabled;
+  }
+
+  async isAiMcpServerEnabled(): Promise<boolean> {
+    let enabled = false;
+    const token = await this.context.secrets.get("authCredential");
+
+    if (!token) {
+      return enabled;
+    }
+
+    const config = await this.getAstConfiguration();
+    if (!config) {
+      return enabled;
+    }
+
+    config.apiKey = token;
+    const cx = new CxWrapper(config);
+
+    try {
+      enabled = await cx.aiMcpServerEnabled();
+    } catch (error) {
+      console.error(`Error checking AI MCP server status: ${error}`);
+      return enabled;
+    }
+
     return enabled;
   }
 
@@ -639,6 +672,20 @@ export class Cx implements CxPlatform {
       throw new Error(scans.status);
     }
   }
+
+  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+    const cx = new CxWrapper(config);
+    const scans = await cx.secretsScanResults(sourcePath);
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
   async authValidate(logs?: Logs): Promise<boolean> {
     const authFailedMsg = "Failed to authenticate to Checkmarx One server";
     const config = await this.getAstConfiguration();
@@ -659,17 +706,20 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined> {
+  async getRiskManagementResults(
+    projectId: string,
+    scanId: string
+  ): Promise<object | undefined> {
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
-    const applications = await cx.riskManagementResults(projectId,scanId);
+    const applications = await cx.riskManagementResults(projectId, scanId);
     let r = [];
     if (applications.payload) {
       r = applications.payload;
     } else {
       throw new Error(applications.status);
     }
-    
+
     return r;
   }
 }

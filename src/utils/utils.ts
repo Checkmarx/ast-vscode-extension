@@ -9,6 +9,9 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
+import { commands } from "./common/commands";
+import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+
 
 export function getProperty(
   o: AstResult | CxScan,
@@ -262,4 +265,31 @@ export function getStateIdForTriage(selectedStateName: string): number {
     (state) => state.name.toLowerCase() === selectedStateName.toLowerCase()
   );
   return matchedCustom.id;
+}
+
+export function isCursorIDE(): boolean {
+  const appName = vscode.env.appName || '';
+  if (appName.toLowerCase().includes('cursor')) {
+    return true;
+  }
+  return false;
+}
+
+export function buildCommandButtons(args: string, isSecret: boolean): string {
+  const isCursor = isCursorIDE();
+
+  return (
+    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
+    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
+    `<a href="command:cx.ignore" title="">Ignore CxAI Package</a>`
+  );
+}
+
+export function isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
+  return 'title' in item && 'description' in item && 'severity' in item;
+}
+
+
+export function renderCxAiBadge(): string {
+  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
 }
