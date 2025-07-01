@@ -198,15 +198,15 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
       // First, open the explorer and navigate to the menifastFiles folder
       console.log("Opening explorer and navigating to menifastFiles folder...");
-      
+
       // Open the file explorer
       await bench.executeCommand("workbench.view.explorer");
       await sleep(2000);
-      
+
       // Open the folder containing the package.json file
       const folderPath = path.join(__dirname, "menifastFiles");
       console.log(`Opening folder: ${folderPath}`);
-      
+
       await bench.executeCommand("workbench.action.files.openFolder");
       const folderInput = await InputBox.create();
       await folderInput.setText(folderPath);
@@ -228,32 +228,31 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(editor).to.not.be.undefined;
       console.log("Editor opened successfully");
 
-      await sleep(150000);
+      await sleep(15000);
       const bottomBar = new BottomBarPanel();
       await bottomBar.toggle(true);
       console.log("Opening output section for debugging...");
-      const outputView = await bottomBar.openOutputView();
-      await sleep(2000);
-      console.log("Output section opened");
+      // const outputView = await bottomBar.openOutputView();
+      // await sleep(2000);
+      // console.log("Output section opened");
 
       // Try to select Checkmarx output channel
-      try {
-        console.log("Attempting to select Checkmarx output channel...");
-        await outputView.selectChannel("Checkmarx");
-        await sleep(1000);
-        console.log("Selected Checkmarx output channel");
+      // try {
+      //   console.log("Attempting to select Checkmarx output channel...");
+      //   await outputView.selectChannel("Checkmarx");
+      //   await sleep(1000);
+      //   console.log("Selected Checkmarx output channel");
 
-        // Get the output text
-        const outputText = await outputView.getText();
-        console.log("Checkmarx Output:");
-        console.log("================");
-        console.log(outputText);
-        console.log("================");
-      } catch (error) {
-        console.log("Could not select Checkmarx channel, trying to get available channels...");
-      }
+      //   // Get the output text
+      //   const outputText = await outputView.getText();
+      //   console.log("Checkmarx Output:");
+      //   console.log("================");
+      //   console.log(outputText);
+      //   console.log("================");
+      // } catch (error) {
+      //   console.log("Could not select Checkmarx channel, trying to get available channels...");
+      // }
 
-      expect(false, "Forcing test to fail for debugging - check output and problems sections").to.be.true;
 
       const problemsView = await bottomBar.openProblemsView();
       console.log("Problems view opened");
