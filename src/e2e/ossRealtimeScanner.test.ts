@@ -173,8 +173,8 @@ describe("OSS Scanner E2E Tests", () => {
 
 				// Restore original content with vulnerabilities
 				// console.log("Restoring original content with vulnerabilities...");
-				// await editor.setText(originalContent);
-				// await sleep(8000); // Give more time for scanner to process
+				await editor.setText(originalContent);
+				await sleep(8000); // Give more time for scanner to process
 
 				// markers = await problemsView.getAllMarkers(MarkerType.Error);
 				// console.log(`Markers after restoring content: ${markers.length}`);
@@ -190,7 +190,7 @@ describe("OSS Scanner E2E Tests", () => {
 				// console.log("Dynamic content change scan test completed successfully");
 			} finally {
 				// Ensure we restore the original content
-				await editor.setText(originalContent);
+				// await editor.setText(originalContent);
 				await sleep(1000);
 			}
 		});
