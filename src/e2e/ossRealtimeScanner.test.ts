@@ -51,7 +51,7 @@ describe("OSS Scanner E2E Tests", () => {
 		);
 		await ossCheckbox.setValue(true);
 
-		await editorView.closeAllEditors();
+		await bench.executeCommand("workbench.action.closeAllEditors");
 
 		await bench.executeCommand("workbench.view.explorer");
       await sleep(2000);
