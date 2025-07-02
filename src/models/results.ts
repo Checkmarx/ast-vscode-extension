@@ -746,7 +746,7 @@ export class AstResult extends CxResult {
           `<div class="card" style="border:0">
           <div style="display: inline-block;position: relative;">
               <p class="header-content">
-                Additional trait
+                Additional Trait
               </p>
           </div>
           <div class="card-content">
