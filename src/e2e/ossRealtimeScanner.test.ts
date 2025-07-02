@@ -56,6 +56,18 @@ describe("OSS Scanner E2E Tests", () => {
 		// Close settings by closing all editors
 		await editorView.closeAllEditors();
 
+		await bench.executeCommand("workbench.view.explorer");
+      await sleep(2000);
+
+      const folderPath = path.join(__dirname, "menifastFiles");
+
+      await bench.executeCommand("workbench.action.files.openFolder");
+      const folderInput = await InputBox.create();
+      await folderInput.setText(folderPath);
+      await folderInput.confirm();
+      await sleep(3000);
+
+
 		await initialize();
 		console.log("OSS Scanner E2E tests setup completed");
 	});
@@ -71,17 +83,6 @@ describe("OSS Scanner E2E Tests", () => {
       this.timeout(220000);
 
       const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
-
-      await bench.executeCommand("workbench.view.explorer");
-      await sleep(2000);
-
-      const folderPath = path.join(__dirname, "menifastFiles");
-
-      await bench.executeCommand("workbench.action.files.openFolder");
-      const folderInput = await InputBox.create();
-      await folderInput.setText(folderPath);
-      await folderInput.confirm();
-      await sleep(3000);
 
       await bench.executeCommand("workbench.action.files.openFile");
       const input = await InputBox.create();
