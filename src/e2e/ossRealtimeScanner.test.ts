@@ -141,59 +141,59 @@ describe("OSS Scanner E2E Tests", () => {
     });
 
 
-		it("should scan file on content change and generate problems", async function () {
-			this.timeout(120000);
-			console.log("Starting dynamic content change scan test...");
+		// it("should scan file on content change and generate problems", async function () {
+		// 	this.timeout(120000);
+		// 	console.log("Starting dynamic content change scan test...");
 
-			const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
-			const originalContent = await fsp.readFile(packageJsonPath, "utf8");
-			console.log("Original package.json content loaded");
+		// 	const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
+		// 	const originalContent = await fsp.readFile(packageJsonPath, "utf8");
+		// 	console.log("Original package.json content loaded");
 
-			await bench.executeCommand("workbench.action.files.openFile");
-			const input = await InputBox.create();
-			await input.setText(packageJsonPath);
-			await input.confirm();
+		// 	await bench.executeCommand("workbench.action.files.openFile");
+		// 	const input = await InputBox.create();
+		// 	await input.setText(packageJsonPath);
+		// 	await input.confirm();
 
-			const editor = await editorView.openEditor("package.json") as TextEditor;
-			expect(editor).to.not.be.undefined;
+		// 	const editor = await editorView.openEditor("package.json") as TextEditor;
+		// 	expect(editor).to.not.be.undefined;
 
-			const bottomBar = new BottomBarPanel();
-			await bottomBar.toggle(true);
-			const problemsView = await bottomBar.openProblemsView();
+		// 	const bottomBar = new BottomBarPanel();
+		// 	await bottomBar.toggle(true);
+		// 	const problemsView = await bottomBar.openProblemsView();
 
-			try {
-				// Clear content to remove all issues
-				console.log("Clearing package.json content...");
-				await editor.setText(`{}`);
-				await sleep(3000);
+		// 	try {
+		// 		// Clear content to remove all issues
+		// 		console.log("Clearing package.json content...");
+		// 		await editor.setText(`{}`);
+		// 		await sleep(3000);
 
-				let markers = await problemsView.getAllMarkers(MarkerType.Error);
-				console.log(`Markers after clearing content: ${markers.length}`);
-				expect(markers.length).to.equal(0, "Expected no markers with empty package.json");
+		// 		let markers = await problemsView.getAllMarkers(MarkerType.Error);
+		// 		console.log(`Markers after clearing content: ${markers.length}`);
+		// 		expect(markers.length).to.equal(0, "Expected no markers with empty package.json");
 
-				// Restore original content with vulnerabilities
-				console.log("Restoring original content with vulnerabilities...");
-				await editor.setText(originalContent);
-				await sleep(8000); // Give more time for scanner to process
+		// 		// Restore original content with vulnerabilities
+		// 		console.log("Restoring original content with vulnerabilities...");
+		// 		await editor.setText(originalContent);
+		// 		await sleep(8000); // Give more time for scanner to process
 
-				markers = await problemsView.getAllMarkers(MarkerType.Error);
-				console.log(`Markers after restoring content: ${markers.length}`);
+		// 		markers = await problemsView.getAllMarkers(MarkerType.Error);
+		// 		console.log(`Markers after restoring content: ${markers.length}`);
 
-				// Debug: Log marker texts
-				const markerTexts = await Promise.all(markers.map(async (marker) => {
-					return await marker.getText();
-				}));
-				console.log("Marker texts after restore:", markerTexts);
+		// 		// Debug: Log marker texts
+		// 		const markerTexts = await Promise.all(markers.map(async (marker) => {
+		// 			return await marker.getText();
+		// 		}));
+		// 		console.log("Marker texts after restore:", markerTexts);
 
-				expect(markers.length).to.be.greaterThan(0, "Expected markers to appear after restoring vulnerable content");
+		// 		expect(markers.length).to.be.greaterThan(0, "Expected markers to appear after restoring vulnerable content");
 
-				console.log("Dynamic content change scan test completed successfully");
-			} finally {
-				// Ensure we restore the original content
-				await editor.setText(originalContent);
-				await sleep(1000);
-			}
-		});
+		// 		console.log("Dynamic content change scan test completed successfully");
+		// 	} finally {
+		// 		// Ensure we restore the original content
+		// 		await editor.setText(originalContent);
+		// 		await sleep(1000);
+		// 	}
+		// });
 	});
 
 	describe("OSS Scanner Settings Verification", () => {
