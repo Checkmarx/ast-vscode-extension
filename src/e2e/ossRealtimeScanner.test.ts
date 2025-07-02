@@ -154,7 +154,7 @@ describe("OSS Scanner E2E Tests", () => {
 			await input.setText(packageJsonPath);
 			await input.confirm();
 
-			const editor = await editorView.openEditor("package.json") as TextEditor;
+			let editor = await editorView.openEditor("package.json") as TextEditor;
 			expect(editor).to.not.be.undefined;
 
 			const bottomBar = new BottomBarPanel();
@@ -171,9 +171,14 @@ describe("OSS Scanner E2E Tests", () => {
 				console.log(`Markers after clearing content: ${markers.length}`);
 				expect(markers.length).to.equal(0, "Expected no markers with empty package.json");
 
+				// Re-obtain editor reference to avoid stale element reference
+				console.log("Re-obtaining editor reference...");
+				editor = await editorView.openEditor("package.json") as TextEditor;
+				expect(editor).to.not.be.undefined;
+
 				// Restore original content with vulnerabilities
-				// console.log("Restoring original content with vulnerabilities...");
-				// await editor.setText(originalContent);
+				console.log("Restoring original content with vulnerabilities...");
+				await editor.setText(originalContent);
 				await sleep(8000); // Give more time for scanner to process
 
 				// markers = await problemsView.getAllMarkers(MarkerType.Error);
@@ -190,7 +195,13 @@ describe("OSS Scanner E2E Tests", () => {
 				// console.log("Dynamic content change scan test completed successfully");
 			} finally {
 				// Ensure we restore the original content
-				// await editor.setText(originalContent);
+				try {
+					// Re-obtain editor reference one more time to ensure it's not stale
+					editor = await editorView.openEditor("package.json") as TextEditor;
+					await editor.setText(originalContent);
+				} catch (error) {
+					console.log("Error restoring original content:", error);
+				}
 				await sleep(1000);
 			}
 		});
