@@ -60,11 +60,11 @@ describe("OSS Scanner E2E Tests", () => {
 		console.log("OSS Scanner E2E tests setup completed");
 	});
 
-	after(async () => {
-		console.log("Cleaning up OSS Scanner E2E tests...");
-		await bench.executeCommand(CX_CLEAR);
-		await editorView.closeAllEditors();
-	});
+	// after(async () => {
+	// 	console.log("Cleaning up OSS Scanner E2E tests...");
+	// 	await bench.executeCommand(CX_CLEAR);
+	// 	await editorView.closeAllEditors();
+	// });
 
 	describe("Real-time OSS Scanning E2E", () => {
 		    it("should scan package.json and detect security issues", async function () {
