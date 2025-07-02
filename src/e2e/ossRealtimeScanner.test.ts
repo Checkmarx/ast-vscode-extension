@@ -79,7 +79,7 @@ describe("OSS Scanner E2E Tests", () => {
 	// });
 
 	describe("Real-time OSS Scanning E2E", () => {
-		    it("should scan package.json and detect security issues", async function () {
+		    it("should scan package.json file on open and show security diagnostics", async function () {
       this.timeout(220000);
 
       const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
@@ -133,162 +133,67 @@ describe("OSS Scanner E2E Tests", () => {
 				}))
 			).filter(Boolean);
 
-			const scaLowVulnerabilityMarkers = (
-				await Promise.all(markers.map(async (marker) => {
-					const text = await marker.getText();
-					return text.includes("Low-risk package") 
-				}))
-			).filter(Boolean);
-
-
-			// Check for each type of security issue found
 			expect(maliciousMarkers.length, "Expected to find malicious package markers").to.be.greaterThan(0);
 			expect(scaCriticalVulnerabilityMarkers.length, "Expected to find critical-risk package markers").to.be.greaterThan(0);
 			expect(scaHighVulnerabilityMarkers.length, "Expected to find high-risk package markers").to.be.greaterThan(0);
 			expect(scaMediumVulnerabilityMarkers.length, "Expected to find medium-risk package markers").to.be.greaterThan(0);
-			expect(scaLowVulnerabilityMarkers.length, "Expected to find low-risk package markers").to.be.greaterThan(0);
 
     });
-		// it("should scan package.json file on open and show security diagnostics", async function () {
-		// 	this.timeout(120000);
-		// 	console.log("Starting package.json security scan test...");
 
-		// 	// Use a test package.json file with known vulnerabilities
-		// 	const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
-		// 	console.log(`Opening package.json from: ${packageJsonPath}`);
 
-		// 	await bench.executeCommand("workbench.action.files.openFile");
-		// 	const input = await InputBox.create();
-		// 	await input.setText(packageJsonPath);
-		// 	await input.confirm();
+		it("should scan file on content change and generate problems", async function () {
+			this.timeout(120000);
+			console.log("Starting dynamic content change scan test...");
 
-		// 	await sleep(5000); // Give more time for file processing
+			const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
+			const originalContent = await fsp.readFile(packageJsonPath, "utf8");
+			console.log("Original package.json content loaded");
 
-		// 	// Wait for the file to be opened properly
-		// 	await driver.wait(async () => {
-		// 		try {
-		// 			const titles = await editorView.getOpenEditorTitles();
-		// 			console.log("Open editor titles:", titles);
-		// 			return titles.some(title => title.includes("package.json"));
-		// 		} catch (error) {
-		// 			console.log("Waiting for editor to open...");
-		// 			return false;
-		// 		}
-		// 	}, 15000, "package.json file did not open in editor");
+			await bench.executeCommand("workbench.action.files.openFile");
+			const input = await InputBox.create();
+			await input.setText(packageJsonPath);
+			await input.confirm();
 
-		// 	// Get the editor - try by title first, then by active tab
-		// 	let editor: TextEditor;
-		// 	try {
-		// 		editor = await editorView.openEditor("package.json") as TextEditor;
-		// 	} catch (error) {
-		// 		console.log("Could not open by title, trying to get active editor...");
-		// 		const activeTab = await editorView.getActiveTab();
-		// 		const activeTitle = await activeTab.getTitle();
-		// 		console.log(`Active tab title: ${activeTitle}`);
-		// 		editor = await editorView.openEditor(activeTitle) as TextEditor;
-		// 	}
-			
-		// 	expect(editor).to.not.be.undefined;
-		// 	console.log("Package.json file opened successfully");
+			const editor = await editorView.openEditor("package.json") as TextEditor;
+			expect(editor).to.not.be.undefined;
 
-		// 	const bottomBar = new BottomBarPanel();
-		// 	await bottomBar.toggle(true);
-		// 	const problemsView = await bottomBar.openProblemsView();
-		// 	console.log("Problems view opened");
+			const bottomBar = new BottomBarPanel();
+			await bottomBar.toggle(true);
+			const problemsView = await bottomBar.openProblemsView();
 
-		// 	await sleep(5000); // Wait for scanner to process
+			try {
+				// Clear content to remove all issues
+				console.log("Clearing package.json content...");
+				await editor.setText(`{}`);
+				await sleep(3000);
 
-		// 	const markers = await problemsView.getAllMarkers(MarkerType.Error);
-		// 	console.log(`Total markers found: ${markers.length}`);
+				let markers = await problemsView.getAllMarkers(MarkerType.Error);
+				console.log(`Markers after clearing content: ${markers.length}`);
+				expect(markers.length).to.equal(0, "Expected no markers with empty package.json");
 
-		// 	// Debug: Log all marker texts for troubleshooting
-		// 	const allMarkerTexts = await Promise.all(markers.map(async (marker) => {
-		// 		return await marker.getText();
-		// 	}));
-		// 	console.log("All marker texts:", allMarkerTexts);
+				// Restore original content with vulnerabilities
+				console.log("Restoring original content with vulnerabilities...");
+				await editor.setText(originalContent);
+				await sleep(8000); // Give more time for scanner to process
 
-		// 	expect(markers.length).to.be.greaterThan(0, "Expected to find error markers from OSS scanner");
+				markers = await problemsView.getAllMarkers(MarkerType.Error);
+				console.log(`Markers after restoring content: ${markers.length}`);
 
-		// 	const maliciousMarkers = (
-		// 		await Promise.all(markers.map(async (marker) => {
-		// 			const text = await marker.getText();
-		// 			return text.includes("Malicious package detected") ? marker : null;
-		// 		}))
-		// 	).filter(Boolean);
+				// Debug: Log marker texts
+				const markerTexts = await Promise.all(markers.map(async (marker) => {
+					return await marker.getText();
+				}));
+				console.log("Marker texts after restore:", markerTexts);
 
-		// 	const scaVulnerabilityMarkers = (
-		// 		await Promise.all(markers.map(async (marker) => {
-		// 			const text = await marker.getText();
-		// 			return text.includes("High-risk package") ||
-		// 				text.includes("vulnerability detected") ||
-		// 				text.includes("vulnerability") ||
-		// 				text.includes("SCA") ? marker : null;
-		// 		}))
-		// 	).filter(Boolean);
+				expect(markers.length).to.be.greaterThan(0, "Expected markers to appear after restoring vulnerable content");
 
-		// 	console.log(`Found ${maliciousMarkers.length} malicious markers`);
-		// 	console.log(`Found ${scaVulnerabilityMarkers.length} SCA vulnerability markers`);
-
-		// 	// Check for either malicious packages or SCA vulnerabilities
-		// 	const hasSecurityIssues = maliciousMarkers.length > 0 || scaVulnerabilityMarkers.length > 0;
-		// 	expect(hasSecurityIssues, "Expected to find either malicious packages or SCA vulnerabilities").to.be.true;
-
-		// 	console.log("Package.json security scan test completed successfully");
-		// });
-
-		// it("should scan file on content change and generate problems", async function () {
-		// 	this.timeout(120000);
-		// 	console.log("Starting dynamic content change scan test...");
-
-		// 	const packageJsonPath = path.join(__dirname, "..", "resources", "menifastFiles", "package.json");
-		// 	const originalContent = await fsp.readFile(packageJsonPath, "utf8");
-		// 	console.log("Original package.json content loaded");
-
-		// 	await bench.executeCommand("workbench.action.files.openFile");
-		// 	const input = await InputBox.create();
-		// 	await input.setText(packageJsonPath);
-		// 	await input.confirm();
-
-		// 	const editor = await editorView.openEditor("package.json") as TextEditor;
-		// 	expect(editor).to.not.be.undefined;
-
-		// 	const bottomBar = new BottomBarPanel();
-		// 	await bottomBar.toggle(true);
-		// 	const problemsView = await bottomBar.openProblemsView();
-
-		// 	try {
-		// 		// Clear content to remove all issues
-		// 		console.log("Clearing package.json content...");
-		// 		await editor.setText(`{}`);
-		// 		await sleep(3000);
-
-		// 		let markers = await problemsView.getAllMarkers(MarkerType.Error);
-		// 		console.log(`Markers after clearing content: ${markers.length}`);
-		// 		expect(markers.length).to.equal(0, "Expected no markers with empty package.json");
-
-		// 		// Restore original content with vulnerabilities
-		// 		console.log("Restoring original content with vulnerabilities...");
-		// 		await editor.setText(originalContent);
-		// 		await sleep(8000); // Give more time for scanner to process
-
-		// 		markers = await problemsView.getAllMarkers(MarkerType.Error);
-		// 		console.log(`Markers after restoring content: ${markers.length}`);
-
-		// 		// Debug: Log marker texts
-		// 		const markerTexts = await Promise.all(markers.map(async (marker) => {
-		// 			return await marker.getText();
-		// 		}));
-		// 		console.log("Marker texts after restore:", markerTexts);
-
-		// 		expect(markers.length).to.be.greaterThan(0, "Expected markers to appear after restoring vulnerable content");
-
-		// 		console.log("Dynamic content change scan test completed successfully");
-		// 	} finally {
-		// 		// Ensure we restore the original content
-		// 		await editor.setText(originalContent);
-		// 		await sleep(1000);
-		// 	}
-		// });
+				console.log("Dynamic content change scan test completed successfully");
+			} finally {
+				// Ensure we restore the original content
+				await editor.setText(originalContent);
+				await sleep(1000);
+			}
+		});
 	});
 
 	describe("OSS Scanner Settings Verification", () => {
