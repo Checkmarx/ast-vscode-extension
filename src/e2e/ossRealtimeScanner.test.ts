@@ -106,6 +106,48 @@ describe("OSS Scanner E2E Tests", () => {
       const markers = await problemsView.getAllMarkers(MarkerType.Error);
       expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
 
+	  			const maliciousMarkers = (
+				await Promise.all(markers.map(async (marker) => {
+					const text = await marker.getText();
+					return text.includes("Malicious package detected") ? marker : null;
+				}))
+			).filter(Boolean);
+
+			const scaCriticalVulnerabilityMarkers = (
+				await Promise.all(markers.map(async (marker) => {
+					const text = await marker.getText();
+					return text.includes("Critical-risk package") 
+				}))
+			).filter(Boolean);
+
+			const scaHighVulnerabilityMarkers = (
+				await Promise.all(markers.map(async (marker) => {
+					const text = await marker.getText();
+					return text.includes("High-risk package") 
+				}))
+			).filter(Boolean);
+			const scaMediumVulnerabilityMarkers = (
+				await Promise.all(markers.map(async (marker) => {
+					const text = await marker.getText();
+					return text.includes("Medium-risk package") 
+				}))
+			).filter(Boolean);
+
+			const scaLowVulnerabilityMarkers = (
+				await Promise.all(markers.map(async (marker) => {
+					const text = await marker.getText();
+					return text.includes("Low-risk package") 
+				}))
+			).filter(Boolean);
+
+
+			// Check for each type of security issue found
+			expect(maliciousMarkers.length, "Expected to find malicious package markers").to.be.greaterThan(0);
+			expect(scaCriticalVulnerabilityMarkers.length, "Expected to find critical-risk package markers").to.be.greaterThan(0);
+			expect(scaHighVulnerabilityMarkers.length, "Expected to find high-risk package markers").to.be.greaterThan(0);
+			expect(scaMediumVulnerabilityMarkers.length, "Expected to find medium-risk package markers").to.be.greaterThan(0);
+			expect(scaLowVulnerabilityMarkers.length, "Expected to find low-risk package markers").to.be.greaterThan(0);
+
     });
 		// it("should scan package.json file on open and show security diagnostics", async function () {
 		// 	this.timeout(120000);
