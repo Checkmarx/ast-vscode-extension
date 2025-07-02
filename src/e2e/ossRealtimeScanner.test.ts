@@ -67,6 +67,45 @@ describe("OSS Scanner E2E Tests", () => {
 	});
 
 	describe("Real-time OSS Scanning E2E", () => {
+		    it("should scan package.json and detect security issues", async function () {
+      this.timeout(220000);
+
+      const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
+
+      await bench.executeCommand("workbench.view.explorer");
+      await sleep(2000);
+
+      const folderPath = path.join(__dirname, "menifastFiles");
+
+      await bench.executeCommand("workbench.action.files.openFolder");
+      const folderInput = await InputBox.create();
+      await folderInput.setText(folderPath);
+      await folderInput.confirm();
+      await sleep(3000);
+
+      await bench.executeCommand("workbench.action.files.openFile");
+      const input = await InputBox.create();
+      await input.setText(packageJsonPath);
+      await input.confirm();
+
+      await sleep(5000);
+
+      const editorView = new EditorView();
+      const editor = await editorView.openEditor("package.json") as TextEditor;
+      expect(editor).to.not.be.undefined;
+
+      await sleep(15000);
+      const bottomBar = new BottomBarPanel();
+      await bottomBar.toggle(true);
+
+      const problemsView = await bottomBar.openProblemsView();
+
+      await sleep(25000);
+
+      const markers = await problemsView.getAllMarkers(MarkerType.Error);
+      expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
+
+    });
 		// it("should scan package.json file on open and show security diagnostics", async function () {
 		// 	this.timeout(120000);
 		// 	console.log("Starting package.json security scan test...");
