@@ -212,6 +212,8 @@ export class IgnoreFileManager {
 		}
 
 		try {
+			const removedFiles: string[] = [];
+
 			if (filePath) {
 				// Remove specific file path from package
 				const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -226,6 +228,7 @@ export class IgnoreFileManager {
 					const index = ignoredFiles.indexOf(relativePath);
 					if (index > -1) {
 						ignoredFiles.splice(index, 1);
+						removedFiles.push(relativePath);
 
 						// If no files left, remove the package entry
 						if (ignoredFiles.length === 0) {
@@ -234,18 +237,73 @@ export class IgnoreFileManager {
 					}
 				}
 			} else {
-				// Remove entire package
+				// Remove entire package - store all files that will be removed
+				const ignoredFiles = this.ignoreData[packageKey];
+				if (ignoredFiles) {
+					removedFiles.push(...ignoredFiles);
+				}
 				delete this.ignoreData[packageKey];
 			}
 
 			// Save updated ignore data
 			fs.writeFileSync(this.ignoreFilePath, JSON.stringify(this.ignoreData, null, 2));
 			this.logs.info(`Removed ${packageKey} from ignore list`);
+
+			// Trigger scans for the removed files immediately
+			if (removedFiles.length > 0) {
+				this.logs.info(`Triggering scans for ${removedFiles.length} files that were removed from ignore list`);
+				this.triggerScansForRemovedFiles(removedFiles);
+			}
+
 			return true;
 		} catch (error) {
 			this.logs.error(`Failed to remove ignored package: ${error}`);
 			return false;
 		}
+	}
+
+	private async triggerScansForRemovedFiles(removedFiles: string[]) {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			return;
+		}
+
+		this.logs.info(`Starting scans for ${removedFiles.length} files removed from ignore list`);
+
+		for (const relativePath of removedFiles) {
+			try {
+				const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, relativePath);
+				this.logs.info(`Triggering scan for removed file: ${relativePath}`);
+
+				// Open the document and show it to trigger the scanner
+				const document = await vscode.workspace.openTextDocument(fullPath);
+				await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+
+				// Wait a bit for the document to be processed
+				await new Promise(resolve => setTimeout(resolve, 200));
+
+				// Make a tiny edit and undo it to trigger change detection
+				const editor = vscode.window.activeTextEditor;
+				if (editor && editor.document.uri.toString() === fullPath.toString()) {
+					await editor.edit(editBuilder => {
+						editBuilder.insert(new vscode.Position(0, 0), ' ');
+					});
+
+					// Undo the change immediately
+					await vscode.commands.executeCommand('undo');
+
+					// Save the document to trigger scan
+					await document.save();
+				}
+
+				this.logs.info(`Scan triggered for: ${relativePath}`);
+
+			} catch (error) {
+				this.logs.warn(`Failed to trigger scan for file ${relativePath}: ${error}`);
+			}
+		}
+
+		this.logs.info('Completed triggering scans for removed files');
 	}
 
 	private addToGitignore(workspaceFolder: vscode.WorkspaceFolder) {
