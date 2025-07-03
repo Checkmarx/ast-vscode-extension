@@ -11,8 +11,11 @@ import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
+import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
 export class OssScannerService extends BaseScannerService {
+  private ignoreFileManager: IgnoreFileManager;
+
   private createDecoration(
     iconName: string,
     size: string = "auto"
@@ -89,6 +92,19 @@ export class OssScannerService extends BaseScannerService {
     this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
       this.onEditorChange.bind(this)
     );
+
+    // Initialize ignore file manager
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+      // Create a temporary logs instance for the ignore file manager
+      const tempLogs = {
+        info: console.log,
+        error: console.error,
+        warn: console.warn
+      } as Logs;
+      this.ignoreFileManager = IgnoreFileManager.getInstance(tempLogs);
+      this.ignoreFileManager.initialize(workspaceFolder);
+    }
   }
   private onDocumentOpen(document: vscode.TextDocument): void {
     if (this.matchesManifestPattern(document.uri.fsPath)) {
@@ -334,6 +350,11 @@ export class OssScannerService extends BaseScannerService {
     const lowIconDecorations: vscode.DecorationOptions[] = [];
 
     for (const result of scanResults) {
+      // Check if package is ignored
+      if (this.ignoreFileManager && this.ignoreFileManager.isPackageIgnored(result.packageName, result.version, filePath)) {
+        continue; // Skip ignored packages
+      }
+
       for (let i = 0; i < result.locations.length; i++) {
         const location = result.locations[i];
         const range = new vscode.Range(
