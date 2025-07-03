@@ -2,58 +2,59 @@ import * as vscode from 'vscode';
 import * as http from 'http';
 import * as https from 'https';
 import * as crypto from 'crypto';
-import {URL, URLSearchParams} from 'url';
-import {Logs} from '../models/logs';
-import {getCx, initialize} from '../cx';
-import {commands} from "../utils/common/commands";
+import { URL, URLSearchParams } from 'url';
+import { Logs } from '../models/logs';
+import { getCx, initialize } from '../cx';
+import { commands } from "../utils/common/commands";
 import axios from 'axios';
-
+import { initializeMcpConfiguration } from './mcpSettingsInjector';
 
 interface OAuthConfig {
-    clientId: string;
-    authEndpoint: string;
-    tokenEndpoint: string;
-    redirectUri: string;
-    scope: string;
-    codeVerifier: string;
-    codeChallenge: string;
-    port: number;
+  clientId: string;
+  authEndpoint: string;
+  tokenEndpoint: string;
+  redirectUri: string;
+  scope: string;
+  codeVerifier: string;
+  codeChallenge: string;
+  port: number;
 }
 
+
 export class AuthService {
-    private static instance: AuthService;
-    private server: http.Server | null = null;  
-    private readonly context: vscode.ExtensionContext;
-    private readonly logs: Logs | undefined;
-    private constructor(extensionContext: vscode.ExtensionContext, logs?: Logs) {
-      this.logs = logs;
-      this.context = extensionContext;
-      initialize(extensionContext);
+  private static instance: AuthService;
+  private server: http.Server | null = null;
+  private readonly context: vscode.ExtensionContext;
+  private readonly logs: Logs | undefined;
+  private constructor(extensionContext: vscode.ExtensionContext, logs?: Logs) {
+    this.logs = logs;
+    this.context = extensionContext;
+    initialize(extensionContext);
   }
 
-    public static getInstance(extensionContext: vscode.ExtensionContext, logs?: Logs): AuthService {
-        if (!this.instance) {
-            this.instance = new AuthService(extensionContext, logs);
-        }
-        return this.instance;
+  public static getInstance(extensionContext: vscode.ExtensionContext, logs?: Logs): AuthService {
+    if (!this.instance) {
+      this.instance = new AuthService(extensionContext, logs);
     }
-    private async closeServer(): Promise<void> {
-        if (this.server) {
-            return new Promise((resolve) => {
-                this.server?.close(() => {
-                    this.server = null;
-                    resolve();
-                });
-            });
-        }
+    return this.instance;
+  }
+  private async closeServer(): Promise<void> {
+    if (this.server) {
+      return new Promise((resolve) => {
+        this.server?.close(() => {
+          this.server = null;
+          resolve();
+        });
+      });
     }
+  }
 
-    private generatePKCE(): { codeVerifier: string; codeChallenge: string } {
-        const codeVerifier = crypto.randomBytes(64).toString('hex');
-        const hashed = crypto.createHash('sha256').update(codeVerifier).digest('base64');
-        const codeChallenge = hashed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        return { codeVerifier, codeChallenge };
-    }
+  private generatePKCE(): { codeVerifier: string; codeChallenge: string } {
+    const codeVerifier = crypto.randomBytes(64).toString('hex');
+    const hashed = crypto.createHash('sha256').update(codeVerifier).digest('base64');
+    const codeChallenge = hashed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return { codeVerifier, codeChallenge };
+  }
 
 
 
@@ -61,404 +62,406 @@ export class AuthService {
     try {
       // Basic URL validation
       const url = new URL(baseUri);
-      
+
       if (!url.protocol.startsWith('http')) {
-        return { 
-          isValid: false, 
+        return {
+          isValid: false,
           error: "Invalid URL protocol. Please use http:// or https://"
         };
       }
-      
+
       if (!tenant || tenant.trim() === '') {
         return {
           isValid: false,
           error: "Tenant name cannot be empty"
         };
       }
-      
+
       // Basic connectivity check to server
       const isBaseUriValid = await this.checkUrlExists(baseUri, false);
       if (!isBaseUriValid) {
-        return { 
-          isValid: false, 
+        return {
+          isValid: false,
           error: "Please check the server address of your Checkmarx One environment."
         };
       }
-      
+
       // Check if tenant exists
       const tenantUrl = `${baseUri}/auth/realms/${tenant}`;
       const isTenantValid = await this.checkUrlExists(tenantUrl, true);
       if (!isTenantValid) {
-        return { 
-          isValid: false, 
+        return {
+          isValid: false,
           error: `Tenant "${tenant}" not found. Please check your tenant name.`
         };
       }
-      
+
       return { isValid: true };
     } catch (error) {
-      return { 
-        isValid: false, 
+      return {
+        isValid: false,
         error: "Could not connect to server. Please check your Base URI."
       };
     }
   }
-  
+
   // Helper function to check if a URL exists
-private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
-  try {
-    const response = await axios.get(urlToCheck, {
-      timeout: 5000
-    });
+  private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
+    try {
+      const response = await axios.get(urlToCheck, {
+        timeout: 5000
+      });
 
-    if (isTenantCheck && (response.status === 404 || response.status === 405)) {
-      console.log(`Tenant check failed with status: ${response.status}`);
-      return false;
-    }
-
-    return response.status < 400;
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { status?: number } };
-      if (axiosError.response) {
-        console.log(`Request failed with status ${axiosError.response.status}`);
+      if (isTenantCheck && (response.status === 404 || response.status === 405)) {
+        console.log(`Tenant check failed with status: ${response.status}`);
         return false;
       }
-    }
-    console.log(`Request error: ${error instanceof Error ? error.message : String(error)}`);
-    return false;
-  }
-}
 
- 
-
-    private async findAvailablePort(): Promise<number> {
-        const MIN_PORT = 49152;
-        const MAX_PORT = 65535;
-        const maxAttempts = 10;  // Limit the number of attempts
-
-
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            // Selecting a random port from the range
-            const port = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1) + MIN_PORT);
-            
-            try {
-                // Checking if the port is available
-                await new Promise((resolve, reject) => {
-                    const server = http.createServer();
-                    server.on('error', reject);
-                    server.listen(port, () => {
-                        server.close(() => resolve(true));
-                    });
-                });
-                
-                return port;
-            } catch (error) {
-                // If the port is occupied, we will proceed to the next attempt
-                continue;
-            }
+      return response.status < 400;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response) {
+          console.log(`Request failed with status ${axiosError.response.status}`);
+          return false;
         }
-        
-        throw new Error('Could not find available port after multiple attempts');
-    }
-
-    public async authenticate(baseUri: string, tenant: string): Promise<string> {
-      await this.closeServer();
-      const validation = await this.validateConnection(baseUri, tenant);
-      if (!validation.isValid) {
-          throw new Error(validation.error);
       }
-      const port = await this.findAvailablePort();
-  
-      const { codeVerifier, codeChallenge } = this.generatePKCE();
-      const config: OAuthConfig = {
-          clientId: 'ide-integration',
-          authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
-          tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
-          redirectUri: `http://localhost:${port}/checkmarx1/callback`,
-          scope: 'openid offline_access',
-          codeVerifier,
-          codeChallenge,
-          port
-      };
-  
+      console.log(`Request error: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
+  }
+
+
+
+  private async findAvailablePort(): Promise<number> {
+    const MIN_PORT = 49152;
+    const MAX_PORT = 65535;
+    const maxAttempts = 10;  // Limit the number of attempts
+
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      // Selecting a random port from the range
+      const port = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1) + MIN_PORT);
+
       try {
-          const server = await this.startLocalServer(config);
+        // Checking if the port is available
+        await new Promise((resolve, reject) => {
+          const server = http.createServer();
+          server.on('error', reject);
+          server.listen(port, () => {
+            server.close(() => resolve(true));
+          });
+        });
 
-          const authUrl = `${config.authEndpoint}?` +
-              `client_id=${config.clientId}&` +
-              `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-              `response_type=code&` +
-              `scope=${config.scope}&` +
-              `code_challenge=${config.codeChallenge}&` +
-              `code_challenge_method=S256`;
-
-          const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
-          if (!opened) {
-              server.close();
-              return "";
-          }
-          const { code, res } = await this.waitForCode(server);
-          const token = await this.getRefreshToken(code, config);
-          // Save token 
-          await this.saveToken(this.context, token);
-          console.log("Token saved after authentication");
-          
-          // Check if validation was successful before showing success page
-          const isValid = await this.validateAndUpdateState();
-          
-          if (isValid) {
-              // Only show success page if token is valid
-              res.end(this.getSuccessPageHtml());
-          } else {
-              // Show error page if token validation failed
-              res.end(this.getErrorPageHtml("Token validation failed. Please try again."));
-          }
-          
-          await this.saveURIAndTenant(this.context, baseUri, tenant);
-          console.log("URI and tenant saved");
-  
-          return token;
+        return port;
       } catch (error) {
-          console.error("Authentication error:", error);
-          throw error;
+        // If the port is occupied, we will proceed to the next attempt
+        continue;
       }
-  }
-    private startLocalServer(config: OAuthConfig): Promise<http.Server> {
-        return new Promise((resolve, reject) => {
-            try {
-                const server = http.createServer();
-                server.on('error', (err) => {
-                    if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
-                        reject(new Error(`Port ${config.port} is already in use. Please try again in a few moments.`));
-                    } else {
-                        reject(err);
-                    }
-                });
-                
-                server.listen(config.port, () => {
-                    resolve(server);
-                });
-            } catch (error) {
-                reject(error);
-            }
-        });
     }
-    private waitForCode(server: http.Server): Promise<{code: string, res: http.ServerResponse}> {
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          server.close();
-          reject(new Error('Timeout waiting for authorization code'));
-        }, 60000); // 60 seconds timeout
-    
-        server.on('request', (req, res) => {
-          clearTimeout(timeout); 
-          const url = new URL(req.url!, `http://${req.headers.host}`);
-          const code = url.searchParams.get('code');
-          
-          if (code) {
-            // Don't end the response yet - just prepare headers
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            
-            // Only close the server, keep the response open
-            server.close();
-            
-            // Return both code and response object
-            resolve({ code, res });
+
+    throw new Error('Could not find available port after multiple attempts');
+  }
+
+  public async authenticate(baseUri: string, tenant: string): Promise<string> {
+    await this.closeServer();
+    const validation = await this.validateConnection(baseUri, tenant);
+    if (!validation.isValid) {
+      throw new Error(validation.error);
+    }
+    const port = await this.findAvailablePort();
+
+    const { codeVerifier, codeChallenge } = this.generatePKCE();
+    const config: OAuthConfig = {
+      clientId: 'ide-integration',
+      authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
+      tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
+      redirectUri: `http://localhost:${port}/checkmarx1/callback`,
+      scope: 'openid offline_access',
+      codeVerifier,
+      codeChallenge,
+      port
+    };
+
+    try {
+      const server = await this.startLocalServer(config);
+
+      const authUrl = `${config.authEndpoint}?` +
+        `client_id=${config.clientId}&` +
+        `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+        `response_type=code&` +
+        `scope=${config.scope}&` +
+        `code_challenge=${config.codeChallenge}&` +
+        `code_challenge_method=S256`;
+
+      const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl));
+      if (!opened) {
+        server.close();
+        return "";
+      }
+      const { code, res } = await this.waitForCode(server);
+      const token = await this.getRefreshToken(code, config);
+      // Save token
+      await this.saveToken(this.context, token);
+      console.log("Token saved after authentication");
+
+      // Check if validation was successful before showing success page
+      const isValid = await this.validateAndUpdateState();
+
+      if (isValid) {
+        // Only show success page if token is valid
+        res.end(this.getSuccessPageHtml());
+      } else {
+        // Show error page if token validation failed
+        res.end(this.getErrorPageHtml("Token validation failed. Please try again."));
+      }
+
+      await this.saveURIAndTenant(this.context, baseUri, tenant);
+      console.log("URI and tenant saved");
+
+      return token;
+    } catch (error) {
+      console.error("Authentication error:", error);
+      throw error;
+    }
+  }
+  private startLocalServer(config: OAuthConfig): Promise<http.Server> {
+    return new Promise((resolve, reject) => {
+      try {
+        const server = http.createServer();
+        server.on('error', (err) => {
+          if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+            reject(new Error(`Port ${config.port} is already in use. Please try again in a few moments.`));
           } else {
-            // For error cases, we can end the response immediately
-            res.writeHead(400, { 'Content-Type': 'text/html' });
-            res.end('<html><body><h1>Error: No authorization code received</h1></body></html>');
-            server.close();
-            reject(new Error('No authorization code received'));
+            reject(err);
           }
         });
-      });
-    }
 
-    public async validateApiKey(apiKey: string): Promise<boolean> {
-        try {
-         
-            await this.context.secrets.store("authCredential", apiKey);
-            const cx = getCx();
-            return await cx.authValidate(this.logs);
-
-        } catch (error) {
-            return false;
-        }
-    }
-
-    private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
-        return new Promise((resolve, reject) => {
-          const makeRequest = (url: string, postData: string, redirectCount = 0) => {
-            if (redirectCount > 5) {
-              reject(new Error('Too many redirects'));
-              return;
-            }
-      
-            const urlObj = new URL(url);
-            const options = {
-              hostname: urlObj.hostname,
-              port: urlObj.protocol === 'https:' ? 443 : 80,
-              path: urlObj.pathname + urlObj.search,
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(postData)
-              }
-            };
-      
-            console.log(`Making request to ${url} (redirect #${redirectCount})`);
-            
-            const req = (urlObj.protocol === 'https:' ? https : http).request(options, (res) => {
-              let data = '';
-              res.on('data', chunk => data += chunk);
-              res.on('end', () => {
-                if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
-                  const location = res.headers.location;
-                  console.log(`Redirect ${res.statusCode} to ${location}`);
-                  
-                  if (!location) {
-                    reject(new Error(`Redirect without location header (status ${res.statusCode})`));
-                    return;
-                  }
-      
-                  const redirectUrl = /^https?:\/\//i.test(location) 
-                    ? location 
-                    : `${urlObj.protocol}//${urlObj.host}${location}`;
-      
-                  makeRequest(redirectUrl, postData, redirectCount + 1);
-                }
-                else if (res.statusCode !== 200) {
-                  reject(new Error(`Request failed with status ${res.statusCode}`));
-                }
-                else {
-                  try {
-                    const parsedData = JSON.parse(data);
-                    if (!parsedData.refresh_token) {
-                      reject(new Error('Response did not include refresh_token'));
-                      return;
-                    }
-                    resolve(parsedData.refresh_token);
-                  } catch (error) {
-                    reject(new Error(`Failed to parse response: ${error.message}`));
-                  }
-                }
-              });
-            });
-      
-            req.on('error', (error) => {
-              reject(new Error(`Request error: ${error.message}`));
-            });
-      
-            req.write(postData);
-            req.end();
-          };
-      
-          const params = new URLSearchParams();
-          params.append('grant_type', 'authorization_code');
-          params.append('client_id', config.clientId);
-          params.append('code', code);
-          params.append('redirect_uri', config.redirectUri);
-          params.append('code_verifier', config.codeVerifier);
-      
-          const postData = params.toString();
-          
-          makeRequest(config.tokenEndpoint, postData, 0);
+        server.listen(config.port, () => {
+          resolve(server);
         });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  private waitForCode(server: http.Server): Promise<{ code: string, res: http.ServerResponse }> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        server.close();
+        reject(new Error('Timeout waiting for authorization code'));
+      }, 60000); // 60 seconds timeout
+
+      server.on('request', (req, res) => {
+        clearTimeout(timeout);
+        const url = new URL(req.url!, `http://${req.headers.host}`);
+        const code = url.searchParams.get('code');
+
+        if (code) {
+          // Don't end the response yet - just prepare headers
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+
+          // Only close the server, keep the response open
+          server.close();
+
+          // Return both code and response object
+          resolve({ code, res });
+        } else {
+          // For error cases, we can end the response immediately
+          res.writeHead(400, { 'Content-Type': 'text/html' });
+          res.end('<html><body><h1>Error: No authorization code received</h1></body></html>');
+          server.close();
+          reject(new Error('No authorization code received'));
+        }
+      });
+    });
+  }
+
+  public async validateApiKey(apiKey: string): Promise<boolean> {
+    try {
+
+      await this.context.secrets.store("authCredential", apiKey);
+      const cx = getCx();
+      return await cx.authValidate(this.logs);
+
+    } catch (error) {
+      return false;
+    }
+  }
+
+  private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const makeRequest = (url: string, postData: string, redirectCount = 0) => {
+        if (redirectCount > 5) {
+          reject(new Error('Too many redirects'));
+          return;
+        }
+
+        const urlObj = new URL(url);
+        const options = {
+          hostname: urlObj.hostname,
+          port: urlObj.protocol === 'https:' ? 443 : 80,
+          path: urlObj.pathname + urlObj.search,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(postData)
+          }
+        };
+
+        console.log(`Making request to ${url} (redirect #${redirectCount})`);
+
+        const req = (urlObj.protocol === 'https:' ? https : http).request(options, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+              const location = res.headers.location;
+              console.log(`Redirect ${res.statusCode} to ${location}`);
+
+              if (!location) {
+                reject(new Error(`Redirect without location header (status ${res.statusCode})`));
+                return;
+              }
+
+              const redirectUrl = /^https?:\/\//i.test(location)
+                ? location
+                : `${urlObj.protocol}//${urlObj.host}${location}`;
+
+              makeRequest(redirectUrl, postData, redirectCount + 1);
+            }
+            else if (res.statusCode !== 200) {
+              reject(new Error(`Request failed with status ${res.statusCode}`));
+            }
+            else {
+              try {
+                const parsedData = JSON.parse(data);
+                if (!parsedData.refresh_token) {
+                  reject(new Error('Response did not include refresh_token'));
+                  return;
+                }
+                resolve(parsedData.refresh_token);
+              } catch (error) {
+                reject(new Error(`Failed to parse response: ${error.message}`));
+              }
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          reject(new Error(`Request error: ${error.message}`));
+        });
+
+        req.write(postData);
+        req.end();
+      };
+
+      const params = new URLSearchParams();
+      params.append('grant_type', 'authorization_code');
+      params.append('client_id', config.clientId);
+      params.append('code', code);
+      params.append('redirect_uri', config.redirectUri);
+      params.append('code_verifier', config.codeVerifier);
+
+      const postData = params.toString();
+
+      makeRequest(config.tokenEndpoint, postData, 0);
+    });
+  }
+
+
+
+  private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
+    const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
+
+    const urls = Object.keys(urlMap);
+
+    if (!urlMap[url]) {
+      if (urls.length >= 10) {
+        delete urlMap[urls[0]];
+      }
+      urlMap[url] = [];
+    }
+
+    if (!urlMap[url].includes(tenant)) {
+      urlMap[url].push(tenant);
+    }
+
+    await context.globalState.update("recentURLsAndTenant", urlMap);
+  }
+
+  public async saveToken(context: vscode.ExtensionContext, token: string) {
+
+    await this.context.secrets.store("authCredential", token);
+    console.log("Token stored in secrets");
+    const isValid = await this.validateAndUpdateState();
+    console.log("Token validation result:", isValid);
+
+    if (isValid) {
+      vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
+      await vscode.commands.executeCommand(commands.refreshTree);
+    }
+    await initializeMcpConfiguration(token);
+
+  }
+
+  public async validateAndUpdateState(): Promise<boolean> {
+    try {
+      const token = await this.context.secrets.get("authCredential");
+
+
+      if (!token) {
+        vscode.commands.executeCommand(
+          commands.setContext,
+          commands.isValidCredentials,
+          false
+        );
+        vscode.commands.executeCommand(
+          commands.setContext,
+          commands.isScanEnabled,
+          false
+        );
+        return false;
+      }
+      const isValid = await this.validateApiKey(token);
+      vscode.commands.executeCommand(
+        commands.setContext,
+        commands.isValidCredentials,
+        isValid
+      );
+
+      if (isValid) {
+        const cx = getCx();
+        const scanEnabled = await cx.isScanEnabled(this.logs);
+
+        vscode.commands.executeCommand(
+          commands.setContext,
+          commands.isScanEnabled,
+          scanEnabled
+        );
       }
 
-
-    
-    private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
-        const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
-    
-        const urls = Object.keys(urlMap);
-    
-        if (!urlMap[url]) {
-            if (urls.length >= 10) {
-                delete urlMap[urls[0]];
-            }
-            urlMap[url] = [];
-        }
-    
-        if (!urlMap[url].includes(tenant)) {
-            urlMap[url].push(tenant);
-        }
-    
-        await context.globalState.update("recentURLsAndTenant", urlMap);
+      return isValid;
+    } catch (error) {
+      console.error('Validation error:', error);
+      return false;
     }
+  }
 
-    public async saveToken(context: vscode.ExtensionContext, token: string) {
-        
-        await this.context.secrets.store("authCredential", token);
-        console.log("Token stored in secrets");
-        const isValid = await this.validateAndUpdateState();
-        console.log("Token validation result:", isValid);
-        
-        if (isValid) {
-            vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
-            await vscode.commands.executeCommand(commands.refreshTree);
-        }
-    }
+  public async getToken(): Promise<string | undefined> {
+    return await this.context.secrets.get("authCredential");
+  }
 
-    public async validateAndUpdateState(): Promise<boolean> {
-        try {
-            const token = await this.context.secrets.get("authCredential");
+  public async logout(): Promise<void> {
+    // Delete only the token
+    await this.context.secrets.delete("authCredential");
 
+    await this.validateAndUpdateState();
+    await vscode.commands.executeCommand(commands.refreshTree);
+  }
 
-            if (!token) {
-                vscode.commands.executeCommand(
-                    commands.setContext,
-                    commands.isValidCredentials,
-                    false
-                );
-                vscode.commands.executeCommand(
-                    commands.setContext,
-                    commands.isScanEnabled,
-                    false
-                );
-                return false;
-            }
-            const isValid = await this.validateApiKey(token);
-            vscode.commands.executeCommand(
-                commands.setContext,
-                commands.isValidCredentials,
-                isValid
-            );
-
-            if (isValid) {
-                const cx = getCx();
-                const scanEnabled = await cx.isScanEnabled(this.logs);
-                
-                vscode.commands.executeCommand(
-                    commands.setContext,
-                    commands.isScanEnabled,
-                    scanEnabled
-                );
-            }
-
-            return isValid;
-        } catch (error) {
-            console.error('Validation error:', error);
-            return false;
-        }
-    }
-
-    public async getToken(): Promise<string | undefined> {
-        return await this.context.secrets.get("authCredential");
-    }
-
-    public async logout(): Promise<void> {
-        // Delete only the token
-        await this.context.secrets.delete("authCredential");
-        
-        await this.validateAndUpdateState();
-        await vscode.commands.executeCommand(commands.refreshTree);
-    }
-
-    private getSuccessPageHtml(): string {
-      return `
+  private getSuccessPageHtml(): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -549,8 +552,8 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </html>
       `;
   }
-    private getErrorPageHtml(errorMessage: string): string {
-      return `
+  private getErrorPageHtml(errorMessage: string): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -628,5 +631,5 @@ private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise
       </body>
       </html>
       `;
-    }
+  }
 }
