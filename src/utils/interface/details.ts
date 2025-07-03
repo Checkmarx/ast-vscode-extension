@@ -144,10 +144,36 @@ export class Details {
 	}
 
 	secretDetectiongeneralTab() {
+		let description = typeof this.result.description === "undefined" ? "" : this.result.description;
+		const startIndex = description.indexOf('/');
+		let filePath = "";
+		if (startIndex !== -1) {
+			// Extract the file path from the description
+			// and remove it from the description
+			filePath = description.slice(startIndex);
+			description = description.slice(0, startIndex);
+		}
 		return `<body>
-				<span>
-					${this.result.description ? "<p>" + this.result.description + "</p>" : ""}
-				</span>
+				<tr>
+					<td style="background:var(--vscode-editor-background)">
+					<td>
+						<div>
+							<div class="bfl-title">
+								${description} 
+								<a href="#" 
+									class="ast-node"
+									id="ast-node-0"
+									data-filename="${this.result.data.filename}" 
+									data-line="${this.result.data.line}" 
+									data-column="${0}"
+									data-length="${1}"
+								>
+								${filePath}
+								</a>
+							</div>
+						</div>
+					</td>
+				</tr>
 				</body>`;
 	}
 
