@@ -84,7 +84,18 @@ export class ManageIgnoredOssView implements vscode.TreeDataProvider<IgnoreItem>
 
 	public registerCommands() {
 		this.context.subscriptions.push(
-			vscode.commands.registerCommand('cx.removeIgnoredPackage', async (packageKey: string) => {
+			vscode.commands.registerCommand('cx.removeIgnoredPackage', async (item: IgnoreItem | string) => {
+				// Handle both cases: when called from context menu (gets IgnoreItem) or directly (gets string)
+				const packageKey = typeof item === 'string' ? item : item?.packageKey;
+
+				this.logs.info(`removeIgnoredPackage called with: ${typeof item === 'string' ? item : `IgnoreItem with packageKey: ${item?.packageKey}`}`);
+
+				if (!packageKey) {
+					this.logs.error('Invalid package information - packageKey is undefined');
+					vscode.window.showErrorMessage('Invalid package information');
+					return;
+				}
+
 				const result = await vscode.window.showWarningMessage(
 					`Remove ${packageKey} from ignore list completely?`,
 					'Yes',
