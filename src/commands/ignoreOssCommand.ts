@@ -62,11 +62,46 @@ export class IgnoreOssCommand {
 					this.logs.info(`Added ${packageKey} to ignore list for file: ${relativePath}`);
 					vscode.window.showInformationMessage(`Package ${hoverData.packageName}@${hoverData.version} added to ignore list`);
 
+					// Trigger scan on the current file to immediately hide the ignored package
+					await this.triggerScanForIgnoredFile(currentFilePath);
+
 				} catch (error) {
 					this.logs.error(`Error ignoring package: ${error}`);
 					vscode.window.showErrorMessage(`Failed to ignore package: ${error}`);
 				}
 			})
 		);
+	}
+
+	private async triggerScanForIgnoredFile(filePath: string) {
+		try {
+			this.logs.info(`Triggering scan for newly ignored file: ${filePath}`);
+
+			// Open the document to trigger the scanner
+			const document = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+			await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+
+			// Wait a bit for the document to be processed
+			await new Promise(resolve => setTimeout(resolve, 200));
+
+			// Make a tiny edit and undo it to trigger change detection
+			const editor = vscode.window.activeTextEditor;
+			if (editor && editor.document.uri.fsPath === filePath) {
+				await editor.edit(editBuilder => {
+					editBuilder.insert(new vscode.Position(0, 0), ' ');
+				});
+
+				// Undo the change immediately
+				await vscode.commands.executeCommand('undo');
+
+				// Save the document to trigger scan
+				await document.save();
+			}
+
+			this.logs.info(`Scan triggered for ignored file: ${filePath}`);
+
+		} catch (error) {
+			this.logs.warn(`Failed to trigger scan for ignored file ${filePath}: ${error}`);
+		}
 	}
 } 
