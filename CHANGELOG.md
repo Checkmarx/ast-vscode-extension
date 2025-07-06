@@ -1,15 +1,26 @@
 # CHANGELOG
 
-## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* Fixed Infocard closure on logout(AST-90830) by @cx-anjali-deore in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
 ### New Features 🚀
-* Open new Copilot chat on Agent mode(AST-100673) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1196
+* Update content and logo for vsode(AST-98735) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1164
+* Displayed additional traits and Risk score in ASPM results UI (AST-93137) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1171
+### Other Changes
+* Add auto configure mcp settings Vscode and Cursor (AST-102811) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1199
 
+## New Contributors
+* @cx-anjali-deore made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-v2.34.0-Fix-InfoCard-logout.0...v2.34.1-aspm-riskscore-traits-1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits-1.0...v2.34.1-CheckMcpVscode.0
+
+## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
 
