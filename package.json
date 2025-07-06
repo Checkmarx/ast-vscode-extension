@@ -861,6 +861,16 @@
     ],
     "configuration": [
       {
+        "title": "MCP Settings",
+        "properties": {
+          "mcp": {
+            "properties": {
+              "servers": {}
+            }
+          }
+        }
+      },
+      {
         "title": "Checkmarx One",
         "id": "ast-results",
         "order": 4,
@@ -1030,6 +1040,7 @@
     "eslintcc": "^0.8.3",
     "install": "^0.13.0",
     "jsonstream-ts": "^1.3.6",
+    "jwt-decode": "^4.0.0",
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
