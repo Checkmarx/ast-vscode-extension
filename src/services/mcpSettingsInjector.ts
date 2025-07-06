@@ -27,7 +27,6 @@ function decodeJwt(apiKey: string): DecodedJwt | null {
 }
 
 export async function initializeMcpConfiguration(apiKey: string) {
-
 	try {
 		const decoded = decodeJwt(apiKey);
 		if (!decoded) {
@@ -41,24 +40,12 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			return;
 		}
 
-		const domainToUrlMap: Record<string, string> = {
-			"eu.iam.checkmarx.net": "https://eu.ast.checkmarx.net",
-			"iam.checkmarx.net": "https://ast.checkmarx.net",
-			"anz.iam.checkmarx.net": "https://anz.ast.checkmarx.net",
-			"ind.iam.checkmarx.net": "https://ind.ast.checkmarx.net",
-			"sng.iam.checkmarx.net": "https://sng.ast.checkmarx.net",
-			"deu.iam.checkmarx.net": "https://deu.ast.checkmarx.net",
-			"us.iam.checkmarx.net": "https://us.ast.checkmarx.net",
-			"eu-2.iam.checkmarx.net": "https://eu-2.ast.checkmarx.net",
-			"mea.iam.checkmarx.net": "https://mea.ast.checkmarx.net",
-			"gov-il.iam.checkmarx.net": "https://gov-il.ast.checkmarx.net",
-		};
-
 		let baseUrl = "https://ast-master-components.dev.cxast.net";
 		try {
 			const hostname = new URL(issuer).hostname;
-			if (hostname in domainToUrlMap) {
-				baseUrl = domainToUrlMap[hostname];
+			if (hostname.includes("iam.checkmarx")) {
+				const astHostname = hostname.replace("iam", "ast");
+				baseUrl = `https://${astHostname}`;
 			}
 		} catch (e) {
 			console.warn("Invalid issuer URL format:", issuer);
