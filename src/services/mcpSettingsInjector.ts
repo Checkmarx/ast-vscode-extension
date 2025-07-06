@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
 import { jwtDecode } from "jwt-decode";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 
 interface DecodedJwt {
 	iss: string;
@@ -15,6 +18,7 @@ interface McpServer {
 
 interface McpConfig {
 	servers?: Record<string, McpServer>;
+	mcpServers?: Record<string, McpServer>;
 }
 
 function decodeJwt(apiKey: string): DecodedJwt | null {
@@ -23,6 +27,43 @@ function decodeJwt(apiKey: string): DecodedJwt | null {
 	} catch (error) {
 		console.error("Failed to decode JWT:", error);
 		return null;
+	}
+}
+
+function getMcpConfigPath(): string {
+	const homeDir = os.homedir();
+	return path.join(homeDir, ".cursor", "mcp.json");
+}
+
+async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
+	const mcpConfigPath = getMcpConfigPath();
+
+	let mcpConfig: McpConfig = {};
+
+	if (fs.existsSync(mcpConfigPath)) {
+		try {
+			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
+			mcpConfig = JSON.parse(fileContent);
+		} catch (error) {
+			console.warn("Failed to read existing mcp.json:", error);
+		}
+	}
+
+	if (!mcpConfig.mcpServers) {
+		mcpConfig.mcpServers = {};
+	}
+
+	mcpConfig.mcpServers["checkmarx"] = mcpServer;
+
+	try {
+		const dir = path.dirname(mcpConfigPath);
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+
+		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+	} catch (error) {
+		throw new Error(`Failed to write mcp.json: ${error}`);
 	}
 }
 
@@ -53,13 +94,9 @@ export async function initializeMcpConfiguration(apiKey: string) {
 
 		const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
 
-		const config = vscode.workspace.getConfiguration();
 		const isCursor = vscode.env.appName.toLowerCase().includes("cursor");
 
-		const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
-		const existingServers = fullMcp.servers || {};
-
-		existingServers["checkmarx"] = {
+		const mcpServer: McpServer = {
 			url: fullUrl,
 			headers: {
 				"cx-origin": "VsCode",
@@ -68,9 +105,14 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		};
 
 		if (isCursor) {
-			fullMcp.servers = existingServers;
-			await config.update("mcp", fullMcp, vscode.ConfigurationTarget.Global);
+			await updateMcpJsonFile(mcpServer);
 		} else {
+			const config = vscode.workspace.getConfiguration();
+			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
+			const existingServers = fullMcp.servers || {};
+
+			existingServers["checkmarx"] = mcpServer;
+
 			await config.update(
 				"mcp",
 				{ servers: existingServers },
