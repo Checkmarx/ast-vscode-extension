@@ -1,22 +1,24 @@
 # CHANGELOG
 
-## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
+## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Bug Fixes 🐛
-* Fixed Infocard closure on logout(AST-90830) by @cx-anjali-deore in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
-### New Features 🚀
-* Update content and logo for vsode(AST-98735) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1164
-* Displayed additional traits and Risk score in ASPM results UI (AST-93137) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1171
 ### Other Changes
-* Add auto configure mcp settings Vscode and Cursor (AST-102811) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1199
+* Fix mcp settings in cursor by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1201
 
-## New Contributors
-* @cx-anjali-deore made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-aspm-riskscore-traits-1.0...v2.34.1-CheckMcpVscode.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-CheckMcpVscode.0...v2.34.1-AutoConfigureMcpVscodeCursor.0
+
+### Fix
+
+- general:
+  - fix mcp settings in cursor (#1201) ([db4dbcb](https://github.com/Checkmarx/ast-vscode-extension/commit/db4dbcb1bba3665159702daf03c7a6826641ca34)) ([#1201](https://github.com/Checkmarx/ast-vscode-extension/pull/1201))
+
+## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
 
