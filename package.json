@@ -407,6 +407,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.filterSCAHideDevTestActive",
+        "category": "ast-results",
+        "title": "✓ Filter: SCA Hide Dev & Test Dependencies",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterNotExploitable",
         "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
@@ -455,6 +461,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.filterSCAHideDevTest",
+        "category": "ast-results",
+        "title": "­­­ ­­ ­ ­ ­Filter: SCA Hide Dev & Test Dependencies",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterNotExploitables",
         "category": "ast-results",
         "title": "Filter: Not Exploitable",
@@ -500,6 +512,12 @@
         "command": "ast-results.filterNotIgnoreds",
         "category": "ast-results",
         "title": "Filter: Not Ignored",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterSCAHideDevTests",
+        "category": "ast-results",
+        "title": "Filter: SCA Hide Dev & Test Dependencies",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -594,6 +612,16 @@
           "command": "ast-results.filterIgnored",
           "group": "navigation@2",
           "when": "!ast-results-Ignored"
+        },
+        {
+          "command": "ast-results.filterSCAHideDevTestActive",
+          "group": "navigation@8",
+          "when": "ast-results-SCAHideDevTest"
+        },
+        {
+          "command": "ast-results.filterSCAHideDevTest",
+          "group": "navigation@8",
+          "when": "!ast-results-SCAHideDevTest"
         }
       ],
       "view/item/context": [
