@@ -4,6 +4,12 @@ import * as path from 'path';
 import { Logs } from '../models/logs';
 import { HoverData } from '../realtimeScanners/common/types';
 
+interface IgnoreEntry {
+	files: string[];
+	active: boolean;
+	type: string;
+}
+
 export class IgnoreOssCommand {
 	constructor(private context: vscode.ExtensionContext, private logs: Logs) { }
 
@@ -23,7 +29,6 @@ export class IgnoreOssCommand {
 					const ignoreFilePath = path.join(workspaceFolder.uri.fsPath, '.checkmarxIgnored');
 					const packageKey = `${hoverData.packageName}:${hoverData.version}`;
 
-					// Get current working file path
 					const activeEditor = vscode.window.activeTextEditor;
 					const currentFilePath = activeEditor?.document.uri.fsPath;
 
@@ -31,10 +36,9 @@ export class IgnoreOssCommand {
 						throw new Error('No active file found');
 					}
 
-					// Make the path relative to workspace
 					const relativePath = path.relative(workspaceFolder.uri.fsPath, currentFilePath);
 
-					let ignoreData: Record<string, string[]> = {};
+					let ignoreData: Record<string, IgnoreEntry> = {};
 
 					// Read existing ignore file if it exists
 					if (fs.existsSync(ignoreFilePath)) {
@@ -48,12 +52,17 @@ export class IgnoreOssCommand {
 
 					// Add or update the package entry
 					if (!ignoreData[packageKey]) {
-						ignoreData[packageKey] = [];
+						ignoreData[packageKey] = {
+							files: [],
+							active: true,
+							type: hoverData?.packageManager ? "ossScan" : "unknown"
+
+						};
 					}
 
 					// Add the current file path if not already present
-					if (!ignoreData[packageKey].includes(relativePath)) {
-						ignoreData[packageKey].push(relativePath);
+					if (!ignoreData[packageKey].files.includes(relativePath)) {
+						ignoreData[packageKey].files.push(relativePath);
 					}
 
 					// Write the updated ignore file
@@ -62,7 +71,6 @@ export class IgnoreOssCommand {
 					this.logs.info(`Added ${packageKey} to ignore list for file: ${relativePath}`);
 					vscode.window.showInformationMessage(`Package ${hoverData.packageName}@${hoverData.version} added to ignore list`);
 
-					// Trigger scan on the current file to immediately hide the ignored package
 					await this.triggerScanForIgnoredFile(currentFilePath);
 
 				} catch (error) {
@@ -77,24 +85,18 @@ export class IgnoreOssCommand {
 		try {
 			this.logs.info(`Triggering scan for newly ignored file: ${filePath}`);
 
-			// Open the document to trigger the scanner
 			const document = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 			await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
 
-			// Wait a bit for the document to be processed
 			await new Promise(resolve => setTimeout(resolve, 200));
 
-			// Make a tiny edit and undo it to trigger change detection
 			const editor = vscode.window.activeTextEditor;
 			if (editor && editor.document.uri.fsPath === filePath) {
 				await editor.edit(editBuilder => {
 					editBuilder.insert(new vscode.Position(0, 0), ' ');
 				});
 
-				// Undo the change immediately
 				await vscode.commands.executeCommand('undo');
-
-				// Save the document to trigger scan
 				await document.save();
 			}
 
@@ -104,4 +106,4 @@ export class IgnoreOssCommand {
 			this.logs.warn(`Failed to trigger scan for ignored file ${filePath}: ${error}`);
 		}
 	}
-} 
+}
