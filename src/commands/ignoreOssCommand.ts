@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Logs } from '../models/logs';
 import { HoverData } from '../realtimeScanners/common/types';
 
-interface IgnoreEntry {
+export interface IgnoreEntry {
 	files: string[];
 	active: boolean;
 	type: string;

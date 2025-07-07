@@ -2,9 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Logs } from '../../models/logs';
+import { IgnoreEntry } from '../../commands/ignoreOssCommand';
 
 export interface IgnoreData {
-	[packageKey: string]: string[];
+	[packageKey: string]: IgnoreEntry;
 }
 
 export class IgnoreFileManager {
@@ -109,11 +110,11 @@ export class IgnoreFileManager {
 		for (const newKey of newKeys) {
 			if (!oldKeys.has(newKey)) {
 				// New package added
-				await this.triggerFileScansForPackage(newKey, newData[newKey]);
+				await this.triggerFileScansForPackage(newKey, newData[newKey].files);
 			} else {
 				// Check for changes in file paths
-				const oldPaths = new Set(oldData[newKey] || []);
-				const newPaths = new Set(newData[newKey] || []);
+				const oldPaths = new Set(oldData[newKey]?.files || []);
+				const newPaths = new Set(newData[newKey]?.files || []);
 
 				const addedPaths = [...newPaths].filter(path => !oldPaths.has(path));
 				if (addedPaths.length > 0) {
@@ -122,6 +123,7 @@ export class IgnoreFileManager {
 			}
 		}
 	}
+
 
 	private async triggerFileScansForPackage(packageKey: string, filePaths: string[]) {
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -182,11 +184,12 @@ export class IgnoreFileManager {
 
 	public isPackageIgnored(packageName: string, version: string, filePath: string): boolean {
 		const packageKey = `${packageName}:${version}`;
-		const ignoredFiles = this.ignoreData[packageKey];
-
-		if (!ignoredFiles) {
+		const entry = this.ignoreData[packageKey];
+		if (!entry) {
 			return false;
 		}
+
+
 
 		// Check if the file is in the ignored list
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -195,7 +198,7 @@ export class IgnoreFileManager {
 		}
 
 		const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-		return ignoredFiles.includes(relativePath);
+		return entry.files.includes(relativePath);
 	}
 
 	public getIgnoreData(): IgnoreData {
@@ -213,34 +216,30 @@ export class IgnoreFileManager {
 
 		try {
 			const removedFiles: string[] = [];
+			const entry = this.ignoreData[packageKey];
 
 			if (filePath) {
 				// Remove specific file path from package
 				const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-				if (!workspaceFolder) {
+				if (!workspaceFolder || !entry) {
 					return false;
 				}
 
 				const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-				const ignoredFiles = this.ignoreData[packageKey];
+				const index = entry.files.indexOf(relativePath);
+				if (index > -1) {
+					entry.files.splice(index, 1);
+					removedFiles.push(relativePath);
 
-				if (ignoredFiles) {
-					const index = ignoredFiles.indexOf(relativePath);
-					if (index > -1) {
-						ignoredFiles.splice(index, 1);
-						removedFiles.push(relativePath);
-
-						// If no files left, remove the package entry
-						if (ignoredFiles.length === 0) {
-							delete this.ignoreData[packageKey];
-						}
+					// If no files left, remove the package entry
+					if (entry.files.length === 0) {
+						delete this.ignoreData[packageKey];
 					}
 				}
 			} else {
 				// Remove entire package - store all files that will be removed
-				const ignoredFiles = this.ignoreData[packageKey];
-				if (ignoredFiles) {
-					removedFiles.push(...ignoredFiles);
+				if (entry) {
+					removedFiles.push(...entry.files);
 				}
 				delete this.ignoreData[packageKey];
 			}
@@ -361,4 +360,4 @@ export class IgnoreFileManager {
 			clearTimeout(this.debounceTimer);
 		}
 	}
-} 
+}

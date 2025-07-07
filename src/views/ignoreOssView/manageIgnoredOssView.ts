@@ -35,8 +35,10 @@ export class ManageIgnoredOssView implements vscode.TreeDataProvider<IgnoreItem>
 		const ignoreData = this.ignoreFileManager.getIgnoreData();
 		const packages: IgnoreItem[] = [];
 
-		for (const [packageKey, files] of Object.entries(ignoreData)) {
+		for (const [packageKey, entry] of Object.entries(ignoreData)) {
 			const [packageName, version] = packageKey.split(':');
+			const files = entry.files;
+
 			const item = new IgnoreItem(
 				`${packageName}@${version}`,
 				vscode.TreeItemCollapsibleState.Collapsed,
@@ -44,9 +46,10 @@ export class ManageIgnoredOssView implements vscode.TreeDataProvider<IgnoreItem>
 				packageKey
 			);
 			item.description = `${files.length} file(s)`;
-			item.tooltip = `Package: ${packageName}@${version}\nIgnored in ${files.length} file(s)`;
+			item.tooltip = `Package: ${packageName}@${version}\nIgnored in ${files.length} file(s)\nType: ${entry.type}`;
 			packages.push(item);
 		}
+
 
 		if (packages.length === 0) {
 			const emptyItem = new IgnoreItem(
@@ -63,9 +66,13 @@ export class ManageIgnoredOssView implements vscode.TreeDataProvider<IgnoreItem>
 
 	private async getFilesForPackage(packageKey: string): Promise<IgnoreItem[]> {
 		const ignoreData = this.ignoreFileManager.getIgnoreData();
-		const files = ignoreData[packageKey] || [];
+		const entry = ignoreData[packageKey];
 
-		return files.map(filePath => {
+		if (!entry) {
+			return [];
+		}
+
+		return entry.files.map(filePath => {
 			const item = new IgnoreItem(
 				filePath,
 				vscode.TreeItemCollapsibleState.None,
@@ -81,6 +88,7 @@ export class ManageIgnoredOssView implements vscode.TreeDataProvider<IgnoreItem>
 			return item;
 		});
 	}
+
 
 	public registerCommands() {
 		this.context.subscriptions.push(
@@ -172,4 +180,4 @@ export class IgnoreItem extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('file');
 		}
 	}
-} 
+}
