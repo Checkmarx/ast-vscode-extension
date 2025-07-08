@@ -1,15 +1,28 @@
 # CHANGELOG
 
-## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### New Features 🚀
-* Open new Copilot chat on Agent mode(AST-100673) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1196
+### Other Changes
+* Fix mcp settings in cursor by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1201
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-v2.34.0-Fix-InfoCard-logout.0...v2.34.1-aspm-riskscore-traits-1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-CheckMcpVscode.0...v2.34.1-AutoConfigureMcpVscodeCursor.0
+
+### Fix
+
+- general:
+  - fix mcp settings in cursor (#1201) ([db4dbcb](https://github.com/Checkmarx/ast-vscode-extension/commit/db4dbcb1bba3665159702daf03c7a6826641ca34)) ([#1201](https://github.com/Checkmarx/ast-vscode-extension/pull/1201))
+
+## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
 
