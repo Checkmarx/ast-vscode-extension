@@ -5,6 +5,8 @@ import { getNonce } from "../utils/utils";
 import { Logs } from "../models/logs";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
+import { cx } from "../cx";
+import { initializeMcpConfiguration } from "../services/mcpSettingsInjector";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -144,7 +146,7 @@ export class AuthenticationWebview {
 </head>
 
 <body>
-  
+
     <div id="loading">
 		<div class="spinner-border" role="status">
 		  <span class="visually-hidden">Checking authentication...</span>
@@ -154,11 +156,11 @@ export class AuthenticationWebview {
         <div class="auth-form-title">Checkmarx One Authentication</div>
         <div id="loginForm">
         <div class="radio-group">
-        
+
             <label>
                 <input type="radio" name="authMethod" value="oauth" checked> OAuth
             </label>
-      
+
             <label>
                 <input type="radio" name="authMethod" value="apiKey">API Key
             </label>
@@ -177,13 +179,13 @@ export class AuthenticationWebview {
         </div>
 
              <!-- (We need to return it to the next div ) (class="hidden">)   -->
-        <div id="apiKeyForm" class="hidden"> 
+        <div id="apiKeyForm" class="hidden">
           <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
         </div>
         <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
         </div>
-        
+
         <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx One</div>
         <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
         <div id="messageBox" class="message">
@@ -246,11 +248,12 @@ export class AuthenticationWebview {
                   const baseUri = message.baseUri.trim();
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
                   await authService.authenticate(baseUri, tenant);
                   setTimeout(async () => {
                     this._panel.dispose();
                     await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context);
+                    WelcomeWebview.show(this.context, isAiEnabled);
                   }, 1000);
                 } else if (message.authMethod === "apiKey") {
                   // New API Key handling
@@ -273,17 +276,20 @@ export class AuthenticationWebview {
 
                   // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
                   authService.saveToken(this.context, message.apiKey);
-
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
                   // Sending a success message to the window
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
-
                   setTimeout(async () => {
+
                     this._panel.dispose();
                     await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context);
+                    WelcomeWebview.show(this.context, isAiEnabled);
+                    if (isAiEnabled) {
+                      await initializeMcpConfiguration(message.apiKey);
+                    }
                     setTimeout(() => {
                       this._panel.webview.postMessage({
                         type: "clear-message-api-validation",
