@@ -7,7 +7,6 @@ import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
 import { commands } from "../utils/common/commands";
 import axios from 'axios';
-import { initializeMcpConfiguration } from './mcpSettingsInjector';
 
 interface OAuthConfig {
   clientId: string;
@@ -401,7 +400,6 @@ export class AuthService {
       vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
       await vscode.commands.executeCommand(commands.refreshTree);
     }
-    await initializeMcpConfiguration(token);
 
   }
 
