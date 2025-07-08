@@ -8,6 +8,9 @@ export interface IgnoreEntry {
 	files: string[];
 	active: boolean;
 	type: string;
+	PackageManager: string;
+	PackageName: string;
+	PackageVersion: string;
 }
 
 export class IgnoreOssCommand {
@@ -55,7 +58,11 @@ export class IgnoreOssCommand {
 						ignoreData[packageKey] = {
 							files: [],
 							active: true,
-							type: hoverData?.packageManager ? "ossScan" : "unknown"
+							type: hoverData?.packageManager ? "ossScan" : "unknown",
+							PackageManager: hoverData.packageManager,
+							PackageName: hoverData.packageName,
+							PackageVersion: hoverData.version
+
 
 						};
 					}

@@ -81,6 +81,35 @@ export class IgnoreFileManager {
 		});
 	}
 
+
+	private async writeIgnoredPackagesListTempFile() {
+		if (!this.ignoreData) {
+			return;
+		}
+
+		const filteredEntries = Object.values(this.ignoreData)
+			.filter(entry => entry.active && entry.type === "ossScan")
+			.map(entry => ({
+				PackageManager: entry.PackageManager,
+				PackageName: entry.PackageName,
+				PackageVersion: entry.PackageVersion
+			}));
+
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			return;
+		}
+
+		const tempFilePath = path.join(workspaceFolder.uri.fsPath, '.checkmarxIgnoredTempList.json');
+
+		try {
+			fs.writeFileSync(tempFilePath, JSON.stringify(filteredEntries, null, 2));
+			this.logs.info(`Wrote ${filteredEntries.length} OSS ignore entries to temporary file.`);
+		} catch (error) {
+			this.logs.warn(`Failed to write checkmarxIgnoredTempList.json: ${error}`);
+		}
+	}
+
 	private debouncedReload() {
 		if (this.debounceTimer) {
 			clearTimeout(this.debounceTimer);
@@ -90,6 +119,7 @@ export class IgnoreFileManager {
 			const oldIgnoreData = { ...this.ignoreData };
 			this.loadIgnoreData();
 			await this.triggerScansOnChanges(oldIgnoreData, this.ignoreData);
+			await this.writeIgnoredPackagesListTempFile();
 		}, 300); // 300ms debounce
 	}
 
@@ -308,49 +338,49 @@ export class IgnoreFileManager {
 	private addToGitignore(workspaceFolder: vscode.WorkspaceFolder) {
 		const gitignorePath = path.join(workspaceFolder.uri.fsPath, '.gitignore');
 		const cursorignorePath = path.join(workspaceFolder.uri.fsPath, '.cursorignore');
-		const ignoreEntry = '.checkmarxIgnored';
+		const ignoreEntries = ['.checkmarxIgnored', '.checkmarxIgnoredTempList.json'];
 
 		try {
-			// Add to .gitignore
-			let gitignoreContent = '';
+			// Handle .gitignore
+			let gitignoreContent = fs.existsSync(gitignorePath)
+				? fs.readFileSync(gitignorePath, 'utf8')
+				: '';
 
-			// Read existing .gitignore if it exists
-			if (fs.existsSync(gitignorePath)) {
-				gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
-
-				// Check if .checkmarxIgnored is already in .gitignore
-				if (!gitignoreContent.includes(ignoreEntry)) {
-					// Add .checkmarxIgnored to .gitignore
-					const newContent = gitignoreContent.trim() + (gitignoreContent.trim() ? '\n' : '') + ignoreEntry + '\n';
-					fs.writeFileSync(gitignorePath, newContent);
-					this.logs.info('Added .checkmarxIgnored to .gitignore for local usage only');
+			let gitignoreUpdated = false;
+			for (const entry of ignoreEntries) {
+				if (!gitignoreContent.includes(entry)) {
+					gitignoreContent += (gitignoreContent.trim() ? '\n' : '') + entry + '\n';
+					gitignoreUpdated = true;
 				}
-			} else {
-				// Create .gitignore with .checkmarxIgnored entry
-				fs.writeFileSync(gitignorePath, ignoreEntry + '\n');
-				this.logs.info('Created .gitignore and added .checkmarxIgnored for local usage only');
 			}
 
-			// Add to .cursorignore for Cursor IDE support
-			let cursorignoreContent = '';
+			if (gitignoreUpdated) {
+				fs.writeFileSync(gitignorePath, gitignoreContent);
+				this.logs.info(`Updated .gitignore with entries: ${ignoreEntries.join(', ')}`);
+			}
 
-			if (fs.existsSync(cursorignorePath)) {
-				cursorignoreContent = fs.readFileSync(cursorignorePath, 'utf8');
+			// Handle .cursorignore
+			let cursorignoreContent = fs.existsSync(cursorignorePath)
+				? fs.readFileSync(cursorignorePath, 'utf8')
+				: '';
 
-				if (!cursorignoreContent.includes(ignoreEntry)) {
-					const newContent = cursorignoreContent.trim() + (cursorignoreContent.trim() ? '\n' : '') + ignoreEntry + '\n';
-					fs.writeFileSync(cursorignorePath, newContent);
-					this.logs.info('Added .checkmarxIgnored to .cursorignore for Cursor IDE support');
+			let cursorignoreUpdated = false;
+			for (const entry of ignoreEntries) {
+				if (!cursorignoreContent.includes(entry)) {
+					cursorignoreContent += (cursorignoreContent.trim() ? '\n' : '') + entry + '\n';
+					cursorignoreUpdated = true;
 				}
-			} else {
-				// Create .cursorignore with .checkmarxIgnored entry
-				fs.writeFileSync(cursorignorePath, ignoreEntry + '\n');
-				this.logs.info('Created .cursorignore and added .checkmarxIgnored for Cursor IDE support');
+			}
+
+			if (cursorignoreUpdated) {
+				fs.writeFileSync(cursorignorePath, cursorignoreContent);
+				this.logs.info(`Updated .cursorignore with entries: ${ignoreEntries.join(', ')}`);
 			}
 		} catch (error) {
-			this.logs.warn(`Failed to add .checkmarxIgnored to ignore files: ${error}`);
+			this.logs.warn(`Failed to update ignore files: ${error}`);
 		}
 	}
+
 
 	public dispose() {
 		if (this.fileWatcher) {
