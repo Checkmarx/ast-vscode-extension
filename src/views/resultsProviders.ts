@@ -21,7 +21,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   constructor(
     protected readonly context: vscode.ExtensionContext,
     protected readonly statusBarItem: vscode.StatusBarItem
-  ) {}
+  ) { }
 
   public getTreeItem(
     element: TreeItem
@@ -141,7 +141,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
         // --- SCA Hide Dev & Test Dependencies filter logic ---
         // Check if obj is an SCA node (adjust this check as needed for your model)
-        const isScaNode = obj.type === "sca"; // <-- replace with your actual SCA type label
+        const isScaNode = obj.type === constants.sca; // <-- replace with your actual SCA type label
         const scaHideDevTest = this.context.globalState.get<boolean>(constants.scaHideDevTestFilter) ?? false;
 
         if (
