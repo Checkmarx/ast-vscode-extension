@@ -335,6 +335,8 @@ export class IgnoreFileManager {
 		this.logs.info('Completed triggering scans for removed files');
 	}
 
+
+
 	private addToGitignore(workspaceFolder: vscode.WorkspaceFolder) {
 		const gitignorePath = path.join(workspaceFolder.uri.fsPath, '.gitignore');
 		const cursorignorePath = path.join(workspaceFolder.uri.fsPath, '.cursorignore');

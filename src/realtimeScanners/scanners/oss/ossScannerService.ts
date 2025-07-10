@@ -219,8 +219,15 @@ export class OssScannerService extends BaseScannerService {
 
       logs.info("Start Realtime scan On File: " + originalFilePath);
 
-      const ignoredFilePath = path.join(tempSubFolder, ".checkmarxIgnoredTempList.json");
-      const scanResults = await cx.ossScanResults(mainTempPath, ignoredFilePath);
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      const ignoredFilePath = workspaceFolder
+        ? path.join(workspaceFolder.uri.fsPath, ".checkmarxIgnoredTempList.json")
+        : "";
+
+      const ignoreArg = ignoredFilePath && fs.existsSync(ignoredFilePath) ? ignoredFilePath : "";
+
+      const scanResults = await cx.ossScanResults(mainTempPath, ignoreArg);
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
       this.storeAndApplyResults(
