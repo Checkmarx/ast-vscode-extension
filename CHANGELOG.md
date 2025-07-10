@@ -1,20 +1,19 @@
 # CHANGELOG
 
-## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
+## [v2.34.1-outdatedTree.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-outdatedTree.0) - 2025-07-08 11:53:22
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
 ### Other Changes
-* Fix mcp settings in cursor by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1201
+* Inject mcp server after welcome page loaded (AST-103985) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1203
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-CheckMcpVscode.0...v2.34.1-AutoConfigureMcpVscodeCursor.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-AutoConfigureMcpVscodeCursor.0...v2.34.1-outdatedTree.0
 
-### Fix
+## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
 
-- general:
-  - fix mcp settings in cursor (#1201) ([db4dbcb](https://github.com/Checkmarx/ast-vscode-extension/commit/db4dbcb1bba3665159702daf03c7a6826641ca34)) ([#1201](https://github.com/Checkmarx/ast-vscode-extension/pull/1201))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
 
