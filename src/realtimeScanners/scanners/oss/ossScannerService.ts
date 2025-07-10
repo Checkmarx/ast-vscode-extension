@@ -219,7 +219,8 @@ export class OssScannerService extends BaseScannerService {
 
       logs.info("Start Realtime scan On File: " + originalFilePath);
 
-      const scanResults = await cx.ossScanResults(mainTempPath);
+      const ignoredFilePath = path.join(tempSubFolder, ".checkmarxIgnoredTempList.json");
+      const scanResults = await cx.ossScanResults(mainTempPath, ignoredFilePath);
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
       this.storeAndApplyResults(
@@ -350,10 +351,7 @@ export class OssScannerService extends BaseScannerService {
     const lowIconDecorations: vscode.DecorationOptions[] = [];
 
     for (const result of scanResults) {
-      // Check if package is ignored
-      if (this.ignoreFileManager && this.ignoreFileManager.isPackageIgnored(result.packageName, result.version, filePath)) {
-        continue; // Skip ignored packages
-      }
+
 
       for (let i = 0; i < result.locations.length; i++) {
         const location = result.locations[i];
