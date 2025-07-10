@@ -3,9 +3,14 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE } from "../utils/utils";
+import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
 import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
-
+import {
+    SCA_EXPLANATION_PROMPT,
+    SCA_REMEDIATION_PROMPT,
+    SECRET_REMEDIATION_PROMPT,
+    SECRETS_EXPLANATION_PROMPT
+} from "../realtimeScanners/scanners/prompts";
 
 
 export class CopilotChatCommand {
@@ -16,6 +21,7 @@ export class CopilotChatCommand {
         this.context = context;
         this.logs = logs;
     }
+
     private pressEnterWindows() {
         const script = `
         Add-Type -AssemblyName System.Windows.Forms
@@ -103,23 +109,19 @@ export class CopilotChatCommand {
             }
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpenWithQueryCommand);
+        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
-    public isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
-        return 'title' in item && 'description' in item && 'severity' in item;
-    }
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
                 let question = '';
-                if (this.isSecretsHoverData(item)) {
-
-                    question = `A secret has been detected: "${item.title}".\n\n${item.description}\n\nPlease identify the appropriate way to remediate or secure this secret, and apply the fix automatically where possible.`;
+                if (isSecretsHoverData(item)) {
+                    question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else {
-                    question = `You are the Checkmarx Security Assistant for npm; target dependency ${item.packageName} @ ${item.version}. Invoke the internal AlternativePackageFinder, which returns JSON objects (action, package, version, reason). \nIf the result contains exactly one object whose action is "upgrade," pin that version in package.json (never touch package-lock.json), \nupdate first-party code as described below, then output a summary formatted as a bullet list (each line starts with "-"): "Upgraded ${item.packageName} to <version> – <reason>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nOtherwise, show one interactive prompt that lists every remediation path as a bullet list where each line is "- <Action>: <package>@<version> – <reason>" (Action is "Upgrade" or "Replace"),\nfollowed by the sentence "Please select the option you would like me to apply." and wait for the user's choice. \nAfter a choice, pin the selected version in package.json, scan first-party source code (ignore node_modules), \nupdate every require/import of the old package, adapt API usage, insert clear TODO comments where manual edits are needed, \nrun offline compile or type checks, and silently patch first-party code until the build passes. \nThen print a final summary, formatted as a bullet list: "Fix applied: <chosen fix>", "Files updated: <count>", "Remaining TODOs: <count>", "Build status: <PASS|FAIL>". \nAlways abort and warn if no safe option exists or malicious indicators persist. Every message and summary must explicitly state that it is provided by the Checkmarx Security Assistant.`;
+                    question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
                 try {
                     await this.openChatWithPrompt(question);
@@ -131,10 +133,13 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
-                let question = `Show all details about the package ${item.packageName}@${item.version}. Explain why it is flagged, what are the risks, and what remediation steps are recommended. Present the information in a clear, actionable way for a developer.`;
-                item.vulnerabilities?.forEach(vuln => {
-                    question += `\n\nVulnerability: ${vuln.cve}\nDescription: ${vuln.description}\nSeverity: ${vuln.severity}`;
-                });
+                let question = '';
+
+                if (isSecretsHoverData(item)) {
+                    question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
+                } else {
+                    question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
+                }
                 try {
                     await this.openChatWithPrompt(question);
                 } catch (error) {

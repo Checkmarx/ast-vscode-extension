@@ -25,6 +25,7 @@ export interface IScannerCommand {
 }
 
 export interface HoverData {
+  packageManager: string;
   packageName: string;
   version: string;
   status: CxRealtimeEngineStatus;
@@ -40,4 +41,9 @@ export interface SecretsHoverData {
     startIndex: number;
     endIndex: number;
   };
+}
+
+export interface CxDiagnosticData {
+  cxType: "oss" | "secrets";
+  item: HoverData | SecretsHoverData;
 }

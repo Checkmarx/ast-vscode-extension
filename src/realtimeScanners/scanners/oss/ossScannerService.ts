@@ -1,10 +1,12 @@
+
+
 import * as vscode from "vscode";
 import * as path from "path";
 import fs from "fs";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
 import { cx } from "../../../cx";
-import { HoverData, IScannerConfig } from "../../common/types";
+import { HoverData, IScannerConfig, CxDiagnosticData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
@@ -338,7 +340,6 @@ export class OssScannerService extends BaseScannerService {
           new vscode.Position(location.line, location.startIndex),
           new vscode.Position(location.line, location.endIndex)
         );
-        const key = `${uri.fsPath}:${range.start.line}`;
         const addDiagnostic = i === 0;
 
         switch (result.status) {
@@ -460,6 +461,17 @@ export class OssScannerService extends BaseScannerService {
       decorations.push({ range });
       const diagnostic = new vscode.Diagnostic(range, message, severity);
       diagnostic.source = 'CxAI';
+
+      (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
+        cxType: "oss",
+        item: {
+          packageManager: result.packageManager,
+          packageName: result.packageName,
+          version: result.version,
+          status: result.status,
+          vulnerabilities: result.vulnerabilities
+        }
+      };
       diagnostics.push(diagnostic);
     } else {
       iconDecorations.push({ range });
@@ -467,6 +479,7 @@ export class OssScannerService extends BaseScannerService {
 
     const key = `${uri.fsPath}:${range.start.line}`;
     hoverMessages.set(key, {
+      packageManager: result.packageManager,
       packageName: result.packageName,
       version: result.version,
       status: result.status,

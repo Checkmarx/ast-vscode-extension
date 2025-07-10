@@ -1,0 +1,129 @@
+import * as vscode from "vscode";
+import { jwtDecode } from "jwt-decode";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+
+interface DecodedJwt {
+	iss: string;
+}
+
+interface McpServer {
+	url: string;
+	headers: {
+		"cx-origin": string;
+		Authorization: string;
+	};
+}
+
+interface McpConfig {
+	servers?: Record<string, McpServer>;
+	mcpServers?: Record<string, McpServer>;
+}
+
+function decodeJwt(apiKey: string): DecodedJwt | null {
+	try {
+		return jwtDecode<DecodedJwt>(apiKey);
+	} catch (error) {
+		console.error("Failed to decode JWT:", error);
+		return null;
+	}
+}
+
+function getMcpConfigPath(): string {
+	const homeDir = os.homedir();
+	return path.join(homeDir, ".cursor", "mcp.json");
+}
+
+async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
+	const mcpConfigPath = getMcpConfigPath();
+
+	let mcpConfig: McpConfig = {};
+
+	if (fs.existsSync(mcpConfigPath)) {
+		try {
+			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
+			mcpConfig = JSON.parse(fileContent);
+		} catch (error) {
+			console.warn("Failed to read existing mcp.json:", error);
+		}
+	}
+
+	if (!mcpConfig.mcpServers) {
+		mcpConfig.mcpServers = {};
+	}
+
+	mcpConfig.mcpServers["checkmarx"] = mcpServer;
+
+	try {
+		const dir = path.dirname(mcpConfigPath);
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+
+		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+	} catch (error) {
+		throw new Error(`Failed to write mcp.json: ${error}`);
+	}
+}
+
+export async function initializeMcpConfiguration(apiKey: string) {
+	try {
+		const decoded = decodeJwt(apiKey);
+		if (!decoded) {
+			vscode.window.showErrorMessage("Failed to decode API key.");
+			return;
+		}
+
+		const issuer = decoded.iss;
+		if (!issuer) {
+			vscode.window.showErrorMessage("API key is missing 'iss' field.");
+			return;
+		}
+
+		let baseUrl = "https://ast-master-components.dev.cxast.net";
+		try {
+			const hostname = new URL(issuer).hostname;
+			if (hostname.includes("iam.checkmarx")) {
+				const astHostname = hostname.replace("iam", "ast");
+				baseUrl = `https://${astHostname}`;
+			}
+		} catch (e) {
+			console.warn("Invalid issuer URL format:", issuer);
+		}
+
+		const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
+
+		const isCursor = vscode.env.appName.toLowerCase().includes("cursor");
+
+		const mcpServer: McpServer = {
+			url: fullUrl,
+			headers: {
+				"cx-origin": "VsCode",
+				Authorization: apiKey,
+			},
+		};
+
+		if (isCursor) {
+			await updateMcpJsonFile(mcpServer);
+		} else {
+			const config = vscode.workspace.getConfiguration();
+			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
+			const existingServers = fullMcp.servers || {};
+
+			existingServers["checkmarx"] = mcpServer;
+
+			await config.update(
+				"mcp",
+				{ servers: existingServers },
+				vscode.ConfigurationTarget.Global
+			);
+		}
+
+		vscode.window.showInformationMessage("MCP configuration saved successfully.");
+	} catch (err: unknown) {
+		const message =
+			err instanceof Error ? err.message : "An unexpected error occurred during MCP setup.";
+		vscode.window.showErrorMessage(message);
+	}
+}

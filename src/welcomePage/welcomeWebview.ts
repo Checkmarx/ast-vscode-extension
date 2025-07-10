@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import { getNonce } from "../utils/utils";
-import { cx } from "../cx";
+
+
 
 export class WelcomeWebview {
-  public static async show(context: vscode.ExtensionContext) {
+  public static async show(context: vscode.ExtensionContext, isAiMcpEnabled: boolean) {
     const panel = vscode.window.createWebviewPanel(
       "checkmarxWelcome",
       "Welcome to Checkmarx",
@@ -150,7 +151,7 @@ export class WelcomeWebview {
     panel.webview.onDidReceiveMessage(async (message) => {
       if (message.type === "getAiFeatureState") {
         try {
-          const isEnabled = await cx.isAiMcpServerEnabled();
+          const isEnabled = isAiMcpEnabled;
           const safeEnabled = isEnabled === true;
 
           isOssEnabled = vscode.workspace

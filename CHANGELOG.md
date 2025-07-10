@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## [v2.34.1-outdatedTree.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-outdatedTree.0) - 2025-07-08 11:53:22
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Inject mcp server after welcome page loaded (AST-103985) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1203
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-AutoConfigureMcpVscodeCursor.0...v2.34.1-outdatedTree.0
+
+## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-aspm-riskscore-traits-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-aspm-riskscore-traits-1.0) - 2025-06-30 10:40:18
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-v2.34.0-Fix-InfoCard-logout.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-v2.34.0-Fix-InfoCard-logout.0) - 2025-06-25 16:00:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompts4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts4.0) - 2025-06-25 14:18:48
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompts3.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompts3.0) - 2025-06-23 14:20:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompt2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt2.0) - 2025-06-23 10:58:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34.1-prompt.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-prompt.0) - 2025-06-23 09:19:58
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-IncludedExplainSecrets_RightClickProblems.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IncludedExplainSecrets_RightClickProblems.0) - 2025-06-22 14:11:52
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-ScanId-invalid-input.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ScanId-invalid-input.0) - 2025-06-19 11:30:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-cwe-atish.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-cwe-atish.0) - 2025-06-17 14:53:21
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
