@@ -62,6 +62,10 @@ export const commands = {
   filterIgnoredActive: `${constants.extensionName}.filterIgnoredActive`,
   filterIgnoredCommand: `${constants.extensionName}.filterIgnoreds`,
 
+  filterSCAHideDevTest: `${constants.extensionName}.filterSCAHideDevTest`,
+  filterSCAHideDevTestActive: `${constants.extensionName}.filterSCAHideDevTestActive`,
+  filterSCAHideDevTestCommand: `${constants.extensionName}.filterSCAHideDevTests`,
+
   groupByFile: `${constants.extensionName}.groupByFile`,
   groupByFileActive: `${constants.extensionName}.groupByFileActive`,
   groupByFileCommand: `${constants.extensionName}.groupByFiles`,

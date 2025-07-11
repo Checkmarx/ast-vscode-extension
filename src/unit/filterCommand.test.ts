@@ -71,6 +71,7 @@ describe("FilterCommand", () => {
             expect(registeredCommands).to.include(commands.filterUrgent);
             expect(registeredCommands).to.include(commands.filterNotIgnored);
             expect(registeredCommands).to.include(commands.filterIgnored);
+            expect(registeredCommands).to.include(commands.filterSCAHideDevTest);
         });
     });
 }); 
