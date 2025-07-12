@@ -285,9 +285,8 @@ export class Cx implements CxPlatform {
     if (!config) {
       return [];
     }
-    const filter = `project-id=${projectId},${
-      branch ? `branch=${branch},` : ""
-    }limit=${limit},statuses=${statuses}`;
+    const filter = `project-id=${projectId},${branch ? `branch=${branch},` : ""
+      }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
@@ -659,20 +658,21 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
+
     const cx = new CxWrapper(config);
-    const scans = await cx.ossScanResults(sourcePath);
+    const scans = await cx.ossScanResults(sourcePath, ignoredFilePath);
+
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
       throw new Error(scans.status);
     }
   }
-
   async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {

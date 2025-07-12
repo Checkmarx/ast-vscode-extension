@@ -11,8 +11,13 @@ import { constants } from "../../../utils/common/constants";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
+import { IgnoreFileManager } from "../../common/ignoreFileManager";
+
+
 
 export class OssScannerService extends BaseScannerService {
+
+
   private createDecoration(
     iconName: string,
     size: string = "auto"
@@ -80,6 +85,7 @@ export class OssScannerService extends BaseScannerService {
       errorMessage: constants.errorOssScanRealtime,
     };
     super(config);
+
   }
 
   public async initializeScanner(): Promise<void> {
@@ -89,6 +95,8 @@ export class OssScannerService extends BaseScannerService {
     this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
       this.onEditorChange.bind(this)
     );
+
+
   }
   private onDocumentOpen(document: vscode.TextDocument): void {
     if (this.matchesManifestPattern(document.uri.fsPath)) {
@@ -203,7 +211,9 @@ export class OssScannerService extends BaseScannerService {
 
       logs.info("Start Realtime scan On File: " + originalFilePath);
 
-      const scanResults = await cx.ossScanResults(mainTempPath);
+      const ignoredPackagesFile = IgnoreFileManager.getInstance().getIgnoredPackagesTempFile();
+
+      const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
       this.storeAndApplyResults(
@@ -334,6 +344,8 @@ export class OssScannerService extends BaseScannerService {
     const lowIconDecorations: vscode.DecorationOptions[] = [];
 
     for (const result of scanResults) {
+
+
       for (let i = 0; i < result.locations.length; i++) {
         const location = result.locations[i];
         const range = new vscode.Range(
@@ -469,7 +481,8 @@ export class OssScannerService extends BaseScannerService {
           packageName: result.packageName,
           version: result.version,
           status: result.status,
-          vulnerabilities: result.vulnerabilities
+          vulnerabilities: result.vulnerabilities,
+          filePath: uri.fsPath
         }
       };
       diagnostics.push(diagnostic);
@@ -484,6 +497,7 @@ export class OssScannerService extends BaseScannerService {
       version: result.version,
       status: result.status,
       vulnerabilities: result.vulnerabilities,
+      filePath: uri.fsPath
     });
   }
 
@@ -515,6 +529,8 @@ export class OssScannerService extends BaseScannerService {
     const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
     return path.join(baseTempPath, this.toSafeTempFileName(relativePath));
   }
+
+
 
   private toSafeTempFileName(relativePath: string): string {
     const baseName = path.basename(relativePath);
