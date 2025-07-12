@@ -281,7 +281,7 @@ export function buildCommandButtons(args: string, isSecret: boolean): string {
   return (
     `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
     `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
-    `<a href="command:cx.ignore?${args}" title="">Ignore CxAI Package</a>`
+    `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore CxAI Package</a>`
   );
 }
 

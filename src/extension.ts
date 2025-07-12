@@ -31,8 +31,8 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
-import { IgnoreOssCommand } from "./commands/ignoreOssCommand";
-import { ManageIgnoredOssView } from "./views/ignoreOssView/manageIgnoredOssView";
+import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
+
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -268,21 +268,14 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
-
-  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  const ossCommand = scannerRegistry.getScanner("oss") as OssScannerCommand;
+  const ossScanner = ossCommand.getScannerService();
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner);
   copilotChatCommand.registerCopilotChatCommand();
 
-  const ignoreOssCommand = new IgnoreOssCommand(context, logs);
-  ignoreOssCommand.registerIgnoreCommand();
 
-  // Register ignored OSS packages management view
-  const manageIgnoredOssView = new ManageIgnoredOssView(context, logs);
-  manageIgnoredOssView.registerCommands();
-  vscode.window.registerTreeDataProvider('ignoreOssView', manageIgnoredOssView);
-  vscode.window.createTreeView('ignoreOssView', {
-    treeDataProvider: manageIgnoredOssView,
-    showCollapseAll: true
-  });
+
+
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

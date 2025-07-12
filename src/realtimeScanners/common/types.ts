@@ -30,6 +30,7 @@ export interface HoverData {
   version: string;
   status: CxRealtimeEngineStatus;
   vulnerabilities?: Array<{ cve: string, description: string, severity: string }>;
+  filePath: string;
 }
 
 export interface SecretsHoverData {

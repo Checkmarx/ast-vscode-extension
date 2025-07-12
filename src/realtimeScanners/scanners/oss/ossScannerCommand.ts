@@ -156,4 +156,8 @@ export class OssScannerCommand extends BaseScannerCommand {
     (this.scannerService as OssScannerService).dispose();
     this.hoverProviderDisposable?.dispose();
   }
+
+  getScannerService(): OssScannerService {
+    return this.scannerService as OssScannerService;
+  }
 }
