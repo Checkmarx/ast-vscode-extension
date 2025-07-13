@@ -1,15 +1,16 @@
 # CHANGELOG
 
-## [v2.34.1-outdatedTree.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-outdatedTree.0) - 2025-07-08 11:53:22
+## [v2.34.1-telemetry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-telemetry.0) - 2025-07-10 10:16:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Inject mcp server after welcome page loaded (AST-103985) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1203
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-AutoConfigureMcpVscodeCursor.0...v2.34.1-outdatedTree.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-outdatedTree.0...v2.34.1-telemetry.0
+
+## [v2.34.1-outdatedTree.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-outdatedTree.0) - 2025-07-08 11:53:22
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
 
