@@ -3,7 +3,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
+import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
 import { HoverData, SecretsHoverData, IScannerService } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
@@ -116,57 +116,6 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
-    private getWorkspaceFolder(filePath: string): vscode.WorkspaceFolder {
-        const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
-        if (!folder) { throw new Error("No workspace folder found."); }
-        return folder;
-    }
-
-    private getInitializedIgnoreManager(folder: vscode.WorkspaceFolder): IgnoreFileManager {
-        const manager = IgnoreFileManager.getInstance();
-        manager.initialize(folder);
-        return manager;
-    }
-
-    private findAndIgnoreMatchingPackages(
-        item: HoverData,
-        scanner: OssScannerService,
-        manager: IgnoreFileManager
-    ): Set<string> {
-        const affected = new Set<string>();
-        for (const [filePath, diagnostics] of scanner['diagnosticsMap'].entries()) {
-            for (const diagnostic of diagnostics) {
-                const d = (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item;
-                if (
-                    d?.packageName === item.packageName &&
-                    d?.version === item.version &&
-                    d?.packageManager === item.packageManager
-                ) {
-                    affected.add(filePath);
-                    manager.addIgnoredEntry({
-                        packageManager: d.packageManager,
-                        packageName: d.packageName,
-                        packageVersion: d.version,
-                        filePath,
-                    });
-                    break;
-                }
-            }
-        }
-        return affected;
-    }
-
-    private async rescanFiles(files: Set<string>, scanner: OssScannerService): Promise<void> {
-        for (const filePath of files) {
-            const document =
-                vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath)
-                ?? await vscode.workspace.openTextDocument(filePath);
-
-            if (scanner.shouldScanFile(document)) {
-                await scanner.scan(document, this.logs);
-            }
-        }
-    }
 
 
 
@@ -208,7 +157,7 @@ export class CopilotChatCommand {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData) => {
                 try {
-                    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(item.filePath));
+                    const workspaceFolder = getWorkspaceFolder(item.filePath);
                     if (!workspaceFolder) {
                         vscode.window.showErrorMessage("No workspace folder found.");
                         return;
@@ -243,12 +192,12 @@ export class CopilotChatCommand {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.IgnoreAll, async (item: HoverData) => {
                 try {
-                    const workspaceFolder = this.getWorkspaceFolder(item.filePath);
-                    const ignoreManager = this.getInitializedIgnoreManager(workspaceFolder);
+                    const workspaceFolder = getWorkspaceFolder(item.filePath);
+                    const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
                     const scanner = this.scannerService as OssScannerService;
 
-                    const affectedFiles = this.findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
-                    await this.rescanFiles(affectedFiles, scanner);
+                    const affectedFiles = findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
+                    await rescanFiles(affectedFiles, scanner, this.logs);
 
                     vscode.window.showInformationMessage(
                         `Ignored ${item.packageName}@${item.version} in ${affectedFiles.size} files.`
