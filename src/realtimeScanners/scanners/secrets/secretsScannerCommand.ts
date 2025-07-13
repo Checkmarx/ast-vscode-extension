@@ -78,7 +78,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		md.appendMarkdown(this.renderSecretsIcon() + "<br>");
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
 
-		md.appendMarkdown(`${"&nbsp;".repeat(30)}${buttons}<br>`);
+		md.appendMarkdown(`${"&nbsp;".repeat(35)}${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
 
 		return new vscode.Hover(md);
