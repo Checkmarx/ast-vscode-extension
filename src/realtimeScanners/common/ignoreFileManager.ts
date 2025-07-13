@@ -85,7 +85,7 @@ export class IgnoreFileManager {
 				type: entry.packageManager ? 'ossScan' : 'unknown',
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
-				PackageVersion: entry.packageVersion
+				PackageVersion: entry.packageVersion,
 			};
 		}
 
@@ -112,4 +112,22 @@ export class IgnoreFileManager {
 
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
+
+	// private updateTempList(): void {
+	// 	const tempList = Object.values(this.ignoreData)
+	// 		.filter(entry => entry.active && Array.isArray(entry.files) && entry.files.length > 0)
+	// 		.flatMap(entry =>
+	// 			entry.files.map(filePath => ({
+	// 				PackageManager: entry.PackageManager,
+	// 				PackageName: entry.PackageName,
+	// 				PackageVersion: entry.PackageVersion,
+	// 				filePath: filePath
+	// 			}))
+	// 		);
+
+	// 	const tempFilePath = path.join(this.workspaceRootPath, '.vscode', '.checkmarxIgnoredTempList.json');
+	// 	fs.mkdirSync(path.dirname(tempFilePath), { recursive: true });
+	// 	fs.writeFileSync(tempFilePath, JSON.stringify(tempList, null, 2));
+	// }
+
 }
