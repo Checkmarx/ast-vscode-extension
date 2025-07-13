@@ -6,7 +6,7 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
-import { getFilePath, getResultsFilePath } from "../utils/utils";
+import { getFilePath, getResultsFilePath, isCursorIDE } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
@@ -285,9 +285,8 @@ export class Cx implements CxPlatform {
     if (!config) {
       return [];
     }
-    const filter = `project-id=${projectId},${
-      branch ? `branch=${branch},` : ""
-    }limit=${limit},statuses=${statuses}`;
+    const filter = `project-id=${projectId},${branch ? `branch=${branch},` : ""
+      }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
@@ -721,5 +720,15 @@ export class Cx implements CxPlatform {
     }
 
     return r;
+  }
+
+  async setUserEventDataForLogs(eventType: string, subType:string, engine: string, problemSeverity: string) {
+    const config = await this.getAstConfiguration();
+    const cx = new CxWrapper(config);
+    const aiProvider = isCursorIDE() ? "Cursor" : "Copilot";
+    const agent = isCursorIDE() ? "Cursor" : constants.vsCodeAgent;
+    const timestamp = new Date();
+
+    cx.telemetryAIEvent(aiProvider, agent, timestamp, eventType, subType, engine, problemSeverity);
   }
 }

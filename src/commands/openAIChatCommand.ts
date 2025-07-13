@@ -11,6 +11,7 @@ import {
     SECRET_REMEDIATION_PROMPT,
     SECRETS_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
+import { cx } from "../cx";
 
 
 export class CopilotChatCommand {
@@ -113,12 +114,21 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
+    private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData): void {
+        const isSecrets = isSecretsHoverData(item);
+        const engine = isSecrets ? constants.secretsScannerEngineName : constants.ossRealtimeScannerEngineName;
+        const problemSeverity = isSecrets ? item.severity : item.status;
+        cx.setUserEventDataForLogs(EventType, subType, engine, problemSeverity);
+    }
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
+                this.logUserEvent("click", commands.openAIChat, item);
+
+                const isSecrets = isSecretsHoverData(item);
                 let question = '';
-                if (isSecretsHoverData(item)) {
+                if (isSecrets) {
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
@@ -133,9 +143,12 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
+                this.logUserEvent("click", commands.viewDetails, item);
+
+                const isSecrets = isSecretsHoverData(item);
                 let question = '';
 
-                if (isSecretsHoverData(item)) {
+                if (isSecrets) {
                     question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);

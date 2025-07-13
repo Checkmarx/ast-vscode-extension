@@ -1619,4 +1619,6 @@ export class CxMock implements CxPlatform {
       ],
     });
   }
+
+  setUserEventDataForLogs(): void {}
 }
