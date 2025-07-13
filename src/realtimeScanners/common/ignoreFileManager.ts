@@ -4,8 +4,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 export interface IgnoreEntry {
-	files: string[];
-	active: boolean;
+	files: Array<{ path: string; active: boolean }>;
 	type: string;
 	PackageManager: string;
 	PackageName: string;
@@ -81,7 +80,6 @@ export class IgnoreFileManager {
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				active: true,
 				type: entry.packageManager ? 'ossScan' : 'unknown',
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
@@ -89,29 +87,37 @@ export class IgnoreFileManager {
 			};
 		}
 
-		if (!this.ignoreData[packageKey].files.includes(relativePath)) {
-			this.ignoreData[packageKey].files.push(relativePath);
+		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+		if (!existing) {
+			this.ignoreData[packageKey].files.push({ path: relativePath, active: true });
+		} else {
+			existing.active = true;
 		}
 
 		this.saveIgnoreFile();
 		this.updateTempList();
 	}
 
+
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
 	}
 
 	private updateTempList(): void {
-		const tempList = Object.values(this.ignoreData)
-			.filter(entry => entry.active)
-			.map(entry => ({
-				PackageManager: entry.PackageManager,
-				PackageName: entry.PackageName,
-				PackageVersion: entry.PackageVersion
-			}));
+		const tempList = Object.values(this.ignoreData).flatMap(entry =>
+			entry.files
+				.filter(file => file.active)
+				.map(file => ({
+					PackageManager: entry.PackageManager,
+					PackageName: entry.PackageName,
+					PackageVersion: entry.PackageVersion,
+					FilePath: path.resolve(this.workspaceRootPath, file.path),
+				}))
+		);
 
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
+
 
 	// private updateTempList(): void {
 	// 	const tempList = Object.values(this.ignoreData)
