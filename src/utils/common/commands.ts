@@ -118,4 +118,5 @@ export const commands = {
   openAIChat: `${constants.extensionName}.fixWithAIChat`,
   viewDetails: `${constants.extensionName}.viewPackageDetails`,
   ignorePackage: `${constants.extensionName}.ignorePackage`,
+  IgnoreAll: `${constants.extensionName}.ignoreAll`,
 };

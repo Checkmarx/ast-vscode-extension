@@ -116,6 +116,59 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
+    private getWorkspaceFolder(filePath: string): vscode.WorkspaceFolder {
+        const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+        if (!folder) { throw new Error("No workspace folder found."); }
+        return folder;
+    }
+
+    private getInitializedIgnoreManager(folder: vscode.WorkspaceFolder): IgnoreFileManager {
+        const manager = IgnoreFileManager.getInstance();
+        manager.initialize(folder);
+        return manager;
+    }
+
+    private findAndIgnoreMatchingPackages(
+        item: HoverData,
+        scanner: OssScannerService,
+        manager: IgnoreFileManager
+    ): Set<string> {
+        const affected = new Set<string>();
+        for (const [filePath, diagnostics] of scanner['diagnosticsMap'].entries()) {
+            for (const diagnostic of diagnostics) {
+                const d = (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item;
+                if (
+                    d?.packageName === item.packageName &&
+                    d?.version === item.version &&
+                    d?.packageManager === item.packageManager
+                ) {
+                    affected.add(filePath);
+                    manager.addIgnoredEntry({
+                        packageManager: d.packageManager,
+                        packageName: d.packageName,
+                        packageVersion: d.version,
+                        filePath,
+                    });
+                    break;
+                }
+            }
+        }
+        return affected;
+    }
+
+    private async rescanFiles(files: Set<string>, scanner: OssScannerService): Promise<void> {
+        for (const filePath of files) {
+            const document =
+                vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath)
+                ?? await vscode.workspace.openTextDocument(filePath);
+
+            if (scanner.shouldScanFile(document)) {
+                await scanner.scan(document, this.logs);
+            }
+        }
+    }
+
+
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
@@ -181,6 +234,28 @@ export class CopilotChatCommand {
                 const scanner = this.scannerService as OssScannerService;
                 if (scanner.shouldScanFile(document)) {
                     await scanner.scan(document, this.logs);
+                }
+            })
+        );
+
+
+
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.IgnoreAll, async (item: HoverData) => {
+                try {
+                    const workspaceFolder = this.getWorkspaceFolder(item.filePath);
+                    const ignoreManager = this.getInitializedIgnoreManager(workspaceFolder);
+                    const scanner = this.scannerService as OssScannerService;
+
+                    const affectedFiles = this.findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
+                    await this.rescanFiles(affectedFiles, scanner);
+
+                    vscode.window.showInformationMessage(
+                        `Ignored ${item.packageName}@${item.version} in ${affectedFiles.size} files.`
+                    );
+                } catch (err) {
+                    this.logs.error(`Failed to ignore all: ${err}`);
+                    vscode.window.showErrorMessage(`Failed to ignore all: ${err}`);
                 }
             })
         );
