@@ -15,6 +15,7 @@ export interface IgnoreEntry {
 export class IgnoreFileManager {
 	private static instance: IgnoreFileManager;
 	private workspacePath: string = '';
+	private workspaceRootPath: string = '';
 	private ignoreData: Record<string, IgnoreEntry> = {};
 
 	private constructor() { }
@@ -28,6 +29,7 @@ export class IgnoreFileManager {
 
 	public initialize(workspaceFolder: vscode.WorkspaceFolder): void {
 		this.workspacePath = path.join(workspaceFolder.uri.fsPath, '.vscode');
+		this.workspaceRootPath = workspaceFolder.uri.fsPath;
 		this.ensureIgnoreFileExists();
 		this.loadIgnoreData();
 	}
@@ -74,7 +76,7 @@ export class IgnoreFileManager {
 		filePath: string;
 	}): void {
 		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
-		const relativePath = path.relative(this.workspacePath, entry.filePath);
+		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
