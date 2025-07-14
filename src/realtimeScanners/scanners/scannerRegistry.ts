@@ -4,6 +4,7 @@ import { IScannerCommand } from "../common/types";
 import { ConfigurationManager } from "../configuration/configurationManager";
 import { OssScannerCommand } from "./oss/ossScannerCommand";
 import { SecretsScannerCommand } from "./secrets/secretsScannerCommand";
+import { AscaScannerCommand } from "./asca/ascaScannerCommand";
 
 export class ScannerRegistry {
   private scanners: Map<string, IScannerCommand> = new Map();
@@ -19,6 +20,7 @@ export class ScannerRegistry {
     // Register all scanners here
     this.registerScanner("oss", new OssScannerCommand(context, logs, configManager));
     this.registerScanner("secrets", new SecretsScannerCommand(context, logs, configManager));
+    this.registerScanner("asca", new AscaScannerCommand(context, logs, configManager));
   }
 
   registerScanner(id: string, scanner: IScannerCommand): void {

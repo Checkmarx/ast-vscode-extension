@@ -152,14 +152,15 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA engine
-  errorInstallation: "Failed to run ASCA engine",
-  errorScanAsca: "failed to handle ASCA scan",
-  ascaStart: "AI Secure Coding Assistant Engine started",
-  ascaDisabled: "AI Secure Coding Assistant Engine disabled",
-  ascaEngineName: "ASCA",
-  ActivateAscaAutoScanning: "Activate ASCA",
-  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
+  // ASCA Realtime Scanner - New configuration
+  activateAscaRealtimeScanner: "Activate ASCA Realtime",
+  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+  ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
+  ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
+  ascaRealtimeScannerEngineName: "AscaRealtimeScanner",
+  ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
+  errorAscaInstallation: "Failed to run ASCA engine",
+  errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
 
   // Secrets Scanner
   activateSecretsScanner: "Activate Secret Detection Realtime",
@@ -194,6 +195,16 @@ export const constants = {
     medium: "medium_untoggle.png",
     low: "low_untoggle.png",
   },
+
+  // ASCA supported file extensions
+  ascaSupportedExtensions: [
+    ".java",
+    ".cs",
+    ".go",
+    ".py",
+    ".js",
+    ".jsx"
+  ],
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

@@ -43,7 +43,19 @@ export interface SecretsHoverData {
   };
 }
 
+export interface AscaHoverData {
+  ruleName: string;
+  description: string;
+  severity: string;
+  remediationAdvise: string;
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+}
+
 export interface CxDiagnosticData {
-  cxType: "oss" | "secrets";
-  item: HoverData | SecretsHoverData;
+  cxType: "oss" | "secrets" | "asca";
+  item: HoverData | SecretsHoverData | AscaHoverData;
 }

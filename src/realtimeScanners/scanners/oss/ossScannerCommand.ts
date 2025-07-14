@@ -17,7 +17,6 @@ export class OssScannerCommand extends BaseScannerCommand {
   ) {
     const scannerService = new OssScannerService();
     super(context, logs, scannerService.config, scannerService, configManager);
-    this.debounceStrategy = "per-document";
   }
 
   protected async initializeScanner(): Promise<void> {

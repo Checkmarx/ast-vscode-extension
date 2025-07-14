@@ -2,30 +2,34 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerCommand } from "../../common/baseScannerCommand";
-import { SecretsScannerService } from "./secretsScannerService";
+import { AscaScannerService } from "./ascaScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
-import { SecretsHoverData } from "../../common/types";
+import { AscaHoverData } from "../../common/types";
+import { cx } from "../../../cx";
 
-
-export class SecretsScannerCommand extends BaseScannerCommand {
+export class AscaScannerCommand extends BaseScannerCommand {
 	constructor(
 		context: vscode.ExtensionContext,
 		logs: Logs,
 		configManager: ConfigurationManager
 	) {
-		const scannerService = new SecretsScannerService();
+		const scannerService = new AscaScannerService();
 		super(context, logs, scannerService.config, scannerService, configManager);
 	}
 
 	private hoverProviderDisposable: vscode.Disposable | undefined;
 
-
-
 	protected async initializeScanner(): Promise<void> {
+		const res = await cx.installAsca();
+		if (res.error) {
+			const errorMessage = constants.errorAscaInstallation + " : " + res.error;
+			vscode.window.showErrorMessage(errorMessage);
+			return;
+		}
 		this.registerScanOnChangeText();
-		const scanner = this.scannerService as SecretsScannerService;
+		const scanner = this.scannerService as AscaScannerService;
 		scanner.initializeScanner();
 
 		if (this.hoverProviderDisposable) {
@@ -49,56 +53,65 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		});
 	}
 
-
-
 	private getHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		scanner: any
+		scanner: AscaScannerService
 	) {
 		const key = `${document.uri.fsPath}:${position.line}`;
-		const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
+		const hoverData: AscaHoverData = scanner.getHoverData()?.get(key);
+		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
 		const hasDiagnostic = diagnostics.some(
 			(d) => d.range.start.line === position.line
 		);
 
-		if (!hasDiagnostic) {
+		if (!hoverData || !hasDiagnostic) {
 			return;
 		}
-		const hoverData: SecretsHoverData = scanner.secretsHoverData.get(key);
+
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
+
+		// Display rule name and description as per requirements
+		const ruleHeader = `**Rule:** ${hoverData.ruleName}\n\n`;
+
+		// Include description with truncation support as per requirements
+		let description = hoverData.description;
+		if (description && description.length > 200) {
+			description = description.substring(0, 197) + "...";
+		}
+		const descriptionText = `**Description:** ${description}\n\n`;
+
+		// Create command arguments for the buttons
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
+		const buttons = buildCommandButtons(args, false, true); // false for isSecret, true for isAsca
 
-		const buttons = buildCommandButtons(args, true);
-
-		md.appendMarkdown(`${hoverData.description}\n\n`);
-		md.appendMarkdown(this.renderSecretsIcon() + "<br>");
+		md.appendMarkdown(ruleHeader);
+		md.appendMarkdown(descriptionText);
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-
 		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
 
 		return new vscode.Hover(md);
 	}
 
-	private renderSecretsIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
-	}
-
 	private renderSeverityIcon(severity: string): string {
-		const iconName = constants.ossIcons[severity.toLowerCase() as keyof typeof constants.ossIcons];
-		if (!iconName) {
-			return "";
-		}
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconName}" width="10" height="11" style="vertical-align: -12px;" />`;
-	}
+		const severityLower = severity.toLowerCase();
+		const iconMap = {
+			critical: "critical_untoggle.png",
+			high: "high_untoggle.png",
+			medium: "medium_untoggle.png",
+			low: "low_untoggle.png"
+		};
 
+		const iconFile = iconMap[severityLower] || "info_untoggle.png";
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
+	}
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as SecretsScannerService).dispose();
+		(this.scannerService as AscaScannerService).dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 }

@@ -3,13 +3,15 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { isCursorIDE, isSecretsHoverData, isAscaHoverData } from "../utils/utils";
+import { HoverData, SecretsHoverData, AscaHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,
     SECRET_REMEDIATION_PROMPT,
-    SECRETS_EXPLANATION_PROMPT
+    SECRETS_EXPLANATION_PROMPT,
+    ASCA_REMEDIATION_PROMPT,
+    ASCA_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
 
 
@@ -116,10 +118,12 @@ export class CopilotChatCommand {
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
+            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData) => {
                 let question = '';
                 if (isSecretsHoverData(item)) {
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
+                } else if (isAscaHoverData(item)) {
+                    question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -132,11 +136,13 @@ export class CopilotChatCommand {
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData) => {
                 let question = '';
 
                 if (isSecretsHoverData(item)) {
                     question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
+                } else if (isAscaHoverData(item)) {
+                    question = ASCA_EXPLANATION_PROMPT(item.ruleName, item.description, item.severity);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }

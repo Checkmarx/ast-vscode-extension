@@ -23,7 +23,6 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
-import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
@@ -192,9 +191,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
-  const ascaCommand = new AscaCommand(context, logs);
-  ascaCommand.registerAsca();
-
   const configManager = new ConfigurationManager();
   const scannerRegistry = new ScannerRegistry(context, logs, configManager);
   await scannerRegistry.activateAllScanners();
@@ -214,6 +210,13 @@ export async function activate(context: vscode.ExtensionContext) {
         scannerRegistry.getScanner("secrets")?.register();
         return;
       }
+      const ascaEffected = section(
+        `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
+      );
+      if (ascaEffected) {
+        scannerRegistry.getScanner("asca")?.register();
+        return;
+      }
     });
   context.subscriptions.push(configListener);
 
@@ -231,8 +234,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await executeCheckSettingsChange(
     context,
     kicsStatusBarItem,
-    logs,
-    ascaCommand
+    logs
   );
 
   const treeCommand = new TreeCommand(
