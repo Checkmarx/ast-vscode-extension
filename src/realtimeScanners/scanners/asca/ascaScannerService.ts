@@ -27,11 +27,7 @@ export class AscaScannerService extends BaseScannerService {
 		critical: this.createDecoration("critical_untoggle.svg", "12px"),
 		high: this.createDecoration("high_untoggle.svg"),
 		medium: this.createDecoration("medium_untoggle.svg"),
-		low: this.createDecoration("low_untoggle.svg"),
-		underline: vscode.window.createTextEditorDecorationType({
-			textDecoration: "underline wavy #f14c4c",
-			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
-		}),
+		low: this.createDecoration("low_untoggle.svg")
 	};
 	private createDecoration(
 		iconName: string,
