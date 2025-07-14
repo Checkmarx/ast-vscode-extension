@@ -16,6 +16,7 @@ export class IgnoreFileManager {
 	private workspacePath: string = '';
 	private workspaceRootPath: string = '';
 	private ignoreData: Record<string, IgnoreEntry> = {};
+	private scannedFileMap: Map<string, string> = new Map();
 
 	private constructor() { }
 
@@ -24,6 +25,10 @@ export class IgnoreFileManager {
 			IgnoreFileManager.instance = new IgnoreFileManager();
 		}
 		return IgnoreFileManager.instance;
+	}
+
+	public setScannedFilePath(originalPath: string, scannedTempPath: string): void {
+		this.scannedFileMap.set(path.resolve(originalPath), scannedTempPath);
 	}
 
 	public initialize(workspaceFolder: vscode.WorkspaceFolder): void {
@@ -107,16 +112,22 @@ export class IgnoreFileManager {
 		const tempList = Object.values(this.ignoreData).flatMap(entry =>
 			entry.files
 				.filter(file => file.active)
-				.map(file => ({
-					PackageManager: entry.PackageManager,
-					PackageName: entry.PackageName,
-					PackageVersion: entry.PackageVersion,
-					FilePath: path.resolve(this.workspaceRootPath, file.path),
-				}))
+				.map(file => {
+					const originalPath = path.resolve(this.workspaceRootPath, file.path);
+					const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
+
+					return {
+						PackageManager: entry.PackageManager,
+						PackageName: entry.PackageName,
+						PackageVersion: entry.PackageVersion,
+						FilePath: scannedTempPath,
+					};
+				})
 		);
 
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
+
 
 
 	// private updateTempList(): void {

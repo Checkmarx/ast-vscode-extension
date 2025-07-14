@@ -211,7 +211,9 @@ export class OssScannerService extends BaseScannerService {
 
       logs.info("Start Realtime scan On File: " + originalFilePath);
 
-      const ignoredPackagesFile = IgnoreFileManager.getInstance().getIgnoredPackagesTempFile();
+      const IgnoreFileManagerInstance = IgnoreFileManager.getInstance();
+      IgnoreFileManagerInstance.setScannedFilePath(originalFilePath, mainTempPath);
+      const ignoredPackagesFile = IgnoreFileManagerInstance.getIgnoredPackagesTempFile();
 
       const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
