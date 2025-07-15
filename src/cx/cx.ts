@@ -727,8 +727,7 @@ export class Cx implements CxPlatform {
     const cx = new CxWrapper(config);
     const aiProvider = isCursorIDE() ? "Cursor" : "Copilot";
     const agent = isCursorIDE() ? "Cursor" : constants.vsCodeAgent;
-    const timestamp = new Date();
 
-    cx.telemetryAIEvent(aiProvider, agent, timestamp, eventType, subType, engine, problemSeverity);
+    cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity);
   }
 }
