@@ -16,6 +16,7 @@ export const constants = {
   urgentFilter: "ast-results-Urgent",
   notIgnoredFilter: "ast-results-NotIgnored",
   ignoredFilter: "ast-results-Ignored",
+  scaHideDevTestFilter: "ast-results-SCAHideDevTest",
   queryNameGroup: "ast-results-groupByQueryName",
   languageGroup: "ast-results-groupByLanguage",
   severityGroup: "ast-results-groupBySeverity",
