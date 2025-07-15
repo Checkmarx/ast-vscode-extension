@@ -284,7 +284,6 @@ export function buildCommandButtons(args: string, isSecret: boolean): string {
     `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
     `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore CxAI Package</a>  ` +
     `<a href="command:${commands.IgnoreAll}?${args}" title="">${isSecret ? " " : "Ignore All CxAI Packages"}</a>`
-
   );
 }
 
@@ -317,26 +316,44 @@ export function findAndIgnoreMatchingPackages(
   manager: IgnoreFileManager
 ): Set<string> {
   const affected = new Set<string>();
+  const packageKey = `${item.packageName}:${item.version}:${item.packageManager}`;
+
+  const packageToFilesMap = buildPackageToFilesMap(scanner);
+  const matchingFiles = packageToFilesMap.get(packageKey);
+
+  if (matchingFiles) {
+    matchingFiles.forEach(filePath => {
+      affected.add(filePath);
+      manager.addIgnoredEntry({
+        packageManager: item.packageManager,
+        packageName: item.packageName,
+        packageVersion: item.version,
+        filePath,
+      });
+    });
+  }
+
+  return affected;
+}
+
+function buildPackageToFilesMap(scanner: OssScannerService): Map<string, Set<string>> {
+  const packageToFilesMap = new Map<string, Set<string>>();
+
   for (const [filePath, diagnostics] of scanner['diagnosticsMap'].entries()) {
     for (const diagnostic of diagnostics) {
       const d = (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item;
-      if (
-        d?.packageName === item.packageName &&
-        d?.version === item.version &&
-        d?.packageManager === item.packageManager
-      ) {
-        affected.add(filePath);
-        manager.addIgnoredEntry({
-          packageManager: d.packageManager,
-          packageName: d.packageName,
-          packageVersion: d.version,
-          filePath,
-        });
-        break;
+      if (d?.packageName && d?.version && d?.packageManager) {
+        const packageKey = `${d.packageName}:${d.version}:${d.packageManager}`;
+
+        if (!packageToFilesMap.has(packageKey)) {
+          packageToFilesMap.set(packageKey, new Set());
+        }
+        packageToFilesMap.get(packageKey)!.add(filePath);
       }
     }
   }
-  return affected;
+
+  return packageToFilesMap;
 }
 
 export async function rescanFiles(files: Set<string>, scanner: OssScannerService, logs: Logs): Promise<void> {
