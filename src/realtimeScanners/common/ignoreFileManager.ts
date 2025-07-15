@@ -119,10 +119,29 @@ export class IgnoreFileManager {
 
 			await this.rescanFile(filePath);
 
+			this.removeIgnoredEntry(packageKey, filePath);
+
 			console.log(`Handled deactivation for ${packageKey} in file ${filePath}`);
 		} catch (error) {
 			console.error(`Error handling file deactivation for ${packageKey}:`, error);
 		}
+	}
+
+	private removeIgnoredEntry(packageKey: string, filePath: string): void {
+		if (!this.ignoreData[packageKey]) {
+			return;
+		}
+
+		const entry = this.ignoreData[packageKey];
+
+		entry.files = entry.files.filter(file => file.path !== filePath);
+
+		if (entry.files.length === 0) {
+			delete this.ignoreData[packageKey];
+		}
+
+		this.saveIgnoreFile();
+		this.updateTempList();
 	}
 
 	private async rescanFile(relativePath: string): Promise<void> {
