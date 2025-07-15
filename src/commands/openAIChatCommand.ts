@@ -124,7 +124,7 @@ export class CopilotChatCommand {
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
-                this.logUserEvent("click", commands.openAIChat, item);
+                this.logUserEvent("click", constants.openAIChat, item);
 
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
@@ -143,7 +143,7 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
-                this.logUserEvent("click", commands.viewDetails, item);
+                this.logUserEvent("click", constants.viewDetails, item);
 
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
