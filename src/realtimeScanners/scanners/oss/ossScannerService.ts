@@ -213,9 +213,17 @@ export class OssScannerService extends BaseScannerService {
 
       const IgnoreFileManagerInstance = IgnoreFileManager.getInstance();
       IgnoreFileManagerInstance.setScannedFilePath(originalFilePath, mainTempPath);
+
       const ignoredPackagesFile = IgnoreFileManagerInstance.getIgnoredPackagesTempFile();
 
       const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
+
+      try {
+        this.cleanupObsoleteIgnoredEntries(originalFilePath, document.getText());
+      } catch (cleanupError) {
+        console.error(`Cleanup error (non-critical):`, cleanupError);
+      }
+
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
       this.storeAndApplyResults(
@@ -538,5 +546,14 @@ export class OssScannerService extends BaseScannerService {
     const baseName = path.basename(relativePath);
     const hash = this.generateFileHash(relativePath);
     return `${baseName}-${hash}.tmp`;
+  }
+
+  private async cleanupObsoleteIgnoredEntries(originalFilePath: string, fileContent: string): Promise<void> {
+    try {
+      const ignoreManager = IgnoreFileManager.getInstance();
+      await ignoreManager.parseAndUpdateIgnoredPackages(originalFilePath, fileContent);
+    } catch (error) {
+      console.error(`Error parsing and updating ignored packages:`, error);
+    }
   }
 }

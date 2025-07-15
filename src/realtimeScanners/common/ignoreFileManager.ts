@@ -176,6 +176,66 @@ export class IgnoreFileManager {
 		this.stopFileWatcher();
 	}
 
+	public cleanupObsoleteEntries(filePath: string, currentPackages: Set<string>): void {
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		let hasChanges = false;
+
+		for (const packageKey in this.ignoreData) {
+			if (!currentPackages.has(packageKey)) {
+				const entry = this.ignoreData[packageKey];
+				const originalLength = entry.files.length;
+
+				entry.files = entry.files.filter(file => file.path !== relativePath);
+
+				if (entry.files.length !== originalLength) {
+					hasChanges = true;
+				}
+
+				if (entry.files.length === 0) {
+					delete this.ignoreData[packageKey];
+					hasChanges = true;
+				}
+			}
+		}
+
+		if (hasChanges) {
+			this.saveIgnoreFile();
+			this.updateTempList();
+		}
+	}
+
+	public async parseAndUpdateIgnoredPackages(filePath: string, fileContent: string): Promise<void> {
+		try {
+			const currentPackages = this.parsePackagesFromContent(fileContent);
+			this.cleanupObsoleteEntries(filePath, currentPackages);
+		} catch (error) {
+			console.error(`Error parsing packages from file:`, error);
+		}
+	}
+
+	private parsePackagesFromContent(fileContent: string): Set<string> {
+		const packages = new Set<string>();
+
+		try {
+			const jsonContent = JSON.parse(fileContent);
+			const deps = {
+				...jsonContent.dependencies,
+				...jsonContent.devDependencies,
+				...jsonContent.peerDependencies
+			};
+
+			for (const [name, version] of Object.entries(deps)) {
+				if (version) {
+					packages.add(`${name}:${version}`);
+				}
+			}
+		} catch (error) {
+			console.error(`Error parsing JSON content:`, error);
+		}
+
+		return packages;
+	}
+
 	private ensureIgnoreFileExists() {
 		if (!fs.existsSync(this.workspacePath)) {
 			fs.mkdirSync(this.workspacePath, { recursive: true });
