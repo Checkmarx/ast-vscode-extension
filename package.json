@@ -930,15 +930,15 @@
         }
       },
       {
-        "title": "Activate ASCA",
-        "id": "asca",
+        "title": "Activate ASCA Realtime",
+        "id": "asca-realtime-scanner",
         "order": 2,
         "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
+          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
             "type": "boolean",
             "order": 3,
             "default": false,
-            "markdownDescription": "Scans your file as you code"
+            "markdownDescription": "Scans your code files for security best practices as you code"
           }
         }
       },

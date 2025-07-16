@@ -9,7 +9,6 @@ import {getFromState, updateState} from "../common/globalState";
 import {cx} from "../../cx";
 import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
 import {messages} from "../common/messages";
-import {AscaCommand} from "../../commands/ascaCommand";
 import {AuthService} from "../../services/authService";
 
 export async function getBranchListener(
@@ -185,8 +184,7 @@ export async function gitExtensionListener(
 export async function executeCheckSettingsChange(
     context: vscode.ExtensionContext,
     kicsStatusBarItem: vscode.StatusBarItem,
-    logs: Logs,
-    ascaCommand: AscaCommand
+    logs: Logs
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
         const authService = AuthService.getInstance(context, logs);
@@ -209,11 +207,5 @@ export async function executeCheckSettingsChange(
                 ? messages.kicsStatusBarConnect
                 : messages.kicsStatusBarDisconnect;
         await vscode.commands.executeCommand(commands.refreshTree);
-        const ascaEffected = event.affectsConfiguration(
-            `${constants.CheckmarxAsca}.${constants.ActivateAscaAutoScanning}`
-        );
-        if (ascaEffected) {
-            await ascaCommand.registerAsca();
-        }
     });
 }

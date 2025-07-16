@@ -10,7 +10,7 @@ import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData, AscaHoverData } from "../realtimeScanners/common/types";
 
 
 export function getProperty(
@@ -275,18 +275,30 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string, isSecret: boolean): string {
+export function buildCommandButtons(args: string, isSecret: boolean, isAsca: boolean = false): string {
   const isCursor = isCursorIDE();
 
+  if (isAsca) {
+    return (
+      `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"   }</a>` +
+      `<a href="command:${commands.viewDetails}?${args}" title=""> CxAI Explain </a>  ` +
+      `<a href="command:cx.ignore" title="">Ignore CxAI</a>`
+    );
+  }
+
   return (
-    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
-    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
+    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"   }</a>` +
+    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>` +
     `<a href="command:cx.ignore" title="">Ignore CxAI Package</a>`
   );
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
+}
+
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData): item is AscaHoverData {
+  return 'ruleName' in item && 'remediationAdvise' in item;
 }
 
 
