@@ -136,14 +136,13 @@ export class AscaScannerService extends BaseScannerService {
 				new vscode.Position(result.line - 1, problemText.length)
 			);
 
-			// Always use Error severity and mark line in red as per requirements
 			const diagnostic = new vscode.Diagnostic(
 				range,
-				result.ruleName, // Use rule name as message as per requirements
+				result.ruleName,
 				vscode.DiagnosticSeverity.Error
 			);
 
-			diagnostic.source = 'CxAI'; // Set source to CxAI as per requirements
+			diagnostic.source = constants.cxAi; 
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'asca',
 				item: {

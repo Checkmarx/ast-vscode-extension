@@ -148,7 +148,7 @@ export class SecretsScannerService extends BaseScannerService {
 				`Secrets have been detected:${problem.title}`,
 				severityMap[problem.severity]
 			);
-			diagnostic.source = 'CxAI';
+			diagnostic.source = constants.cxAi; 
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'secrets',
 				item: {

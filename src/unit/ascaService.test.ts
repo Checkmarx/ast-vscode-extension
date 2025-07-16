@@ -6,6 +6,7 @@ import { mockDiagnosticCollection } from './mocks/vscode-mock';
 import { AscaScannerService } from '../realtimeScanners/scanners/asca/ascaScannerService';
 import type CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import type { Uri } from 'vscode';
+import { constants } from '../utils/common/constants';
 
 describe('AscaScannerService', () => {
     let ascaService: AscaScannerService;
@@ -94,22 +95,22 @@ describe('AscaScannerService', () => {
             const diagnostics = mockDiagnosticCollection.set.getCall(0).args[1];
 
             // Check first diagnostic
-            expect(diagnostics[0].range.start.line).to.equal(0); // line - 1
-            expect(diagnostics[0].range.start.character).to.equal(2); // 2 spaces
+            expect(diagnostics[0].range.start.line).to.equal(0); 
+            expect(diagnostics[0].range.start.character).to.equal(2); 
             expect(diagnostics[0].range.end.line).to.equal(0);
-            expect(diagnostics[0].range.end.character).to.equal(33); // full line length
-            expect(diagnostics[0].message).to.equal('Avoid Eval Usage'); // Rule name as message
-            expect(diagnostics[0].source).to.equal('CxAI'); // Source should be CxAI
-            expect(diagnostics[0].severity).to.equal(0); // Error severity
+            expect(diagnostics[0].range.end.character).to.equal(33);
+            expect(diagnostics[0].message).to.equal('Avoid Eval Usage'); 
+            expect(diagnostics[0].source).to.equal(constants.cxAi);
+            expect(diagnostics[0].severity).to.equal(0);
 
             // Check second diagnostic
-            expect(diagnostics[1].range.start.line).to.equal(1); // line - 1
-            expect(diagnostics[1].range.start.character).to.equal(4); // 4 spaces
+            expect(diagnostics[1].range.start.line).to.equal(1); 
+            expect(diagnostics[1].range.start.character).to.equal(4); 
             expect(diagnostics[1].range.end.line).to.equal(1);
-            expect(diagnostics[1].range.end.character).to.equal(24); // full line length
-            expect(diagnostics[1].message).to.equal('Hardcoded Secret'); // Rule name as message
-            expect(diagnostics[1].source).to.equal('CxAI'); // Source should be CxAI
-            expect(diagnostics[1].severity).to.equal(0); // Error severity
+            expect(diagnostics[1].range.end.character).to.equal(24);
+            expect(diagnostics[1].message).to.equal('Hardcoded Secret'); 
+            expect(diagnostics[1].source).to.equal(constants.cxAi);
+            expect(diagnostics[1].severity).to.equal(0);
         });
 
         it('should store hover data correctly', () => {

@@ -206,6 +206,8 @@ export const constants = {
     ".jsx"
   ],
 
+  cxAi: 'CxAI',
+
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
   mediumSeverity: "MEDIUM",
