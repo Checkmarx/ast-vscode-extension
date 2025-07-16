@@ -17,6 +17,7 @@ export interface IgnoreEntry {
 	PackageVersion: string;
 	severity?: string;
 	description?: string;
+	dateAdded?: string;
 }
 
 export class IgnoreFileManager {
@@ -285,6 +286,7 @@ export class IgnoreFileManager {
 		line?: number;
 		severity?: string;
 		description?: string;
+		dateAdded?: string;
 	}): void {
 		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
@@ -297,7 +299,8 @@ export class IgnoreFileManager {
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
 				severity: entry.severity,
-				description: entry.description
+				description: entry.description,
+				dateAdded: entry.dateAdded
 			};
 		} else {
 			if (entry.severity !== undefined) {

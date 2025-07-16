@@ -147,7 +147,7 @@ export async function getGitAPIRepository() {
 
 export async function getGitBranchName() {
   const gitApi = await getGitAPIRepository();
-  return gitApi.repositories[0]?.state.HEAD?.name; //TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+  return gitApi.repositories[0]?.state.HEAD?.name;
 }
 
 function extractRepoFullName(remoteURL: string): string | undefined {
@@ -160,7 +160,7 @@ export async function getActiveRepository(): Promise<Repository | undefined> {
   if (!gitAPI) {
     return undefined;
   }
-  return gitAPI.repositories[0]; // Default to the first repository
+  return gitAPI.repositories[0];
 }
 
 export async function getRepositoryFullName(): Promise<string | undefined> {
@@ -322,6 +322,8 @@ export function findAndIgnoreMatchingPackages(
   const matchingData = packageToDataMap.get(packageKey);
 
   if (matchingData) {
+    const ignoreDate = new Date().toISOString();
+
     matchingData.forEach(hoverData => {
       affected.add(hoverData.filePath);
       manager.addIgnoredEntry({
@@ -333,7 +335,8 @@ export function findAndIgnoreMatchingPackages(
         severity: hoverData.status,
         description: hoverData.vulnerabilities ?
           hoverData.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
-          undefined
+          undefined,
+        dateAdded: ignoreDate
       });
     });
   }

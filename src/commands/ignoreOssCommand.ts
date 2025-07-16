@@ -25,7 +25,8 @@ export class IgnoreCommand {
 					packageManager: hoverData.packageManager,
 					packageName: hoverData.packageName,
 					packageVersion: hoverData.version,
-					filePath
+					filePath,
+					dateAdded: new Date().toISOString()
 				});
 
 				vscode.window.showInformationMessage(`${hoverData.packageName}@${hoverData.version} ignored.`);
