@@ -463,7 +463,7 @@ export class OssScannerService extends BaseScannerService {
       diagnostic.source = 'CxAI';
 
       (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-        cxType: "oss",
+        cxType: constants.ossRealtimeScannerEngineName,
         item: {
           packageManager: result.packageManager,
           packageName: result.packageName,

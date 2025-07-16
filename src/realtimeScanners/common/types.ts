@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { constants } from "../../utils/common/constants";
 
 export interface IScannerConfig {
   engineName: string;
@@ -55,7 +56,12 @@ export interface AscaHoverData {
   };
 }
 
+const scannerEngineNames = {
+  oss: constants.ossRealtimeScannerEngineName,
+  secrets: constants.secretsScannerEngineName,
+  asca: constants.ascaRealtimeScannerEngineName
+} as const;
 export interface CxDiagnosticData {
-  cxType: "oss" | "secrets" | "asca";
+  cxType: typeof scannerEngineNames[keyof typeof scannerEngineNames];
   item: HoverData | SecretsHoverData | AscaHoverData;
 }

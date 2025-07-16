@@ -200,21 +200,21 @@ export async function activate(context: vscode.ExtensionContext) {
         `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
       );
       if (ossEffected) {
-        scannerRegistry.getScanner("oss")?.register();
+        scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
         return;
       }
       const secretsEffected = section(
         `${constants.secretsScanner}.${constants.activateSecretsScanner}`
       );
       if (secretsEffected) {
-        scannerRegistry.getScanner("secrets")?.register();
+        scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
         return;
       }
       const ascaEffected = section(
         `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
       );
       if (ascaEffected) {
-        scannerRegistry.getScanner("asca")?.register();
+        scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
         return;
       }
     });
