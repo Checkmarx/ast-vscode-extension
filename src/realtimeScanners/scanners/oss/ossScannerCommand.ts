@@ -86,7 +86,7 @@ export class OssScannerCommand extends BaseScannerCommand {
         "<br>"
       );
     }
-    md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
+    md.appendMarkdown(`${"&nbsp;".repeat(35)}${buttons}<br>`);
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }
@@ -155,5 +155,9 @@ export class OssScannerCommand extends BaseScannerCommand {
     await super.dispose();
     (this.scannerService as OssScannerService).dispose();
     this.hoverProviderDisposable?.dispose();
+  }
+
+  getScannerService(): OssScannerService {
+    return this.scannerService as OssScannerService;
   }
 }

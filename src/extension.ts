@@ -31,6 +31,10 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
+import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
+import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
+
+
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -266,9 +270,22 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+  const ossCommand = scannerRegistry.getScanner("oss") as OssScannerCommand;
+  const ossScanner = ossCommand.getScannerService();
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  const ignoreFileManager = IgnoreFileManager.getInstance();
+  ignoreFileManager.setOssScannerService(ossScanner);
+
+  context.subscriptions.push({
+    dispose: () => ignoreFileManager.dispose()
+  });
+
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner);
   copilotChatCommand.registerCopilotChatCommand();
+
+
+
+
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

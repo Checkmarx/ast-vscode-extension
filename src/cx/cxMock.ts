@@ -1461,11 +1461,11 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
- 
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     return [];
   }
- 
+
   async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
     return [];
   }

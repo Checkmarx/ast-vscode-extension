@@ -226,7 +226,7 @@ export interface CxPlatform {
    */
   scanAsca(sourcePath: string): Promise<CxAsca>;
 
-  ossScanResults(sourcePath: string): Promise<CxOssResult[] | undefined>;
+  ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 

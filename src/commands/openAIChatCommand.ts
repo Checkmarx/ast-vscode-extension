@@ -3,23 +3,26 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData } from "../utils/utils";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
+import { HoverData, SecretsHoverData, IScannerService } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,
     SECRET_REMEDIATION_PROMPT,
     SECRETS_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
-
+import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
+import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 
 export class CopilotChatCommand {
     context: vscode.ExtensionContext;
     logs: Logs;
+    scannerService: IScannerService;
 
-    constructor(context: vscode.ExtensionContext, logs: Logs) {
+    constructor(context: vscode.ExtensionContext, logs: Logs, scannerService: IScannerService) {
         this.context = context;
         this.logs = logs;
+        this.scannerService = scannerService;
     }
 
     private pressEnterWindows() {
@@ -59,14 +62,10 @@ export class CopilotChatCommand {
     private async handleCursorIDE(question: string): Promise<void> {
         try {
             const originalClipboard = await vscode.env.clipboard.readText();
-
-            // Closes any open Cursor composer tab to start a fresh new chat
             await vscode.commands.executeCommand("composer.closeComposerTab");
 
             await vscode.env.clipboard.writeText(question);
-            // Opens a new chat tab with the Cursor AI agent
             await vscode.commands.executeCommand("composer.newAgentChat");
-            // Triggers a new follow-up action inside the Cursor AI chat interface
             await vscode.commands.executeCommand("aichat.newfollowupaction");
             await new Promise(resolve => setTimeout(resolve, 100));
             try {
@@ -114,6 +113,8 @@ export class CopilotChatCommand {
     }
 
 
+
+
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
@@ -148,5 +149,61 @@ export class CopilotChatCommand {
                 }
             })
         );
+
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData) => {
+                try {
+                    const workspaceFolder = getWorkspaceFolder(item.filePath);
+                    if (!workspaceFolder) {
+                        vscode.window.showErrorMessage("No workspace folder found.");
+                        return;
+                    }
+
+                    const ignoreManager = IgnoreFileManager.getInstance();
+                    ignoreManager.initialize(workspaceFolder);
+                    ignoreManager.addIgnoredEntry({
+                        packageManager: item.packageManager,
+                        packageName: item.packageName,
+                        packageVersion: item.version,
+                        filePath: item.filePath
+                    });
+
+                    vscode.window.showInformationMessage(`Package ${item.packageName}@${item.version} ignored successfully.`);
+                } catch (err) {
+                    this.logs.error(`Failed to ignore package: ${err}`);
+                    vscode.window.showErrorMessage(`Failed to ignore package: ${err}`);
+                }
+
+                const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
+                    ?? await vscode.workspace.openTextDocument(item.filePath);
+                const scanner = this.scannerService as OssScannerService;
+                if (scanner.shouldScanFile(document)) {
+                    await scanner.scan(document, this.logs);
+                }
+            })
+        );
+
+
+
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.IgnoreAll, async (item: HoverData) => {
+                try {
+                    const workspaceFolder = getWorkspaceFolder(item.filePath);
+                    const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
+                    const scanner = this.scannerService as OssScannerService;
+
+                    const affectedFiles = findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
+                    await rescanFiles(affectedFiles, scanner, this.logs);
+
+                    vscode.window.showInformationMessage(
+                        `Ignored ${item.packageName}@${item.version} in ${affectedFiles.size} files.`
+                    );
+                } catch (err) {
+                    this.logs.error(`Failed to ignore all: ${err}`);
+                    vscode.window.showErrorMessage(`Failed to ignore all: ${err}`);
+                }
+            })
+        );
+
     }
 }

@@ -11,8 +11,9 @@ import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
 import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
-
-
+import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
+import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { Logs } from "../models/logs";
 export function getProperty(
   o: AstResult | CxScan,
   propertyName: string
@@ -281,7 +282,8 @@ export function buildCommandButtons(args: string, isSecret: boolean): string {
   return (
     `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
     `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
-    `<a href="command:cx.ignore" title="">Ignore CxAI Package</a>`
+    `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore CxAI Package</a>  ` +
+    `<a href="command:${commands.IgnoreAll}?${args}" title="">${isSecret ? " " : "Ignore All CxAI Packages"}</a>`
   );
 }
 
@@ -292,4 +294,76 @@ export function isSecretsHoverData(item: HoverData | SecretsHoverData): item is 
 
 export function renderCxAiBadge(): string {
   return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
+}
+
+
+export function getWorkspaceFolder(filePath: string): vscode.WorkspaceFolder {
+  const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+  if (!folder) { throw new Error("No workspace folder found."); }
+  return folder;
+}
+
+export function getInitializedIgnoreManager(folder: vscode.WorkspaceFolder): IgnoreFileManager {
+  const manager = IgnoreFileManager.getInstance();
+  manager.initialize(folder);
+  return manager;
+}
+
+
+export function findAndIgnoreMatchingPackages(
+  item: HoverData,
+  scanner: OssScannerService,
+  manager: IgnoreFileManager
+): Set<string> {
+  const affected = new Set<string>();
+  const packageKey = `${item.packageName}:${item.version}:${item.packageManager}`;
+
+  const packageToFilesMap = buildPackageToFilesMap(scanner);
+  const matchingFiles = packageToFilesMap.get(packageKey);
+
+  if (matchingFiles) {
+    matchingFiles.forEach(filePath => {
+      affected.add(filePath);
+      manager.addIgnoredEntry({
+        packageManager: item.packageManager,
+        packageName: item.packageName,
+        packageVersion: item.version,
+        filePath,
+      });
+    });
+  }
+
+  return affected;
+}
+
+function buildPackageToFilesMap(scanner: OssScannerService): Map<string, Set<string>> {
+  const packageToFilesMap = new Map<string, Set<string>>();
+
+  for (const [filePath, diagnostics] of scanner['diagnosticsMap'].entries()) {
+    for (const diagnostic of diagnostics) {
+      const d = (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item;
+      if (d?.packageName && d?.version && d?.packageManager) {
+        const packageKey = `${d.packageName}:${d.version}:${d.packageManager}`;
+
+        if (!packageToFilesMap.has(packageKey)) {
+          packageToFilesMap.set(packageKey, new Set());
+        }
+        packageToFilesMap.get(packageKey)!.add(filePath);
+      }
+    }
+  }
+
+  return packageToFilesMap;
+}
+
+export async function rescanFiles(files: Set<string>, scanner: OssScannerService, logs: Logs): Promise<void> {
+  for (const filePath of files) {
+    const document =
+      vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath)
+      ?? await vscode.workspace.openTextDocument(filePath);
+
+    if (scanner.shouldScanFile(document)) {
+      await scanner.scan(document, logs);
+    }
+  }
 }
