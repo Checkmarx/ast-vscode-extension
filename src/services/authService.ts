@@ -401,8 +401,6 @@ export class AuthService {
       await vscode.commands.executeCommand(commands.refreshTree);
     }
 
-  }
-
   public async validateAndUpdateState(): Promise<boolean> {
     try {
       const token = await this.context.secrets.get("authCredential");
@@ -456,6 +454,7 @@ export class AuthService {
 
     await this.validateAndUpdateState();
     await vscode.commands.executeCommand(commands.refreshTree);
+    await vscode.commands.executeCommand(commands.clear);
   }
 
   private getSuccessPageHtml(): string {
