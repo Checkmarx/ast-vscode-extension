@@ -326,6 +326,20 @@ export class IgnoreFileManager {
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
 
+	public isPackageIgnored(packageName: string, version: string, filePath: string): boolean {
+		const packageKey = `${packageName}:${version}`;
+		const entry = this.ignoreData[packageKey];
+
+		if (!entry) {
+			return false;
+		}
+
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const fileEntry = entry.files.find(f => f.path === relativePath);
+
+		return fileEntry && fileEntry.active;
+	}
+
 
 
 

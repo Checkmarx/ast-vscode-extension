@@ -62,14 +62,10 @@ export class CopilotChatCommand {
     private async handleCursorIDE(question: string): Promise<void> {
         try {
             const originalClipboard = await vscode.env.clipboard.readText();
-
-            // Closes any open Cursor composer tab to start a fresh new chat
             await vscode.commands.executeCommand("composer.closeComposerTab");
 
             await vscode.env.clipboard.writeText(question);
-            // Opens a new chat tab with the Cursor AI agent
             await vscode.commands.executeCommand("composer.newAgentChat");
-            // Triggers a new follow-up action inside the Cursor AI chat interface
             await vscode.commands.executeCommand("aichat.newfollowupaction");
             await new Promise(resolve => setTimeout(resolve, 100));
             try {
