@@ -627,7 +627,8 @@ export class OssScannerService extends BaseScannerService {
           version: result.version,
           status: result.status,
           vulnerabilities: result.vulnerabilities,
-          filePath: uri.fsPath
+          filePath: uri.fsPath,
+          line: range.start.line
         }
       };
       diagnostics.push(diagnostic);
@@ -642,7 +643,8 @@ export class OssScannerService extends BaseScannerService {
       version: result.version,
       status: result.status,
       vulnerabilities: result.vulnerabilities,
-      filePath: uri.fsPath
+      filePath: uri.fsPath,
+      line: range.start.line
     });
   }
 

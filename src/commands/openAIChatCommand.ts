@@ -165,7 +165,12 @@ export class CopilotChatCommand {
                         packageManager: item.packageManager,
                         packageName: item.packageName,
                         packageVersion: item.version,
-                        filePath: item.filePath
+                        filePath: item.filePath,
+                        line: item.line,
+                        severity: item.status,
+                        description: item.vulnerabilities ?
+                            item.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
+                            undefined
                     });
 
                     vscode.window.showInformationMessage(`Package ${item.packageName}@${item.version} ignored successfully.`);

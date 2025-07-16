@@ -6,11 +6,17 @@ import { OssScannerService } from '../scanners/oss/ossScannerService';
 import { Logs } from '../../models/logs';
 
 export interface IgnoreEntry {
-	files: Array<{ path: string; active: boolean }>;
+	files: Array<{
+		path: string;
+		active: boolean;
+		line?: number;
+	}>;
 	type: string;
 	PackageManager: string;
 	PackageName: string;
 	PackageVersion: string;
+	severity?: string;
+	description?: string;
 }
 
 export class IgnoreFileManager {
@@ -276,6 +282,9 @@ export class IgnoreFileManager {
 		packageName: string;
 		packageVersion: string;
 		filePath: string;
+		line?: number;
+		severity?: string;
+		description?: string;
 	}): void {
 		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
@@ -287,14 +296,28 @@ export class IgnoreFileManager {
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
+				severity: entry.severity,
+				description: entry.description
 			};
+		} else {
+			if (entry.severity !== undefined) {
+				this.ignoreData[packageKey].severity = entry.severity;
+			}
+			if (entry.description !== undefined) {
+				this.ignoreData[packageKey].description = entry.description;
+			}
 		}
 
-		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath && f.line === entry.line);
 		if (!existing) {
-			this.ignoreData[packageKey].files.push({ path: relativePath, active: true });
+			this.ignoreData[packageKey].files.push({
+				path: relativePath,
+				active: true,
+				line: entry.line
+			});
 		} else {
 			existing.active = true;
+			existing.line = entry.line;
 		}
 
 		this.saveIgnoreFile();

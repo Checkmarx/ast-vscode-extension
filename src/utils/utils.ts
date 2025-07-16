@@ -318,17 +318,22 @@ export function findAndIgnoreMatchingPackages(
   const affected = new Set<string>();
   const packageKey = `${item.packageName}:${item.version}:${item.packageManager}`;
 
-  const packageToFilesMap = buildPackageToFilesMap(scanner);
-  const matchingFiles = packageToFilesMap.get(packageKey);
+  const packageToDataMap = buildPackageToDataMap(scanner);
+  const matchingData = packageToDataMap.get(packageKey);
 
-  if (matchingFiles) {
-    matchingFiles.forEach(filePath => {
-      affected.add(filePath);
+  if (matchingData) {
+    matchingData.forEach(hoverData => {
+      affected.add(hoverData.filePath);
       manager.addIgnoredEntry({
-        packageManager: item.packageManager,
-        packageName: item.packageName,
-        packageVersion: item.version,
-        filePath,
+        packageManager: hoverData.packageManager,
+        packageName: hoverData.packageName,
+        packageVersion: hoverData.version,
+        filePath: hoverData.filePath,
+        line: hoverData.line,
+        severity: hoverData.status,
+        description: hoverData.vulnerabilities ?
+          hoverData.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
+          undefined
       });
     });
   }
@@ -336,24 +341,21 @@ export function findAndIgnoreMatchingPackages(
   return affected;
 }
 
-function buildPackageToFilesMap(scanner: OssScannerService): Map<string, Set<string>> {
-  const packageToFilesMap = new Map<string, Set<string>>();
+function buildPackageToDataMap(scanner: OssScannerService): Map<string, HoverData[]> {
+  return Array.from(scanner['diagnosticsMap'].values())
+    .flatMap(diagnostics => diagnostics)
+    .map(diagnostic => (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item)
+    .filter((d): d is HoverData => !!(d?.packageName && d?.version && d?.packageManager))
+    .reduce((map, hoverData) => {
+      const packageKey = `${hoverData.packageName}:${hoverData.version}:${hoverData.packageManager}`;
 
-  for (const [filePath, diagnostics] of scanner['diagnosticsMap'].entries()) {
-    for (const diagnostic of diagnostics) {
-      const d = (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item;
-      if (d?.packageName && d?.version && d?.packageManager) {
-        const packageKey = `${d.packageName}:${d.version}:${d.packageManager}`;
-
-        if (!packageToFilesMap.has(packageKey)) {
-          packageToFilesMap.set(packageKey, new Set());
-        }
-        packageToFilesMap.get(packageKey)!.add(filePath);
+      if (!map.has(packageKey)) {
+        map.set(packageKey, []);
       }
-    }
-  }
+      map.get(packageKey)!.push(hoverData);
 
-  return packageToFilesMap;
+      return map;
+    }, new Map<string, HoverData[]>());
 }
 
 export async function rescanFiles(files: Set<string>, scanner: OssScannerService, logs: Logs): Promise<void> {
