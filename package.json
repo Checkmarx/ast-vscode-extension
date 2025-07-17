@@ -855,10 +855,10 @@
         "id": "cxone-assist",
         "order": 1,
         "properties": {
-          "mcp": {
-            "properties": {
-              "servers": {}
-            }
+          "checkmarx.mcp": {
+            "type": "",
+            "default": {},
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
           },
           "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
             "type": "boolean",

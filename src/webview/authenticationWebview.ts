@@ -6,7 +6,7 @@ import { Logs } from "../models/logs";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
-import { initializeMcpConfiguration } from "../services/mcpSettingsInjector";
+import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -232,6 +232,7 @@ export class AuthenticationWebview {
                 vscode.window.showInformationMessage(
                   "Logged out successfully."
                 );
+                uninstallMcp();
               }
             });
         } else if (message.command === "authenticate") {
@@ -289,6 +290,8 @@ export class AuthenticationWebview {
                     WelcomeWebview.show(this.context, isAiEnabled);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
+                    } else {
+                      await uninstallMcp();
                     }
                     setTimeout(() => {
                       this._panel.webview.postMessage({
