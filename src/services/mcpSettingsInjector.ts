@@ -91,7 +91,6 @@ export async function uninstallMcp() {
 			const mcpConfigPath = getMcpConfigPath();
 
 			if (!fs.existsSync(mcpConfigPath)) {
-				vscode.window.showWarningMessage("MCP configuration file not found.");
 				return;
 			}
 
@@ -104,8 +103,6 @@ export async function uninstallMcp() {
 				fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 
 				vscode.window.showInformationMessage("Checkmarx MCP configuration removed successfully.");
-			} else {
-				vscode.window.showWarningMessage("Checkmarx MCP configuration not found.");
 			}
 		} else {
 			// Handle VSCode: Remove from settings
@@ -122,8 +119,6 @@ export async function uninstallMcp() {
 					vscode.ConfigurationTarget.Global
 				);
 				vscode.window.showInformationMessage("Checkmarx MCP configuration removed successfully.");
-			} else {
-				vscode.window.showWarningMessage("Checkmarx MCP configuration not found.");
 			}
 		}
 	} catch (error) {
