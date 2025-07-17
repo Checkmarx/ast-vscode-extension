@@ -23,6 +23,7 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
+import { IgnoredView } from "./views/ignoredView/ignoredView";
 import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
@@ -64,6 +65,9 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Left
   );
   const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left
+  );
+  const ignoredStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
 
@@ -282,6 +286,39 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner);
   copilotChatCommand.registerCopilotChatCommand();
+
+  // Initialize ignored packages view
+  const ignoredView = new IgnoredView(context);
+
+  // Register ignored packages command
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.openIgnoredView, () => {
+      ignoredView.show();
+    })
+  );
+
+  // Function to update ignored packages status bar
+  function updateIgnoredStatusBar() {
+    const count = ignoreFileManager.getIgnoredPackagesCount();
+    const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
+
+    if (hasIgnoreFile) {
+      ignoredStatusBarItem.text = `$(shield) ${count}`;
+      ignoredStatusBarItem.tooltip = count > 0
+        ? `${count} ignored packages - Click to view`
+        : `No ignored packages - Click to view`;
+      ignoredStatusBarItem.command = commands.openIgnoredView;
+      ignoredStatusBarItem.show();
+    } else {
+      ignoredStatusBarItem.hide();
+    }
+  }
+
+  // Update status bar initially
+  updateIgnoredStatusBar();
+
+  // Set callback to update status bar when ignore file changes
+  ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
 
 
 

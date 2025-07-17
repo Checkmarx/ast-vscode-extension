@@ -1,0 +1,334 @@
+body {
+  font-family: var(--vscode-font-family);
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: none;
+}
+
+.header {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-right {
+  margin-top: 4px;
+}
+
+.header h1 {
+  color: var(--vscode-editor-foreground);
+  font-size: 24px;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: var(--vscode-descriptionForeground);
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+.refresh-btn {
+  background-color: transparent;
+  color: #4696ff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refresh-btn:hover:not(.disabled) {
+  background-color: rgba(70, 150, 255, 0.1);
+}
+
+.refresh-btn.disabled,
+.refresh-btn:disabled {
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.refresh-btn.disabled .refresh-icon,
+.refresh-btn:disabled .refresh-icon {
+  opacity: 0.3;
+}
+
+.refresh-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: auto;
+  height: auto;
+  margin-bottom: 40px;
+}
+
+.empty-state-text {
+  color: var(--secondary, rgba(255, 255, 255, 0.7));
+  font-size: 24px;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 50px 20px 45px 20px 2fr 80px 100px;
+  background-color: var(--vscode-editor-background);
+  padding: 12px 16px;
+  border-bottom: none;
+  font-weight: 400;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 50px 20px 45px 20px 2fr 80px 100px;
+  padding: 16px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  align-items: center;
+  min-height: 85px;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.col-spacer {
+}
+
+.col-checkbox {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 17px;
+}
+
+.col-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid var(--Light-CTA-Selection-Idle, #d7d8db);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.col-checkbox input[type="checkbox"]:checked {
+  background-color: var(--Light-CTA-Selection-Idle, #d7d8db);
+}
+
+.risk-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.package-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.severity-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.col-package-icon {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.package-severity-icon-large {
+  width: 45px;
+  height: 45px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.package-severity-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.package-name {
+  color: var(--main, rgba(255, 255, 255, 0.9));
+  font-family: Menlo;
+  font-size: 16px;
+}
+
+.file-buttons {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.file-btn {
+  background-color: var(--vscode-button-secondaryBackground, #333);
+  color: var(--secondary, rgba(255, 255, 255, 0.7));
+  border: 1px solid var(--border, #3c3c3c);
+  border-radius: 12px;
+  padding: 4px 8px 4px 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  width: auto;
+  height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  box-sizing: border-box;
+}
+
+.file-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.file-btn:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground, #444);
+}
+
+.col-updated {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  text-align: left;
+}
+
+.col-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.revive-btn {
+  background: var(--fill-container, #2a2a2a);
+  color: var(--main, rgba(255, 255, 255, 0.9));
+  border: 1px solid var(--main, rgba(255, 255, 255, 0.9));
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 123px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 35px;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.revive-btn:hover {
+  background: rgba(42, 42, 42, 0.8);
+  border-color: rgba(255, 255, 255, 1);
+}
+
+.revive-btn:focus {
+  outline: 1px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 1px;
+}
+
+.revive-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.table-body {
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.file-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sca-icon {
+  width: 37px;
+  height: 37px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.expand-files-btn {
+  background-color: transparent;
+  color: var(--secondary, rgba(255, 255, 255, 0.7));
+  border: none;
+  border-radius: 12px;
+  padding: 4px 8px 4px 4px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  width: auto;
+  height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: underline;
+}
+
+.expand-files-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hidden-file-btn {
+  display: none;
+}
+
+.file-buttons.expanded .hidden-file-btn {
+  display: inline-flex;
+}
+
+.file-buttons.expanded .expand-files-btn {
+  display: none;
+}

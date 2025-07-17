@@ -72,7 +72,6 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.supportHtml = true;
     md.isTrusted = true;
 
-    const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
     const args = encodeURIComponent(JSON.stringify([hoverData]));
     const buttons = buildCommandButtons(args, false);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
@@ -128,7 +127,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     }
 
     const severityDisplayItems = Object.entries(counts)
-      .filter(([_, count]) => count > 0)
+      .filter(([, count]) => count > 0)
       .map(
         ([sev, count]) =>
           `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]

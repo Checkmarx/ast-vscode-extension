@@ -119,4 +119,5 @@ export const commands = {
   viewDetails: `${constants.extensionName}.viewPackageDetails`,
   ignorePackage: `${constants.extensionName}.ignorePackage`,
   IgnoreAll: `${constants.extensionName}.ignoreAll`,
+  openIgnoredView: `${constants.extensionName}.openIgnoredView`,
 };

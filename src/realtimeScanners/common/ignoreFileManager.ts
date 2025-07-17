@@ -30,6 +30,10 @@ export class IgnoreFileManager {
 	private fileWatcher: fs.FSWatcher | undefined;
 	private previousIgnoreData: Record<string, IgnoreEntry> = {};
 	private ossScannerService: OssScannerService | undefined;
+	private statusBarUpdateCallback: (() => void) | undefined;
+	private uiRefreshCallback: (() => void) | undefined;
+
+
 
 	private constructor() { }
 
@@ -58,14 +62,22 @@ export class IgnoreFileManager {
 		this.ossScannerService = service;
 	}
 
+	public setStatusBarUpdateCallback(callback: () => void): void {
+		this.statusBarUpdateCallback = callback;
+	}
+
+	public setUiRefreshCallback(callback: () => void): void {
+		this.uiRefreshCallback = callback;
+	}
+
 	private startFileWatcher(): void {
 		this.stopFileWatcher();
 
 		const ignoreFilePath = this.getIgnoreFilePath();
 		if (fs.existsSync(ignoreFilePath)) {
-			this.fileWatcher = fs.watch(ignoreFilePath, (eventType) => {
+			this.fileWatcher = fs.watch(ignoreFilePath, async (eventType) => {
 				if (eventType === 'change') {
-					this.handleFileChange();
+					await this.handleFileChange();
 				}
 			});
 		}
@@ -78,15 +90,15 @@ export class IgnoreFileManager {
 		}
 	}
 
-	private handleFileChange(): void {
+	private async handleFileChange(): Promise<void> {
 		this.loadIgnoreData();
 
-		this.detectAndHandleActiveChanges();
+		await this.detectAndHandleActiveChanges();
 
 		this.previousIgnoreData = JSON.parse(JSON.stringify(this.ignoreData));
 	}
 
-	private detectAndHandleActiveChanges(): void {
+	private async detectAndHandleActiveChanges(): Promise<void> {
 		if (!this.ossScannerService) {
 			return;
 		}
@@ -94,16 +106,84 @@ export class IgnoreFileManager {
 		const previousActiveFiles = this.getActiveFilesList(this.previousIgnoreData);
 		const currentActiveFiles = this.getActiveFilesList(this.ignoreData);
 
+
+
 		const deactivatedFiles = previousActiveFiles.filter(prevFile =>
 			!currentActiveFiles.some(currFile =>
 				currFile.packageKey === prevFile.packageKey && currFile.path === prevFile.path
 			)
 		);
 
-		deactivatedFiles.forEach(file => {
-			this.handleFileDeactivated(file.packageKey, file.path);
-		});
+
+		if (deactivatedFiles.length > 0) {
+			deactivatedFiles.forEach(file => {
+				this.removeIgnoredEntryWithoutTempUpdate(file.packageKey, file.path);
+			});
+
+			this.updateTempList();
+
+			const affectedFilePaths = [...new Set(deactivatedFiles.map(file => file.path))];
+			for (const filePath of affectedFilePaths) {
+				await this.rescanFile(filePath);
+			}
+
+		}
 	}
+
+	public async triggerActiveChangesDetection(): Promise<void> {
+		await this.detectAndHandleActiveChanges();
+		this.previousIgnoreData = JSON.parse(JSON.stringify(this.ignoreData));
+
+		this.loadIgnoreData();
+		if (this.statusBarUpdateCallback) {
+			this.statusBarUpdateCallback();
+		}
+	}
+
+	public cleanupObsoletePackagesForFile(filePath: string, scanResults: Array<{ packageName: string; version: string }>): boolean {
+		try {
+			const relativePath = path.relative(this.workspaceRootPath, filePath);
+
+			const currentPackages = new Set<string>();
+			for (const result of scanResults) {
+				const packageKey = `${result.packageName}:${result.version}`;
+				currentPackages.add(packageKey);
+			}
+
+			const packagesToDeactivate: string[] = [];
+
+			for (const packageKey in this.ignoreData) {
+				const entry = this.ignoreData[packageKey];
+				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+
+				if (fileEntry && !currentPackages.has(packageKey)) {
+					packagesToDeactivate.push(packageKey);
+				}
+			}
+
+			if (packagesToDeactivate.length > 0) {
+				for (const packageKey of packagesToDeactivate) {
+					const entry = this.ignoreData[packageKey];
+					const fileEntry = entry.files.find(f => f.path === relativePath);
+					if (fileEntry) {
+						fileEntry.active = false;
+					}
+				}
+
+				this.saveIgnoreFile();
+				this.updateTempList();
+				return true;
+			}
+
+			return false;
+
+		} catch (error) {
+			console.error(`[ManifestChange] Error cleaning up obsolete packages:`, error);
+			return false;
+		}
+	}
+
+
 
 	private getActiveFilesList(ignoreData: Record<string, IgnoreEntry>): Array<{ packageKey: string, path: string }> {
 		const activeFiles: Array<{ packageKey: string, path: string }> = [];
@@ -120,19 +200,7 @@ export class IgnoreFileManager {
 		return activeFiles;
 	}
 
-	private async handleFileDeactivated(packageKey: string, filePath: string): Promise<void> {
-		try {
-			this.updateTempList();
 
-			await this.rescanFile(filePath);
-
-			this.removeIgnoredEntry(packageKey, filePath);
-
-			console.log(`Handled deactivation for ${packageKey} in file ${filePath}`);
-		} catch (error) {
-			console.error(`Error handling file deactivation for ${packageKey}:`, error);
-		}
-	}
 
 	private removeIgnoredEntry(packageKey: string, filePath: string): void {
 		if (!this.ignoreData[packageKey]) {
@@ -149,6 +217,32 @@ export class IgnoreFileManager {
 
 		this.saveIgnoreFile();
 		this.updateTempList();
+
+		if (this.uiRefreshCallback) {
+			this.uiRefreshCallback();
+		}
+	}
+
+	private removeIgnoredEntryWithoutTempUpdate(packageKey: string, filePath: string): void {
+		if (!this.ignoreData[packageKey]) {
+			return;
+		}
+
+		const entry = this.ignoreData[packageKey];
+
+
+		entry.files = entry.files.filter(file => file.path !== filePath);
+
+
+		if (entry.files.length === 0) {
+			delete this.ignoreData[packageKey];
+		}
+
+		this.saveIgnoreFile();
+
+		if (this.uiRefreshCallback) {
+			this.uiRefreshCallback();
+		}
 	}
 
 	private async rescanFile(relativePath: string): Promise<void> {
@@ -172,7 +266,6 @@ export class IgnoreFileManager {
 				} as Logs;
 
 				await this.ossScannerService.scan(document, logs);
-				console.log(`Rescanned file: ${fullPath}`);
 			}
 		} catch (error) {
 			console.error(`Error rescanning file ${fullPath}:`, error);
@@ -183,65 +276,7 @@ export class IgnoreFileManager {
 		this.stopFileWatcher();
 	}
 
-	public cleanupObsoleteEntries(filePath: string, currentPackages: Set<string>): void {
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
-		let hasChanges = false;
 
-		for (const packageKey in this.ignoreData) {
-			if (!currentPackages.has(packageKey)) {
-				const entry = this.ignoreData[packageKey];
-				const originalLength = entry.files.length;
-
-				entry.files = entry.files.filter(file => file.path !== relativePath);
-
-				if (entry.files.length !== originalLength) {
-					hasChanges = true;
-				}
-
-				if (entry.files.length === 0) {
-					delete this.ignoreData[packageKey];
-					hasChanges = true;
-				}
-			}
-		}
-
-		if (hasChanges) {
-			this.saveIgnoreFile();
-			this.updateTempList();
-		}
-	}
-
-	public async parseAndUpdateIgnoredPackages(filePath: string, fileContent: string): Promise<void> {
-		try {
-			const currentPackages = this.parsePackagesFromContent(fileContent);
-			this.cleanupObsoleteEntries(filePath, currentPackages);
-		} catch (error) {
-			console.error(`Error parsing packages from file:`, error);
-		}
-	}
-
-	private parsePackagesFromContent(fileContent: string): Set<string> {
-		const packages = new Set<string>();
-
-		try {
-			const jsonContent = JSON.parse(fileContent);
-			const deps = {
-				...jsonContent.dependencies,
-				...jsonContent.devDependencies,
-				...jsonContent.peerDependencies
-			};
-
-			for (const [name, version] of Object.entries(deps)) {
-				if (version) {
-					packages.add(`${name}:${version}`);
-				}
-			}
-		} catch (error) {
-			console.error(`Error parsing JSON content:`, error);
-		}
-
-		return packages;
-	}
 
 	private ensureIgnoreFileExists() {
 		if (!fs.existsSync(this.workspacePath)) {
@@ -278,6 +313,38 @@ export class IgnoreFileManager {
 		return undefined;
 	}
 
+	public getIgnoredPackagesCount(): number {
+		if (!fs.existsSync(this.getIgnoreFilePath())) {
+			return 0;
+		}
+		return Object.keys(this.ignoreData).length;
+	}
+
+	public hasIgnoreFile(): boolean {
+		return fs.existsSync(this.getIgnoreFilePath());
+	}
+
+	public getIgnoredPackagesData(): Record<string, IgnoreEntry> {
+		return this.ignoreData;
+	}
+
+	public revivePackage(packageKey: string): boolean {
+		if (!this.ignoreData[packageKey]) {
+			return false;
+		}
+
+
+		this.ignoreData[packageKey].files.forEach(file => {
+			file.active = false;
+		});
+
+		this.saveIgnoreFile();
+
+		this.updateTempList();
+
+		return true;
+	}
+
 	public addIgnoredEntry(entry: {
 		packageManager: string;
 		packageName: string;
@@ -288,6 +355,8 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
+		const countBefore = this.getIgnoredPackagesCount();
+
 		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
 
@@ -325,11 +394,19 @@ export class IgnoreFileManager {
 
 		this.saveIgnoreFile();
 		this.updateTempList();
+
+		const countAfter = this.getIgnoredPackagesCount();
+		if (countBefore === 0 && countAfter > 0 && this.uiRefreshCallback) {
+			this.uiRefreshCallback();
+		}
 	}
 
 
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
+		if (this.statusBarUpdateCallback) {
+			this.statusBarUpdateCallback();
+		}
 	}
 
 	private updateTempList(): void {

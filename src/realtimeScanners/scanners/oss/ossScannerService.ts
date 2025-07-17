@@ -227,12 +227,6 @@ export class OssScannerService extends BaseScannerService {
 
       const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
 
-      try {
-        this.cleanupObsoleteIgnoredEntries(originalFilePath, document.getText());
-      } catch (cleanupError) {
-        console.error(`Cleanup error (non-critical):`, cleanupError);
-      }
-
       this.updateProblems<CxOssResult[]>(scanResults, document.uri);
     } catch (error) {
       this.storeAndApplyResults(
@@ -436,6 +430,8 @@ export class OssScannerService extends BaseScannerService {
     const scanResults = problems as unknown as CxOssResult[];
     const filePath = uri.fsPath;
 
+
+
     // Save previous diagnostics to check what disappeared due to ignore
     const previousDiagnostics = this.diagnosticsMap.get(filePath) || [];
 
@@ -554,16 +550,17 @@ export class OssScannerService extends BaseScannerService {
         }
       }
     }
-    // Check for diagnostics that disappeared due to ignore and add ignored decorations
     const ignoredDecorations: vscode.DecorationOptions[] = [];
     const ignoreManager = IgnoreFileManager.getInstance();
+
+    const existingIgnoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+    ignoredDecorations.push(...existingIgnoredDecorations);
 
     for (const prevDiagnostic of previousDiagnostics) {
       const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
       if (prevData?.cxType === 'oss') {
         const prevOssItem = prevData.item as HoverData;
 
-        // Check if this diagnostic is missing from new results due to ignore
         const stillExists = diagnostics.some(newDiag => {
           const newData = (newDiag as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
           if (newData?.cxType === 'oss') {
@@ -575,9 +572,18 @@ export class OssScannerService extends BaseScannerService {
           return false;
         });
 
-        // If it doesn't exist in new results but is in ignore list, add ignored decoration
         if (!stillExists && ignoreManager.isPackageIgnored(prevOssItem.packageName, prevOssItem.version, filePath)) {
-          ignoredDecorations.push({ range: prevDiagnostic.range });
+          const range = prevDiagnostic.range;
+          const alreadyIgnored = ignoredDecorations.some(decoration =>
+            decoration.range.start.line === range.start.line &&
+            decoration.range.start.character === range.start.character &&
+            decoration.range.end.line === range.end.line &&
+            decoration.range.end.character === range.end.character
+          );
+
+          if (!alreadyIgnored) {
+            ignoredDecorations.push({ range });
+          }
         }
       }
     }
@@ -685,12 +691,4 @@ export class OssScannerService extends BaseScannerService {
     return `${baseName}-${hash}.tmp`;
   }
 
-  private async cleanupObsoleteIgnoredEntries(originalFilePath: string, fileContent: string): Promise<void> {
-    try {
-      const ignoreManager = IgnoreFileManager.getInstance();
-      await ignoreManager.parseAndUpdateIgnoredPackages(originalFilePath, fileContent);
-    } catch (error) {
-      console.error(`Error parsing and updating ignored packages:`, error);
-    }
-  }
 }
