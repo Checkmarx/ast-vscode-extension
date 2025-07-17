@@ -10,9 +10,7 @@ interface DecodedJwt {
 interface McpServer {
 	url: string;
 	headers: {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
 		"cx-origin": string;
-		// eslint-disable-next-line @typescript-eslint/naming-convention
 		"Authorization": string;
 	};
 }
@@ -166,9 +164,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			url: fullUrl,
 			headers: {
-				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"cx-origin": "VsCode",
-				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"Authorization": apiKey,
 			},
 		};
