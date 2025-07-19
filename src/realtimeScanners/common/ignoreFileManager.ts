@@ -70,6 +70,13 @@ export class IgnoreFileManager {
 		this.uiRefreshCallback = callback;
 	}
 
+	public updateStatusBar(): void {
+		this.loadIgnoreData();
+		if (this.statusBarUpdateCallback) {
+			this.statusBarUpdateCallback();
+		}
+	}
+
 	private startFileWatcher(): void {
 		this.stopFileWatcher();
 

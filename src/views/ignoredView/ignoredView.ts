@@ -73,6 +73,8 @@ export class IgnoredView {
 					command: 'updateButtonState',
 					hasPackages: hasPackages
 				});
+
+				ignoreManager.updateStatusBar();
 			}, 100);
 		}
 	}
