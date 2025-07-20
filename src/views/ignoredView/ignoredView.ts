@@ -326,10 +326,13 @@ export class IgnoredView {
 				</div>
 				<div class="col-updated">${lastUpdated}</div>
 				<div class="col-actions">
-					<button class="revive-btn" onclick="revivePackage('${packageKey}')">
-						<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
-						Revive
-					</button>
+					<div class="tooltip revive-btn-tooltip">
+						<button class="revive-btn" onclick="revivePackage('${packageKey}')">
+							<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
+							Revive
+						</button>
+						<span class="tooltiptext">This vulnerability will be revived across affected files</span>
+					</div>
 				</div>
 			</div>
 		`;
@@ -416,10 +419,13 @@ export class IgnoredView {
 			.map(file => {
 				const fileName = file.path.split('/').pop() || file.path;
 				const fileIconUri = this.getGenericFileIconPath();
-				return `<button class="file-btn" onclick="openFile('${file.path}', ${file.line || 1})" title="Go to ${file.path}:${file.line || 1}">
-					<img src="${fileIconUri}" alt="File" class="file-icon" />
-					${fileName}
-				</button>`;
+				return `<div class="tooltip file-btn-tooltip">
+					<button class="file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
+						<img src="${fileIconUri}" alt="File" class="file-icon" />
+						${fileName}
+					</button>
+					<span class="tooltiptext">Click to show in file</span>
+				</div>`;
 			})
 			.join('');
 
@@ -427,10 +433,13 @@ export class IgnoredView {
 			.map(file => {
 				const fileName = file.path.split('/').pop() || file.path;
 				const fileIconUri = this.getGenericFileIconPath();
-				return `<button class="file-btn hidden-file-btn" onclick="openFile('${file.path}', ${file.line || 1})" title="Go to ${file.path}:${file.line || 1}">
-					<img src="${fileIconUri}" alt="File" class="file-icon" />
-					${fileName}
-				</button>`;
+				return `<div class="tooltip file-btn-tooltip hidden-tooltip">
+					<button class="file-btn hidden-file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
+						<img src="${fileIconUri}" alt="File" class="file-icon" />
+						${fileName}
+					</button>
+					<span class="tooltiptext">Click to show in file</span>
+				</div>`;
 			})
 			.join('');
 

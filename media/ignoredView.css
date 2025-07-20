@@ -227,6 +227,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  align-items: center;
 }
 
 .file-btn {
@@ -358,10 +359,96 @@ body {
   display: none;
 }
 
+.tooltip.hidden-tooltip {
+  display: none;
+}
+
 .file-buttons.expanded .hidden-file-btn {
+  display: inline-flex;
+}
+
+.file-buttons.expanded .tooltip.hidden-tooltip {
   display: inline-flex;
 }
 
 .file-buttons.expanded .expand-files-btn {
   display: none;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  border-radius: 4px;
+  border: 1px solid var(--Light-Border-Secondary, rgba(242, 244, 243, 0.9));
+  background: var(--Light-Background-L1, #fefefe);
+  color: var(--Light-Text-Primary, #52545f);
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 65%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--Light-Background-L1, #fefefe) transparent transparent
+    transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.file-btn-tooltip .tooltiptext {
+  min-width: 200px;
+}
+
+.revive-btn-tooltip .tooltiptext {
+  min-width: 180px;
+}
+
+.file-btn-tooltip .tooltiptext {
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: -8px;
+  min-width: auto;
+  width: max-content;
+  padding: 6px 10px;
+}
+
+.file-btn-tooltip .tooltiptext::after {
+  left: 50%;
+  margin-left: -5px;
+}
+
+.revive-btn-tooltip .tooltiptext {
+  right: 0;
+  left: -60px;
+  transform: none;
+  margin-top: -8px;
+}
+
+.revive-btn-tooltip .tooltiptext::after {
+  left: 85%;
+  margin-left: -5px;
 }
