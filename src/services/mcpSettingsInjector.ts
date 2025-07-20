@@ -101,8 +101,6 @@ export async function uninstallMcp() {
 				delete mcpConfig.mcpServers[checkmarxMcpServerName];
 
 				fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
-
-				vscode.window.showInformationMessage("Checkmarx MCP configuration removed successfully.");
 			}
 		} else {
 			// Handle VSCode: Remove from settings
@@ -118,7 +116,6 @@ export async function uninstallMcp() {
 					{ servers: updatedServers },
 					vscode.ConfigurationTarget.Global
 				);
-				vscode.window.showInformationMessage("Checkmarx MCP configuration removed successfully.");
 			}
 		}
 	} catch (error) {
