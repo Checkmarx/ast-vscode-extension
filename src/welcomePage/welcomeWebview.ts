@@ -125,13 +125,13 @@ export class WelcomeWebview {
                     alt="Unchecked Icon"
                   />
                 </div>
-                <span class="card-title">Code Smarter with AI</span>
+                <span class="card-title">Code Smarter with CxOne Assist</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code.</li>
                 <li>See suggested fixes for vulnerabilities across open source, config, and code.</li>
                 <li>Fix faster with intelligent, context-aware remediation inside your IDE.</li>
-                <li id="mcpStatusItem" style="display: none;">Checkmarx MCP Installed automatically - no need for manual integration</li>
+                ${isAiMcpEnabled ? '<li>Checkmarx MCP Installed automatically - no need for manual integration</li>' : ''}
               </ul>
               <div class="ai-feature-box-wrapper hidden" id="aiFeatureBoxWrapper">
                 <img
@@ -171,6 +171,9 @@ export class WelcomeWebview {
         <script nonce="${nonce}" src="${jsUri}"></script>
         <script nonce="${nonce}">
           const vscode = acquireVsCodeApi();
+
+          // Initial state check
+          vscode.postMessage({ type: 'getAiFeatureState' });
 
           window.addEventListener('message', event => {
             const message = event.data;
