@@ -390,7 +390,7 @@ export class IgnoredView {
 							<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
 							Revive
 						</button>
-						<span class="tooltiptext">This vulnerability will be revived across affected files</span>
+						<span class="tooltiptext">Revive this vulnerability in all affected files</span>
 					</div>
 				</div>
 			</div>

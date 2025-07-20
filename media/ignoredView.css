@@ -481,7 +481,9 @@ body {
 }
 
 .revive-btn-tooltip .tooltiptext {
-  min-width: 180px;
+  min-width: 220px;
+  white-space: normal;
+  max-width: 250px;
 }
 
 .file-btn-tooltip .tooltiptext {
@@ -500,13 +502,13 @@ body {
 
 .revive-btn-tooltip .tooltiptext {
   right: 0;
-  left: -60px;
+  left: -90px;
   transform: none;
   margin-top: -8px;
 }
 
 .revive-btn-tooltip .tooltiptext::after {
-  left: 85%;
+  left: 80%;
   margin-left: -5px;
 }
 
