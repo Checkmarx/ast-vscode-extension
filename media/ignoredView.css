@@ -94,22 +94,31 @@ body {
 
 .table-header {
   display: grid;
-  grid-template-columns: 50px 20px 45px 20px 2fr 80px 100px;
+  grid-template-columns: 35px 45px 2fr 1fr 1fr;
   background-color: var(--vscode-editor-background);
-  padding: 12px 16px;
+  padding: 12px 8px;
   border-bottom: none;
   font-weight: 400;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
+  align-items: center;
+  gap: 8px;
+}
+
+.table-header .col-risk,
+.table-header .col-updated {
+  text-align: left;
+  justify-self: start;
 }
 
 .table-row {
   display: grid;
-  grid-template-columns: 50px 20px 45px 20px 2fr 80px 100px;
-  padding: 16px;
+  grid-template-columns: 35px 45px 2fr 1fr 1fr;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--vscode-panel-border);
   align-items: center;
-  min-height: 85px;
+  min-height: 60px;
+  gap: 8px;
 }
 
 .table-row:last-child {
@@ -120,14 +129,20 @@ body {
   background-color: var(--vscode-list-hoverBackground);
 }
 
-.col-spacer {
+.spacer-small {
+  width: 8px;
+}
+
+.spacer-large {
+  width: 8px;
 }
 
 .col-checkbox {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 17px;
+  height: 100%;
+  min-height: 45px;
 }
 
 .col-checkbox input[type="checkbox"] {
@@ -140,22 +155,32 @@ body {
   -moz-appearance: none;
   background-color: transparent;
   cursor: pointer;
+  margin-bottom: 15px;
 }
 
 .col-checkbox input[type="checkbox"]:checked {
   background-color: var(--Light-CTA-Selection-Idle, #d7d8db);
 }
 
+.col-risk {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
 .risk-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: flex-start;
+  width: 100%;
 }
 
 .package-line {
   display: flex;
   align-items: center;
   gap: 0;
+  margin-top: 0;
 }
 
 .severity-icon {
@@ -169,12 +194,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  height: 100%;
+  padding-top: 6px;
+  width: 45px;
 }
 
 .package-severity-icon-large {
   width: 45px;
   height: 45px;
-  margin-bottom: 20px;
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -196,7 +223,7 @@ body {
 }
 
 .file-buttons {
-  margin-top: 6px;
+  margin-top: 4px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -235,10 +262,15 @@ body {
   color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .col-actions {
   display: flex;
+  align-items: center;
+  margin-right: 8px;
   justify-content: flex-end;
 }
 
@@ -250,12 +282,11 @@ body {
   cursor: pointer;
   font-size: 16px;
   width: 123px;
-  height: 30px;
+  height: 36px;
   display: flex;
   align-items: center;
-  padding-left: 20px;
-  padding-right: 35px;
-  gap: 8px;
+  justify-content: center;
+  gap: 5px;
   box-sizing: border-box;
 }
 
@@ -288,12 +319,14 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  align-items: center;
+  margin-top: 4px;
 }
 
 .sca-icon {
-  width: 37px;
-  height: 37px;
-  margin-right: 12px;
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
   flex-shrink: 0;
 }
 

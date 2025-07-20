@@ -227,7 +227,11 @@ export class OssScannerService extends BaseScannerService {
 
       const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
 
-      this.updateProblems<CxOssResult[]>(scanResults, document.uri);
+      const fullScanResults = IgnoreFileManager.getInstance().getIgnoredPackagesCount() > 0
+        ? await cx.ossScanResults(mainTempPath, "")
+        : undefined;
+
+      this.updateProblems<CxOssResult[]>(scanResults, document.uri, fullScanResults);
     } catch (error) {
       this.storeAndApplyResults(
         originalFilePath,
@@ -426,7 +430,7 @@ export class OssScannerService extends BaseScannerService {
     }
   }
 
-  updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
+  updateProblems<T = unknown>(problems: T, uri: vscode.Uri, fullScanResults?: CxOssResult[]): void {
     const scanResults = problems as unknown as CxOssResult[];
     const filePath = uri.fsPath;
 
@@ -606,6 +610,61 @@ export class OssScannerService extends BaseScannerService {
       mediumIconDecorations,
       lowIconDecorations
     );
+
+    if (ignoreManager.getIgnoredPackagesCount() > 0 && fullScanResults) {
+      this.cleanupIgnoredEntriesWithoutFileWatcher(fullScanResults, filePath, ignoreManager);
+    }
+  }
+
+  private cleanupIgnoredEntries(fullScanResults: CxOssResult[], currentFilePath: string): void {
+    const ignoreManager = IgnoreFileManager.getInstance();
+    const ignoredData = ignoreManager.getIgnoredPackagesData();
+    const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', currentFilePath);
+
+    const existingFindings = new Set(
+      fullScanResults.flatMap(result =>
+        result.locations.map(location =>
+          `${result.packageManager}:${result.packageName}:${result.version}:${location.line}`
+        )
+      )
+    );
+
+    const activeEntries = Object.entries(ignoredData)
+      .flatMap(([packageKey, entry]) =>
+        entry.files
+          .filter(file => file.active && file.path === relativePath)
+          .map(file => ({
+            packageKey,
+            entry,
+            file,
+            entryKey: `${entry.PackageManager}:${entry.PackageName}:${entry.PackageVersion}:${file.line}`
+          }))
+      );
+
+    const toRemove = activeEntries.filter(item => !existingFindings.has(item.entryKey));
+
+    toRemove.forEach(item =>
+      ignoreManager.removePackageEntry(item.packageKey, relativePath)
+    );
+
+    console.log(`Cleanup: ${activeEntries.length} checked, ${toRemove.length} removed`);
+  }
+
+  private cleanupIgnoredEntriesWithoutFileWatcher(
+    fullScanResults: CxOssResult[],
+    currentFilePath: string,
+    ignoreManager: IgnoreFileManager
+  ): void {
+    ignoreManager.dispose();
+    this.cleanupIgnoredEntries(fullScanResults, currentFilePath);
+
+    setTimeout(() => {
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (workspaceFolder) {
+        ignoreManager.initialize(workspaceFolder);
+        ignoreManager.setOssScannerService(this);
+      }
+    }, 100);
   }
   private handleProblemStatus(
     diagnostics: vscode.Diagnostic[],

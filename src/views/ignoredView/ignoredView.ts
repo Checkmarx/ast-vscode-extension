@@ -5,9 +5,12 @@ import { IgnoreFileManager, IgnoreEntry } from '../../realtimeScanners/common/ig
 export class IgnoredView {
 	private panel: vscode.WebviewPanel | undefined;
 	private context: vscode.ExtensionContext;
+	private autoRefreshTimer: NodeJS.Timeout | undefined;
+	private lastRefreshDate: string;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
+		this.lastRefreshDate = new Date().toDateString();
 	}
 
 	public show(): void {
@@ -18,7 +21,7 @@ export class IgnoredView {
 
 		if (this.panel) {
 			this.panel.reveal();
-			this.refresh();
+			this.checkAndRefreshIfDateChanged();
 			return;
 		}
 
@@ -37,8 +40,11 @@ export class IgnoredView {
 
 		this.panel.webview.html = this.getWebviewContent();
 
+		this.startAutoRefresh();
+
 		this.panel.onDidDispose(() => {
 			this.panel = undefined;
+			this.stopAutoRefresh();
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setUiRefreshCallback(undefined);
 		});
@@ -60,7 +66,55 @@ export class IgnoredView {
 		);
 	}
 
+	private startAutoRefresh(): void {
+		this.scheduleNextDayRefresh();
+	}
+
+	private scheduleNextDayRefresh(): void {
+		const now = new Date();
+		const tomorrow = new Date(now);
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		tomorrow.setHours(0, 0, 0, 0);
+
+		const msUntilTomorrow = tomorrow.getTime() - now.getTime();
+
+		console.log(`Next refresh scheduled in ${Math.round(msUntilTomorrow / 1000 / 60)} minutes (at ${tomorrow.toLocaleString()})`);
+
+		this.autoRefreshTimer = setTimeout(() => {
+			this.onDayChanged();
+		}, msUntilTomorrow);
+	}
+
+	private onDayChanged(): void {
+		console.log('Day changed - refreshing ignored view with updated dates');
+		this.lastRefreshDate = new Date().toDateString();
+		this.refresh();
+
+		this.scheduleNextDayRefresh();
+	}
+
+	private stopAutoRefresh(): void {
+		if (this.autoRefreshTimer) {
+			clearTimeout(this.autoRefreshTimer);
+			this.autoRefreshTimer = undefined;
+		}
+	}
+
+	private checkAndRefreshIfDateChanged(): void {
+		const currentDate = new Date().toDateString();
+		if (currentDate !== this.lastRefreshDate) {
+			console.log('Date changed detected - refreshing ignored view');
+			this.lastRefreshDate = currentDate;
+			this.refresh();
+
+			this.stopAutoRefresh();
+			this.startAutoRefresh();
+		}
+	}
+
 	private refresh(): void {
+		this.lastRefreshDate = new Date().toDateString();
+
 		if (this.panel) {
 			this.panel.webview.html = this.getWebviewContent();
 
@@ -168,6 +222,10 @@ export class IgnoredView {
 			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'ignoredView.css'))
 		);
 
+		const jsUri = this.panel?.webview.asWebviewUri(
+			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'ignoredView.js'))
+		);
+
 		const refreshIconUri = this.panel?.webview.asWebviewUri(
 			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'refresh_ignore.svg'))
 		);
@@ -199,73 +257,7 @@ export class IgnoredView {
 					${this.generateTableContent(ignoredPackages)}
 				</div>
 
-								<script>
-					const vscode = acquireVsCodeApi();
-
-					function refresh() {
-						const refreshBtn = document.querySelector('.refresh-btn');
-						if (refreshBtn && !refreshBtn.disabled && !refreshBtn.classList.contains('disabled')) {
-							vscode.postMessage({ command: 'refresh' });
-						}
-					}
-
-					function updateRefreshButtonState(hasPackages) {
-						const refreshBtn = document.querySelector('.refresh-btn');
-						if (refreshBtn) {
-							if (hasPackages) {
-								refreshBtn.disabled = false;
-								refreshBtn.classList.remove('disabled');
-							} else {
-								refreshBtn.disabled = true;
-								refreshBtn.classList.add('disabled');
-							}
-						}
-					}
-
-					function revivePackage(packageKey) {
-						vscode.postMessage({ command: 'revive', packageKey: packageKey });
-					}
-
-					function openFile(filePath, line) {
-						vscode.postMessage({ command: 'openFile', filePath: filePath, line: line });
-					}
-
-					function expandFiles(button) {
-						const fileButtons = button.parentElement;
-						fileButtons.classList.add('expanded');
-					}
-
-					document.addEventListener('DOMContentLoaded', function() {
-						const tableRows = document.querySelectorAll('.table-row');
-						tableRows.forEach(row => {
-							const packageIcon = row.querySelector('.package-severity-icon-large');
-
-							if (packageIcon) {
-								const originalSrc = packageIcon.src;
-								const hoverSrc = packageIcon.getAttribute('data-hover-src');
-
-								if (hoverSrc) {
-									row.addEventListener('mouseenter', function() {
-										packageIcon.src = hoverSrc;
-									});
-
-									row.addEventListener('mouseleave', function() {
-										packageIcon.src = originalSrc;
-									});
-								}
-							}
-						});
-					});
-
-					window.addEventListener('message', event => {
-						const message = event.data;
-						switch (message.command) {
-							case 'updateButtonState':
-								updateRefreshButtonState(message.hasPackages);
-								break;
-						}
-					});
-				</script>
+								<script src="${jsUri}"></script>
 			</body>
 			</html>
 		`;
@@ -291,9 +283,7 @@ export class IgnoredView {
 		return `
 			<div class="table-header">
 				<div class="col-checkbox"></div>
-				<div class="col-spacer"></div>
 				<div class="col-package-icon"></div>
-				<div class="col-spacer"></div>
 				<div class="col-risk">Risk</div>
 				<div class="col-updated">Last updated</div>
 				<div class="col-actions"></div>
@@ -319,11 +309,9 @@ export class IgnoredView {
 				<div class="col-checkbox">
 					<input type="checkbox" />
 				</div>
-				<div class="col-spacer"></div>
 				${packageIcon ? `<div class="col-package-icon">
 					<img src="${packageIcon}" alt="Package ${pkg.severity}" class="package-severity-icon-large" data-hover-src="${packageIconHover}" />
 				</div>` : '<div class="col-package-icon"></div>'}
-				<div class="col-spacer"></div>
 				<div class="col-risk">
 					<div class="risk-content">
 						<div class="package-line">
@@ -359,10 +347,7 @@ export class IgnoredView {
 		const normalizedSeverity = severity?.toLowerCase();
 		const iconFile = iconMap[normalizedSeverity] || 'Vulnerability-medium_ignore';
 
-		console.log(`[Icon Debug] Original severity: "${severity}"`);
-		console.log(`[Icon Debug] Normalized severity: "${normalizedSeverity}"`);
-		console.log(`[Icon Debug] Mapped icon file: "${iconFile}"`);
-		console.log(`[Icon Debug] Full path will be: media/icons/ignorePage/${iconFile}.svg`);
+
 
 		const iconPath = this.panel?.webview.asWebviewUri(
 			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', `${iconFile}.svg`))
@@ -475,8 +460,17 @@ export class IgnoredView {
 				return 'Today';
 			} else if (diffDays === 1) {
 				return '1 day ago';
-			} else {
+			} else if (diffDays < 7) {
 				return `${diffDays} days ago`;
+			} else if (diffDays < 30) {
+				const weeks = Math.floor(diffDays / 7);
+				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+			} else if (diffDays < 365) {
+				const months = Math.floor(diffDays / 30);
+				return months === 1 ? '1 month ago' : `${months} months ago`;
+			} else {
+				const years = Math.floor(diffDays / 365);
+				return years === 1 ? '1 year ago' : `${years} years ago`;
 			}
 		} catch (error) {
 			console.error('Error parsing date:', dateAdded, error);

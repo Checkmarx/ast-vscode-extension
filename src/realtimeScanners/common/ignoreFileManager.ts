@@ -352,6 +352,11 @@ export class IgnoreFileManager {
 		return true;
 	}
 
+	public removePackageEntry(packageKey: string, filePath: string): boolean {
+		this.removeIgnoredEntry(packageKey, filePath);
+		return true;
+	}
+
 	public addIgnoredEntry(entry: {
 		packageManager: string;
 		packageName: string;
