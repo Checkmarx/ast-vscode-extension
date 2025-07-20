@@ -73,19 +73,16 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		md.supportHtml = true;
 		md.isTrusted = true;
 
-		// Display rule name and description as per requirements
 		const ruleHeader = `**Rule:** ${hoverData.ruleName}\n\n`;
 
-		// Include description with truncation support as per requirements
 		let description = hoverData.description;
 		if (description && description.length > 200) {
 			description = description.substring(0, 197) + "...";
 		}
 		const descriptionText = `**Description:** ${description}\n\n`;
 
-		// Create command arguments for the buttons
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false, true); // false for isSecret, true for isAsca
+		const buttons = buildCommandButtons(args, false, true);
 
 		md.appendMarkdown(ruleHeader);
 		md.appendMarkdown(descriptionText);

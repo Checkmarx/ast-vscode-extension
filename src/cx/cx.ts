@@ -659,6 +659,21 @@ export class Cx implements CxPlatform {
     }
   }
 
+  async scanContainers(sourcePath: string): Promise<any[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+    const cx = new CxWrapper(config);
+      // const scans = await cx.containersScanResults(sourcePath);
+      // if (scans.payload && scans.exitCode === 0) {
+      //   return scans.payload[0];
+      // } else {
+      //   throw new Error(scans.status);
+      // }
+return null
+  }
+
   async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {

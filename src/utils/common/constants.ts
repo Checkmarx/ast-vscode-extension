@@ -180,6 +180,15 @@ export const constants = {
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -204,6 +213,21 @@ export const constants = {
     ".py",
     ".js",
     ".jsx"
+  ],
+
+  // Containers supported file patterns
+  containersSupportedPatterns: [
+    "**/Dockerfile",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/compose.yml",
+    "**/compose.yaml"
+  ],
+
+  // Containers Helm file extensions (only if in helm folder)
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
   ],
 
   cxAi: 'CxAI',
