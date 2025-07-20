@@ -68,4 +68,80 @@ window.addEventListener("message", (event) => {
   }
 });
 
+function toggleMasterCheckbox(masterCheckbox) {
+  const rowCheckboxes = document.querySelectorAll(".row-checkbox");
+  const isChecked = masterCheckbox.checked;
+
+  rowCheckboxes.forEach((checkbox) => {
+    checkbox.checked = isChecked;
+  });
+
+  updateSelectionBar();
+}
+
+function updateMasterCheckbox() {
+  const rowCheckboxes = document.querySelectorAll(".row-checkbox");
+  const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+  const masterCheckbox = document.getElementById("master-checkbox");
+
+  if (checkedBoxes.length === 0) {
+    masterCheckbox.checked = false;
+    masterCheckbox.indeterminate = false;
+  } else if (checkedBoxes.length === rowCheckboxes.length) {
+    masterCheckbox.checked = true;
+    masterCheckbox.indeterminate = false;
+  } else {
+    masterCheckbox.checked = true;
+    masterCheckbox.indeterminate = true;
+  }
+
+  updateSelectionBar();
+}
+
+function updateSelectionBar() {
+  const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+  const selectionBar = document.getElementById("selection-bar");
+  const selectionCount = document.getElementById("selection-count");
+
+  if (checkedBoxes.length > 0) {
+    selectionBar.style.display = "flex";
+    selectionCount.textContent = `${checkedBoxes.length} Risk${
+      checkedBoxes.length === 1 ? "" : "s"
+    } selected`;
+  } else {
+    selectionBar.style.display = "none";
+  }
+}
+
+function clearAllSelections() {
+  const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+  allCheckboxes.forEach((checkbox) => {
+    checkbox.checked = false;
+    checkbox.indeterminate = false;
+  });
+
+  updateSelectionBar();
+}
+
+function reviveAllSelected() {
+  const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+  const packageKeys = Array.from(checkedBoxes).map((checkbox) =>
+    checkbox.getAttribute("data-package-key")
+  );
+
+  if (packageKeys.length > 0) {
+    vscode.postMessage({
+      command: "reviveMultiple",
+      packageKeys: packageKeys,
+    });
+  }
+}
+
+function getSelectedPackageKeys() {
+  const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+  return Array.from(checkedBoxes).map((checkbox) =>
+    checkbox.getAttribute("data-package-key")
+  );
+}
+
 document.addEventListener("DOMContentLoaded", initializeView);

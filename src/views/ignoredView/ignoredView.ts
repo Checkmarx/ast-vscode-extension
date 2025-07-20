@@ -58,6 +58,9 @@ export class IgnoredView {
 					case 'revive':
 						this.revivePackage(message.packageKey);
 						break;
+					case 'reviveMultiple':
+						this.reviveMultiplePackages(message.packageKeys);
+						break;
 					case 'openFile':
 						this.openFile(message.filePath, message.line);
 						break;
@@ -150,14 +153,7 @@ export class IgnoredView {
 				);
 
 				setTimeout(async () => {
-
-
-
-
-
 					await ignoreManager.triggerActiveChangesDetection();
-
-
 					this.refresh();
 				}, 100);
 
@@ -167,6 +163,51 @@ export class IgnoredView {
 		} catch (error) {
 			console.error('Error reviving package:', error);
 			vscode.window.showErrorMessage(`Failed to revive package: ${error}`);
+		}
+	}
+
+	private async reviveMultiplePackages(packageKeys: string[]): Promise<void> {
+		const ignoreManager = IgnoreFileManager.getInstance();
+
+		try {
+			let totalSuccesses = 0;
+			let totalFileCount = 0;
+			const failedPackages: string[] = [];
+
+			for (const packageKey of packageKeys) {
+				const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
+				const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
+
+				const success = ignoreManager.revivePackage(packageKey);
+
+				if (success) {
+					totalSuccesses++;
+					totalFileCount += fileCount;
+				} else {
+					failedPackages.push(packageKey);
+				}
+			}
+
+			if (totalSuccesses > 0) {
+				const message = totalSuccesses === 1
+					? `1 vulnerability has been revived in ${totalFileCount} files.`
+					: `${totalSuccesses} vulnerabilities have been revived in ${totalFileCount} files.`;
+
+				vscode.window.showInformationMessage(message, 'Close');
+
+				setTimeout(async () => {
+					await ignoreManager.triggerActiveChangesDetection();
+					this.refresh();
+				}, 100);
+			}
+
+			if (failedPackages.length > 0) {
+				vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
+			}
+
+		} catch (error) {
+			console.error('Error reviving packages:', error);
+			vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
 		}
 	}
 
@@ -245,6 +286,22 @@ export class IgnoredView {
 						<div class="header-left">
 							<h1>Ignored Vulnerabilities (${packageCount})</h1>
 							<p class="subtitle">Manage and review vulnerabilities that have been marked as ignored</p>
+							<div class="selection-bar" id="selection-bar" style="display: none;">
+								<div class="selection-info">
+									<span id="selection-count">0 Risks selected</span>
+									<div class="divider"></div>
+									<button class="clear-selections-btn" onclick="clearAllSelections()">
+										<img src="${this.getCloseIconPath()}" alt="Close" class="close-icon" />
+										Clear Selections
+									</button>
+								</div>
+								<div class="bulk-actions">
+									<button class="revive-all-btn" onclick="reviveAllSelected()">
+										<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
+										Revive All
+									</button>
+								</div>
+							</div>
 						</div>
 						<div class="header-right">
 							<button class="refresh-btn ${!hasPackages ? 'disabled' : ''}" ${!hasPackages ? 'disabled' : ''} onclick="refresh()">
@@ -282,7 +339,9 @@ export class IgnoredView {
 
 		return `
 			<div class="table-header">
-				<div class="col-checkbox"></div>
+				<div class="col-checkbox">
+					<input type="checkbox" id="master-checkbox" onchange="toggleMasterCheckbox(this)" />
+				</div>
 				<div class="col-package-icon"></div>
 				<div class="col-risk">Risk</div>
 				<div class="col-updated">Last updated</div>
@@ -307,7 +366,7 @@ export class IgnoredView {
 		return `
 			<div class="table-row">
 				<div class="col-checkbox">
-					<input type="checkbox" />
+					<input type="checkbox" class="row-checkbox" data-package-key="${packageKey}" onchange="updateMasterCheckbox()" />
 				</div>
 				${packageIcon ? `<div class="col-package-icon">
 					<img src="${packageIcon}" alt="Package ${pkg.severity}" class="package-severity-icon-large" data-hover-src="${packageIconHover}" />
@@ -490,6 +549,13 @@ export class IgnoredView {
 	private getGenericFileIconPath(): string {
 		const iconPath = this.panel?.webview.asWebviewUri(
 			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'genericFile.svg'))
+		);
+		return iconPath?.toString() || '';
+	}
+
+	private getCloseIconPath(): string {
+		const iconPath = this.panel?.webview.asWebviewUri(
+			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'Close.svg'))
 		);
 		return iconPath?.toString() || '';
 	}
