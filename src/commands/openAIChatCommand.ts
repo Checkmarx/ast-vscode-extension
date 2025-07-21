@@ -15,6 +15,7 @@ import {
     CONTAINERS_REMEDIATION_PROMPT,
     CONTAINERS_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
+import path from "path";
 
 
 export class CopilotChatCommand {
@@ -127,7 +128,9 @@ export class CopilotChatCommand {
                 } else if (isAscaHoverData(item)) {
                     question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
                 } else if (isContainersHoverData(item)) {
-                    question = CONTAINERS_REMEDIATION_PROMPT(item.imageName, item.imageTag, item.status, item.vulnerabilities);
+                    const activeEditor = vscode.window.activeTextEditor;
+                    const fileName = activeEditor ? path.basename(activeEditor.document.uri.fsPath) : '';
+                    question = CONTAINERS_REMEDIATION_PROMPT(fileName, item.imageName, item.imageTag, item.status);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
