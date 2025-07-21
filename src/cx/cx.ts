@@ -673,13 +673,15 @@ export class Cx implements CxPlatform {
       throw new Error(scans.status);
     }
   }
-  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
+
     const cx = new CxWrapper(config);
-    const scans = await cx.secretsScanResults(sourcePath);
+    const scans = await cx.secretsScanResults(sourcePath, ignoredFilePath);
+
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
