@@ -11,6 +11,13 @@
     const aiBoxInfo = document.getElementById("aiFeatureStatusBox");
     const aiFeatureBoxWrapper = document.getElementById("aiFeatureBoxWrapper");
 
+    const closeButton = document.getElementById("closeButton");
+    if (closeButton) {
+      closeButton.addEventListener("click", () => {
+        vscode.postMessage({ type: "close" });
+      });
+    }
+
     checkIcon.addEventListener("click", () => {
       if (!serverEnabled) {
         return;
