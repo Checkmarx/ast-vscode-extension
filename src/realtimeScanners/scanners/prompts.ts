@@ -586,3 +586,128 @@ Suggest relevant:
 - Be thorough but concise
 `;
 
+export const CONTAINER_REMEDIATION_PROMPT = (
+  fileType: string,
+  imageName: string,
+  imageTag: string,
+  severity: string
+) => `You are the ${AGENT_NAME} Security Assistant.
+
+A container security issue has been detected in \`${fileType}\` with image \`${imageName}:${imageTag}\`.  
+**Severity:** \`${severity}\`  
+Your task is to remediate the issue **completely and autonomously** using the internal imageRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
+
+---
+
+1. ANALYSIS (AUTOMATED):
+
+Determine the issue type:
+- If \`severity\` is one of: \`Critical\`, \`High\`, \`Medium\`, \`Low\`, set: \`issueType = "CVE"\`
+- If \`severity = "Malicious"\`, set: \`issueType = "malicious"\`
+
+Call the internal imageRemediation tool with:
+
+\`\`\`json
+{
+  "fileType": "${fileType}",
+  "imageName": "${imageName}",
+  "imageTag": "${imageTag}",
+  "severity": "${severity}"
+}
+\`\`\`
+
+Parse the response and extract the \`fix_instructions\` field. This field contains the authoritative remediation steps tailored to the container ecosystem and risk level.
+
+---
+
+2. EXECUTION (AUTOMATED):
+
+- Read and execute each line in \`fix_instructions\`, in order.
+- For each change:
+  - Apply the instruction exactly.
+  - Track all modified files.
+  - Note the type of change (e.g., image update, configuration change, security hardening).
+  - Record before → after values where applicable.
+  - Capture line numbers if known.
+
+Examples:
+- \`Dockerfile\`: FROM confluentinc/cp-kafkacat:6.1.10 → FROM confluentinc/cp-kafkacat:6.2.15
+- \`docker-compose.yml\`: image: vulnerable-image:1.0 → image: secure-image:2.1
+- \`values.yaml\`: repository: old-repo → repository: new-repo
+- \`Chart.yaml\`: version: 1.0.0 → version: 1.1.0
+
+---
+
+3. VERIFICATION:
+
+- If the instructions include build, test, or deployment steps — run them exactly as written
+- If instructions do not explicitly cover validation, perform basic checks based on \`${fileType}\`:
+  - \`Dockerfile\`: \`docker build .\`, \`docker run <image>\`
+  - \`docker-compose.yml\`: \`docker-compose up --build\`, \`docker-compose down\`
+  - \`Helm Chart\`: \`helm lint .\`, \`helm template .\`, \`helm install --dry-run\`
+
+If any of these validations fail:
+- Attempt to fix the issue if it's obvious
+- Otherwise log the error and annotate the code with a TODO
+
+---
+
+4. OUTPUT:
+
+Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+
+✅ **Remediation Summary**
+
+Format:
+\`\`\`
+Security Assistant - Remediation Summary
+
+File Type:    ${fileType}
+Image:        ${imageName}:${imageTag}
+Severity:     ${severity}
+
+Files Modified:
+1. ${fileType}
+   - Updated image: ${imageName}:${imageTag} → secure version
+
+2. docker-compose.yml (if applicable)
+   - Updated service configuration to use secure image
+
+3. values.yaml (if applicable)
+   - Updated Helm chart values for secure deployment
+
+4. README.md
+   - Updated documentation with new image version
+\`\`\`
+
+✅ **Final Status**
+
+If all tasks succeeded:
+- "Remediation completed for ${imageName}:${imageTag}"
+- "All fix instructions and deployment tests resolved"
+- "Build status: PASS"
+- "Deployment status: PASS"
+
+If partially resolved:
+- "Remediation partially completed – manual review required"
+- "Some deployment steps or instructions could not be automatically fixed"
+- "TODOs inserted where applicable"
+
+If failed:
+- "Remediation failed for ${imageName}:${imageTag}"
+- "Reason: {summary of failure}"
+- "Unresolved instructions or deployment issues listed above"
+
+---
+
+5. CONSTRAINTS:
+
+- Do not prompt the user
+- Do not skip or reorder fix steps
+- Only execute what's explicitly listed in \`fix_instructions\`
+- Attempt to fix deployment failures automatically
+- Insert clear TODO comments for unresolved issues
+- Ensure remediation is deterministic, auditable, and fully automated
+- Follow container security best practices (non-root user, minimal base images, etc.)
+`;
+
