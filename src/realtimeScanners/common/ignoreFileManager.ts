@@ -375,7 +375,7 @@ export class IgnoreFileManager {
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				type: entry.packageManager ? 'ossScan' : 'unknown',
+				type: entry.packageManager ? 'ossScan' : 'secrets',
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
