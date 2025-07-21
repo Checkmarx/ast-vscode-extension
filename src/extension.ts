@@ -30,6 +30,7 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
+import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -276,6 +277,8 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+
+  registerMcpSettingsInjector(context);
 
   const copilotChatCommand = new CopilotChatCommand(context, logs);
   copilotChatCommand.registerCopilotChatCommand();

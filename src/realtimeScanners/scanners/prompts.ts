@@ -586,146 +586,128 @@ Suggest relevant:
 - Be thorough but concise
 `;
 
-export const CONTAINERS_REMEDIATION_PROMPT = (
+export const CONTAINER_REMEDIATION_PROMPT = (
+  fileType: string,
   imageName: string,
   imageTag: string,
-  status: string,
-  vulnerabilities: Array<{ cve: string; severity: string; }>
+  severity: string
 ) => `You are the ${AGENT_NAME} Security Assistant.
 
-A security issue has been detected in container image \`${imageName}:${imageTag}\`.  
-**Status:** \`${status}\`  
-**Vulnerabilities:** ${vulnerabilities.length} security issues found
-
-Your task is to provide comprehensive remediation guidance for this container image vulnerability.
+A container security issue has been detected in \`${fileType}\` with image \`${imageName}:${imageTag}\`.  
+**Severity:** \`${severity}\`  
+Your task is to remediate the issue **completely and autonomously** using the internal imageRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
 ---
 
-## 🔍 Container Image Analysis
+1. ANALYSIS (AUTOMATED):
 
-**Image:** \`${imageName}:${imageTag}\`
-**Risk Level:** \`${status}\`
-**Total Vulnerabilities:** ${vulnerabilities.length}
+Determine the issue type:
+- If \`severity\` is one of: \`Critical\`, \`High\`, \`Medium\`, \`Low\`, set: \`issueType = "CVE"\`
+- If \`severity = "Malicious"\`, set: \`issueType = "malicious"\`
 
-${vulnerabilities.map(vuln => `- **${vuln.cve || 'Unknown'}**: ${vuln.severity || 'Unknown'} severity`).join('\n')}
+Call the internal imageRemediation tool with:
 
----
-
-## 🛠️ Remediation Steps
-
-### 1. Immediate Actions
-- Update the base image to the latest stable version
-- Apply security patches for identified vulnerabilities
-- Review and minimize installed packages
-
-### 2. Base Image Recommendations
-- Use official, minimal base images (e.g., alpine, distroless)
-- Consider using specific version tags instead of 'latest'
-- Regularly update base images as part of maintenance
-
-### 3. Container Security Best Practices
-- Run containers as non-root user
-- Use multi-stage builds to reduce attack surface
-- Implement proper secrets management
-- Scan images regularly in CI/CD pipeline
-
-### 4. Dockerfile Improvements
-\`\`\`dockerfile
-# Example secure Dockerfile patterns
-FROM node:18-alpine
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-USER nextjs
+\`\`\`json
+{
+  "fileType": "${fileType}",
+  "imageName": "${imageName}",
+  "imageTag": "${imageTag}",
+  "severity": "${severity}"
+}
 \`\`\`
 
----
-
-## 🔒 Security Recommendations
-
-- Implement container image scanning in your CI/CD pipeline
-- Use tools like Docker Bench for Security
-- Follow CIS Docker Benchmark guidelines
-- Monitor containers at runtime with security tools
+Parse the response and extract the \`fix_instructions\` field. This field contains the authoritative remediation steps tailored to the container ecosystem and risk level.
 
 ---
 
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\``;
+2. EXECUTION (AUTOMATED):
 
-export const CONTAINERS_EXPLANATION_PROMPT = (
-  imageName: string,
-  imageTag: string,
-  status: string,
-  vulnerabilities: Array<{ cve: string; severity: string; }>
-) => `You are the ${AGENT_NAME} Security Assistant.
+- Read and execute each line in \`fix_instructions\`, in order.
+- For each change:
+  - Apply the instruction exactly.
+  - Track all modified files.
+  - Note the type of change (e.g., image update, configuration change, security hardening).
+  - Record before → after values where applicable.
+  - Capture line numbers if known.
 
-Please provide a detailed explanation of the container image security issues found in \`${imageName}:${imageTag}\`.
-
----
-
-## 📋 Container Image Overview
-
-**Image:** \`${imageName}:${imageTag}\`
-**Status Level:** \`${status}\`
-**Total Vulnerabilities:** ${vulnerabilities.length}
-
-## 🔍 Vulnerability Details
-
-${vulnerabilities.map((vuln, index) => `
-### ${index + 1}. ${vuln.cve || 'CVE-Unknown'}
-- **Severity:** ${vuln.severity || 'Unknown'}
-- **CVE ID:** ${vuln.cve || 'Not specified'}
-`).join('\n')}
+Examples:
+- \`Dockerfile\`: FROM confluentinc/cp-kafkacat:6.1.10 → FROM confluentinc/cp-kafkacat:6.2.15
+- \`docker-compose.yml\`: image: vulnerable-image:1.0 → image: secure-image:2.1
+- \`values.yaml\`: repository: old-repo → repository: new-repo
+- \`Chart.yaml\`: version: 1.0.0 → version: 1.1.0
 
 ---
 
-## 🚨 Security Impact
+3. VERIFICATION:
 
-Container image vulnerabilities can lead to:
+- If the instructions include build, test, or deployment steps — run them exactly as written
+- If instructions do not explicitly cover validation, perform basic checks based on \`${fileType}\`:
+  - \`Dockerfile\`: \`docker build .\`, \`docker run <image>\`
+  - \`docker-compose.yml\`: \`docker-compose up --build\`, \`docker-compose down\`
+  - \`Helm Chart\`: \`helm lint .\`, \`helm template .\`, \`helm install --dry-run\`
 
-### 🎯 Attack Vectors
-- Container escape and host system compromise
-- Lateral movement within containerized environments
-- Data exfiltration from running containers
-- Privilege escalation attacks
-
-### 💼 Business Impact
-- Service disruption and downtime
-- Data breaches and compliance violations
-- Supply chain attacks affecting downstream systems
-- Reputation damage and financial losses
+If any of these validations fail:
+- Attempt to fix the issue if it's obvious
+- Otherwise log the error and annotate the code with a TODO
 
 ---
 
-## 🛡️ Prevention Strategies
+4. OUTPUT:
 
-### Image Security
-- Use official, minimal base images
-- Regularly update base images and dependencies
-- Implement automated vulnerability scanning
-- Follow least privilege principles
+Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
 
-### Container Runtime Security
-- Run containers as non-root users
-- Use read-only filesystems where possible
-- Implement network segmentation
-- Monitor container behavior at runtime
+✅ **Remediation Summary**
 
-### DevSecOps Integration
-- Integrate security scanning in CI/CD pipelines
-- Implement policy-as-code for container security
-- Automate remediation where possible
-- Regular security assessments and updates
+Format:
+\`\`\`
+Security Assistant - Remediation Summary
+
+File Type:    ${fileType}
+Image:        ${imageName}:${imageTag}
+Severity:     ${severity}
+
+Files Modified:
+1. ${fileType}
+   - Updated image: ${imageName}:${imageTag} → secure version
+
+2. docker-compose.yml (if applicable)
+   - Updated service configuration to use secure image
+
+3. values.yaml (if applicable)
+   - Updated Helm chart values for secure deployment
+
+4. README.md
+   - Updated documentation with new image version
+\`\`\`
+
+✅ **Final Status**
+
+If all tasks succeeded:
+- "Remediation completed for ${imageName}:${imageTag}"
+- "All fix instructions and deployment tests resolved"
+- "Build status: PASS"
+- "Deployment status: PASS"
+
+If partially resolved:
+- "Remediation partially completed – manual review required"
+- "Some deployment steps or instructions could not be automatically fixed"
+- "TODOs inserted where applicable"
+
+If failed:
+- "Remediation failed for ${imageName}:${imageTag}"
+- "Reason: {summary of failure}"
+- "Unresolved instructions or deployment issues listed above"
 
 ---
 
-## 📚 Resources for Container Security
+5. CONSTRAINTS:
 
-- Docker Security Best Practices
-- NIST Container Security Guidelines
-- CIS Docker Benchmark
-- Kubernetes Security Documentation
-
----
-
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\``;
+- Do not prompt the user
+- Do not skip or reorder fix steps
+- Only execute what's explicitly listed in \`fix_instructions\`
+- Attempt to fix deployment failures automatically
+- Insert clear TODO comments for unresolved issues
+- Ensure remediation is deterministic, auditable, and fully automated
+- Follow container security best practices (non-root user, minimal base images, etc.)
+`;
 
