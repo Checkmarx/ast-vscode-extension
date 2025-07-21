@@ -152,7 +152,7 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA Realtime Scanner - New configuration
+  // ASCA Realtime Scanner
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
   ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
@@ -205,7 +205,6 @@ export const constants = {
     low: "low_untoggle.png",
   },
 
-  // ASCA supported file extensions
   ascaSupportedExtensions: [
     ".java",
     ".cs",
@@ -215,16 +214,15 @@ export const constants = {
     ".jsx"
   ],
 
-  // Containers supported file patterns
   containersSupportedPatterns: [
-    "**/Dockerfile",
+    "**/dockerfile",
     "**/docker-compose.yml",
     "**/docker-compose.yaml",
     "**/compose.yml",
     "**/compose.yaml"
   ],
 
-  // Containers Helm file extensions (only if in helm folder)
+  // Containers Helm file extensions
   containersHelmExtensions: [
     ".yml",
     ".yaml"

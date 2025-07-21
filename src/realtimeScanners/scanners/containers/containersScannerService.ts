@@ -5,28 +5,11 @@ import { BaseScannerService } from "../../common/baseScannerService";
 import { IScannerConfig, CxDiagnosticData, ContainersHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import CxContainerRealtimeResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxContainerRealtime";
 import path from "path";
 import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
-
-interface CxContainersResult {
-	images: Array<{
-		imageName: string;
-		imageTag: string;
-		filePath: string;
-		locations: Array<{
-			line: number;
-			startIndex: number;
-			endIndex: number;
-		}>;
-		status: CxRealtimeEngineStatus;
-		vulnerabilities: Array<{
-			cve: string;
-			severity: string;
-		}>;
-	}>;
-}
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -173,7 +156,6 @@ export class ContainersScannerService extends BaseScannerService {
 			const scanResults = await cx.scanContainers(tempFilePath);
 
 			this.updateProblems(scanResults, document.uri);
-			logs.info(`${scanResults.images?.length || 0} container images were scanned in ${filePath}`);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
@@ -183,7 +165,7 @@ export class ContainersScannerService extends BaseScannerService {
 	}
 
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
-		const scanResults = problems as unknown as CxContainersResult;
+		const scanResults = problems as CxContainerRealtimeResult[];
 		const filePath = uri.fsPath;
 
 		const diagnostics: vscode.Diagnostic[] = [];
@@ -203,102 +185,101 @@ export class ContainersScannerService extends BaseScannerService {
 		const mediumIconDecorations: vscode.DecorationOptions[] = [];
 		const lowIconDecorations: vscode.DecorationOptions[] = [];
 
-		if (scanResults.images && Array.isArray(scanResults.images)) {
-			for (const image of scanResults.images) {
-				if (image.locations && Array.isArray(image.locations)) {
-					for (let i = 0; i < image.locations.length; i++) {
-						const location = image.locations[i];
-						const range = new vscode.Range(
-							new vscode.Position(location.line, location.startIndex),
-							new vscode.Position(location.line, location.endIndex)
-						);
-						const addDiagnostic = i === 0;
+		for (const image of scanResults) {
+			if (image.locations && Array.isArray(image.locations)) {
+				for (let i = 0; i < image.locations.length; i++) {
+					const location = image.locations[i];
+					const range = new vscode.Range(
+						new vscode.Position(location.line, location.startIndex),
+						new vscode.Position(location.line, location.endIndex)
+					);
+					const addDiagnostic = i === 0;
 
-						switch (image.status) {
-							case CxRealtimeEngineStatus.malicious:
-								this.handleProblemStatus(
-									diagnostics,
-									maliciousDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Malicious container image detected",
-									addDiagnostic,
-									maliciousIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.ok:
-								if (addDiagnostic) {
-									okDecorations.push({ range });
-								}
-								break;
-							case CxRealtimeEngineStatus.unknown:
-								unknownDecorations.push({ range });
-								break;
-							case CxRealtimeEngineStatus.critical:
-								this.handleProblemStatus(
-									diagnostics,
-									criticalDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Critical-risk container image",
-									addDiagnostic,
-									criticalIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.high:
-								this.handleProblemStatus(
-									diagnostics,
-									highDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"High-risk container image",
-									addDiagnostic,
-									highIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.medium:
-								this.handleProblemStatus(
-									diagnostics,
-									mediumDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Medium-risk container image",
-									addDiagnostic,
-									mediumIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.low:
-								this.handleProblemStatus(
-									diagnostics,
-									lowDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Low-risk container image",
-									addDiagnostic,
-									lowIconDecorations
-								);
-								break;
-							default:
-								continue;
-						}
+					switch (image.status) {
+						case CxRealtimeEngineStatus.malicious:
+							this.handleProblemStatus(
+								diagnostics,
+								maliciousDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Malicious container image detected",
+								addDiagnostic,
+								maliciousIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.ok:
+							if (addDiagnostic) {
+								okDecorations.push({ range });
+							}
+							break;
+						case CxRealtimeEngineStatus.unknown:
+							unknownDecorations.push({ range });
+							break;
+						case CxRealtimeEngineStatus.critical:
+							this.handleProblemStatus(
+								diagnostics,
+								criticalDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Critical-risk container image",
+								addDiagnostic,
+								criticalIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.high:
+							this.handleProblemStatus(
+								diagnostics,
+								highDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"High-risk container image",
+								addDiagnostic,
+								highIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.medium:
+							this.handleProblemStatus(
+								diagnostics,
+								mediumDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Medium-risk container image",
+								addDiagnostic,
+								mediumIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.low:
+							this.handleProblemStatus(
+								diagnostics,
+								lowDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Low-risk container image",
+								addDiagnostic,
+								lowIconDecorations
+							);
+							break;
+						default:
+							continue;
 					}
 				}
 			}
+
 		}
 
 		this.storeAndApplyResults(
@@ -371,8 +352,7 @@ export class ContainersScannerService extends BaseScannerService {
 		decorations.push({ range });
 
 		if (addDiagnostic) {
-			const vulnerabilityCount = result.vulnerabilities?.length || 0;
-			const diagnosticMessage = `${result.imageName}:${result.imageTag} - ${message} (${vulnerabilityCount} vulnerabilities)`;
+			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
 			const diagnostic = new vscode.Diagnostic(range, diagnosticMessage, severity);
 			diagnostic.source = constants.cxAi;

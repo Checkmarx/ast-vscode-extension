@@ -5,16 +5,29 @@ import * as os from "os";
 import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig } from "./types";
 import { createHash } from "crypto";
+import { DiagnosticPriorityManager } from "./diagnosticPriorityManager";
 
 export abstract class BaseScannerService implements IScannerService {
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
+  private diagnosticPriorityManager: DiagnosticPriorityManager | null = null;
+  private usePrioritySystem: boolean;
 
-  constructor(config: IScannerConfig) {
+  constructor(config: IScannerConfig, priority?: number) {
     this.config = config;
+    this.usePrioritySystem = priority !== undefined;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection(
       config.engineName
     );
+    
+    if (this.usePrioritySystem && priority !== undefined) {
+      this.diagnosticPriorityManager = DiagnosticPriorityManager.getInstance();
+      this.diagnosticPriorityManager.registerScanner(
+        config.engineName,
+        priority,
+        this.diagnosticCollection
+      );
+    }
   }
 
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
@@ -22,7 +35,29 @@ export abstract class BaseScannerService implements IScannerService {
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
 
   async clearProblems(): Promise<void> {
-    this.diagnosticCollection.clear();
+    if (this.usePrioritySystem && this.diagnosticPriorityManager) {
+      this.diagnosticPriorityManager.clearAllDiagnostics(this.config.engineName);
+    } else {
+      this.diagnosticCollection.clear();
+    }
+  }
+
+  protected setDiagnosticsWithPriority(uri: vscode.Uri, diagnostics: vscode.Diagnostic[]): void {
+    if (this.usePrioritySystem && this.diagnosticPriorityManager) {
+      this.diagnosticPriorityManager.setDiagnostics(this.config.engineName, uri, diagnostics);
+    } else {
+      // Fallback to direct diagnostic collection for scanners that don't use priority system
+      this.diagnosticCollection.set(uri, diagnostics);
+    }
+  }
+
+  protected deleteDiagnosticsWithPriority(uri: vscode.Uri): void {
+    if (this.usePrioritySystem && this.diagnosticPriorityManager) {
+      this.diagnosticPriorityManager.deleteDiagnostics(this.config.engineName, uri);
+    } else {
+      // Fallback to direct diagnostic collection for scanners that don't use priority system
+      this.diagnosticCollection.delete(uri);
+    }
   }
 
   shouldScanFile(document: vscode.TextDocument): boolean {
