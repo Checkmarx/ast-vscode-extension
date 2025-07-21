@@ -597,9 +597,9 @@ Your task is to **analyze and explain** the container security issue affecting \
 
 ---
 
-### ❗ Important Instructions:
-- 👉 **Do not change anything in the code. Just explain the risks and remediation steps.**
-- ❌ **Never include references from Checkmarx competitors.**
+###  Important Instructions:
+-  **Do not change anything in the code. Just explain the risks and remediation steps.**
+-  **Never include references from Checkmarx competitors.**
 
 ---
 
@@ -692,7 +692,7 @@ Conclude with:
 
 ---
 
-### ✏️ Output Formatting
+### Output Formatting
 
 - Use Markdown: \`##\`, \`- \`, \`**bold**\`, \`code\`
 - Developer-friendly tone, informative, concise
