@@ -70,6 +70,21 @@ export class ContainersScannerService extends BaseScannerService {
 		super(config);
 	}
 
+	async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+		const dirPath = path.dirname(uri.fsPath);
+		const dirUri = vscode.Uri.file(dirPath);
+		const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+		const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+		for (const [entryName, _type] of entries) {
+			if (entryName.toLowerCase() === fileNameLower) {
+				return path.join(dirPath, entryName);      
+			}
+		}
+		return undefined;
+	}
+
 	shouldScanFile(document: vscode.TextDocument): boolean {
 		if (!super.shouldScanFile(document)) {
 			return false;
@@ -104,7 +119,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const originalExt = path.extname(originalFilePath);
 		const baseName = path.basename(originalFilePath, originalExt);
 		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
+		const tempFileName = `${baseName}${originalExt}`;
 		const tempFilePath = path.join(tempFolder, tempFileName);
 		fs.writeFileSync(tempFilePath, content);
 		return tempFilePath;
@@ -134,7 +149,10 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		const filePath = document.uri.fsPath;
+		// const filePath = document.uri.fsPath;
+		// Use the method to take care of in DockerFiles 
+		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
+
 		logs.info("Scanning Containers in file: " + filePath);
 
 		const tempFolder = this.getTempSubFolderPath(document, constants.containersRealtimeScannerDirectory);
@@ -147,7 +165,7 @@ export class ContainersScannerService extends BaseScannerService {
 			const fileExtension = path.extname(filePath).toLowerCase();
 			const isYamlFile = constants.containersHelmExtensions.includes(fileExtension);
 
-			if (isYamlFile) {
+			if (isYamlFile) {//check if not docker 
 				tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
 			} else {
 				tempFilePath = this.saveFile(tempFolder, filePath, document.getText());

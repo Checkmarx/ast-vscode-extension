@@ -665,6 +665,7 @@ export class Cx implements CxPlatform {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
+
       const scans = await cx.containersRealtimeScanResults(sourcePath);
       if (scans.payload && scans.exitCode === 0) {
         return scans.payload[0];

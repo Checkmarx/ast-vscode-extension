@@ -877,6 +877,12 @@
             "order": 3,
             "default": false,
             "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
           }
         }
       },
@@ -948,58 +954,6 @@
             ]
           }
         }
-      },
-      {
-        "title": "Activate ASCA Realtime",
-        "id": "asca-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your code files for security best practices as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate OSS-Realtime",
-        "id": "realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your manifest files as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Secret Detection Realtime",
-        "id": "secret-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Containers Realtime",
-        "id": "containers-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
-          }
-        }
       }
     ]
   },
@@ -1047,7 +1001,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.136",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "npm:@CheckmarxDev/ast-cli-javascript-wrapper@^0.0.137-rc.0",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.8.3",

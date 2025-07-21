@@ -586,7 +586,7 @@ Suggest relevant:
 - Be thorough but concise
 `;
 
-export const CONTAINER_REMEDIATION_PROMPT = (
+export const CONTAINERS_REMEDIATION_PROMPT = (
   fileType: string,
   imageName: string,
   imageTag: string,
@@ -711,3 +711,9 @@ If failed:
 - Follow container security best practices (non-root user, minimal base images, etc.)
 `;
 
+export const CONTAINERS_EXPLANATION_PROMPT = (
+  imageName: string,
+  imageTag: string,
+  status: string
+) => `You are the ${AGENT_NAME} Security Assistant providing detailed container security explanations.
+A container security issue has been detected in image \`${imageName}:${imageTag}\` with status: \`${status}\`.`;
