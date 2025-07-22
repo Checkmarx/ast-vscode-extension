@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { OssScannerService } from '../scanners/oss/ossScannerService';
+import { SecretsScannerService } from '../scanners/secrets/secretsScannerService';
 import { Logs } from '../../models/logs';
 
 export interface IgnoreEntry {
@@ -12,9 +13,9 @@ export interface IgnoreEntry {
 		line?: number;
 	}>;
 	type: string;
-	PackageManager: string;
+	PackageManager?: string;
 	PackageName: string;
-	PackageVersion: string;
+	PackageVersion?: string;
 	severity?: string;
 	description?: string;
 	dateAdded?: string;
@@ -30,6 +31,7 @@ export class IgnoreFileManager {
 	private fileWatcher: fs.FSWatcher | undefined;
 	private previousIgnoreData: Record<string, IgnoreEntry> = {};
 	private ossScannerService: OssScannerService | undefined;
+	private secretsScannerService: SecretsScannerService | undefined;
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
@@ -60,6 +62,10 @@ export class IgnoreFileManager {
 
 	public setOssScannerService(service: OssScannerService): void {
 		this.ossScannerService = service;
+	}
+
+	public setSecretsScannerService(service: SecretsScannerService): void {
+		this.secretsScannerService = service;
 	}
 
 	public setStatusBarUpdateCallback(callback: () => void): void {
@@ -106,7 +112,7 @@ export class IgnoreFileManager {
 	}
 
 	private async detectAndHandleActiveChanges(): Promise<void> {
-		if (!this.ossScannerService) {
+		if (!this.ossScannerService && !this.secretsScannerService) {
 			return;
 		}
 
@@ -253,10 +259,6 @@ export class IgnoreFileManager {
 	}
 
 	private async rescanFile(relativePath: string): Promise<void> {
-		if (!this.ossScannerService) {
-			return;
-		}
-
 		const fullPath = path.resolve(this.workspaceRootPath, relativePath);
 
 		try {
@@ -266,13 +268,17 @@ export class IgnoreFileManager {
 				document = await vscode.workspace.openTextDocument(fullPath);
 			}
 
-			if (this.ossScannerService.shouldScanFile(document)) {
-				const logs = {
-					info: (msg: string) => console.log('[INFO]', msg),
-					error: (msg: string) => console.error('[ERROR]', msg)
-				} as Logs;
+			const logs = {
+				info: (msg: string) => console.log('[INFO]', msg),
+				error: (msg: string) => console.error('[ERROR]', msg)
+			} as Logs;
 
+			if (this.ossScannerService && this.ossScannerService.shouldScanFile(document)) {
 				await this.ossScannerService.scan(document, logs);
+			}
+
+			if (this.secretsScannerService && this.secretsScannerService.shouldScanFile(document)) {
+				await this.secretsScannerService.scan(document, logs);
 			}
 		} catch (error) {
 			console.error(`Error rescanning file ${fullPath}:`, error);
@@ -339,7 +345,6 @@ export class IgnoreFileManager {
 		if (!this.ignoreData[packageKey]) {
 			return false;
 		}
-
 
 		this.ignoreData[packageKey].files.forEach(file => {
 			file.active = false;
@@ -413,6 +418,57 @@ export class IgnoreFileManager {
 		}
 	}
 
+	public addIgnoredEntrySecrets(entry: {
+		title: string;
+		filePath: string;
+		line?: number;
+		severity?: string;
+		description?: string;
+		dateAdded?: string;
+	}): void {
+		const countBefore = this.getIgnoredPackagesCount();
+
+		const packageKey = `${entry.title}:${entry.line || 0}`;
+		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+
+		if (!this.ignoreData[packageKey]) {
+			this.ignoreData[packageKey] = {
+				files: [],
+				type: 'secrets',
+				PackageName: entry.title,
+				severity: entry.severity,
+				description: entry.description,
+				dateAdded: entry.dateAdded
+			};
+		} else {
+			if (entry.severity !== undefined) {
+				this.ignoreData[packageKey].severity = entry.severity;
+			}
+			if (entry.description !== undefined) {
+				this.ignoreData[packageKey].description = entry.description;
+			}
+		}
+
+		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath && f.line === entry.line);
+		if (!existing) {
+			this.ignoreData[packageKey].files.push({
+				path: relativePath,
+				active: true,
+				line: entry.line
+			});
+		} else {
+			existing.active = true;
+			existing.line = entry.line;
+		}
+
+		this.saveIgnoreFile();
+		this.updateTempList();
+
+		const countAfter = this.getIgnoredPackagesCount();
+		if (countBefore === 0 && countAfter > 0 && this.uiRefreshCallback) {
+			this.uiRefreshCallback();
+		}
+	}
 
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
@@ -429,12 +485,20 @@ export class IgnoreFileManager {
 					const originalPath = path.resolve(this.workspaceRootPath, file.path);
 					const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
 
-					return {
-						PackageManager: entry.PackageManager,
-						PackageName: entry.PackageName,
-						PackageVersion: entry.PackageVersion,
-						FilePath: scannedTempPath,
-					};
+					if (entry.type === 'secrets') {
+						return {
+							Title: entry.PackageName,
+							FilePath: scannedTempPath,
+							Line: file.line - 1
+						};
+					} else {
+						return {
+							PackageManager: entry.PackageManager,
+							PackageName: entry.PackageName,
+							PackageVersion: entry.PackageVersion,
+							FilePath: scannedTempPath,
+						};
+					}
 				})
 		);
 
@@ -451,6 +515,20 @@ export class IgnoreFileManager {
 
 		const relativePath = path.relative(this.workspaceRootPath, filePath);
 		const fileEntry = entry.files.find(f => f.path === relativePath);
+
+		return fileEntry && fileEntry.active;
+	}
+
+	public isSecretIgnored(title: string, line: number, filePath: string): boolean {
+		const packageKey = `${title}:${line}`;
+		const entry = this.ignoreData[packageKey];
+
+		if (!entry) {
+			return false;
+		}
+
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const fileEntry = entry.files.find(f => f.path === relativePath && f.line === line);
 
 		return fileEntry && fileEntry.active;
 	}

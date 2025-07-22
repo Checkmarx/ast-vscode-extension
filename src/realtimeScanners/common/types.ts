@@ -43,6 +43,7 @@ export interface SecretsHoverData {
     startIndex: number;
     endIndex: number;
   };
+  filePath: string;
 }
 
 export interface CxDiagnosticData {

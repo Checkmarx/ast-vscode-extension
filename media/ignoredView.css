@@ -117,7 +117,7 @@ body {
   padding: 10px 8px;
   border-bottom: 1px solid var(--vscode-panel-border);
   align-items: center;
-  min-height: 60px;
+  min-height: 80px;
   gap: 8px;
 }
 
@@ -155,7 +155,6 @@ body {
   -moz-appearance: none;
   background-color: transparent;
   cursor: pointer;
-  margin-bottom: 15px;
   position: relative;
   outline: none;
   box-shadow: none;
@@ -384,6 +383,13 @@ body {
 .sca-icon {
   width: 32px;
   height: 32px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.secrets-icon {
+  width: 60px;
+  height: 60px;
   margin-right: 8px;
   flex-shrink: 0;
 }

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IgnoreFileManager, IgnoreEntry } from '../../realtimeScanners/common/ignoreFileManager';
+import * as ignoredViewUtils from './ignoredViewUtils';
 
 export class IgnoredView {
 	private panel: vscode.WebviewPanel | undefined;
@@ -224,7 +225,7 @@ export class IgnoredView {
 			try {
 				const document = await vscode.workspace.openTextDocument(fullPath);
 				const editor = await vscode.window.showTextDocument(document);
-				const position = new vscode.Position(Math.max(0, line), 0);
+				const position = new vscode.Position(Math.max(0, line - 1), 0);
 				editor.selection = new vscode.Selection(position, position);
 				editor.revealRange(new vscode.Range(position, position));
 			} catch (error) {
@@ -237,9 +238,7 @@ export class IgnoredView {
 		}
 	}
 
-	private updateStatusBar(): void {
 
-	}
 
 	private getWebviewContent(): string {
 		const ignoreManager = IgnoreFileManager.getInstance();
@@ -291,13 +290,13 @@ export class IgnoredView {
 									<span id="selection-count">0 Risks selected</span>
 									<div class="divider"></div>
 									<button class="clear-selections-btn" onclick="clearAllSelections()">
-										<img src="${this.getCloseIconPath()}" alt="Close" class="close-icon" />
+										<img src="${ignoredViewUtils.getCloseIconPath(this.panel!.webview, this.context.extensionPath)}" alt="Close" class="close-icon" />
 										Clear Selections
 									</button>
 								</div>
 								<div class="bulk-actions">
 									<button class="revive-all-btn" onclick="reviveAllSelected()">
-										<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
+										<img src="${ignoredViewUtils.getReviveIconPath(this.panel!.webview, this.context.extensionPath)}" alt="Revive" class="revive-icon" />
 										Revive All
 									</button>
 								</div>
@@ -326,7 +325,7 @@ export class IgnoredView {
 		if (packageKeys.length === 0) {
 			return `
 				<div class="empty-state">
-					<img src="${this.getNoIgnoreVulIconPath()}" alt="No ignored vulnerabilities" class="empty-state-icon" />
+					<img src="${ignoredViewUtils.getNoIgnoreVulIconPath(this.panel!.webview, this.context.extensionPath)}" alt="No ignored vulnerabilities" class="empty-state-icon" />
 					<div class="empty-state-text">No Ignored Vulnerabilities</div>
 				</div>
 			`;
@@ -354,14 +353,28 @@ export class IgnoredView {
 	}
 
 	private generateTableRow(packageKey: string, pkg: IgnoreEntry): string {
-		const iconName = this.getIconName(pkg.severity);
-		const lastUpdated = this.getLastUpdated(pkg.dateAdded);
-		const fileButtons = this.generateFileButtons(pkg.files);
-		const scaIcon = pkg.type === 'ossScan' ? this.getScaIconPath() : '';
-		const packageIcon = pkg.type === 'ossScan' ? this.getPackageIconPath(pkg.severity || 'medium') : '';
-		const packageIconHover = pkg.type === 'ossScan' ? this.getPackageIconPath(pkg.severity || 'medium', true) : '';
+		const webview = this.panel!.webview;
+		const extensionPath = this.context.extensionPath;
 
-		console.log(`Package ${packageKey}: dateAdded = ${pkg.dateAdded}, lastUpdated = ${lastUpdated}, type = ${pkg.type}`);
+		const iconName = ignoredViewUtils.getIconName(pkg.severity, webview, extensionPath);
+		const lastUpdated = ignoredViewUtils.getLastUpdated(pkg.dateAdded);
+		const fileButtons = ignoredViewUtils.generateFileButtons(pkg.files, webview, extensionPath);
+		const scaIcon = pkg.type === 'ossScan' ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
+		const secretsIcon = pkg.type === 'secrets' ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
+
+		const packageIcon = pkg.type === 'ossScan'
+			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath)
+			: pkg.type === 'secrets'
+				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath)
+				: '';
+
+		const packageIconHover = pkg.type === 'ossScan'
+			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+			: pkg.type === 'secrets'
+				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+				: '';
+
+		const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, pkg.type);
 
 		return `
 			<div class="table-row">
@@ -375,10 +388,11 @@ export class IgnoredView {
 					<div class="risk-content">
 						<div class="package-line">
 							<img src="${iconName}" alt="${pkg.severity}" class="severity-icon" />
-							<div class="package-name">${packageKey}</div>
+							<div class="package-name">${displayName}</div>
 						</div>
 						<div class="file-buttons-container">
 							${scaIcon ? `<img src="${scaIcon}" alt="SCA" class="sca-icon" />` : ''}
+							${secretsIcon ? `<img src="${secretsIcon}" alt="Secrets" class="secrets-icon" />` : ''}
 							${fileButtons}
 						</div>
 					</div>
@@ -387,7 +401,7 @@ export class IgnoredView {
 				<div class="col-actions">
 					<div class="tooltip revive-btn-tooltip">
 						<button class="revive-btn" onclick="revivePackage('${packageKey}')">
-							<img src="${this.getReviveIconPath()}" alt="Revive" class="revive-icon" />
+							<img src="${ignoredViewUtils.getReviveIconPath(webview, extensionPath)}" alt="Revive" class="revive-icon" />
 							Revive
 						</button>
 						<span class="tooltiptext">Revive this vulnerability in all affected files</span>
@@ -395,169 +409,6 @@ export class IgnoredView {
 				</div>
 			</div>
 		`;
-	}
-
-	private getIconName(severity: string): string {
-		const iconMap: Record<string, string> = {
-			'critical': 'Vulnerability critical_ignore',
-			'high': 'Vulnerability-high_ignore',
-			'medium': 'Vulnerability-medium_ignore',
-			'low': 'Vulnerability-low_ignore}',
-			'malicious': 'Vulnerability_malicious_ignore'
-		};
-
-		const normalizedSeverity = severity?.toLowerCase();
-		const iconFile = iconMap[normalizedSeverity] || 'Vulnerability-medium_ignore';
-
-
-
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', `${iconFile}.svg`))
-		);
-
-		console.log(`[Icon Debug] Final icon URI: ${iconPath?.toString()}`);
-
-		return iconPath?.toString() || '';
-	}
-
-	private getReviveIconPath(): string {
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'arrow_ignore.svg'))
-		);
-		return iconPath?.toString() || '';
-	}
-
-	private getScaIconPath(): string {
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'sca_ignore.svg'))
-		);
-		return iconPath?.toString() || '';
-	}
-
-	private getNoIgnoreVulIconPath(): string {
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'no_ignore_vul.svg'))
-		);
-		return iconPath?.toString() || '';
-	}
-
-	private getPackageIconPath(severity: string, isHover: boolean = false): string {
-		const normalizedSeverity = severity?.toLowerCase();
-		const iconName = isHover ? `${normalizedSeverity}_hover` : normalizedSeverity;
-
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'Packages', `${iconName}.svg`))
-		);
-
-		console.log(`[Package Icon Debug] Severity: "${severity}", Hover: ${isHover}, Path: ${iconPath?.toString()}`);
-		return iconPath?.toString() || '';
-	}
-
-	private getRiskText(severity: string): string {
-		if (severity?.toLowerCase() === 'malicious') {
-			return 'malicious-package detected';
-		}
-		return `${severity}-risk package`;
-	}
-
-	private generateFileButtons(files: Array<{ path: string; active: boolean; line?: number }>): string {
-		if (!files || files.length === 0) {
-			return '';
-		}
-
-		const activeFiles = files.filter(file => file.active);
-		if (activeFiles.length === 0) {
-			return '';
-		}
-
-		const maxVisible = 1;
-		const visibleFiles = activeFiles.slice(0, maxVisible);
-		const remainingCount = activeFiles.length - maxVisible;
-
-		const visibleButtons = visibleFiles
-			.map(file => {
-				const fileName = file.path.split('/').pop() || file.path;
-				const fileIconUri = this.getGenericFileIconPath();
-				return `<div class="tooltip file-btn-tooltip">
-					<button class="file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
-						<img src="${fileIconUri}" alt="File" class="file-icon" />
-						${fileName}
-					</button>
-					<span class="tooltiptext">Click to show in file</span>
-				</div>`;
-			})
-			.join('');
-
-		const hiddenButtons = activeFiles.slice(maxVisible)
-			.map(file => {
-				const fileName = file.path.split('/').pop() || file.path;
-				const fileIconUri = this.getGenericFileIconPath();
-				return `<div class="tooltip file-btn-tooltip hidden-tooltip">
-					<button class="file-btn hidden-file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
-						<img src="${fileIconUri}" alt="File" class="file-icon" />
-						${fileName}
-					</button>
-					<span class="tooltiptext">Click to show in file</span>
-				</div>`;
-			})
-			.join('');
-
-		const expandButton = remainingCount > 0
-			? `<button class="expand-files-btn" onclick="expandFiles(this)">and ${remainingCount} more files</button>`
-			: '';
-
-		return `<div class="file-buttons">${visibleButtons}${expandButton}${hiddenButtons}</div>`;
-	}
-
-	private getLastUpdated(dateAdded: string | undefined): string {
-		if (!dateAdded) {
-			return 'Unknown';
-		}
-
-		try {
-			const addedDate = new Date(dateAdded);
-			const now = new Date();
-
-			const addedDay = new Date(addedDate.getFullYear(), addedDate.getMonth(), addedDate.getDate());
-			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-			const diffMs = today.getTime() - addedDay.getTime();
-			const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-			if (diffDays === 0) {
-				return 'Today';
-			} else if (diffDays === 1) {
-				return '1 day ago';
-			} else if (diffDays < 7) {
-				return `${diffDays} days ago`;
-			} else if (diffDays < 30) {
-				const weeks = Math.floor(diffDays / 7);
-				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
-			} else if (diffDays < 365) {
-				const months = Math.floor(diffDays / 30);
-				return months === 1 ? '1 month ago' : `${months} months ago`;
-			} else {
-				const years = Math.floor(diffDays / 365);
-				return years === 1 ? '1 year ago' : `${years} years ago`;
-			}
-		} catch (error) {
-			console.error('Error parsing date:', dateAdded, error);
-			return 'Unknown';
-		}
-	}
-
-	private getGenericFileIconPath(): string {
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'genericFile.svg'))
-		);
-		return iconPath?.toString() || '';
-	}
-
-	private getCloseIconPath(): string {
-		const iconPath = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'Close.svg'))
-		);
-		return iconPath?.toString() || '';
 	}
 
 

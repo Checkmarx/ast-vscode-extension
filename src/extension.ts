@@ -33,6 +33,7 @@ import { ConfigurationManager } from "./realtimeScanners/configuration/configura
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
 import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
+import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
 import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 
 
@@ -274,18 +275,24 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+  const ignoreFileManager = IgnoreFileManager.getInstance();
   const ossCommand = scannerRegistry.getScanner("oss") as OssScannerCommand;
   const ossScanner = ossCommand.getScannerService();
 
-  const ignoreFileManager = IgnoreFileManager.getInstance();
+  const secretCommand = scannerRegistry.getScanner("secrets") as SecretsScannerCommand;
+  const secretScanner = secretCommand.getScannerService();
+
   ignoreFileManager.setOssScannerService(ossScanner);
+  ignoreFileManager.setSecretsScannerService(secretScanner);
 
   context.subscriptions.push({
     dispose: () => ignoreFileManager.dispose()
   });
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner);
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner);
   copilotChatCommand.registerCopilotChatCommand();
+
+
 
   // Initialize ignored packages view
   const ignoredView = new IgnoredView(context);
@@ -303,7 +310,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 
     if (hasIgnoreFile) {
-      ignoredStatusBarItem.text = `$(shield) ${count}`;
+      ignoredStatusBarItem.text = `$(workspace-untrusted) ${count}`;
       ignoredStatusBarItem.tooltip = count > 0
         ? `${count} ignored packages - Click to view`
         : `No ignored packages - Click to view`;

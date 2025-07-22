@@ -85,7 +85,7 @@ export class OssScannerCommand extends BaseScannerCommand {
         "<br>"
       );
     }
-    md.appendMarkdown(`${"&nbsp;".repeat(35)}${buttons}<br>`);
+    md.appendMarkdown(`${"&nbsp;".repeat(10)}${buttons}<br>`);
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }

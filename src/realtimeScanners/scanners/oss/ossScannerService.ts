@@ -39,7 +39,7 @@ export class OssScannerService extends BaseScannerService {
     high: this.createDecoration("high_untoggle.svg"),
     medium: this.createDecoration("medium_untoggle.svg"),
     low: this.createDecoration("low_untoggle.svg"),
-    ignored: this.createDecoration("ignored.svg"),
+    ignored: this.createDecoration("Ignored.svg"),
     underline: vscode.window.createTextEditorDecorationType({
       textDecoration: "underline wavy #f14c4c",
       rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,

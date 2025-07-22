@@ -102,4 +102,8 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		(this.scannerService as SecretsScannerService).dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
+
+	getScannerService(): SecretsScannerService {
+		return this.scannerService as SecretsScannerService;
+	}
 }

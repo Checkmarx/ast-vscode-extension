@@ -280,10 +280,10 @@ export function buildCommandButtons(args: string, isSecret: boolean): string {
   const isCursor = isCursorIDE();
 
   return (
-    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
-    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
-    `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore CxAI Package</a>  ` +
-    `<a href="command:${commands.IgnoreAll}?${args}" title="">${isSecret ? " " : "Ignore All CxAI Packages"}</a>`
+    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxOne Assist & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
+    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxOne Assist Explain " : "View CxOne Assist  Package Details"}</a>  ` +
+    `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore this vulnerability</a>  ` +
+    `<a href="command:${commands.IgnoreAll}?${args}" title="">${isSecret ? " " : "Ignore all of this type"}</a>`
   );
 }
 

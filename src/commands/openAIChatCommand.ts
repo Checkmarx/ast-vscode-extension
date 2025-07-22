@@ -4,7 +4,7 @@ import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
-import { HoverData, SecretsHoverData, IScannerService } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,
@@ -13,16 +13,24 @@ import {
 } from "../realtimeScanners/scanners/prompts";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
 
 export class CopilotChatCommand {
     context: vscode.ExtensionContext;
     logs: Logs;
-    scannerService: IScannerService;
+    private ossScanner: OssScannerService;
+    private secretsScanner: SecretsScannerService;
 
-    constructor(context: vscode.ExtensionContext, logs: Logs, scannerService: IScannerService) {
+    constructor(
+        context: vscode.ExtensionContext,
+        logs: Logs,
+        ossScanner: OssScannerService,
+        secretsScanner: SecretsScannerService
+    ) {
         this.context = context;
         this.logs = logs;
-        this.scannerService = scannerService;
+        this.ossScanner = ossScanner;
+        this.secretsScanner = secretsScanner;
     }
 
     private pressEnterWindows() {
@@ -151,7 +159,7 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData) => {
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     if (!workspaceFolder) {
@@ -161,30 +169,50 @@ export class CopilotChatCommand {
 
                     const ignoreManager = IgnoreFileManager.getInstance();
                     ignoreManager.initialize(workspaceFolder);
-                    ignoreManager.addIgnoredEntry({
-                        packageManager: item.packageManager,
-                        packageName: item.packageName,
-                        packageVersion: item.version,
-                        filePath: item.filePath,
-                        line: item.line,
-                        severity: item.status,
-                        description: item.vulnerabilities ?
-                            item.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
-                            undefined,
-                        dateAdded: new Date().toISOString()
-                    });
 
-                    vscode.window.showInformationMessage(`Package ${item.packageName}@${item.version} ignored successfully.`);
+                    if (isSecretsHoverData(item)) {
+                        ignoreManager.addIgnoredEntrySecrets({
+                            title: item.title || "",
+                            filePath: item.filePath,
+                            line: (item.location?.line || 0) + 1,
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+
+
+
+                        vscode.window.showInformationMessage(`Secret '${item.title}' ignored successfully.`);
+
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
+                            ?? await vscode.workspace.openTextDocument(item.filePath);
+                        const secretsScannerForScan = this.secretsScanner as SecretsScannerService;
+                        await secretsScannerForScan.scan(document, this.logs);
+                    } else {
+                        ignoreManager.addIgnoredEntry({
+                            packageManager: item.packageManager,
+                            packageName: item.packageName,
+                            packageVersion: item.version,
+                            filePath: item.filePath,
+                            line: item.line,
+                            severity: item.status,
+                            description: item.vulnerabilities ?
+                                item.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
+                                undefined,
+                            dateAdded: new Date().toISOString()
+                        });
+                        vscode.window.showInformationMessage(`Package ${item.packageName}@${item.version} ignored successfully.`);
+
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
+                            ?? await vscode.workspace.openTextDocument(item.filePath);
+                        const scanner = this.ossScanner as OssScannerService;
+                        if (scanner.shouldScanFile(document)) {
+                            await scanner.scan(document, this.logs);
+                        }
+                    }
                 } catch (err) {
-                    this.logs.error(`Failed to ignore package: ${err}`);
-                    vscode.window.showErrorMessage(`Failed to ignore package: ${err}`);
-                }
-
-                const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
-                    ?? await vscode.workspace.openTextDocument(item.filePath);
-                const scanner = this.scannerService as OssScannerService;
-                if (scanner.shouldScanFile(document)) {
-                    await scanner.scan(document, this.logs);
+                    this.logs.error(`Failed to ignore: ${err}`);
+                    vscode.window.showErrorMessage(`Failed to ignore: ${err}`);
                 }
             })
         );
@@ -196,7 +224,7 @@ export class CopilotChatCommand {
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
-                    const scanner = this.scannerService as OssScannerService;
+                    const scanner = this.ossScanner as OssScannerService;
 
                     const affectedFiles = findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
                     await rescanFiles(affectedFiles, scanner, this.logs);
