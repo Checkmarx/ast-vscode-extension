@@ -294,17 +294,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 
-  // Initialize ignored packages view
   const ignoredView = new IgnoredView(context);
 
-  // Register ignored packages command
   context.subscriptions.push(
     vscode.commands.registerCommand(commands.openIgnoredView, () => {
       ignoredView.show();
     })
   );
 
-  // Function to update ignored packages status bar
   function updateIgnoredStatusBar() {
     const count = ignoreFileManager.getIgnoredPackagesCount();
     const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
@@ -321,10 +318,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  // Update status bar initially
   updateIgnoredStatusBar();
 
-  // Set callback to update status bar when ignore file changes
   ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
 
 
