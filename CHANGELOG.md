@@ -4,17 +4,6 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Add MCP message into welcome page (AST-105046) by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1209
-### New Features 🚀
-* Configure Checkmarx MCP (AST-103975) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1207
-### Other Changes
-* Prompt to activate containers remediation and use fix instructions (AST-106089) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1210
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-0...v2.34.1-containers.0
-
 ## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
