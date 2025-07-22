@@ -69,7 +69,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Left
   );
   const ignoredStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left
+    vscode.StatusBarAlignment.Left, 20
+
   );
 
   await setScanButtonDefaultIfScanIsNotRunning(context);
@@ -307,7 +308,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 
     if (hasIgnoreFile) {
-      ignoredStatusBarItem.text = `$(workspace-untrusted) ${count}`;
+      ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
       ignoredStatusBarItem.tooltip = count > 0
         ? `${count} ignored packages - Click to view`
         : `No ignored packages - Click to view`;
