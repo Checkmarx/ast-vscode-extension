@@ -1,21 +1,23 @@
 # CHANGELOG
 
-## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
+## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* Add MCP message into welcome page (AST-105046) by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1209
 ### New Features 🚀
-* Updated logo and content (AST-98735) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1205
+* Configure Checkmarx MCP (AST-103975) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1207
 ### Other Changes
-* Sca hide dev & Test Dependency(AST-103537) by @cx-sumit-morchhale in https://github.com/Checkmarx/ast-vscode-extension/pull/1202
-* Secret detection highlight file and line(AST-99850) by @cx-sumit-morchhale in https://github.com/Checkmarx/ast-vscode-extension/pull/1177
-* Implement ASCA Realtime Scanner (AST-103920) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1206
+* Prompt to activate containers remediation and use fix instructions (AST-106089) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1210
 
-## New Contributors
-* @cx-sumit-morchhale made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1202
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-telemetry.0...v2.34.1-0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-0...v2.34.1-containers.0
+
+## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-telemetry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-telemetry.0) - 2025-07-10 10:16:47
 
