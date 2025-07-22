@@ -79,10 +79,19 @@ export class ContainersScannerService extends BaseScannerService {
 
 		for (const [entryName, _type] of entries) {
 			if (entryName.toLowerCase() === fileNameLower) {
-				return path.join(dirPath, entryName);      
+				return path.join(dirPath, entryName);
 			}
 		}
 		return undefined;
+	}
+
+	private isDockerComposeFile(filePath: string): boolean {
+		const fileName = path.basename(filePath).toLowerCase();
+
+		if (fileName.includes('docker-compose')) {
+			return true;
+		}
+		return false;
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -94,7 +103,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const normalizedPath = filePath.replace(/\\/g, "/");
 
 		const matchesContainerPattern = constants.containersSupportedPatterns.some((pattern) =>
-			minimatch(normalizedPath, pattern)
+			minimatch(normalizedPath, pattern, { nocase: true })
 		);
 
 		if (matchesContainerPattern) {
@@ -111,7 +120,25 @@ export class ContainersScannerService extends BaseScannerService {
 		return false;
 	}
 
-	private saveFile(
+	private saveDockerFile(
+		tempFolder: string,
+		originalFilePath: string,
+		content: string
+	): string {
+		const originalFileName = path.basename(originalFilePath);
+
+		const hash = this.generateFileHash(originalFilePath);
+		const dockerFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
+		if (!fs.existsSync(dockerFolder)) {
+			fs.mkdirSync(dockerFolder, { recursive: true });
+		}
+
+		const tempFilePath = path.join(dockerFolder, originalFileName);
+		fs.writeFileSync(tempFilePath, content);
+		return tempFilePath;
+	}
+
+	private saveDockerComposeFile(
 		tempFolder: string,
 		originalFilePath: string,
 		content: string
@@ -119,7 +146,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const originalExt = path.extname(originalFilePath);
 		const baseName = path.basename(originalFilePath, originalExt);
 		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}${originalExt}`;
+		const tempFileName = `${baseName}-${hash}${originalExt}`;
 		const tempFilePath = path.join(tempFolder, tempFileName);
 		fs.writeFileSync(tempFilePath, content);
 		return tempFilePath;
@@ -130,18 +157,28 @@ export class ContainersScannerService extends BaseScannerService {
 		originalFilePath: string,
 		content: string
 	): string {
-		const helmFolder = path.join(tempFolder, "helm");
-		if (!fs.existsSync(helmFolder)) {
-			fs.mkdirSync(helmFolder, { recursive: true });
-		}
-
-		const originalExt = path.extname(originalFilePath);
-		const baseName = path.basename(originalFilePath, originalExt);
 		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
-		const tempFilePath = path.join(helmFolder, tempFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
+		const helmFolder = path.join(tempFolder, `helm-${hash}`);
+		
+		const normalizedPath = originalFilePath.replace(/\\/g, "/");
+		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");
+		
+		let relativePath: string;
+		if (helmIndex !== -1) {
+			relativePath = normalizedPath.substring(helmIndex + 6);
+		} else {
+			relativePath = path.basename(originalFilePath);
+		}
+		
+		const fullTargetPath = path.join(helmFolder, relativePath);
+		const targetDir = path.dirname(fullTargetPath);
+		
+		if (!fs.existsSync(targetDir)) {
+			fs.mkdirSync(targetDir, { recursive: true });
+		}
+		
+		fs.writeFileSync(fullTargetPath, content);
+		return fullTargetPath;
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
@@ -149,7 +186,6 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		// const filePath = document.uri.fsPath;
 		// Use the method to take care of in DockerFiles 
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
@@ -165,10 +201,14 @@ export class ContainersScannerService extends BaseScannerService {
 			const fileExtension = path.extname(filePath).toLowerCase();
 			const isYamlFile = constants.containersHelmExtensions.includes(fileExtension);
 
-			if (isYamlFile) {//check if not docker 
-				tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
+			if (isYamlFile) {
+				if (this.isDockerComposeFile(filePath)) {
+					tempFilePath = this.saveDockerComposeFile(tempFolder, filePath, document.getText());
+				} else {
+					tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
+				}
 			} else {
-				tempFilePath = this.saveFile(tempFolder, filePath, document.getText());
+				tempFilePath = this.saveDockerFile(tempFolder, filePath, document.getText());
 			}
 
 			const scanResults = await cx.scanContainers(tempFilePath);
