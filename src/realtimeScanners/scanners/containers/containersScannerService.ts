@@ -28,6 +28,8 @@ export class ContainersScannerService extends BaseScannerService {
 	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 
+	private currentTempFilePath: string | undefined;
+
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
 
@@ -213,11 +215,30 @@ export class ContainersScannerService extends BaseScannerService {
 
 			const scanResults = await cx.scanContainers(tempFilePath);
 
+			this.currentTempFilePath = tempFilePath;
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
+			this.storeAndApplyResults(
+				tempFilePath,
+				document.uri,
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[]
+			)
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
+			this.currentTempFilePath = undefined;
 			this.deleteTempFile(tempFilePath);
 		}
 	}
@@ -244,6 +265,11 @@ export class ContainersScannerService extends BaseScannerService {
 		const lowIconDecorations: vscode.DecorationOptions[] = [];
 
 		for (const image of scanResults) {
+			// Filter results because the containers scanner scans all files in the folder
+			if (image.filepath && this.currentTempFilePath && image.filepath !== this.currentTempFilePath) {
+				continue;
+			}
+
 			if (image.locations && Array.isArray(image.locations)) {
 				for (let i = 0; i < image.locations.length; i++) {
 					const location = image.locations[i];

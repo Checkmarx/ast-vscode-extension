@@ -216,8 +216,10 @@ export const constants = {
 
   containersSupportedPatterns: [
     "**/dockerfile",
-    "**/docker-compose.yml",
-    "**/docker-compose.yaml"
+    "**/dockerfile-*",
+    "**/dockerfile.*",
+    "**/docker-compose*.yml",
+    "**/docker-compose*.yaml"
   ],
 
   // Containers Helm file extensions
