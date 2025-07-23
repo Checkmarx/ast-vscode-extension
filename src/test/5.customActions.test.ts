@@ -51,10 +51,10 @@ describe("filter and groups actions tests", () => {
 
   it("should click on all group by", async function () {
     const commands = [
-      CX_GROUP_LANGUAGE,
-      CX_GROUP_STATUS,
-      CX_GROUP_STATE,
       CX_GROUP_QUERY_NAME,
+      CX_GROUP_STATE,
+      CX_GROUP_STATUS,
+      CX_GROUP_LANGUAGE,
       CX_GROUP_FILE,
     ];
     // Get scan node
@@ -81,7 +81,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all group by", async function () {
-    const commands = [CX_GROUP_LANGUAGE, CX_GROUP_STATUS, CX_GROUP_STATE, CX_GROUP_QUERY_NAME, CX_GROUP_FILE];
+    const commands = [CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_GROUP_LANGUAGE, CX_GROUP_FILE];
     // Get scan node
     const treeScans = await initialize();
     let scan = await treeScans?.findItem(
