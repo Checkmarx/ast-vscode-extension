@@ -116,7 +116,7 @@ body {
   grid-template-columns: 35px 45px 2fr 1fr 1fr;
   padding: 10px 8px;
   border-bottom: 1px solid var(--vscode-panel-border);
-  align-items: center;
+  align-items: start;
   min-height: 80px;
   gap: 8px;
 }
@@ -141,8 +141,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  min-height: 45px;
+  height: 45px;
+  padding-top: 6px;
 }
 
 .col-checkbox input[type="checkbox"] {
@@ -177,6 +177,11 @@ body {
   box-shadow: none;
 }
 
+.table-header .col-checkbox #master-checkbox:not(:checked) {
+  border: 2px solid var(--Light-CTA-Selection-Idle, #d7d8db);
+  background-color: transparent;
+}
+
 .table-row .col-checkbox .row-checkbox:checked {
   background-color: #0081e1;
   border: 2px solid #0081e1;
@@ -188,13 +193,23 @@ body {
   box-shadow: none;
 }
 
-.table-row .col-checkbox .row-checkbox:focus,
-.table-row .col-checkbox .row-checkbox:active,
 .table-row .col-checkbox .row-checkbox:checked:focus,
 .table-row .col-checkbox .row-checkbox:checked:active {
   outline: none;
   box-shadow: none;
   border: 2px solid #0081e1;
+}
+
+.table-row .col-checkbox .row-checkbox:focus,
+.table-row .col-checkbox .row-checkbox:active {
+  outline: none;
+  box-shadow: none;
+  border: 2px solid var(--Light-CTA-Selection-Idle, #d7d8db);
+}
+
+.table-row .col-checkbox .row-checkbox:not(:checked) {
+  border: 2px solid var(--Light-CTA-Selection-Idle, #d7d8db);
+  background-color: transparent;
 }
 
 .table-header .col-checkbox #master-checkbox:checked {
@@ -208,9 +223,6 @@ body {
   box-shadow: none;
 }
 
-.table-header .col-checkbox #master-checkbox:focus,
-.table-header .col-checkbox #master-checkbox:active,
-.table-header .col-checkbox #master-checkbox:hover,
 .table-header .col-checkbox #master-checkbox:checked:focus,
 .table-header .col-checkbox #master-checkbox:checked:active {
   outline: none;
@@ -218,10 +230,19 @@ body {
   border: 2px solid #0081e1;
 }
 
+.table-header .col-checkbox #master-checkbox:focus,
+.table-header .col-checkbox #master-checkbox:active,
+.table-header .col-checkbox #master-checkbox:hover {
+  outline: none;
+  box-shadow: none;
+  border: 2px solid var(--Light-CTA-Selection-Idle, #d7d8db);
+}
+
 .col-risk {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+  padding-top: 6px;
 }
 
 .risk-content {
@@ -322,6 +343,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  padding-top: 10px;
 }
 
 .col-actions {
@@ -329,6 +351,7 @@ body {
   align-items: center;
   margin-right: 8px;
   justify-content: flex-end;
+  padding-top: 4px;
 }
 
 .revive-btn {
@@ -375,22 +398,22 @@ body {
 .file-buttons-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
   align-items: center;
   margin-top: 4px;
 }
 
 .sca-icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
+  width: 36px;
+  height: 36px;
+  margin-top: 3px;
   flex-shrink: 0;
 }
 
 .secrets-icon {
-  width: 60px;
-  height: 60px;
-  margin-right: 8px;
+  width: 54px;
+  height: 54px;
+  margin-top: 3px;
   flex-shrink: 0;
 }
 
