@@ -310,8 +310,8 @@ export async function activate(context: vscode.ExtensionContext) {
     if (hasIgnoreFile) {
       ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
       ignoredStatusBarItem.tooltip = count > 0
-        ? `${count} ignored packages - Click to view`
-        : `No ignored packages - Click to view`;
+        ? `${count} ignored vulnerabilities - Click to view`
+        : `No ignored vulnerabilities - Click to view`;
       ignoredStatusBarItem.command = commands.openIgnoredView;
       ignoredStatusBarItem.show();
     } else {
