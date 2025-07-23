@@ -275,13 +275,10 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string): string {
-  return `
-        <div style="display: flex; justify-content: flex-start; gap: 4em;">
-            <a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
-            <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
-            <a href="command:cx.ignore">Ignore this vulnerability</a>
-        </div>
+export function buildCommandButtons(args: string): string { 
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
+          <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
+          <a href="command:cx.ignore">Ignore this vulnerability</a>
     `;
 }
 

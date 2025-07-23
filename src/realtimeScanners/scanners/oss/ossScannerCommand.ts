@@ -85,7 +85,7 @@ export class OssScannerCommand extends BaseScannerCommand {
         "<br>"
       );
     }
-    md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
+    md.appendMarkdown(this.renderID(hoverData))
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }
@@ -93,6 +93,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       md.appendMarkdown(this.renderMaliciousIcon());
     }
 
+    md.appendMarkdown(`${buttons}<br>`);
     return new vscode.Hover(md);
   }
 
@@ -104,6 +105,14 @@ export class OssScannerCommand extends BaseScannerCommand {
       CxRealtimeEngineStatus.low,
     ].includes(status);
   }
+
+  private renderID(hoverData: HoverData): string {
+    return `
+<b>${hoverData.packageName}@${hoverData.version}</b> 
+<i style="color: grey;"> - ${hoverData.status} severity Package <br></i>
+`;
+  }
+
 
 
 
