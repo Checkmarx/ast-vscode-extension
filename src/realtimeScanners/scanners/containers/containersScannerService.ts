@@ -28,7 +28,7 @@ export class ContainersScannerService extends BaseScannerService {
 	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 
-	private currentTempFilePath: string | undefined;
+	private currentTempFileNmae: string | undefined;
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -111,6 +111,7 @@ export class ContainersScannerService extends BaseScannerService {
 		if (matchesContainerPattern) {
 			return true;
 		}
+		//do not support on dockerFile 
 
 		const fileExtension = path.extname(filePath).toLowerCase();
 		if (constants.containersHelmExtensions.includes(fileExtension)) {
@@ -215,7 +216,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 			const scanResults = await cx.scanContainers(tempFilePath);
 
-			this.currentTempFilePath = tempFilePath;
+			this.currentTempFileNmae = tempFilePath ? path.basename(tempFilePath) : undefined;
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
 			this.storeAndApplyResults(
@@ -238,7 +239,7 @@ export class ContainersScannerService extends BaseScannerService {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
-			this.currentTempFilePath = undefined;
+			this.currentTempFileNmae = undefined;
 			this.deleteTempFile(tempFilePath);
 		}
 	}
@@ -266,7 +267,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 		for (const image of scanResults) {
 			// Filter results because the containers scanner scans all files in the folder
-			if (image.filepath && this.currentTempFilePath && image.filepath !== this.currentTempFilePath) {
+			if (image.filepath && this.currentTempFileNmae && image.filepath !== this.currentTempFileNmae) {
 				continue;
 			}
 
