@@ -108,8 +108,8 @@ export class OssScannerCommand extends BaseScannerCommand {
 
   private renderID(hoverData: HoverData): string {
     return `
-<b>${hoverData.packageName}@${hoverData.version}</b> 
-<i style="color: grey;"> - ${hoverData.status} severity Package <br></i>
+<b>${hoverData.packageName} @ ${hoverData.version}</b> 
+<i style="color: dimgrey;"> - ${hoverData.status} severity Package <br></i>
 `;
   }
 
