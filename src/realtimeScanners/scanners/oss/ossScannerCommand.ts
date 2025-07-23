@@ -73,7 +73,7 @@ export class OssScannerCommand extends BaseScannerCommand {
 
     const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = buildCommandButtons(args, false);
+    const buttons = buildCommandButtons(args);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
     if (isMalicious) {

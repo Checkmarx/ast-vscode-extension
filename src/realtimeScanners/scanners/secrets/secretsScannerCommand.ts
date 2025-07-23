@@ -71,7 +71,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-		const buttons = buildCommandButtons(args, true);
+		const buttons = buildCommandButtons(args);
 
 		md.appendMarkdown(`${hoverData.description}\n\n`);
 		md.appendMarkdown(this.renderSecretsIcon() + "<br>");

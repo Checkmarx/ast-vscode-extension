@@ -85,7 +85,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 		// Create command arguments for the buttons
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false, true); // false for isSecret, true for isAsca
+		const buttons = buildCommandButtons(args);
 
 		md.appendMarkdown(ruleHeader);
 		md.appendMarkdown(descriptionText);
