@@ -595,6 +595,39 @@ export class OssScannerService extends BaseScannerService {
     }
     ignoredDecorations.push(...updatedIgnoredDecorations);
 
+    const ignoredData = ignoreManager.getIgnoredPackagesData();
+    const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+
+    Object.entries(ignoredData).forEach(([packageKey, entry]) => {
+      const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+      if (fileEntry && fileEntry.line !== undefined) {
+        const alreadyHasDecoration = ignoredDecorations.some(decoration =>
+          decoration.range.start.line === fileEntry.line
+        );
+
+        if (!alreadyHasDecoration) {
+          const range = new vscode.Range(
+            new vscode.Position(fileEntry.line, 0),
+            new vscode.Position(fileEntry.line, 1000)
+          );
+          ignoredDecorations.push({ range });
+
+          const hoverKey = `${filePath}:${fileEntry.line}`;
+          if (!this.hoverMessages.has(hoverKey)) {
+            const hoverData: HoverData = {
+              packageName: entry.PackageName,
+              version: entry.PackageVersion,
+              packageManager: entry.PackageManager,
+              filePath: filePath,
+              line: fileEntry.line,
+              status: CxRealtimeEngineStatus.ok
+            };
+            this.hoverMessages.set(hoverKey, hoverData);
+          }
+        }
+      }
+    });
+
     this.storeAndApplyResults(
       filePath,
       uri,
