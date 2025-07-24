@@ -82,10 +82,10 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 			md.appendMarkdown(this.renderMaliciousIcon());
 		}
 		md.appendMarkdown(this.renderID(hoverData));
-		
+		if (isVulnerable) {
+			md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+		}
 		md.appendMarkdown(`${buttons}<br>`);
-
-		md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
 
 		return new vscode.Hover(md);
 	}
