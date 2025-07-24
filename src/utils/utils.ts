@@ -10,7 +10,7 @@ import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
-import { HoverData, SecretsHoverData, AscaHoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
 
 
 export function getProperty(
@@ -282,12 +282,16 @@ export function buildCommandButtons(args: string): string {
     `;
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }
 
-export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData): item is AscaHoverData {
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is AscaHoverData {
   return 'ruleName' in item && 'remediationAdvise' in item;
+}
+
+export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is ContainersHoverData {
+  return 'imageName' in item && 'imageTag' in item;
 }
 
 

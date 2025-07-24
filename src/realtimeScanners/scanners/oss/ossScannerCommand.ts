@@ -33,7 +33,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       { provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
     );
 
-    await this.scanAllManifestFilesInWorkspace();
+    this.scanAllManifestFilesInWorkspace();
 
     vscode.workspace.onDidRenameFiles(async (event) => {
       const scanner = this.scannerService as OssScannerService;

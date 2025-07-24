@@ -167,7 +167,7 @@ export const constants = {
   secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
   secretsScannerStart: "Secret Detection Scanner Engine started",
   secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
-  secretsScannerEngineName: "SecretScanner",
+  secretsScannerEngineName: "Secrets",
   secretsScannerDirectory: "Cx-secret-realtime-scanner",
   errorSecretsScanRealtime: "Failed to handle Secret Detection scan",
 
@@ -176,9 +176,18 @@ export const constants = {
   ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
   ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
   ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
-  ossRealtimeScannerEngineName: "RealtimeOssScanner",
+  ossRealtimeScannerEngineName: "Oss",
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
+
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
 
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
@@ -206,6 +215,21 @@ export const constants = {
     ".jsx"
   ],
 
+  // Containers supported file patterns
+  containersSupportedPatterns: [
+    "**/Dockerfile",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/compose.yml",
+    "**/compose.yaml"
+  ],
+
+  // Containers Helm file extensions (only if in helm folder)
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
+  ],
+
   cxAi: 'CxAI',
 
   criticalSeverity: "CRITICAL",
@@ -217,6 +241,9 @@ export const constants = {
   copilotChatExtensionId: "GitHub.copilot-chat",
   copilotNewChatOpen: "workbench.action.chat.newChat",
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
+
+  openAIChat: "fixWithAIChat",
+  viewDetails: "viewPackageDetails"
 };
 
 export enum Platform {

@@ -5,6 +5,7 @@ import { ConfigurationManager } from "../configuration/configurationManager";
 import { OssScannerCommand } from "./oss/ossScannerCommand";
 import { SecretsScannerCommand } from "./secrets/secretsScannerCommand";
 import { AscaScannerCommand } from "./asca/ascaScannerCommand";
+import { ContainersScannerCommand } from "./containers/containersScannerCommand";
 import { constants } from "../../utils/common/constants";
 
 export class ScannerRegistry {
@@ -22,6 +23,7 @@ export class ScannerRegistry {
     this.registerScanner(constants.ossRealtimeScannerEngineName, new OssScannerCommand(context, logs, configManager));
     this.registerScanner(constants.secretsScannerEngineName, new SecretsScannerCommand(context, logs, configManager));
     this.registerScanner(constants.ascaRealtimeScannerEngineName, new AscaScannerCommand(context, logs, configManager));
+    this.registerScanner(constants.containersRealtimeScannerEngineName, new ContainersScannerCommand(context, logs, configManager));
   }
 
   registerScanner(id: string, scanner: IScannerCommand): void {
