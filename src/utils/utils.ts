@@ -10,10 +10,12 @@ import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { Logs } from "../models/logs";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
+
+
 export function getProperty(
   o: AstResult | CxScan,
   propertyName: string
@@ -276,24 +278,30 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string, isSecret: boolean): string {
-  const isCursor = isCursorIDE();
 
-  return (
-    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxOne Assist</a>  ` +
-    `<a href="command:${commands.viewDetails}?${args}" title="">View details</a>  ` +
-    `<a href="command:${commands.ignorePackage}?${args}" title="">Ignore this vulnerability</a>  ` +
-    `<a href="command:${commands.IgnoreAll}?${args}" title="">${isSecret ? " " : "Ignore all of this type"}</a>`
-  );
+export function buildCommandButtons(args: string, hasIgnoreAll: boolean): string {
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
+          <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
+          <a href="command:${commands.ignorePackage}?${args}">Ignore this vulnerability</a> &emsp;
+          <a href="command:${commands.IgnoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>
+    `;
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
+}
+
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is AscaHoverData {
+  return 'ruleName' in item && 'remediationAdvise' in item;
+}
+
+export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is ContainersHoverData {
+  return 'imageName' in item && 'imageTag' in item;
 }
 
 
 export function renderCxAiBadge(): string {
-  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
+  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
 }
 
 

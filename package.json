@@ -407,6 +407,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.filterSCAHideDevTestActive",
+        "category": "ast-results",
+        "title": "✓ Filter: SCA Hide Dev & Test Dependencies",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterNotExploitable",
         "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
@@ -455,6 +461,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.filterSCAHideDevTest",
+        "category": "ast-results",
+        "title": "­­­ ­­ ­ ­ ­Filter: SCA Hide Dev & Test Dependencies",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterNotExploitables",
         "category": "ast-results",
         "title": "Filter: Not Exploitable",
@@ -500,6 +512,12 @@
         "command": "ast-results.filterNotIgnoreds",
         "category": "ast-results",
         "title": "Filter: Not Ignored",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.filterSCAHideDevTests",
+        "category": "ast-results",
+        "title": "Filter: SCA Hide Dev & Test Dependencies",
         "enablement": "ast-results.isValidCredentials"
       },
       {
@@ -612,6 +630,16 @@
           "command": "ast-results.filterIgnored",
           "group": "navigation@2",
           "when": "!ast-results-Ignored"
+        },
+        {
+          "command": "ast-results.filterSCAHideDevTestActive",
+          "group": "navigation@8",
+          "when": "ast-results-SCAHideDevTest"
+        },
+        {
+          "command": "ast-results.filterSCAHideDevTest",
+          "group": "navigation@8",
+          "when": "!ast-results-SCAHideDevTest"
         }
       ],
       "view/item/context": [
@@ -861,12 +889,38 @@
     ],
     "configuration": [
       {
-        "title": "MCP Settings",
+        "title": "CxOne Assist",
+        "id": "cxone-assist",
+        "order": 1,
         "properties": {
-          "mcp": {
-            "properties": {
-              "servers": {}
-            }
+          "checkmarx.mcp": {
+            "type": "",
+            "default": {},
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
+          },
+          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
+            "type": "boolean",
+            "order": 1,
+            "default": false,
+            "markdownDescription": "Scans your code files for security best practices as you code"
+          },
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 2,
+            "default": false,
+            "markdownDescription": "Scans your manifest files as you code"
+          },
+          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
           }
         }
       },
@@ -900,7 +954,7 @@
       {
         "title": "Checkmarx KICS Real-time Scanning",
         "id": "kics-ast",
-        "order": 1,
+        "order": 2,
         "properties": {
           "CheckmarxKICS.Activate KICS Real-time Scanning": {
             "type": "boolean",
@@ -941,45 +995,6 @@
               "gpt-4: (Recommended)",
               "gpt-3.5-turbo"
             ]
-          }
-        }
-      },
-      {
-        "title": "Activate ASCA",
-        "id": "asca",
-        "order": 2,
-        "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA).Activate ASCA": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your file as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate OSS-Realtime",
-        "id": "realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your manifest files as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Secret Detection Realtime",
-        "id": "secret-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
           }
         }
       }
@@ -1029,10 +1044,10 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.137-rcItayIgnoreSecretsPlusOss.0",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.138",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
-    "axios": "^1.8.3",
+    "axios": "1.11.0",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",

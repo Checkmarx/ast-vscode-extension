@@ -1470,6 +1470,35 @@ export class CxMock implements CxPlatform {
     return [];
   }
 
+  async scanContainers(sourcePath: string): Promise<any> {
+    return {
+      Images: [
+        {
+          imageName: "nginx",
+          imageTag: "latest",
+          filePath: sourcePath,
+          locations: [
+            {
+              line: 1,
+              startIndex: 0,
+              endIndex: 20
+            }
+          ],
+          status: "Malicious",
+          vulnerabilities: [
+            {
+              CVE: "CVE-2023-12345",
+              Severity: "High"
+            },
+            {
+              CVE: "CVE-2023-67890",
+              Severity: "Medium"
+            }
+          ]
+        }
+      ]
+    };
+  }
   async authValidate(): Promise<boolean> {
     return true;
   }

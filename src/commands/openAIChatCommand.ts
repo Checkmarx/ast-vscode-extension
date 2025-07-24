@@ -3,17 +3,23 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { isCursorIDE, isSecretsHoverData, isAscaHoverData, isContainersHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,
     SECRET_REMEDIATION_PROMPT,
-    SECRETS_EXPLANATION_PROMPT
+    SECRETS_EXPLANATION_PROMPT,
+    ASCA_REMEDIATION_PROMPT,
+    ASCA_EXPLANATION_PROMPT,
+    CONTAINERS_REMEDIATION_PROMPT,
+    CONTAINERS_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
+import path from "path";
+
 
 export class CopilotChatCommand {
     context: vscode.ExtensionContext;
@@ -125,10 +131,14 @@ export class CopilotChatCommand {
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData) => {
+            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
                 let question = '';
                 if (isSecretsHoverData(item)) {
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
+                } else if (isAscaHoverData(item)) {
+                    question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
+                } else if (isContainersHoverData(item)) {
+                    question = CONTAINERS_REMEDIATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -141,11 +151,15 @@ export class CopilotChatCommand {
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
                 let question = '';
 
                 if (isSecretsHoverData(item)) {
                     question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
+                } else if (isAscaHoverData(item)) {
+                    question = ASCA_EXPLANATION_PROMPT(item.ruleName, item.description, item.severity);
+                } else if (isContainersHoverData(item)) {
+                    question = CONTAINERS_EXPLANATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }

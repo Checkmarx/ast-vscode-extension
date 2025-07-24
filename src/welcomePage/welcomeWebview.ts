@@ -57,6 +57,15 @@ export class WelcomeWebview {
       )
     );
 
+    const doubleCheckUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "double-check.svg"
+      )
+    );
+
     const cssUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
     );
@@ -116,12 +125,13 @@ export class WelcomeWebview {
                     alt="Unchecked Icon"
                   />
                 </div>
-                <span class="card-title">Code Smarter with AI</span>
+                <span class="card-title">Code Smarter with CxOne Assist</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code.</li>
                 <li>See suggested fixes for vulnerabilities across open source, config, and code.</li>
                 <li>Fix faster with intelligent, context-aware remediation inside your IDE.</li>
+                ${isAiMcpEnabled ? '<li>Checkmarx MCP Installed automatically - no need for manual integration</li>' : ''}
               </ul>
               <div class="ai-feature-box-wrapper hidden" id="aiFeatureBoxWrapper">
                 <img
@@ -138,12 +148,47 @@ export class WelcomeWebview {
               <li>Preview or rescan before committing.</li>
               <li>Triage & fix issues directly in the editor.</li>
             </ul>
+            <div style="margin-top: 40px; padding-left: 24px;">
+              <button id="closeButton" style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: transparent;
+                border: none;
+                color: #0E9BF7;
+                cursor: pointer;
+                font-size: 14px;
+                padding: 0;">
+                <img src="${doubleCheckUri}" alt="Double check" width="16" height="16" style="color: currentColor;" />
+                Mark Done
+              </button>
+            </div>
           </div>
           <div class="right-section">
             <img src="${scannerImgUri}" alt="AI Example" />
           </div>
         </div>
         <script nonce="${nonce}" src="${jsUri}"></script>
+        <script nonce="${nonce}">
+          const vscode = acquireVsCodeApi();
+
+          // Initial state check
+          vscode.postMessage({ type: 'getAiFeatureState' });
+
+          window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.type === 'setAiFeatureState') {
+              const mcpItem = document.getElementById('mcpStatusItem');
+              if (mcpItem) {
+                mcpItem.style.display = message.enabled ? 'list-item' : 'none';
+              }
+            }
+          });
+
+          document.getElementById('closeButton').addEventListener('click', () => {
+            vscode.postMessage({ type: 'close' });
+          });
+        </script>
       </body>
       </html>
     `;
@@ -194,14 +239,8 @@ export class WelcomeWebview {
             ossSetting: false,
           });
         }
-      }
-
-      if (message.type === "setOssRealtimeEnabled") {
-        await config.update(
-          configKey,
-          message.value,
-          vscode.ConfigurationTarget.Global
-        );
+      } else if (message.type === 'close') {
+        panel.dispose();
       }
     });
 

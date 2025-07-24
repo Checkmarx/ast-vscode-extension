@@ -9,9 +9,8 @@ export abstract class BaseScannerCommand implements IScannerCommand {
   protected config: IScannerConfig;
   protected scannerService: IScannerService;
   protected onDidChangeTextDocument: vscode.Disposable | undefined;
-  protected timeouts = new Map<string, NodeJS.Timeout>();
   protected configManager: ConfigurationManager;
-  protected debounceStrategy: "per-document" | "global" = "per-document";
+  protected timeouts = new Map<string, NodeJS.Timeout>();
   protected pendingEvents = new Map<string, vscode.TextDocumentChangeEvent>();
 
   constructor(
@@ -58,32 +57,32 @@ export abstract class BaseScannerCommand implements IScannerCommand {
   
   protected registerScanOnChangeText(): void {
     if (this.onDidChangeTextDocument) {
-     this.onDidChangeTextDocument.dispose();
-     this.onDidChangeTextDocument = undefined;
+      this.onDidChangeTextDocument.dispose();
+      this.onDidChangeTextDocument = undefined;
     }
-   this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
-    (event) => {
-      const uri = event.document.uri.toString();
+    
+    this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
+      (event) => {
+        const uri = event.document.uri.toString();
 
-      if (event.contentChanges.length > 0) {
-        this.pendingEvents.set(uri, event);
-      }
-
-      this.debounce((_) => {
-        const pending = this.pendingEvents.get(uri);
-        if (pending) {
-          this.pendingEvents.delete(uri);
-          this.onTextChange(pending);
+        if (event.contentChanges.length > 0) {
+          this.pendingEvents.set(uri, event);
         }
-      }, 1000)(event);
-    }
-);
+
+        this.perDocumentDebounce((_) => {
+          const pending = this.pendingEvents.get(uri);
+          if (pending) {
+            this.pendingEvents.delete(uri);
+            this.onTextChange(pending);
+          }
+        }, 1000)(event);
+      }
+    );
 
     this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
   
   protected onTextChange(event: vscode.TextDocumentChangeEvent): void {
-
     try {
       this.scannerService.scan(event.document, this.logs);
     } catch (error) {
@@ -92,28 +91,6 @@ export abstract class BaseScannerCommand implements IScannerCommand {
     }
   }
 
-  protected debounce(func: (event: vscode.TextDocumentChangeEvent) => void, wait: number) {
-    if (this.debounceStrategy === "global") {
-      return this.globalDebounce(func, wait);
-    } else {
-      return this.perDocumentDebounce(func, wait);
-    }
-  }
-  protected globalDebounce(func: (event: vscode.TextDocumentChangeEvent) => void, wait: number) {
-    let timeout: NodeJS.Timeout | null = null;
-    
-    return function(...args) {
-      // Clear previous timeout
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-      
-      // Set new timeout
-      timeout = setTimeout(() => {
-        func.apply(this, args);
-      }, wait);
-    };
-  }
   protected perDocumentDebounce(func: (event: vscode.TextDocumentChangeEvent) => void, wait: number) {
     return (event: vscode.TextDocumentChangeEvent) => {
       try {
