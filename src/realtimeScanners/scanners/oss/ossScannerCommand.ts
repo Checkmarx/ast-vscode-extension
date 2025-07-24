@@ -71,7 +71,6 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.supportHtml = true;
     md.isTrusted = true;
 
-    const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
     const args = encodeURIComponent(JSON.stringify([hoverData]));
     const buttons = buildCommandButtons(args);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
@@ -80,10 +79,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
       md.appendMarkdown(renderCxAiBadge() + "<br>");
     } else if (isVulnerable) {
-      md.appendMarkdown(
-        renderCxAiBadge() +
-        "<br>"
-      );
+      md.appendMarkdown(renderCxAiBadge() + "<br>");
     }
     md.appendMarkdown(this.renderPackageIcon() + " ");
     md.appendMarkdown(this.renderID(hoverData))
@@ -144,7 +140,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       .filter(([_, count]) => count > 0)
       .map(
         ([sev, count]) =>
-          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
+          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
           }" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
       );
 
