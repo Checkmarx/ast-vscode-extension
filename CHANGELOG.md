@@ -1,19 +1,22 @@
 # CHANGELOG
 
-## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
+## [v2.34.1-group_by_order_changed.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed.0) - 2025-07-24 06:59:11
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Bug Fixes 🐛
-* Add MCP message into welcome page (AST-105046) by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1209
-### New Features 🚀
-* Configure Checkmarx MCP (AST-103975) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1207
 ### Other Changes
-* Prompt to activate containers remediation and use fix instructions (AST-106089) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1210
+* Add CxOne Assist Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1213
+* Add CxOne Package Icon (AST-102812)  by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1215
+* Add CxOne Severities Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1217
+* Add CxOne decorations Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1218
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-0...v2.34.1-containers.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-containers.0...v2.34.1-group_by_order_changed.0
+
+## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
 

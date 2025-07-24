@@ -119,7 +119,7 @@ export class ContainersScannerService extends BaseScannerService {
 			if (constants.containersHelmExcludedFiles.includes(fileName)) {
 				return false;
 			}
-			
+
 			const isInHelmFolder = normalizedPath.toLowerCase().includes("/helm/") ||
 				normalizedPath.toLowerCase().includes("\\helm\\");
 			return isInHelmFolder;
@@ -451,14 +451,18 @@ export class ContainersScannerService extends BaseScannerService {
 		iconDecorations: vscode.DecorationOptions[]
 	): void {
 		decorations.push({ range });
-
+		const fileType = this.isDockerComposeFile(uri.fsPath)
+			? 'docker-compose'
+			: constants.containersHelmExtensions.includes(path.extname(uri.fsPath).toLowerCase())
+			? 'helm'
+			: 'dockerfile';
 		if (addDiagnostic) {
 			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
 			const diagnostic = new vscode.Diagnostic(range, diagnosticMessage, severity);
 			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-				cxType: 'containers',
+				cxType: constants.containersRealtimeScannerEngineName,
 				item: {
 					imageName: result.imageName,
 					imageTag: result.imageTag,
@@ -468,7 +472,8 @@ export class ContainersScannerService extends BaseScannerService {
 						line: range.start.line,
 						startIndex: range.start.character,
 						endIndex: range.end.character
-					}
+					},
+					fileType
 				}
 			};
 			diagnostics.push(diagnostic);
@@ -486,7 +491,8 @@ export class ContainersScannerService extends BaseScannerService {
 				line: range.start.line,
 				startIndex: range.start.character,
 				endIndex: range.end.character
-			}
+			},
+			fileType: fileType
 		});
 	}
 
