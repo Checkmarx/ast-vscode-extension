@@ -436,7 +436,6 @@ export class OssScannerService extends BaseScannerService {
 
 
 
-    // Save previous diagnostics to check what disappeared due to ignore
     const previousDiagnostics = this.diagnosticsMap.get(filePath) || [];
 
     const diagnostics: vscode.Diagnostic[] = [];
@@ -560,37 +559,41 @@ export class OssScannerService extends BaseScannerService {
     const existingIgnoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
     ignoredDecorations.push(...existingIgnoredDecorations);
 
+    const updatedIgnoredDecorations: vscode.DecorationOptions[] = [];
     for (const prevDiagnostic of previousDiagnostics) {
       const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
       if (prevData?.cxType === 'oss') {
         const prevOssItem = prevData.item as HoverData;
 
-        const stillExists = diagnostics.some(newDiag => {
-          const newData = (newDiag as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-          if (newData?.cxType === 'oss') {
-            const newOssItem = newData.item as HoverData;
-            return newOssItem?.packageName === prevOssItem?.packageName &&
-              newOssItem?.version === prevOssItem?.version &&
-              newDiag.range.start.line === prevDiagnostic.range.start.line;
-          }
-          return false;
-        });
+        if (ignoreManager.isPackageIgnored(prevOssItem.packageName, prevOssItem.version, filePath)) {
+          const packageKey = `${prevOssItem.packageName}:${prevOssItem.version}`;
+          const ignoredData = ignoreManager.getIgnoredPackagesData();
+          const entry = ignoredData[packageKey];
 
-        if (!stillExists && ignoreManager.isPackageIgnored(prevOssItem.packageName, prevOssItem.version, filePath)) {
-          const range = prevDiagnostic.range;
-          const alreadyIgnored = ignoredDecorations.some(decoration =>
-            decoration.range.start.line === range.start.line &&
-            decoration.range.start.character === range.start.character &&
-            decoration.range.end.line === range.end.line &&
-            decoration.range.end.character === range.end.character
-          );
+          if (entry) {
+            const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+            const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
-          if (!alreadyIgnored) {
-            ignoredDecorations.push({ range });
+            if (fileEntry && fileEntry.line !== undefined) {
+              const updatedRange = new vscode.Range(
+                new vscode.Position(fileEntry.line, prevDiagnostic.range.start.character),
+                new vscode.Position(fileEntry.line, prevDiagnostic.range.end.character)
+              );
+
+              const alreadyExists = updatedIgnoredDecorations.some(decoration =>
+                decoration.range.start.line === fileEntry.line &&
+                decoration.range.start.character === updatedRange.start.character
+              );
+
+              if (!alreadyExists) {
+                updatedIgnoredDecorations.push({ range: updatedRange });
+              }
+            }
           }
         }
       }
     }
+    ignoredDecorations.push(...updatedIgnoredDecorations);
 
     this.storeAndApplyResults(
       filePath,
@@ -621,13 +624,16 @@ export class OssScannerService extends BaseScannerService {
     const ignoredData = ignoreManager.getIgnoredPackagesData();
     const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', currentFilePath);
 
-    const existingFindings = new Set(
-      fullScanResults.flatMap(result =>
-        result.locations.map(location =>
-          `${result.packageManager}:${result.packageName}:${result.version}:${location.line}`
-        )
-      )
-    );
+    const existingFindingsByPackage = new Map<string, number[]>();
+    fullScanResults.forEach(result => {
+      const packageKey = `${result.packageManager}:${result.packageName}:${result.version}`;
+      if (!existingFindingsByPackage.has(packageKey)) {
+        existingFindingsByPackage.set(packageKey, []);
+      }
+      result.locations.forEach(location => {
+        existingFindingsByPackage.get(packageKey)!.push(location.line);
+      });
+    });
 
     const activeEntries = Object.entries(ignoredData)
       .flatMap(([packageKey, entry]) =>
@@ -637,17 +643,34 @@ export class OssScannerService extends BaseScannerService {
             packageKey,
             entry,
             file,
-            entryKey: `${entry.PackageManager}:${entry.PackageName}:${entry.PackageVersion}:${file.line}`
+            currentLine: file.line
           }))
       );
 
-    const toRemove = activeEntries.filter(item => !existingFindings.has(item.entryKey));
+    let updatedCount = 0;
+    let removedCount = 0;
 
-    toRemove.forEach(item =>
-      ignoreManager.removePackageEntry(item.packageKey, relativePath)
-    );
+    activeEntries.forEach(item => {
+      const entryPackageKey = `${item.entry.PackageManager}:${item.entry.PackageName}:${item.entry.PackageVersion}`;
+      const availableLines = existingFindingsByPackage.get(entryPackageKey);
 
-    console.log(`Cleanup: ${activeEntries.length} checked, ${toRemove.length} removed`);
+      if (availableLines && availableLines.length > 0) {
+        if (!availableLines.includes(item.currentLine)) {
+          const newLine = availableLines[0];
+          const success = ignoreManager.updatePackageLineNumber(item.packageKey, currentFilePath, newLine);
+
+          if (success) {
+            this.updateIgnoredDecorationLine(currentFilePath, item.currentLine, newLine);
+            this.updateHoverDataLine(currentFilePath, item.currentLine, newLine);
+            updatedCount++;
+          }
+        }
+      } else {
+        ignoreManager.removePackageEntry(item.packageKey, relativePath);
+        this.removeIgnoredDecorationAtLine(currentFilePath, item.currentLine);
+        removedCount++;
+      }
+    });
   }
 
   private cleanupIgnoredEntriesWithoutFileWatcher(
@@ -748,6 +771,108 @@ export class OssScannerService extends BaseScannerService {
     const baseName = path.basename(relativePath);
     const hash = this.generateFileHash(relativePath);
     return `${baseName}-${hash}.tmp`;
+  }
+
+  private updateIgnoredDecorationLine(filePath: string, oldLine: number, newLine: number): void {
+    const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+
+    const oldDecorationIndex = ignoredDecorations.findIndex(decoration =>
+      decoration.range.start.line === oldLine
+    );
+
+    if (oldDecorationIndex !== -1) {
+      const oldDecoration = ignoredDecorations[oldDecorationIndex];
+      ignoredDecorations.splice(oldDecorationIndex, 1);
+
+      const newRange = new vscode.Range(
+        new vscode.Position(newLine, oldDecoration.range.start.character),
+        new vscode.Position(newLine, oldDecoration.range.end.character)
+      );
+      ignoredDecorations.push({ range: newRange });
+
+      this.ignoredDecorationsMap.set(filePath, ignoredDecorations);
+
+      const ignoredIconDecorations = this.ignoredIconDecorationsMap.get(filePath) || [];
+      const oldIconIndex = ignoredIconDecorations.findIndex(decoration =>
+        decoration.range.start.line === oldLine
+      );
+
+      if (oldIconIndex !== -1) {
+        const oldIconDecoration = ignoredIconDecorations[oldIconIndex];
+        ignoredIconDecorations.splice(oldIconIndex, 1);
+
+        const newIconRange = new vscode.Range(
+          new vscode.Position(newLine, oldIconDecoration.range.start.character),
+          new vscode.Position(newLine, oldIconDecoration.range.end.character)
+        );
+        ignoredIconDecorations.push({ range: newIconRange });
+        this.ignoredIconDecorationsMap.set(filePath, ignoredIconDecorations);
+      }
+
+      const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
+      if (editor) {
+        editor.setDecorations(this.decorationTypes.ignored, ignoredDecorations);
+
+        const allUnderlineDecorations = [
+          ...(this.maliciousIconDecorationsMap.get(filePath) || []),
+          ...(this.criticalIconDecorationsMap.get(filePath) || []),
+          ...(this.highIconDecorationsMap.get(filePath) || []),
+          ...(this.mediumIconDecorationsMap.get(filePath) || []),
+          ...(this.lowIconDecorationsMap.get(filePath) || []),
+          ...(this.ignoredIconDecorationsMap.get(filePath) || []),
+        ];
+
+        editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
+      }
+    }
+  }
+
+  private updateHoverDataLine(filePath: string, oldLine: number, newLine: number): void {
+    const oldKey = `${filePath}:${oldLine}`;
+    const newKey = `${filePath}:${newLine}`;
+
+    const hoverData = this.hoverMessages.get(oldKey);
+    if (hoverData) {
+      hoverData.line = newLine;
+
+      this.hoverMessages.set(newKey, hoverData);
+      this.hoverMessages.delete(oldKey);
+    }
+  }
+
+
+  private removeIgnoredDecorationAtLine(filePath: string, line: number): void {
+    const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+
+    const filteredDecorations = ignoredDecorations.filter(decoration =>
+      decoration.range.start.line !== line
+    );
+
+    this.ignoredDecorationsMap.set(filePath, filteredDecorations);
+
+    const ignoredIconDecorations = this.ignoredIconDecorationsMap.get(filePath) || [];
+    const filteredIconDecorations = ignoredIconDecorations.filter(decoration =>
+      decoration.range.start.line !== line
+    );
+    this.ignoredIconDecorationsMap.set(filePath, filteredIconDecorations);
+
+    const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
+    if (editor) {
+      editor.setDecorations(this.decorationTypes.ignored, filteredDecorations);
+
+      const allUnderlineDecorations = [
+        ...(this.maliciousIconDecorationsMap.get(filePath) || []),
+        ...(this.criticalIconDecorationsMap.get(filePath) || []),
+        ...(this.highIconDecorationsMap.get(filePath) || []),
+        ...(this.mediumIconDecorationsMap.get(filePath) || []),
+        ...(this.lowIconDecorationsMap.get(filePath) || []),
+        ...(this.ignoredIconDecorationsMap.get(filePath) || []),
+      ];
+
+      editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
+    }
+    const hoverKey = `${filePath}:${line}`;
+    this.hoverMessages.delete(hoverKey);
   }
 
 }

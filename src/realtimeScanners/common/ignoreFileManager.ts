@@ -357,6 +357,64 @@ export class IgnoreFileManager {
 		return true;
 	}
 
+	public updatePackageLineNumber(packageKey: string, filePath: string, newLineNumber: number): boolean {
+		if (!this.ignoreData[packageKey]) {
+			return false;
+		}
+
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const entry = this.ignoreData[packageKey];
+		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+
+		if (fileEntry) {
+			fileEntry.line = newLineNumber;
+
+			this.saveIgnoreFile();
+			this.updateTempList();
+
+			if (this.uiRefreshCallback) {
+				this.uiRefreshCallback();
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public updateSecretLineNumber(packageKey: string, filePath: string, newLineNumber: number): boolean {
+		if (!this.ignoreData[packageKey]) {
+			return false;
+		}
+
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const entry = this.ignoreData[packageKey];
+		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+
+		if (fileEntry) {
+			fileEntry.line = newLineNumber;
+
+			const oldPackageKey = packageKey;
+			const newPackageKey = `${entry.PackageName}:${newLineNumber}`;
+
+			if (oldPackageKey !== newPackageKey) {
+				this.ignoreData[newPackageKey] = { ...entry };
+				delete this.ignoreData[oldPackageKey];
+			}
+
+			this.saveIgnoreFile();
+			this.updateTempList();
+
+			if (this.uiRefreshCallback) {
+				this.uiRefreshCallback();
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public removePackageEntry(packageKey: string, filePath: string): boolean {
 		this.removeIgnoredEntry(packageKey, filePath);
 		return true;
