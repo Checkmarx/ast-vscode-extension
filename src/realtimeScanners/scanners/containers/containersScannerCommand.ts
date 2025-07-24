@@ -81,7 +81,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 			md.appendMarkdown(renderCxAiBadge() + "<br>");
 		}
 
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
+		md.appendMarkdown(`${buttons}<br>`);
 
 		if (isVulnerable) {
 			md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
