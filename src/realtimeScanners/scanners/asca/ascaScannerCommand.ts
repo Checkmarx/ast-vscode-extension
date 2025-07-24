@@ -73,40 +73,35 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		md.supportHtml = true;
 		md.isTrusted = true;
 
-		// Display rule name and description as per requirements
-		const ruleHeader = `**Rule:** ${hoverData.ruleName}\n\n`;
 
-		// Include description with truncation support as per requirements
-		let description = hoverData.description;
-		if (description && description.length > 200) {
-			description = description.substring(0, 197) + "...";
-		}
-		const descriptionText = `**Description:** ${description}\n\n`;
 
 		// Create command arguments for the buttons
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false, true); // false for isSecret, true for isAsca
+		const buttons = buildCommandButtons(args);
 
-		md.appendMarkdown(ruleHeader);
-		md.appendMarkdown(descriptionText);
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
-		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
+		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity) + " ");
+		md.appendMarkdown(this.renderID(hoverData) + "<br>");
+		md.appendMarkdown(`${buttons}<br>`);
 
 		return new vscode.Hover(md);
+	}
+	
+	private renderID(hoverData: AscaHoverData): string {
+		return `<b>${hoverData.ruleName}</b> - ${hoverData.description} <br>`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
 		const severityLower = severity.toLowerCase();
 		const iconMap = {
-			critical: "critical_untoggle.png",
-			high: "high_untoggle.png",
-			medium: "medium_untoggle.png",
-			low: "low_untoggle.png"
+			critical: "realtimeEngines/critical_severity.png",
+			high: "realtimeEngines/high_severity.png",
+			medium: "realtimeEngines/medium_severity.png",
+			low: "realtimeEngines/low_severity.png"
 		};
 
 		const iconFile = iconMap[severityLower] || "info_untoggle.png";
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
 	public async dispose(): Promise<void> {
