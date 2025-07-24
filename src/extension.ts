@@ -63,6 +63,42 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Left
   );
 
+  const configManager = new ConfigurationManager();
+  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
+  await scannerRegistry.activateAllScanners();
+  const configListener = configManager.registerConfigChangeListener(
+    (section) => {
+      const ossEffected = section(
+        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
+      );
+      if (ossEffected) {
+        scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const secretsEffected = section(
+        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
+      );
+      if (secretsEffected) {
+        scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
+        return;
+      }
+      const ascaEffected = section(
+        `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
+      );
+      if (ascaEffected) {
+        scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const containersEffected = section(
+        `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`
+      );
+      if (containersEffected) {
+        scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
+        return;
+      }
+    });
+  context.subscriptions.push(configListener);
+
   await setScanButtonDefaultIfScanIsNotRunning(context);
 
   // Scans from IDE scanning commands
@@ -192,34 +228,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
-  const configManager = new ConfigurationManager();
-  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
-  await scannerRegistry.activateAllScanners();
-  const configListener = configManager.registerConfigChangeListener(
-    (section) => {
-      const ossEffected = section(
-        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
-      );
-      if (ossEffected) {
-        scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
-        return;
-      }
-      const secretsEffected = section(
-        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
-      );
-      if (secretsEffected) {
-        scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
-        return;
-      }
-      const ascaEffected = section(
-        `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
-      );
-      if (ascaEffected) {
-        scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
-        return;
-      }
-    });
-  context.subscriptions.push(configListener);
 
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);

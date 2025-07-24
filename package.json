@@ -877,6 +877,12 @@
             "order": 3,
             "default": false,
             "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
           }
         }
       },

@@ -56,12 +56,29 @@ export interface AscaHoverData {
   };
 }
 
+export interface ContainersHoverData {
+  imageName: string;
+  imageTag: string;
+  status: CxRealtimeEngineStatus;
+  vulnerabilities: Array<{
+    cve: string;
+    severity: string;
+  }>;
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+  fileType: string;
+}
+
 const scannerEngineNames = {
   oss: constants.ossRealtimeScannerEngineName,
   secrets: constants.secretsScannerEngineName,
-  asca: constants.ascaRealtimeScannerEngineName
+  asca: constants.ascaRealtimeScannerEngineName,
+  containers: constants.containersRealtimeScannerEngineName
 } as const;
 export interface CxDiagnosticData {
   cxType: typeof scannerEngineNames[keyof typeof scannerEngineNames];
-  item: HoverData | SecretsHoverData | AscaHoverData;
+  item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
 }
