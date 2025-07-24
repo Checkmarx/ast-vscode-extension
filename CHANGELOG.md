@@ -4,6 +4,22 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
+## [v2.34.1-containers.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0.0) - 2025-07-24 12:33:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.137 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1219
+* Update AST CLI JavaScript Wrapper to version 0.0.138 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1220
+### Other Changes
+* Improve Finding Cards (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1214
+* Add Containers Realtime Scanner (AST-102227) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1208
+* Add Container Image Icon (AST-0000) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1221
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-group_by_order_changed.0...v2.34.1-containers.0.0
+
 ## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
