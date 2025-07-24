@@ -69,8 +69,10 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
+    const now = new Date();
+    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
     return createHash("sha256")
-      .update(input)
+      .update(input + timeSuffix)
       .digest("hex")
       .substring(0, 16);
   }

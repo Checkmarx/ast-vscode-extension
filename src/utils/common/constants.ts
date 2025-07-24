@@ -152,7 +152,7 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA Realtime Scanner - New configuration
+  // ASCA Realtime Scanner
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
   ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
@@ -180,6 +180,15 @@ export const constants = {
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -196,7 +205,6 @@ export const constants = {
     low: "low_severity.png",
   },
 
-  // ASCA supported file extensions
   ascaSupportedExtensions: [
     ".java",
     ".cs",
@@ -204,6 +212,26 @@ export const constants = {
     ".py",
     ".js",
     ".jsx"
+  ],
+
+  containersSupportedPatterns: [
+    "**/dockerfile",
+    "**/dockerfile-*",
+    "**/dockerfile.*",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/docker-compose-*.yml",
+    "**/docker-compose-*.yaml"
+  ],
+
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
+  ],
+
+  containersHelmExcludedFiles: [
+    "chart.yaml",
+    "chart.yml"
   ],
 
   cxAi: 'CxAI',

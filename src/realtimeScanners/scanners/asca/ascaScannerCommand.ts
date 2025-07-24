@@ -74,8 +74,6 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 
 
-
-		// Create command arguments for the buttons
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 		const buttons = buildCommandButtons(args);
 
