@@ -4,6 +4,21 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
+## [v2.34.1-containers.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0.0) - 2025-07-24 12:33:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-container-and-cards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-container-and-cards.0) - 2025-07-24 13:11:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Improve Containers findings card (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1222
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-containers.0.0...v2.34.1-container-and-cards.0
+
 ## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

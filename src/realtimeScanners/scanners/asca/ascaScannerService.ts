@@ -113,7 +113,8 @@ export class AscaScannerService extends BaseScannerService {
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
-			//clean problems?
+			this.clearScanData(document.uri);
+			this.applyDecorations(document.uri);
 		} finally {
 			this.deleteTempFile(tempFilePath);
 		}
@@ -146,7 +147,7 @@ export class AscaScannerService extends BaseScannerService {
 				vscode.DiagnosticSeverity.Error
 			);
 
-			diagnostic.source = constants.cxAi; 
+			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'asca',
 				item: {
