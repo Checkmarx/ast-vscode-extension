@@ -190,10 +190,10 @@ export const constants = {
     "**/*.csproj"
   ],
   ossIcons: {
-    critical: "critical_untoggle.png",
-    high: "high_untoggle.png",
-    medium: "medium_untoggle.png",
-    low: "low_untoggle.png",
+    critical: "critical_severity.png",
+    high: "high_severity.png",
+    medium: "medium_severity.png",
+    low: "low_severity.png",
   },
 
   // ASCA supported file extensions
