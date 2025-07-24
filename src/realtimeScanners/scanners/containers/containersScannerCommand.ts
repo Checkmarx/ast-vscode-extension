@@ -7,7 +7,7 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
-import {ContainersHoverData, HoverData} from "../../common/types";
+import {ContainersHoverData} from "../../common/types";
 
 export class ContainersScannerCommand extends BaseScannerCommand {
 	constructor(
