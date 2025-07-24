@@ -4,16 +4,6 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Add CxOne Assist Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1213
-* Add CxOne Package Icon (AST-102812)  by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1215
-* Add CxOne Severities Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1217
-* Add CxOne decorations Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1218
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-containers.0...v2.34.1-group_by_order_changed.0
-
 ## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
