@@ -90,7 +90,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		md.appendMarkdown(ruleHeader);
 		md.appendMarkdown(descriptionText);
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
+		md.appendMarkdown(`${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
 
 		return new vscode.Hover(md);
@@ -99,10 +99,10 @@ export class AscaScannerCommand extends BaseScannerCommand {
 	private renderSeverityIcon(severity: string): string {
 		const severityLower = severity.toLowerCase();
 		const iconMap = {
-			critical: "critical_untoggle.png",
-			high: "high_untoggle.png",
-			medium: "medium_untoggle.png",
-			low: "low_untoggle.png"
+			critical: "realtimeEngines/critical_severity.png",
+			high: "realtimeEngines/high_severity.png",
+			medium: "realtimeEngines/medium_severity.png",
+			low: "realtimeEngines/low_severity.png"
 		};
 
 		const iconFile = iconMap[severityLower] || "info_untoggle.png";
