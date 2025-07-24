@@ -218,14 +218,20 @@ export const constants = {
     "**/dockerfile",
     "**/dockerfile-*",
     "**/dockerfile.*",
-    "**/docker-compose*.yml",
-    "**/docker-compose*.yaml"
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/docker-compose-*.yml",
+    "**/docker-compose-*.yaml"
   ],
 
-  // Containers Helm file extensions
   containersHelmExtensions: [
     ".yml",
     ".yaml"
+  ],
+
+  containersHelmExcludedFiles: [
+    "chart.yaml",
+    "chart.yml"
   ],
 
   cxAi: 'CxAI',

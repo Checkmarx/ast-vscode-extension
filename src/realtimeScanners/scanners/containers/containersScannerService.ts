@@ -29,6 +29,7 @@ export class ContainersScannerService extends BaseScannerService {
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 
 	private currentTempFileNmae: string | undefined;
+	private currentTempSubFolder: string | undefined;
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -111,10 +112,14 @@ export class ContainersScannerService extends BaseScannerService {
 		if (matchesContainerPattern) {
 			return true;
 		}
-		//do not support on dockerFile 
 
 		const fileExtension = path.extname(filePath).toLowerCase();
 		if (constants.containersHelmExtensions.includes(fileExtension)) {
+			const fileName = path.basename(filePath).toLowerCase();
+			if (constants.containersHelmExcludedFiles.includes(fileName)) {
+				return false;
+			}
+			
 			const isInHelmFolder = normalizedPath.toLowerCase().includes("/helm/") ||
 				normalizedPath.toLowerCase().includes("\\helm\\");
 			return isInHelmFolder;
@@ -136,6 +141,8 @@ export class ContainersScannerService extends BaseScannerService {
 			fs.mkdirSync(dockerFolder, { recursive: true });
 		}
 
+		this.currentTempSubFolder = dockerFolder;
+
 		const tempFilePath = path.join(dockerFolder, originalFileName);
 		fs.writeFileSync(tempFilePath, content);
 		return tempFilePath;
@@ -155,6 +162,17 @@ export class ContainersScannerService extends BaseScannerService {
 		return tempFilePath;
 	}
 
+	private getHelmRelativePath(originalFilePath: string): string {
+		const normalizedPath = originalFilePath.replace(/\\/g, "/");
+		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");
+
+		if (helmIndex !== -1) {
+			return normalizedPath.substring(helmIndex + 6);
+		} else {
+			return path.basename(originalFilePath);
+		}
+	}
+
 	private saveHelmFile(
 		tempFolder: string,
 		originalFilePath: string,
@@ -162,24 +180,18 @@ export class ContainersScannerService extends BaseScannerService {
 	): string {
 		const hash = this.generateFileHash(originalFilePath);
 		const helmFolder = path.join(tempFolder, `helm-${hash}`);
-		
-		const normalizedPath = originalFilePath.replace(/\\/g, "/");
-		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");
-		
-		let relativePath: string;
-		if (helmIndex !== -1) {
-			relativePath = normalizedPath.substring(helmIndex + 6);
-		} else {
-			relativePath = path.basename(originalFilePath);
-		}
-		
+
+		const relativePath = this.getHelmRelativePath(originalFilePath);
+
 		const fullTargetPath = path.join(helmFolder, relativePath);
 		const targetDir = path.dirname(fullTargetPath);
-		
+
 		if (!fs.existsSync(targetDir)) {
 			fs.mkdirSync(targetDir, { recursive: true });
 		}
-		
+
+		this.currentTempSubFolder = helmFolder;
+
 		fs.writeFileSync(fullTargetPath, content);
 		return fullTargetPath;
 	}
@@ -220,7 +232,7 @@ export class ContainersScannerService extends BaseScannerService {
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
 			this.storeAndApplyResults(
-				tempFilePath,
+				filePath,
 				document.uri,
 				[],
 				[],
@@ -241,6 +253,10 @@ export class ContainersScannerService extends BaseScannerService {
 		} finally {
 			this.currentTempFileNmae = undefined;
 			this.deleteTempFile(tempFilePath);
+			if (this.currentTempSubFolder) {
+				this.deleteTempFolder(this.currentTempSubFolder);
+			}
+			this.currentTempSubFolder = undefined;
 		}
 	}
 
@@ -266,8 +282,8 @@ export class ContainersScannerService extends BaseScannerService {
 		const lowIconDecorations: vscode.DecorationOptions[] = [];
 
 		for (const image of scanResults) {
-			// Filter results because the containers scanner scans all files in the folder
-			if (image.filepath && this.currentTempFileNmae && image.filepath !== this.currentTempFileNmae) {
+			// Filter results because the containers scanner scans all the files in the folder
+			if (image.filepath && this.currentTempFileNmae && image.filepath !== this.currentTempFileNmae && image.filepath.replace(/\\/g, "/") !== this.getHelmRelativePath(uri.fsPath)) {
 				continue;
 			}
 
