@@ -357,6 +357,7 @@ export class GroupByCommand {
 
   private getFixedGroupOrder(): GroupBy[] {
     return [
+      GroupBy.typeLabel,
       GroupBy.severity,
       GroupBy.queryName,
       GroupBy.state,
