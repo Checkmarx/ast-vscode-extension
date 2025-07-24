@@ -85,6 +85,7 @@ export class OssScannerCommand extends BaseScannerCommand {
         "<br>"
       );
     }
+    md.appendMarkdown(this.renderPackageIcon() + " ");
     md.appendMarkdown(this.renderID(hoverData))
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
@@ -122,6 +123,10 @@ export class OssScannerCommand extends BaseScannerCommand {
 
   private renderMaliciousIcon(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="10" height="11" style="vertical-align: -12px;"/>`;
+  }
+  
+  private renderPackageIcon() : string {
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="10" height="11" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(
