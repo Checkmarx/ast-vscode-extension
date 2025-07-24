@@ -71,20 +71,22 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-		const buttons = buildCommandButtons(args, true);
+		const buttons = buildCommandButtons(args);
 
-		md.appendMarkdown(`${hoverData.description}\n\n`);
-		md.appendMarkdown(this.renderSecretsIcon() + "<br>");
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
+		md.appendMarkdown(this.renderID(hoverData));
+
+		md.appendMarkdown(`${buttons}<br>`);
 
 		return new vscode.Hover(md);
 	}
-
-	private renderSecretsIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
+	
+	private renderID(hoverData: SecretsHoverData): string {
+		return `
+<b>${hoverData.title}</b> 
+<i style="color: dimgrey;"> - Secret finding <br></i>
+`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
@@ -92,7 +94,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		if (!iconName) {
 			return "";
 		}
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconName}" width="10" height="11" style="vertical-align: -12px;" />`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
 
 

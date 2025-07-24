@@ -275,13 +275,11 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string, isSecret: boolean, isAsca: boolean = false): string {
-  const isCursor = isCursorIDE();
-   return (
-    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
-    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret||isAsca ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
-    `<a href="command:cx.ignore" title="">Ignore CxAI${isSecret||isAsca ? "" : " Package"}</a>`
-  );
+export function buildCommandButtons(args: string): string { 
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
+          <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
+          <a href="command:cx.ignore">Ignore this vulnerability</a>
+    `;
 }
 
 export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
@@ -298,5 +296,5 @@ export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaH
 
 
 export function renderCxAiBadge(): string {
-  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
+  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
 }

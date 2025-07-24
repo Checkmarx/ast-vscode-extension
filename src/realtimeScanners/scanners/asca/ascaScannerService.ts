@@ -22,12 +22,16 @@ export class AscaScannerService extends BaseScannerService {
 
 	private decorationTypes = {
 		malicious: this.createDecoration("malicious.svg"),
-		ok: this.createDecoration("circle-check.svg"),
-		unknown: this.createDecoration("question-mark.svg"),
-		critical: this.createDecoration("critical_untoggle.svg", "12px"),
-		high: this.createDecoration("high_untoggle.svg"),
-		medium: this.createDecoration("medium_untoggle.svg"),
-		low: this.createDecoration("low_untoggle.svg")
+		ok: this.createDecoration("realtimeEngines/green_check.svg"),
+		unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
+		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+		high: this.createDecoration("realtimeEngines/high_severity.svg"),
+		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
+		low: this.createDecoration("realtimeEngines/low_severity.svg"),
+		underline: vscode.window.createTextEditorDecorationType({
+			textDecoration: "underline wavy #f14c4c",
+			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+		}),
 	};
 	private createDecoration(
 		iconName: string,
