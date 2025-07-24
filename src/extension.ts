@@ -288,10 +288,10 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
   const ignoreFileManager = IgnoreFileManager.getInstance();
-  const ossCommand = scannerRegistry.getScanner("oss") as OssScannerCommand;
+  const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
   const ossScanner = ossCommand.getScannerService();
 
-  const secretCommand = scannerRegistry.getScanner("secrets") as SecretsScannerCommand;
+  const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
   const secretScanner = secretCommand.getScannerService();
 
   ignoreFileManager.setOssScannerService(ossScanner);

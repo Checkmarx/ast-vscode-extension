@@ -47,7 +47,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				arguments: [item]
 			};
 
-			const ignoreAction = new vscode.CodeAction(data.cxType === "secrets" ? "ignore" : "Ignore CxAI Package", vscode.CodeActionKind.QuickFix);
+			const ignoreAction = new vscode.CodeAction(data.cxType === constants.secretsScannerEngineName ? "ignore" : "Ignore CxAI Package", vscode.CodeActionKind.QuickFix);
 			ignoreAction.command = {
 				command: commands.ignorePackage,
 				title: ignoreAction.title,

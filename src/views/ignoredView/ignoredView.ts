@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { IgnoreFileManager, IgnoreEntry } from '../../realtimeScanners/common/ignoreFileManager';
 import * as ignoredViewUtils from './ignoredViewUtils';
+import { constants } from '../../utils/common/constants';
 
 export class IgnoredView {
 	private panel: vscode.WebviewPanel | undefined;
@@ -359,18 +360,18 @@ export class IgnoredView {
 		const iconName = ignoredViewUtils.getIconName(pkg.severity, webview, extensionPath);
 		const lastUpdated = ignoredViewUtils.getLastUpdated(pkg.dateAdded);
 		const fileButtons = ignoredViewUtils.generateFileButtons(pkg.files, webview, extensionPath);
-		const scaIcon = pkg.type === 'ossScan' ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
-		const secretsIcon = pkg.type === 'secrets' ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
+		const scaIcon = pkg.type === constants.ossRealtimeScannerEngineName ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
+		const secretsIcon = pkg.type === constants.secretsScannerEngineName ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
 
-		const packageIcon = pkg.type === 'ossScan'
+		const packageIcon = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath)
-			: pkg.type === 'secrets'
+			: pkg.type === constants.secretsScannerEngineName
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath)
 				: '';
 
-		const packageIconHover = pkg.type === 'ossScan'
+		const packageIconHover = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath, true)
-			: pkg.type === 'secrets'
+			: pkg.type === constants.secretsScannerEngineName
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath, true)
 				: '';
 
