@@ -1461,11 +1461,41 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
- 
+
+  async scanContainers(sourcePath: string): Promise<any> {
+    return {
+      Images: [
+        {
+          imageName: "nginx",
+          imageTag: "latest",
+          filePath: sourcePath,
+          locations: [
+            {
+              line: 1,
+              startIndex: 0,
+              endIndex: 20
+            }
+          ],
+          status: "Malicious",
+          vulnerabilities: [
+            {
+              CVE: "CVE-2023-12345",
+              Severity: "High"
+            },
+            {
+              CVE: "CVE-2023-67890",
+              Severity: "Medium"
+            }
+          ]
+        }
+      ]
+    };
+  }
+
   async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
     return [];
   }
- 
+
   async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
     return [];
   }

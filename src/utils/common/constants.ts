@@ -152,14 +152,15 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA engine
-  errorInstallation: "Failed to run ASCA engine",
-  errorScanAsca: "failed to handle ASCA scan",
-  ascaStart: "AI Secure Coding Assistant Engine started",
-  ascaDisabled: "AI Secure Coding Assistant Engine disabled",
-  ascaEngineName: "ASCA",
-  ActivateAscaAutoScanning: "Activate ASCA",
-  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
+  // ASCA Realtime Scanner - New configuration
+  activateAscaRealtimeScanner: "Activate ASCA Realtime",
+  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+  ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
+  ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
+  ascaRealtimeScannerEngineName: "AscaRealtimeScanner",
+  ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
+  errorAscaInstallation: "Failed to run ASCA engine",
+  errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
 
   // Secrets Scanner
   activateSecretsScanner: "Activate Secret Detection Realtime",
@@ -179,6 +180,15 @@ export const constants = {
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -189,11 +199,38 @@ export const constants = {
     "**/*.csproj"
   ],
   ossIcons: {
-    critical: "critical_untoggle.png",
-    high: "high_untoggle.png",
-    medium: "medium_untoggle.png",
-    low: "low_untoggle.png",
+    critical: "critical_severity.png",
+    high: "high_severity.png",
+    medium: "medium_severity.png",
+    low: "low_severity.png",
   },
+
+  // ASCA supported file extensions
+  ascaSupportedExtensions: [
+    ".java",
+    ".cs",
+    ".go",
+    ".py",
+    ".js",
+    ".jsx"
+  ],
+
+  // Containers supported file patterns
+  containersSupportedPatterns: [
+    "**/Dockerfile",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/compose.yml",
+    "**/compose.yaml"
+  ],
+
+  // Containers Helm file extensions (only if in helm folder)
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
+  ],
+
+  cxAi: 'CxAI',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

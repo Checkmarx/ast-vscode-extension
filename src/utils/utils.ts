@@ -10,7 +10,7 @@ import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
 
 
 export function getProperty(
@@ -275,21 +275,26 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string, isSecret: boolean): string {
-  const isCursor = isCursorIDE();
-
-  return (
-    `<a href="command:${commands.openAIChat}?${args}" title="">Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}</a>  ` +
-    `<a href="command:${commands.viewDetails}?${args}" title="">${isSecret ? "CxAI Explain " : "View CxAI Package Details"}</a>  ` +
-    `<a href="command:cx.ignore" title="">Ignore CxAI Package</a>`
-  );
+export function buildCommandButtons(args: string): string { 
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
+          <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
+          <a href="command:cx.ignore">Ignore this vulnerability</a>
+    `;
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
+}
+
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is AscaHoverData {
+  return 'ruleName' in item && 'remediationAdvise' in item;
+}
+
+export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is ContainersHoverData {
+  return 'imageName' in item && 'imageTag' in item;
 }
 
 
 export function renderCxAiBadge(): string {
-  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxAi.png" style="vertical-align: -12px;"/> `;
+  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
 }

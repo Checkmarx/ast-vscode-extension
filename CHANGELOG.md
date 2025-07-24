@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.34.1-group_by_order_changed.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed.0) - 2025-07-24 06:59:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-telemetry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-telemetry.0) - 2025-07-10 10:16:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

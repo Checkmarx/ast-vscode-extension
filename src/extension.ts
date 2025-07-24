@@ -23,7 +23,6 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
-import { AscaCommand } from "./commands/ascaCommand";
 import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
@@ -31,6 +30,7 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
+import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -62,6 +62,42 @@ export async function activate(context: vscode.ExtensionContext) {
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
+
+  const configManager = new ConfigurationManager();
+  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
+  await scannerRegistry.activateAllScanners();
+  const configListener = configManager.registerConfigChangeListener(
+    (section) => {
+      const ossEffected = section(
+        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
+      );
+      if (ossEffected) {
+        scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const secretsEffected = section(
+        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
+      );
+      if (secretsEffected) {
+        scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
+        return;
+      }
+      const ascaEffected = section(
+        `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
+      );
+      if (ascaEffected) {
+        scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const containersEffected = section(
+        `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`
+      );
+      if (containersEffected) {
+        scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
+        return;
+      }
+    });
+  context.subscriptions.push(configListener);
 
   await setScanButtonDefaultIfScanIsNotRunning(context);
 
@@ -192,30 +228,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
-  const ascaCommand = new AscaCommand(context, logs);
-  ascaCommand.registerAsca();
-
-  const configManager = new ConfigurationManager();
-  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
-  await scannerRegistry.activateAllScanners();
-  const configListener = configManager.registerConfigChangeListener(
-    (section) => {
-      const ossEffected = section(
-        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
-      );
-      if (ossEffected) {
-        scannerRegistry.getScanner("oss")?.register();
-        return;
-      }
-      const secretsEffected = section(
-        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
-      );
-      if (secretsEffected) {
-        scannerRegistry.getScanner("secrets")?.register();
-        return;
-      }
-    });
-  context.subscriptions.push(configListener);
 
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
@@ -231,8 +243,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await executeCheckSettingsChange(
     context,
     kicsStatusBarItem,
-    logs,
-    ascaCommand
+    logs
   );
 
   const treeCommand = new TreeCommand(
@@ -266,6 +277,8 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+
+  registerMcpSettingsInjector(context);
 
   const copilotChatCommand = new CopilotChatCommand(context, logs);
   copilotChatCommand.registerCopilotChatCommand();
