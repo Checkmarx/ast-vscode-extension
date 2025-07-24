@@ -586,6 +586,121 @@ Suggest relevant:
 - Be thorough but concise
 `;
 
+export const CONTAINER_EXPLANATION_PROMPT = (
+  fileType: string,
+  imageName: string,
+  imageTag: string,
+  severity: string
+) => `You are the \`${AGENT_NAME} Security Assistant\`.
+
+Your task is to **analyze and explain** the container security issue affecting \`${fileType}\` with image \`${imageName}:${imageTag}\` and severity: \`${severity}\`.
+
+---
+
+###  Important Instructions:
+-  **Do not change anything in the code. Just explain the risks and remediation steps.**
+-  **Never include references from Checkmarx competitors.**
+
+---
+
+### 🔍 Container Overview
+
+- **File Type:** \`${fileType}\`
+- **Image:** \`${imageName}:${imageTag}\`
+- **Severity:** \`${severity}\`
+
+---
+
+### 🐳 Container Security Issue Analysis
+
+**Issue Type:** ${severity === 'Malicious' ? 'Malicious Container Image' : 'Vulnerable Container Image'}
+
+${severity === 'Malicious' ? `
+### 🧨 Malicious Container Detected
+
+This container image has been flagged as **malicious**.
+
+**⚠️ Never deploy or use this container under any circumstances.**
+
+#### 🔎 Investigation Guidelines:
+
+- Search for trusted community or vendor reports about malicious activity involving this image
+- If information exists about other tags but **not** tag \`${imageTag}\`, explicitly state:
+
+> _"This specific tag (\`${imageTag}\`) was identified as malicious by Checkmarx Security researchers."_
+
+- If **no credible external information is found**, state:
+
+> _"This container image was identified as malicious by Checkmarx Security researchers based on internal threat intelligence and behavioral analysis."_
+
+**Common Malicious Container Behaviors:**
+- Data exfiltration to external servers
+- Cryptocurrency mining operations
+- Backdoor access establishment
+- Credential harvesting
+- Lateral movement within infrastructure
+
+**Recommended Actions:**
+- ✅ Immediately remove from all deployment pipelines
+- ❌ Never redeploy or trust any version of this image
+- 🔁 Replace with a well-known, secure alternative
+- 🔒 Audit all systems that may have run this container
+` : `
+### 🚨 Container Vulnerabilities
+
+This container image contains known security vulnerabilities.
+
+**Risk Assessment:**
+- **Critical/High:** Immediate action required - vulnerable to active exploitation
+- **Medium:** Should be addressed soon - potential for exploitation
+- **Low:** Address when convenient - limited immediate risk
+
+**Common Container Security Issues:**
+- Outdated base images with known CVEs
+- Unnecessary packages and services
+- Running as root user
+- Missing security patches
+- Insecure default configurations
+`}
+
+---
+
+### 🛠️ Remediation Guidance
+
+Offer actionable advice:
+- Whether to update, replace, or rebuild the container
+- If malicious: clearly emphasize permanent removal
+- Recommend secure base images and best practices
+- Suggest preventative measures:
+  - Use container scanning in CI/CD
+  - Prefer minimal base images (Alpine, distroless)
+  - Implement image signing and verification
+  - Regular security updates and patching
+  - Run containers as non-root users
+  - Use multi-stage builds to reduce attack surface
+
+---
+
+### ✅ Summary Section
+
+Conclude with:
+- Overall risk explanation for container deployments
+- Immediate remediation steps
+- Whether this specific image/tag is linked to online reports
+- If not, reference Checkmarx attribution (per above rules)
+- Never mention competitor vendors or tools
+
+---
+
+### Output Formatting
+
+- Use Markdown: \`##\`, \`- \`, \`**bold**\`, \`code\`
+- Developer-friendly tone, informative, concise
+- No speculation — use only trusted, verified sources
+- Include container-specific terminology and best practices
+
+`;
+
 export const CONTAINER_REMEDIATION_PROMPT = (
   fileType: string,
   imageName: string,
