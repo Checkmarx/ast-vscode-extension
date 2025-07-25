@@ -17,7 +17,7 @@ export class GroupByCommand {
     GroupBy.typeLabel,
     GroupBy.scaType,
     GroupBy.severity,
-    GroupBy.packageIdentifier,
+    GroupBy.queryName,
   ];
   public stateFilter: GroupBy = GroupBy.state;
   constructor(context: vscode.ExtensionContext, logs: Logs) {
@@ -378,7 +378,6 @@ export class GroupByCommand {
 
   private rebuildGroupByList(set: Set<GroupBy>, order: GroupBy[]): GroupBy[] {
     const result = order.filter(group => set.has(group));
-    result.push(GroupBy.packageIdentifier); // Always at the end
     return result;
   }
 }
