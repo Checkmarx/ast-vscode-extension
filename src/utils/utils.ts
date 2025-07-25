@@ -278,15 +278,13 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-
 export function buildCommandButtons(args: string, hasIgnoreAll: boolean): string {
   return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
           <a href="command:${commands.ignorePackage}?${args}">Ignore this vulnerability</a> &emsp;
-          <a href="command:${commands.IgnoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>
+          <a href="command:${commands.IgnoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
     `;
 }
-
 export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }

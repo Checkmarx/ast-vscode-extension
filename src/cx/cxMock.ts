@@ -1499,6 +1499,11 @@ export class CxMock implements CxPlatform {
       ]
     };
   }
+
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
+    return [];
+  }
+
   async authValidate(): Promise<boolean> {
     return true;
   }

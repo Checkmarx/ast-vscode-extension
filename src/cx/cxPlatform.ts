@@ -229,9 +229,9 @@ export interface CxPlatform {
   ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[] | undefined>;
 
   /**
-  * Scan the edited file in the Containers engine and show the results in the problem section
-  * @param sourcePath the edited file sent to the Containers engine
-  */
+   * Scan the edited file in the Containers engine and show the results in the problem section
+   * @param sourcePath the edited file sent to the Containers engine
+   */
   scanContainers(sourcePath: string): Promise<any>;
 
   authValidate(logs: Logs): Promise<boolean>;

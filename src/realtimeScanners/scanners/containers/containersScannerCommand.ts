@@ -7,7 +7,7 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
-import {ContainersHoverData} from "../../common/types";
+import { ContainersHoverData } from "../../common/types";
 
 export class ContainersScannerCommand extends BaseScannerCommand {
 	constructor(
@@ -93,17 +93,17 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 	private renderID(hoverData: ContainersHoverData): string {
 		if (hoverData.status == CxRealtimeEngineStatus.malicious) {
 			return `
-<b>${hoverData.imageName}:${hoverData.imageTag}</b> 
+<b>${hoverData.imageName}:${hoverData.imageTag}</b>
 <i style="color: dimgrey;"> - ${hoverData.status} image <br></i>
 `;
 		}
 		return `
-<b>${hoverData.imageName}:${hoverData.imageTag}</b> 
+<b>${hoverData.imageName}:${hoverData.imageTag}</b>
 <i style="color: dimgrey;"> - ${hoverData.status} severity image <br></i>
 `;
 	}
 
-	private renderImageIcon() : string {
+	private renderImageIcon(): string {
 		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/container_image.png" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
