@@ -41,8 +41,6 @@ describe("Extension settings tests", () => {
     await new EditorView().closeAllEditors();
   });
 
-  
-
   it("open settings and check if are empty", async () => {
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
@@ -51,7 +49,6 @@ describe("Extension settings tests", () => {
     )) as LinkSetting;
     expect(settings).to.be.undefined;
   });
-
 
   it("should check kics real-time scan enablement on settings", async function () {
     const settingsWizard = await bench.openSettings();
@@ -63,24 +60,24 @@ describe("Extension settings tests", () => {
     expect(enablement).to.equal(true);
   });
 
-  it("verify ASCA checkbox exists in the settings", async function () {
+  it("verify ASCA realtime scanning checkbox exists in the settings", async function () {
     settingsEditor = await bench.openSettings();
-    const ascaCheckbox = await settingsEditor.findSetting(
-      constants.ActivateAscaAutoScanning,
-      constants.CheckmarxAsca
+    const ascaRealtimeCheckbox = await settingsEditor.findSetting(
+      constants.activateAscaRealtimeScanner,
+      constants.ascaRealtimeScanner
     );
-    let ascaCheckboxValue = await ascaCheckbox.getValue();
-    expect(ascaCheckboxValue).to.not.be.undefined;
+    let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
+    expect(ascaRealtimeCheckboxValue).to.not.be.undefined;
   });
 
-  it("ASCA starts when the ASCA checkbox is True in settings", async function () {
+  it("ASCA realtime scanning starts when the checkbox is True in settings", async function () {
     settingsEditor = await bench.openSettings();
-    const ascaCheckbox = await settingsEditor.findSetting(
-      constants.ActivateAscaAutoScanning,
-      constants.CheckmarxAsca
+    const ascaRealtimeCheckbox = await settingsEditor.findSetting(
+      constants.activateAscaRealtimeScanner,
+      constants.ascaRealtimeScanner
     );
-    await ascaCheckbox.setValue(true);
-    let ascaCheckboxValue = await ascaCheckbox.getValue();
-    expect(ascaCheckboxValue).to.be.true;
+    await ascaRealtimeCheckbox.setValue(true);
+    let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
+    expect(ascaRealtimeCheckboxValue).to.be.true;
   });
 });

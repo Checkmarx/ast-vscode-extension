@@ -51,6 +51,7 @@ export class FilterCommand {
     this.registerFilterUrgentCommand();
     this.registerFilterNotIgnoredCommand();
     this.registerFilterIgnoredCommand();
+    this.registerFilterSCAHideDevTestCommand();
   }
 
   public async initializeFilters() {
@@ -111,6 +112,10 @@ export class FilterCommand {
     this.updateState(StateLevel.ignored, ignored);
     await updateStateFilter(this.context, constants.ignoredFilter, ignored);
     await vscode.commands.executeCommand(commands.refreshTree);
+
+    const scaHideDevTest =
+      this.context.globalState.get<boolean>(constants.scaHideDevTestFilter) ?? false;
+    await updateStateFilter(this.context, constants.scaHideDevTestFilter, scaHideDevTest);
   }
 
 
@@ -585,6 +590,42 @@ export class FilterCommand {
     );
   }
 
+  private registerFilterSCAHideDevTestCommand() {
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterSCAHideDevTest,
+        async () =>
+          await this.filterSCAHideDevTest(
+            this.logs,
+            this.context,
+            constants.scaHideDevTestFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterSCAHideDevTestActive,
+        async () =>
+          await this.filterSCAHideDevTest(
+            this.logs,
+            this.context,
+            constants.scaHideDevTestFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterSCAHideDevTestCommand,
+        async () =>
+          await this.filterSCAHideDevTest(
+            this.logs,
+            this.context,
+            constants.scaHideDevTestFilter
+          )
+      )
+    );
+  }
+
   private updateSeverities(
     activeSeverities: SeverityLevel,
     include: boolean
@@ -642,4 +683,16 @@ export class FilterCommand {
     await updateStateFilter(context, filter, !currentValue);
     await vscode.commands.executeCommand(commands.refreshTree);
   }
+
+  private async filterSCAHideDevTest(
+    logs: Logs,
+    context: vscode.ExtensionContext,
+    filter: string
+  ) {
+    logs.info(messages.filterResults("SCA Hide Dev/Test"));
+    const currentValue = context.globalState.get(filter);
+    await updateStateFilter(context, filter, !currentValue);
+    await vscode.commands.executeCommand(commands.refreshTree);
+  }
+
 }

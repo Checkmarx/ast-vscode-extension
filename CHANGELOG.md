@@ -1,20 +1,48 @@
 # CHANGELOG
 
-## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
+## [v2.34.1-group_by_order_changed_bug_fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed_bug_fixes.0) - 2025-07-24 13:19:27
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Fix mcp settings in cursor by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1201
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-CheckMcpVscode.0...v2.34.1-AutoConfigureMcpVscodeCursor.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-container-and-cards.0...v2.34.1-group_by_order_changed_bug_fixes.0
 
-### Fix
+## [v2.34.1-group_by_order_changed.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed.0) - 2025-07-24 06:59:11
 
-- general:
-  - fix mcp settings in cursor (#1201) ([db4dbcb](https://github.com/Checkmarx/ast-vscode-extension/commit/db4dbcb1bba3665159702daf03c7a6826641ca34)) ([#1201](https://github.com/Checkmarx/ast-vscode-extension/pull/1201))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-containers.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0.0) - 2025-07-24 12:33:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-container-and-cards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-container-and-cards.0) - 2025-07-24 13:11:04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-containers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0) - 2025-07-21 10:22:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-0) - 2025-07-16 09:45:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-telemetry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-telemetry.0) - 2025-07-10 10:16:47
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-outdatedTree.0...v2.34.1-telemetry.0
+
+## [v2.34.1-outdatedTree.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-outdatedTree.0) - 2025-07-08 11:53:22
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-AutoConfigureMcpVscodeCursor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-AutoConfigureMcpVscodeCursor.0) - 2025-07-07 06:56:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-CheckMcpVscode.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-CheckMcpVscode.0) - 2025-07-06 10:55:45
 

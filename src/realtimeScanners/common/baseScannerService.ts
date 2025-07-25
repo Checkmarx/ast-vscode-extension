@@ -69,6 +69,8 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
+
+
     return createHash("sha256")
       .update(input)
       .digest("hex")

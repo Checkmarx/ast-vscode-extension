@@ -33,12 +33,12 @@ export class OssScannerService extends BaseScannerService {
 
   private decorationTypes = {
     malicious: this.createDecoration("malicious.svg"),
-    ok: this.createDecoration("circle-check.svg"),
-    unknown: this.createDecoration("question-mark.svg"),
-    critical: this.createDecoration("critical_untoggle.svg", "12px"),
-    high: this.createDecoration("high_untoggle.svg"),
-    medium: this.createDecoration("medium_untoggle.svg"),
-    low: this.createDecoration("low_untoggle.svg"),
+    ok: this.createDecoration("realtimeEngines/green_check.svg"),
+    unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
+    critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+    high: this.createDecoration("realtimeEngines/high_severity.svg"),
+    medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
+    low: this.createDecoration("realtimeEngines/low_severity.svg"),
     ignored: this.createDecoration("Ignored.svg"),
     underline: vscode.window.createTextEditorDecorationType({
       textDecoration: "underline wavy #f14c4c",
@@ -738,10 +738,10 @@ export class OssScannerService extends BaseScannerService {
     if (addDiagnostic) {
       decorations.push({ range });
       const diagnostic = new vscode.Diagnostic(range, message, severity);
-      diagnostic.source = 'CxAI';
+      diagnostic.source = constants.cxAi;
 
       (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-        cxType: "oss",
+        cxType: constants.ossRealtimeScannerEngineName,
         item: {
           packageManager: result.packageManager,
           packageName: result.packageName,

@@ -21,7 +21,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   constructor(
     protected readonly context: vscode.ExtensionContext,
     protected readonly statusBarItem: vscode.StatusBarItem
-  ) {}
+  ) { }
 
   public getTreeItem(
     element: TreeItem
@@ -138,6 +138,24 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         (!obj.getState() || issueLevel.includes(obj.getSeverity())) &&
         (!obj.getState() || stateLevel.includes(obj.getState()))
       ) {
+
+        // --- SCA Hide Dev & Test Dependencies filter logic ---
+        // Check if obj is an SCA node (adjust this check as needed for your model)
+        const isScaNode = obj.type === constants.sca; // <-- replace with your actual SCA type label
+        const scaHideDevTest = this.context.globalState.get<boolean>(constants.scaHideDevTestFilter) ?? false;
+
+        if (
+          isScaNode &&
+          scaHideDevTest &&
+          (
+            (obj.data?.scaPackageData.isDevelopmentDependency === true) ||
+            (obj.data?.scaPackageData.isTestDependency === true)
+          )
+        ) {
+          // Skip adding this item if it's a dev dependency and the filter is ON
+          return;
+        }
+
         if (obj.sastNodes.length > 0) {
           this.createDiagnostic(
             obj.label,
@@ -202,8 +220,8 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     const tree = previousValue.children
       ? previousValue.children.find(
-          (item) => item.label === value.replaceAll("_", " ")
-        )
+        (item) => item.label === value.replaceAll("_", " ")
+      )
       : undefined;
     if (tree) {
       tree.setDescription();

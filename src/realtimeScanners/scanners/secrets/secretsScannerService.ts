@@ -34,9 +34,9 @@ export class SecretsScannerService extends BaseScannerService {
 	}
 
 	private decorationTypes = {
-		critical: this.createDecoration("critical_untoggle.svg", "12px"),
-		high: this.createDecoration("high_untoggle.svg"),
-		medium: this.createDecoration("medium_untoggle.svg"),
+		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+		high: this.createDecoration("realtimeEngines/high_severity.svg"),
+		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
 		ignored: this.createDecoration("Ignored.svg")
 	};
 
@@ -156,7 +156,7 @@ export class SecretsScannerService extends BaseScannerService {
 				`Secrets have been detected:${problem.title}`,
 				severityMap[problem.severity]
 			);
-			diagnostic.source = 'CxAI';
+			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'secrets',
 				item: {

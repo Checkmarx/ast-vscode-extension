@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { HoverData, SecretsHoverData, CxDiagnosticData } from "../common/types";
 import { commands } from "../../utils/common/commands";
 import { isCursorIDE } from "../../utils/utils";
+import { constants } from "../../utils/common/constants";
 
 
 export class CxCodeActionProvider implements vscode.CodeActionProvider {
@@ -37,7 +38,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			};
 
 			const explainAction = new vscode.CodeAction(
-				data.cxType === "secrets" ? "CxAI Explain" : "View CxAI Package Details",
+				data.cxType === constants.secretsScannerEngineName ? "CxAI Explain" : "View CxAI Package Details",
 				vscode.CodeActionKind.QuickFix
 			);
 			explainAction.command = {

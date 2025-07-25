@@ -16,6 +16,7 @@ export const constants = {
   urgentFilter: "ast-results-Urgent",
   notIgnoredFilter: "ast-results-NotIgnored",
   ignoredFilter: "ast-results-Ignored",
+  scaHideDevTestFilter: "ast-results-SCAHideDevTest",
   queryNameGroup: "ast-results-groupByQueryName",
   languageGroup: "ast-results-groupByLanguage",
   severityGroup: "ast-results-groupBySeverity",
@@ -151,14 +152,15 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA engine
-  errorInstallation: "Failed to run ASCA engine",
-  errorScanAsca: "failed to handle ASCA scan",
-  ascaStart: "AI Secure Coding Assistant Engine started",
-  ascaDisabled: "AI Secure Coding Assistant Engine disabled",
-  ascaEngineName: "ASCA",
-  ActivateAscaAutoScanning: "Activate ASCA",
-  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
+  // ASCA Realtime Scanner
+  activateAscaRealtimeScanner: "Activate ASCA Realtime",
+  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+  ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
+  ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
+  ascaRealtimeScannerEngineName: "AscaRealtimeScanner",
+  ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
+  errorAscaInstallation: "Failed to run ASCA engine",
+  errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
 
   // Secrets Scanner
   activateSecretsScanner: "Activate Secret Detection Realtime",
@@ -178,6 +180,15 @@ export const constants = {
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -188,11 +199,42 @@ export const constants = {
     "**/*.csproj"
   ],
   ossIcons: {
-    critical: "critical_untoggle.png",
-    high: "high_untoggle.png",
-    medium: "medium_untoggle.png",
-    low: "low_untoggle.png",
+    critical: "critical_severity.png",
+    high: "high_severity.png",
+    medium: "medium_severity.png",
+    low: "low_severity.png",
   },
+
+  ascaSupportedExtensions: [
+    ".java",
+    ".cs",
+    ".go",
+    ".py",
+    ".js",
+    ".jsx"
+  ],
+
+  containersSupportedPatterns: [
+    "**/dockerfile",
+    "**/dockerfile-*",
+    "**/dockerfile.*",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/docker-compose-*.yml",
+    "**/docker-compose-*.yaml"
+  ],
+
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
+  ],
+
+  containersHelmExcludedFiles: [
+    "chart.yaml",
+    "chart.yml"
+  ],
+
+  cxAi: 'CxAI',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
