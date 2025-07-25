@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
-import {Logs} from "../../models/logs";
-import {RepositoryState} from "../types/git";
-import {commands} from "../common/commands";
+import { Logs } from "../../models/logs";
+import { RepositoryState } from "../types/git";
+import { commands } from "../common/commands";
 import {
     constants
 } from "../common/constants";
-import {getFromState, updateState} from "../common/globalState";
-import {cx} from "../../cx";
-import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
-import {messages} from "../common/messages";
-import {AuthService} from "../../services/authService";
+import { getFromState, updateState } from "../common/globalState";
+import { cx } from "../../cx";
+import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
+import { messages } from "../common/messages";
+import { AuthService } from "../../services/authService";
 
 export async function getBranchListener(
     context: vscode.ExtensionContext,
@@ -116,7 +116,7 @@ export function addRealTimeSaveListener(
         const isSystemFiles = isSystemFile(e);
         if (isValidKicsFile && isSystemFiles) {
             // Mandatory in order to have the document appearing as displayed for VSCode
-            await vscode.window.showTextDocument(e, 1, false);
+            await vscode.window.showTextDocument(e, 1, true);
             updateState(context, constants.kicsRealtimeFile, {
                 id: e.uri.fsPath,
                 name: e.uri.fsPath,
@@ -143,7 +143,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
             `${constants.extensionName}.createScanButton`,
             true
         );
-        updateState(context, constants.scanCreatePrepKey, {id: false, name: "", displayScanId: "", scanDatetime: ""});
+        updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: "", scanDatetime: "" });
     }
     const scanID = getFromState(context, constants.scanIdKey);
     if (scanID === undefined) {
@@ -157,7 +157,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
             `${constants.extensionName}.createScanButton`,
             false
         );
-        updateState(context, constants.scanCreatePrepKey, {id: false, name: "", displayScanId: "", scanDatetime: ""});
+        updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: "", scanDatetime: "" });
     }
 }
 
