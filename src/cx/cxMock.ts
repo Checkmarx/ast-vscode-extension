@@ -1466,9 +1466,6 @@ export class CxMock implements CxPlatform {
     return [];
   }
 
-  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
-    return [];
-  }
 
   async scanContainers(sourcePath: string): Promise<any> {
     return {
