@@ -3,8 +3,8 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, AscaHoverData, ContainersHoverData } from "../utils/utils";
-import { HoverData, SecretsHoverData } from "../realtimeScanners/common/types";
+import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles } from "../utils/utils";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,

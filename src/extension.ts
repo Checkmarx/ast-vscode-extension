@@ -304,6 +304,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner);
   registerMcpSettingsInjector(context);
 
+
   copilotChatCommand.registerCopilotChatCommand();
 
 

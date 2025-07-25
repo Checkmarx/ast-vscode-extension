@@ -158,7 +158,7 @@ export class SecretsScannerService extends BaseScannerService {
 			);
 			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-				cxType: 'secrets',
+				cxType: constants.secretsScannerEngineName,
 				item: {
 					title: problem.title,
 					description: problem.description,
@@ -193,7 +193,7 @@ export class SecretsScannerService extends BaseScannerService {
 		for (const prevDiagnostic of previousDiagnostics) {
 			const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: any }).data;
 
-			if (prevData?.cxType !== 'secrets') {
+			if (prevData?.cxType !== constants.secretsScannerEngineName) {
 				continue;
 			}
 
@@ -201,7 +201,7 @@ export class SecretsScannerService extends BaseScannerService {
 
 			const stillExists = diagnostics.some(currentDiag => {
 				const currentData = (currentDiag as vscode.Diagnostic & { data?: any }).data;
-				if (currentData?.cxType === 'secrets') {
+				if (currentData?.cxType === constants.secretsScannerEngineName) {
 					const currentSecret = currentData.item;
 					return currentSecret.title === prevSecret.title &&
 						currentDiag.range.start.line === prevDiagnostic.range.start.line;

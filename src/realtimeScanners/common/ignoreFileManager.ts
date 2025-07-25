@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { OssScannerService } from '../scanners/oss/ossScannerService';
 import { SecretsScannerService } from '../scanners/secrets/secretsScannerService';
 import { Logs } from '../../models/logs';
+import { constants } from '../../utils/common/constants';
 
 export interface IgnoreEntry {
 	files: Array<{
@@ -438,7 +439,7 @@ export class IgnoreFileManager {
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				type: entry.packageManager ? 'ossScan' : 'secrets',
+				type: entry.packageManager ? constants.ossRealtimeScannerEngineName : constants.secretsScannerEngineName,
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
@@ -492,7 +493,7 @@ export class IgnoreFileManager {
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				type: 'secrets',
+				type: constants.secretsScannerEngineName,
 				PackageName: entry.title,
 				severity: entry.severity,
 				description: entry.description,
@@ -543,7 +544,7 @@ export class IgnoreFileManager {
 					const originalPath = path.resolve(this.workspaceRootPath, file.path);
 					const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
 
-					if (entry.type === 'secrets') {
+					if (entry.type === constants.secretsScannerEngineName) {
 						return {
 							Title: entry.PackageName,
 							FilePath: scannedTempPath,

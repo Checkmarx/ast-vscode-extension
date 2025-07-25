@@ -349,7 +349,7 @@ export class OssScannerService extends BaseScannerService {
     const diagnostics = this.diagnosticsMap.get(filePath) || [];
     const updatedDiagnostics = diagnostics.filter(diagnostic => {
       const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-      if (diagnosticData?.cxType === 'oss') {
+      if (diagnosticData?.cxType === constants.ossRealtimeScannerEngineName) {
         const ossItem = diagnosticData.item as HoverData;
         return !(ossItem?.packageName === hoverData.packageName &&
           ossItem?.version === hoverData.version);
@@ -362,7 +362,7 @@ export class OssScannerService extends BaseScannerService {
 
     for (const diagnostic of diagnostics) {
       const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-      if (diagnosticData?.cxType === 'oss') {
+      if (diagnosticData?.cxType === constants.ossRealtimeScannerEngineName) {
         const ossItem = diagnosticData.item as HoverData;
         if (ossItem?.packageName === hoverData.packageName &&
           ossItem?.version === hoverData.version) {
@@ -562,7 +562,7 @@ export class OssScannerService extends BaseScannerService {
     const updatedIgnoredDecorations: vscode.DecorationOptions[] = [];
     for (const prevDiagnostic of previousDiagnostics) {
       const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-      if (prevData?.cxType === 'oss') {
+      if (prevData?.cxType === constants.ossRealtimeScannerEngineName) {
         const prevOssItem = prevData.item as HoverData;
 
         if (ignoreManager.isPackageIgnored(prevOssItem.packageName, prevOssItem.version, filePath)) {

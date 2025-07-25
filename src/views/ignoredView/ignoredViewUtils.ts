@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { constants } from '../../utils/common/constants';
 export function getIconName(severity: string, webview: vscode.Webview, extensionPath: string): string {
 	const iconMap: Record<string, string> = {
 		'critical': 'Vulnerability critical_ignore',
@@ -84,9 +85,9 @@ export function getCloseIconPath(webview: vscode.Webview, extensionPath: string)
 }
 
 export function formatPackageDisplayName(packageKey: string, packageType: string): string {
-	if (packageType === 'ossScan') {
+	if (packageType === constants.ossRealtimeScannerEngineName) {
 		return packageKey.replace(':', '@');
-	} else if (packageType === 'secrets') {
+	} else if (packageType === constants.secretsScannerEngineName) {
 		const colonIndex = packageKey.lastIndexOf(':');
 		if (colonIndex !== -1) {
 			return packageKey.substring(0, colonIndex);
