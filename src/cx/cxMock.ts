@@ -1462,6 +1462,11 @@ export class CxMock implements CxPlatform {
     return new CxAsca();
   }
 
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
+    return [];
+  }
+
+
   async scanContainers(sourcePath: string): Promise<any> {
     return {
       Images: [
@@ -1492,11 +1497,7 @@ export class CxMock implements CxPlatform {
     };
   }
 
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
-    return [];
-  }
-
-  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
     return [];
   }
 

@@ -72,7 +72,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = buildCommandButtons(args);
+    const buttons = buildCommandButtons(args, true);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
     if (isMalicious) {
@@ -82,7 +82,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       md.appendMarkdown(renderCxAiBadge() + "<br>");
       md.appendMarkdown(this.renderPackageIcon() + " ");
     }
-    md.appendMarkdown(this.renderID(hoverData))
+    md.appendMarkdown(this.renderID(hoverData));
     if (isVulnerable) {
       md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
     }
@@ -103,12 +103,12 @@ export class OssScannerCommand extends BaseScannerCommand {
   private renderID(hoverData: HoverData): string {
     if (hoverData.status == CxRealtimeEngineStatus.malicious) {
       return `
-<b>${hoverData.packageName} @ ${hoverData.version}</b> 
+<b>${hoverData.packageName} @ ${hoverData.version}</b>
 <i style="color: dimgrey;"> - ${hoverData.status} Package <br></i>
 `;
     }
     return `
-<b>${hoverData.packageName} @ ${hoverData.version}</b> 
+<b>${hoverData.packageName} @ ${hoverData.version}</b>
 <i style="color: dimgrey;"> - ${hoverData.status} severity Package <br></i>
 `;
   }
@@ -116,8 +116,8 @@ export class OssScannerCommand extends BaseScannerCommand {
   private renderMaliciousIcon(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
-  
-  private renderPackageIcon() : string {
+
+  private renderPackageIcon(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
@@ -133,7 +133,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     }
 
     const severityDisplayItems = Object.entries(counts)
-      .filter(([_, count]) => count > 0)
+      .filter(([, count]) => count > 0)
       .map(
         ([sev, count]) =>
           `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
@@ -160,5 +160,9 @@ export class OssScannerCommand extends BaseScannerCommand {
     await super.dispose();
     (this.scannerService as OssScannerService).dispose();
     this.hoverProviderDisposable?.dispose();
+  }
+
+  getScannerService(): OssScannerService {
+    return this.scannerService as OssScannerService;
   }
 }

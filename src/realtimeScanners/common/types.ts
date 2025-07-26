@@ -31,6 +31,8 @@ export interface HoverData {
   version: string;
   status: CxRealtimeEngineStatus;
   vulnerabilities?: Array<{ cve: string, description: string, severity: string }>;
+  filePath: string;
+  line: number;
 }
 
 export interface SecretsHoverData {
@@ -42,6 +44,7 @@ export interface SecretsHoverData {
     startIndex: number;
     endIndex: number;
   };
+  filePath: string;
 }
 
 export interface AscaHoverData {

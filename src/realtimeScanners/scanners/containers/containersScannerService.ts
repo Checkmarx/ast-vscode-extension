@@ -10,6 +10,7 @@ import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
+import { createHash } from "crypto";
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -128,6 +129,16 @@ export class ContainersScannerService extends BaseScannerService {
 		return false;
 	}
 
+
+	private generateFileHashContainers(input: string): string {
+		const now = new Date();
+		const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
+		return createHash("sha256")
+			.update(input + timeSuffix)
+			.digest("hex")
+			.substring(0, 16);
+	}
+
 	private saveDockerFile(
 		tempFolder: string,
 		originalFilePath: string,
@@ -135,7 +146,7 @@ export class ContainersScannerService extends BaseScannerService {
 	): string {
 		const originalFileName = path.basename(originalFilePath);
 
-		const hash = this.generateFileHash(originalFilePath);
+		const hash = this.generateFileHashContainers(originalFilePath);
 		const dockerFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
 		if (!fs.existsSync(dockerFolder)) {
 			fs.mkdirSync(dockerFolder, { recursive: true });
@@ -155,7 +166,7 @@ export class ContainersScannerService extends BaseScannerService {
 	): string {
 		const originalExt = path.extname(originalFilePath);
 		const baseName = path.basename(originalFilePath, originalExt);
-		const hash = this.generateFileHash(originalFilePath);
+		const hash = this.generateFileHashContainers(originalFilePath);
 		const tempFileName = `${baseName}-${hash}${originalExt}`;
 		const tempFilePath = path.join(tempFolder, tempFileName);
 		fs.writeFileSync(tempFilePath, content);
@@ -178,7 +189,7 @@ export class ContainersScannerService extends BaseScannerService {
 		originalFilePath: string,
 		content: string
 	): string {
-		const hash = this.generateFileHash(originalFilePath);
+		const hash = this.generateFileHashContainers(originalFilePath);
 		const helmFolder = path.join(tempFolder, `helm-${hash}`);
 
 		const relativePath = this.getHelmRelativePath(originalFilePath);
@@ -201,7 +212,7 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		// Use the method to take care of in DockerFiles 
+		// Use the method to take care of in DockerFiles
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
 		logs.info("Scanning Containers in file: " + filePath);
@@ -247,7 +258,7 @@ export class ContainersScannerService extends BaseScannerService {
 				[],
 				[],
 				[]
-			)
+			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
@@ -454,8 +465,8 @@ export class ContainersScannerService extends BaseScannerService {
 		const fileType = this.isDockerComposeFile(uri.fsPath)
 			? 'docker-compose'
 			: constants.containersHelmExtensions.includes(path.extname(uri.fsPath).toLowerCase())
-			? 'helm'
-			: 'dockerfile';
+				? 'helm'
+				: 'dockerfile';
 		if (addDiagnostic) {
 			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
