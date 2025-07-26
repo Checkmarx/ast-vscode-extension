@@ -144,7 +144,8 @@ export function getRiskText(severity: string): string {
 export function generateFileButtons(
 	files: Array<{ path: string; active: boolean; line?: number }>,
 	webview: vscode.Webview,
-	extensionPath: string
+	extensionPath: string,
+	entryType?: string
 ): string {
 	if (!files || files.length === 0) {
 		return '';
@@ -164,8 +165,9 @@ export function generateFileButtons(
 	const visibleButtons = visibleFiles
 		.map(file => {
 			const fileName = file.path.split('/').pop() || file.path;
+			const displayLine = entryType === constants.ossRealtimeScannerEngineName ? (file.line || 0) + 1 : (file.line || 1);
 			return `<div class="tooltip file-btn-tooltip">
-				<button class="file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
+				<button class="file-btn" onclick="openFile('${file.path}', ${displayLine})">
 					<img src="${fileIconUri}" alt="File" class="file-icon" />
 					${fileName}
 				</button>
@@ -177,8 +179,9 @@ export function generateFileButtons(
 	const hiddenButtons = activeFiles.slice(maxVisible)
 		.map(file => {
 			const fileName = file.path.split('/').pop() || file.path;
+			const displayLine = entryType === constants.ossRealtimeScannerEngineName ? (file.line || 0) + 1 : (file.line || 1);
 			return `<div class="tooltip file-btn-tooltip hidden-tooltip">
-				<button class="file-btn hidden-file-btn" onclick="openFile('${file.path}', ${file.line || 1})">
+				<button class="file-btn hidden-file-btn" onclick="openFile('${file.path}', ${displayLine})">
 					<img src="${fileIconUri}" alt="File" class="file-icon" />
 					${fileName}
 				</button>

@@ -359,7 +359,7 @@ export class IgnoredView {
 
 		const iconName = ignoredViewUtils.getIconName(pkg.severity, webview, extensionPath);
 		const lastUpdated = ignoredViewUtils.getLastUpdated(pkg.dateAdded);
-		const fileButtons = ignoredViewUtils.generateFileButtons(pkg.files, webview, extensionPath);
+		const fileButtons = ignoredViewUtils.generateFileButtons(pkg.files, webview, extensionPath, pkg.type);
 		const scaIcon = pkg.type === constants.ossRealtimeScannerEngineName ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
 		const secretsIcon = pkg.type === constants.secretsScannerEngineName ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
 
