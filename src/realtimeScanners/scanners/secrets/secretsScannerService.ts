@@ -91,11 +91,18 @@ export class SecretsScannerService extends BaseScannerService {
 
 			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
 
+			let fullScanResults: CxSecretsResult[] = scanResults;
+			if (ignoreManager.getIgnoredPackagesCount() > 0) {
+				fullScanResults = await cx.secretsScanResults(tempFilePath, "");
+			}
+
+			ignoreManager.removeMissingSecrets(fullScanResults, filePath);
+
 			const ignoredData = ignoreManager.getIgnoredPackagesData();
 			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 			const ignoredDecorations: vscode.DecorationOptions[] = [];
 
-			Object.entries(ignoredData).forEach(([packageKey, entry]) => {
+			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }
 				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 				if (!fileEntry || fileEntry.line === undefined) { return; }

@@ -6,7 +6,7 @@ import { OssScannerService } from '../scanners/oss/ossScannerService';
 import { SecretsScannerService } from '../scanners/secrets/secretsScannerService';
 import { Logs } from '../../models/logs';
 import { constants } from '../../utils/common/constants';
-
+import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 export interface IgnoreEntry {
 	files: Array<{
 		path: string;
@@ -590,6 +590,59 @@ export class IgnoreFileManager {
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.line === line);
 
 		return fileEntry && fileEntry.active;
+	}
+
+	public removeMissingSecrets(currentResults: CxSecretsResult[], filePath: string): boolean {
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		let hasChanges = false;
+
+		const currentSecrets = new Set<string>();
+		currentResults.forEach(result => {
+			if (result.locations && result.locations.length > 0) {
+				const line = result.locations[0].line + 1;
+				currentSecrets.add(`${result.title}:${line}`);
+			}
+		});
+
+		const keysToProcess = Object.keys(this.ignoreData);
+		for (const packageKey of keysToProcess) {
+			const entry = this.ignoreData[packageKey];
+
+			if (entry.type !== constants.secretsScannerEngineName) {
+				continue;
+			}
+
+			const fileIndex = entry.files.findIndex(f =>
+				f.path === relativePath && f.active && f.line !== undefined
+			);
+
+			if (fileIndex !== -1) {
+				const fileEntry = entry.files[fileIndex];
+				const secretKey = `${entry.PackageName}:${fileEntry.line}`;
+
+				if (!currentSecrets.has(secretKey)) {
+
+					entry.files.splice(fileIndex, 1);
+					hasChanges = true;
+
+					if (entry.files.length === 0) {
+						delete this.ignoreData[packageKey];
+					}
+				}
+			}
+		}
+
+		if (hasChanges) {
+			this.saveIgnoreFile();
+			this.updateTempList();
+
+			if (this.uiRefreshCallback) {
+				this.uiRefreshCallback();
+			}
+
+		}
+
+		return hasChanges;
 	}
 
 
