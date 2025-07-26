@@ -56,21 +56,11 @@ export class SecretsScannerService extends BaseScannerService {
 		if (!super.shouldScanFile(document)) {
 			return false;
 		}
-
 		const filePath = document.uri.fsPath.replace(/\\/g, "/");
-		if (constants.supportedManifestFilePatterns.some(pattern =>
-			minimatch(filePath, pattern))
-		) {
-			return false;
-		}
-		return true;
+		return !constants.supportedManifestFilePatterns.some(pattern => minimatch(filePath, pattern));
 	}
 
-	private saveFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): string {
+	private saveFile(tempFolder: string, originalFilePath: string, content: string): string {
 		const originalExt = path.extname(originalFilePath);
 		const baseName = path.basename(originalFilePath, originalExt);
 		const hash = this.generateFileHash(originalFilePath);
@@ -84,28 +74,55 @@ export class SecretsScannerService extends BaseScannerService {
 		if (!this.shouldScanFile(document)) {
 			return;
 		}
-
 		const filePath = document.uri.fsPath;
 		logs.info("Scanning for secrets in file: " + filePath);
 
 		const tempFolder = this.getTempSubFolderPath(document, constants.secretsScannerDirectory);
-
 		let tempFilePath: string | undefined;
-
 		try {
 			this.createTempFolder(tempFolder);
-			tempFilePath = this.saveFile(
-				tempFolder,
-				filePath,
-				document.getText()
-			);
+			tempFilePath = this.saveFile(tempFolder, filePath, document.getText());
 
-			const IgnoreFileManagerInstance = IgnoreFileManager.getInstance();
-			IgnoreFileManagerInstance.setScannedFilePath(filePath, tempFilePath);
-			const ignoredPackagesFile = IgnoreFileManagerInstance.getIgnoredPackagesTempFile();
+			const ignoreManager = IgnoreFileManager.getInstance();
+			ignoreManager.setScannedFilePath(filePath, tempFilePath);
+			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
 
 			const scanResults = await cx.secretsScanResults(tempFilePath, ignoredPackagesFile || "");
+
 			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
+
+			const ignoredData = ignoreManager.getIgnoredPackagesData();
+			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+			const ignoredDecorations: vscode.DecorationOptions[] = [];
+
+			Object.entries(ignoredData).forEach(([packageKey, entry]) => {
+				if (entry.type !== constants.secretsScannerEngineName) { return; }
+				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+				if (!fileEntry || fileEntry.line === undefined) { return; }
+
+				const adjustedLine = Math.max(0, fileEntry.line - 1);
+
+				const range = new vscode.Range(
+					new vscode.Position(adjustedLine, 0),
+					new vscode.Position(adjustedLine, 1000)
+				);
+				ignoredDecorations.push({ range });
+
+				const hoverKey = `${filePath}:${adjustedLine}`;
+				if (!this.secretsHoverData.has(hoverKey)) {
+					this.secretsHoverData.set(hoverKey, {
+						title: entry.PackageName,
+						description: entry.description,
+						severity: entry.severity,
+						filePath,
+						location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
+					});
+				}
+			});
+
+			this.ignoredDecorations.set(filePath, ignoredDecorations);
+			this.applyDecorations(document.uri);
+
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
@@ -117,9 +134,6 @@ export class SecretsScannerService extends BaseScannerService {
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const secretsProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
-
-		const previousDiagnostics = this.diagnosticsMap.get(filePath) || [];
-
 		const diagnostics: vscode.Diagnostic[] = [];
 		const criticalDecorations: vscode.DecorationOptions[] = [];
 		const highDecorations: vscode.DecorationOptions[] = [];
@@ -127,35 +141,27 @@ export class SecretsScannerService extends BaseScannerService {
 
 		for (const problem of secretsProblems) {
 			if (problem.locations.length === 0) { continue; }
-
 			const location = problem.locations[0];
-			const severityMap = {
-				critical: vscode.DiagnosticSeverity.Error,
-				high: vscode.DiagnosticSeverity.Error,
-				medium: vscode.DiagnosticSeverity.Warning
-			};
+			const range = new vscode.Range(
+				new vscode.Position(location.line, location.startIndex),
+				new vscode.Position(location.line, location.endIndex)
+			);
 			const key = `${filePath}:${location.line}`;
 			this.secretsHoverData.set(key, {
 				title: problem.title,
 				description: problem.description,
 				severity: problem.severity,
-				location: {
-					line: location.line,
-					startIndex: location.startIndex,
-					endIndex: location.endIndex
-				},
-				filePath: filePath
+				location,
+				filePath
 			});
 
-			const range = new vscode.Range(
-				new vscode.Position(location.line, location.startIndex),
-				new vscode.Position(location.line, location.endIndex)
-			);
-			const diagnostic = new vscode.Diagnostic(
-				range,
-				`Secrets have been detected:${problem.title}`,
-				severityMap[problem.severity]
-			);
+			const severityMap = {
+				critical: vscode.DiagnosticSeverity.Error,
+				high: vscode.DiagnosticSeverity.Error,
+				medium: vscode.DiagnosticSeverity.Warning
+			};
+
+			const diagnostic = new vscode.Diagnostic(range, `Secrets have been detected: ${problem.title}`, severityMap[problem.severity]);
 			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: constants.secretsScannerEngineName,
@@ -163,12 +169,8 @@ export class SecretsScannerService extends BaseScannerService {
 					title: problem.title,
 					description: problem.description,
 					severity: problem.severity,
-					location: {
-						line: location.line,
-						startIndex: location.startIndex,
-						endIndex: location.endIndex
-					},
-					filePath: filePath
+					location,
+					filePath
 				}
 			};
 
@@ -188,41 +190,25 @@ export class SecretsScannerService extends BaseScannerService {
 			}
 		}
 
-		const ignoredDecorations: vscode.DecorationOptions[] = [];
-
-		for (const prevDiagnostic of previousDiagnostics) {
-			const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: any }).data;
-
-			if (prevData?.cxType !== constants.secretsScannerEngineName) {
-				continue;
-			}
-
-			const prevSecret = prevData.item;
-
-			const stillExists = diagnostics.some(currentDiag => {
-				const currentData = (currentDiag as vscode.Diagnostic & { data?: any }).data;
-				if (currentData?.cxType === constants.secretsScannerEngineName) {
-					const currentSecret = currentData.item;
-					return currentSecret.title === prevSecret.title &&
-						currentDiag.range.start.line === prevDiagnostic.range.start.line;
-				}
-				return false;
-			});
-
-			if (!stillExists) {
-				ignoredDecorations.push({ range: prevDiagnostic.range });
-			}
-		}
-
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
 
 		this.criticalDecorations.set(filePath, criticalDecorations);
 		this.highDecorations.set(filePath, highDecorations);
 		this.mediumDecorations.set(filePath, mediumDecorations);
-		this.ignoredDecorations.set(filePath, ignoredDecorations);
+	}
 
-		this.applyDecorations(uri);
+	private applyDecorations(uri: vscode.Uri): void {
+		const editor = vscode.window.visibleTextEditors.find(
+			e => e.document.uri.toString() === uri.toString()
+		);
+		if (!editor) { return; }
+
+		const filePath = uri.fsPath;
+		editor.setDecorations(this.decorationTypes.critical, this.criticalDecorations.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.high, this.highDecorations.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.medium, this.mediumDecorations.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
 	}
 
 	public clearScanData(uri: vscode.Uri): void {
@@ -237,12 +223,8 @@ export class SecretsScannerService extends BaseScannerService {
 	}
 
 	public async initializeScanner(): Promise<void> {
-		this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(
-			this.onDocumentOpen.bind(this)
-		);
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
-			this.onEditorChange.bind(this)
-		);
+		this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(this.onDocumentOpen.bind(this));
+		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(this.onEditorChange.bind(this));
 	}
 
 	private onDocumentOpen(document: vscode.TextDocument): void {
@@ -257,26 +239,6 @@ export class SecretsScannerService extends BaseScannerService {
 		}
 	}
 
-	private applyDecorations(uri: vscode.Uri): void {
-		const editor = vscode.window.visibleTextEditors.find(
-			e => e.document.uri.toString() === uri.toString()
-		);
-		if (!editor) {
-			return;
-		}
-
-		const filePath = uri.fsPath;
-		const criticalDecorations = this.criticalDecorations.get(filePath) || [];
-		const highDecorations = this.highDecorations.get(filePath) || [];
-		const mediumDecorations = this.mediumDecorations.get(filePath) || [];
-		const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
-
-		editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
-		editor.setDecorations(this.decorationTypes.high, highDecorations);
-		editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
-		editor.setDecorations(this.decorationTypes.ignored, ignoredDecorations);
-	}
-
 	public async clearProblems(): Promise<void> {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
@@ -286,15 +248,8 @@ export class SecretsScannerService extends BaseScannerService {
 		this.ignoredDecorations.clear();
 	}
 
-
-
 	public dispose(): void {
-		if (this.documentOpenListener) {
-			this.documentOpenListener.dispose();
-		}
-
-		if (this.editorChangeListener) {
-			this.editorChangeListener.dispose();
-		}
+		this.documentOpenListener?.dispose();
+		this.editorChangeListener?.dispose();
 	}
 }
