@@ -665,21 +665,7 @@ export class Cx implements CxPlatform {
     }
     const cx = new CxWrapper(config);
 
-      const scans = await cx.containersRealtimeScanResults(sourcePath);
-      if (scans.payload && scans.exitCode === 0) {
-        return scans.payload[0];
-      } else {
-        throw new Error(scans.status);
-      }
-  }
-
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
-    let config = await this.getAstConfiguration();
-    if (!config) {
-      config = new CxConfig();
-    }
-    const cx = new CxWrapper(config);
-    const scans = await cx.ossScanResults(sourcePath);
+    const scans = await cx.containersRealtimeScanResults(sourcePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -687,13 +673,30 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
+
     const cx = new CxWrapper(config);
-    const scans = await cx.secretsScanResults(sourcePath);
+    const scans = await cx.ossScanResults(sourcePath, ignoredFilePath);
+
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+
+    const cx = new CxWrapper(config);
+    const scans = await cx.secretsScanResults(sourcePath, ignoredFilePath);
+
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
