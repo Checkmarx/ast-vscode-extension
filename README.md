@@ -173,7 +173,7 @@ We appreciate feedback and contribution to the VsCode extension! Before you get 
 
 Distributed under the [Apache 2.0](LICENSE). See `LICENSE` for more information.
 
-<!-- FEEDBACK -->
+<!-- FEEDBACK  -->
 ## Feedback
 We’d love to hear your feedback! If you come across a bug or have a feature request, please let us know by submitting an issue in [GitHub Issues](https://github.com/Checkmarx/ast-vscode-extension/issues).
 
