@@ -556,45 +556,6 @@ export class OssScannerService extends BaseScannerService {
     const ignoredDecorations: vscode.DecorationOptions[] = [];
     const ignoreManager = IgnoreFileManager.getInstance();
 
-    const existingIgnoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
-    ignoredDecorations.push(...existingIgnoredDecorations);
-
-    const updatedIgnoredDecorations: vscode.DecorationOptions[] = [];
-    for (const prevDiagnostic of previousDiagnostics) {
-      const prevData = (prevDiagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-      if (prevData?.cxType === constants.ossRealtimeScannerEngineName) {
-        const prevOssItem = prevData.item as HoverData;
-
-        if (ignoreManager.isPackageIgnored(prevOssItem.packageName, prevOssItem.version, filePath)) {
-          const packageKey = `${prevOssItem.packageName}:${prevOssItem.version}`;
-          const ignoredData = ignoreManager.getIgnoredPackagesData();
-          const entry = ignoredData[packageKey];
-
-          if (entry) {
-            const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
-            const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
-
-            if (fileEntry && fileEntry.line !== undefined) {
-              const updatedRange = new vscode.Range(
-                new vscode.Position(fileEntry.line, prevDiagnostic.range.start.character),
-                new vscode.Position(fileEntry.line, prevDiagnostic.range.end.character)
-              );
-
-              const alreadyExists = updatedIgnoredDecorations.some(decoration =>
-                decoration.range.start.line === fileEntry.line &&
-                decoration.range.start.character === updatedRange.start.character
-              );
-
-              if (!alreadyExists) {
-                updatedIgnoredDecorations.push({ range: updatedRange });
-              }
-            }
-          }
-        }
-      }
-    }
-    ignoredDecorations.push(...updatedIgnoredDecorations);
-
     const ignoredData = ignoreManager.getIgnoredPackagesData();
     const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 
