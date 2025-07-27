@@ -5,8 +5,9 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { ContainersScannerService } from "./containersScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
-import { ContainersHoverData } from "../../common/types";
+import {ContainersHoverData} from "../../common/types";
 
 export class ContainersScannerCommand extends BaseScannerCommand {
 	constructor(
@@ -64,64 +65,79 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 	}
 
 	private createHoverContent(hoverData: ContainersHoverData): vscode.Hover {
-		const markdown = new vscode.MarkdownString();
-		markdown.isTrusted = true;
+		const md = new vscode.MarkdownString();
+		md.supportHtml = true;
+		md.isTrusted = true;
+		const { vulnerabilities, ...hoverDataWithoutVuln } = hoverData;
+		const args = encodeURIComponent(JSON.stringify([hoverDataWithoutVuln]));
+		const buttons = buildCommandButtons(args);
+		const isVulnerable = this.isVulnerableStatus(hoverData.status);
+		const isMalicious = hoverData.status === "Malicious";
 
-		const vulnerabilityCount = hoverData.vulnerabilities.length;
-		const statusIcon = hoverData.status === "Malicious" ? "🚨" : "ℹ️";
-
-		markdown.appendMarkdown(`### ${statusIcon} Container Image Analysis\n\n`);
-		markdown.appendMarkdown(`**Image:** \`${hoverData.imageName}:${hoverData.imageTag}\`\n\n`);
-		markdown.appendMarkdown(`**Status:** ${hoverData.status}\n\n`);
-		markdown.appendMarkdown(`**Vulnerabilities Found:** ${vulnerabilityCount}\n\n`);
-
-		if (vulnerabilityCount > 0) {
-			markdown.appendMarkdown(`### Vulnerabilities:\n\n`);
-
-			const severityGroups: { [key: string]: string[] } = {};
-			hoverData.vulnerabilities.forEach(vuln => {
-				const severity = vuln.severity.toUpperCase();
-				if (!severityGroups[severity]) {
-					severityGroups[severity] = [];
-				}
-				severityGroups[severity].push(vuln.cve);
-			});
-
-			const severityOrder = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
-			severityOrder.forEach(severity => {
-				if (severityGroups[severity]) {
-					const severityIcon = this.getSeverityIcon(severity);
-					markdown.appendMarkdown(`**${severityIcon} ${severity}:** ${severityGroups[severity].join(", ")}\n\n`);
-				}
-			});
+		md.appendMarkdown(renderCxAiBadge() + "<br>");
+		if (isVulnerable) {
+			md.appendMarkdown(this.renderImageIcon());
 		}
-
-		markdown.appendMarkdown(`---\n\n`);
-		markdown.appendMarkdown(renderCxAiBadge());
-
-		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false, false);
-
-		if (buttons) {
-			markdown.appendMarkdown(buttons);
+		if (isMalicious) {
+			md.appendMarkdown(this.renderMaliciousIcon());
 		}
+		md.appendMarkdown(this.renderID(hoverData));
+		if (isVulnerable) {
+			md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+		}
+		md.appendMarkdown(`${buttons}<br>`);
 
-		return new vscode.Hover(markdown);
+		return new vscode.Hover(md);
 	}
 
-	private getSeverityIcon(severity: string): string {
-		switch (severity.toUpperCase()) {
-			case "CRITICAL":
-				return "🔴";
-			case "HIGH":
-				return "🟠";
-			case "MEDIUM":
-				return "🟡";
-			case "LOW":
-				return "🔵";
-			default:
-				return "⚪";
+	private renderID(hoverData: ContainersHoverData): string {
+		if (hoverData.status == CxRealtimeEngineStatus.malicious) {
+			return `
+<b>${hoverData.imageName}:${hoverData.imageTag}</b> 
+<i style="color: dimgrey;"> - ${hoverData.status} image <br></i>
+`;
 		}
+		return `
+<b>${hoverData.imageName}:${hoverData.imageTag}</b> 
+<i style="color: dimgrey;"> - ${hoverData.status} severity image <br></i>
+`;
+	}
+
+	private renderImageIcon() : string {
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/container_image.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+	}
+
+	private isVulnerableStatus(status: string): boolean {
+		return [
+			CxRealtimeEngineStatus.critical,
+			CxRealtimeEngineStatus.high,
+			CxRealtimeEngineStatus.medium,
+			CxRealtimeEngineStatus.low,
+		].includes(status as any);
+	}
+
+	private renderMaliciousIcon(): string {
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+	}
+
+	private renderVulnCounts(vulnerabilities: Array<{ severity: string }>): string {
+		const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+		for (const v of vulnerabilities) {
+			const sev = v.severity.toLowerCase();
+			if (counts[sev as keyof typeof counts] !== undefined) {
+				counts[sev as keyof typeof counts]++;
+			}
+		}
+
+		const severityDisplayItems = Object.entries(counts)
+			.filter(([_, count]) => count > 0)
+			.map(
+				([sev, count]) =>
+					`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
+					}" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
+			);
+
+		return `${severityDisplayItems.join("")}\n\n\n`;
 	}
 
 	public dispose(): Promise<void> {

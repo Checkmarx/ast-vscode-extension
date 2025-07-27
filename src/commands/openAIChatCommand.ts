@@ -144,7 +144,7 @@ export class CopilotChatCommand {
                 } else if (isAscaHoverData(item)) {
                     question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
                 } else if (isContainersHoverData(item)) {
-                    question = CONTAINERS_REMEDIATION_PROMPT(item.imageName, item.imageTag, item.status, item.vulnerabilities);
+                    question = CONTAINERS_REMEDIATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -168,7 +168,7 @@ export class CopilotChatCommand {
                 } else if (isAscaHoverData(item)) {
                     question = ASCA_EXPLANATION_PROMPT(item.ruleName, item.description, item.severity);
                 } else if (isContainersHoverData(item)) {
-                    question = CONTAINERS_EXPLANATION_PROMPT(item.imageName, item.imageTag, item.status, item.vulnerabilities);
+                    question = CONTAINERS_EXPLANATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }

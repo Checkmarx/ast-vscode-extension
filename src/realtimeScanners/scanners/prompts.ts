@@ -586,7 +586,7 @@ Suggest relevant:
 - Be thorough but concise
 `;
 
-export const CONTAINER_EXPLANATION_PROMPT = (
+export const CONTAINERS_EXPLANATION_PROMPT = (
   fileType: string,
   imageName: string,
   imageTag: string,
@@ -701,7 +701,7 @@ Conclude with:
 
 `;
 
-export const CONTAINER_REMEDIATION_PROMPT = (
+export const CONTAINERS_REMEDIATION_PROMPT = (
   fileType: string,
   imageName: string,
   imageTag: string,
@@ -825,4 +825,3 @@ If failed:
 - Ensure remediation is deterministic, auditable, and fully automated
 - Follow container security best practices (non-root user, minimal base images, etc.)
 `;
-

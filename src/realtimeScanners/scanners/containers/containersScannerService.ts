@@ -4,29 +4,12 @@ import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
 import { IScannerConfig, CxDiagnosticData, ContainersHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
-import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import CxContainerRealtimeResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxContainerRealtime";
 import path from "path";
 import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
-
-interface CxContainersResult {
-	images: Array<{
-		imageName: string;
-		imageTag: string;
-		filePath: string;
-		locations: Array<{
-			line: number;
-			startIndex: number;
-			endIndex: number;
-		}>;
-		status: CxRealtimeEngineStatus;
-		vulnerabilities: Array<{
-			cve: string;
-			severity: string;
-		}>;
-	}>;
-}
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -45,17 +28,20 @@ export class ContainersScannerService extends BaseScannerService {
 	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 
+	private currentTempFileNmae: string | undefined;
+	private currentTempSubFolder: string | undefined;
+
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
 		malicious: this.createDecoration("malicious.svg"),
-		ok: this.createDecoration("circle-check.svg"),
-		unknown: this.createDecoration("question-mark.svg"),
-		critical: this.createDecoration("critical_untoggle.svg", "12px"),
-		high: this.createDecoration("high_untoggle.svg"),
-		medium: this.createDecoration("medium_untoggle.svg"),
-		low: this.createDecoration("low_untoggle.svg"),
+		ok: this.createDecoration("realtimeEngines/green_check.svg"),
+		unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
+		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+		high: this.createDecoration("realtimeEngines/high_severity.svg"),
+		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
+		low: this.createDecoration("realtimeEngines/low_severity.svg"),
 		underline: vscode.window.createTextEditorDecorationType({
 			textDecoration: "underline wavy #f14c4c",
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -87,6 +73,30 @@ export class ContainersScannerService extends BaseScannerService {
 		super(config);
 	}
 
+	async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+		const dirPath = path.dirname(uri.fsPath);
+		const dirUri = vscode.Uri.file(dirPath);
+		const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+		const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+		for (const [entryName, _type] of entries) {
+			if (entryName.toLowerCase() === fileNameLower) {
+				return path.join(dirPath, entryName);
+			}
+		}
+		return undefined;
+	}
+
+	private isDockerComposeFile(filePath: string): boolean {
+		const fileName = path.basename(filePath).toLowerCase();
+
+		if (fileName.includes('docker-compose')) {
+			return true;
+		}
+		return false;
+	}
+
 	shouldScanFile(document: vscode.TextDocument): boolean {
 		if (!super.shouldScanFile(document)) {
 			return false;
@@ -96,7 +106,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const normalizedPath = filePath.replace(/\\/g, "/");
 
 		const matchesContainerPattern = constants.containersSupportedPatterns.some((pattern) =>
-			minimatch(normalizedPath, pattern)
+			minimatch(normalizedPath, pattern, { nocase: true })
 		);
 
 		if (matchesContainerPattern) {
@@ -105,6 +115,11 @@ export class ContainersScannerService extends BaseScannerService {
 
 		const fileExtension = path.extname(filePath).toLowerCase();
 		if (constants.containersHelmExtensions.includes(fileExtension)) {
+			const fileName = path.basename(filePath).toLowerCase();
+			if (constants.containersHelmExcludedFiles.includes(fileName)) {
+				return false;
+			}
+
 			const isInHelmFolder = normalizedPath.toLowerCase().includes("/helm/") ||
 				normalizedPath.toLowerCase().includes("\\helm\\");
 			return isInHelmFolder;
@@ -113,7 +128,27 @@ export class ContainersScannerService extends BaseScannerService {
 		return false;
 	}
 
-	private saveFile(
+	private saveDockerFile(
+		tempFolder: string,
+		originalFilePath: string,
+		content: string
+	): string {
+		const originalFileName = path.basename(originalFilePath);
+
+		const hash = this.generateFileHash(originalFilePath);
+		const dockerFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
+		if (!fs.existsSync(dockerFolder)) {
+			fs.mkdirSync(dockerFolder, { recursive: true });
+		}
+
+		this.currentTempSubFolder = dockerFolder;
+
+		const tempFilePath = path.join(dockerFolder, originalFileName);
+		fs.writeFileSync(tempFilePath, content);
+		return tempFilePath;
+	}
+
+	private saveDockerComposeFile(
 		tempFolder: string,
 		originalFilePath: string,
 		content: string
@@ -127,23 +162,38 @@ export class ContainersScannerService extends BaseScannerService {
 		return tempFilePath;
 	}
 
+	private getHelmRelativePath(originalFilePath: string): string {
+		const normalizedPath = originalFilePath.replace(/\\/g, "/");
+		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");
+
+		if (helmIndex !== -1) {
+			return normalizedPath.substring(helmIndex + 6);
+		} else {
+			return path.basename(originalFilePath);
+		}
+	}
+
 	private saveHelmFile(
 		tempFolder: string,
 		originalFilePath: string,
 		content: string
 	): string {
-		const helmFolder = path.join(tempFolder, "helm");
-		if (!fs.existsSync(helmFolder)) {
-			fs.mkdirSync(helmFolder, { recursive: true });
+		const hash = this.generateFileHash(originalFilePath);
+		const helmFolder = path.join(tempFolder, `helm-${hash}`);
+
+		const relativePath = this.getHelmRelativePath(originalFilePath);
+
+		const fullTargetPath = path.join(helmFolder, relativePath);
+		const targetDir = path.dirname(fullTargetPath);
+
+		if (!fs.existsSync(targetDir)) {
+			fs.mkdirSync(targetDir, { recursive: true });
 		}
 
-		const originalExt = path.extname(originalFilePath);
-		const baseName = path.basename(originalFilePath, originalExt);
-		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
-		const tempFilePath = path.join(helmFolder, tempFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
+		this.currentTempSubFolder = helmFolder;
+
+		fs.writeFileSync(fullTargetPath, content);
+		return fullTargetPath;
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
@@ -151,7 +201,9 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		const filePath = document.uri.fsPath;
+		// Use the method to take care of in DockerFiles 
+		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
+
 		logs.info("Scanning Containers in file: " + filePath);
 
 		const tempFolder = this.getTempSubFolderPath(document, constants.containersRealtimeScannerDirectory);
@@ -165,25 +217,51 @@ export class ContainersScannerService extends BaseScannerService {
 			const isYamlFile = constants.containersHelmExtensions.includes(fileExtension);
 
 			if (isYamlFile) {
-				tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
+				if (this.isDockerComposeFile(filePath)) {
+					tempFilePath = this.saveDockerComposeFile(tempFolder, filePath, document.getText());
+				} else {
+					tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
+				}
 			} else {
-				tempFilePath = this.saveFile(tempFolder, filePath, document.getText());
+				tempFilePath = this.saveDockerFile(tempFolder, filePath, document.getText());
 			}
 
 			const scanResults = await cx.scanContainers(tempFilePath);
 
+			this.currentTempFileNmae = tempFilePath ? path.basename(tempFilePath) : undefined;
 			this.updateProblems(scanResults, document.uri);
-			logs.info(`${scanResults.images?.length || 0} container images were scanned in ${filePath}`);
 		} catch (error) {
+			this.storeAndApplyResults(
+				filePath,
+				document.uri,
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[],
+				[]
+			)
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
+			this.currentTempFileNmae = undefined;
 			this.deleteTempFile(tempFilePath);
+			if (this.currentTempSubFolder) {
+				this.deleteTempFolder(this.currentTempSubFolder);
+			}
+			this.currentTempSubFolder = undefined;
 		}
 	}
 
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
-		const scanResults = problems as unknown as CxContainersResult;
+		const scanResults = problems as CxContainerRealtimeResult[];
 		const filePath = uri.fsPath;
 
 		const diagnostics: vscode.Diagnostic[] = [];
@@ -203,102 +281,106 @@ export class ContainersScannerService extends BaseScannerService {
 		const mediumIconDecorations: vscode.DecorationOptions[] = [];
 		const lowIconDecorations: vscode.DecorationOptions[] = [];
 
-		if (scanResults.images && Array.isArray(scanResults.images)) {
-			for (const image of scanResults.images) {
-				if (image.locations && Array.isArray(image.locations)) {
-					for (let i = 0; i < image.locations.length; i++) {
-						const location = image.locations[i];
-						const range = new vscode.Range(
-							new vscode.Position(location.line, location.startIndex),
-							new vscode.Position(location.line, location.endIndex)
-						);
-						const addDiagnostic = i === 0;
+		for (const image of scanResults) {
+			// Filter results because the containers scanner scans all the files in the folder
+			if (image.filepath && this.currentTempFileNmae && image.filepath !== this.currentTempFileNmae && image.filepath.replace(/\\/g, "/") !== this.getHelmRelativePath(uri.fsPath)) {
+				continue;
+			}
 
-						switch (image.status) {
-							case CxRealtimeEngineStatus.malicious:
-								this.handleProblemStatus(
-									diagnostics,
-									maliciousDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Malicious container image detected",
-									addDiagnostic,
-									maliciousIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.ok:
-								if (addDiagnostic) {
-									okDecorations.push({ range });
-								}
-								break;
-							case CxRealtimeEngineStatus.unknown:
-								unknownDecorations.push({ range });
-								break;
-							case CxRealtimeEngineStatus.critical:
-								this.handleProblemStatus(
-									diagnostics,
-									criticalDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Critical-risk container image",
-									addDiagnostic,
-									criticalIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.high:
-								this.handleProblemStatus(
-									diagnostics,
-									highDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"High-risk container image",
-									addDiagnostic,
-									highIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.medium:
-								this.handleProblemStatus(
-									diagnostics,
-									mediumDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Medium-risk container image",
-									addDiagnostic,
-									mediumIconDecorations
-								);
-								break;
-							case CxRealtimeEngineStatus.low:
-								this.handleProblemStatus(
-									diagnostics,
-									lowDecorations,
-									this.containersHoverData,
-									range,
-									uri,
-									image,
-									vscode.DiagnosticSeverity.Error,
-									"Low-risk container image",
-									addDiagnostic,
-									lowIconDecorations
-								);
-								break;
-							default:
-								continue;
-						}
+			if (image.locations && Array.isArray(image.locations)) {
+				for (let i = 0; i < image.locations.length; i++) {
+					const location = image.locations[i];
+					const range = new vscode.Range(
+						new vscode.Position(location.line, location.startIndex),
+						new vscode.Position(location.line, location.endIndex)
+					);
+					const addDiagnostic = i === 0;
+
+					switch (image.status) {
+						case CxRealtimeEngineStatus.malicious:
+							this.handleProblemStatus(
+								diagnostics,
+								maliciousDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Malicious container image detected",
+								addDiagnostic,
+								maliciousIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.ok:
+							if (addDiagnostic) {
+								okDecorations.push({ range });
+							}
+							break;
+						case CxRealtimeEngineStatus.unknown:
+							unknownDecorations.push({ range });
+							break;
+						case CxRealtimeEngineStatus.critical:
+							this.handleProblemStatus(
+								diagnostics,
+								criticalDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Critical-risk container image",
+								addDiagnostic,
+								criticalIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.high:
+							this.handleProblemStatus(
+								diagnostics,
+								highDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"High-risk container image",
+								addDiagnostic,
+								highIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.medium:
+							this.handleProblemStatus(
+								diagnostics,
+								mediumDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Medium-risk container image",
+								addDiagnostic,
+								mediumIconDecorations
+							);
+							break;
+						case CxRealtimeEngineStatus.low:
+							this.handleProblemStatus(
+								diagnostics,
+								lowDecorations,
+								this.containersHoverData,
+								range,
+								uri,
+								image,
+								vscode.DiagnosticSeverity.Error,
+								"Low-risk container image",
+								addDiagnostic,
+								lowIconDecorations
+							);
+							break;
+						default:
+							continue;
 					}
 				}
 			}
+
 		}
 
 		this.storeAndApplyResults(
@@ -369,15 +451,18 @@ export class ContainersScannerService extends BaseScannerService {
 		iconDecorations: vscode.DecorationOptions[]
 	): void {
 		decorations.push({ range });
-
+		const fileType = this.isDockerComposeFile(uri.fsPath)
+			? 'docker-compose'
+			: constants.containersHelmExtensions.includes(path.extname(uri.fsPath).toLowerCase())
+			? 'helm'
+			: 'dockerfile';
 		if (addDiagnostic) {
-			const vulnerabilityCount = result.vulnerabilities?.length || 0;
-			const diagnosticMessage = `${result.imageName}:${result.imageTag} - ${message} (${vulnerabilityCount} vulnerabilities)`;
+			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
 			const diagnostic = new vscode.Diagnostic(range, diagnosticMessage, severity);
 			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-				cxType: 'containers',
+				cxType: constants.containersRealtimeScannerEngineName,
 				item: {
 					imageName: result.imageName,
 					imageTag: result.imageTag,
@@ -387,7 +472,8 @@ export class ContainersScannerService extends BaseScannerService {
 						line: range.start.line,
 						startIndex: range.start.character,
 						endIndex: range.end.character
-					}
+					},
+					fileType
 				}
 			};
 			diagnostics.push(diagnostic);
@@ -405,7 +491,8 @@ export class ContainersScannerService extends BaseScannerService {
 				line: range.start.line,
 				startIndex: range.start.character,
 				endIndex: range.end.character
-			}
+			},
+			fileType: fileType
 		});
 	}
 
