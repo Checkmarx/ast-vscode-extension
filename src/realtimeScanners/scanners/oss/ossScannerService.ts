@@ -904,8 +904,7 @@ export class OssScannerService extends BaseScannerService {
 
       editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
     }
-    const hoverKey = `${filePath}:${line}`;
-    this.hoverMessages.delete(hoverKey);
+
   }
 
 }
