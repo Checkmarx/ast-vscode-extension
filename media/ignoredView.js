@@ -25,6 +25,13 @@ function updateRefreshButtonState(hasPackages) {
 }
 
 function revivePackage(packageKey) {
+  const reviveBtn = document.querySelector(
+    `button[onclick="revivePackage('${packageKey}')"]`
+  );
+  if (reviveBtn && reviveBtn.classList.contains("disabled")) {
+    return;
+  }
+
   vscode.postMessage({ command: "revive", packageKey: packageKey });
 }
 
@@ -108,8 +115,12 @@ function updateSelectionBar() {
     selectionCount.textContent = `${checkedBoxes.length} Risk${
       checkedBoxes.length === 1 ? "" : "s"
     } selected`;
+    // Disable individual revive buttons when selection bar is active
+    updateReviveButtonsState(true);
   } else {
     selectionBar.style.display = "none";
+    // Enable individual revive buttons when no selections
+    updateReviveButtonsState(false);
   }
 }
 
@@ -142,6 +153,54 @@ function getSelectedPackageKeys() {
   return Array.from(checkedBoxes).map((checkbox) =>
     checkbox.getAttribute("data-package-key")
   );
+}
+
+function updateReviveButtonsState(hasSelections) {
+  if (hasSelections) {
+    const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+    const selectedPackageKeys = Array.from(checkedBoxes).map((checkbox) =>
+      checkbox.getAttribute("data-package-key")
+    );
+
+    selectedPackageKeys.forEach((packageKey) => {
+      const reviveBtn = document.querySelector(
+        `button[onclick="revivePackage('${packageKey}')"]`
+      );
+      if (reviveBtn) {
+        reviveBtn.classList.add("disabled");
+        reviveBtn.setAttribute("disabled", "true");
+
+        const tooltip = reviveBtn.closest(".revive-btn-tooltip");
+        if (tooltip) {
+          const tooltipText = tooltip.querySelector(".tooltiptext");
+          if (tooltipText) {
+            tooltipText.setAttribute(
+              "data-original-text",
+              tooltipText.textContent
+            );
+            tooltipText.textContent =
+              'Use "Revive All" to revive selected vulnerabilities';
+          }
+        }
+      }
+    });
+  } else {
+    const allReviveButtons = document.querySelectorAll(".revive-btn");
+    allReviveButtons.forEach((btn) => {
+      btn.classList.remove("disabled");
+      btn.removeAttribute("disabled");
+
+      const tooltip = btn.closest(".revive-btn-tooltip");
+      if (tooltip) {
+        const tooltipText = tooltip.querySelector(".tooltiptext");
+        if (tooltipText && tooltipText.getAttribute("data-original-text")) {
+          tooltipText.textContent =
+            tooltipText.getAttribute("data-original-text");
+          tooltipText.removeAttribute("data-original-text");
+        }
+      }
+    });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initializeView);

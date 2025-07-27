@@ -386,6 +386,18 @@ body {
   outline-offset: 1px;
 }
 
+.revive-btn.disabled {
+  background: rgba(42, 42, 42, 0.3);
+  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.revive-btn.disabled .revive-icon {
+  opacity: 0.3;
+}
+
 .revive-icon {
   width: 16px;
   height: 16px;
