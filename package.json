@@ -531,24 +531,6 @@
         "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
-      },
-      {
-        "command": "cx.refreshIgnoreList",
-        "title": "Refresh",
-        "icon": "$(refresh)",
-        "category": "Checkmarx"
-      },
-      {
-        "command": "cx.openIgnoreFile",
-        "title": "Open Ignore File",
-        "icon": "$(edit)",
-        "category": "Checkmarx"
-      },
-      {
-        "command": "cx.removeIgnoredPackage",
-        "title": "Remove Package",
-        "icon": "$(trash)",
-        "category": "Checkmarx"
       }
     ],
     "submenus": [
@@ -662,11 +644,6 @@
           "command": "ast-results.scanInput",
           "group": "inline",
           "when": "viewItem == scan-item"
-        },
-        {
-          "command": "cx.removeIgnoredPackage",
-          "group": "inline",
-          "when": "viewItem == ignoredPackage"
         }
       ],
       "view/title": [
@@ -829,16 +806,6 @@
           "submenu": "ast-results.filterBy",
           "group": "navigation@6",
           "when": "view == astResults"
-        },
-        {
-          "command": "cx.refreshIgnoreList",
-          "group": "navigation@1",
-          "when": "view == ignoreOssView"
-        },
-        {
-          "command": "cx.openIgnoreFile",
-          "group": "navigation@2",
-          "when": "view == ignoreOssView"
         }
       ]
     },
@@ -863,11 +830,6 @@
           "id": "docAndFeedback",
           "type": "tree",
           "name": "Documentation & Feedback"
-        },
-        {
-          "id": "ignoreOssView",
-          "type": "tree",
-          "name": "Ignored OSS Packages"
         }
       ]
     },
@@ -943,11 +905,6 @@
               "type": "string",
               "default": ""
             }
-          },
-          "checkmarxOne.manageIgnoredOssResults": {
-            "type": "",
-            "order": 7,
-            "markdownDescription": "## [**Manage Ignored OSS Results**](command:workbench.view.extension.astView)"
           }
         }
       },
