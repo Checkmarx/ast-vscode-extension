@@ -658,7 +658,7 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async scanContainers(sourcePath: string): Promise<any[]> {
+  async scanContainers(sourcePath: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();

@@ -259,4 +259,12 @@ export class SecretsScannerService extends BaseScannerService {
 		this.documentOpenListener?.dispose();
 		this.editorChangeListener?.dispose();
 	}
+
+	getHoverData(): Map<string, any> {
+		return this.secretsHoverData;
+	}
+
+	getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
+		return this.diagnosticsMap;
+	}
 }

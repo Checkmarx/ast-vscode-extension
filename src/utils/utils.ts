@@ -285,6 +285,7 @@ export function buildCommandButtons(args: string, hasIgnoreAll: boolean): string
           <a href="command:${commands.IgnoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
     `;
 }
+
 export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }

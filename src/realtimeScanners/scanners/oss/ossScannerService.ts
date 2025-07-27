@@ -767,6 +767,14 @@ export class OssScannerService extends BaseScannerService {
     return `${baseName}-${hash}.tmp`;
   }
 
+  getHoverData(): Map<string, HoverData> {
+    return this.hoverMessages;
+  }
+
+  getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
+    return this.diagnosticsMap;
+  }
+  
   private updateIgnoredDecorationLine(filePath: string, oldLine: number, newLine: number): void {
     const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
 

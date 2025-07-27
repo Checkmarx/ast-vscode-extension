@@ -57,8 +57,14 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		const key = `${filePath}:${line}`;
 
 		const hoverData = scanner.getHoverData().get(key);
-		if (!hoverData) {
-			return undefined;
+
+		const diagnostics = scanner.getDiagnosticsMap().get(document.uri.fsPath) ?? [];
+		const hasDiagnostic = diagnostics.some(
+			(d) => d.range.start.line === position.line
+		);
+
+		if (!hoverData || !hasDiagnostic) {
+			return;
 		}
 
 		return this.createHoverContent(hoverData);
@@ -116,8 +122,12 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		].includes(status as any);
 	}
 
+	private renderMaliciousFinding(): string {
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
+	}
+
 	private renderMaliciousIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="10" height="11" style="vertical-align: -12px;"/>`;
 	}
 
 	private renderVulnCounts(vulnerabilities: Array<{ severity: string }>): string {

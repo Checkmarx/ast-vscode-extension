@@ -54,18 +54,20 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 	private getHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		scanner: any
+		scanner: SecretsScannerService
 	) {
 		const key = `${document.uri.fsPath}:${position.line}`;
-		const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
+		
+		const hoverData: SecretsHoverData = scanner.getHoverData().get(key);
+
+		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
 		const hasDiagnostic = diagnostics.some(
 			(d) => d.range.start.line === position.line
 		);
 
-		if (!hasDiagnostic) {
+		if (!hoverData || !hasDiagnostic) {
 			return;
 		}
-		const hoverData: SecretsHoverData = scanner.secretsHoverData.get(key);
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
