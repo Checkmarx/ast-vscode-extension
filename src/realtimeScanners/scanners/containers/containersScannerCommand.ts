@@ -76,28 +76,41 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const { vulnerabilities, ...hoverDataWithoutVuln } = hoverData;
 		const args = encodeURIComponent(JSON.stringify([hoverDataWithoutVuln]));
-		const buttons = buildCommandButtons(args);
+		const buttons = buildCommandButtons(args, true);
 		const isVulnerable = this.isVulnerableStatus(hoverData.status);
 		const isMalicious = hoverData.status === "Malicious";
 
-		if (isMalicious) {
-			md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
-			md.appendMarkdown(renderCxAiBadge() + "<br>");
-		} else if (isVulnerable) {
-			md.appendMarkdown(renderCxAiBadge() + "<br>");
-		}
-
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
-
+		md.appendMarkdown(renderCxAiBadge() + "<br>");
 		if (isVulnerable) {
-			md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+			md.appendMarkdown(this.renderImageIcon());
 		}
-
 		if (isMalicious) {
 			md.appendMarkdown(this.renderMaliciousIcon());
 		}
+		md.appendMarkdown(this.renderID(hoverData));
+		if (isVulnerable) {
+			md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+		}
+		md.appendMarkdown(`${buttons}<br>`);
 
 		return new vscode.Hover(md);
+	}
+
+	private renderID(hoverData: ContainersHoverData): string {
+		if (hoverData.status == CxRealtimeEngineStatus.malicious) {
+			return `
+<b>${hoverData.imageName}:${hoverData.imageTag}</b>
+<i style="color: dimgrey;"> - ${hoverData.status} image <br></i>
+`;
+		}
+		return `
+<b>${hoverData.imageName}:${hoverData.imageTag}</b>
+<i style="color: dimgrey;"> - ${hoverData.status} severity image <br></i>
+`;
+	}
+
+	private renderImageIcon(): string {
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/container_image.png" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
 	private isVulnerableStatus(status: string): boolean {
@@ -130,7 +143,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 			.filter(([_, count]) => count > 0)
 			.map(
 				([sev, count]) =>
-					`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
+					`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
 					}" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
 			);
 

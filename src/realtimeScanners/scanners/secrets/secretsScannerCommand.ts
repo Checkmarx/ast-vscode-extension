@@ -73,7 +73,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-		const buttons = buildCommandButtons(args);
+		const buttons = buildCommandButtons(args, false);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
@@ -86,7 +86,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 
 	private renderID(hoverData: SecretsHoverData): string {
 		return `
-<b>${hoverData.title}</b> 
+<b>${hoverData.title}</b>
 <i style="color: dimgrey;"> - Secret finding <br></i>
 `;
 	}
@@ -104,5 +104,9 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		await super.dispose();
 		(this.scannerService as SecretsScannerService).dispose();
 		this.hoverProviderDisposable?.dispose();
+	}
+
+	getScannerService(): SecretsScannerService {
+		return this.scannerService as SecretsScannerService;
 	}
 }

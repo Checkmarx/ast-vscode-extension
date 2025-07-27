@@ -10,6 +10,7 @@ import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
+import { createHash } from "crypto";
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -33,12 +34,12 @@ export class ContainersScannerService extends BaseScannerService {
 
 	private decorationTypes = {
 		malicious: this.createDecoration("malicious.svg"),
-		ok: this.createDecoration("circle-check.svg"),
-		unknown: this.createDecoration("question-mark.svg"),
-		critical: this.createDecoration("critical_untoggle.svg", "12px"),
-		high: this.createDecoration("high_untoggle.svg"),
-		medium: this.createDecoration("medium_untoggle.svg"),
-		low: this.createDecoration("low_untoggle.svg"),
+		ok: this.createDecoration("realtimeEngines/green_check.svg"),
+		unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
+		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+		high: this.createDecoration("realtimeEngines/high_severity.svg"),
+		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
+		low: this.createDecoration("realtimeEngines/low_severity.svg"),
 		underline: vscode.window.createTextEditorDecorationType({
 			textDecoration: "underline wavy #f14c4c",
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -123,6 +124,15 @@ export class ContainersScannerService extends BaseScannerService {
 		}
 
 		return false;
+	}
+
+	protected generateFileHash(input: string): string {
+		const now = new Date();
+		const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
+		return createHash("sha256")
+			.update(input + timeSuffix)
+			.digest("hex")
+			.substring(0, 16);
 	}
 
 	private createSubFolderAndSaveFile(

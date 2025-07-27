@@ -1,6 +1,50 @@
 # CHANGELOG
 
+## [v2.34.1-main-containers-ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-main-containers-ignore.0) - 2025-07-27 15:00:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Fix Oss prevent duplicate ignored icons during long edit by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1226
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-hotfix-duplicate-icons-ignored.0...v2.34.1-main-containers-ignore.0
+
+### Fix
+
+- oss:
+  - prevent duplicate ignored icons during long edit (#1226) ([b704b75](https://github.com/Checkmarx/ast-vscode-extension/commit/b704b75289efb6361469a283dfc4caa9f5396690)) ([#1226](https://github.com/Checkmarx/ast-vscode-extension/pull/1226))
+
+## [v2.34.1-hotfix-duplicate-icons-ignored.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-hotfix-duplicate-icons-ignored.0) - 2025-07-27 14:14:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-Ignore-secrets-oss.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Ignore-secrets-oss.0) - 2025-07-25 16:27:57
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-group_by_order_changed_bug_fixes.0...v2.34.1-Ignore-secrets-oss.0
+
+## [v2.34.1-group_by_order_changed_bug_fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed_bug_fixes.0) - 2025-07-24 13:19:27
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-container-and-cards.0...v2.34.1-group_by_order_changed_bug_fixes.0
+
 ## [v2.34.1-group_by_order_changed.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed.0) - 2025-07-24 06:59:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-containers.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-containers.0.0) - 2025-07-24 12:33:08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-container-and-cards.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-container-and-cards.0) - 2025-07-24 13:11:04
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
