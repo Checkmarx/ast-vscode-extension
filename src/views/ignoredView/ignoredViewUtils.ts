@@ -171,7 +171,7 @@ export function generateFileButtons(
 					<img src="${fileIconUri}" alt="File" class="file-icon" />
 					${fileName}
 				</button>
-				<span class="tooltiptext">Click to show in file</span>
+				<span class="tooltiptext">Click to show in ${file.path}</span>
 			</div>`;
 		})
 		.join('');
@@ -185,7 +185,7 @@ export function generateFileButtons(
 					<img src="${fileIconUri}" alt="File" class="file-icon" />
 					${fileName}
 				</button>
-				<span class="tooltiptext">Click to show in file</span>
+				<span class="tooltiptext">Click to show in ${file.path}</span>
 			</div>`;
 		})
 		.join('');
