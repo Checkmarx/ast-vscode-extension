@@ -115,11 +115,9 @@ function updateSelectionBar() {
     selectionCount.textContent = `${checkedBoxes.length} Risk${
       checkedBoxes.length === 1 ? "" : "s"
     } selected`;
-    // Disable individual revive buttons when selection bar is active
     updateReviveButtonsState(true);
   } else {
     selectionBar.style.display = "none";
-    // Enable individual revive buttons when no selections
     updateReviveButtonsState(false);
   }
 }
