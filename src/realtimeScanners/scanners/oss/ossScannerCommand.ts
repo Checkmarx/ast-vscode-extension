@@ -54,11 +54,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   private getHover(
     document: vscode.TextDocument,
     position: vscode.Position,
-    scanner: any
+    scanner: OssScannerService
   ) {
     const key = `${document.uri.fsPath}:${position.line}`;
-    const hoverData: HoverData = scanner.hoverMessages?.get(key);
-    const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
+    const hoverData: HoverData = scanner.getHoverData()?.get(key);
+    const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
     const hasDiagnostic = diagnostics.some(
       (d) => d.range.start.line === position.line
     );
@@ -116,8 +116,8 @@ export class OssScannerCommand extends BaseScannerCommand {
   private renderMaliciousIcon(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
-  
-  private renderPackageIcon() : string {
+
+  private renderPackageIcon(): string {
     return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 

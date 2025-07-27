@@ -148,7 +148,7 @@ export class SecretsScannerService extends BaseScannerService {
 				`Secrets have been detected:${problem.title}`,
 				severityMap[problem.severity]
 			);
-			diagnostic.source = constants.cxAi; 
+			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'secrets',
 				item: {
@@ -249,5 +249,13 @@ export class SecretsScannerService extends BaseScannerService {
 		editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
 		editor.setDecorations(this.decorationTypes.high, highDecorations);
 		editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
+	}
+
+	getHoverData(): Map<string, any> {
+		return this.secretsHoverData;
+	}
+
+	getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
+		return this.diagnosticsMap;
 	}
 }

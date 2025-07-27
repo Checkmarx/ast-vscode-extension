@@ -521,4 +521,12 @@ export class OssScannerService extends BaseScannerService {
     const hash = this.generateFileHash(relativePath);
     return `${baseName}-${hash}.tmp`;
   }
+
+  getHoverData(): Map<string, HoverData> {
+    return this.hoverMessages;
+  }
+
+  getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
+    return this.diagnosticsMap;
+  }
 }

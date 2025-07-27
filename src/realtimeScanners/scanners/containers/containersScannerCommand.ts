@@ -57,8 +57,14 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		const key = `${filePath}:${line}`;
 
 		const hoverData = scanner.getHoverData().get(key);
-		if (!hoverData) {
-			return undefined;
+
+		const diagnostics = scanner.getDiagnosticsMap().get(document.uri.fsPath) ?? [];
+		const hasDiagnostic = diagnostics.some(
+			(d) => d.range.start.line === position.line
+		);
+
+		if (!hoverData || !hasDiagnostic) {
+			return;
 		}
 
 		return this.createHoverContent(hoverData);
