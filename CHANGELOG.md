@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.34.1-hotfix-duplicate-icons-ignored.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-hotfix-duplicate-icons-ignored.0) - 2025-07-27 14:14:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Adds user event logging for telemetry data (AST-103478) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1204
+* Support ignore functionality in Oss and Secrets include ui by @cx-elchanan-arbiv in https://github.com/Checkmarx/ast-vscode-extension/pull/1200
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Ignore-secrets-oss.0...v2.34.1-hotfix-duplicate-icons-ignored.0
+
 ## [v2.34.1-Ignore-secrets-oss.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Ignore-secrets-oss.0) - 2025-07-25 16:27:57
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
