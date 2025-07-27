@@ -15,7 +15,7 @@ import {
     CONTAINERS_REMEDIATION_PROMPT,
     CONTAINERS_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
-import path from "path";
+import { cx } from "../cx";
 
 
 export class CopilotChatCommand {
@@ -118,12 +118,28 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
+    private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): void {
+        const isSecrets = isSecretsHoverData(item);
+        const engine = isSecrets ? constants.secretsScannerEngineName : constants.ossRealtimeScannerEngineName;
+        let problemSeverity: string | undefined;
+        if (isSecrets) {
+            problemSeverity = item.severity;
+        } else if (isAscaHoverData(item)) {
+            problemSeverity = item.severity;
+        } else {
+            problemSeverity = (item as HoverData | ContainersHoverData).status;
+        }
+        cx.setUserEventDataForLogs(EventType, subType, engine, problemSeverity);
+    }
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
+                this.logUserEvent("click", constants.openAIChat, item);
+
+                const isSecrets = isSecretsHoverData(item);
                 let question = '';
-                if (isSecretsHoverData(item)) {
+                if (isSecrets) {
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else if (isAscaHoverData(item)) {
                     question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
@@ -142,9 +158,12 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
+                this.logUserEvent("click", constants.viewDetails, item);
+
+                const isSecrets = isSecretsHoverData(item);
                 let question = '';
 
-                if (isSecretsHoverData(item)) {
+                if (isSecrets) {
                     question = SECRETS_EXPLANATION_PROMPT(item.title, item.description, item.severity);
                 } else if (isAscaHoverData(item)) {
                     question = ASCA_EXPLANATION_PROMPT(item.ruleName, item.description, item.severity);
