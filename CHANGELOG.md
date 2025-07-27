@@ -4,17 +4,16 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
+## [v2.34.1-ignoeAndContainers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ignoeAndContainers.0) - 2025-07-27 20:10:42
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## What's Changed
 ### Other Changes
-* Fix Oss prevent duplicate ignored icons during long edit by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1226
+* Fix in Containers Realtime Scanner by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1225
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-hotfix-duplicate-icons-ignored.0...v2.34.1-main-containers-ignore.0
-
-### Fix
-
-- oss:
-  - prevent duplicate ignored icons during long edit (#1226) ([b704b75](https://github.com/Checkmarx/ast-vscode-extension/commit/b704b75289efb6361469a283dfc4caa9f5396690)) ([#1226](https://github.com/Checkmarx/ast-vscode-extension/pull/1226))
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-main-containers-ignore.0...v2.34.1-ignoeAndContainers.0
 
 ## [v2.34.1-hotfix-duplicate-icons-ignored.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-hotfix-duplicate-icons-ignored.0) - 2025-07-27 14:14:31
 
