@@ -121,8 +121,8 @@ export const commands = {
   openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`,
   openAIChat: `${constants.extensionName}.${constants.openAIChat}`,
   viewDetails: `${constants.extensionName}.${constants.viewDetails}`,
-  ignorePackage: `${constants.extensionName}.ignorePackage`,
-  IgnoreAll: `${constants.extensionName}.ignoreAll`,
+  ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
+  ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
 
 };

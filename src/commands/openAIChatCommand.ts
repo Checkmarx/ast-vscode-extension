@@ -195,6 +195,8 @@ export class CopilotChatCommand {
 
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData) => {
+                this.logUserEvent("click", constants.ignorePackage, item);
+
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     if (!workspaceFolder) {
@@ -255,7 +257,8 @@ export class CopilotChatCommand {
 
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.IgnoreAll, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData) => {
+                this.logUserEvent("click", constants.ignoreAll, item);
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
