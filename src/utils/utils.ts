@@ -282,7 +282,7 @@ export function buildCommandButtons(args: string, hasIgnoreAll: boolean): string
   return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
           <a href="command:${commands.ignorePackage}?${args}">Ignore this vulnerability</a> &emsp;
-          <a href="command:${commands.IgnoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
+          <a href="command:${commands.ignoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
     `;
 }
 
