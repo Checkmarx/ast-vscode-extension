@@ -3,18 +3,33 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { Logs } from "../../models/logs";
-import { IScannerService, IScannerConfig } from "./types";
+import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
 
 export abstract class BaseScannerService implements IScannerService {
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
 
+  private static diagnosticCollections = new Map<string, vscode.DiagnosticCollection>();
+  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData>>();
+
   constructor(config: IScannerConfig) {
     this.config = config;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection(
       config.engineName
     );
+
+    BaseScannerService.diagnosticCollections.set(config.engineName, this.diagnosticCollection);
+  }
+
+  protected getOtherScannerCollection(engineName: string): vscode.DiagnosticCollection | undefined {
+    return BaseScannerService.diagnosticCollections.get(engineName);
+  }
+  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData>): void {
+    BaseScannerService.hoverDataMaps.set(this.config.engineName, hoverDataMap);
+  }
+  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData> | undefined {
+    return BaseScannerService.hoverDataMaps.get(engineName);
   }
 
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
@@ -70,7 +85,7 @@ export abstract class BaseScannerService implements IScannerService {
 
   protected generateFileHash(input: string): string {
     return createHash("sha256")
-      .update(input )
+      .update(input)
       .digest("hex")
       .substring(0, 16);
   }
