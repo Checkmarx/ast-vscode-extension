@@ -56,6 +56,8 @@ export class AscaScannerService extends BaseScannerService {
 			errorMessage: constants.errorAscaScanRealtime
 		};
 		super(config);
+
+		this.registerHoverDataMap(this.ascaHoverData);
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -120,6 +122,21 @@ export class AscaScannerService extends BaseScannerService {
 		}
 	}
 
+	private hasSecretsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
+		const secretsCollection = this.getOtherScannerCollection(constants.secretsScannerEngineName);
+		if (secretsCollection) {
+			const secretsDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				return diagnosticData?.cxType === constants.secretsScannerEngineName;
+			});
+
+			if (secretsDiagnostics.some(diagnostic => diagnostic.range.start.line === lineNumber)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const scanResults = problems as unknown as CxAsca;
 		const filePath = uri.fsPath;
@@ -133,6 +150,10 @@ export class AscaScannerService extends BaseScannerService {
 		const lowDecorations: vscode.DecorationOptions[] = [];
 
 		for (const result of scanResults.scanDetails) {
+			if (this.hasSecretsAtLine(uri, result.line - 1)) {
+				continue;
+			}
+
 			const problemText = result.problematicLine;
 			const startIndex = problemText.length - problemText.trimStart().length;
 
