@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [v2.34.1-main-containers-ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-main-containers-ignore.0) - 2025-07-27 15:00:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-ignoeAndContainers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ignoeAndContainers.0) - 2025-07-27 20:10:42
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Fix in Containers Realtime Scanner by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1225
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-main-containers-ignore.0...v2.34.1-ignoeAndContainers.0
+
+## [v2.34.1-hotfix-duplicate-icons-ignored.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-hotfix-duplicate-icons-ignored.0) - 2025-07-27 14:14:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-Ignore-secrets-oss.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Ignore-secrets-oss.0) - 2025-07-25 16:27:57
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-group_by_order_changed_bug_fixes.0...v2.34.1-Ignore-secrets-oss.0
+
 ## [v2.34.1-group_by_order_changed_bug_fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-group_by_order_changed_bug_fixes.0) - 2025-07-24 13:19:27
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

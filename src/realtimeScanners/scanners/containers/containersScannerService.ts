@@ -10,6 +10,7 @@ import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
+import { createHash } from "crypto";
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -27,9 +28,6 @@ export class ContainersScannerService extends BaseScannerService {
 	private highIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-
-	private currentTempFileNmae: string | undefined;
-	private currentTempSubFolder: string | undefined;
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -128,11 +126,20 @@ export class ContainersScannerService extends BaseScannerService {
 		return false;
 	}
 
-	private saveDockerFile(
+	protected generateFileHash(input: string): string {
+		const now = new Date();
+		const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
+		return createHash("sha256")
+			.update(input + timeSuffix)
+			.digest("hex")
+			.substring(0, 16);
+	}
+
+	private createSubFolderAndSaveFile(
 		tempFolder: string,
 		originalFilePath: string,
 		content: string
-	): string {
+	): { tempFilePath: string; tempSubFolder: string } {
 		const originalFileName = path.basename(originalFilePath);
 
 		const hash = this.generateFileHash(originalFilePath);
@@ -141,25 +148,9 @@ export class ContainersScannerService extends BaseScannerService {
 			fs.mkdirSync(dockerFolder, { recursive: true });
 		}
 
-		this.currentTempSubFolder = dockerFolder;
-
 		const tempFilePath = path.join(dockerFolder, originalFileName);
 		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
-	}
-
-	private saveDockerComposeFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): string {
-		const originalExt = path.extname(originalFilePath);
-		const baseName = path.basename(originalFilePath, originalExt);
-		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
-		const tempFilePath = path.join(tempFolder, tempFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
+		return { tempFilePath, tempSubFolder: dockerFolder };
 	}
 
 	private getHelmRelativePath(originalFilePath: string): string {
@@ -177,7 +168,7 @@ export class ContainersScannerService extends BaseScannerService {
 		tempFolder: string,
 		originalFilePath: string,
 		content: string
-	): string {
+	): { tempFilePath: string; tempSubFolder: string } {
 		const hash = this.generateFileHash(originalFilePath);
 		const helmFolder = path.join(tempFolder, `helm-${hash}`);
 
@@ -190,10 +181,8 @@ export class ContainersScannerService extends BaseScannerService {
 			fs.mkdirSync(targetDir, { recursive: true });
 		}
 
-		this.currentTempSubFolder = helmFolder;
-
 		fs.writeFileSync(fullTargetPath, content);
-		return fullTargetPath;
+		return { tempFilePath: fullTargetPath, tempSubFolder: helmFolder };
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
@@ -209,6 +198,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const tempFolder = this.getTempSubFolderPath(document, constants.containersRealtimeScannerDirectory);
 
 		let tempFilePath: string | undefined;
+		let tempSubFolder: string | undefined;
 
 		try {
 			this.createTempFolder(tempFolder);
@@ -216,19 +206,19 @@ export class ContainersScannerService extends BaseScannerService {
 			const fileExtension = path.extname(filePath).toLowerCase();
 			const isYamlFile = constants.containersHelmExtensions.includes(fileExtension);
 
-			if (isYamlFile) {
-				if (this.isDockerComposeFile(filePath)) {
-					tempFilePath = this.saveDockerComposeFile(tempFolder, filePath, document.getText());
-				} else {
-					tempFilePath = this.saveHelmFile(tempFolder, filePath, document.getText());
-				}
+			let saveResult: { tempFilePath: string; tempSubFolder: string };
+
+			if (isYamlFile && !this.isDockerComposeFile(filePath)) {
+				saveResult = this.saveHelmFile(tempFolder, filePath, document.getText());
 			} else {
-				tempFilePath = this.saveDockerFile(tempFolder, filePath, document.getText());
+				saveResult = this.createSubFolderAndSaveFile(tempFolder, filePath, document.getText());
 			}
+
+			tempFilePath = saveResult.tempFilePath;
+			tempSubFolder = saveResult.tempSubFolder;
 
 			const scanResults = await cx.scanContainers(tempFilePath);
 
-			this.currentTempFileNmae = tempFilePath ? path.basename(tempFilePath) : undefined;
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
 			this.storeAndApplyResults(
@@ -251,12 +241,9 @@ export class ContainersScannerService extends BaseScannerService {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
-			this.currentTempFileNmae = undefined;
-			this.deleteTempFile(tempFilePath);
-			if (this.currentTempSubFolder) {
-				this.deleteTempFolder(this.currentTempSubFolder);
+			if (tempSubFolder) {
+				this.deleteTempFolder(tempSubFolder);
 			}
-			this.currentTempSubFolder = undefined;
 		}
 	}
 
@@ -282,11 +269,6 @@ export class ContainersScannerService extends BaseScannerService {
 		const lowIconDecorations: vscode.DecorationOptions[] = [];
 
 		for (const image of scanResults) {
-			// Filter results because the containers scanner scans all the files in the folder
-			if (image.filepath && this.currentTempFileNmae && image.filepath !== this.currentTempFileNmae && image.filepath.replace(/\\/g, "/") !== this.getHelmRelativePath(uri.fsPath)) {
-				continue;
-			}
-
 			if (image.locations && Array.isArray(image.locations)) {
 				for (let i = 0; i < image.locations.length; i++) {
 					const location = image.locations[i];
@@ -454,8 +436,8 @@ export class ContainersScannerService extends BaseScannerService {
 		const fileType = this.isDockerComposeFile(uri.fsPath)
 			? 'docker-compose'
 			: constants.containersHelmExtensions.includes(path.extname(uri.fsPath).toLowerCase())
-			? 'helm'
-			: 'dockerfile';
+				? 'helm'
+				: 'dockerfile';
 		if (addDiagnostic) {
 			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
