@@ -12,7 +12,9 @@ export interface IgnoreEntry {
 		path: string;
 		active: boolean;
 		line?: number;
+
 	}>;
+	secretValue?: string;
 	type: string;
 	PackageManager?: string;
 	PackageName: string;
@@ -484,10 +486,11 @@ export class IgnoreFileManager {
 		severity?: string;
 		description?: string;
 		dateAdded?: string;
+		secretValue?: string;
 	}): void {
 		const countBefore = this.getIgnoredPackagesCount();
 
-		const packageKey = `${entry.title}:${entry.line || 0}`;
+		const packageKey = `${entry.title}:${entry.secretValue || 0}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
@@ -497,7 +500,8 @@ export class IgnoreFileManager {
 				PackageName: entry.title,
 				severity: entry.severity,
 				description: entry.description,
-				dateAdded: entry.dateAdded
+				dateAdded: entry.dateAdded,
+				secretValue: entry.secretValue
 			};
 		} else {
 			if (entry.severity !== undefined) {
@@ -548,7 +552,7 @@ export class IgnoreFileManager {
 						return {
 							Title: entry.PackageName,
 							FilePath: scannedTempPath,
-							Line: file.line - 1
+							SecretValue: entry.secretValue
 						};
 					} else {
 						return {
