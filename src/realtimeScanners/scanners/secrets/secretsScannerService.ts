@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
-import { IScannerConfig, CxDiagnosticData } from "../../common/types";
+import { IScannerConfig, CxDiagnosticData, SecretsHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 import { minimatch } from "minimatch";
@@ -21,7 +21,7 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
-	public secretsHoverData: Map<string, any> = new Map();
+	public secretsHoverData: Map<string, SecretsHoverData> = new Map();
 
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
 		return vscode.window.createTextEditorDecorationType({
@@ -50,6 +50,8 @@ export class SecretsScannerService extends BaseScannerService {
 			errorMessage: constants.errorSecretsScanRealtime,
 		};
 		super(config);
+
+		this.registerHoverDataMap(this.secretsHoverData);
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -138,6 +140,29 @@ export class SecretsScannerService extends BaseScannerService {
 		}
 	}
 
+	private removeAscaDiagnosticsAtLine(uri: vscode.Uri, lineNumber: number): void {
+		const ascaCollection = this.getOtherScannerCollection(constants.ascaRealtimeScannerEngineName);
+		if (!ascaCollection) { return; }
+
+		const ascaDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+			const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+			return diagnosticData?.cxType === 'asca';
+		});
+
+		const filteredDiagnostics = ascaDiagnostics.filter(diagnostic =>
+			diagnostic.range.start.line !== lineNumber
+		);
+		ascaCollection.set(uri, filteredDiagnostics);
+	}
+
+	private removeAscaHoverDataAtLine(filePath: string, lineNumber: number): void {
+		const ascaHoverData = this.getOtherScannerHoverData(constants.ascaRealtimeScannerEngineName);
+		if (!ascaHoverData) { return; } 
+
+		const key = `${filePath}:${lineNumber}`;
+		ascaHoverData.delete(key);
+	}
+
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const secretsProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
@@ -149,6 +174,10 @@ export class SecretsScannerService extends BaseScannerService {
 		for (const problem of secretsProblems) {
 			if (problem.locations.length === 0) { continue; }
 			const location = problem.locations[0];
+
+			this.removeAscaDiagnosticsAtLine(uri, location.line);
+			this.removeAscaHoverDataAtLine(filePath, location.line);
+
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),
 				new vscode.Position(location.line, location.endIndex)
