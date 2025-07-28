@@ -157,7 +157,7 @@ export const constants = {
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
   ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
   ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
-  ascaRealtimeScannerEngineName: "AscaRealtimeScanner",
+  ascaRealtimeScannerEngineName: "Asca",
   ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
   errorAscaInstallation: "Failed to run ASCA engine",
   errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
