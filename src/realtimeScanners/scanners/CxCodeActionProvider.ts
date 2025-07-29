@@ -50,8 +50,8 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				title: explainAction.title,
 				arguments: [item]
 			};
-			const ignoreVulnerbility = "Ignore this vulnerability";
-			const ignoreAction = new vscode.CodeAction(ignoreVulnerbility, vscode.CodeActionKind.QuickFix);
+			const ignoreVulnerability = "Ignore this vulnerability";
+			const ignoreAction = new vscode.CodeAction(ignoreVulnerability, vscode.CodeActionKind.QuickFix);
 			ignoreAction.command = {
 				command: commands.ignorePackage,
 				title: ignoreAction.title,
@@ -61,8 +61,8 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			const actionList = [fixAction, explainAction, ignoreAction];
 
 			if (this.isEligibleForIgnoreAll(item)) {
-				const ignoreAllVulnerbility = "Ignore all of this type";
-				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerbility, vscode.CodeActionKind.QuickFix);
+				const ignoreAllVulnerability = "Ignore all of this type";
+				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerability, vscode.CodeActionKind.QuickFix);
 				ignoreAllAction.command = {
 					command: commands.IgnoreAll,
 					title: ignoreAllAction.title,
