@@ -13,7 +13,7 @@ import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/m
 
 export class SCAResultsProvider extends ResultsProvider {
   public process;
-  public issueFilter: GroupBy[] = [GroupBy.severity, GroupBy.packageIdentifier];
+  public issueFilter: GroupBy[] = [GroupBy.severity, GroupBy.queryName];
   private scan: string | undefined;
   public scaResults: CxResult[];
   private message: string | undefined;
@@ -21,7 +21,7 @@ export class SCAResultsProvider extends ResultsProvider {
   public activeGroupBy: GroupBy[] = [
     GroupBy.fileName,
     GroupBy.severity,
-    GroupBy.packageIdentifier,
+    GroupBy.queryName,
   ];
   constructor(
     protected readonly context: vscode.ExtensionContext,
