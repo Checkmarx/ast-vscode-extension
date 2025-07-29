@@ -85,7 +85,7 @@ describe.skip("Using a local branch if Git exists", () => {
 		let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + constants.localBranch);
 		expect(project, `Should select ${projectName}`).is.not.undefined;
-		expect(branch, `Sould display ${constants.localBranch}`).is.not.undefined;
+		expect(branch, `Should display ${constants.localBranch}`).is.not.undefined;
 	}, 3));
 
 
