@@ -688,6 +688,22 @@ export class Cx implements CxPlatform {
       throw new Error(scans.status);
     }
   }
+
+  async iacScanResults(sourcePath: string, dockerProvider: string): Promise<any[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+
+    const cx = new CxWrapper(config);
+    const scans = await cx.iacRealtimeScanResults(sourcePath, dockerProvider);
+
+      if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
   async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
@@ -740,7 +756,7 @@ export class Cx implements CxPlatform {
     return r;
   }
 
-  async setUserEventDataForLogs(eventType: string, subType:string, engine: string, problemSeverity: string) {
+  async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
     const aiProvider = isCursorIDE() ? "Cursor" : "Copilot";

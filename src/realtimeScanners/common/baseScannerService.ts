@@ -89,4 +89,19 @@ export abstract class BaseScannerService implements IScannerService {
       .digest("hex")
       .substring(0, 16);
   }
+
+  async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+    const dirPath = path.dirname(uri.fsPath);
+    const dirUri = vscode.Uri.file(dirPath);
+    const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+    const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+    for (const [entryName, _type] of entries) {
+      if (entryName.toLowerCase() === fileNameLower) {
+        return path.join(dirPath, entryName);
+      }
+    }
+    return undefined;
+  }
 }

@@ -75,13 +75,28 @@ export interface ContainersHoverData {
   fileType: string;
 }
 
+export interface IacHoverData {
+  similarityId: string;
+  title: string;
+  description: string;
+  severity: string;
+  filePath: string;
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+  fileType: string;
+}
+
 const scannerEngineNames = {
   oss: constants.ossRealtimeScannerEngineName,
   secrets: constants.secretsScannerEngineName,
   asca: constants.ascaRealtimeScannerEngineName,
-  containers: constants.containersRealtimeScannerEngineName
+  containers: constants.containersRealtimeScannerEngineName,
+  iac: constants.iacRealtimeScannerEngineName
 } as const;
 export interface CxDiagnosticData {
   cxType: typeof scannerEngineNames[keyof typeof scannerEngineNames];
-  item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
+  item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData;
 }
