@@ -111,12 +111,12 @@ export class IacScannerService extends BaseScannerService {
 		return { tempFilePath, tempSubFolder: iacFolder };
 	}
 
-	private getDockerProvider(): string {
-		const dockerProvider = vscode.workspace
+	private getContainersManagementTool(): string {
+		const containersManagementTool = vscode.workspace
 			.getConfiguration(this.config.configSection)
-			.get("Docker Provider") as string;
+			.get("Containers Management Tool") as string;
 
-		return dockerProvider;
+		return containersManagementTool;
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
@@ -127,7 +127,7 @@ export class IacScannerService extends BaseScannerService {
 		// Use the method to take care of in DockerFiles 
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
-		logs. info("Scanning IaC in file: " + filePath);
+		logs.info("Scanning IaC in file: " + filePath);
 
 		const tempFolder = this.getTempSubFolderPath(document, constants.iacRealtimeScannerDirectory);
 
@@ -141,8 +141,8 @@ export class IacScannerService extends BaseScannerService {
 			tempFilePath = saveResult.tempFilePath;
 			tempSubFolder = saveResult.tempSubFolder;
 
-			const dockerProvider = this.getDockerProvider();
-			const scanResults = await cx.iacScanResults(tempFilePath, dockerProvider);
+			const containersManagementTool = this.getContainersManagementTool();
+			const scanResults = await cx.iacScanResults(tempFilePath, containersManagementTool);
 
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
@@ -181,64 +181,62 @@ export class IacScannerService extends BaseScannerService {
 		const lowDecorations: vscode.DecorationOptions[] = [];
 
 		for (const result of scanResults) {
-			if (result.locations && Array.isArray(result.locations) && result.locations.length > 0) {//remove it
-				const location = result.locations[0];
-				const range = new vscode.Range(
-					new vscode.Position(location.line, location.startIndex),
-					new vscode.Position(location.line, location.endIndex)
-				);
+			const location = result.locations[0];
+			const range = new vscode.Range(
+				new vscode.Position(location.line, location.startIndex),
+				new vscode.Position(location.line, location.endIndex)
+			);
 
-				// Store hover data
-				const fileExtension = path.extname(uri.fsPath).toLowerCase();
-				const fileType = constants.iacSupportedPatterns.some(pattern =>
-					minimatch(uri.fsPath.replace(/\\/g, "/"), pattern, { nocase: true })
-				) ? 'dockerfile' : fileExtension.substring(1);
+			// Store hover data
+			const fileExtension = path.extname(uri.fsPath).toLowerCase();
+			const fileType = constants.iacSupportedPatterns.some(pattern =>
+				minimatch(uri.fsPath.replace(/\\/g, "/"), pattern, { nocase: true })
+			) ? 'dockerfile' : fileExtension.substring(1);
 
-				const key = `${uri.fsPath}:${range.start.line}`;
-				this.iacHoverData.set(key, {
+			const key = `${uri.fsPath}:${range.start.line}`;
+			this.iacHoverData.set(key, {
+				similarityId: result.similarityID,
+				title: result.title,
+				description: result.description,
+				severity: result.severity,
+				filePath: result.filepath,
+				location,
+				fileType: fileType
+			});
+
+			const diagnostic = new vscode.Diagnostic(range, `${result.title}`, vscode.DiagnosticSeverity.Error);
+			diagnostic.source = constants.cxAi;
+			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
+				cxType: constants.iacRealtimeScannerEngineName,
+				item: {
 					similarityId: result.similarityID,
 					title: result.title,
 					description: result.description,
 					severity: result.severity,
 					filePath: result.filepath,
 					location,
-					fileType: fileType
-				});
-
-				const diagnostic = new vscode.Diagnostic(range, `${result.title}`, vscode.DiagnosticSeverity.Error);
-				diagnostic.source = constants.cxAi;
-				(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
-					cxType: constants.iacRealtimeScannerEngineName,
-					item: {
-						similarityId: result.similarityID,
-						title: result.title,
-						description: result.description,
-						severity: result.severity,
-						filePath: result.filepath,
-						location,
-						fileType
-					}
-				};
-
-				diagnostics.push(diagnostic);
-
-				const decoration = { range };
-				switch (result.severity) {
-					case CxRealtimeEngineStatus.critical:
-						criticalDecorations.push(decoration);
-						break;
-					case CxRealtimeEngineStatus.high:
-						highDecorations.push(decoration);
-						break;
-					case CxRealtimeEngineStatus.medium:
-						mediumDecorations.push(decoration);
-						break;
-					case CxRealtimeEngineStatus.low:
-						lowDecorations.push(decoration);
-						break;
-					default:
-						break;
+					fileType
 				}
+			};
+
+			diagnostics.push(diagnostic);
+
+			const decoration = { range };
+			switch (result.severity) {
+				case CxRealtimeEngineStatus.critical:
+					criticalDecorations.push(decoration);
+					break;
+				case CxRealtimeEngineStatus.high:
+					highDecorations.push(decoration);
+					break;
+				case CxRealtimeEngineStatus.medium:
+					mediumDecorations.push(decoration);
+					break;
+				case CxRealtimeEngineStatus.low:
+					lowDecorations.push(decoration);
+					break;
+				default:
+					break;
 			}
 		}
 

@@ -884,17 +884,17 @@
             "default": false,
             "markdownDescription": "Scans your Docker files and container configurations as you code"
           },
-          "Checkmarx IaC Realtime Scanner.Activate IaC Realtime": {
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
             "type": "boolean",
             "order": 5,
             "default": false,
             "markdownDescription": "Scans your Infrastructure as Code files as you code"
           },
-          "Checkmarx IaC Realtime Scanner.Docker Provider": {
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
             "type": "string",
             "order": 6,
-            "description": "Docker Provider for IaC Scanner",
-            "markdownDescription": "Select the Docker provider to use for IaC scanning.",
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
             "enum": [
               "docker",
               "podman"

@@ -190,8 +190,8 @@ export const constants = {
   errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
 
   // IaC Scanner
-  activateIacRealtimeScanner: "Activate IaC Realtime",
-  iacRealtimeScanner: "Checkmarx IaC Realtime Scanner",
+  activateIacRealtimeScanner: "Activate IAC Realtime",
+  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
   iacRealtimeScannerStart: "IaC Realtime Scanner Engine started",
   iacRealtimeScannerDisabled: "IaC Realtime Scanner Engine disabled",
   iacRealtimeScannerEngineName: "IaC",

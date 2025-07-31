@@ -689,14 +689,14 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async iacScanResults(sourcePath: string, dockerProvider: string): Promise<any[]> {
+  async iacScanResults(sourcePath: string, containersManagementTool: string): Promise<any[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
 
     const cx = new CxWrapper(config);
-    const scans = await cx.iacRealtimeScanResults(sourcePath, dockerProvider);
+    const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool);
 
       if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
