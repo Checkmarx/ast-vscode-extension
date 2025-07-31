@@ -39,6 +39,7 @@ export interface SecretsHoverData {
   title?: string;
   description: string;
   severity: string;
+  secretValue: string;
   location?: {
     line: number;
     startIndex: number;

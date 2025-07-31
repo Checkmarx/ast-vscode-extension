@@ -490,7 +490,7 @@ export class IgnoreFileManager {
 	}): void {
 		const countBefore = this.getIgnoredPackagesCount();
 
-		const packageKey = `${entry.title}:${entry.secretValue || 0}`;
+		const packageKey = `${entry.title}:${entry.secretValue}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
@@ -512,16 +512,17 @@ export class IgnoreFileManager {
 			}
 		}
 
-		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath && f.line === entry.line);
+		const existing = this.ignoreData[packageKey].files.find(f =>
+			f.path === relativePath
+		);
+
 		if (!existing) {
 			this.ignoreData[packageKey].files.push({
 				path: relativePath,
-				active: true,
-				line: entry.line
+				active: true
 			});
 		} else {
 			existing.active = true;
-			existing.line = entry.line;
 		}
 
 		this.saveIgnoreFile();

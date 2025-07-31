@@ -123,6 +123,7 @@ export class SecretsScannerService extends BaseScannerService {
 						title: entry.PackageName,
 						description: entry.description,
 						severity: entry.severity,
+						secretValue: entry.secretValue,
 						filePath,
 						location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
 					});
@@ -157,7 +158,7 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private removeAscaHoverDataAtLine(filePath: string, lineNumber: number): void {
 		const ascaHoverData = this.getOtherScannerHoverData(constants.ascaRealtimeScannerEngineName);
-		if (!ascaHoverData) { return; } 
+		if (!ascaHoverData) { return; }
 
 		const key = `${filePath}:${lineNumber}`;
 		ascaHoverData.delete(key);
@@ -187,6 +188,7 @@ export class SecretsScannerService extends BaseScannerService {
 				title: problem.title,
 				description: problem.description,
 				severity: problem.severity,
+				secretValue: problem.secretValue,
 				location,
 				filePath
 			});
@@ -205,6 +207,7 @@ export class SecretsScannerService extends BaseScannerService {
 					title: problem.title,
 					description: problem.description,
 					severity: problem.severity,
+					secretValue: problem.secretValue,
 					location,
 					filePath
 				}
