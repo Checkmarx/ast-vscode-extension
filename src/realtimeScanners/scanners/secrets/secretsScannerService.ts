@@ -104,30 +104,44 @@ export class SecretsScannerService extends BaseScannerService {
 			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 			const ignoredDecorations: vscode.DecorationOptions[] = [];
 
+			const secretLocations = new Map<string, number[]>();
+			fullScanResults.forEach(result => {
+				if (result.secretValue) {
+					const key = `${result.title}:${result.secretValue}`;
+					const lines = secretLocations.get(key) || [];
+					result.locations.forEach(loc => lines.push(loc.line));
+					secretLocations.set(key, lines);
+				}
+			});
+
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }
 				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
-				if (!fileEntry || fileEntry.line === undefined) { return; }
+				if (!fileEntry) { return; }
 
-				const adjustedLine = Math.max(0, fileEntry.line - 1);
+				const key = `${entry.PackageName}:${entry.secretValue}`;
+				const lines = secretLocations.get(key) || [];
 
-				const range = new vscode.Range(
-					new vscode.Position(adjustedLine, 0),
-					new vscode.Position(adjustedLine, 1000)
-				);
-				ignoredDecorations.push({ range });
+				lines.forEach(line => {
+					const adjustedLine = Math.max(0, line);
+					const range = new vscode.Range(
+						new vscode.Position(adjustedLine, 0),
+						new vscode.Position(adjustedLine, 1000)
+					);
+					ignoredDecorations.push({ range });
 
-				const hoverKey = `${filePath}:${adjustedLine}`;
-				if (!this.secretsHoverData.has(hoverKey)) {
-					this.secretsHoverData.set(hoverKey, {
-						title: entry.PackageName,
-						description: entry.description,
-						severity: entry.severity,
-						secretValue: entry.secretValue,
-						filePath,
-						location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
-					});
-				}
+					const hoverKey = `${filePath}:${adjustedLine}`;
+					if (!this.secretsHoverData.has(hoverKey)) {
+						this.secretsHoverData.set(hoverKey, {
+							title: entry.PackageName,
+							description: entry.description,
+							severity: entry.severity,
+							secretValue: entry.secretValue,
+							filePath,
+							location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
+						});
+					}
+				});
 			});
 
 			this.ignoredDecorations.set(filePath, ignoredDecorations);
