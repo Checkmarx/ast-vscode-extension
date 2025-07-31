@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
-import { IScannerConfig, CxDiagnosticData, IacHoverData } from "../../common/types";
+import { IScannerConfig, CxDiagnosticData, IacHoverData, ContainersHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
@@ -15,9 +15,7 @@ import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper
 
 export class IacScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
-	private iacHoverData = new Map<string, IacHoverData>();
-	private okDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private unknownDecorationsMap = new Map<string, vscode.DecorationOptions[]>();//
+	private iacHoverData = new Map<string, IacHoverData[]>();
 	private criticalDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private highDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private mediumDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
@@ -27,8 +25,6 @@ export class IacScannerService extends BaseScannerService {
 	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
-		ok: this.createDecoration("realtimeEngines/green_check.svg"),
-		unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
@@ -124,6 +120,14 @@ export class IacScannerService extends BaseScannerService {
 			return;
 		}
 
+		const keysToDelete: string[] = [];
+		for (const key of this.iacHoverData.keys()) {
+			if (key.startsWith(`${document.uri.fsPath}:`)) {
+				keysToDelete.push(key);
+			}
+		}
+		keysToDelete.forEach(key => this.iacHoverData.delete(key));
+
 		// Use the method to take care of in DockerFiles 
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
@@ -153,8 +157,6 @@ export class IacScannerService extends BaseScannerService {
 				[],
 				[],
 				[],
-				[],
-				[],
 				[]
 			)
 			console.error(error);
@@ -173,56 +175,76 @@ export class IacScannerService extends BaseScannerService {
 		const diagnostics: vscode.Diagnostic[] = [];
 		this.diagnosticCollection.delete(uri);
 
-		const okDecorations: vscode.DecorationOptions[] = [];
-		const unknownDecorations: vscode.DecorationOptions[] = [];//
 		const criticalDecorations: vscode.DecorationOptions[] = [];
 		const highDecorations: vscode.DecorationOptions[] = [];
 		const mediumDecorations: vscode.DecorationOptions[] = [];
 		const lowDecorations: vscode.DecorationOptions[] = [];
 
+		const resultsByLine = new Map<number, CxIacResult[]>();
+
 		for (const result of scanResults) {
 			const location = result.locations[0];
+			const lineNumber = location.line;
+
+			if (!resultsByLine.has(lineNumber)) {
+				resultsByLine.set(lineNumber, []);
+			}
+			resultsByLine.get(lineNumber)!.push(result);
+		}
+
+		for (const [lineNumber, lineResults] of resultsByLine) {
+			const location = lineResults[0].locations[0];
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),
 				new vscode.Position(location.line, location.endIndex)
 			);
 
-			// Store hover data
 			const fileExtension = path.extname(uri.fsPath).toLowerCase();
 			const fileType = constants.iacSupportedPatterns.some(pattern =>
 				minimatch(uri.fsPath.replace(/\\/g, "/"), pattern, { nocase: true })
 			) ? 'dockerfile' : fileExtension.substring(1);
 
 			const key = `${uri.fsPath}:${range.start.line}`;
-			this.iacHoverData.set(key, {
+			const hoverProblems: IacHoverData[] = lineResults.map(result => ({
 				similarityId: result.similarityID,
 				title: result.title,
 				description: result.description,
 				severity: result.severity,
 				filePath: result.filepath,
-				location,
+				location: result.locations[0],
 				fileType: fileType
-			});
+			}));
 
-			const diagnostic = new vscode.Diagnostic(range, `${result.title}`, vscode.DiagnosticSeverity.Error);
+			this.iacHoverData.set(key, hoverProblems);
+
+			const problemCount = lineResults.length;
+			const titleMessage = problemCount === 1
+				? lineResults[0].title
+				: `${problemCount} IaC vulnerabilities detected on this line`;
+
+			let highestSeverity = this.getHighestSeverity(lineResults.map(r => r.severity));
+
+			const diagnostic = new vscode.Diagnostic(range, titleMessage, vscode.DiagnosticSeverity.Error);
 			diagnostic.source = constants.cxAi;
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: constants.iacRealtimeScannerEngineName,
 				item: {
-					similarityId: result.similarityID,
-					title: result.title,
-					description: result.description,
-					severity: result.severity,
-					filePath: result.filepath,
-					location,
+					similarityId: problemCount === 1 ? lineResults[0].similarityID : undefined,
+					title: problemCount === 1 ? lineResults[0].title : titleMessage,
+					description: problemCount === 1 ? lineResults[0].description : titleMessage,
+					severity: highestSeverity,
+					filePath: lineResults[0].filepath,
+					location: lineResults[0].locations[0],
 					fileType
 				}
 			};
 
 			diagnostics.push(diagnostic);
 
+			highestSeverity = this.getHighestSeverity([highestSeverity, this.exsistContainersSeverityAtLine(uri, lineNumber)]);
+
 			const decoration = { range };
-			switch (result.severity) {
+			switch (highestSeverity) {
 				case CxRealtimeEngineStatus.critical:
 					criticalDecorations.push(decoration);
 					break;
@@ -244,8 +266,6 @@ export class IacScannerService extends BaseScannerService {
 			filePath,
 			uri,
 			diagnostics,
-			okDecorations,
-			unknownDecorations,
 			criticalDecorations,
 			highDecorations,
 			mediumDecorations,
@@ -253,20 +273,31 @@ export class IacScannerService extends BaseScannerService {
 		);
 	}
 
+	private exsistContainersSeverityAtLine(uri: vscode.Uri, lineNumber: number): string {
+		const containersCollection = this.getOtherScannerCollection(constants.containersRealtimeScannerEngineName);
+		if (containersCollection) {
+			const containersDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				return diagnosticData?.cxType === constants.containersRealtimeScannerEngineName;
+			});
+			const containersAtLine = containersDiagnostics.filter(diagnostic => diagnostic.range.start.line === lineNumber);
+			if (containersAtLine[0]) {
+				return ((containersAtLine[0] as vscode.Diagnostic & { data?: CxDiagnosticData }).data.item as ContainersHoverData).status;
+			}
+			return undefined;
+		}
+	}
+
 	private storeAndApplyResults(
 		filePath: string,
 		uri: vscode.Uri,
 		diagnostics: vscode.Diagnostic[],
-		okDecorations: vscode.DecorationOptions[],
-		unknownDecorations: vscode.DecorationOptions[],
 		criticalDecorations: vscode.DecorationOptions[],
 		highDecorations: vscode.DecorationOptions[],
 		mediumDecorations: vscode.DecorationOptions[],
 		lowDecorations: vscode.DecorationOptions[],
 	): void {
 		this.diagnosticsMap.set(filePath, diagnostics);
-		this.okDecorationsMap.set(filePath, okDecorations);
-		this.unknownDecorationsMap.set(filePath, unknownDecorations);
 		this.criticalDecorationsMap.set(filePath, criticalDecorations);
 		this.highDecorationsMap.set(filePath, highDecorations);
 		this.mediumDecorationsMap.set(filePath, mediumDecorations);
@@ -285,8 +316,6 @@ export class IacScannerService extends BaseScannerService {
 		for (const editor of editors) {
 			const filePath = editor.document.uri.fsPath;
 
-			editor.setDecorations(this.decorationTypes.ok, this.okDecorationsMap.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.unknown, this.unknownDecorationsMap.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.critical, this.criticalDecorationsMap.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.high, this.highDecorationsMap.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.medium, this.mediumDecorationsMap.get(filePath) || []);
@@ -299,15 +328,13 @@ export class IacScannerService extends BaseScannerService {
 		this.diagnosticCollection.delete(uri);
 		this.diagnosticsMap.delete(filePath);
 		this.iacHoverData.clear();
-		this.okDecorationsMap.delete(filePath);
-		this.unknownDecorationsMap.delete(filePath);
 		this.criticalDecorationsMap.delete(filePath);
 		this.highDecorationsMap.delete(filePath);
 		this.mediumDecorationsMap.delete(filePath);
 		this.lowDecorationsMap.delete(filePath);
 	}
 
-	public getHoverData(): Map<string, IacHoverData> {
+	public getHoverData(): Map<string, IacHoverData[]> {
 		return this.iacHoverData;
 	}
 
@@ -333,8 +360,6 @@ export class IacScannerService extends BaseScannerService {
 
 		this.diagnosticsMap.clear();
 		this.iacHoverData.clear();
-		this.okDecorationsMap.clear();
-		this.unknownDecorationsMap.clear();
 		this.criticalDecorationsMap.clear();
 		this.highDecorationsMap.clear();
 		this.mediumDecorationsMap.clear();

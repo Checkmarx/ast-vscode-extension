@@ -69,21 +69,29 @@ export class IacScannerCommand extends BaseScannerCommand {
 		return this.createHoverContent(hoverData);
 	}
 
-	private createHoverContent(hoverData: IacHoverData): vscode.Hover {
+	private createHoverContent(hoverData: IacHoverData[]): vscode.Hover {
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
-		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, true);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
-		md.appendMarkdown(this.renderID(hoverData));
 
-		md.appendMarkdown(`${buttons}<br>`);
+		hoverData.forEach((problem, index) => {
+			if (index > 0) {
+				md.appendMarkdown("<br>"); 
+			}
+
+			const args = encodeURIComponent(JSON.stringify([problem]));
+			const buttons = buildCommandButtons(args, true);
+
+			md.appendMarkdown(this.renderSeverityIcon(problem.severity));
+			md.appendMarkdown(this.renderID(problem));
+			md.appendMarkdown(`${buttons}<br>`);
+		});
 
 		return new vscode.Hover(md);
 	}
+
 	private renderSeverityIcon(severity: string): string {
 		const iconName = constants.ossIcons[severity.toLowerCase() as keyof typeof constants.ossIcons];
 		if (!iconName) {
@@ -91,15 +99,17 @@ export class IacScannerCommand extends BaseScannerCommand {
 		}
 		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
+
 	private renderID(hoverData: IacHoverData): string {
 		return `
 <b>${hoverData.title}</b> - ${hoverData.description}
-<i style="color: dimgrey;"> -IaC vulnerability<br></i>
+<i style="color: dimgrey;"> - IaC vulnerability<br></i>
 `;
 	}
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 }

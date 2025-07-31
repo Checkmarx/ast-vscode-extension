@@ -102,7 +102,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as SecretsScannerService).dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 

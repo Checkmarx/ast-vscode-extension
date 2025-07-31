@@ -5,6 +5,7 @@ import * as os from "os";
 import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export abstract class BaseScannerService implements IScannerService {
   public config: IScannerConfig;
@@ -35,6 +36,8 @@ export abstract class BaseScannerService implements IScannerService {
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
+
+  abstract dispose(): void;
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();
@@ -104,4 +107,22 @@ export abstract class BaseScannerService implements IScannerService {
     }
     return undefined;
   }
+
+  protected getHighestSeverity(severities: string[]): string {
+      const severityPriority = [
+        CxRealtimeEngineStatus.malicious,
+        CxRealtimeEngineStatus.critical,
+        CxRealtimeEngineStatus.high,
+        CxRealtimeEngineStatus.medium,
+        CxRealtimeEngineStatus.low,
+        CxRealtimeEngineStatus.unknown,
+        CxRealtimeEngineStatus.ok
+      ];
+  
+      for (const priority of severityPriority) {
+        if (severities.includes(priority)) {
+          return priority;
+        }
+      }
+    }
 }

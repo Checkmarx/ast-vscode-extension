@@ -18,11 +18,12 @@ export interface IScannerService {
   shouldScanFile(document: vscode.TextDocument): boolean;
   updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
   diagnosticCollection: vscode.DiagnosticCollection;
+  dispose(): void;
 }
 
 export interface IScannerCommand {
   register(): Promise<void>;
-  dispose(): Promise<void>;
+  dispose(): void;
 }
 
 export interface HoverData {
