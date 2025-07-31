@@ -91,14 +91,14 @@ export class SecretsScannerService extends BaseScannerService {
 
 			const scanResults = await cx.secretsScanResults(tempFilePath, ignoredPackagesFile || "");
 
-			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
-
 			let fullScanResults: CxSecretsResult[] = scanResults;
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				fullScanResults = await cx.secretsScanResults(tempFilePath, "");
 			}
 
 			ignoreManager.removeMissingSecrets(fullScanResults, filePath);
+
+			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
 
 			const ignoredData = ignoreManager.getIgnoredPackagesData();
 			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
@@ -107,7 +107,7 @@ export class SecretsScannerService extends BaseScannerService {
 			const secretLocations = new Map<string, number[]>();
 			fullScanResults.forEach(result => {
 				if (result.secretValue) {
-					const key = `${result.title}:${result.secretValue}`;
+					const key = `${result.title}:${result.secretValue}:${relativePath}`;
 					const lines = secretLocations.get(key) || [];
 					result.locations.forEach(loc => lines.push(loc.line));
 					secretLocations.set(key, lines);
@@ -119,11 +119,11 @@ export class SecretsScannerService extends BaseScannerService {
 				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 				if (!fileEntry) { return; }
 
-				const key = `${entry.PackageName}:${entry.secretValue}`;
+				const key = `${entry.PackageName}:${entry.secretValue}:${relativePath}`;
 				const lines = secretLocations.get(key) || [];
 
 				lines.forEach(line => {
-					const adjustedLine = Math.max(0, line);
+					const adjustedLine = line;
 					const range = new vscode.Range(
 						new vscode.Position(adjustedLine, 0),
 						new vscode.Position(adjustedLine, 1000)
