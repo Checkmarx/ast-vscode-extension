@@ -1053,7 +1053,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139-secrets-realtime-fix.0",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.11.0",
