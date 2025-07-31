@@ -214,7 +214,8 @@ export class CopilotChatCommand {
                             line: (item.location?.line || 0) + 1,
                             severity: item.severity,
                             description: item.description,
-                            dateAdded: new Date().toISOString()
+                            dateAdded: new Date().toISOString(),
+                            secretValue: item.secretValue
                         });
 
 
