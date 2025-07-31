@@ -59,7 +59,18 @@ export class SecretsScannerService extends BaseScannerService {
 			return false;
 		}
 		const filePath = document.uri.fsPath.replace(/\\/g, "/");
-		return !constants.supportedManifestFilePatterns.some(pattern => minimatch(filePath, pattern));
+		if (this.isManifestFile(filePath) || this.isRealtimeIgnoreFile(filePath)) {
+			return false;
+		}
+		return true;
+	}
+
+	private isManifestFile(filePath: string): boolean {
+		return constants.supportedManifestFilePatterns.some(pattern => minimatch(filePath, pattern));
+	}
+
+	private isRealtimeIgnoreFile(filePath: string): boolean {
+		return filePath.includes("/.vscode/.checkmarxIgnored") || filePath.includes("/.vscode/.checkmarxIgnoredTempList");
 	}
 
 	private saveFile(tempFolder: string, originalFilePath: string, content: string): string {
