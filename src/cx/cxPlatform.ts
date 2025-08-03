@@ -11,6 +11,7 @@ import CxLearnMoreDescriptions from "@checkmarxdev/ast-cli-javascript-wrapper/di
 import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 
 export interface CxPlatform {
@@ -233,6 +234,8 @@ export interface CxPlatform {
    * @param sourcePath the edited file sent to the Containers engine
    */
   scanContainers(sourcePath: string): Promise<any>;
+
+  iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 

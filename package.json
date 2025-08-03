@@ -882,7 +882,24 @@
             "type": "boolean",
             "order": 4,
             "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
           }
         }
       },
@@ -952,58 +969,6 @@
               "gpt-4: (Recommended)",
               "gpt-3.5-turbo"
             ]
-          }
-        }
-      },
-      {
-        "title": "Activate ASCA Realtime",
-        "id": "asca-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your code files for security best practices as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate OSS-Realtime",
-        "id": "realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your manifest files as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Secret Detection Realtime",
-        "id": "secret-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Containers Realtime",
-        "id": "containers-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
           }
         }
       }

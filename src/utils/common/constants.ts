@@ -189,6 +189,15 @@ export const constants = {
   containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
   errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
 
+  // IaC Scanner
+  activateIacRealtimeScanner: "Activate IAC Realtime",
+  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
+  iacRealtimeScannerStart: "IaC Realtime Scanner Engine started",
+  iacRealtimeScannerDisabled: "IaC Realtime Scanner Engine disabled",
+  iacRealtimeScannerEngineName: "IaC",
+  iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
+  errorIacScanRealtime: "Failed to handle IaC Realtime scan",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -234,6 +243,21 @@ export const constants = {
     "chart.yml"
   ],
 
+  iacSupportedExtensions: [
+    ".tf",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".proto",
+    ".dockerfile"
+  ],
+
+  iacSupportedPatterns: [
+    "**/Dockerfile",
+    "**/*.auto.tfvars",
+    "**/*.terraform.tfvars",
+  ],
+
   cxAi: 'CxAI',
 
   criticalSeverity: "CRITICAL",
@@ -247,7 +271,7 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
 
   openAIChat: "fixWithAIChat",
-  viewDetails: "viewPackageDetails",
+  viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
   ignorePackage: "ignorePackage"
 };

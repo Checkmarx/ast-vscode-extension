@@ -13,12 +13,16 @@ import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
 
   constructor(context?: vscode.ExtensionContext) {
     this.context = context;
+  }
+  async iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined> {
+    return [new CxIacResult()];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -104,7 +104,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as AscaScannerService).dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 }

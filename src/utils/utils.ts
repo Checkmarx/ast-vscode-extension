@@ -13,7 +13,7 @@ import { commands } from "./common/commands";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { Logs } from "../models/logs";
-import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 
 
 export function getProperty(
@@ -287,16 +287,20 @@ export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecre
 
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }
 
-export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is AscaHoverData {
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is AscaHoverData {
   return 'ruleName' in item && 'remediationAdvise' in item;
 }
 
-export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is ContainersHoverData {
+export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is ContainersHoverData {
   return 'imageName' in item && 'imageTag' in item;
+}
+
+export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is IacHoverData {
+  return 'similarityId' in item && 'title' in item;
 }
 
 
