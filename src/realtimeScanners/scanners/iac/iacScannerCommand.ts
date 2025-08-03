@@ -78,11 +78,11 @@ export class IacScannerCommand extends BaseScannerCommand {
 
 		hoverData.forEach((problem, index) => {
 			if (index > 0) {
-				md.appendMarkdown("<br>"); 
+				md.appendMarkdown("<br>");
 			}
 
 			const args = encodeURIComponent(JSON.stringify([problem]));
-			const buttons = buildCommandButtons(args, true);
+			const buttons = buildCommandButtons(args, true, false);
 
 			md.appendMarkdown(this.renderSeverityIcon(problem.severity));
 			md.appendMarkdown(this.renderID(problem));

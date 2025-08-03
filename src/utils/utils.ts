@@ -287,7 +287,7 @@ export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecre
 
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }
 
