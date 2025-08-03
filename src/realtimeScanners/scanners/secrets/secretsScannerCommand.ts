@@ -57,7 +57,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		scanner: SecretsScannerService
 	) {
 		const key = `${document.uri.fsPath}:${position.line}`;
-		
+
 		const hoverData: SecretsHoverData = scanner.getHoverData().get(key);
 
 		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
@@ -73,7 +73,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-		const buttons = buildCommandButtons(args, false);
+		const buttons = buildCommandButtons(args, false, true);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));

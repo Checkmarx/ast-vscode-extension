@@ -271,7 +271,9 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
 
   openAIChat: "fixWithAIChat",
-  viewDetails: "viewDetails"
+  viewDetails: "viewDetails",
+  ignoreAll: "ignoreAll",
+  ignorePackage: "ignorePackage"
 };
 
 export enum Platform {
