@@ -235,6 +235,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       []
     );
     previousValue.children?.push(newTree);
+    newTree.setDescription();
     return newTree;
   }
 }
