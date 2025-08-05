@@ -128,7 +128,7 @@ export class IacScannerService extends BaseScannerService {
 		}
 		keysToDelete.forEach(key => this.iacHoverData.delete(key));
 
-		// Use the method to take care of in DockerFiles 
+		// Use the method to take care of in DockerFiles
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
 		logs.info("Scanning IaC in file: " + filePath);
@@ -146,7 +146,7 @@ export class IacScannerService extends BaseScannerService {
 			tempSubFolder = saveResult.tempSubFolder;
 
 			const containersManagementTool = this.getContainersManagementTool();
-			const scanResults = await cx.iacScanResults(tempFilePath, containersManagementTool);
+			const scanResults = await cx.iacScanResults(tempFilePath, containersManagementTool,);
 
 			this.updateProblems(scanResults, document.uri);
 		} catch (error) {
@@ -158,7 +158,7 @@ export class IacScannerService extends BaseScannerService {
 				[],
 				[],
 				[]
-			)
+			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {

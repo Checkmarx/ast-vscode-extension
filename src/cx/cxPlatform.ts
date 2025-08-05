@@ -235,7 +235,7 @@ export interface CxPlatform {
    */
   scanContainers(sourcePath: string): Promise<any>;
 
-  iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined>;
+  iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 

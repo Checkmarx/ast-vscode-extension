@@ -689,16 +689,16 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async iacScanResults(sourcePath: string, containersManagementTool: string): Promise<any[]> {
+  async iacScanResults(sourcePath: string, containersManagementTool: string, ignoredFilePath?: string): Promise<any[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
 
     const cx = new CxWrapper(config);
-    const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool);
+    const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool, ignoredFilePath);
 
-      if (scans.payload && scans.exitCode === 0) {
+    if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
       throw new Error(scans.status);
