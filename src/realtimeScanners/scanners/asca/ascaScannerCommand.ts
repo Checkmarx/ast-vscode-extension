@@ -75,7 +75,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args);
+		const buttons = buildCommandButtons(args, false, false);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity) + " ");
@@ -84,7 +84,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 		return new vscode.Hover(md);
 	}
-	
+
 	private renderID(hoverData: AscaHoverData): string {
 		return `<b>${hoverData.ruleName}</b> - ${hoverData.description} <br>`;
 	}
@@ -104,7 +104,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as AscaScannerService).dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 }

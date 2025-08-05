@@ -23,6 +23,7 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
+import { IgnoredView } from "./views/ignoredView/ignoredView";
 import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
@@ -30,6 +31,11 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
+import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
+import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
+import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
+
+
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
 
@@ -61,6 +67,10 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
+  );
+  const ignoredStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left, 20
+
   );
 
   const configManager = new ConfigurationManager();
@@ -94,6 +104,13 @@ export async function activate(context: vscode.ExtensionContext) {
       );
       if (containersEffected) {
         scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const iacEffected = section(
+        `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+      );
+      if (iacEffected) {
+        scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName)?.register();
         return;
       }
     });
@@ -277,11 +294,59 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+  const ignoreFileManager = IgnoreFileManager.getInstance();
+  const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
+  const ossScanner = ossCommand.getScannerService();
 
+  const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
+  const secretScanner = secretCommand.getScannerService();
+
+  ignoreFileManager.setOssScannerService(ossScanner);
+  ignoreFileManager.setSecretsScannerService(secretScanner);
+
+  context.subscriptions.push({
+    dispose: () => ignoreFileManager.dispose()
+  });
+
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner);
   registerMcpSettingsInjector(context);
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs);
+
   copilotChatCommand.registerCopilotChatCommand();
+
+
+
+  const ignoredView = new IgnoredView(context);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.openIgnoredView, () => {
+      ignoredView.show();
+    })
+  );
+
+  function updateIgnoredStatusBar() {
+    const count = ignoreFileManager.getIgnoredPackagesCount();
+    const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
+
+    if (hasIgnoreFile) {
+      ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
+      ignoredStatusBarItem.tooltip = count > 0
+        ? `${count} ignored vulnerabilities - Click to view`
+        : `No ignored vulnerabilities - Click to view`;
+      ignoredStatusBarItem.command = commands.openIgnoredView;
+      ignoredStatusBarItem.show();
+    } else {
+      ignoredStatusBarItem.hide();
+    }
+  }
+
+  updateIgnoredStatusBar();
+
+  ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
+
+
+
+
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

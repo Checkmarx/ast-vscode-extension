@@ -1,12 +1,15 @@
 
 import * as vscode from "vscode";
-import { HoverData, SecretsHoverData, CxDiagnosticData } from "../common/types";
+import { HoverData, SecretsHoverData, CxDiagnosticData, ContainersHoverData, AscaHoverData } from "../common/types";
 import { commands } from "../../utils/common/commands";
-import { isCursorIDE } from "../../utils/utils";
-import { constants } from "../../utils/common/constants";
+
 
 
 export class CxCodeActionProvider implements vscode.CodeActionProvider {
+
+
+
+
 	provideCodeActions(
 		document: vscode.TextDocument,
 		range: vscode.Range,
@@ -22,10 +25,10 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				continue;
 			}
 
-			const item = data.item as HoverData | SecretsHoverData;
+			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
 
-			const isCursor = isCursorIDE();
-			const fixWithCxButton = `Fix with CxAI & ${isCursor ? "Cursor" : "Copilot"}`;
+
+			const fixWithCxButton = `Fix with CxOne Assist`;
 
 			const fixAction = new vscode.CodeAction(
 				fixWithCxButton,
@@ -37,8 +40,9 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				arguments: [item]
 			};
 
+			const viewDetails = "View details";
 			const explainAction = new vscode.CodeAction(
-				data.cxType === constants.secretsScannerEngineName ? "CxAI Explain" : "View CxAI Package Details",
+				viewDetails,
 				vscode.CodeActionKind.QuickFix
 			);
 			explainAction.command = {
@@ -46,10 +50,45 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				title: explainAction.title,
 				arguments: [item]
 			};
+			const ignoreVulnerbility = this.isEligibleForIgnoreSecret(item)
+				? "Ignore this secret in file"
+				: "Ignore this vulnerability";
+			const ignoreAction = new vscode.CodeAction(ignoreVulnerbility, vscode.CodeActionKind.QuickFix);
+			ignoreAction.command = {
+				command: commands.ignorePackage,
+				title: ignoreAction.title,
+				arguments: [item]
+			};
 
-			actions.push(fixAction, explainAction);
+			const actionList = [fixAction, explainAction, ignoreAction];
+
+			if (this.isEligibleForIgnoreAll(item)) {
+				const ignoreAllVulnerbility = "Ignore all of this type";
+				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerbility, vscode.CodeActionKind.QuickFix);
+				ignoreAllAction.command = {
+					command: commands.ignoreAll,
+					title: ignoreAllAction.title,
+					arguments: [item]
+				};
+				actionList.push(ignoreAllAction);
+			}
+
+
+			actions.push(...actionList);
 		}
 
 		return actions.length ? actions : undefined;
+	}
+
+	private isEligibleForIgnoreAll(
+		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+	): boolean {
+		return "packageManager" in item || "imageName" in item;
+	}
+
+	private isEligibleForIgnoreSecret(
+		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+	): boolean {
+		return "title" in item && "secretValue" in item;
 	}
 }

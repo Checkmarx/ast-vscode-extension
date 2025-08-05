@@ -882,7 +882,24 @@
             "type": "boolean",
             "order": 4,
             "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
           }
         }
       },
@@ -1001,7 +1018,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.138",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.11.0",

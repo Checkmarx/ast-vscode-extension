@@ -3,23 +3,41 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { Logs } from "../../models/logs";
-import { IScannerService, IScannerConfig } from "./types";
+import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export abstract class BaseScannerService implements IScannerService {
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
+
+  private static diagnosticCollections = new Map<string, vscode.DiagnosticCollection>();
+  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData>>();
 
   constructor(config: IScannerConfig) {
     this.config = config;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection(
       config.engineName
     );
+
+    BaseScannerService.diagnosticCollections.set(config.engineName, this.diagnosticCollection);
+  }
+
+  protected getOtherScannerCollection(engineName: string): vscode.DiagnosticCollection | undefined {
+    return BaseScannerService.diagnosticCollections.get(engineName);
+  }
+  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData>): void {
+    BaseScannerService.hoverDataMaps.set(this.config.engineName, hoverDataMap);
+  }
+  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData> | undefined {
+    return BaseScannerService.hoverDataMaps.get(engineName);
   }
 
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
+
+  abstract dispose(): void;
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();
@@ -69,11 +87,42 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
-    const now = new Date();
-    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
     return createHash("sha256")
-      .update(input + timeSuffix)
+      .update(input)
       .digest("hex")
       .substring(0, 16);
   }
+
+  async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+    const dirPath = path.dirname(uri.fsPath);
+    const dirUri = vscode.Uri.file(dirPath);
+    const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+    const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+    for (const [entryName, _type] of entries) {
+      if (entryName.toLowerCase() === fileNameLower) {
+        return path.join(dirPath, entryName);
+      }
+    }
+    return undefined;
+  }
+
+  protected getHighestSeverity(severities: string[]): string {
+      const severityPriority = [
+        CxRealtimeEngineStatus.malicious,
+        CxRealtimeEngineStatus.critical,
+        CxRealtimeEngineStatus.high,
+        CxRealtimeEngineStatus.medium,
+        CxRealtimeEngineStatus.low,
+        CxRealtimeEngineStatus.unknown,
+        CxRealtimeEngineStatus.ok
+      ];
+  
+      for (const priority of severityPriority) {
+        if (severities.includes(priority)) {
+          return priority;
+        }
+      }
+    }
 }

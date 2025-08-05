@@ -10,7 +10,10 @@ import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
-import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
+import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
+import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { Logs } from "../models/logs";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 
 
 export function getProperty(
@@ -146,7 +149,7 @@ export async function getGitAPIRepository() {
 
 export async function getGitBranchName() {
   const gitApi = await getGitAPIRepository();
-  return gitApi.repositories[0]?.state.HEAD?.name; //TODO: replace with getFromState(context, constants.branchName) when the onBranchChange is working properly
+  return gitApi.repositories[0]?.state.HEAD?.name;
 }
 
 function extractRepoFullName(remoteURL: string): string | undefined {
@@ -159,7 +162,7 @@ export async function getActiveRepository(): Promise<Repository | undefined> {
   if (!gitAPI) {
     return undefined;
   }
-  return gitAPI.repositories[0]; // Default to the first repository
+  return gitAPI.repositories[0];
 }
 
 export async function getRepositoryFullName(): Promise<string | undefined> {
@@ -275,26 +278,109 @@ export function isCursorIDE(): boolean {
   return false;
 }
 
-export function buildCommandButtons(args: string): string { 
+export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecret: boolean): string {
   return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
-          <a href="command:cx.ignore">Ignore this vulnerability</a>
+          <a href="command:${commands.ignorePackage}?${args}"> ${isSecret ? "ignore this secret in file" : "Ignore this vulnerability"}</a> &emsp;
+          <a href="command:${commands.ignoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
     `;
+
 }
 
-export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is SecretsHoverData {
+export function isSecretsHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is SecretsHoverData {
   return 'title' in item && 'description' in item && 'severity' in item;
 }
 
-export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is AscaHoverData {
+export function isAscaHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is AscaHoverData {
   return 'ruleName' in item && 'remediationAdvise' in item;
 }
 
-export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): item is ContainersHoverData {
+export function isContainersHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is ContainersHoverData {
   return 'imageName' in item && 'imageTag' in item;
+}
+
+export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): item is IacHoverData {
+  return 'similarityId' in item && 'title' in item;
 }
 
 
 export function renderCxAiBadge(): string {
   return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
+}
+
+
+export function getWorkspaceFolder(filePath: string): vscode.WorkspaceFolder {
+  const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+  if (!folder) { throw new Error("No workspace folder found."); }
+  return folder;
+}
+
+export function getInitializedIgnoreManager(folder: vscode.WorkspaceFolder): IgnoreFileManager {
+  const manager = IgnoreFileManager.getInstance();
+  manager.initialize(folder);
+  return manager;
+}
+
+
+export function findAndIgnoreMatchingPackages(
+  item: HoverData,
+  scanner: OssScannerService,
+  manager: IgnoreFileManager
+): Set<string> {
+  const affected = new Set<string>();
+  const packageKey = `${item.packageName}:${item.version}:${item.packageManager}`;
+
+  const packageToDataMap = buildPackageToDataMap(scanner);
+  const matchingData = packageToDataMap.get(packageKey);
+
+  if (matchingData) {
+    const ignoreDate = new Date().toISOString();
+
+    matchingData.forEach(hoverData => {
+      affected.add(hoverData.filePath);
+      manager.addIgnoredEntry({
+        packageManager: hoverData.packageManager,
+        packageName: hoverData.packageName,
+        packageVersion: hoverData.version,
+        filePath: hoverData.filePath,
+        line: hoverData.line,
+        severity: hoverData.status,
+        description: hoverData.vulnerabilities ?
+          hoverData.vulnerabilities.map(v => `${v.cve}: ${v.description}`).join(', ') :
+          undefined,
+        dateAdded: ignoreDate
+      });
+    });
+  }
+
+  return affected;
+}
+
+function buildPackageToDataMap(scanner: OssScannerService): Map<string, HoverData[]> {
+  return Array.from(scanner['diagnosticsMap'].values())
+    .flatMap(diagnostics => diagnostics)
+    .map(diagnostic => (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item)
+    .filter((d): d is HoverData => !!(d?.packageName && d?.version && d?.packageManager))
+    .reduce((map, hoverData) => {
+      const packageKey = `${hoverData.packageName}:${hoverData.version}:${hoverData.packageManager}`;
+
+      if (!map.has(packageKey)) {
+        map.set(packageKey, []);
+      }
+      map.get(packageKey)!.push(hoverData);
+
+      return map;
+    }, new Map<string, HoverData[]>());
+}
+
+export async function rescanFiles(files: Set<string>, scanner: OssScannerService, logs: Logs): Promise<void> {
+  for (const filePath of files) {
+    const document =
+      vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath)
+      ?? await vscode.workspace.openTextDocument(filePath);
+
+    if (scanner.shouldScanFile(document)) {
+      await scanner.scan(document, logs);
+    }
+  }
 }

@@ -157,7 +157,7 @@ export const constants = {
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
   ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
   ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
-  ascaRealtimeScannerEngineName: "AscaRealtimeScanner",
+  ascaRealtimeScannerEngineName: "Asca",
   ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
   errorAscaInstallation: "Failed to run ASCA engine",
   errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
@@ -167,7 +167,7 @@ export const constants = {
   secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
   secretsScannerStart: "Secret Detection Scanner Engine started",
   secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
-  secretsScannerEngineName: "SecretScanner",
+  secretsScannerEngineName: "Secrets",
   secretsScannerDirectory: "Cx-secret-realtime-scanner",
   errorSecretsScanRealtime: "Failed to handle Secret Detection scan",
 
@@ -176,7 +176,7 @@ export const constants = {
   ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
   ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
   ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
-  ossRealtimeScannerEngineName: "RealtimeOssScanner",
+  ossRealtimeScannerEngineName: "Oss",
   ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
   errorOssScanRealtime: "Failed to handle OSS Realtime scan",
 
@@ -188,6 +188,15 @@ export const constants = {
   containersRealtimeScannerEngineName: "Containers",
   containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
   errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
+  // IaC Scanner
+  activateIacRealtimeScanner: "Activate IAC Realtime",
+  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
+  iacRealtimeScannerStart: "IaC Realtime Scanner Engine started",
+  iacRealtimeScannerDisabled: "IaC Realtime Scanner Engine disabled",
+  iacRealtimeScannerEngineName: "IaC",
+  iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
+  errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
@@ -234,6 +243,21 @@ export const constants = {
     "chart.yml"
   ],
 
+  iacSupportedExtensions: [
+    ".tf",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".proto",
+    ".dockerfile"
+  ],
+
+  iacSupportedPatterns: [
+    "**/Dockerfile",
+    "**/*.auto.tfvars",
+    "**/*.terraform.tfvars",
+  ],
+
   cxAi: 'CxAI',
 
   criticalSeverity: "CRITICAL",
@@ -245,6 +269,11 @@ export const constants = {
   copilotChatExtensionId: "GitHub.copilot-chat",
   copilotNewChatOpen: "workbench.action.chat.newChat",
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
+
+  openAIChat: "fixWithAIChat",
+  viewDetails: "viewDetails",
+  ignoreAll: "ignoreAll",
+  ignorePackage: "ignorePackage"
 };
 
 export enum Platform {
