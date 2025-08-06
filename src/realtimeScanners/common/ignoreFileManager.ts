@@ -9,6 +9,8 @@ import { constants } from '../../utils/common/constants';
 import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 import { IacScannerService } from '../scanners/iac/iacScannerService';
+import { AscaScannerService } from '../scanners/asca/ascaScannerService';
+import { ContainersScannerService } from '../scanners/containers/containersScannerService';
 export interface IgnoreEntry {
 	files: Array<{
 		path: string;
@@ -38,6 +40,8 @@ export class IgnoreFileManager {
 	private ossScannerService: OssScannerService | undefined;
 	private secretsScannerService: SecretsScannerService | undefined;
 	private iacScannerService: IacScannerService | undefined;
+	private ascaScannerService: AscaScannerService | undefined;
+	private containersScannerService: ContainersScannerService | undefined;
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
@@ -77,6 +81,15 @@ export class IgnoreFileManager {
 
 	public setIacScannerService(service: IacScannerService): void {
 		this.iacScannerService = service;
+	}
+
+	public setAscaScannerService(service: AscaScannerService): void {
+		this.ascaScannerService = service;
+	}
+
+
+	public setContainersScannerService(service: ContainersScannerService): void {
+		this.containersScannerService = service;
 	}
 
 	public setStatusBarUpdateCallback(callback: () => void): void {
@@ -123,7 +136,7 @@ export class IgnoreFileManager {
 	}
 
 	private async detectAndHandleActiveChanges(): Promise<void> {
-		if (!this.ossScannerService && !this.secretsScannerService && !this.iacScannerService) {
+		if (!this.ossScannerService && !this.secretsScannerService && !this.iacScannerService && !this.ascaScannerService && !this.containersScannerService) {
 			return;
 		}
 

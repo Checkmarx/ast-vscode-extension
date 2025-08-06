@@ -22,7 +22,8 @@ import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager"
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
 import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
-
+import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
+import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
 import { cx } from "../cx";
 
 
@@ -32,19 +33,25 @@ export class CopilotChatCommand {
     private ossScanner: OssScannerService;
     private secretsScanner: SecretsScannerService;
     private iacScanner: IacScannerService;
+    private ascaScanner: AscaScannerService;
+    private containersScanner: ContainersScannerService;
 
     constructor(
         context: vscode.ExtensionContext,
         logs: Logs,
         ossScanner: OssScannerService,
         secretsScanner: SecretsScannerService,
-        iacScanner: IacScannerService
+        iacScanner: IacScannerService,
+        ascaScanner: AscaScannerService,
+        containersScanner: ContainersScannerService
     ) {
         this.context = context;
         this.logs = logs;
         this.ossScanner = ossScanner;
         this.secretsScanner = secretsScanner;
         this.iacScanner = iacScanner;
+        this.ascaScanner = ascaScanner;
+        this.containersScanner = containersScanner;
     }
 
     private pressEnterWindows() {
