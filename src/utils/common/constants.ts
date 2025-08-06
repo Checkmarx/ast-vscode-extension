@@ -17,6 +17,7 @@ export const constants = {
   notIgnoredFilter: "ast-results-NotIgnored",
   ignoredFilter: "ast-results-Ignored",
   scaHideDevTestFilter: "ast-results-SCAHideDevTest",
+  allCustomStatesFilter: "ast-results-AllCustomStates",
   queryNameGroup: "ast-results-groupByQueryName",
   languageGroup: "ast-results-groupByLanguage",
   severityGroup: "ast-results-groupBySeverity",
@@ -311,6 +312,7 @@ export enum StateLevel {
   notExploitable = "NotExploitable",
   notIgnored = "NotIgnored",
   ignored = "Ignored",
+  customStates = "CustomStates",
 }
 export enum QuickPickPaginationButtons {
   nextPage = "Next Page",
