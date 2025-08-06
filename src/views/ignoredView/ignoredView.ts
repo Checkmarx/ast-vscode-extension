@@ -409,7 +409,7 @@ export class IgnoredView {
 				<div class="col-updated">${lastUpdated}</div>
 				<div class="col-actions">
 					<div class="tooltip revive-btn-tooltip">
-						<button class="revive-btn" onclick="revivePackage('${packageKey}')">
+						<button class="revive-btn" data-package-key="${packageKey}" onclick="revivePackage(this.getAttribute('data-package-key'))">
 							<img src="${ignoredViewUtils.getReviveIconPath(webview, extensionPath)}" alt="Revive" class="revive-icon" />
 							Revive
 						</button>
