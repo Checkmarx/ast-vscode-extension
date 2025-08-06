@@ -107,13 +107,13 @@ export class Cx implements CxPlatform {
   }
 
   getGptConfig(): { gptToken: string; gptEngine: string } {
-    const gptToken = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptSettingsKey) as string;
+    const config = vscode.workspace.getConfiguration(constants.gptCommandName);
 
-    const gptEngine = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptEngineKey) as string;
+    const gptToken = config.get<string>(constants.gptSettingsKey) || '';
+    const selectedModel = config.get<string>(constants.gptEngineKey) || '';
+    const customModel = config.get<string>(constants.gptCustomModelKey) || '';
+
+    const gptEngine = customModel.trim() !== '' ? customModel : selectedModel;
 
     return { gptToken, gptEngine };
   }
@@ -698,7 +698,7 @@ export class Cx implements CxPlatform {
     const cx = new CxWrapper(config);
     const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool);
 
-      if (scans.payload && scans.exitCode === 0) {
+    if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
       throw new Error(scans.status);
