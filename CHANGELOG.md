@@ -1,18 +1,16 @@
 # CHANGELOG
 
-## [v2.34.1-iac-realtime-5.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-iac-realtime-5.8.0) - 2025-08-03 10:50:37
+## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.139 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1232
-### Other Changes
-* Support ignoring secrets by value and apply ignore to all matches in same file (AST-107316) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1229
-* Add IaC Realtime Scanner (AST-102220) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1231
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-IaC.0...v2.34.1-iac-realtime-5.8.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-iac-realtime-5.8.0...v2.34.1-OpenAI-Model-list.0
+
+## [v2.34.1-iac-realtime-5.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-iac-realtime-5.8.0) - 2025-08-03 10:50:37
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-IaC.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IaC.0) - 2025-07-29 21:01:45
 
