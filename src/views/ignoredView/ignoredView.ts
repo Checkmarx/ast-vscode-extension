@@ -145,11 +145,13 @@ export class IgnoredView {
 			const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
 			const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
 
+			const displayName = packageData ? ignoredViewUtils.formatPackageDisplayName(packageKey, packageData.type) : packageKey;
+
 			const success = ignoreManager.revivePackage(packageKey);
 
 			if (success) {
 				vscode.window.showInformationMessage(
-					`'${packageKey}' vulnerability has been revived in ${fileCount} files.`,
+					`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
 					'Close',
 					'Undo'
 				);
@@ -362,18 +364,23 @@ export class IgnoredView {
 		const fileButtons = ignoredViewUtils.generateFileButtons(pkg.files, webview, extensionPath, pkg.type);
 		const scaIcon = pkg.type === constants.ossRealtimeScannerEngineName ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
 		const secretsIcon = pkg.type === constants.secretsScannerEngineName ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
+		const iacIcon = pkg.type === constants.iacRealtimeScannerEngineName ? ignoredViewUtils.getIacIgnoreIconPath(webview, extensionPath) : '';
 
 		const packageIcon = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath)
 			: pkg.type === constants.secretsScannerEngineName
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath)
-				: '';
+				: pkg.type === constants.iacRealtimeScannerEngineName
+					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath)
+					: '';
 
 		const packageIconHover = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath, true)
 			: pkg.type === constants.secretsScannerEngineName
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath, true)
-				: '';
+				: pkg.type === constants.iacRealtimeScannerEngineName
+					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+					: '';
 
 		const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, pkg.type);
 
@@ -394,6 +401,7 @@ export class IgnoredView {
 						<div class="file-buttons-container">
 							${scaIcon ? `<img src="${scaIcon}" alt="SCA" class="sca-icon" />` : ''}
 							${secretsIcon ? `<img src="${secretsIcon}" alt="Secrets" class="secrets-icon" />` : ''}
+							${iacIcon ? `<img src="${iacIcon}" alt="IaC" class="iac-icon" />` : ''}
 							${fileButtons}
 						</div>
 					</div>

@@ -70,6 +70,24 @@ export function getSecretsIgnoreIconPath(webview: vscode.Webview, extensionPath:
 	return iconPath?.toString() || '';
 }
 
+export function getIacIconPath(severity: string, webview: vscode.Webview, extensionPath: string, isHover: boolean = false): string {
+	const normalizedSeverity = (severity?.toLowerCase()) || 'medium';
+	const iconName = isHover ? `${normalizedSeverity}_hover` : normalizedSeverity;
+
+	const iconPath = webview.asWebviewUri(
+		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', 'IacAsca', `${iconName}.svg`))
+	);
+
+	return iconPath?.toString() || '';
+}
+
+export function getIacIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	const iconPath = webview.asWebviewUri(
+		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', 'iac_ignore.svg'))
+	);
+	return iconPath?.toString() || '';
+}
+
 export function getGenericFileIconPath(webview: vscode.Webview, extensionPath: string): string {
 	const iconPath = webview.asWebviewUri(
 		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', 'genericFile.svg'))
@@ -89,6 +107,8 @@ export function formatPackageDisplayName(packageKey: string, packageType: string
 		return packageKey.replace(':', '@');
 	} else if (packageType === constants.secretsScannerEngineName) {
 		return packageKey.split(':')[0];
+	} else if (packageType === constants.iacRealtimeScannerEngineName) {
+		return packageKey.split(':')[0]; // Show only title for IaC
 	}
 	return packageKey;
 }
