@@ -21,6 +21,7 @@ import {
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
+import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
 
 import { cx } from "../cx";
 
@@ -30,17 +31,20 @@ export class CopilotChatCommand {
     logs: Logs;
     private ossScanner: OssScannerService;
     private secretsScanner: SecretsScannerService;
+    private iacScanner: IacScannerService;
 
     constructor(
         context: vscode.ExtensionContext,
         logs: Logs,
         ossScanner: OssScannerService,
-        secretsScanner: SecretsScannerService
+        secretsScanner: SecretsScannerService,
+        iacScanner: IacScannerService
     ) {
         this.context = context;
         this.logs = logs;
         this.ossScanner = ossScanner;
         this.secretsScanner = secretsScanner;
+        this.iacScanner = iacScanner;
     }
 
     private pressEnterWindows() {
@@ -205,11 +209,19 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.ignorePackage, item);
 
+
                 try {
-                    const workspaceFolder = getWorkspaceFolder(item.filePath);
+                    let workspaceFolder: vscode.WorkspaceFolder;
+
+                    if (isIacHoverData(item)) {
+                        const iacItem = item as IacHoverData & { originalFilePath?: string };
+                        workspaceFolder = getWorkspaceFolder(iacItem.originalFilePath);
+                    } else {
+                        workspaceFolder = getWorkspaceFolder(item.filePath);
+                    }
                     if (!workspaceFolder) {
                         vscode.window.showErrorMessage("No workspace folder found.");
                         return;
@@ -218,7 +230,24 @@ export class CopilotChatCommand {
                     const ignoreManager = IgnoreFileManager.getInstance();
                     ignoreManager.initialize(workspaceFolder);
 
-                    if (isSecretsHoverData(item)) {
+                    if (isIacHoverData(item)) {
+                        ignoreManager.addIgnoredEntryIac({
+                            title: item.title || "",
+                            similarityId: item.similarityId || "",
+                            filePath: item.originalFilePath,
+                            line: (item.location?.line || 0),
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+                        vscode.window.showInformationMessage(`IaC finding '${item.title}' ignored successfully.`);
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.originalFilePath)
+                            ?? await vscode.workspace.openTextDocument(item.originalFilePath);
+                        if (this.iacScanner && this.iacScanner.scan) {
+                            await this.iacScanner.scan(document, this.logs);
+                        }
+                    }
+                    else if (isSecretsHoverData(item)) {
                         ignoreManager.addIgnoredEntrySecrets({
                             title: item.title || "",
                             filePath: item.filePath,
@@ -229,15 +258,14 @@ export class CopilotChatCommand {
                             secretValue: item.secretValue
                         });
 
-
-
                         vscode.window.showInformationMessage(`Secret '${item.title}' ignored successfully.`);
 
                         const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
                             ?? await vscode.workspace.openTextDocument(item.filePath);
                         const secretsScannerForScan = this.secretsScanner as SecretsScannerService;
                         await secretsScannerForScan.scan(document, this.logs);
-                    } else {
+                    }
+                    else {
                         ignoreManager.addIgnoredEntry({
                             packageManager: item.packageManager,
                             packageName: item.packageName,

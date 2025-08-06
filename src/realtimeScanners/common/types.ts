@@ -83,6 +83,7 @@ export interface IacHoverData {
   description: string;
   severity: string;
   filePath: string;
+  originalFilePath?: string
   location?: {
     line: number;
     startIndex: number;

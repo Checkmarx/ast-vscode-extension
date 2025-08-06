@@ -34,6 +34,7 @@ import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionPr
 import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
 import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
 import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
+import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
@@ -301,14 +302,18 @@ export async function activate(context: vscode.ExtensionContext) {
   const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
   const secretScanner = secretCommand.getScannerService();
 
+  const iacCommand = scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName) as IacScannerCommand;
+  const iacScanner = iacCommand.getScannerService();
+
   ignoreFileManager.setOssScannerService(ossScanner);
   ignoreFileManager.setSecretsScannerService(secretScanner);
+  ignoreFileManager.setIacScannerService(iacScanner);
 
   context.subscriptions.push({
     dispose: () => ignoreFileManager.dispose()
   });
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner);
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner);
   registerMcpSettingsInjector(context);
 
 

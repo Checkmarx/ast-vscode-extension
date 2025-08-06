@@ -7,14 +7,16 @@ import { SecretsScannerService } from '../scanners/secrets/secretsScannerService
 import { Logs } from '../../models/logs';
 import { constants } from '../../utils/common/constants';
 import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import { IacScannerService } from '../scanners/iac/iacScannerService';
 export interface IgnoreEntry {
 	files: Array<{
 		path: string;
 		active: boolean;
 		line?: number;
-
 	}>;
 	secretValue?: string;
+	similarityId?: string;
 	type: string;
 	PackageManager?: string;
 	PackageName: string;
@@ -35,6 +37,7 @@ export class IgnoreFileManager {
 	private previousIgnoreData: Record<string, IgnoreEntry> = {};
 	private ossScannerService: OssScannerService | undefined;
 	private secretsScannerService: SecretsScannerService | undefined;
+	private iacScannerService: IacScannerService | undefined;
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
@@ -69,6 +72,11 @@ export class IgnoreFileManager {
 
 	public setSecretsScannerService(service: SecretsScannerService): void {
 		this.secretsScannerService = service;
+	}
+
+
+	public setIacScannerService(service: IacScannerService): void {
+		this.iacScannerService = service;
 	}
 
 	public setStatusBarUpdateCallback(callback: () => void): void {
@@ -115,7 +123,7 @@ export class IgnoreFileManager {
 	}
 
 	private async detectAndHandleActiveChanges(): Promise<void> {
-		if (!this.ossScannerService && !this.secretsScannerService) {
+		if (!this.ossScannerService && !this.secretsScannerService && !this.iacScannerService) {
 			return;
 		}
 
@@ -279,9 +287,11 @@ export class IgnoreFileManager {
 			if (this.ossScannerService && this.ossScannerService.shouldScanFile(document)) {
 				await this.ossScannerService.scan(document, logs);
 			}
-
 			if (this.secretsScannerService && this.secretsScannerService.shouldScanFile(document)) {
 				await this.secretsScannerService.scan(document, logs);
+			}
+			if (this.iacScannerService && this.iacScannerService.shouldScanFile(document)) {
+				await this.iacScannerService.scan(document, logs);
 			}
 		} catch (error) {
 			console.error(`Error rescanning file ${fullPath}:`, error);
@@ -527,6 +537,51 @@ export class IgnoreFileManager {
 		this.uiRefreshCallback?.();
 	}
 
+	public addIgnoredEntryIac(entry: {
+		title: string;
+		similarityId: string;
+		filePath: string;
+		line: number;
+		severity?: string;
+		description?: string;
+		dateAdded?: string;
+	}): void {
+		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const packageKey = `${entry.title}:${entry.similarityId}:${relativePath}`;
+
+		if (!this.ignoreData[packageKey]) {
+			this.ignoreData[packageKey] = {
+				files: [{
+					path: relativePath,
+					active: true,
+					line: entry.line + 1
+				}],
+				type: constants.iacRealtimeScannerEngineName,
+				PackageName: entry.title,
+				similarityId: entry.similarityId,
+				severity: entry.severity,
+				description: entry.description,
+				dateAdded: entry.dateAdded
+			};
+		} else {
+			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+			if (existingFileEntry) {
+				existingFileEntry.active = true;
+			} else {
+				this.ignoreData[packageKey].files.push({
+					path: relativePath,
+					active: true,
+					line: this.ignoreData[packageKey].files[0]?.line || (entry.line + 1)
+				});
+			}
+			if (entry.severity !== undefined) { this.ignoreData[packageKey].severity = entry.severity; }
+			if (entry.description !== undefined) { this.ignoreData[packageKey].description = entry.description; }
+		}
+		this.saveIgnoreFile();
+		this.updateTempList();
+		this.uiRefreshCallback?.();
+	}
+
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
 		if (this.statusBarUpdateCallback) {
@@ -547,6 +602,11 @@ export class IgnoreFileManager {
 							Title: entry.PackageName,
 							FilePath: scannedTempPath,
 							SecretValue: entry.secretValue
+						};
+					} else if (entry.type === constants.iacRealtimeScannerEngineName) {
+						return {
+							Title: entry.PackageName,
+							SimilarityID: entry.similarityId
 						};
 					} else {
 						return {
@@ -620,6 +680,52 @@ export class IgnoreFileManager {
 				hasChanges = true;
 			} else {
 				const lines = currentSecrets.get(secretKey) || [];
+				if (lines.length > 0) {
+					fileEntry.line = lines[0];
+					hasChanges = true;
+				}
+			}
+		});
+
+		if (hasChanges) {
+			this.saveIgnoreFile();
+			this.updateTempList();
+			this.uiRefreshCallback?.();
+		}
+
+		return hasChanges;
+	}
+
+	public removeMissingIac(currentResults: CxIacResult[], filePath: string): boolean {
+		let hasChanges = false;
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+
+		const currentIacs = new Map<string, number[]>();
+		currentResults.forEach(result => {
+			if (result.similarityID) {
+				const key = `${result.title}:${result.similarityID}:${relativePath}`;
+				const lines = currentIacs.get(key) || [];
+				result.locations.forEach(loc => lines.push(loc.line + 1));
+				currentIacs.set(key, lines);
+			}
+		});
+
+		Object.entries(this.ignoreData).forEach(([key, entry]) => {
+			if (entry.type !== constants.iacRealtimeScannerEngineName) { return; }
+
+			const fileEntry = entry.files.find(f => f.path === relativePath);
+			if (!fileEntry || !fileEntry.active) { return; }
+
+			const iacKey = `${entry.PackageName}:${entry.similarityId}:${relativePath}`;
+			if (!currentIacs.has(iacKey)) {
+				if (entry.files.length === 1) {
+					delete this.ignoreData[key];
+				} else {
+					fileEntry.active = false;
+				}
+				hasChanges = true;
+			} else {
+				const lines = currentIacs.get(iacKey) || [];
 				if (lines.length > 0) {
 					fileEntry.line = lines[0];
 					hasChanges = true;

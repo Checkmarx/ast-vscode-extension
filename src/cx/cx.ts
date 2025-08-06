@@ -688,7 +688,7 @@ export class Cx implements CxPlatform {
       throw new Error(scans.status);
     }
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async iacScanResults(sourcePath: string, containersManagementTool: string, ignoredFilePath?: string): Promise<any[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
