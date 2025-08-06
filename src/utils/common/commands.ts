@@ -66,6 +66,10 @@ export const commands = {
   filterSCAHideDevTestActive: `${constants.extensionName}.filterSCAHideDevTestActive`,
   filterSCAHideDevTestCommand: `${constants.extensionName}.filterSCAHideDevTests`,
 
+  filterAllCustomStates: `${constants.extensionName}.filterAllCustomStates`,
+  filterAllCustomStatesActive: `${constants.extensionName}.filterAllCustomStatesActive`,
+  filterAllCustomStatesCommand: `${constants.extensionName}.filterAllCustomStatess`,
+
   groupByFile: `${constants.extensionName}.groupByFile`,
   groupByFileActive: `${constants.extensionName}.groupByFileActive`,
   groupByFileCommand: `${constants.extensionName}.groupByFiles`,
