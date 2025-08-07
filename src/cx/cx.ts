@@ -113,7 +113,7 @@ export class Cx implements CxPlatform {
     const selectedModel = config.get<string>(constants.gptEngineKey) || '';
     const customModel = config.get<string>(constants.gptCustomModelKey) || '';
 
-    const gptEngine = customModel.trim() !== '' ? customModel : selectedModel;
+    const gptEngine = customModel.trim() !== '' ? customModel.trim() : selectedModel;
 
     return { gptToken, gptEngine };
   }
