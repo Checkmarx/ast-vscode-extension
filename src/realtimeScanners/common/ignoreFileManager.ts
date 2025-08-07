@@ -19,6 +19,7 @@ export interface IgnoreEntry {
 	}>;
 	secretValue?: string;
 	similarityId?: string;
+	ruleId?: number;
 	type: string;
 	PackageManager?: string;
 	PackageName: string;
@@ -305,6 +306,9 @@ export class IgnoreFileManager {
 			}
 			if (this.iacScannerService && this.iacScannerService.shouldScanFile(document)) {
 				await this.iacScannerService.scan(document, logs);
+			}
+			if (this.ascaScannerService && this.ascaScannerService.shouldScanFile(document)) {
+				await this.ascaScannerService.scan(document, logs);
 			}
 		} catch (error) {
 			console.error(`Error rescanning file ${fullPath}:`, error);
@@ -595,6 +599,51 @@ export class IgnoreFileManager {
 		this.uiRefreshCallback?.();
 	}
 
+	public addIgnoredEntryAsca(entry: {
+		ruleName: string;
+		ruleId: number;
+		filePath: string;
+		line: number;
+		severity?: string;
+		description?: string;
+		dateAdded?: string;
+	}): void {
+		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const packageKey = `${entry.ruleName}:${entry.ruleId}:${relativePath}`;
+
+		if (!this.ignoreData[packageKey]) {
+			this.ignoreData[packageKey] = {
+				files: [{
+					path: relativePath,
+					active: true,
+					line: entry.line + 1
+				}],
+				type: constants.ascaRealtimeScannerEngineName,
+				PackageName: entry.ruleName,
+				ruleId: entry.ruleId,
+				severity: entry.severity,
+				description: entry.description,
+				dateAdded: entry.dateAdded
+			};
+		} else {
+			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+			if (existingFileEntry) {
+				existingFileEntry.active = true;
+			} else {
+				this.ignoreData[packageKey].files.push({
+					path: relativePath,
+					active: true,
+					line: this.ignoreData[packageKey].files[0]?.line || (entry.line + 1)
+				});
+			}
+			if (entry.severity !== undefined) { this.ignoreData[packageKey].severity = entry.severity; }
+			if (entry.description !== undefined) { this.ignoreData[packageKey].description = entry.description; }
+		}
+		this.saveIgnoreFile();
+		this.updateTempList();
+		this.uiRefreshCallback?.();
+	}
+
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
 		if (this.statusBarUpdateCallback) {
@@ -620,6 +669,12 @@ export class IgnoreFileManager {
 						return {
 							Title: entry.PackageName,
 							SimilarityID: entry.similarityId
+						};
+					} else if (entry.type === constants.ascaRealtimeScannerEngineName) {
+						return {
+							FileName: path.basename(scannedTempPath),
+							Line: file.line,
+							RuleID: entry.ruleId
 						};
 					} else {
 						return {
@@ -755,8 +810,48 @@ export class IgnoreFileManager {
 		return hasChanges;
 	}
 
+	public removeMissingAsca(currentResults: unknown[], filePath: string): boolean {
+		let hasChanges = false;
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
 
+		const currentAsca = new Map<string, number[]>();
+		currentResults.forEach(result => {
+			const scanDetail = result as { ruleName: string; ruleId: number; line: number };
+			const key = `${scanDetail.ruleName}:${scanDetail.ruleId}`;
+			const lines = currentAsca.get(key) || [];
+			lines.push(scanDetail.line);
+			currentAsca.set(key, lines);
+		});
 
+		Object.entries(this.ignoreData).forEach(([packageKey, entry]) => {
+			if (entry.type !== constants.ascaRealtimeScannerEngineName) { return; }
 
+			const fileEntry = entry.files.find(f => f.path === relativePath);
+			if (!fileEntry) { return; }
+
+			const ascaKey = `${entry.PackageName}:${entry.ruleId}`;
+			const currentLines = currentAsca.get(ascaKey) || [];
+
+			const lineStillExists = currentLines.includes(fileEntry.line);
+
+			if (!lineStillExists) {
+				if (currentLines.length === 0) {
+					delete this.ignoreData[packageKey];
+					hasChanges = true;
+				} else {
+					fileEntry.line = currentLines[0];
+					hasChanges = true;
+				}
+			}
+		});
+
+		if (hasChanges) {
+			this.saveIgnoreFile();
+			this.updateTempList();
+			this.uiRefreshCallback?.();
+		}
+
+		return hasChanges;
+	}
 
 }

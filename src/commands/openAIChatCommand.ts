@@ -216,7 +216,7 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData) => {
                 this.logUserEvent("click", constants.ignorePackage, item);
 
 
@@ -271,6 +271,25 @@ export class CopilotChatCommand {
                             ?? await vscode.workspace.openTextDocument(item.filePath);
                         const secretsScannerForScan = this.secretsScanner as SecretsScannerService;
                         await secretsScannerForScan.scan(document, this.logs);
+                    }
+                    else if (isAscaHoverData(item)) {
+                        ignoreManager.addIgnoredEntryAsca({
+                            ruleName: item.ruleName,
+                            ruleId: item.ruleId!,
+                            filePath: item.filePath || '',
+                            line: (item.location?.line || 0),
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`ASCA rule '${item.ruleName}' ignored successfully.`);
+
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === (item.filePath || ''))
+                            ?? await vscode.workspace.openTextDocument(item.filePath || '');
+                        if (this.ascaScanner && this.ascaScanner.scan) {
+                            await this.ascaScanner.scan(document, this.logs);
+                        }
                     }
                     else {
                         ignoreManager.addIgnoredEntry({

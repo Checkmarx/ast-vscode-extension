@@ -629,7 +629,7 @@ export class Cx implements CxPlatform {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.scanAsca(null, true, constants.vsCodeAgent);
+    const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -644,13 +644,13 @@ export class Cx implements CxPlatform {
     return errorRes;
   }
 
-  async scanAsca(sourcePath: string): Promise<CxAsca> {
+  async scanAsca(sourcePath: string, ignorePath: string): Promise<CxAsca> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent);
+    const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
