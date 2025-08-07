@@ -108,7 +108,9 @@ export function formatPackageDisplayName(packageKey: string, packageType: string
 	} else if (packageType === constants.secretsScannerEngineName) {
 		return packageKey.split(':')[0];
 	} else if (packageType === constants.iacRealtimeScannerEngineName) {
-		return packageKey.split(':')[0]; // Show only title for IaC
+		return packageKey.split(':')[0];
+	} else if (packageType === constants.ascaRealtimeScannerEngineName) {
+		return packageKey.split(':')[0];
 	}
 	return packageKey;
 }
@@ -211,4 +213,22 @@ export function generateFileButtons(
 		: '';
 
 	return `<div class="file-buttons">${visibleButtons}${expandButton}${hiddenButtons}</div>`;
+}
+
+export function getAscaIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	const iconPath = webview.asWebviewUri(
+		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', 'asca_ignore.svg'))
+	);
+	return iconPath?.toString() || '';
+}
+
+export function getAscaIconPath(severity: string, webview: vscode.Webview, extensionPath: string, isHover: boolean = false): string {
+	const normalizedSeverity = severity?.toLowerCase() || 'medium';
+	const iconName = isHover ? `${normalizedSeverity}_hover` : normalizedSeverity;
+
+	const iconPath = webview.asWebviewUri(
+		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', 'IacAsca', `${iconName}.svg`))
+	);
+
+	return iconPath?.toString() || '';
 }
