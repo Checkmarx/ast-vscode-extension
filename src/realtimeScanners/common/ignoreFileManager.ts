@@ -20,6 +20,8 @@ export interface IgnoreEntry {
 	secretValue?: string;
 	similarityId?: string;
 	ruleId?: number;
+	imageName?: string;
+	imageTag?: string;
 	type: string;
 	PackageManager?: string;
 	PackageName: string;
@@ -87,7 +89,6 @@ export class IgnoreFileManager {
 	public setAscaScannerService(service: AscaScannerService): void {
 		this.ascaScannerService = service;
 	}
-
 
 	public setContainersScannerService(service: ContainersScannerService): void {
 		this.containersScannerService = service;
@@ -309,6 +310,9 @@ export class IgnoreFileManager {
 			}
 			if (this.ascaScannerService && this.ascaScannerService.shouldScanFile(document)) {
 				await this.ascaScannerService.scan(document, logs);
+			}
+			if (this.containersScannerService && this.containersScannerService.shouldScanFile(document)) {
+				await this.containersScannerService.scan(document, logs);
 			}
 		} catch (error) {
 			console.error(`Error rescanning file ${fullPath}:`, error);
@@ -644,6 +648,52 @@ export class IgnoreFileManager {
 		this.uiRefreshCallback?.();
 	}
 
+	public addIgnoredEntryContainers(entry: {
+		imageName: string;
+		imageTag: string;
+		filePath: string;
+		line: number;
+		severity?: string;
+		description?: string;
+		dateAdded?: string;
+	}): void {
+		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const packageKey = `${entry.imageName}:${entry.imageTag}:${relativePath}`;
+
+		if (!this.ignoreData[packageKey]) {
+			this.ignoreData[packageKey] = {
+				files: [{
+					path: relativePath,
+					active: true,
+					line: entry.line
+				}],
+				type: constants.containersRealtimeScannerEngineName,
+				PackageName: `${entry.imageName}:${entry.imageTag}`,
+				imageName: entry.imageName,
+				imageTag: entry.imageTag,
+				severity: entry.severity,
+				description: entry.description,
+				dateAdded: entry.dateAdded
+			};
+		} else {
+			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+			if (existingFileEntry) {
+				existingFileEntry.active = true;
+			} else {
+				this.ignoreData[packageKey].files.push({
+					path: relativePath,
+					active: true,
+					line: this.ignoreData[packageKey].files[0]?.line || entry.line
+				});
+			}
+			if (entry.severity !== undefined) { this.ignoreData[packageKey].severity = entry.severity; }
+			if (entry.description !== undefined) { this.ignoreData[packageKey].description = entry.description; }
+		}
+		this.saveIgnoreFile();
+		this.updateTempList();
+		this.uiRefreshCallback?.();
+	}
+
 	private saveIgnoreFile(): void {
 		fs.writeFileSync(this.getIgnoreFilePath(), JSON.stringify(this.ignoreData, null, 2));
 		if (this.statusBarUpdateCallback) {
@@ -675,6 +725,11 @@ export class IgnoreFileManager {
 							FileName: path.basename(scannedTempPath),
 							Line: file.line,
 							RuleID: entry.ruleId
+						};
+					} else if (entry.type === constants.containersRealtimeScannerEngineName) {
+						return {
+							ImageName: entry.imageName,
+							ImageTag: entry.imageTag
 						};
 					} else {
 						return {
@@ -842,6 +897,54 @@ export class IgnoreFileManager {
 					fileEntry.line = currentLines[0];
 					hasChanges = true;
 				}
+			}
+		});
+
+		if (hasChanges) {
+			this.saveIgnoreFile();
+			this.updateTempList();
+			this.uiRefreshCallback?.();
+		}
+
+		return hasChanges;
+	}
+
+	public removeMissingContainers(currentResults: unknown[], filePath: string): boolean {
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		let hasChanges = false;
+
+		const currentImages = new Map<string, number[]>();
+		currentResults.forEach(result => {
+			const containerResult = result as { imageName: string; imageTag: string; locations: Array<{ line: number }> };
+			const imageKey = `${containerResult.imageName}:${containerResult.imageTag}`;
+			if (!currentImages.has(imageKey)) {
+				currentImages.set(imageKey, []);
+			}
+			containerResult.locations.forEach(location => {
+				currentImages.get(imageKey)!.push(location.line);
+			});
+		});
+
+		Object.keys(this.ignoreData).forEach(packageKey => {
+			const entry = this.ignoreData[packageKey];
+			if (entry.type !== constants.containersRealtimeScannerEngineName) {
+				return;
+			}
+
+			const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+			if (!fileEntry) {
+				return;
+			}
+
+			const imageKey = `${entry.imageName}:${entry.imageTag}`;
+			const currentLines = currentImages.get(imageKey) || [];
+
+			if (currentLines.length === 0) {
+				delete this.ignoreData[packageKey];
+				hasChanges = true;
+			} else {
+				fileEntry.line = currentLines[0] + 1;
+				hasChanges = true;
 			}
 		});
 

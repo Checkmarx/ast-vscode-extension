@@ -216,7 +216,7 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData | ContainersHoverData) => {
                 this.logUserEvent("click", constants.ignorePackage, item);
 
 
@@ -226,6 +226,12 @@ export class CopilotChatCommand {
                     if (isIacHoverData(item)) {
                         const iacItem = item as IacHoverData & { originalFilePath?: string };
                         workspaceFolder = getWorkspaceFolder(iacItem.originalFilePath);
+                    } else if (isContainersHoverData(item)) {
+                        workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (!workspaceFolder) {
+                            vscode.window.showErrorMessage("No workspace folder found.");
+                            return;
+                        }
                     } else {
                         workspaceFolder = getWorkspaceFolder(item.filePath);
                     }
@@ -289,6 +295,26 @@ export class CopilotChatCommand {
                             ?? await vscode.workspace.openTextDocument(item.filePath || '');
                         if (this.ascaScanner && this.ascaScanner.scan) {
                             await this.ascaScanner.scan(document, this.logs);
+                        }
+                    }
+                    else if (isContainersHoverData(item)) {
+                        ignoreManager.addIgnoredEntryContainers({
+                            imageName: item.imageName,
+                            imageTag: item.imageTag,
+                            filePath: vscode.window.activeTextEditor?.document.uri.fsPath || '',
+                            line: (item.location?.line || 0) + 1,
+                            severity: item.status,
+                            description: item.vulnerabilities && item.vulnerabilities.length > 0 ?
+                                item.vulnerabilities.map(v => `${v.cve}: ${v.severity}`).join(', ') :
+                                undefined,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`Container ${item.imageName}:${item.imageTag} ignored successfully.`);
+
+                        const document = vscode.window.activeTextEditor?.document;
+                        if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
+                            await this.containersScanner.scan(document, this.logs);
                         }
                     }
                     else {

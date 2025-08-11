@@ -1471,7 +1471,7 @@ export class CxMock implements CxPlatform {
   }
 
 
-  async scanContainers(sourcePath: string): Promise<any> {
+  async scanContainers(sourcePath: string, ignoredFilePath): Promise<any> {
     return {
       Images: [
         {
