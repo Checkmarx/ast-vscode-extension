@@ -59,7 +59,18 @@ export class SecretsScannerService extends BaseScannerService {
 			return false;
 		}
 		const filePath = document.uri.fsPath.replace(/\\/g, "/");
-		return !constants.supportedManifestFilePatterns.some(pattern => minimatch(filePath, pattern));
+		if (this.isManifestFile(filePath) || this.isRealtimeIgnoreFile(filePath)) {
+			return false;
+		}
+		return true;
+	}
+
+	private isManifestFile(filePath: string): boolean {
+		return constants.supportedManifestFilePatterns.some(pattern => minimatch(filePath, pattern));
+	}
+
+	private isRealtimeIgnoreFile(filePath: string): boolean {
+		return filePath.includes("/.vscode/.checkmarxIgnored") || filePath.includes("/.vscode/.checkmarxIgnoredTempList");
 	}
 
 	private saveFile(tempFolder: string, originalFilePath: string, content: string): string {
@@ -91,8 +102,6 @@ export class SecretsScannerService extends BaseScannerService {
 
 			const scanResults = await cx.secretsScanResults(tempFilePath, ignoredPackagesFile || "");
 
-			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
-
 			let fullScanResults: CxSecretsResult[] = scanResults;
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				fullScanResults = await cx.secretsScanResults(tempFilePath, "");
@@ -100,33 +109,50 @@ export class SecretsScannerService extends BaseScannerService {
 
 			ignoreManager.removeMissingSecrets(fullScanResults, filePath);
 
+			this.updateProblems<CxSecretsResult[]>(scanResults, document.uri);
+
 			const ignoredData = ignoreManager.getIgnoredPackagesData();
 			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 			const ignoredDecorations: vscode.DecorationOptions[] = [];
 
+			const secretLocations = new Map<string, number[]>();
+			fullScanResults.forEach(result => {
+				if (result.secretValue) {
+					const key = `${result.title}:${result.secretValue}:${relativePath}`;
+					const lines = secretLocations.get(key) || [];
+					result.locations.forEach(loc => lines.push(loc.line));
+					secretLocations.set(key, lines);
+				}
+			});
+
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }
 				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
-				if (!fileEntry || fileEntry.line === undefined) { return; }
+				if (!fileEntry) { return; }
 
-				const adjustedLine = Math.max(0, fileEntry.line - 1);
+				const key = `${entry.PackageName}:${entry.secretValue}:${relativePath}`;
+				const lines = secretLocations.get(key) || [];
 
-				const range = new vscode.Range(
-					new vscode.Position(adjustedLine, 0),
-					new vscode.Position(adjustedLine, 1000)
-				);
-				ignoredDecorations.push({ range });
+				lines.forEach(line => {
+					const adjustedLine = line;
+					const range = new vscode.Range(
+						new vscode.Position(adjustedLine, 0),
+						new vscode.Position(adjustedLine, 1000)
+					);
+					ignoredDecorations.push({ range });
 
-				const hoverKey = `${filePath}:${adjustedLine}`;
-				if (!this.secretsHoverData.has(hoverKey)) {
-					this.secretsHoverData.set(hoverKey, {
-						title: entry.PackageName,
-						description: entry.description,
-						severity: entry.severity,
-						filePath,
-						location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
-					});
-				}
+					const hoverKey = `${filePath}:${adjustedLine}`;
+					if (!this.secretsHoverData.has(hoverKey)) {
+						this.secretsHoverData.set(hoverKey, {
+							title: entry.PackageName,
+							description: entry.description,
+							severity: entry.severity,
+							secretValue: entry.secretValue,
+							filePath,
+							location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
+						});
+					}
+				});
 			});
 
 			this.ignoredDecorations.set(filePath, ignoredDecorations);
@@ -157,7 +183,7 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private removeAscaHoverDataAtLine(filePath: string, lineNumber: number): void {
 		const ascaHoverData = this.getOtherScannerHoverData(constants.ascaRealtimeScannerEngineName);
-		if (!ascaHoverData) { return; } 
+		if (!ascaHoverData) { return; }
 
 		const key = `${filePath}:${lineNumber}`;
 		ascaHoverData.delete(key);
@@ -187,6 +213,7 @@ export class SecretsScannerService extends BaseScannerService {
 				title: problem.title,
 				description: problem.description,
 				severity: problem.severity,
+				secretValue: problem.secretValue,
 				location,
 				filePath
 			});
@@ -205,6 +232,7 @@ export class SecretsScannerService extends BaseScannerService {
 					title: problem.title,
 					description: problem.description,
 					severity: problem.severity,
+					secretValue: problem.secretValue,
 					location,
 					filePath
 				}
