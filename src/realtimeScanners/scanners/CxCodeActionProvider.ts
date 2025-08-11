@@ -50,7 +50,9 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				title: explainAction.title,
 				arguments: [item]
 			};
-			const ignoreVulnerbility = "Ignore this vulnerability";
+			const ignoreVulnerbility = this.isEligibleForIgnoreSecret(item)
+				? "Ignore this secret in file"
+				: "Ignore this vulnerability";
 			const ignoreAction = new vscode.CodeAction(ignoreVulnerbility, vscode.CodeActionKind.QuickFix);
 			ignoreAction.command = {
 				command: commands.ignorePackage,
@@ -64,7 +66,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				const ignoreAllVulnerbility = "Ignore all of this type";
 				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerbility, vscode.CodeActionKind.QuickFix);
 				ignoreAllAction.command = {
-					command: commands.IgnoreAll,
+					command: commands.ignoreAll,
 					title: ignoreAllAction.title,
 					arguments: [item]
 				};
@@ -84,4 +86,9 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 		return "packageManager" in item || "imageName" in item;
 	}
 
+	private isEligibleForIgnoreSecret(
+		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+	): boolean {
+		return "title" in item && "secretValue" in item;
+	}
 }

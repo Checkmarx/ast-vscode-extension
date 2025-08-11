@@ -413,6 +413,12 @@
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
+        "command": "ast-results.filterAllCustomStatesActive",
+        "category": "ast-results",
+        "title": "✓ Filter: All Custom States",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
         "command": "ast-results.filterNotExploitable",
         "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: Not Exploitable",
@@ -464,6 +470,12 @@
         "command": "ast-results.filterSCAHideDevTest",
         "category": "ast-results",
         "title": "­­­ ­­ ­ ­ ­Filter: SCA Hide Dev & Test Dependencies",
+        "enablement": "ast-results.isValidCredentials && view == astResults"
+      },
+      {
+        "command": "ast-results.filterAllCustomStates",
+        "category": "ast-results",
+        "title": "­­­ ­­ ­ ­ ­Filter: All Custom States",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
@@ -521,6 +533,12 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.filterAllCustomStatess",
+        "category": "ast-results",
+        "title": "Filter: All Custom States",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.createSCAScan",
         "category": "ast-results",
         "title": "Run SCA Realtime Scan",
@@ -542,51 +560,11 @@
       }
     ],
     "menus": {
-      "ast-results.filterBy": [
-        {
-          "command": "ast-results.filterNotExploitableActive",
-          "group": "navigation@3",
-          "when": "ast-results-NotExploitable"
-        },
-        {
-          "command": "ast-results.filterProposedActive",
-          "group": "navigation@5",
-          "when": "ast-results-Proposed"
-        },
+      "ast-results.filterBy": [        
         {
           "command": "ast-results.filterConfirmedActive",
           "group": "navigation@1",
           "when": "ast-results-Confirmed"
-        },
-        {
-          "command": "ast-results.filterToVerifyActive",
-          "group": "navigation@6",
-          "when": "ast-results-ToVerify"
-        },
-        {
-          "command": "ast-results.filterUrgentActive",
-          "group": "navigation@7",
-          "when": "ast-results-Urgent"
-        },
-        {
-          "command": "ast-results.filterNotIgnoredActive",
-          "group": "navigation@4",
-          "when": "ast-results-NotIgnored"
-        },
-        {
-          "command": "ast-results.filterIgnoredActive",
-          "group": "navigation@2",
-          "when": "ast-results-Ignored"
-        },
-        {
-          "command": "ast-results.filterNotExploitable",
-          "group": "navigation@3",
-          "when": "!ast-results-NotExploitable"
-        },
-        {
-          "command": "ast-results.filterProposed",
-          "group": "navigation@5",
-          "when": "!ast-results-Proposed"
         },
         {
           "command": "ast-results.filterConfirmed",
@@ -594,19 +572,9 @@
           "when": "!ast-results-Confirmed"
         },
         {
-          "command": "ast-results.filterToVerify",
-          "group": "navigation@6",
-          "when": "!ast-results-ToVerify"
-        },
-        {
-          "command": "ast-results.filterUrgent",
-          "group": "navigation@7",
-          "when": "!ast-results-Urgent"
-        },
-        {
-          "command": "ast-results.filterNotIgnored",
-          "group": "navigation@4",
-          "when": "!ast-results-NotIgnored"
+          "command": "ast-results.filterIgnoredActive",
+          "group": "navigation@2",
+          "when": "ast-results-Ignored"
         },
         {
           "command": "ast-results.filterIgnored",
@@ -614,14 +582,74 @@
           "when": "!ast-results-Ignored"
         },
         {
+          "command": "ast-results.filterNotExploitableActive",
+          "group": "navigation@3",
+          "when": "ast-results-NotExploitable"
+        },
+        {
+          "command": "ast-results.filterNotExploitable",
+          "group": "navigation@3",
+          "when": "!ast-results-NotExploitable"
+        },
+        {
+          "command": "ast-results.filterNotIgnoredActive",
+          "group": "navigation@4",
+          "when": "ast-results-NotIgnored"
+        },
+        {
+          "command": "ast-results.filterNotIgnored",
+          "group": "navigation@4",
+          "when": "!ast-results-NotIgnored"
+        },
+        {
+          "command": "ast-results.filterProposedActive",
+          "group": "navigation@5",
+          "when": "ast-results-Proposed"
+        },
+        {
+          "command": "ast-results.filterProposed",
+          "group": "navigation@5",
+          "when": "!ast-results-Proposed"
+        },
+        {
           "command": "ast-results.filterSCAHideDevTestActive",
-          "group": "navigation@8",
+          "group": "navigation@6",
           "when": "ast-results-SCAHideDevTest"
         },
         {
           "command": "ast-results.filterSCAHideDevTest",
-          "group": "navigation@8",
+          "group": "navigation@6",
           "when": "!ast-results-SCAHideDevTest"
+        },
+        {
+          "command": "ast-results.filterToVerifyActive",
+          "group": "navigation@7",
+          "when": "ast-results-ToVerify"
+        },
+        {
+          "command": "ast-results.filterToVerify",
+          "group": "navigation@7",
+          "when": "!ast-results-ToVerify"
+        },
+        {
+          "command": "ast-results.filterUrgentActive",
+          "group": "navigation@8",
+          "when": "ast-results-Urgent"
+        },
+        {
+          "command": "ast-results.filterUrgent",
+          "group": "navigation@8",
+          "when": "!ast-results-Urgent"
+        },
+        {
+          "command": "ast-results.filterAllCustomStatesActive",
+          "group": "navigation@9",
+          "when": "ast-results-AllCustomStates"
+        },
+        {
+          "command": "ast-results.filterAllCustomStates",
+          "group": "navigation@9",
+          "when": "!ast-results-AllCustomStates"
         }
       ],
       "view/item/context": [
@@ -882,7 +910,24 @@
             "type": "boolean",
             "order": 4,
             "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
           }
         }
       },
@@ -954,58 +999,6 @@
             ]
           }
         }
-      },
-      {
-        "title": "Activate ASCA Realtime",
-        "id": "asca-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your code files for security best practices as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate OSS-Realtime",
-        "id": "realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your manifest files as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Secret Detection Realtime",
-        "id": "secret-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
-          }
-        }
-      },
-      {
-        "title": "Activate Containers Realtime",
-        "id": "containers-realtime-scanner",
-        "order": 2,
-        "properties": {
-          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
-            "type": "boolean",
-            "order": 3,
-            "default": false,
-            "markdownDescription": "Scans your Docker files and container configurations for vulnerabilities as you code"
-          }
-        }
       }
     ]
   },
@@ -1053,7 +1046,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139-secrets-realtime-fix.0",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.11.0",

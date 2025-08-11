@@ -5,6 +5,7 @@ import * as os from "os";
 import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export abstract class BaseScannerService implements IScannerService {
   public config: IScannerConfig;
@@ -35,6 +36,8 @@ export abstract class BaseScannerService implements IScannerService {
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
+
+  abstract dispose(): void;
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();
@@ -89,4 +92,37 @@ export abstract class BaseScannerService implements IScannerService {
       .digest("hex")
       .substring(0, 16);
   }
+
+  async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+    const dirPath = path.dirname(uri.fsPath);
+    const dirUri = vscode.Uri.file(dirPath);
+    const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+    const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+    for (const [entryName, _type] of entries) {
+      if (entryName.toLowerCase() === fileNameLower) {
+        return path.join(dirPath, entryName);
+      }
+    }
+    return undefined;
+  }
+
+  protected getHighestSeverity(severities: string[]): string {
+      const severityPriority = [
+        CxRealtimeEngineStatus.malicious,
+        CxRealtimeEngineStatus.critical,
+        CxRealtimeEngineStatus.high,
+        CxRealtimeEngineStatus.medium,
+        CxRealtimeEngineStatus.low,
+        CxRealtimeEngineStatus.unknown,
+        CxRealtimeEngineStatus.ok
+      ];
+  
+      for (const priority of severityPriority) {
+        if (severities.includes(priority)) {
+          return priority;
+        }
+      }
+    }
 }

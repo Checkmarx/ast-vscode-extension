@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
-import { IScannerConfig, CxDiagnosticData, ContainersHoverData } from "../../common/types";
+import { IScannerConfig, CxDiagnosticData, ContainersHoverData, IacHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import CxContainerRealtimeResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxContainerRealtime";
 import path from "path";
@@ -277,12 +277,42 @@ export class ContainersScannerService extends BaseScannerService {
 						new vscode.Position(location.line, location.endIndex)
 					);
 					const addDiagnostic = i === 0;
+					const highestSeverity = this.getHighestSeverity([image.status, this.exsistIacSeverityAtLine(uri, location.line)]);
+					// Handle gutter decorations based on highest severity
+					let gutterDecorations: vscode.DecorationOptions[];
+					switch (highestSeverity) {
+						case CxRealtimeEngineStatus.malicious:
+							gutterDecorations = maliciousDecorations;
+							break;
+						case CxRealtimeEngineStatus.critical:
+							gutterDecorations = criticalDecorations;
+							break;
+						case CxRealtimeEngineStatus.high:
+							gutterDecorations = highDecorations;
+							break;
+						case CxRealtimeEngineStatus.medium:
+							gutterDecorations = mediumDecorations;
+							break;
+						case CxRealtimeEngineStatus.low:
+							gutterDecorations = lowDecorations;
+							break;
+						case CxRealtimeEngineStatus.ok:
+							gutterDecorations = okDecorations;
+							break;
+						case CxRealtimeEngineStatus.unknown:
+							gutterDecorations = unknownDecorations;
+							break;
+						default:
+							gutterDecorations = unknownDecorations;
+							break;
+					}
 
+					// Handle icon decorations and diagnostics based on image status
 					switch (image.status) {
 						case CxRealtimeEngineStatus.malicious:
 							this.handleProblemStatus(
 								diagnostics,
-								maliciousDecorations,
+								gutterDecorations,
 								this.containersHoverData,
 								range,
 								uri,
@@ -295,16 +325,16 @@ export class ContainersScannerService extends BaseScannerService {
 							break;
 						case CxRealtimeEngineStatus.ok:
 							if (addDiagnostic) {
-								okDecorations.push({ range });
+								gutterDecorations.push({ range });
 							}
 							break;
 						case CxRealtimeEngineStatus.unknown:
-							unknownDecorations.push({ range });
+							gutterDecorations.push({ range });
 							break;
 						case CxRealtimeEngineStatus.critical:
 							this.handleProblemStatus(
 								diagnostics,
-								criticalDecorations,
+								gutterDecorations,
 								this.containersHoverData,
 								range,
 								uri,
@@ -318,7 +348,7 @@ export class ContainersScannerService extends BaseScannerService {
 						case CxRealtimeEngineStatus.high:
 							this.handleProblemStatus(
 								diagnostics,
-								highDecorations,
+								gutterDecorations,
 								this.containersHoverData,
 								range,
 								uri,
@@ -332,7 +362,7 @@ export class ContainersScannerService extends BaseScannerService {
 						case CxRealtimeEngineStatus.medium:
 							this.handleProblemStatus(
 								diagnostics,
-								mediumDecorations,
+								gutterDecorations,
 								this.containersHoverData,
 								range,
 								uri,
@@ -346,7 +376,7 @@ export class ContainersScannerService extends BaseScannerService {
 						case CxRealtimeEngineStatus.low:
 							this.handleProblemStatus(
 								diagnostics,
-								lowDecorations,
+								gutterDecorations,
 								this.containersHoverData,
 								range,
 								uri,
@@ -382,6 +412,21 @@ export class ContainersScannerService extends BaseScannerService {
 			mediumIconDecorations,
 			lowIconDecorations
 		);
+	}
+
+	private exsistIacSeverityAtLine(uri: vscode.Uri, lineNumber: number): string | undefined {
+		const iacCollection = this.getOtherScannerCollection(constants.iacRealtimeScannerEngineName);
+		if (iacCollection) {
+			const iacDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				return diagnosticData?.cxType === constants.iacRealtimeScannerEngineName;
+			});
+			const iacAtLine = iacDiagnostics.filter(diagnostic => diagnostic.range.start.line === lineNumber);
+			if (iacAtLine[0]) {
+				return ((iacAtLine[0] as vscode.Diagnostic & { data?: CxDiagnosticData }).data.item as IacHoverData).severity;
+			}
+			return undefined;
+		}
 	}
 
 	private storeAndApplyResults(

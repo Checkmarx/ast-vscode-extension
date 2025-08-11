@@ -76,7 +76,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		md.isTrusted = true;
 		const { vulnerabilities, ...hoverDataWithoutVuln } = hoverData;
 		const args = encodeURIComponent(JSON.stringify([hoverDataWithoutVuln]));
-		const buttons = buildCommandButtons(args, true);
+		const buttons = buildCommandButtons(args, true, false);
 		const isVulnerable = this.isVulnerableStatus(hoverData.status);
 		const isMalicious = hoverData.status === "Malicious";
 

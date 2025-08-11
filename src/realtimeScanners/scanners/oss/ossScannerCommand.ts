@@ -72,7 +72,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.isTrusted = true;
 
     const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = buildCommandButtons(args, true);
+    const buttons = buildCommandButtons(args, true, false);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
     if (isMalicious) {
@@ -158,7 +158,7 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
   public async dispose(): Promise<void> {
     await super.dispose();
-    (this.scannerService as OssScannerService).dispose();
+    this.scannerService.dispose();
     this.hoverProviderDisposable?.dispose();
   }
 

@@ -12,7 +12,9 @@ export interface IgnoreEntry {
 		path: string;
 		active: boolean;
 		line?: number;
+
 	}>;
+	secretValue?: string;
 	type: string;
 	PackageManager?: string;
 	PackageName: string;
@@ -479,54 +481,50 @@ export class IgnoreFileManager {
 
 	public addIgnoredEntrySecrets(entry: {
 		title: string;
+		description: string;
+		severity: string;
+		dateAdded: string;
+		line: number;
+		secretValue: string;
 		filePath: string;
-		line?: number;
-		severity?: string;
-		description?: string;
-		dateAdded?: string;
 	}): void {
-		const countBefore = this.getIgnoredPackagesCount();
-
-		const packageKey = `${entry.title}:${entry.line || 0}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const packageKey = `${entry.title}:${entry.secretValue}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
-				files: [],
+				files: [{
+					path: relativePath,
+					active: true,
+					line: entry.line + 1
+				}],
 				type: constants.secretsScannerEngineName,
 				PackageName: entry.title,
 				severity: entry.severity,
 				description: entry.description,
-				dateAdded: entry.dateAdded
+				dateAdded: entry.dateAdded,
+				secretValue: entry.secretValue
 			};
 		} else {
-			if (entry.severity !== undefined) {
-				this.ignoreData[packageKey].severity = entry.severity;
+			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+			if (existingFileEntry) {
+				existingFileEntry.active = true;
+			} else {
+				this.ignoreData[packageKey].files.push({
+					path: relativePath,
+					active: true,
+					line: this.ignoreData[packageKey].files[0]?.line || (entry.line + 1)
+				});
 			}
-			if (entry.description !== undefined) {
-				this.ignoreData[packageKey].description = entry.description;
-			}
-		}
 
-		const existing = this.ignoreData[packageKey].files.find(f => f.path === relativePath && f.line === entry.line);
-		if (!existing) {
-			this.ignoreData[packageKey].files.push({
-				path: relativePath,
-				active: true,
-				line: entry.line
-			});
-		} else {
-			existing.active = true;
-			existing.line = entry.line;
+			if (entry.severity !== undefined) { this.ignoreData[packageKey].severity = entry.severity; }
+			if (entry.description !== undefined) { this.ignoreData[packageKey].description = entry.description; }
+			if (entry.secretValue !== undefined) { this.ignoreData[packageKey].secretValue = entry.secretValue; }
 		}
 
 		this.saveIgnoreFile();
 		this.updateTempList();
-
-		const countAfter = this.getIgnoredPackagesCount();
-		if (countBefore === 0 && countAfter > 0 && this.uiRefreshCallback) {
-			this.uiRefreshCallback();
-		}
+		this.uiRefreshCallback?.();
 	}
 
 	private saveIgnoreFile(): void {
@@ -548,7 +546,7 @@ export class IgnoreFileManager {
 						return {
 							Title: entry.PackageName,
 							FilePath: scannedTempPath,
-							Line: file.line - 1
+							SecretValue: entry.secretValue
 						};
 					} else {
 						return {
@@ -593,53 +591,46 @@ export class IgnoreFileManager {
 	}
 
 	public removeMissingSecrets(currentResults: CxSecretsResult[], filePath: string): boolean {
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
 		let hasChanges = false;
+		const relativePath = path.relative(this.workspaceRootPath, filePath);
 
-		const currentSecrets = new Set<string>();
+		const currentSecrets = new Map<string, number[]>();
 		currentResults.forEach(result => {
-			if (result.locations && result.locations.length > 0) {
-				const line = result.locations[0].line + 1;
-				currentSecrets.add(`${result.title}:${line}`);
+			if (result.secretValue) {
+				const key = `${result.title}:${result.secretValue}:${relativePath}`;
+				const lines = currentSecrets.get(key) || [];
+				result.locations.forEach(loc => lines.push(loc.line + 1));
+				currentSecrets.set(key, lines);
 			}
 		});
 
-		const keysToProcess = Object.keys(this.ignoreData);
-		for (const packageKey of keysToProcess) {
-			const entry = this.ignoreData[packageKey];
+		Object.entries(this.ignoreData).forEach(([key, entry]) => {
+			if (entry.type !== constants.secretsScannerEngineName) { return; }
 
-			if (entry.type !== constants.secretsScannerEngineName) {
-				continue;
-			}
+			const fileEntry = entry.files.find(f => f.path === relativePath);
+			if (!fileEntry || !fileEntry.active) { return; }
 
-			const fileIndex = entry.files.findIndex(f =>
-				f.path === relativePath && f.active && f.line !== undefined
-			);
-
-			if (fileIndex !== -1) {
-				const fileEntry = entry.files[fileIndex];
-				const secretKey = `${entry.PackageName}:${fileEntry.line}`;
-
-				if (!currentSecrets.has(secretKey)) {
-
-					entry.files.splice(fileIndex, 1);
+			const secretKey = `${entry.PackageName}:${entry.secretValue}:${relativePath}`;
+			if (!currentSecrets.has(secretKey)) {
+				if (entry.files.length === 1) {
+					delete this.ignoreData[key];
+				} else {
+					fileEntry.active = false;
+				}
+				hasChanges = true;
+			} else {
+				const lines = currentSecrets.get(secretKey) || [];
+				if (lines.length > 0) {
+					fileEntry.line = lines[0];
 					hasChanges = true;
-
-					if (entry.files.length === 0) {
-						delete this.ignoreData[packageKey];
-					}
 				}
 			}
-		}
+		});
 
 		if (hasChanges) {
 			this.saveIgnoreFile();
 			this.updateTempList();
-
-			if (this.uiRefreshCallback) {
-				this.uiRefreshCallback();
-			}
-
+			this.uiRefreshCallback?.();
 		}
 
 		return hasChanges;
