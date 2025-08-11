@@ -6,7 +6,8 @@ import { URL, URLSearchParams } from 'url';
 import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
 import { commands } from "../utils/common/commands";
-import axios from 'axios';
+import { ProxyHelper } from '../utils/proxy/proxy';
+
 
 interface OAuthConfig {
   clientId: string;
@@ -25,10 +26,12 @@ export class AuthService {
   private server: http.Server | null = null;
   private readonly context: vscode.ExtensionContext;
   private readonly logs: Logs | undefined;
+  private proxyHelper: ProxyHelper;
   private constructor(extensionContext: vscode.ExtensionContext, logs?: Logs) {
     this.logs = logs;
     this.context = extensionContext;
     initialize(extensionContext);
+    this.proxyHelper = new ProxyHelper();
   }
 
   public static getInstance(extensionContext: vscode.ExtensionContext, logs?: Logs): AuthService {
@@ -37,6 +40,7 @@ export class AuthService {
     }
     return this.instance;
   }
+
   private async closeServer(): Promise<void> {
     if (this.server) {
       return new Promise((resolve) => {
@@ -54,8 +58,6 @@ export class AuthService {
     const codeChallenge = hashed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return { codeVerifier, codeChallenge };
   }
-
-
 
   private async validateConnection(baseUri: string, tenant: string): Promise<{ isValid: boolean; error?: string }> {
     try {
@@ -76,25 +78,41 @@ export class AuthService {
         };
       }
 
-      // Basic connectivity check to server
-      const isBaseUriValid = await this.checkUrlExists(baseUri, false);
-      if (!isBaseUriValid) {
+      // Step 3: Check proxy reachability before proceeding with server checks
+      const isProxyReachable = await this.proxyHelper.checkProxyReachability(baseUri);
+      if (!isProxyReachable) {
         return {
           isValid: false,
-          error: "Please check the server address of your Checkmarx One environment."
+          error: "Proxy is not reachable. Please check your proxy settings."
+        };
+      }
+
+      try {
+        // Basic connectivity check to server
+        const isBaseUriValid = await this.checkUrlExists(baseUri, false);
+        if (!isBaseUriValid) {
+          return {
+            isValid: false,
+            error: "Please check the server address of your Checkmarx One environment."
+          };
+        }
+      }
+      catch (error) {
+        return {
+          isValid: false,
+          error: error
         };
       }
 
       // Check if tenant exists
       const tenantUrl = `${baseUri}/auth/realms/${tenant}`;
-      const isTenantValid = await this.checkUrlExists(tenantUrl, true);
+      const isTenantValid = await this.checkUrlExists(tenantUrl.replace(/([^:]\/)\/+/g, '$1'), true);
       if (!isTenantValid) {
         return {
           isValid: false,
           error: `Tenant "${tenant}" not found. Please check your tenant name.`
         };
       }
-
       return { isValid: true };
     } catch (error) {
       return {
@@ -106,28 +124,81 @@ export class AuthService {
 
   // Helper function to check if a URL exists
   private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
-    try {
-      const response = await axios.get(urlToCheck, {
-        timeout: 5000
-      });
+    const MAX_REDIRECTS = 5;
 
-      if (isTenantCheck && (response.status === 404 || response.status === 405)) {
-        console.log(`Tenant check failed with status: ${response.status}`);
+    const fetchUrl = async (urlStr: string, redirectCount: number): Promise<boolean> => {
+      try {
+        const urlObj = new URL(urlStr);
+        const isHttps = urlObj.protocol === 'https:';
+        const requestFn = isHttps ? https.request : http.request;
+        const agent = this.proxyHelper.createHttpsProxyAgent();
+
+        const options: https.RequestOptions = {
+          hostname: urlObj.hostname,
+          port: urlObj.port || (isHttps ? 443 : 80),
+          path: urlObj.pathname + urlObj.search,
+          method: 'GET',
+          timeout: 5000,
+          headers: {
+            Accept: 'application/json',
+          },
+          agent,
+        };
+
+        return await new Promise<boolean>((resolve, reject) => {
+          const req = requestFn(options, (res) => {
+            const { statusCode, headers } = res;
+            let body = '';
+
+            res.on('data', (chunk) => (body += chunk));
+            res.on('end', async () => {
+              if (statusCode && statusCode >= 300 && statusCode < 400 && headers.location) {
+                if (redirectCount >= MAX_REDIRECTS) {
+                  console.error('Too many redirects');
+                  return resolve(false);
+                }
+
+                const redirectUrl = new URL(headers.location, urlStr).href;
+                return resolve(await fetchUrl(redirectUrl, redirectCount + 1));
+              }
+
+              if (isTenantCheck && (statusCode === 404 || statusCode === 405)) {
+                console.log(`Tenant check failed with ${statusCode}:`, body);
+                return resolve(false);
+              }
+
+              if (statusCode && statusCode < 400) {
+                return resolve(true);
+              }
+
+              console.log(`Final response status: ${statusCode}`);
+              console.log(`Response body: ${body}`);
+              return resolve(false);
+            });
+          });
+
+          req.on('error', (err) => {
+            console.error(`Request error: ${err.message}`);
+            //resolve(false);
+            reject(new Error(err.message));
+          });
+
+          req.on('timeout', () => {
+            console.error('Request timed out');
+            req.destroy();
+            resolve(false);
+            reject(new Error('Request timed out'));
+          });
+
+          req.end();
+        });
+      } catch (error) {
+        console.error('Unexpected error:', error);
         return false;
       }
+    };
 
-      return response.status < 400;
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number } };
-        if (axiosError.response) {
-          console.log(`Request failed with status ${axiosError.response.status}`);
-          return false;
-        }
-      }
-      console.log(`Request error: ${error instanceof Error ? error.message : String(error)}`);
-      return false;
-    }
+    return await fetchUrl(urlToCheck, 0);
   }
 
 
@@ -289,86 +360,79 @@ export class AuthService {
   }
 
   private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const makeRequest = (url: string, postData: string, redirectCount = 0) => {
-        if (redirectCount > 5) {
-          reject(new Error('Too many redirects'));
-          return;
+    const MAX_REDIRECTS = 5;
+    const agent = this.proxyHelper.createHttpsProxyAgent();
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: config.clientId,
+      code,
+      redirect_uri: config.redirectUri,
+      code_verifier: config.codeVerifier
+    });
+
+    const postData = params.toString();
+
+    const makeRequest = (url: string, redirectCount = 0): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        if (redirectCount > MAX_REDIRECTS) {
+          return reject(new Error('Too many redirects'));
         }
 
         const urlObj = new URL(url);
-        const options = {
+        const isHttps = urlObj.protocol === 'https:';
+        const requestFn = isHttps ? https.request : http.request;
+
+        const options: https.RequestOptions = {
           hostname: urlObj.hostname,
-          port: urlObj.protocol === 'https:' ? 443 : 80,
+          port: urlObj.port || (isHttps ? 443 : 80),
           path: urlObj.pathname + urlObj.search,
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(postData)
-          }
+            'Content-Length': Buffer.byteLength(postData),
+          },
+          agent
         };
 
-        console.log(`Making request to ${url} (redirect #${redirectCount})`);
-
-        const req = (urlObj.protocol === 'https:' ? https : http).request(options, (res) => {
+        const req = requestFn(options, (res) => {
           let data = '';
-          res.on('data', chunk => data += chunk);
+
+          res.on('data', (chunk) => data += chunk);
           res.on('end', () => {
-            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
-              const location = res.headers.location;
-              console.log(`Redirect ${res.statusCode} to ${location}`);
+            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              const redirectUrl = /^https?:\/\//i.test(res.headers.location)
+                ? res.headers.location
+                : `${urlObj.protocol}//${urlObj.host}${res.headers.location}`;
 
-              if (!location) {
-                reject(new Error(`Redirect without location header (status ${res.statusCode})`));
-                return;
-              }
-
-              const redirectUrl = /^https?:\/\//i.test(location)
-                ? location
-                : `${urlObj.protocol}//${urlObj.host}${location}`;
-
-              makeRequest(redirectUrl, postData, redirectCount + 1);
+              console.log(`Redirecting to ${redirectUrl}`);
+              return resolve(makeRequest(redirectUrl, redirectCount + 1));
             }
-            else if (res.statusCode !== 200) {
-              reject(new Error(`Request failed with status ${res.statusCode}`));
+
+            if (res.statusCode !== 200) {
+              return reject(new Error(`Request failed with status ${res.statusCode}. Body: ${data}`));
             }
-            else {
-              try {
-                const parsedData = JSON.parse(data);
-                if (!parsedData.refresh_token) {
-                  reject(new Error('Response did not include refresh_token'));
-                  return;
-                }
-                resolve(parsedData.refresh_token);
-              } catch (error) {
-                reject(new Error(`Failed to parse response: ${error.message}`));
+
+            try {
+              const parsed = JSON.parse(data);
+              if (!parsed.refresh_token) {
+                return reject(new Error('Response did not include refresh_token'));
               }
+              return resolve(parsed.refresh_token);
+            } catch (err: any) {
+              return reject(new Error(`Failed to parse response: ${err.message}`));
             }
           });
         });
 
-        req.on('error', (error) => {
-          reject(new Error(`Request error: ${error.message}`));
-        });
+        req.on('error', (err) => reject(new Error(`Request error: ${err.message}`)));
 
         req.write(postData);
         req.end();
-      };
+      });
+    };
 
-      const params = new URLSearchParams();
-      params.append('grant_type', 'authorization_code');
-      params.append('client_id', config.clientId);
-      params.append('code', code);
-      params.append('redirect_uri', config.redirectUri);
-      params.append('code_verifier', config.codeVerifier);
-
-      const postData = params.toString();
-
-      makeRequest(config.tokenEndpoint, postData, 0);
-    });
+    return makeRequest(config.tokenEndpoint);
   }
-
-
 
   private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
     const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
