@@ -698,7 +698,11 @@ export class Cx implements CxPlatform {
     const cx = new CxWrapper(config);
     const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool);
 
+<<<<<<< HEAD
     if (scans.payload && scans.exitCode === 0) {
+=======
+      if (scans.payload && scans.exitCode === 0) {
+>>>>>>> main
       return scans.payload[0];
     } else {
       throw new Error(scans.status);

@@ -1,16 +1,20 @@
 # CHANGELOG
 
-## [v2.34.1-IaC.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IaC.0) - 2025-07-29 21:01:45
+## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Add results priority (AST-105849) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1227
-* Add Telemetry to Ignore Buttons (AST-107521) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1228
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-ignoeAndContainers.0...v2.34.1-IaC.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-iac-realtime-5.8.0...v2.34.1-OpenAI-Model-list.0
+
+## [v2.34.1-iac-realtime-5.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-iac-realtime-5.8.0) - 2025-08-03 10:50:37
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-IaC.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IaC.0) - 2025-07-29 21:01:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-main-containers-ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-main-containers-ignore.0) - 2025-07-27 15:00:54
 
