@@ -6,7 +6,7 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
-import { getFilePath, getResultsFilePath, isCursorIDE } from "../utils/utils";
+import { getFilePath, getResultsFilePath, isIDE } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
@@ -698,7 +698,7 @@ export class Cx implements CxPlatform {
     const cx = new CxWrapper(config);
     const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool);
 
-      if (scans.payload && scans.exitCode === 0) {
+    if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
       throw new Error(scans.status);
@@ -759,8 +759,8 @@ export class Cx implements CxPlatform {
   async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
     const config = await this.getAstConfiguration();
     const cx = new CxWrapper(config);
-    const aiProvider = isCursorIDE() ? "Cursor" : "Copilot";
-    const agent = isCursorIDE() ? "Cursor" : constants.vsCodeAgent;
+    const aiProvider = isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
+    const agent = isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
 
     cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity);
   }

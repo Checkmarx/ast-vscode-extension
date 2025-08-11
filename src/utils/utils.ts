@@ -270,12 +270,12 @@ export function getStateIdForTriage(selectedStateName: string): number {
   return matchedCustom.id;
 }
 
-export function isCursorIDE(): boolean {
-  const appName = vscode.env.appName || '';
-  if (appName.toLowerCase().includes('cursor')) {
-    return true;
-  }
-  return false;
+export function getIDEName(): string {
+  return (vscode.env.appName || '').toLowerCase();
+}
+
+export function isIDE(ideName: string): boolean {
+  return getIDEName().includes(ideName.toLowerCase());
 }
 
 export function buildCommandButtons(args: string, hasIgnoreAll: boolean): string {
