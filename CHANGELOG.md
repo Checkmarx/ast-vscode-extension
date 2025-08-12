@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.34.1-custom_state.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-custom_state.0) - 2025-08-11 08:32:27
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-custom_state.0
+
+## [v2.34.1-Windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Windsurf.0) - 2025-08-11 07:33:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

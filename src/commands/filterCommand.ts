@@ -52,6 +52,7 @@ export class FilterCommand {
     this.registerFilterNotIgnoredCommand();
     this.registerFilterIgnoredCommand();
     this.registerFilterSCAHideDevTestCommand();
+    this.registerFilterAllCustomStatesCommand();
   }
 
   public async initializeFilters() {
@@ -111,11 +112,17 @@ export class FilterCommand {
       this.context.globalState.get<boolean>(constants.ignoredFilter) ?? true;
     this.updateState(StateLevel.ignored, ignored);
     await updateStateFilter(this.context, constants.ignoredFilter, ignored);
-    await vscode.commands.executeCommand(commands.refreshTree);
 
     const scaHideDevTest =
       this.context.globalState.get<boolean>(constants.scaHideDevTestFilter) ?? false;
     await updateStateFilter(this.context, constants.scaHideDevTestFilter, scaHideDevTest);
+
+    const customStates =
+      this.context.globalState.get<boolean>(constants.allCustomStatesFilter) ?? true;
+    this.updateState(StateLevel.customStates, customStates);
+    await updateStateFilter(this.context, constants.allCustomStatesFilter, customStates);
+
+    await vscode.commands.executeCommand(commands.refreshTree);
   }
 
 
@@ -621,6 +628,44 @@ export class FilterCommand {
             this.logs,
             this.context,
             constants.scaHideDevTestFilter
+          )
+      )
+    );
+  }
+  private registerFilterAllCustomStatesCommand() {
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterAllCustomStates,
+        async () =>
+          await this.filterState(
+            this.logs,
+            this.context,
+            StateLevel.customStates,
+            constants.allCustomStatesFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterAllCustomStatesActive,
+        async () =>
+          await this.filterState(
+            this.logs,
+            this.context,
+            StateLevel.customStates,
+            constants.allCustomStatesFilter
+          )
+      )
+    );
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        commands.filterAllCustomStatesCommand,
+        async () =>
+          await this.filterState(
+            this.logs,
+            this.context,
+            StateLevel.customStates,
+            constants.allCustomStatesFilter
           )
       )
     );
