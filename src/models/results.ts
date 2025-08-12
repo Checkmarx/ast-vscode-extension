@@ -100,6 +100,7 @@ export class AstResult extends CxResult {
     this.state = result.state;
     this.similarityId = result.similarityId;
     this.queryName = result.data.queryName;
+    this.queryName = result.data.queryName ?? result.data.packageIdentifier ?? result.id;
     this.queryId = result.data.queryId;
     this.vulnerabilityDetails = result.vulnerabilityDetails;
     this.riskScore = result.riskScore;
@@ -278,6 +279,8 @@ export class AstResult extends CxResult {
         return StateLevel.notIgnored;
       case "IGNORED":
         return StateLevel.ignored;
+      default:
+        return StateLevel.customStates;
     }
   }
 

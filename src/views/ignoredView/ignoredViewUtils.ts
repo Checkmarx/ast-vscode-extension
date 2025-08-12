@@ -88,11 +88,7 @@ export function formatPackageDisplayName(packageKey: string, packageType: string
 	if (packageType === constants.ossRealtimeScannerEngineName) {
 		return packageKey.replace(':', '@');
 	} else if (packageType === constants.secretsScannerEngineName) {
-		const colonIndex = packageKey.lastIndexOf(':');
-		if (colonIndex !== -1) {
-			return packageKey.substring(0, colonIndex);
-		}
-		return packageKey;
+		return packageKey.split(':')[0];
 	}
 	return packageKey;
 }

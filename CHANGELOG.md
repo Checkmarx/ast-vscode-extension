@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## [v2.34.1-custom_state.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-custom_state.0) - 2025-08-11 08:32:27
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-custom_state.0
+
+## [v2.34.1-Windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Windsurf.0) - 2025-08-11 07:33:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34-Finish-Ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34-Finish-Ignore.0) - 2025-08-11 09:01:25
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-2.34-Finish-Ignore.0
+
+## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-iac-realtime-5.8.0...v2.34.1-OpenAI-Model-list.0
+
+## [v2.34.1-iac-realtime-5.8.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-iac-realtime-5.8.0) - 2025-08-03 10:50:37
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-IaC.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-IaC.0) - 2025-07-29 21:01:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.34.1-main-containers-ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-main-containers-ignore.0) - 2025-07-27 15:00:54
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -7,13 +43,6 @@
 ## [v2.34.1-ignoeAndContainers.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-ignoeAndContainers.0) - 2025-07-27 20:10:42
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Other Changes
-* Fix in Containers Realtime Scanner by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1225
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-main-containers-ignore.0...v2.34.1-ignoeAndContainers.0
 
 ## [v2.34.1-hotfix-duplicate-icons-ignored.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-hotfix-duplicate-icons-ignored.0) - 2025-07-27 14:14:31
 

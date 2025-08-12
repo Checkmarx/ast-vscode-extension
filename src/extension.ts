@@ -106,6 +106,13 @@ export async function activate(context: vscode.ExtensionContext) {
         scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
         return;
       }
+      const iacEffected = section(
+        `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+      );
+      if (iacEffected) {
+        scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName)?.register();
+        return;
+      }
     });
   context.subscriptions.push(configListener);
 

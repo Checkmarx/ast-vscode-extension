@@ -66,6 +66,10 @@ export const commands = {
   filterSCAHideDevTestActive: `${constants.extensionName}.filterSCAHideDevTestActive`,
   filterSCAHideDevTestCommand: `${constants.extensionName}.filterSCAHideDevTests`,
 
+  filterAllCustomStates: `${constants.extensionName}.filterAllCustomStates`,
+  filterAllCustomStatesActive: `${constants.extensionName}.filterAllCustomStatesActive`,
+  filterAllCustomStatesCommand: `${constants.extensionName}.filterAllCustomStatess`,
+
   groupByFile: `${constants.extensionName}.groupByFile`,
   groupByFileActive: `${constants.extensionName}.groupByFileActive`,
   groupByFileCommand: `${constants.extensionName}.groupByFiles`,
@@ -121,8 +125,8 @@ export const commands = {
   openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`,
   openAIChat: `${constants.extensionName}.${constants.openAIChat}`,
   viewDetails: `${constants.extensionName}.${constants.viewDetails}`,
-  ignorePackage: `${constants.extensionName}.ignorePackage`,
-  IgnoreAll: `${constants.extensionName}.ignoreAll`,
+  ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
+  ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
 
 };

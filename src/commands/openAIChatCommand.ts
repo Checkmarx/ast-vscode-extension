@@ -3,9 +3,9 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData } from "../utils/utils";
+import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData, isIacHoverData } from "../utils/utils";
 
-import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData } from "../realtimeScanners/common/types";
+import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
     SCA_REMEDIATION_PROMPT,
@@ -14,7 +14,9 @@ import {
     ASCA_REMEDIATION_PROMPT,
     ASCA_EXPLANATION_PROMPT,
     CONTAINERS_REMEDIATION_PROMPT,
-    CONTAINERS_EXPLANATION_PROMPT
+    CONTAINERS_EXPLANATION_PROMPT,
+    IAC_REMEDIATION_PROMPT,
+    IAC_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
@@ -128,13 +130,18 @@ export class CopilotChatCommand {
         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
     }
 
-    private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData): void {
+    private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
         const isSecrets = isSecretsHoverData(item);
-        const engine = isSecrets ? constants.secretsScannerEngineName : constants.ossRealtimeScannerEngineName;
+        const isIac = isIacHoverData(item);
+        const engine = isSecrets ? constants.secretsScannerEngineName :
+            isIac ? constants.iacRealtimeScannerEngineName :
+                constants.ossRealtimeScannerEngineName;
         let problemSeverity: string | undefined;
         if (isSecrets) {
             problemSeverity = item.severity;
         } else if (isAscaHoverData(item)) {
+            problemSeverity = item.severity;
+        } else if (isIac) {
             problemSeverity = item.severity;
         } else {
             problemSeverity = (item as HoverData | ContainersHoverData).status;
@@ -146,7 +153,7 @@ export class CopilotChatCommand {
 
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
+            vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.openAIChat, item);
 
                 const isSecrets = isSecretsHoverData(item);
@@ -157,6 +164,8 @@ export class CopilotChatCommand {
                     question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_REMEDIATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
+                } else if (isIacHoverData(item)) {
+                    question = IAC_REMEDIATION_PROMPT(item.title, item.description, item.severity, item.fileType);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -169,7 +178,7 @@ export class CopilotChatCommand {
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData) => {
+            vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.viewDetails, item);
 
                 const isSecrets = isSecretsHoverData(item);
@@ -181,6 +190,8 @@ export class CopilotChatCommand {
                     question = ASCA_EXPLANATION_PROMPT(item.ruleName, item.description, item.severity);
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_EXPLANATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
+                } else if (isIacHoverData(item)) {
+                    question = IAC_EXPLANATION_PROMPT(item.title, item.description, item.severity, item.fileType);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
@@ -195,6 +206,8 @@ export class CopilotChatCommand {
 
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData) => {
+                this.logUserEvent("click", constants.ignorePackage, item);
+
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     if (!workspaceFolder) {
@@ -212,7 +225,8 @@ export class CopilotChatCommand {
                             line: (item.location?.line || 0) + 1,
                             severity: item.severity,
                             description: item.description,
-                            dateAdded: new Date().toISOString()
+                            dateAdded: new Date().toISOString(),
+                            secretValue: item.secretValue
                         });
 
 
@@ -255,7 +269,8 @@ export class CopilotChatCommand {
 
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.IgnoreAll, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData) => {
+                this.logUserEvent("click", constants.ignoreAll, item);
                 try {
                     const workspaceFolder = getWorkspaceFolder(item.filePath);
                     const ignoreManager = getInitializedIgnoreManager(workspaceFolder);

@@ -75,7 +75,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false);
+		const buttons = buildCommandButtons(args, false, false);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity) + " ");
@@ -104,7 +104,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as AscaScannerService).dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
 }

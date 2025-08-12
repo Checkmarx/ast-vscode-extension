@@ -2,30 +2,27 @@
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
 import { BaseScannerCommand } from "../../common/baseScannerCommand";
-import { SecretsScannerService } from "./secretsScannerService";
+import { IacScannerService } from "./iacScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
-import { constants } from "../../../utils/common/constants";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
-import { SecretsHoverData } from "../../common/types";
+import { IacHoverData } from "../../common/types";
+import { constants } from "../../../utils/common/constants";
 
-
-export class SecretsScannerCommand extends BaseScannerCommand {
+export class IacScannerCommand extends BaseScannerCommand {
 	constructor(
 		context: vscode.ExtensionContext,
 		logs: Logs,
 		configManager: ConfigurationManager
 	) {
-		const scannerService = new SecretsScannerService();
+		const scannerService = new IacScannerService();
 		super(context, logs, scannerService.config, scannerService, configManager);
 	}
 
 	private hoverProviderDisposable: vscode.Disposable | undefined;
 
-
-
 	protected async initializeScanner(): Promise<void> {
 		this.registerScanOnChangeText();
-		const scanner = this.scannerService as SecretsScannerService;
+		const scanner = this.scannerService as IacScannerService;
 		scanner.initializeScanner();
 
 		if (this.hoverProviderDisposable) {
@@ -49,18 +46,18 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		});
 	}
 
-
-
 	private getHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		scanner: SecretsScannerService
-	) {
-		const key = `${document.uri.fsPath}:${position.line}`;
+		scanner: IacScannerService
+	): vscode.Hover | undefined {
+		const filePath = document.uri.fsPath;
+		const line = position.line;
+		const key = `${filePath}:${line}`;
 
-		const hoverData: SecretsHoverData = scanner.getHoverData().get(key);
+		const hoverData = scanner.getHoverData().get(key);
 
-		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
+		const diagnostics = scanner.getDiagnosticsMap().get(document.uri.fsPath) ?? [];
 		const hasDiagnostic = diagnostics.some(
 			(d) => d.range.start.line === position.line
 		);
@@ -68,27 +65,31 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		if (!hoverData || !hasDiagnostic) {
 			return;
 		}
+
+		return this.createHoverContent(hoverData);
+	}
+
+	private createHoverContent(hoverData: IacHoverData[]): vscode.Hover {
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
-		const args = encodeURIComponent(JSON.stringify([hoverData]));
-
-		const buttons = buildCommandButtons(args, false, true);
 
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
-		md.appendMarkdown(this.renderID(hoverData));
 
-		md.appendMarkdown(`${buttons}<br>`);
+		hoverData.forEach((problem, index) => {
+			if (index > 0) {
+				md.appendMarkdown("<br>");
+			}
+
+			const args = encodeURIComponent(JSON.stringify([problem]));
+			const buttons = buildCommandButtons(args, true, false);
+
+			md.appendMarkdown(this.renderSeverityIcon(problem.severity));
+			md.appendMarkdown(this.renderID(problem));
+			md.appendMarkdown(`${buttons}<br>`);
+		});
 
 		return new vscode.Hover(md);
-	}
-
-	private renderID(hoverData: SecretsHoverData): string {
-		return `
-<b>${hoverData.title}</b>
-<i style="color: dimgrey;"> - Secret finding <br></i>
-`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
@@ -99,14 +100,16 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
 
+	private renderID(hoverData: IacHoverData): string {
+		return `
+<b>${hoverData.title}</b> - ${hoverData.description}
+<i style="color: dimgrey;"> - IaC vulnerability<br></i>
+`;
+	}
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
 		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
-	}
-
-	getScannerService(): SecretsScannerService {
-		return this.scannerService as SecretsScannerService;
 	}
 }
