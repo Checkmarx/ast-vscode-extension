@@ -224,17 +224,13 @@ export class ContainersScannerService extends BaseScannerService {
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setScannedFilePath(filePath, tempFilePath);
 
-			const fullScanResults = await cx.scanContainers(tempFilePath, "");
-			this.lastFullScanResults = fullScanResults as CxContainerRealtimeResult[];
-
-			if (ignoreManager.getIgnoredPackagesCount() > 0) {
-				ignoreManager.removeMissingContainers(fullScanResults, filePath);
-			}
+			const unfiltered = await cx.scanContainers(tempFilePath, "");
+			this.lastFullScanResults = unfiltered as CxContainerRealtimeResult[];
 
 			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
 			const scanResults = await cx.scanContainers(tempFilePath, ignoredPackagesFile || "");
 
-			this.updateProblems(scanResults, document.uri);
+			this.updateProblems(scanResults, document.uri, this.lastFullScanResults);
 		} catch (error) {
 			this.storeAndApplyResults(
 				filePath,
@@ -251,7 +247,9 @@ export class ContainersScannerService extends BaseScannerService {
 				[],
 				[],
 				[],
-				[]
+				[],
+				[],
+
 			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
@@ -262,7 +260,7 @@ export class ContainersScannerService extends BaseScannerService {
 		}
 	}
 
-	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
+	updateProblems<T = unknown>(problems: T, uri: vscode.Uri, fullScanResults?: unknown[]): void {
 		const scanResults = problems as CxContainerRealtimeResult[];
 		const filePath = uri.fsPath;
 
@@ -415,7 +413,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const ignoredData = ignoreManager.getIgnoredPackagesData();
 		const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 
-		const fullScanResults = (this.lastFullScanResults as CxContainerRealtimeResult[]) || scanResults;
+		const allScanResults = (this.lastFullScanResults as CxContainerRealtimeResult[]) || scanResults;
 
 		Object.entries(ignoredData).forEach(([, entry]) => {
 			if (entry.type !== constants.containersRealtimeScannerEngineName) { return; }
@@ -424,7 +422,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 			const imageKey = `${entry.imageName}:${entry.imageTag}`;
 
-			fullScanResults.forEach(result => {
+			allScanResults.forEach(result => {
 				const resultKey = `${result.imageName}:${result.imageTag}`;
 				if (resultKey === imageKey && result.locations) {
 					result.locations.forEach(location => {
@@ -460,6 +458,15 @@ export class ContainersScannerService extends BaseScannerService {
 
 		this.ignoredDecorations.set(filePath, ignoredDecorations);
 
+		// Cleanup ignored entries if we have fullScanResults
+		const hasContainerIgnores = Object.values(ignoredData).some(
+			entry => entry.type === constants.containersRealtimeScannerEngineName
+		);
+
+		if (hasContainerIgnores && fullScanResults) {
+			this.cleanupContainersIgnoredEntriesWithoutFileWatcher(fullScanResults, filePath, ignoreManager);
+		}
+
 		this.storeAndApplyResults(
 			filePath,
 			uri,
@@ -471,12 +478,34 @@ export class ContainersScannerService extends BaseScannerService {
 			highDecorations,
 			mediumDecorations,
 			lowDecorations,
+			ignoredDecorations,
 			maliciousIconDecorations,
 			criticalIconDecorations,
 			highIconDecorations,
 			mediumIconDecorations,
 			lowIconDecorations
 		);
+	}
+
+	private cleanupContainersIgnoredEntriesWithoutFileWatcher(
+		fullScanResults: unknown[],
+		currentFilePath: string,
+		ignoreManager: IgnoreFileManager
+	): void {
+		// Dispose the file watcher to avoid conflicts
+		ignoreManager.dispose();
+
+		// Perform the cleanup
+		ignoreManager.removeMissingContainers(fullScanResults, currentFilePath);
+
+		// Re-initialize the file watcher after a short delay
+		setTimeout(async () => {
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+			if (workspaceFolder) {
+				ignoreManager.initialize(workspaceFolder);
+				ignoreManager.setContainersScannerService(this);
+			}
+		}, 100);
 	}
 
 	private exsistIacSeverityAtLine(uri: vscode.Uri, lineNumber: number): string | undefined {
@@ -505,6 +534,7 @@ export class ContainersScannerService extends BaseScannerService {
 		highDecorations: vscode.DecorationOptions[],
 		mediumDecorations: vscode.DecorationOptions[],
 		lowDecorations: vscode.DecorationOptions[],
+		ignoredDecorations: vscode.DecorationOptions[],
 		maliciousIconDecorations: vscode.DecorationOptions[],
 		criticalIconDecorations: vscode.DecorationOptions[],
 		highIconDecorations: vscode.DecorationOptions[],

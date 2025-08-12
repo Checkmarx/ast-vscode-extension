@@ -658,7 +658,7 @@ export class IgnoreFileManager {
 		dateAdded?: string;
 	}): void {
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
-		const packageKey = `${entry.imageName}:${entry.imageTag}:${relativePath}`;
+		const packageKey = `${entry.imageName}:${entry.imageTag}`;
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
@@ -702,45 +702,70 @@ export class IgnoreFileManager {
 	}
 
 	private updateTempList(): void {
-		const tempList = Object.values(this.ignoreData).flatMap(entry =>
-			entry.files
-				.filter(file => file.active)
-				.map(file => {
-					const originalPath = path.resolve(this.workspaceRootPath, file.path);
-					const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
+		const tempList: Array<{
+			Title?: string;
+			FilePath?: string;
+			SecretValue?: string;
+			SimilarityID?: string;
+			FileName?: string;
+			Line?: number;
+			RuleID?: number;
+			ImageName?: string;
+			ImageTag?: string;
+			PackageManager?: string;
+			PackageName?: string;
+			PackageVersion?: string;
+		}> = [];
+		const addedContainers = new Set<string>();
 
-					if (entry.type === constants.secretsScannerEngineName) {
-						return {
-							Title: entry.PackageName,
-							FilePath: scannedTempPath,
-							SecretValue: entry.secretValue
-						};
-					} else if (entry.type === constants.iacRealtimeScannerEngineName) {
-						return {
-							Title: entry.PackageName,
-							SimilarityID: entry.similarityId
-						};
-					} else if (entry.type === constants.ascaRealtimeScannerEngineName) {
-						return {
-							FileName: path.basename(scannedTempPath),
-							Line: file.line,
-							RuleID: entry.ruleId
-						};
-					} else if (entry.type === constants.containersRealtimeScannerEngineName) {
-						return {
-							ImageName: entry.imageName,
-							ImageTag: entry.imageTag
-						};
-					} else {
-						return {
-							PackageManager: entry.PackageManager,
-							PackageName: entry.PackageName,
-							PackageVersion: entry.PackageVersion,
-							FilePath: scannedTempPath,
-						};
-					}
-				})
-		);
+		Object.values(this.ignoreData).forEach(entry => {
+			const hasActiveFiles = entry.files.some(file => file.active);
+			if (!hasActiveFiles) { return; }
+
+			if (entry.type === constants.containersRealtimeScannerEngineName) {
+				const containerKey = `${entry.imageName}:${entry.imageTag}`;
+				if (!addedContainers.has(containerKey)) {
+					tempList.push({
+						ImageName: entry.imageName,
+						ImageTag: entry.imageTag
+					});
+					addedContainers.add(containerKey);
+				}
+			} else {
+				entry.files
+					.filter(file => file.active)
+					.forEach(file => {
+						const originalPath = path.resolve(this.workspaceRootPath, file.path);
+						const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
+
+						if (entry.type === constants.secretsScannerEngineName) {
+							tempList.push({
+								Title: entry.PackageName,
+								FilePath: scannedTempPath,
+								SecretValue: entry.secretValue
+							});
+						} else if (entry.type === constants.iacRealtimeScannerEngineName) {
+							tempList.push({
+								Title: entry.PackageName,
+								SimilarityID: entry.similarityId
+							});
+						} else if (entry.type === constants.ascaRealtimeScannerEngineName) {
+							tempList.push({
+								FileName: path.basename(scannedTempPath),
+								Line: file.line,
+								RuleID: entry.ruleId
+							});
+						} else {
+							tempList.push({
+								PackageManager: entry.PackageManager,
+								PackageName: entry.PackageName,
+								PackageVersion: entry.PackageVersion,
+								FilePath: scannedTempPath,
+							});
+						}
+					});
+			}
+		});
 
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
@@ -940,11 +965,20 @@ export class IgnoreFileManager {
 			const currentLines = currentImages.get(imageKey) || [];
 
 			if (currentLines.length === 0) {
-				delete this.ignoreData[packageKey];
+				const updatedFiles = entry.files.filter(f => f.path !== relativePath);
+				if (updatedFiles.length === 0) {
+					delete this.ignoreData[packageKey];
+				} else {
+					entry.files = updatedFiles;
+				}
 				hasChanges = true;
 			} else {
-				fileEntry.line = currentLines[0] + 1;
-				hasChanges = true;
+				entry.files.forEach(fileEntry => {
+					if (fileEntry.path === relativePath && fileEntry.active) {
+						fileEntry.line = currentLines[0] + 1;
+						hasChanges = true;
+					}
+				});
 			}
 		});
 
