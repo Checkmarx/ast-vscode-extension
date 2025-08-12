@@ -12,6 +12,14 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
+## [v2.34.1-2.34-Finish-Ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34-Finish-Ignore.0) - 2025-08-11 09:01:25
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-2.34-Finish-Ignore.0
+
 ## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
