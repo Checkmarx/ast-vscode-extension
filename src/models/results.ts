@@ -279,6 +279,8 @@ export class AstResult extends CxResult {
         return StateLevel.notIgnored;
       case "IGNORED":
         return StateLevel.ignored;
+      default:
+        return StateLevel.customStates;
     }
   }
 
