@@ -458,7 +458,6 @@ export class ContainersScannerService extends BaseScannerService {
 
 		this.ignoredDecorations.set(filePath, ignoredDecorations);
 
-		// Cleanup ignored entries if we have fullScanResults
 		const hasContainerIgnores = Object.values(ignoredData).some(
 			entry => entry.type === constants.containersRealtimeScannerEngineName
 		);
@@ -492,13 +491,10 @@ export class ContainersScannerService extends BaseScannerService {
 		currentFilePath: string,
 		ignoreManager: IgnoreFileManager
 	): void {
-		// Dispose the file watcher to avoid conflicts
 		ignoreManager.dispose();
 
-		// Perform the cleanup
 		ignoreManager.removeMissingContainers(fullScanResults, currentFilePath);
 
-		// Re-initialize the file watcher after a short delay
 		setTimeout(async () => {
 			const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 			if (workspaceFolder) {
