@@ -742,32 +742,32 @@
         },
         {
           "command": "ast-results.groupBySeverity",
-          "group": "@groupBy@4",
+          "group": "@groupBy@1",
           "when": "view == astResults && !ast-results-groupBySeverity"
         },
         {
           "command": "ast-results.groupByStatus",
-          "group": "@groupBy@6",
+          "group": "@groupBy@4",
           "when": "view == astResults && !ast-results-groupByStatus"
         },
         {
           "command": "ast-results.groupByLanguage",
-          "group": "@groupBy@2",
+          "group": "@groupBy@5",
           "when": "view == astResults && !ast-results-groupByLanguage"
         },
         {
           "command": "ast-results.groupByFile",
-          "group": "@groupBy@1",
+          "group": "@groupBy@6",
           "when": "view == astResults && !ast-results-groupByFile"
         },
         {
           "command": "ast-results.groupByState",
-          "group": "@groupBy@5",
+          "group": "@groupBy@3",
           "when": "view == astResults && !ast-results-groupByState"
         },
         {
           "command": "ast-results.groupByQueryName",
-          "group": "@groupBy@3",
+          "group": "@groupBy@2",
           "when": "view == astResults && !ast-results-groupByQueryName"
         },
         {
@@ -777,32 +777,32 @@
         },
         {
           "command": "ast-results.groupBySeverityActive",
-          "group": "@groupBy@4",
+          "group": "@groupBy@1",
           "when": "view == astResults && ast-results-groupBySeverity"
         },
         {
           "command": "ast-results.groupByStatusActive",
-          "group": "@groupBy@6",
+          "group": "@groupBy@4",
           "when": "view == astResults && ast-results-groupByStatus"
         },
         {
           "command": "ast-results.groupByLanguageActive",
-          "group": "@groupBy@2",
+          "group": "@groupBy@5",
           "when": "view == astResults && ast-results-groupByLanguage"
         },
         {
           "command": "ast-results.groupByFileActive",
-          "group": "@groupBy@1",
+          "group": "@groupBy@6",
           "when": "view == astResults && ast-results-groupByFile"
         },
         {
           "command": "ast-results.groupByStateActive",
-          "group": "@groupBy@5",
+          "group": "@groupBy@3",
           "when": "view == astResults && ast-results-groupByState"
         },
         {
           "command": "ast-results.groupByQueryNameActive",
-          "group": "@groupBy@3",
+          "group": "@groupBy@2",
           "when": "view == astResults && ast-results-groupByQueryName"
         },
         {
@@ -1062,7 +1062,7 @@
     "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
-    "axios": "1.11.0",
+    "axios": "^1.11.0",
     "copyfiles": "2.4.1",
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^9.1.0",
