@@ -953,13 +953,13 @@
             "type": "string",
             "order": 3,
             "default": "",
-            "markdownDescription": "API key to connect to OpenAI."
+            "markdownDescription": "API key used to connect to OpenAI."
           },
           "CheckmarxSecurityChampion.model": {
             "order": 1,
             "type": "string",
             "default": "gpt-4.1-mini",
-            "markdownDescription": "The model for AI Security Champion to use. This will be overridden if a custom model is specified below.",
+            "markdownDescription": "The OpenAI model used by AI Security Champion. This will be overridden if a user-defined model is specified below.",
             "enum": [
               "gpt-4.1-mini",
               "gpt-4.1",
@@ -981,7 +981,7 @@
             "type": "string",
             "order": 2,
             "default": "",
-            "markdownDescription": "Custom model name (optional). Use this if the desired model is not listed above. Will override the selected model if provided."
+            "markdownDescription": "If your organization's preferred OpenAI model is not available in the selection menu above, you can enter a custom model here. Optional"
           }
         }
       }
