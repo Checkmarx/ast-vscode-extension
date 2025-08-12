@@ -20,18 +20,15 @@ interface OAuthConfig {
   port: number;
 }
 
-
 export class AuthService {
   private static instance: AuthService;
   private server: http.Server | null = null;
   private readonly context: vscode.ExtensionContext;
   private readonly logs: Logs | undefined;
-  private proxyHelper: ProxyHelper;
   private constructor(extensionContext: vscode.ExtensionContext, logs?: Logs) {
     this.logs = logs;
     this.context = extensionContext;
     initialize(extensionContext);
-    this.proxyHelper = new ProxyHelper();
   }
 
   public static getInstance(extensionContext: vscode.ExtensionContext, logs?: Logs): AuthService {
@@ -79,7 +76,8 @@ export class AuthService {
       }
 
       // Step 3: Check proxy reachability before proceeding with server checks
-      const isProxyReachable = await this.proxyHelper.checkProxyReachability(baseUri);
+      const proxyHelper = new ProxyHelper();
+      const isProxyReachable = await proxyHelper.checkProxyReachability(baseUri);
       if (!isProxyReachable) {
         return {
           isValid: false,
@@ -131,7 +129,8 @@ export class AuthService {
         const urlObj = new URL(urlStr);
         const isHttps = urlObj.protocol === 'https:';
         const requestFn = isHttps ? https.request : http.request;
-        const agent = this.proxyHelper.createHttpsProxyAgent();
+        const proxyHelper = new ProxyHelper();
+        const agent = proxyHelper.createHttpsProxyAgent();
 
         const options: https.RequestOptions = {
           hostname: urlObj.hostname,
@@ -361,7 +360,8 @@ export class AuthService {
 
   private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
     const MAX_REDIRECTS = 5;
-    const agent = this.proxyHelper.createHttpsProxyAgent();
+    const proxyHelper = new ProxyHelper();
+    const agent = proxyHelper.createHttpsProxyAgent();
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: config.clientId,

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import * as http from 'http';
-import * as https from 'https';
+import tls from 'tls';
+import net from 'net';
 import * as url from 'url';
 
 
@@ -23,15 +23,16 @@ export class ProxyHelper {
 
 	constructor() {
 		this.additionalParams = vscode.workspace.getConfiguration().get<string>('checkmarxOne.additionalParams') || '';
-		if (!this.additionalParams.trim()) {
+		if (this.additionalParams.trim()) {
 			this.parseAdditionalParams();
 		}
 		if (!this.extensionProxy) {
 			this.vscodeProxy = vscode.workspace.getConfiguration().get<string>('http.proxy');
-			this.strictSSL = vscode.workspace.getConfiguration().get<boolean>('http.proxyStrictSSL', true);
+			if (this.vscodeProxy && this.vscodeProxy !== "")
+				this.strictSSL = vscode.workspace.getConfiguration().get<boolean>('http.proxyStrictSSL', false);
 		}
 
-		if (!this.vscodeProxy) {
+		if (!this.extensionProxy && !this.vscodeProxy) {
 			this.envProxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 		}
 	}
@@ -65,9 +66,9 @@ export class ProxyHelper {
 	public getProxyConfig(): ProxyConfig {
 		return {
 			proxy: this.extensionProxy || this.vscodeProxy || this.envProxy || undefined,
-			strictSSL: this.extensionProxy ? false : this.strictSSL,
-			proxyAuthType: this.proxyAuthType,
-			proxyNtlmDomain: this.proxyNtlmDomain,
+			strictSSL: this.strictSSL,
+			proxyAuthType: this.extensionProxy ? this.proxyAuthType : undefined,
+			proxyNtlmDomain: this.extensionProxy ? this.proxyNtlmDomain : undefined,
 		};
 	}
 
@@ -102,41 +103,78 @@ export class ProxyHelper {
 		return new Promise((resolve) => {
 			const { proxy } = this.getProxyConfig();
 			if (!proxy) {
+				// No proxy configured → treat as reachable
 				resolve(true);
+				return;
 			}
 
-			// Parse the proxy URL
 			const parsedProxy = url.parse(proxy);
+			const target = new URL(targetUrl);
 
-			// Choose http or https depending on the target URL
-			const requestFn = targetUrl.startsWith('https') ? https.request : http.request;
-
-			// Setup request options for the proxy
-			const options = {
-				hostname: parsedProxy.hostname,
-				port: parsedProxy.port || 8080, // Default port for proxy
-				path: targetUrl,
-				method: 'GET',
-				headers: {
-					Host: new URL(targetUrl).hostname
+			// Connect to proxy via TCP socket
+			const socket = net.connect(
+				{
+					host: parsedProxy.hostname,
+					port: Number(parsedProxy.port) || 8080,
+				},
+				() => {
+					// Send CONNECT request to proxy to open tunnel to target
+					socket.write(
+						`CONNECT ${target.hostname}:443 HTTP/1.1\r\n` +
+						`Host: ${target.hostname}:443\r\n` +
+						`Connection: close\r\n\r\n`
+					);
 				}
-			};
+			);
 
-			const req = requestFn(options, (res) => {
-				if (res.statusCode === 200) {
-					resolve(true);  // Proxy is reachable and the target is reachable
-				} else {
-					resolve(false);
-					console.error(`Proxy responded with status code: ${res.statusCode}`);
+			socket.setEncoding('utf8');
+
+			let responseBuffer = '';
+
+			socket.on('data', (chunk) => {
+				responseBuffer += chunk;
+
+				if (responseBuffer.indexOf('\r\n\r\n') !== -1) {
+					if (/^HTTP\/1\.[01] 200/.test(responseBuffer)) {
+						// Tunnel established, upgrade to TLS socket to confirm HTTPS handshake
+						const tlsSocket = tls.connect(
+							{
+								socket: socket,
+								servername: target.hostname,
+							},
+							() => {
+								// Success: proxy reachable & tunnel works
+								resolve(true);
+								tlsSocket.end();
+							}
+						);
+
+						tlsSocket.on('error', (err) => {
+							console.error(`TLS handshake error: ${err.message}`);
+							resolve(false);
+						});
+					} else {
+						// Proxy rejected CONNECT request
+						console.error(`Proxy CONNECT failed: ${responseBuffer.split('\r\n')[0]}`);
+						resolve(false);
+						socket.end();
+					}
+
+					socket.removeAllListeners('data');
 				}
 			});
 
-			req.on('error', (err) => {
-				console.error(`Error connecting to proxy: ${err.message}`);
+			socket.on('error', (err) => {
+				console.error(`Proxy connection error: ${err.message}`);
 				resolve(false);
 			});
 
-			req.end();
+			// Timeout to prevent hanging if proxy doesn’t respond
+			socket.setTimeout(5000, () => {
+				console.error('Proxy connection timed out');
+				socket.destroy();
+				resolve(false);
+			});
 		});
 	}
 }
