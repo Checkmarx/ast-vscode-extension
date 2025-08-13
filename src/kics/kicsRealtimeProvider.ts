@@ -299,7 +299,7 @@ export class KicsProvider {
       let additionalParams = vscode.workspace
         .getConfiguration("CheckmarxKICS")
         .get("Additional Parameters") as string;
-        additionalParams = additionalParams.replace(/("[^"]*")|\s+/g, (match, quoted) => quoted ? quoted : ",");
+      additionalParams = additionalParams.replace(/("[^"]*")|\s+/g, (match, quoted) => quoted ? quoted : ",");
       if (file) {
         results = await cx.getResultsRealtime(file, additionalParams);
       } else {
@@ -367,7 +367,7 @@ export class KicsProvider {
   "${kicsResult.description}"
   Value: 
    ${kicsResult.query_name}
-  Recomended fix: 
+  Recommended fix: 
    ${file.expected_value}
        `,
         kicsResult: kicsResult,

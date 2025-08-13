@@ -59,7 +59,7 @@ export class WebViewCommand {
           this.logs,
           type
         );
-        // Need to check if the detailsPanel is positioned in the rigth place
+        // Need to check if the detailsPanel is positioned in the right place
         if (
           this.detailsPanel?.viewColumn === 1 ||
           !this.detailsPanel?.viewColumn
@@ -115,7 +115,7 @@ export class WebViewCommand {
 
         // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
         //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
-        // Comunication between webview and extension
+        // Communication between webview and extension
         await this.handleMessages(result, detailsDetachedView);
       }
     );
@@ -147,7 +147,7 @@ export class WebViewCommand {
           type,
           masked
         );
-        // Need to check if the detailsPanel is positioned in the rigth place
+        // Need to check if the detailsPanel is positioned in the right place
         if (
           this.gptPanel?.viewColumn === 1 ||
           this.gptPanel?.viewColumn === 2 ||
