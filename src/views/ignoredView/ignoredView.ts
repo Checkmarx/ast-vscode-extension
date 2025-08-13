@@ -83,7 +83,7 @@ export class IgnoredView {
 
 		const msUntilTomorrow = tomorrow.getTime() - now.getTime();
 
-		console.log(`Next refresh scheduled in ${Math.round(msUntilTomorrow / 1000 / 60)} minutes (at ${tomorrow.toLocaleString()})`);
+
 
 		this.autoRefreshTimer = setTimeout(() => {
 			this.onDayChanged();
@@ -91,7 +91,6 @@ export class IgnoredView {
 	}
 
 	private onDayChanged(): void {
-		console.log('Day changed - refreshing ignored view with updated dates');
 		this.lastRefreshDate = new Date().toDateString();
 		this.refresh();
 
@@ -108,7 +107,6 @@ export class IgnoredView {
 	private checkAndRefreshIfDateChanged(): void {
 		const currentDate = new Date().toDateString();
 		if (currentDate !== this.lastRefreshDate) {
-			console.log('Date changed detected - refreshing ignored view');
 			this.lastRefreshDate = currentDate;
 			this.refresh();
 
@@ -254,9 +252,6 @@ export class IgnoredView {
 		const ignoredPackages = ignoreManager.getIgnoredPackagesData();
 
 
-		console.log('Ignored packages data:', ignoredPackages);
-
-
 		const ignoreManagerInstance = IgnoreFileManager.getInstance();
 		const packageCount = ignoreManagerInstance.getIgnoredPackagesCount();
 		const hasPackages = packageCount > 0;
@@ -365,6 +360,8 @@ export class IgnoredView {
 		const scaIcon = pkg.type === constants.ossRealtimeScannerEngineName ? ignoredViewUtils.getScaIconPath(webview, extensionPath) : '';
 		const secretsIcon = pkg.type === constants.secretsScannerEngineName ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
 		const iacIcon = pkg.type === constants.iacRealtimeScannerEngineName ? ignoredViewUtils.getIacIgnoreIconPath(webview, extensionPath) : '';
+		const ascaIcon = pkg.type === constants.ascaRealtimeScannerEngineName ? ignoredViewUtils.getAscaIgnoreIconPath(webview, extensionPath) : '';
+		const containersIcon = pkg.type === constants.containersRealtimeScannerEngineName ? ignoredViewUtils.getContainersIgnoreIconPath(webview, extensionPath) : '';
 
 		const packageIcon = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath)
@@ -372,7 +369,11 @@ export class IgnoredView {
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath)
 				: pkg.type === constants.iacRealtimeScannerEngineName
 					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath)
-					: '';
+					: pkg.type === constants.ascaRealtimeScannerEngineName
+						? ignoredViewUtils.getAscaIconPath(pkg.severity || 'medium', webview, extensionPath)
+						: pkg.type === constants.containersRealtimeScannerEngineName
+							? ignoredViewUtils.getContainersIconPath(pkg.severity || 'medium', webview, extensionPath)
+							: '';
 
 		const packageIconHover = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath, true)
@@ -380,7 +381,11 @@ export class IgnoredView {
 				? ignoredViewUtils.getSecretsIconPath(pkg.severity || 'medium', webview, extensionPath, true)
 				: pkg.type === constants.iacRealtimeScannerEngineName
 					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath, true)
-					: '';
+					: pkg.type === constants.ascaRealtimeScannerEngineName
+						? ignoredViewUtils.getAscaIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+						: pkg.type === constants.containersRealtimeScannerEngineName
+							? ignoredViewUtils.getContainersIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+							: '';
 
 		const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, pkg.type);
 
@@ -402,6 +407,8 @@ export class IgnoredView {
 							${scaIcon ? `<img src="${scaIcon}" alt="SCA" class="sca-icon" />` : ''}
 							${secretsIcon ? `<img src="${secretsIcon}" alt="Secrets" class="secrets-icon" />` : ''}
 							${iacIcon ? `<img src="${iacIcon}" alt="IaC" class="iac-icon" />` : ''}
+							${ascaIcon ? `<img src="${ascaIcon}" alt="ASCA" class="asca-icon" />` : ''}
+							${containersIcon ? `<img src="${containersIcon}" alt="Containers" class="containers-icon" />` : ''}
 							${fileButtons}
 						</div>
 					</div>

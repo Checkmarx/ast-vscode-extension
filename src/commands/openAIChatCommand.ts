@@ -3,7 +3,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData, isIacHoverData } from "../utils/utils";
+import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData, isIacHoverData, findAndIgnoreMatchingContainersInWorkspace, rescanContainerFiles } from "../utils/utils";
 
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import {
@@ -216,7 +216,7 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData | ContainersHoverData) => {
                 this.logUserEvent("click", constants.ignorePackage, item);
 
 
@@ -226,6 +226,12 @@ export class CopilotChatCommand {
                     if (isIacHoverData(item)) {
                         const iacItem = item as IacHoverData & { originalFilePath?: string };
                         workspaceFolder = getWorkspaceFolder(iacItem.originalFilePath);
+                    } else if (isContainersHoverData(item)) {
+                        workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (!workspaceFolder) {
+                            vscode.window.showErrorMessage("No workspace folder found.");
+                            return;
+                        }
                     } else {
                         workspaceFolder = getWorkspaceFolder(item.filePath);
                     }
@@ -272,6 +278,45 @@ export class CopilotChatCommand {
                         const secretsScannerForScan = this.secretsScanner as SecretsScannerService;
                         await secretsScannerForScan.scan(document, this.logs);
                     }
+                    else if (isAscaHoverData(item)) {
+                        ignoreManager.addIgnoredEntryAsca({
+                            ruleName: item.ruleName,
+                            ruleId: item.ruleId!,
+                            filePath: item.filePath || '',
+                            line: (item.location?.line || 0),
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`ASCA rule '${item.ruleName}' ignored successfully.`);
+
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === (item.filePath || ''))
+                            ?? await vscode.workspace.openTextDocument(item.filePath || '');
+                        if (this.ascaScanner && this.ascaScanner.scan) {
+                            await this.ascaScanner.scan(document, this.logs);
+                        }
+                    }
+                    else if (isContainersHoverData(item)) {
+                        ignoreManager.addIgnoredEntryContainers({
+                            imageName: item.imageName,
+                            imageTag: item.imageTag,
+                            filePath: vscode.window.activeTextEditor?.document.uri.fsPath || '',
+                            line: (item.location?.line || 0) + 1,
+                            severity: item.status,
+                            description: item.vulnerabilities && item.vulnerabilities.length > 0 ?
+                                item.vulnerabilities.map(v => `${v.cve}: ${v.severity}`).join(', ') :
+                                undefined,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`Container ${item.imageName}:${item.imageTag} ignored successfully.`);
+
+                        const document = vscode.window.activeTextEditor?.document;
+                        if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
+                            await this.containersScanner.scan(document, this.logs);
+                        }
+                    }
                     else {
                         ignoreManager.addIgnoredEntry({
                             packageManager: item.packageManager,
@@ -304,19 +349,38 @@ export class CopilotChatCommand {
 
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData | ContainersHoverData) => {
                 this.logUserEvent("click", constants.ignoreAll, item);
                 try {
-                    const workspaceFolder = getWorkspaceFolder(item.filePath);
-                    const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
-                    const scanner = this.ossScanner as OssScannerService;
+                    if (isContainersHoverData(item)) {
+                        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (!workspaceFolder) {
+                            vscode.window.showErrorMessage("No workspace folder found.");
+                            return;
+                        }
 
-                    const affectedFiles = findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
-                    await rescanFiles(affectedFiles, scanner, this.logs);
+                        const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
+                        const scanner = this.containersScanner as ContainersScannerService;
 
-                    vscode.window.showInformationMessage(
-                        `Ignored ${item.packageName}@${item.version} in ${affectedFiles.size} files.`
-                    );
+                        const affectedFiles = await findAndIgnoreMatchingContainersInWorkspace(item, scanner, ignoreManager, this.logs);
+                        await rescanContainerFiles(affectedFiles, scanner, this.logs);
+
+                        vscode.window.showInformationMessage(
+                            `Ignored ${item.imageName}@${item.imageTag} in ${affectedFiles.size} files.`
+                        );
+                    } else {
+                        const ossItem = item as HoverData;
+                        const workspaceFolder = getWorkspaceFolder(ossItem.filePath);
+                        const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
+                        const scanner = this.ossScanner as OssScannerService;
+
+                        const affectedFiles = findAndIgnoreMatchingPackages(ossItem, scanner, ignoreManager);
+                        await rescanFiles(affectedFiles, scanner, this.logs);
+
+                        vscode.window.showInformationMessage(
+                            `Ignored ${ossItem.packageName}@${ossItem.version} in ${affectedFiles.size} files.`
+                        );
+                    }
                 } catch (err) {
                     this.logs.error(`Failed to ignore all: ${err}`);
                     vscode.window.showErrorMessage(`Failed to ignore all: ${err}`);
