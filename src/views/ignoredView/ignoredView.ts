@@ -361,6 +361,7 @@ export class IgnoredView {
 		const secretsIcon = pkg.type === constants.secretsScannerEngineName ? ignoredViewUtils.getSecretsIgnoreIconPath(webview, extensionPath) : '';
 		const iacIcon = pkg.type === constants.iacRealtimeScannerEngineName ? ignoredViewUtils.getIacIgnoreIconPath(webview, extensionPath) : '';
 		const ascaIcon = pkg.type === constants.ascaRealtimeScannerEngineName ? ignoredViewUtils.getAscaIgnoreIconPath(webview, extensionPath) : '';
+		const containersIcon = pkg.type === constants.containersRealtimeScannerEngineName ? ignoredViewUtils.getContainersIgnoreIconPath(webview, extensionPath) : '';
 
 		const packageIcon = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath)
@@ -370,7 +371,9 @@ export class IgnoredView {
 					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath)
 					: pkg.type === constants.ascaRealtimeScannerEngineName
 						? ignoredViewUtils.getAscaIconPath(pkg.severity || 'medium', webview, extensionPath)
-						: '';
+						: pkg.type === constants.containersRealtimeScannerEngineName
+							? ignoredViewUtils.getContainersIconPath(pkg.severity || 'medium', webview, extensionPath)
+							: '';
 
 		const packageIconHover = pkg.type === constants.ossRealtimeScannerEngineName
 			? ignoredViewUtils.getPackageIconPath(pkg.severity || 'medium', webview, extensionPath, true)
@@ -380,7 +383,9 @@ export class IgnoredView {
 					? ignoredViewUtils.getIacIconPath(pkg.severity || 'medium', webview, extensionPath, true)
 					: pkg.type === constants.ascaRealtimeScannerEngineName
 						? ignoredViewUtils.getAscaIconPath(pkg.severity || 'medium', webview, extensionPath, true)
-						: '';
+						: pkg.type === constants.containersRealtimeScannerEngineName
+							? ignoredViewUtils.getContainersIconPath(pkg.severity || 'medium', webview, extensionPath, true)
+							: '';
 
 		const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, pkg.type);
 
@@ -403,6 +408,7 @@ export class IgnoredView {
 							${secretsIcon ? `<img src="${secretsIcon}" alt="Secrets" class="secrets-icon" />` : ''}
 							${iacIcon ? `<img src="${iacIcon}" alt="IaC" class="iac-icon" />` : ''}
 							${ascaIcon ? `<img src="${ascaIcon}" alt="ASCA" class="asca-icon" />` : ''}
+							${containersIcon ? `<img src="${containersIcon}" alt="Containers" class="containers-icon" />` : ''}
 							${fileButtons}
 						</div>
 					</div>
