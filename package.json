@@ -560,7 +560,7 @@
       }
     ],
     "menus": {
-      "ast-results.filterBy": [        
+      "ast-results.filterBy": [
         {
           "command": "ast-results.filterConfirmedActive",
           "group": "navigation@1",
@@ -1059,7 +1059,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.139",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.140-new-feilds.0",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "^1.11.0",

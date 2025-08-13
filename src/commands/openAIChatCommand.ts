@@ -165,7 +165,7 @@ export class CopilotChatCommand {
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_REMEDIATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else if (isIacHoverData(item)) {
-                    question = IAC_REMEDIATION_PROMPT(item.title, item.description, item.severity, item.fileType);
+                    question = IAC_REMEDIATION_PROMPT(item.title, item.description, item.severity, item.fileType, item.expectedValue, item.actualValue);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -191,7 +191,7 @@ export class CopilotChatCommand {
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_EXPLANATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else if (isIacHoverData(item)) {
-                    question = IAC_EXPLANATION_PROMPT(item.title, item.description, item.severity, item.fileType);
+                    question = IAC_EXPLANATION_PROMPT(item.title, item.description, item.severity, item.fileType, item.expectedValue, item.actualValue);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }

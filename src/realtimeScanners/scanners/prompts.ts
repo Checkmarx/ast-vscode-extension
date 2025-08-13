@@ -475,58 +475,114 @@ A secure coding issue has been detected in your code.
 **Description:** ${description}  
 **Recommended Fix:** ${remediationAdvise}
 
-Your task is to help fix this security issue by providing concrete code changes and best practices.
+Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
 ---
 
-### 🔍 Issue Analysis
+1. ANALYSIS (AUTOMATED):
 
-The code violates the security rule: **${ruleName}**
+Determine the programming language of the file where the security issue was detected.  
+If unknown, leave the \`language\` field empty.
 
-**Problem Description:**
-${description}
+Call the internal \`codeRemediation\` MCP tool with:
 
-**Security Risk Level:** ${severity}
+\`\`\`json
+{
+  "language": "[auto-detected programming language]",
+  "metadata": {
+    "ruleID": "${ruleName}",
+    "description": "${description}",
+    "remediationAdvice": "${remediationAdvise}"
+  },
+  "sub_type": "",
+  "type": "sast"
+}
+\`\`\`
 
----
+- If the tool is **available**, parse the response:
+  - \`fix_instructions\` – exact steps to follow for remediation
 
-### 🛠️ Recommended Solution
-
-**Primary Fix:**
-${remediationAdvise}
-
-### 📋 Step-by-Step Remediation
-
-1. **Identify the problematic code pattern**
-   - Review the flagged line and surrounding context
-   - Understand why this pattern is insecure
-
-2. **Apply the recommended fix**
-   - Implement the suggested changes
-   - Follow secure coding best practices
-
-3. **Verify the fix**
-   - Test that the functionality still works
-   - Ensure no new security issues are introduced
-
-### 💡 Best Practices
-
-- Always validate and sanitize input data
-- Use parameterized queries to prevent injection attacks
-- Implement proper authentication and authorization
-- Keep dependencies up to date
-- Follow principle of least privilege
-- Use secure configuration settings
+- If the tool is **not available**, display:
+  \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
 
 ---
 
-### ✏️ Output Format Guidelines
+2. EXECUTION (AUTOMATED):
 
-- Provide specific code examples when possible
-- Explain why the original code is insecure
-- Show the secure alternative implementation
-- Include testing recommendations
-- Be factual, concise, and helpful
+- Read and execute each line in \`fix_instructions\`, in order.
+- For each change:
+  - Apply the instruction exactly.
+  - Track all modified files.
+  - Note the type of change (e.g., input validation, sanitization, secure API usage, authentication fix).
+  - Record before → after values where applicable.
+  - Capture line numbers if known.
+
+Examples:
+- \`src/auth.ts:42\`: \`password === userInput\` → \`bcrypt.compare(userInput, password)\`
+- \`src/db.ts:78\`: \`query = "SELECT * FROM users WHERE id = " + userId\` → \`query = "SELECT * FROM users WHERE id = ?", [userId]\`
+- \`src/api.ts:156\`: Added input validation: \`if (!validator.isEmail(email)) throw new Error('Invalid email')\`
+- \`src/config.ts:23\`: // TODO: Review security configuration for production deployment
+
+4. OUTPUT:
+
+Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+
+✅ **Remediation Summary**
+
+Format:
+\`\`\`
+\`${AGENT_NAME} Security Assistant -\` - Remediation Summary
+
+Rule:        ${ruleName}
+Severity:    ${severity}
+Issue Type:  SAST Security Vulnerability
+
+Files Modified:
+1. src/auth.ts
+   - Line 42: Replaced plain text comparison with bcrypt.compare()
+   - Added secure password hashing implementation
+
+2. src/db.ts
+   - Line 78: Replaced string concatenation with parameterized query
+   - Prevented SQL injection vulnerability
+
+3. src/api.ts
+   - Line 156: Added input validation for email parameter
+   - Implemented sanitization for user inputs
+
+4. src/config.ts
+   - Line 23: Inserted TODO for production security review
+\`\`\`
+
+✅ **Final Status**
+
+If all tasks succeeded:
+- "Remediation completed for security rule ${ruleName}"
+- "All fix instructions and security validations resolved"
+- "Build status: PASS"
+- "Security tests: PASS"
+
+If partially resolved:
+- "Remediation partially completed – manual review required"
+- "Some security validations or instructions could not be automatically fixed"
+- "TODOs inserted where applicable"
+
+If failed:
+- "Remediation failed for security rule ${ruleName}"
+- "Reason: {summary of failure}"
+- "Unresolved instructions or security issues listed above"
+
+---
+
+5. CONSTRAINTS:
+
+- Do not prompt the user
+- Do not skip or reorder fix steps
+- Only execute what's explicitly listed in \`fix_instructions\`
+- Attempt to fix build/test failures automatically
+- Insert clear TODO comments for unresolved issues
+- Ensure remediation is deterministic, auditable, and fully automated
+- Follow secure coding best practices throughout the process
 `;
 
 export const ASCA_EXPLANATION_PROMPT = (
@@ -830,7 +886,9 @@ export const IAC_REMEDIATION_PROMPT = (
   title: string,
   description: string,
   severity: string,
-  fileType: string
+  fileType: string,
+  expectedValue: string,
+  actualValue: string
 ) => `You are the ${AGENT_NAME} Security Assistant.
 
 An Infrastructure as Code (IaC) security issue has been detected.
@@ -840,67 +898,137 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **File Type:** \`${fileType}\`  
 **Description:** ${description}
 
-Your task is to help fix this IaC security issue by providing concrete configuration changes and best practices.
+Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
 ---
 
-### 🔍 Issue Analysis
+1. ANALYSIS (AUTOMATED):
 
-The infrastructure configuration violates the security rule: **${title}**
+Determine the programming language of the file where the IaC security issue was detected.  
+If unknown, leave the \`language\` field empty.
 
-**Problem Description:**
-${description}
+Call the internal \`codeRemediation\` MCP tool with:
 
-**Security Risk Level:** ${severity}
+\`\`\`json
+{
+  "language": "[auto-detected programming language]",
+  "metadata": {
+    "title": "${title}",
+    "description": "${description}",
+    "remediationAdvice": "${expectedValue}"
+  },
+  "sub_type": "",
+  "type": "iac"
+}
+\`\`\`
 
----
+- If the tool is **available**, parse the response:
+  - \`fix_instructions\` – exact steps to follow for remediation
 
-### 🛠️ Recommended Solution
-
-**Primary Fix:**
-Provide specific configuration changes to address this security issue based on the file type and vulnerability.
-
-### 📋 Step-by-Step Remediation
-
-1. **Identify the problematic configuration**
-   - Review the flagged configuration and surrounding context
-   - Understand why this pattern is insecure for infrastructure
-
-2. **Apply the recommended fix**
-   - Implement the suggested configuration changes
-   - Follow infrastructure security best practices
-
-3. **Verify the fix**
-   - Test that the infrastructure still deploys correctly
-   - Ensure no new security issues are introduced
-   - Validate compliance with security policies
-
-### 💡 Best Practices for ${fileType}
-
-- Follow principle of least privilege for permissions
-- Use secure defaults for all services
-- Implement proper network segmentation
-- Enable logging and monitoring
-- Use secrets management for sensitive data
-- Regular security updates and patching
-- Implement infrastructure scanning in CI/CD
+- If the tool is **not available**, display:
+  \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
 
 ---
 
-### ✏️ Output Format Guidelines
+2. EXECUTION (AUTOMATED):
 
-- Provide specific configuration examples when possible
-- Explain why the original configuration is insecure
-- Show the secure alternative implementation
-- Include deployment testing recommendations
-- Be factual, concise, and helpful
+- Read and execute each line in \`fix_instructions\`, in order.
+- For each change:
+  - Apply the instruction exactly.
+  - Track all modified files.
+  - Note the type of change (e.g., configuration update, security hardening, permission changes, encryption settings).
+  - Record before → after values where applicable.
+  - Capture line numbers if known.
+
+Examples:
+- \`terraform/main.tf:42\`: \`public_access = true\` → \`public_access = false\`
+- \`cloudformation.yaml:78\`: \`SecurityGroups: ["sg-open"]\` → \`SecurityGroups: ["sg-restricted"]\`
+- \`kubernetes.yaml:156\`: Added security context: \`runAsNonRoot: true\`
+- \`ansible/playbook.yml:23\`: // TODO: Review IAC security configuration for production deployment
+
+---
+
+3. VERIFICATION:
+
+- If the instructions include validation, deployment, or testing steps — run them exactly as written
+- If instructions do not explicitly cover validation, perform basic checks based on \`${fileType}\`:
+  - \`Terraform\`: \`terraform validate\`, \`terraform plan\`
+  - \`CloudFormation\`: \`aws cloudformation validate-template\`
+  - \`Kubernetes\`: \`kubectl apply --dry-run=client\`
+  - \`Ansible\`: \`ansible-playbook --check\`
+  - \`Docker\`: \`docker-compose config\`
+
+If any of these validations fail:
+- Attempt to fix the issue if it's obvious
+- Otherwise log the error and annotate the code with a TODO
+
+---
+
+4. OUTPUT:
+
+Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+
+✅ **Remediation Summary**
+
+Format:
+\`\`\`
+Security Assistant - Remediation Summary
+
+Issue:       ${title}
+Severity:    ${severity}
+File Type:   ${fileType}
+
+Files Modified:
+1. ${fileType}
+   - Updated configuration: ${actualValue} → ${expectedValue}
+   - Applied security hardening based on best practices
+
+2. Additional configurations (if applicable)
+   - Updated related security settings
+   - Added missing security controls
+
+3. Documentation
+   - Updated comments and documentation where applicable
+\`\`\`
+
+✅ **Final Status**
+
+If all tasks succeeded:
+- "Remediation completed for IaC security issue ${title}"
+- "All fix instructions and security validations resolved"
+- "Configuration validation: PASS"
+- "Security compliance: PASS"
+
+If partially resolved:
+- "Remediation partially completed – manual review required"
+- "Some security validations or instructions could not be automatically fixed"
+- "TODOs inserted where applicable"
+
+If failed:
+- "Remediation failed for IaC security issue ${title}"
+- "Reason: {summary of failure}"
+- "Unresolved instructions or security issues listed above"
+
+---
+
+5. CONSTRAINTS:
+
+- Do not prompt the user
+- Do not skip or reorder fix steps
+- Only execute what's explicitly listed in \`fix_instructions\`
+- Attempt to fix validation failures automatically
+- Insert clear TODO comments for unresolved issues
+- Ensure remediation is deterministic, auditable, and fully automated
+- Follow Infrastructure as Code security best practices throughout the process
 `;
 
 export const IAC_EXPLANATION_PROMPT = (
   title: string,
   description: string,
   severity: string,
-  fileType: string
+  fileType: string,
+  expectedValue: string,
+  actualValue: string
 ) => `You are the \`${AGENT_NAME} Security Assistant\`.
 
 Your task is to **analyze and explain** the Infrastructure as Code (IaC) security issue: **${title}** with severity: \`${severity}\`.
@@ -919,6 +1047,8 @@ Your task is to **analyze and explain** the Infrastructure as Code (IaC) securit
 - **File Type:** \`${fileType}\`
 - **Severity:** \`${severity}\`
 - **Description:** ${description}
+- **Expected Value:** \`${expectedValue}\`
+- **Actual Value:** \`${actualValue}\`
 
 ---
 

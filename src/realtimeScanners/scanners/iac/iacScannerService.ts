@@ -158,7 +158,7 @@ export class IacScannerService extends BaseScannerService {
 				[],
 				[],
 				[]
-			)
+			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
@@ -210,6 +210,8 @@ export class IacScannerService extends BaseScannerService {
 				title: result.title,
 				description: result.description,
 				severity: result.severity,
+				expectedValue: result.expectedValue,
+				actualValue: result.actualValue,
 				filePath: result.filepath,
 				location: result.locations[0],
 				fileType: fileType
@@ -235,6 +237,8 @@ export class IacScannerService extends BaseScannerService {
 					severity: highestSeverity,
 					filePath: lineResults[0].filepath,
 					location: lineResults[0].locations[0],
+					expectedValue: lineResults[0].expectedValue,
+					actualValue: lineResults[0].actualValue,
 					fileType
 				}
 			};

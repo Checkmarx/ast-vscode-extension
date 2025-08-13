@@ -104,6 +104,8 @@ export class IacScannerCommand extends BaseScannerCommand {
 		return `
 <b>${hoverData.title}</b> - ${hoverData.description}
 <i style="color: dimgrey;"> - IaC vulnerability<br></i>
+<b>Expected:</b> ${hoverData.expectedValue}<br>
+<b>Actual:</b> ${hoverData.actualValue}<br>
 `;
 	}
 

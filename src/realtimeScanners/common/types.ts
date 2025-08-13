@@ -82,6 +82,8 @@ export interface IacHoverData {
   title: string;
   description: string;
   severity: string;
+  expectedValue: string;
+  actualValue: string;
   filePath: string;
   location?: {
     line: number;
