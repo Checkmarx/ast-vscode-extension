@@ -107,13 +107,13 @@ export class Cx implements CxPlatform {
   }
 
   getGptConfig(): { gptToken: string; gptEngine: string } {
-    const gptToken = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptSettingsKey) as string;
+    const config = vscode.workspace.getConfiguration(constants.gptCommandName);
 
-    const gptEngine = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptEngineKey) as string;
+    const gptToken = config.get<string>(constants.gptSettingsKey) || '';
+    const selectedModel = config.get<string>(constants.gptEngineKey) || '';
+    const customModel = config.get<string>(constants.gptCustomModelKey) || '';
+
+    const gptEngine = customModel.trim() !== '' ? customModel.trim() : selectedModel;
 
     return { gptToken, gptEngine };
   }

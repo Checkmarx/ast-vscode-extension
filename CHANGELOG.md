@@ -1,15 +1,44 @@
 # CHANGELOG
 
-## [v2.34.1-Windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Windsurf.0) - 2025-08-11 07:33:26
+## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* fixed bug related to vuln count (AST-108362) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1234
+### New Features 🚀
+* Added\Updated OpenAI model List (AST-101415) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1237
 ### Other Changes
-* Added a new hardcoded filter All Custom States(AST-99851) by @cx-atish-jadhav in https://github.com/Checkmarx/ast-vscode-extension/pull/1236
+* Changed order of group by and added fixed order of group by (AST-33367) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1212
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-OpenAI-Model-list.0...v2.34.1-Windsurf.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34-Finish-Ignore.0...v2.34.1-2.34.1-iac-and-asca-prompts.0
+
+### Fix
+
+- general:
+  - fixed bug related to vuln count (#1234) ([bd6ad08](https://github.com/Checkmarx/ast-vscode-extension/commit/bd6ad08c4f1f9a113aaa8d8a81c8e1e3e3bf5a2a)) ([#1234](https://github.com/Checkmarx/ast-vscode-extension/pull/1234))
+
+## [v2.34.1-custom_state.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-custom_state.0) - 2025-08-11 08:32:27
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-custom_state.0
+
+## [v2.34.1-Windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-Windsurf.0) - 2025-08-11 07:33:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-2.34-Finish-Ignore.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34-Finish-Ignore.0) - 2025-08-11 09:01:25
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-Windsurf.0...v2.34.1-2.34-Finish-Ignore.0
 
 ## [v2.34.1-OpenAI-Model-list.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-OpenAI-Model-list.0) - 2025-08-05 07:23:29
 
