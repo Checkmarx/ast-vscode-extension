@@ -160,7 +160,7 @@ export class CopilotChatCommand {
     private async handleWindsurfIDE(question: string): Promise<void> {
         const executeFunction = async () => {
             await vscode.commands.executeCommand("windsurf.prioritized.chat.openNewConversation");
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 300));
             await this.pasteCmd();
             await new Promise(resolve => setTimeout(resolve, 100));
             await this.pressEnter();
