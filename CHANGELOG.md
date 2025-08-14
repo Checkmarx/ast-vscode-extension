@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## [v2.35.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.0) - 2025-08-14 17:28:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.35.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* bug/Enabled scan button with usage of proxy (AST-93304) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1097
+* Fixed Infocard closure on logout(AST-90830) by @cx-anjali-deore in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
+* Add MCP message into welcome page (AST-105046) by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1209
+* fixed bug related to vuln count (AST-108362) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1234
+### New Features 🚀
+* Add icons to oss (AST-97472) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1140
+* Add error throw message to the static message (AST-98289) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1134
+* Oss Scanner (AST-95367) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1126
+* Welcoma Page by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1150
+* Add Secret Detection Realtime Scanner (AST-99451) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1154
+* Open AI chat from card (AST-97474) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1153
+* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1186
+* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1189
+* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1190
+* Open new Copilot chat on Agent mode(AST-100673) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1196
+* Update content and logo for vsode(AST-98735) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1164
+* Displayed additional traits and Risk score in ASPM results UI (AST-93137) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1171
+* Updated logo and content (AST-98735) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1205
+* Configure Checkmarx MCP (AST-103975) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1207
+* Added\Updated OpenAI model List (AST-101415) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1237
+* Add expected and actual values to IaC And Update Prompts (AST-109635) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1242
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.137 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1219
+* Update AST CLI JavaScript Wrapper to version 0.0.138 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1220
+* Update AST CLI JavaScript Wrapper to version 0.0.139 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1232
+### Other Changes
+* Add correct link in 2 places (AST-95576) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1133
+* add png in media folder to use as link by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1136
+* Add img for AI card(AST-95367) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1145
+* Add malicous png by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1151
+* Fix oss real time cards by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1152
+* Fix locations of oss real time by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1156
+* Display CWE reference link in Learn More section (AST-95343) by @cx-atish-jadhav in https://github.com/Checkmarx/ast-vscode-extension/pull/1159
+* Fix sync tenant settings with welcome and oss settings by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1162
+* Fix duplicated Markdown hovers by disposing old hover providers on OSS scanner restart by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1163
+* Fix stale Problems on file rename by clearing and rescanning in OSS & Secrets scanners (AST-101132) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1172
+* Refactor: remove OSS hover tooltips and extract shared button rendering by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1180
+* Add explain button for secrets cards (AST-101321) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1184
+* Finish support right click in problems (AST-97475) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1185
+* Replace cx to cxAI by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1187
+* Add SCA Prompt (AST-99101, AST-98628) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1188
+* remove description from oss package by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1193
+* add explanation prompts for SCA and secrets remediation (AST-99101) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1194
+* Align VS code behavior with Eclipse when scan is not found (AST-99730) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
+* Add auto configure mcp settings Vscode and Cursor (AST-102811) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1199
+* Fix mcp settings in cursor by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1201
+* Inject mcp server after welcome page loaded (AST-103985) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1203
+* Sca hide dev & Test Dependency(AST-103537) by @cx-sumit-morchhale in https://github.com/Checkmarx/ast-vscode-extension/pull/1202
+* Secret detection highlight file and line(AST-99850) by @cx-sumit-morchhale in https://github.com/Checkmarx/ast-vscode-extension/pull/1177
+* Implement ASCA Realtime Scanner (AST-103920) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1206
+* Prompt to activate containers remediation and use fix instructions (AST-106089) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1210
+* Prompt for explanation about containers(AST-106089) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1211
+* Add CxOne Assist Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1213
+* Add CxOne Package Icon (AST-102812)  by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1215
+* Add CxOne Severities Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1217
+* Add CxOne decorations Icon (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1218
+* Improve Finding Cards (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1214
+* Add Containers Realtime Scanner (AST-102227) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1208
+* Add Container Image Icon (AST-0000) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1221
+* Improve Containers findings card (AST-102812) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1222
+* Adds user event logging for telemetry data (AST-103478) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1204
+* Support ignore functionality in Oss and Secrets include ui by @cx-elchanan-arbiv in https://github.com/Checkmarx/ast-vscode-extension/pull/1200
+* Fix Oss prevent duplicate ignored icons during long edit by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1226
+* Fix in Containers Realtime Scanner by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1225
+* Add results priority (AST-105849) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1227
+* Add Telemetry to Ignore Buttons (AST-107521) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1228
+* Support ignoring secrets by value and apply ignore to all matches in same file (AST-107316) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1229
+* Add IaC Realtime Scanner (AST-102220) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1231
+* Added a new hardcoded filter All Custom States(AST-99851) by @cx-atish-jadhav in https://github.com/Checkmarx/ast-vscode-extension/pull/1236
+* Changed order of group by and added fixed order of group by (AST-33367) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1212
+* Add Windsurf integrations(AST-107992) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1241
+* MCP Settings Injector for Windsurf (AST-109179) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1243
+* Change scanner settings from welcome page (AST-109475) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1245
+* Integrated ASCA, Containers, and IAC engines into IgnoreManager (UI & flow enabled for IAC-Containers-ASCA only) (AST-107989) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1235
+* Update hover data handling to support multiple issues per line (AST-109933) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1247
+* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1248
+
+## New Contributors
+* @cx-atish-jadhav made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1159
+* @cx-rah-pid made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1183
+* @cx-anjali-deore made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1195
+* @cx-sumit-morchhale made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1202
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.0...v2.35.0
+
 ## [v2.34.1-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-windsurf.0) - 2025-08-14 08:28:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
