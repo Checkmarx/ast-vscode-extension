@@ -3,7 +3,20 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData, isIacHoverData, findAndIgnoreMatchingContainersInWorkspace, rescanContainerFiles } from "../utils/utils";
+import {
+  isCursorIDE,
+  isIDE,
+  isSecretsHoverData,
+  getWorkspaceFolder,
+  getInitializedIgnoreManager,
+  findAndIgnoreMatchingPackages,
+  rescanFiles,
+  isContainersHoverData,
+  isAscaHoverData,
+  isIacHoverData,
+  findAndIgnoreMatchingContainersInWorkspace,
+  rescanContainerFiles
+} from "../utils/utils";
 
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import {
@@ -88,41 +101,108 @@ export class CopilotChatCommand {
         }
     }
 
-    private async handleCursorIDE(question: string): Promise<void> {
+
+    private pasteCmdWindows() {
+        const script = `
+        Add-Type -AssemblyName System.Windows.Forms
+        [System.Windows.Forms.SendKeys]::SendWait("^v")
+        `;
+
+        spawn('powershell', ['-Command', script], { windowsHide: true });
+    }
+
+    private pasteCmdMac() {
+        const script = `tell application "System Events" to keystroke "v" using command down`;
+        spawn('osascript', ['-e', script]);
+    }
+
+    private async pasteCmd(): Promise<void> {
+        const platform = process.platform as Platform;
+
+        try {
+            switch (platform) {
+                case Platform.WINDOWS:
+                    await this.pasteCmdWindows();
+                    break;
+                case Platform.MAC:
+                    await this.pasteCmdMac();
+                    break;
+                default:
+                    throw new Error(`Unsupported platform: ${platform}`);
+            }
+        } catch (error) {
+            this.logs.error(`Failed to paste on platform ${platform}: ${error}`);
+            throw error;
+        }
+    }
+
+    private async restoreClipboard(originalClipboard: string, question: string): Promise<void> {
+        try {
+            const currentClipboard = await vscode.env.clipboard.readText();
+            if (currentClipboard !== question) {
+                await vscode.env.clipboard.writeText(originalClipboard);
+            }
+        } catch (clipboardError) {
+            this.logs.error('Error restoring clipboard:' + clipboardError);
+        }
+    }
+
+    private async executeWithClipboard(
+        question: string,
+        executeFunction: () => Promise<void>
+    ): Promise<void> {
         try {
             const originalClipboard = await vscode.env.clipboard.readText();
-            await vscode.commands.executeCommand("composer.closeComposerTab");
-
             await vscode.env.clipboard.writeText(question);
-            await vscode.commands.executeCommand("composer.newAgentChat");
-            await vscode.commands.executeCommand("aichat.newfollowupaction");
-            await new Promise(resolve => setTimeout(resolve, 100));
-            try {
-                await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
-                await this.pressEnter();
 
+            try {
+                await executeFunction();
                 await vscode.env.clipboard.writeText(originalClipboard);
             } catch (pasteErr) {
                 this.logs.error(`Failed to programmatically paste: ${pasteErr}`);
-                try {
-                    const originalClipboard = await vscode.env.clipboard.readText();
-                    if (originalClipboard !== question) {
-                        await vscode.env.clipboard.writeText(originalClipboard);
-                    }
-                } catch (clipboardError) {
-                    this.logs.error('Error restoring clipboard:' + clipboardError);
-                }
+                await this.restoreClipboard(originalClipboard, question);
             }
         } catch (err) {
-            this.logs.error(`Error in Cursor IDE integration: ${err}`);
-            vscode.window.showInformationMessage("Failed to open Cursor Chat.");
+            this.logs.error(`Error in IDE integration: ${err}`);
+            vscode.window.showInformationMessage("Failed to open Chat.");
         }
+    }
+
+    private async handleCursorIDE(question: string): Promise<void> {
+        const executeFunction = async () => {
+            await vscode.commands.executeCommand("composer.closeComposerTab");
+            await vscode.commands.executeCommand("composer.newAgentChat");
+            await vscode.commands.executeCommand("aichat.newfollowupaction");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
+            await this.pressEnter();
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
+    private async handleWindsurfIDE(question: string): Promise<void> {
+        const executeFunction = async () => {
+            await vscode.commands.executeCommand("windsurf.prioritized.chat.openNewConversation");
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await this.pasteCmd();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pressEnter();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
     }
 
     private async openChatWithPrompt(question: string): Promise<void> {
 
-        if (isCursorIDE()) {
+        if (isIDE(constants.cursorAgent)) {
             await this.handleCursorIDE(question);
+            return;
+        }
+
+        if (isIDE(constants.windsurfAgent)) {
+            await this.handleWindsurfIDE(question);
             return;
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
