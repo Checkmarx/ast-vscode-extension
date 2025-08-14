@@ -98,7 +98,7 @@ export class AuthService {
       catch (error) {
         return {
           isValid: false,
-          error: error
+          error: "Could not connect to server. Please check your Base URI.",
         };
       }
 

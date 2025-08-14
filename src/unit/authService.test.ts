@@ -6,7 +6,7 @@ import sinon from "sinon";
 import nock from "nock";
 import { AuthService } from "../services/authService";
 import * as vscode from "vscode";
-
+import { ProxyHelper } from "../utils/proxy/proxy";
 
 describe("AuthService Tests", () => {
   let authService: AuthService;
@@ -29,6 +29,13 @@ describe("AuthService Tests", () => {
     } as unknown as vscode.ExtensionContext;
 
     authService = AuthService.getInstance(mockContext);
+
+    sandbox.stub(ProxyHelper.prototype, "checkProxyReachability").resolves(true);
+
+    // IMPORTANT: use sandbox.stub here too, NOT sinon.stub directly
+    sandbox.stub(vscode.workspace, "getConfiguration").returns({
+      get: () => "",
+    } as any);
   });
 
   afterEach(() => {
@@ -109,6 +116,20 @@ describe("AuthService Tests", () => {
         "Could not connect to server. Please check your Base URI."
       );
     });
+    it("should fail when proxy is not reachable", async () => {
+      (ProxyHelper.prototype.checkProxyReachability as sinon.SinonStub).restore();
+      sandbox.stub(ProxyHelper.prototype, "checkProxyReachability").resolves(false);
+
+      const result = await (authService as any).validateConnection(
+        "https://valid-url.com",
+        "validTenant"
+      );
+      expect(result.isValid).to.be.false;
+      expect(result.error).to.equal(
+        "Proxy is not reachable. Please check your proxy settings."
+      );
+    });
+
   });
 
   describe("checkUrlExists", () => {
