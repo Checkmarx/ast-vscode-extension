@@ -21,7 +21,7 @@ export class CxMock implements CxPlatform {
   constructor(context?: vscode.ExtensionContext) {
     this.context = context;
   }
-  async iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined> {
+  async iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined> {
     return [new CxIacResult()];
   }
 
@@ -1471,7 +1471,7 @@ export class CxMock implements CxPlatform {
   }
 
 
-  async scanContainers(sourcePath: string): Promise<any> {
+  async scanContainers(sourcePath: string, ignoredFilePath): Promise<any> {
     return {
       Images: [
         {
@@ -1655,5 +1655,5 @@ export class CxMock implements CxPlatform {
     });
   }
 
-  setUserEventDataForLogs(): void {}
+  setUserEventDataForLogs(): void { }
 }

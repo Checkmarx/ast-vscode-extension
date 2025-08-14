@@ -107,4 +107,8 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
 	}
+
+	public getScannerService(): AscaScannerService {
+		return this.scannerService as AscaScannerService;
+	}
 }
