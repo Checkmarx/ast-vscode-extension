@@ -131,8 +131,7 @@ export const SECRET_REMEDIATION_PROMPT = (
   title: string,
   description: string,
   severity: string
-) => `
-A secret has been detected: "${title}"  
+) => `A secret has been detected: "${title}"  
 ${description}
 
 ---
@@ -266,8 +265,7 @@ export const SCA_EXPLANATION_PROMPT = (
 ) => {
   const isMalicious = status.toLowerCase() === "malicious";
 
-  let prompt = `
-You are the \`${AGENT_NAME} Security Assistant\`.
+  let prompt = `You are the \`${AGENT_NAME} Security Assistant\`.
 
 Your task is to **analyze and explain** the security issue affecting the package \`${packageName}@${version}\` with status: \`${status}\`.
 
@@ -386,8 +384,7 @@ export const SECRETS_EXPLANATION_PROMPT = (
   title: string,
   description: string,
   severity: string
-) => `
-You are the \`${AGENT_NAME} Security Assistant\`.
+) => `You are the \`${AGENT_NAME} Security Assistant\`.
 
 A potential secret has been detected: **"${title}"**  
 Severity: **${severity}**
