@@ -93,7 +93,7 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 export async function uninstallMcp() {
 	try {
 
-		if (!isIDE(constants.vsCodeAgent)) {
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
 			// Handle Cursor and Windsurf: Remove from mcp json file 
 			const mcpConfigPath = getMcpConfigPath();
 
@@ -166,7 +166,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			},
 		};
 
-		if (!isIDE(constants.vsCodeAgent)) {
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
 			const config = vscode.workspace.getConfiguration();
