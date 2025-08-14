@@ -123,65 +123,14 @@ export class AscaScannerService extends BaseScannerService {
 			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
 			const scanResults = await cx.scanAsca(tempFilePath, ignoredPackagesFile || "");
 
-			this.updateProblems<CxAsca>(scanResults, document.uri);
+			// Pass full results to updateProblems for proper ignored handling
+			this.updateProblems<CxAsca>(fullScanResults, document.uri);
 
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				this.cleanupIgnoredEntries(fullScanResults.scanDetails, filePath);
 			}
 
-
-			const ignoredData = ignoreManager.getIgnoredPackagesData();
-			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
-			const ignoredDecorations: vscode.DecorationOptions[] = [];
-
-
-			const ascaLocations = new Map<string, number[]>();
-			fullScanResults.scanDetails.forEach(result => {
-				const key = `${result.ruleName}:${result.ruleId}`;
-				const lines = ascaLocations.get(key) || [];
-				lines.push(result.line - 1);
-				ascaLocations.set(key, lines);
-			});
-
-			Object.entries(ignoredData).forEach(([packageKey, entry]) => {
-				if (entry.type !== constants.ascaRealtimeScannerEngineName) { return; }
-
-				const expectedPackageKey = `${entry.PackageName}:${entry.ruleId}:${relativePath}`;
-				if (packageKey !== expectedPackageKey) { return; }
-
-				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
-				if (!fileEntry) { return; }
-
-				const key = `${entry.PackageName}:${entry.ruleId}`;
-				const lines = ascaLocations.get(key) || [];
-
-				lines.forEach(line => {
-					const adjustedLine = line;
-					const range = new vscode.Range(
-						new vscode.Position(adjustedLine, 0),
-						new vscode.Position(adjustedLine, 1000)
-					);
-					ignoredDecorations.push({ range });
-
-					const hoverKey = `${filePath}:${adjustedLine}`;
-					if (!this.ascaHoverData.has(hoverKey)) {
-						this.ascaHoverData.set(hoverKey, {
-							ruleName: entry.PackageName,
-							description: entry.description || '',
-							severity: entry.severity || 'medium',
-							remediationAdvise: entry.description || '',
-							filePath: filePath,
-							ruleId: entry.ruleId,
-							location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
-						});
-					}
-				});
-			});
-
-			this.ignoredDecorations.set(filePath, ignoredDecorations);
-			this.applyDecorations(document.uri);
-
-			logs.info(`${scanResults.scanDetails.length} security best practice violations were found in ${filePath}`);
+			logs.info(`${fullScanResults.scanDetails.length} security best practice violations were found in ${filePath} (${fullScanResults.scanDetails.filter(r => !this.isAscaResultIgnored(r, filePath)).length} active, ${fullScanResults.scanDetails.filter(r => this.isAscaResultIgnored(r, filePath)).length} ignored)`);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
@@ -205,6 +154,36 @@ export class AscaScannerService extends BaseScannerService {
 			}
 		}
 		return false;
+	}
+
+	private isAscaResultIgnored(result: any, filePath: string): boolean {
+		const ignoreManager = IgnoreFileManager.getInstance();
+		if (!ignoreManager) {
+			return false;
+		}
+
+		const ignoreData = ignoreManager.getIgnoredPackagesData();
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+		if (!workspaceFolder) {
+			return false;
+		}
+
+		const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
+		const packageKey = `${result.ruleName}:${result.ruleId}:${relativePath}`;
+
+		const ignoreEntry = ignoreData[packageKey];
+		if (!ignoreEntry || ignoreEntry.type !== constants.ascaRealtimeScannerEngineName) {
+			return false;
+		}
+
+		// Check if there's an active file entry for this path and line
+		const fileEntry = ignoreEntry.files.find(f =>
+			f.path === relativePath &&
+			f.active &&
+			f.line === result.line
+		);
+
+		return !!fileEntry;
 	}
 
 	protected getHighestSeverity(severities: string[]): string {
@@ -237,6 +216,11 @@ export class AscaScannerService extends BaseScannerService {
 			const lineNumber = result.line - 1;
 
 			if (this.hasSecretsAtLine(uri, lineNumber)) {
+				continue;
+			}
+
+			// Skip ignored results
+			if (this.isAscaResultIgnored(result, filePath)) {
 				continue;
 			}
 
@@ -323,6 +307,62 @@ export class AscaScannerService extends BaseScannerService {
 			}
 		}
 
+		// Handle ignored results - create ignored decorations
+		const ignoredDecorations: vscode.DecorationOptions[] = [];
+		const ignoredResultsByLine = new Map<number, any[]>();
+
+		// Check for ignored results
+		for (const result of scanResults.scanDetails) {
+			const lineNumber = result.line - 1;
+
+			if (this.hasSecretsAtLine(uri, lineNumber)) {
+				continue;
+			}
+
+			// Only include ignored results here
+			if (this.isAscaResultIgnored(result, filePath)) {
+				if (!ignoredResultsByLine.has(lineNumber)) {
+					ignoredResultsByLine.set(lineNumber, []);
+				}
+				ignoredResultsByLine.get(lineNumber)!.push(result);
+			}
+		}
+
+		// Create ignored decorations and hover data for ignored results
+		for (const [lineNumber, ignoredResults] of ignoredResultsByLine) {
+			const firstResult = ignoredResults[0];
+			const problemText = firstResult.problematicLine;
+			const startIndex = problemText.length - problemText.trimStart().length;
+
+			const range = new vscode.Range(
+				new vscode.Position(lineNumber, startIndex),
+				new vscode.Position(lineNumber, problemText.length)
+			);
+
+			ignoredDecorations.push({ range });
+
+			// Store hover data for ignored results too
+			const key = `${filePath}:${lineNumber}`;
+			if (!this.ascaHoverData.has(key)) {
+				const hoverProblems: AscaHoverData[] = ignoredResults.map(result => ({
+					ruleName: result.ruleName,
+					description: result.description || result.remediationAdvise,
+					severity: result.severity,
+					remediationAdvise: result.remediationAdvise,
+					filePath: filePath,
+					ruleId: result.ruleId,
+					location: {
+						line: lineNumber,
+						startIndex: startIndex,
+						endIndex: problemText.length
+					}
+				}));
+
+				this.ascaHoverData.set(key, hoverProblems);
+				this.ascaHoverDataFlat.set(key, hoverProblems[0]);
+			}
+		}
+
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
 
@@ -330,6 +370,7 @@ export class AscaScannerService extends BaseScannerService {
 		this.highDecorations.set(filePath, highDecorations);
 		this.mediumDecorations.set(filePath, mediumDecorations);
 		this.lowDecorations.set(filePath, lowDecorations);
+		this.ignoredDecorations.set(filePath, ignoredDecorations);
 
 		this.applyDecorations(uri);
 	}
@@ -461,12 +502,25 @@ export class AscaScannerService extends BaseScannerService {
 		const oldKey = `${filePath}:${oldLine}`;
 		const newKey = `${filePath}:${newLine}`;
 
-		const hoverData = this.ascaHoverData.get(oldKey);
-		if (hoverData) {
-			hoverData.location.line = newLine;
+		const hoverDataArray = this.ascaHoverData.get(oldKey);
+		if (hoverDataArray) {
+			// Update the line number in each hover data item
+			hoverDataArray.forEach(hoverData => {
+				if (hoverData.location) {
+					hoverData.location.line = newLine;
+				}
+			});
 
-			this.ascaHoverData.set(newKey, hoverData);
+			this.ascaHoverData.set(newKey, hoverDataArray);
 			this.ascaHoverData.delete(oldKey);
+
+			// Also update the flattened hover data
+			const flatHoverData = this.ascaHoverDataFlat.get(oldKey);
+			if (flatHoverData && flatHoverData.location) {
+				flatHoverData.location.line = newLine;
+				this.ascaHoverDataFlat.set(newKey, flatHoverData);
+				this.ascaHoverDataFlat.delete(oldKey);
+			}
 		}
 	}
 
