@@ -11,6 +11,7 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
 import { createHash } from "crypto";
+import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -28,6 +29,8 @@ export class ContainersScannerService extends BaseScannerService {
 	private highIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
+	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
+	private lastFullScanResults: unknown[] = [];
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -40,6 +43,7 @@ export class ContainersScannerService extends BaseScannerService {
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
 		low: this.createDecoration("realtimeEngines/low_severity.svg"),
+		ignored: this.createDecoration("Ignored.svg"),
 		underline: vscode.window.createTextEditorDecorationType({
 			textDecoration: "underline wavy #f14c4c",
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -78,7 +82,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 		const fileNameLower = path.basename(uri.fsPath).toLowerCase();
 
-		for (const [entryName, _type] of entries) {
+		for (const [entryName] of entries) {
 			if (entryName.toLowerCase() === fileNameLower) {
 				return path.join(dirPath, entryName);
 			}
@@ -190,7 +194,7 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		// Use the method to take care of in DockerFiles 
+		// Use the method to take care of in DockerFiles
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
 		logs.info("Scanning Containers in file: " + filePath);
@@ -217,9 +221,16 @@ export class ContainersScannerService extends BaseScannerService {
 			tempFilePath = saveResult.tempFilePath;
 			tempSubFolder = saveResult.tempSubFolder;
 
-			const scanResults = await cx.scanContainers(tempFilePath);
+			const ignoreManager = IgnoreFileManager.getInstance();
+			ignoreManager.setScannedFilePath(filePath, tempFilePath);
 
-			this.updateProblems(scanResults, document.uri);
+			const unfiltered = await cx.scanContainers(tempFilePath, "");
+			this.lastFullScanResults = unfiltered as CxContainerRealtimeResult[];
+
+			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
+			const scanResults = await cx.scanContainers(tempFilePath, ignoredPackagesFile || "");
+
+			this.updateProblems(scanResults, document.uri, this.lastFullScanResults);
 		} catch (error) {
 			this.storeAndApplyResults(
 				filePath,
@@ -236,8 +247,10 @@ export class ContainersScannerService extends BaseScannerService {
 				[],
 				[],
 				[],
-				[]
-			)
+				[],
+				[],
+
+			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
@@ -247,7 +260,7 @@ export class ContainersScannerService extends BaseScannerService {
 		}
 	}
 
-	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
+	updateProblems<T = unknown>(problems: T, uri: vscode.Uri, fullScanResults?: unknown[]): void {
 		const scanResults = problems as CxContainerRealtimeResult[];
 		const filePath = uri.fsPath;
 
@@ -395,6 +408,81 @@ export class ContainersScannerService extends BaseScannerService {
 
 		}
 
+		const ignoredDecorations: vscode.DecorationOptions[] = [];
+		const ignoreManager = IgnoreFileManager.getInstance();
+		const ignoredData = ignoreManager.getIgnoredPackagesData();
+		const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+
+		const allScanResults = (this.lastFullScanResults as CxContainerRealtimeResult[]) || scanResults;
+
+		const activeLineNumbers = new Set<number>();
+		scanResults.forEach(result => {
+			if (result.locations) {
+				result.locations.forEach(loc => activeLineNumbers.add(loc.line));
+			}
+		});
+
+		const iacDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+			const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+			return diagnosticData?.cxType === constants.iacRealtimeScannerEngineName;
+		});
+
+		Object.entries(ignoredData).forEach(([, entry]) => {
+			if (entry.type !== constants.containersRealtimeScannerEngineName) { return; }
+			const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+			if (!fileEntry) { return; }
+
+			const imageKey = `${entry.imageName}:${entry.imageTag}`;
+
+			allScanResults.forEach(result => {
+				const resultKey = `${result.imageName}:${result.imageTag}`;
+				if (resultKey === imageKey && result.locations) {
+					result.locations.forEach(location => {
+						const hasActiveContainerFindings = activeLineNumbers.has(location.line);
+						const hasActiveIacFindings = iacDiagnostics.some(diag => diag.range.start.line === location.line);
+
+						if (!hasActiveContainerFindings && !hasActiveIacFindings) {
+							const range = new vscode.Range(
+								new vscode.Position(location.line, location.startIndex),
+								new vscode.Position(location.line, location.endIndex)
+							);
+							ignoredDecorations.push({ range });
+
+							const hoverKey = `${filePath}:${location.line}`;
+							if (!this.containersHoverData.has(hoverKey)) {
+								this.containersHoverData.set(hoverKey, {
+									imageName: entry.imageName!,
+									imageTag: entry.imageTag!,
+									status: (entry.severity as CxRealtimeEngineStatus) || CxRealtimeEngineStatus.medium,
+									vulnerabilities: [],
+									location: {
+										line: location.line,
+										startIndex: location.startIndex,
+										endIndex: location.endIndex
+									},
+									fileType: this.isDockerComposeFile(filePath)
+										? 'docker-compose'
+										: constants.containersHelmExtensions.includes(path.extname(filePath).toLowerCase())
+											? 'helm'
+											: 'dockerfile'
+								});
+							}
+						}
+					});
+				}
+			});
+		});
+
+		this.ignoredDecorations.set(filePath, ignoredDecorations);
+
+		const hasContainerIgnores = Object.values(ignoredData).some(
+			entry => entry.type === constants.containersRealtimeScannerEngineName
+		);
+
+		if (hasContainerIgnores && fullScanResults) {
+			this.cleanupContainersIgnoredEntriesWithoutFileWatcher(fullScanResults, filePath, ignoreManager);
+		}
+
 		this.storeAndApplyResults(
 			filePath,
 			uri,
@@ -406,12 +494,31 @@ export class ContainersScannerService extends BaseScannerService {
 			highDecorations,
 			mediumDecorations,
 			lowDecorations,
+			ignoredDecorations,
 			maliciousIconDecorations,
 			criticalIconDecorations,
 			highIconDecorations,
 			mediumIconDecorations,
 			lowIconDecorations
 		);
+	}
+
+	private cleanupContainersIgnoredEntriesWithoutFileWatcher(
+		fullScanResults: unknown[],
+		currentFilePath: string,
+		ignoreManager: IgnoreFileManager
+	): void {
+		ignoreManager.dispose();
+
+		ignoreManager.removeMissingContainers(fullScanResults, currentFilePath);
+
+		setTimeout(async () => {
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+			if (workspaceFolder) {
+				ignoreManager.initialize(workspaceFolder);
+				ignoreManager.setContainersScannerService(this);
+			}
+		}, 100);
 	}
 
 	private exsistIacSeverityAtLine(uri: vscode.Uri, lineNumber: number): string | undefined {
@@ -440,6 +547,7 @@ export class ContainersScannerService extends BaseScannerService {
 		highDecorations: vscode.DecorationOptions[],
 		mediumDecorations: vscode.DecorationOptions[],
 		lowDecorations: vscode.DecorationOptions[],
+		ignoredDecorations: vscode.DecorationOptions[],
 		maliciousIconDecorations: vscode.DecorationOptions[],
 		criticalIconDecorations: vscode.DecorationOptions[],
 		highIconDecorations: vscode.DecorationOptions[],
@@ -546,6 +654,7 @@ export class ContainersScannerService extends BaseScannerService {
 		this.highIconDecorationsMap.clear();
 		this.mediumIconDecorationsMap.clear();
 		this.lowIconDecorationsMap.clear();
+		this.ignoredDecorations.clear();
 	}
 
 	public dispose(): void {
@@ -575,6 +684,7 @@ export class ContainersScannerService extends BaseScannerService {
 		this.highIconDecorationsMap.delete(filePath);
 		this.mediumIconDecorationsMap.delete(filePath);
 		this.lowIconDecorationsMap.delete(filePath);
+		this.ignoredDecorations.delete(filePath);
 	}
 
 	public async initializeScanner(): Promise<void> {
@@ -634,6 +744,7 @@ export class ContainersScannerService extends BaseScannerService {
 			editor.setDecorations(this.decorationTypes.high, highDecorations);
 			editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
 			editor.setDecorations(this.decorationTypes.low, lowDecorations);
+			editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
 		}
 	}
@@ -644,5 +755,17 @@ export class ContainersScannerService extends BaseScannerService {
 
 	getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
 		return this.diagnosticsMap;
+	}
+
+	public hasAnySeverityDecorations(): boolean {
+		return (
+			this.maliciousDecorationsMap.size > 0 ||
+			this.okDecorationsMap.size > 0 ||
+			this.unknownDecorationsMap.size > 0 ||
+			this.criticalDecorationsMap.size > 0 ||
+			this.highDecorationsMap.size > 0 ||
+			this.mediumDecorationsMap.size > 0 ||
+			this.lowDecorationsMap.size > 0
+		);
 	}
 }

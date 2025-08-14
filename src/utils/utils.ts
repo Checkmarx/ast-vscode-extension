@@ -12,6 +12,7 @@ import { getGlobalContext } from "../extension";
 import { commands } from "./common/commands";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
 import { Logs } from "../models/logs";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 
@@ -383,4 +384,124 @@ export async function rescanFiles(files: Set<string>, scanner: OssScannerService
       await scanner.scan(document, logs);
     }
   }
+}
+
+
+export async function scanAllContainerFilesInWorkspace(
+  scanner: ContainersScannerService,
+  logs: Logs
+): Promise<void> {
+  for (const pattern of constants.containersSupportedPatterns) {
+    const uris = await vscode.workspace.findFiles(pattern);
+    for (const uri of uris) {
+      try {
+        const document = await vscode.workspace.openTextDocument(uri);
+        if (scanner.shouldScanFile(document)) {
+          await scanner.scan(document, logs);
+        }
+      } catch (err) {
+        logs.warn(`Failed to scan container file: ${uri.fsPath}`);
+      }
+    }
+  }
+}
+
+/**
+ */
+function buildContainerToDataMap(scanner: ContainersScannerService): Map<string, Array<{ hoverData: ContainersHoverData, filePath: string }>> {
+  const containerMap = new Map<string, Array<{ hoverData: ContainersHoverData, filePath: string }>>();
+
+  scanner.getHoverData().forEach((hoverData, key) => {
+    const filePath = key.split(':')[0];
+    const imageKey = `${hoverData.imageName}:${hoverData.imageTag}`;
+
+    if (!containerMap.has(imageKey)) {
+      containerMap.set(imageKey, []);
+    }
+
+    containerMap.get(imageKey)!.push({ hoverData, filePath });
+  });
+
+  return containerMap;
+}
+
+export async function findAndIgnoreMatchingContainersInWorkspace(
+  item: ContainersHoverData,
+  scanner: ContainersScannerService,
+  manager: IgnoreFileManager,
+  logs: Logs
+): Promise<Set<string>> {
+  const affected = new Set<string>();
+
+  await scanAllContainerFilesInWorkspace(scanner, logs);
+
+  const imageKey = `${item.imageName}:${item.imageTag}`;
+  const containerToDataMap = buildContainerToDataMap(scanner);
+  const matchingData = containerToDataMap.get(imageKey);
+
+  if (matchingData) {
+    const ignoreDate = new Date().toISOString();
+
+    matchingData.forEach(({ hoverData, filePath }) => {
+      affected.add(filePath);
+      manager.addIgnoredEntryContainers({
+        imageName: hoverData.imageName,
+        imageTag: hoverData.imageTag,
+        filePath: filePath,
+        line: (hoverData.location?.line || 0) + 1,
+        severity: hoverData.status,
+        description: hoverData.vulnerabilities && hoverData.vulnerabilities.length > 0 ?
+          hoverData.vulnerabilities.map(v => `${v.cve}: ${v.severity}`).join(', ') :
+          undefined,
+        dateAdded: ignoreDate
+      });
+    });
+  }
+
+  return affected;
+}
+
+
+export async function rescanContainerFiles(files: Set<string>, scanner: ContainersScannerService, logs: Logs): Promise<void> {
+  for (const filePath of files) {
+    try {
+      const document =
+        vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath)
+        ?? await vscode.workspace.openTextDocument(filePath);
+
+      if (scanner.shouldScanFile(document)) {
+        await scanner.scan(document, logs);
+      }
+    } catch (error) {
+      continue;
+    }
+  }
+}
+
+
+export async function rescanAllContainerIgnoredFiles(
+  ignoreManager: IgnoreFileManager,
+  scanner: ContainersScannerService,
+  logs: Logs
+): Promise<void> {
+  const ignoredData = ignoreManager.getIgnoredPackagesData();
+  const containerEntries = Object.values(ignoredData).filter(
+    entry => entry.type === constants.containersRealtimeScannerEngineName
+  );
+
+  const affectedFiles = new Set<string>();
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+  if (!workspaceFolder) { return; }
+
+  containerEntries.forEach(entry => {
+    entry.files?.forEach(file => {
+      if (file.active) {
+        const fullPath = path.resolve(workspaceFolder.uri.fsPath, file.path);
+        affectedFiles.add(fullPath);
+      }
+    });
+  });
+
+  await rescanContainerFiles(affectedFiles, scanner, logs);
 }
