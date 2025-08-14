@@ -1,16 +1,16 @@
 # CHANGELOG
 
-## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 08:27:19
+## [v2.34.1-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-windsurf.0) - 2025-08-14 08:28:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Add Windsurf integrations(AST-107992) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1241
-* MCP Settings Injector for Windsurf (AST-109179) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1243
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-iac-and-asca-prompts.0...v2.34.1-auth-proxy-support.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-auth-proxy-support.0...v2.34.1-windsurf.0
+
+## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 08:27:19
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 
