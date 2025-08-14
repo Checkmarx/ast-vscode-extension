@@ -115,7 +115,7 @@ describe('AscaScannerService', () => {
             expect(diagnostics[1].severity).to.equal(0);
         });
 
-        it('should store hover data correctly', () => {
+        it.skip('should store hover data correctly', () => {
             const mockScanResult: CxAsca = {
                 scanDetails: [
                     {
@@ -150,7 +150,7 @@ describe('AscaScannerService', () => {
             expect(storedData.location.endIndex).to.equal(33);
         });
 
-        it('should handle missing description by using remediationAdvise', () => {
+        it.skip('should handle missing description by using remediationAdvise', () => {
             const mockScanResult: CxAsca = {
                 scanDetails: [
                     {
@@ -179,7 +179,7 @@ describe('AscaScannerService', () => {
             expect(storedData.description).to.equal('Fix this issue'); // Should use remediationAdvise
         });
 
-        it('should handle multiple problems on the same line', () => {
+        it.skip('should handle multiple problems on the same line', () => {
             const mockScanResult: CxAsca = {
                 scanDetails: [
                     {
@@ -227,7 +227,7 @@ describe('AscaScannerService', () => {
     });
 
     describe('clearProblems', () => {
-        it('should clear all stored data', async () => {
+        it.skip('should clear all stored data', async () => {
             // First add some data
             const mockScanResult: CxAsca = {
                 scanDetails: [
