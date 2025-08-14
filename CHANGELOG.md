@@ -36,22 +36,13 @@
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### New Features 🚀
-* Add expected and actual values to IaC And Update Prompts (AST-109635) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1242
-### Other Changes
-* Update hover data handling to support multiple issues per line (AST-109933) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1247
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0...v2.34.1-beta.0
-
-## [v2.34.1-auth-proxy-support1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support1.0) - 2025-08-14 09:06:12
+## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 15:26:27
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompts.0...v2.34.1-auth-proxy-support1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-beta.0...v2.34.1-auth-proxy-support.0
 
 ## [v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0) - 2025-08-14 13:23:31
 
