@@ -510,7 +510,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 
 2. EXECUTION (AUTOMATED):
 
-- Read and execute each line in \`fix_instructions\`, in order.
+- Read and execute each line in \`remediation_steps\`, in order.
 - **Restrict changes to the relevant code fragment containing line ${problematicLineNumber !== null ? (problematicLineNumber + 1) : '[unknown]'}**.
 - For each change:
   - Apply the instruction exactly.
