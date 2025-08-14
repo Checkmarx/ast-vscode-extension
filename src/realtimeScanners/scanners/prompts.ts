@@ -1,10 +1,10 @@
-const AGENT_NAME = 'Checkmarx';
+const AGENT_NAME = 'Checkmarx One Assist';
 export const SCA_REMEDIATION_PROMPT = (
   packageName: string,
   packageVersion: string,
   packageManager: string,
   status: string
-) => `You are the ${AGENT_NAME} Security Assistant.
+) => `You are the ${AGENT_NAME}.
 
 A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${packageManager}\`).  
 **Severity:** \`${status}\`  
@@ -69,7 +69,7 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+Prefix all output with: \`${AGENT_NAME} -\`
 
 ✅ **Remediation Summary**
 
@@ -136,7 +136,7 @@ ${description}
 
 ---
 
-You are the \`${AGENT_NAME} Security Assistant\`.
+You are the \`${AGENT_NAME}\`.
 
 Your mission is to identify and remediate this secret using secure coding standards. Follow industry best practices, automate safely, and clearly document all actions taken.
 
@@ -207,7 +207,7 @@ If applicable for the language:
 Generate a structured remediation summary:
 
 \`\`\`markdown
-### ${AGENT_NAME} Security Assistant - Secret Remediation Summary
+### ${AGENT_NAME} - Secret Remediation Summary
 
 **Secret:** ${title}  
 **Severity:** ${severity}  
@@ -265,7 +265,7 @@ export const SCA_EXPLANATION_PROMPT = (
 ) => {
   const isMalicious = status.toLowerCase() === "malicious";
 
-  let prompt = `You are the \`${AGENT_NAME} Security Assistant\`.
+  let prompt = `You are the \`${AGENT_NAME}\`.
 
 Your task is to **analyze and explain** the security issue affecting the package \`${packageName}@${version}\` with status: \`${status}\`.
 
@@ -384,7 +384,7 @@ export const SECRETS_EXPLANATION_PROMPT = (
   title: string,
   description: string,
   severity: string
-) => `You are the \`${AGENT_NAME} Security Assistant\`.
+) => `You are the \`${AGENT_NAME}\`.
 
 A potential secret has been detected: **"${title}"**  
 Severity: **${severity}**
@@ -464,7 +464,7 @@ export const ASCA_REMEDIATION_PROMPT = (
     severity: string,
     remediationAdvise: string,
     problematicLineNumber: number | null = null
-) => `You are the ${AGENT_NAME} AI Secure Coding Assistant.
+) => `You are the ${AGENT_NAME}.
 
 A secure coding issue has been detected in your code.
 
@@ -521,13 +521,13 @@ Call the internal \`codeRemediation\` MCP tool with:
 
 4. OUTPUT:
 
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+Prefix all output with: \`${AGENT_NAME} -\`
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-\`${AGENT_NAME} Security Assistant -\` - Remediation Summary
+\`${AGENT_NAME} -\` - Remediation Summary
 
 Rule:        ${ruleName}
 Severity:    ${severity}
@@ -586,7 +586,7 @@ export const ASCA_EXPLANATION_PROMPT = (
   ruleName: string,
   description: string,
   severity: string
-) => `You are the ${AGENT_NAME} AI Secure Coding Assistant providing detailed security explanations.
+) => `You are the ${AGENT_NAME} providing detailed security explanations.
 
 **Rule:** \`${ruleName}\`  
 **Severity:** \`${severity}\`  
@@ -644,7 +644,7 @@ export const CONTAINERS_EXPLANATION_PROMPT = (
   imageName: string,
   imageTag: string,
   severity: string
-) => `You are the \`${AGENT_NAME} Security Assistant\`.
+) => `You are the \`${AGENT_NAME}\`.
 
 Your task is to **analyze and explain** the container security issue affecting \`${fileType}\` with image \`${imageName}:${imageTag}\` and severity: \`${severity}\`.
 
@@ -759,7 +759,7 @@ export const CONTAINERS_REMEDIATION_PROMPT = (
   imageName: string,
   imageTag: string,
   severity: string
-) => `You are the ${AGENT_NAME} Security Assistant.
+) => `You are the ${AGENT_NAME}.
 
 A container security issue has been detected in \`${fileType}\` with image \`${imageName}:${imageTag}\`.  
 **Severity:** \`${severity}\`  
@@ -822,7 +822,7 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+Prefix all output with: \`${AGENT_NAME} -\`
 
 ✅ **Remediation Summary**
 
@@ -887,7 +887,7 @@ export const IAC_REMEDIATION_PROMPT = (
     expectedValue: string,
     actualValue: string,
     problematicLineNumber: number | null = null
-) => `You are the ${AGENT_NAME} Security Assistant.
+) => `You are the ${AGENT_NAME}.
 
 An Infrastructure as Code (IaC) security issue has been detected.
 
@@ -963,7 +963,7 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
+Prefix all output with: \`${AGENT_NAME} -\`
 
 ✅ **Remediation Summary**
 
@@ -1028,7 +1028,7 @@ export const IAC_EXPLANATION_PROMPT = (
   fileType: string,
   expectedValue: string,
   actualValue: string
-) => `You are the \`${AGENT_NAME} Security Assistant\`.
+) => `You are the \`${AGENT_NAME}\`.
 
 Your task is to **analyze and explain** the Infrastructure as Code (IaC) security issue: **${title}** with severity: \`${severity}\`.
 
