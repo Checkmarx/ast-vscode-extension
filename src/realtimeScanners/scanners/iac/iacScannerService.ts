@@ -219,8 +219,10 @@ export class IacScannerService extends BaseScannerService {
 								severity: entry.severity,
 								filePath,
 								originalFilePath: filePath,
-								location: { line: adjustedLine, startIndex: 0, endIndex: 1000 },
-								fileType: path.extname(filePath).substring(1)
+								location: {line: adjustedLine, startIndex: 0, endIndex: 1000},
+								fileType: path.extname(filePath).substring(1),
+								expectedValue: "",
+								actualValue: ""
 							}]);
 						}
 					}
