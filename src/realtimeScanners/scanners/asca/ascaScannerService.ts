@@ -12,7 +12,8 @@ import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
 export class AscaScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
-	private ascaHoverData = new Map<string, AscaHoverData>();
+	private ascaHoverData = new Map<string, AscaHoverData[]>();
+	private ascaHoverDataFlat = new Map<string, AscaHoverData>();
 	private criticalDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private highDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private mediumDecorations = new Map<string, vscode.DecorationOptions[]>();
@@ -60,7 +61,7 @@ export class AscaScannerService extends BaseScannerService {
 		};
 		super(config);
 
-		this.registerHoverDataMap(this.ascaHoverData);
+		this.registerHoverDataMap(this.ascaHoverDataFlat);
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -206,6 +207,18 @@ export class AscaScannerService extends BaseScannerService {
 		return false;
 	}
 
+	protected getHighestSeverity(severities: string[]): string {
+		const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+
+		for (const severity of severityOrder) {
+			if (severities.some(s => s.toUpperCase() === severity)) {
+				return severity;
+			}
+		}
+
+		return severities[0] || 'LOW';
+	}
+
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const scanResults = problems as unknown as CxAsca;
 		const filePath = uri.fsPath;
@@ -218,22 +231,39 @@ export class AscaScannerService extends BaseScannerService {
 		const mediumDecorations: vscode.DecorationOptions[] = [];
 		const lowDecorations: vscode.DecorationOptions[] = [];
 
+		const resultsByLine = new Map<number, any[]>();
+
 		for (const result of scanResults.scanDetails) {
-			if (this.hasSecretsAtLine(uri, result.line - 1)) {
+			const lineNumber = result.line - 1;
+
+			if (this.hasSecretsAtLine(uri, lineNumber)) {
 				continue;
 			}
 
-			const problemText = result.problematicLine;
+			if (!resultsByLine.has(lineNumber)) {
+				resultsByLine.set(lineNumber, []);
+			}
+			resultsByLine.get(lineNumber)!.push(result);
+		}
+
+		for (const [lineNumber, lineResults] of resultsByLine) {
+			const firstResult = lineResults[0];
+			const problemText = firstResult.problematicLine;
 			const startIndex = problemText.length - problemText.trimStart().length;
 
 			const range = new vscode.Range(
-				new vscode.Position(result.line - 1, startIndex),
-				new vscode.Position(result.line - 1, problemText.length)
+				new vscode.Position(lineNumber, startIndex),
+				new vscode.Position(lineNumber, problemText.length)
 			);
+
+			const problemCount = lineResults.length;
+			const titleMessage = problemCount === 1
+				? lineResults[0].ruleName
+				: `${problemCount} ASCA violations detected on this line`;
 
 			const diagnostic = new vscode.Diagnostic(
 				range,
-				result.ruleName,
+				titleMessage,
 				vscode.DiagnosticSeverity.Error
 			);
 
@@ -241,12 +271,12 @@ export class AscaScannerService extends BaseScannerService {
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'asca',
 				item: {
-					ruleName: result.ruleName,
-					description: result.description || result.remediationAdvise,
-					severity: result.severity,
-					remediationAdvise: result.remediationAdvise,
+					ruleName: problemCount === 1 ? lineResults[0].ruleName : titleMessage,
+					description: problemCount === 1 ? (lineResults[0].description || lineResults[0].remediationAdvise) : titleMessage,
+					severity: this.getHighestSeverity(lineResults.map(r => r.severity)),
+					remediationAdvise: problemCount === 1 ? lineResults[0].remediationAdvise : undefined,
 					location: {
-						line: result.line - 1,
+						line: lineNumber,
 						startIndex: startIndex,
 						endIndex: problemText.length
 					}
@@ -255,9 +285,8 @@ export class AscaScannerService extends BaseScannerService {
 
 			diagnostics.push(diagnostic);
 
-			// Store hover data
-			const key = `${filePath}:${result.line - 1}`;
-			this.ascaHoverData.set(key, {
+			const key = `${filePath}:${lineNumber}`;
+			const hoverProblems: AscaHoverData[] = lineResults.map(result => ({
 				ruleName: result.ruleName,
 				description: result.description || result.remediationAdvise,
 				severity: result.severity,
@@ -265,14 +294,20 @@ export class AscaScannerService extends BaseScannerService {
 				filePath: filePath,
 				ruleId: result.ruleId,
 				location: {
-					line: result.line - 1,
+					line: lineNumber,
 					startIndex: startIndex,
 					endIndex: problemText.length
 				}
-			});
+			}));
 
+			this.ascaHoverData.set(key, hoverProblems);
+
+			// Store flattened hover data for base scanner compatibility
+			this.ascaHoverDataFlat.set(key, hoverProblems[0]);
+
+			const highestSeverity = this.getHighestSeverity(lineResults.map(r => r.severity));
 			const decoration = { range };
-			switch (result.severity.toUpperCase()) {
+			switch (highestSeverity.toUpperCase()) {
 				case 'CRITICAL':
 					criticalDecorations.push(decoration);
 					break;
@@ -303,6 +338,7 @@ export class AscaScannerService extends BaseScannerService {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
 		this.ascaHoverData.clear();
+		this.ascaHoverDataFlat.clear();
 		this.criticalDecorations.clear();
 		this.highDecorations.clear();
 		this.mediumDecorations.clear();
@@ -324,7 +360,18 @@ export class AscaScannerService extends BaseScannerService {
 		const filePath = uri.fsPath;
 		this.diagnosticsMap.delete(filePath);
 		this.diagnosticCollection.delete(uri);
-		this.ascaHoverData.delete(filePath);
+
+		const keysToDelete: string[] = [];
+		for (const key of this.ascaHoverData.keys()) {
+			if (key.startsWith(`${filePath}:`)) {
+				keysToDelete.push(key);
+			}
+		}
+		keysToDelete.forEach(key => {
+			this.ascaHoverData.delete(key);
+			this.ascaHoverDataFlat.delete(key);
+		});
+
 		this.criticalDecorations.delete(filePath);
 		this.highDecorations.delete(filePath);
 		this.mediumDecorations.delete(filePath);
@@ -375,7 +422,7 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	// Getter for hover data to be used by the command
-	getHoverData(): Map<string, AscaHoverData> {
+	getHoverData(): Map<string, AscaHoverData[]> {
 		return this.ascaHoverData;
 	}
 
