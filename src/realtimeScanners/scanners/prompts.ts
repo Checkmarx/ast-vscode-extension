@@ -8,7 +8,7 @@ export const SCA_REMEDIATION_PROMPT = (
 
 A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${packageManager}\`).  
 **Severity:** \`${status}\`  
-Your task is to remediate the issue **completely and autonomously** using the internal PackageRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
+Your task is to remediate the issue **completely and autonomously** using the internal PackageRemediation tool in Checkmarx MCP. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
 ---
 
@@ -474,7 +474,7 @@ A secure coding issue has been detected in your code.
 **Recommended Fix:** ${remediationAdvise}  
 ${problematicLineNumber !== null ? `**Problematic Line Number:** ${(problematicLineNumber + 1)}` : ''}
 
-Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool in Checkmarx MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
 
@@ -899,7 +899,7 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **Actual Value:** ${actualValue}
 ${problematicLineNumber !== null ? `**Problematic Line Number:** ${problematicLineNumber + 1}` : ''}
 
-Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool in Checkmarx MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber + 1 : '[unknown]'}, without introducing unrelated modifications elsewhere in the file.
 
