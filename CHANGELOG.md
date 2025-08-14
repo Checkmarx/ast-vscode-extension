@@ -1,24 +1,20 @@
 # CHANGELOG
 
-## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
+## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 08:27:19
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Bug Fixes 🐛
-* fixed bug related to vuln count (AST-108362) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1234
-### New Features 🚀
-* Added\Updated OpenAI model List (AST-101415) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1237
 ### Other Changes
-* Changed order of group by and added fixed order of group by (AST-33367) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1212
+* Add Windsurf integrations(AST-107992) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1241
+* MCP Settings Injector for Windsurf (AST-109179) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1243
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34-Finish-Ignore.0...v2.34.1-2.34.1-iac-and-asca-prompts.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.1-iac-and-asca-prompts.0...v2.34.1-auth-proxy-support.0
 
-### Fix
+## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 
-- general:
-  - fixed bug related to vuln count (#1234) ([bd6ad08](https://github.com/Checkmarx/ast-vscode-extension/commit/bd6ad08c4f1f9a113aaa8d8a81c8e1e3e3bf5a2a)) ([#1234](https://github.com/Checkmarx/ast-vscode-extension/pull/1234))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-custom_state.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-custom_state.0) - 2025-08-11 08:32:27
 
