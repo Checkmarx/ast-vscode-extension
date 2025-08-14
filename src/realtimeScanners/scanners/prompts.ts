@@ -476,7 +476,7 @@ ${problematicLineNumber !== null ? `**Problematic Line Number:** ${(problematicL
 
 Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool in Checkmarx MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
-⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
+⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber + 1 : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
 
 ---
 
