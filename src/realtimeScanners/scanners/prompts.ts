@@ -459,10 +459,11 @@ Hardcoded secrets pose a serious risk:
 `;
 
 export const ASCA_REMEDIATION_PROMPT = (
-  ruleName: string,
-  description: string,
-  severity: string,
-  remediationAdvise: string
+    ruleName: string,
+    description: string,
+    severity: string,
+    remediationAdvise: string,
+    problematicLineNumber: number | null = null
 ) => `You are the ${AGENT_NAME} AI Secure Coding Assistant.
 
 A secure coding issue has been detected in your code.
@@ -470,9 +471,12 @@ A secure coding issue has been detected in your code.
 **Rule:** \`${ruleName}\`  
 **Severity:** \`${severity}\`  
 **Description:** ${description}  
-**Recommended Fix:** ${remediationAdvise}
+**Recommended Fix:** ${remediationAdvise}  
+${problematicLineNumber !== null ? `**Problematic Line Number:** ${(problematicLineNumber + 1)}` : ''}
 
 Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+
+⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
 
 ---
 
@@ -507,6 +511,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 2. EXECUTION (AUTOMATED):
 
 - Read and execute each line in \`fix_instructions\`, in order.
+- **Restrict changes to the relevant code fragment containing line ${problematicLineNumber !== null ? (problematicLineNumber + 1) : '[unknown]'}**.
 - For each change:
   - Apply the instruction exactly.
   - Track all modified files.
@@ -533,6 +538,7 @@ Format:
 Rule:        ${ruleName}
 Severity:    ${severity}
 Issue Type:  SAST Security Vulnerability
+Problematic Line: ${problematicLineNumber !== null ? (problematicLineNumber + 1) : '[unknown]'}
 
 Files Modified:
 1. src/auth.ts
@@ -575,7 +581,7 @@ If failed:
 
 - Do not prompt the user
 - Do not skip or reorder fix steps
-- Only execute what's explicitly listed in \`fix_instructions\`
+- **Only modify the code that corresponds to the identified problematic line**
 - Attempt to fix build/test failures automatically
 - Insert clear TODO comments for unresolved issues
 - Ensure remediation is deterministic, auditable, and fully automated
@@ -880,12 +886,13 @@ If failed:
 `;
 
 export const IAC_REMEDIATION_PROMPT = (
-  title: string,
-  description: string,
-  severity: string,
-  fileType: string,
-  expectedValue: string,
-  actualValue: string
+    title: string,
+    description: string,
+    severity: string,
+    fileType: string,
+    expectedValue: string,
+    actualValue: string,
+    problematicLineNumber: number | null = null
 ) => `You are the ${AGENT_NAME} Security Assistant.
 
 An Infrastructure as Code (IaC) security issue has been detected.
@@ -893,9 +900,12 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **Issue:** \`${title}\`  
 **Severity:** \`${severity}\`  
 **File Type:** \`${fileType}\`  
-**Description:** ${description}
+**Description:** ${description}  
+${problematicLineNumber !== null ? `**Problematic Line Number:** ${problematicLineNumber}` : ''}
 
 Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+
+⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
 
 ---
 
@@ -930,6 +940,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 2. EXECUTION (AUTOMATED):
 
 - Read and execute each line in \`remediation_steps\`, in order.
+- **Restrict changes to the relevant code fragment containing line ${problematicLineNumber !== null ? (problematicLineNumber + 1) : '[problematic line number]'}**.
 - For each change:
   - Apply the instruction exactly.
   - Track all modified files.
@@ -973,6 +984,7 @@ Security Assistant - Remediation Summary
 Issue:       ${title}
 Severity:    ${severity}
 File Type:   ${fileType}
+Problematic Line: ${problematicLineNumber !== null ? (problematicLineNumber + 1) : '[unknown]'}
 
 Files Modified:
 1. ${fileType}
@@ -1011,12 +1023,13 @@ If failed:
 
 - Do not prompt the user
 - Do not skip or reorder fix steps
-- Only execute what's explicitly listed in \`fix_instructions\`
+- **Only modify the code that corresponds to the identified problematic line**
 - Attempt to fix validation failures automatically
 - Insert clear TODO comments for unresolved issues
 - Ensure remediation is deterministic, auditable, and fully automated
 - Follow Infrastructure as Code security best practices throughout the process
 `;
+
 
 export const IAC_EXPLANATION_PROMPT = (
   title: string,
