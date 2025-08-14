@@ -14,6 +14,36 @@
       "authenticatedMessage"
     );
 
+     window.addEventListener("message", (event) => {
+      const message = event.data;
+      if (message.command === "disableAuthButton") {
+        const authButton = document.getElementById("authButton");
+        if (authButton) {
+          debugger;
+          authButton.disabled = true;
+          document.getElementsByName("authMethod").forEach(input => {
+            input.disabled = true;
+          });
+          document.getElementById("apiKey").disabled = true;
+          document.getElementById("baseUri").disabled = true;
+          document.getElementById("tenant").disabled = true;
+        }
+      }
+
+      if (message.command === "enableAuthButton") {
+        const authButton = document.getElementById("authButton");
+        if (authButton) {
+          authButton.disabled = false;
+          document.getElementsByName("authMethod").forEach(input => {
+            input.disabled = false;
+          });
+          document.getElementById("apiKey").disabled = false;
+          document.getElementById("baseUri").disabled = false;
+          document.getElementById("tenant").disabled = false;
+        }
+      }
+    });
+    
     document.querySelectorAll('input[name="authMethod"]').forEach((radio) => {
       radio.addEventListener("change", (e) => {
         const isOAuth = e.target.value === "oauth";
