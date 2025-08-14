@@ -30,7 +30,7 @@ export class TreeItem extends vscode.TreeItem {
         : vscode.TreeItemCollapsibleState.Collapsed
     );
     this.result = result;
-    this.size = 1;
+    this.size = 0;
     this.contextValue = type;
     this.children = children;
 
@@ -49,7 +49,7 @@ export class TreeItem extends vscode.TreeItem {
 
   setDescription() {
     +this.size++;
-    this.description = "" + this.size;
+    this.description = `(${this.size})`;
   }
 
   setDescriptionValue(description: string) {

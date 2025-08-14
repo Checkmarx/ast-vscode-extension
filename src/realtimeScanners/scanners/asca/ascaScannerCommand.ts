@@ -86,7 +86,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 	}
 
 	private renderID(hoverData: AscaHoverData): string {
-		return `<b>${hoverData.ruleName}</b> - ${hoverData.description} <br>`;
+		return `<b>${hoverData.ruleName}</b> - ${hoverData.description} <i style="color: dimgrey;"> - SAST vulnerability<br></i>`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
