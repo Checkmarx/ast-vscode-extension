@@ -32,6 +32,19 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-auth-proxy-support1.0...v2.34.1-new-prompt-1.0
 
+## [v2.34.1-beta.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-beta.0) - 2025-08-14 15:17:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Add expected and actual values to IaC And Update Prompts (AST-109635) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1242
+### Other Changes
+* Update hover data handling to support multiple issues per line (AST-109933) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1247
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0...v2.34.1-beta.0
+
 ## [v2.34.1-auth-proxy-support1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support1.0) - 2025-08-14 09:06:12
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -43,14 +56,6 @@
 ## [v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0) - 2025-08-14 13:23:31
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
-
-## What's Changed
-### Other Changes
-* Change scanner settings from welcome page (AST-109475) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1245
-* Integrated ASCA, Containers, and IAC engines into IgnoreManager (UI & flow enabled for IAC-Containers-ASCA only) (AST-107989) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1235
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompts-2.0...v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0
 
 ## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 
