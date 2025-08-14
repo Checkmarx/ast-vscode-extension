@@ -472,7 +472,7 @@ A secure coding issue has been detected in your code.
 **Description:** ${description}  
 **Recommended Fix:** ${remediationAdvise}
 
-Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
+Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ---
 
@@ -497,7 +497,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 \`\`\`
 
 - If the tool is **available**, parse the response:
-  - \`fix_instructions\` – exact steps to follow for remediation
+  - \`remediation_steps\` – exact steps to follow for remediation
 
 - If the tool is **not available**, display:
   \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
@@ -895,7 +895,7 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **File Type:** \`${fileType}\`  
 **Description:** ${description}
 
-Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
+Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ---
 
@@ -920,7 +920,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 \`\`\`
 
 - If the tool is **available**, parse the response:
-  - \`fix_instructions\` – exact steps to follow for remediation
+  - \`remediation_steps\` – exact steps to follow for remediation
 
 - If the tool is **not available**, display:
   \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
@@ -929,7 +929,7 @@ Call the internal \`codeRemediation\` MCP tool with:
 
 2. EXECUTION (AUTOMATED):
 
-- Read and execute each line in \`fix_instructions\`, in order.
+- Read and execute each line in \`remediation_steps\`, in order.
 - For each change:
   - Apply the instruction exactly.
   - Track all modified files.
@@ -952,7 +952,6 @@ Examples:
   - \`Terraform\`: \`terraform validate\`, \`terraform plan\`
   - \`CloudFormation\`: \`aws cloudformation validate-template\`
   - \`Kubernetes\`: \`kubectl apply --dry-run=client\`
-  - \`Ansible\`: \`ansible-playbook --check\`
   - \`Docker\`: \`docker-compose config\`
 
 If any of these validations fail:
