@@ -28,8 +28,7 @@ export class ProxyHelper {
 		}
 		if (!this.extensionProxy) {
 			this.vscodeProxy = vscode.workspace.getConfiguration().get<string>('http.proxy');
-			if (this.vscodeProxy && this.vscodeProxy !== "")
-				this.strictSSL = vscode.workspace.getConfiguration().get<boolean>('http.proxyStrictSSL', false);
+			if (this.vscodeProxy && this.vscodeProxy !== "") { this.strictSSL = vscode.workspace.getConfiguration().get<boolean>('http.proxyStrictSSL', false); }
 		}
 
 		if (!this.extensionProxy && !this.vscodeProxy) {
@@ -97,8 +96,8 @@ export class ProxyHelper {
 	}
 
 	/**
-   * Checks if the proxy is reachable by making an HTTP/HTTPS request to a target URL through the proxy.
-   */
+ * Checks if the proxy is reachable by making an HTTPS CONNECT request to a target URL through the proxy.
+ */
 	public checkProxyReachability(targetUrl: string): Promise<boolean> {
 		return new Promise((resolve) => {
 			const { proxy } = this.getProxyConfig();
@@ -110,41 +109,60 @@ export class ProxyHelper {
 
 			const parsedProxy = url.parse(proxy);
 			const target = new URL(targetUrl);
+			const cred = parsedProxy.auth; // format: "username:password"
 
-			// Connect to proxy via TCP socket
+			// Extract optional settings
+			const strictSSL = this.strictSSL ?? false;
+			const proxyAuthType = this.extensionProxy ? this.proxyAuthType : undefined;
+			const proxyNtlmDomain = this.extensionProxy ? this.proxyNtlmDomain : undefined;
+
+			let headers =
+				`CONNECT ${target.hostname}:443 HTTP/1.1\r\n` +
+				`Host: ${target.hostname}:443\r\n`;
+
+			if (cred) {
+				const [username, password] = cred.split(':');
+
+				if (proxyAuthType === 'ntlm' && proxyNtlmDomain) {
+					// Placeholder for actual NTLM auth header (requires NTLM library for real use)
+					const ntlmHeader = `NTLM ${Buffer.from(`${username}:${password}:${proxyNtlmDomain}`).toString('base64')}`;
+					headers += `Proxy-Authorization: ${ntlmHeader}\r\n`;
+				} else {
+					// Default to Basic auth
+					const basicAuth = Buffer.from(cred).toString('base64');
+					headers += `Proxy-Authorization: Basic ${basicAuth}\r\n`;
+				}
+			}
+
+			headers += `Connection: close\r\n\r\n`;
+
 			const socket = net.connect(
 				{
 					host: parsedProxy.hostname,
 					port: Number(parsedProxy.port) || 8080,
 				},
 				() => {
-					// Send CONNECT request to proxy to open tunnel to target
-					socket.write(
-						`CONNECT ${target.hostname}:443 HTTP/1.1\r\n` +
-						`Host: ${target.hostname}:443\r\n` +
-						`Connection: close\r\n\r\n`
-					);
+					socket.write(headers);
 				}
 			);
 
 			socket.setEncoding('utf8');
-
 			let responseBuffer = '';
 
 			socket.on('data', (chunk) => {
 				responseBuffer += chunk;
 
-				if (responseBuffer.indexOf('\r\n\r\n') !== -1) {
+				if (responseBuffer.includes('\r\n\r\n')) {
 					if (/^HTTP\/1\.[01] 200/.test(responseBuffer)) {
-						// Tunnel established, upgrade to TLS socket to confirm HTTPS handshake
+						// CONNECT successful — now test TLS handshake
 						const tlsSocket = tls.connect(
 							{
-								socket: socket,
+								socket,
 								servername: target.hostname,
+								rejectUnauthorized: strictSSL,
 							},
 							() => {
-								// Success: proxy reachable & tunnel works
-								resolve(true);
+								resolve(true); // Tunnel and TLS handshake succeeded
 								tlsSocket.end();
 							}
 						);
@@ -154,7 +172,6 @@ export class ProxyHelper {
 							resolve(false);
 						});
 					} else {
-						// Proxy rejected CONNECT request
 						console.error(`Proxy CONNECT failed: ${responseBuffer.split('\r\n')[0]}`);
 						resolve(false);
 						socket.end();
@@ -169,7 +186,6 @@ export class ProxyHelper {
 				resolve(false);
 			});
 
-			// Timeout to prevent hanging if proxy doesn’t respond
 			socket.setTimeout(5000, () => {
 				console.error('Proxy connection timed out');
 				socket.destroy();
