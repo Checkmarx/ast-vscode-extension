@@ -900,12 +900,14 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **Issue:** \`${title}\`  
 **Severity:** \`${severity}\`  
 **File Type:** \`${fileType}\`  
-**Description:** ${description}  
-${problematicLineNumber !== null ? `**Problematic Line Number:** ${problematicLineNumber}` : ''}
+**Description:** ${description}\`
+**Expected Value:** ${expectedValue}
+**Actual Value:** ${actualValue}
+${problematicLineNumber !== null ? `**Problematic Line Number:** ${problematicLineNumber + 1}` : ''}
 
 Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
-⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
+⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber + 1 : '[unknown]'}, without introducing unrelated modifications elsewhere in the file.
 
 ---
 
