@@ -102,7 +102,7 @@ export class IacScannerCommand extends BaseScannerCommand {
 
 	private renderID(hoverData: IacHoverData): string {
 		return `
-<b>${hoverData.title}</b> - ${hoverData.description}
+<b>${hoverData.title}</b> - ${hoverData.actualValue}. ${hoverData.description}
 <i style="color: dimgrey;"> - IaC vulnerability<br></i>
 `;
 	}
