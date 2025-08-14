@@ -4,20 +4,19 @@ import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import {
-  isCursorIDE,
-  isIDE,
-  isSecretsHoverData,
-  getWorkspaceFolder,
-  getInitializedIgnoreManager,
-  findAndIgnoreMatchingPackages,
-  rescanFiles,
-  isContainersHoverData,
-  isAscaHoverData,
-  isIacHoverData,
-  findAndIgnoreMatchingContainersInWorkspace,
-  rescanContainerFiles
+    isIDE,
+    getIDEName,
+    isSecretsHoverData,
+    getWorkspaceFolder,
+    getInitializedIgnoreManager,
+    findAndIgnoreMatchingPackages,
+    rescanFiles,
+    isContainersHoverData,
+    isAscaHoverData,
+    isIacHoverData,
+    findAndIgnoreMatchingContainersInWorkspace,
+    rescanContainerFiles
 } from "../utils/utils";
-
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
