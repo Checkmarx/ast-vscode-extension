@@ -436,4 +436,14 @@ export class IacScannerService extends BaseScannerService {
 		this.lowDecorationsMap.clear();
 		this.ignoredDecorations.clear();
 	}
+
+
+	public hasAnySeverityDecorations(): boolean {
+		return (
+			this.criticalDecorationsMap.size > 0 ||
+			this.highDecorationsMap.size > 0 ||
+			this.mediumDecorationsMap.size > 0 ||
+			this.lowDecorationsMap.size > 0
+		);
+	}
 }

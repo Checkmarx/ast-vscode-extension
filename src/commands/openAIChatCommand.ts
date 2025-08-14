@@ -259,6 +259,11 @@ export class CopilotChatCommand {
                         if (this.iacScanner && this.iacScanner.scan) {
                             await this.iacScanner.scan(document, this.logs);
                         }
+                        if (this.containersScanner.hasAnySeverityDecorations()) {
+                            await this.containersScanner.scan(document, this.logs);
+
+                        }
+
                     }
                     else if (isSecretsHoverData(item)) {
                         ignoreManager.addIgnoredEntrySecrets({
@@ -315,6 +320,10 @@ export class CopilotChatCommand {
                         const document = vscode.window.activeTextEditor?.document;
                         if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
                             await this.containersScanner.scan(document, this.logs);
+                        }
+                        if (this.iacScanner.hasAnySeverityDecorations()) {
+                            await this.iacScanner.scan(document, this.logs);
+
                         }
                     }
                     else {

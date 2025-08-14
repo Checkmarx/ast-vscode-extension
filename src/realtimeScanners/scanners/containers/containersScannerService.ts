@@ -739,4 +739,16 @@ export class ContainersScannerService extends BaseScannerService {
 	getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
 		return this.diagnosticsMap;
 	}
+
+	public hasAnySeverityDecorations(): boolean {
+		return (
+			this.maliciousDecorationsMap.size > 0 ||
+			this.okDecorationsMap.size > 0 ||
+			this.unknownDecorationsMap.size > 0 ||
+			this.criticalDecorationsMap.size > 0 ||
+			this.highDecorationsMap.size > 0 ||
+			this.mediumDecorationsMap.size > 0 ||
+			this.lowDecorationsMap.size > 0
+		);
+	}
 }
