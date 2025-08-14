@@ -25,7 +25,7 @@
       checkIcon.classList.add("hidden");
       uncheckIcon.classList.remove("hidden");
       currentState = false;
-      vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
+      vscode.postMessage({ type: "setAllScannersEnabled", value: false });
     });
 
     uncheckIcon.addEventListener("click", () => {
@@ -35,7 +35,7 @@
       checkIcon.classList.remove("hidden");
       uncheckIcon.classList.add("hidden");
       currentState = true;
-      vscode.postMessage({ type: "setOssRealtimeEnabled", value: true });
+      vscode.postMessage({ type: "setAllScannersEnabled", value: true });
     });
 
     if (previousState.aiFeatureLoaded) {
@@ -52,21 +52,6 @@
       if (message.type === "setAiFeatureState") {
         handleSetAiFeatureState(message);
       }
-
-      if (message.type === "setOssRealtimeEnabledFromSettings") {
-        if (!serverEnabled) {
-          return;
-        }
-        if (message.value) {
-          checkIcon.classList.remove("hidden");
-          uncheckIcon.classList.add("hidden");
-          currentState = true;
-        } else {
-          checkIcon.classList.add("hidden");
-          uncheckIcon.classList.remove("hidden");
-          currentState = false;
-        }
-      }
     });
 
     function handleSetAiFeatureState(message) {
@@ -74,7 +59,7 @@
       serverEnabled = message.enabled;
 
       if (message.enabled) {
-        if (message.ossSetting) {
+        if (message.scannersSettings) {
           checkIcon.classList.remove("hidden");
           uncheckIcon.classList.add("hidden");
           currentState = true;
