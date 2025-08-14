@@ -170,6 +170,15 @@ export class IacScannerService extends BaseScannerService {
 			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 			const ignoredDecorations: vscode.DecorationOptions[] = [];
 
+			const activeLineNumbers = new Set<number>();
+			scanResults.forEach(result => {
+				result.locations.forEach(loc => activeLineNumbers.add(loc.line));
+			});
+
+			const containerDiagnostics = vscode.languages.getDiagnostics(document.uri).filter(diagnostic => {
+				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				return diagnosticData?.cxType === constants.containersRealtimeScannerEngineName;
+			});
 
 			const iacLocations = new Map<string, number[]>();
 			fullScanResults.forEach(result => {
@@ -190,25 +199,30 @@ export class IacScannerService extends BaseScannerService {
 				const lines = iacLocations.get(key) || [];
 
 				lines.forEach(line => {
-					const adjustedLine = line;
-					const range = new vscode.Range(
-						new vscode.Position(adjustedLine, 0),
-						new vscode.Position(adjustedLine, 1000)
-					);
-					ignoredDecorations.push({ range });
+					const hasActiveIacFindings = activeLineNumbers.has(line);
+					const hasActiveContainerFindings = containerDiagnostics.some(diag => diag.range.start.line === line);
 
-					const hoverKey = `${filePath}:${adjustedLine}`;
-					if (!this.iacHoverData.has(hoverKey)) {
-						this.iacHoverData.set(hoverKey, [{
-							similarityId: entry.similarityId,
-							title: entry.PackageName,
-							description: entry.description,
-							severity: entry.severity,
-							filePath,
-							originalFilePath: filePath,
-							location: { line: adjustedLine, startIndex: 0, endIndex: 1000 },
-							fileType: path.extname(filePath).substring(1)
-						}]);
+					if (!hasActiveIacFindings && !hasActiveContainerFindings) {
+						const adjustedLine = line;
+						const range = new vscode.Range(
+							new vscode.Position(adjustedLine, 0),
+							new vscode.Position(adjustedLine, 1000)
+						);
+						ignoredDecorations.push({ range });
+
+						const hoverKey = `${filePath}:${adjustedLine}`;
+						if (!this.iacHoverData.has(hoverKey)) {
+							this.iacHoverData.set(hoverKey, [{
+								similarityId: entry.similarityId,
+								title: entry.PackageName,
+								description: entry.description,
+								severity: entry.severity,
+								filePath,
+								originalFilePath: filePath,
+								location: { line: adjustedLine, startIndex: 0, endIndex: 1000 },
+								fileType: path.extname(filePath).substring(1)
+							}]);
+						}
 					}
 				});
 			});

@@ -415,6 +415,18 @@ export class ContainersScannerService extends BaseScannerService {
 
 		const allScanResults = (this.lastFullScanResults as CxContainerRealtimeResult[]) || scanResults;
 
+		const activeLineNumbers = new Set<number>();
+		scanResults.forEach(result => {
+			if (result.locations) {
+				result.locations.forEach(loc => activeLineNumbers.add(loc.line));
+			}
+		});
+
+		const iacDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+			const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+			return diagnosticData?.cxType === constants.iacRealtimeScannerEngineName;
+		});
+
 		Object.entries(ignoredData).forEach(([, entry]) => {
 			if (entry.type !== constants.containersRealtimeScannerEngineName) { return; }
 			const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
@@ -426,30 +438,35 @@ export class ContainersScannerService extends BaseScannerService {
 				const resultKey = `${result.imageName}:${result.imageTag}`;
 				if (resultKey === imageKey && result.locations) {
 					result.locations.forEach(location => {
-						const range = new vscode.Range(
-							new vscode.Position(location.line, location.startIndex),
-							new vscode.Position(location.line, location.endIndex)
-						);
-						ignoredDecorations.push({ range });
+						const hasActiveContainerFindings = activeLineNumbers.has(location.line);
+						const hasActiveIacFindings = iacDiagnostics.some(diag => diag.range.start.line === location.line);
 
-						const hoverKey = `${filePath}:${location.line}`;
-						if (!this.containersHoverData.has(hoverKey)) {
-							this.containersHoverData.set(hoverKey, {
-								imageName: entry.imageName!,
-								imageTag: entry.imageTag!,
-								status: (entry.severity as CxRealtimeEngineStatus) || CxRealtimeEngineStatus.medium,
-								vulnerabilities: [],
-								location: {
-									line: location.line,
-									startIndex: location.startIndex,
-									endIndex: location.endIndex
-								},
-								fileType: this.isDockerComposeFile(filePath)
-									? 'docker-compose'
-									: constants.containersHelmExtensions.includes(path.extname(filePath).toLowerCase())
-										? 'helm'
-										: 'dockerfile'
-							});
+						if (!hasActiveContainerFindings && !hasActiveIacFindings) {
+							const range = new vscode.Range(
+								new vscode.Position(location.line, location.startIndex),
+								new vscode.Position(location.line, location.endIndex)
+							);
+							ignoredDecorations.push({ range });
+
+							const hoverKey = `${filePath}:${location.line}`;
+							if (!this.containersHoverData.has(hoverKey)) {
+								this.containersHoverData.set(hoverKey, {
+									imageName: entry.imageName!,
+									imageTag: entry.imageTag!,
+									status: (entry.severity as CxRealtimeEngineStatus) || CxRealtimeEngineStatus.medium,
+									vulnerabilities: [],
+									location: {
+										line: location.line,
+										startIndex: location.startIndex,
+										endIndex: location.endIndex
+									},
+									fileType: this.isDockerComposeFile(filePath)
+										? 'docker-compose'
+										: constants.containersHelmExtensions.includes(path.extname(filePath).toLowerCase())
+											? 'helm'
+											: 'dockerfile'
+								});
+							}
 						}
 					});
 				}
