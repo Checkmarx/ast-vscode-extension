@@ -59,7 +59,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		scanner: AscaScannerService
 	) {
 		const key = `${document.uri.fsPath}:${position.line}`;
-		const hoverData: AscaHoverData = scanner.getHoverData()?.get(key);
+		const hoverData: AscaHoverData[] = scanner.getHoverData()?.get(key);
 		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
 		const hasDiagnostic = diagnostics.some(
 			(d) => d.range.start.line === position.line
@@ -69,18 +69,28 @@ export class AscaScannerCommand extends BaseScannerCommand {
 			return;
 		}
 
+		return this.createHoverContent(hoverData);
+	}
+
+	private createHoverContent(hoverData: AscaHoverData[]): vscode.Hover {
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
 
-
-		const args = encodeURIComponent(JSON.stringify([hoverData]));
-		const buttons = buildCommandButtons(args, false, false);
-
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity) + " ");
-		md.appendMarkdown(this.renderID(hoverData) + "<br>");
-		md.appendMarkdown(`${buttons}<br>`);
+
+		hoverData.forEach((problem, index) => {
+			if (index > 0) {
+				md.appendMarkdown("<br>");
+			}
+
+			const args = encodeURIComponent(JSON.stringify([problem]));
+			const buttons = buildCommandButtons(args, false, false);
+
+			md.appendMarkdown(this.renderSeverityIcon(problem.severity) + " ");
+			md.appendMarkdown(this.renderID(problem) + "<br>");
+			md.appendMarkdown(`${buttons}<br>`);
+		});
 
 		return new vscode.Hover(md);
 	}
