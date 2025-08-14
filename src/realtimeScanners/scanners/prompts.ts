@@ -156,7 +156,7 @@ Severity level: \`${severity}\`
 Determine the programming language of the file where the secret was detected.  
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` MCP tool with:
+Call the internal \`codeRemediation\` Checkmarx MCP tool with:
 
 \`\`\`json
 {
@@ -485,7 +485,7 @@ Your task is to remediate this security issue **completely and autonomously** us
 Determine the programming language of the file where the security issue was detected.  
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` MCP tool with:
+Call the internal \`codeRemediation\` Checkmarx MCP tool with:
 
 \`\`\`json
 {
@@ -910,7 +910,7 @@ Your task is to remediate this IaC security issue **completely and autonomously*
 Determine the programming language of the file where the IaC security issue was detected.  
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` MCP tool with:
+Call the internal \`codeRemediation\` Checkmarx MCP tool with:
 
 \`\`\`json
 {
