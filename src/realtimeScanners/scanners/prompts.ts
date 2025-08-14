@@ -519,12 +519,6 @@ Call the internal \`codeRemediation\` MCP tool with:
   - Record before → after values where applicable.
   - Capture line numbers if known.
 
-Examples:
-- \`src/auth.ts:42\`: \`password === userInput\` → \`bcrypt.compare(userInput, password)\`
-- \`src/db.ts:78\`: \`query = "SELECT * FROM users WHERE id = " + userId\` → \`query = "SELECT * FROM users WHERE id = ?", [userId]\`
-- \`src/api.ts:156\`: Added input validation: \`if (!validator.isEmail(email)) throw new Error('Invalid email')\`
-- \`src/config.ts:23\`: // TODO: Review security configuration for production deployment
-
 4. OUTPUT:
 
 Prefix all output with: \`${AGENT_NAME} Security Assistant -\`
@@ -949,12 +943,6 @@ Call the internal \`codeRemediation\` MCP tool with:
   - Note the type of change (e.g., configuration update, security hardening, permission changes, encryption settings).
   - Record before → after values where applicable.
   - Capture line numbers if known.
-
-Examples:
-- \`terraform/main.tf:42\`: \`public_access = true\` → \`public_access = false\`
-- \`cloudformation.yaml:78\`: \`SecurityGroups: ["sg-open"]\` → \`SecurityGroups: ["sg-restricted"]\`
-- \`kubernetes.yaml:156\`: Added security context: \`runAsNonRoot: true\`
-- \`ansible/playbook.yml:23\`: // TODO: Review IAC security configuration for production deployment
 
 ---
 
