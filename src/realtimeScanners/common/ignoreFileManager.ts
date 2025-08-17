@@ -466,13 +466,14 @@ export class IgnoreFileManager {
 	}): void {
 		const countBefore = this.getIgnoredPackagesCount();
 
-		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
+		// עבור OSS, נשתמש רק ב-PackageManager:PackageName:PackageVersion בלי FilePath
+		const packageKey = `${entry.packageManager}:${entry.packageName}:${entry.packageVersion}`;
 		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				type: entry.packageManager ? constants.ossRealtimeScannerEngineName : constants.secretsScannerEngineName,
+				type: constants.ossRealtimeScannerEngineName,
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
@@ -717,6 +718,7 @@ export class IgnoreFileManager {
 			PackageVersion?: string;
 		}> = [];
 		const addedContainers = new Set<string>();
+		const addedOssPackages = new Set<string>(); // עבור OSS deduplication
 
 		Object.values(this.ignoreData).forEach(entry => {
 			const hasActiveFiles = entry.files.some(file => file.active);
@@ -731,7 +733,19 @@ export class IgnoreFileManager {
 					});
 					addedContainers.add(containerKey);
 				}
+			} else if (entry.type === constants.ossRealtimeScannerEngineName) {
+				// OSS - deduplication לפי PackageManager:PackageName:PackageVersion
+				const ossKey = `${entry.PackageManager}:${entry.PackageName}:${entry.PackageVersion}`;
+				if (!addedOssPackages.has(ossKey)) {
+					tempList.push({
+						PackageManager: entry.PackageManager,
+						PackageName: entry.PackageName,
+						PackageVersion: entry.PackageVersion
+					});
+					addedOssPackages.add(ossKey);
+				}
 			} else {
+				// עבור Secrets, IaC, ASCA - נשאר כמו שהיה (לכל קובץ בנפרד)
 				entry.files
 					.filter(file => file.active)
 					.forEach(file => {
@@ -755,13 +769,6 @@ export class IgnoreFileManager {
 								Line: file.line,
 								RuleID: entry.ruleId
 							});
-						} else {
-							tempList.push({
-								PackageManager: entry.PackageManager,
-								PackageName: entry.PackageName,
-								PackageVersion: entry.PackageVersion,
-								FilePath: scannedTempPath,
-							});
 						}
 					});
 			}
@@ -770,8 +777,11 @@ export class IgnoreFileManager {
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
 
-	public isPackageIgnored(packageName: string, version: string, filePath: string): boolean {
-		const packageKey = `${packageName}:${version}`;
+	public isPackageIgnored(packageName: string, version: string, filePath: string, packageManager?: string): boolean {
+		// עבור OSS, נשתמש ב-PackageManager:PackageName:PackageVersion
+		const packageKey = packageManager ?
+			`${packageManager}:${packageName}:${version}` :
+			`${packageName}:${version}`; // fallback לתאימות לאחור
 		const entry = this.ignoreData[packageKey];
 
 		if (!entry) {
