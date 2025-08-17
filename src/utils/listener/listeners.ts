@@ -115,8 +115,12 @@ export function addRealTimeSaveListener(
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
         if (isValidKicsFile && isSystemFiles) {
-            // Mandatory in order to have the document appearing as displayed for VSCode
-            await vscode.window.showTextDocument(e, 1, false);
+            // Only show document in VSCode to prevent infinite loop in Cursor IDE
+            // Cursor IDE handles document display differently and doesn't require this call
+            const isVSCode = vscode.env.appName === 'Visual Studio Code';
+            if (isVSCode) {
+                await vscode.window.showTextDocument(e, 1, false);
+            }
             updateState(context, constants.kicsRealtimeFile, {
                 id: e.uri.fsPath,
                 name: e.uri.fsPath,
