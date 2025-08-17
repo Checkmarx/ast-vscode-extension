@@ -120,14 +120,29 @@ export function addRealTimeSaveListener(
             const isVSCode = vscode.env.appName === 'Visual Studio Code';
             if (isVSCode) {
                 await vscode.window.showTextDocument(e, 1, false);
+                updateState(context, constants.kicsRealtimeFile, {
+                    id: e.uri.fsPath,
+                    name: e.uri.fsPath,
+                    displayScanId: undefined,
+                    scanDatetime: undefined
+                });
+                await vscode.commands.executeCommand(constants.kicsRealtime);
+            } else {
+                // In Cursor IDE, wait a bit to let the active editor get set and only process first file
+                setTimeout(async () => {
+                    const activeEditor = vscode.window.activeTextEditor;
+                    // Only process if this is the active editor (the file user actually opened)
+                    if (activeEditor && activeEditor.document.uri.fsPath === e.uri.fsPath) {
+                        updateState(context, constants.kicsRealtimeFile, {
+                            id: e.uri.fsPath,
+                            name: e.uri.fsPath,
+                            displayScanId: undefined,
+                            scanDatetime: undefined
+                        });
+                        await vscode.commands.executeCommand(constants.kicsRealtime);
+                    }
+                }, 50); // Small delay to let Cursor set the active editor
             }
-            updateState(context, constants.kicsRealtimeFile, {
-                id: e.uri.fsPath,
-                name: e.uri.fsPath,
-                displayScanId: undefined,
-                scanDatetime: undefined
-            });
-            await vscode.commands.executeCommand(constants.kicsRealtime);
         }
     });
 }
