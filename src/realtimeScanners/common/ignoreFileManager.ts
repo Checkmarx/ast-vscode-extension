@@ -48,7 +48,10 @@ export class IgnoreFileManager {
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
-
+	// פונקציה לנרמול paths - תמיד forward slashes לתאימות cross-platform
+	private normalizePath(filePath: string): string {
+		return path.relative(this.workspaceRootPath, filePath).replace(/\\/g, '/');
+	}
 
 	private constructor() { }
 
@@ -181,7 +184,7 @@ export class IgnoreFileManager {
 
 	public cleanupObsoletePackagesForFile(filePath: string, scanResults: Array<{ packageName: string; version: string }>): boolean {
 		try {
-			const relativePath = path.relative(this.workspaceRootPath, filePath);
+			const relativePath = this.normalizePath(filePath);
 
 			const currentPackages = new Set<string>();
 			for (const result of scanResults) {
@@ -396,7 +399,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const entry = this.ignoreData[packageKey];
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
@@ -421,7 +424,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const entry = this.ignoreData[packageKey];
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
@@ -468,7 +471,7 @@ export class IgnoreFileManager {
 
 		// עבור OSS, נשתמש רק ב-PackageManager:PackageName:PackageVersion בלי FilePath
 		const packageKey = `${entry.packageManager}:${entry.packageName}:${entry.packageVersion}`;
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
@@ -520,7 +523,7 @@ export class IgnoreFileManager {
 		secretValue: string;
 		filePath: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.title}:${entry.secretValue}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -568,7 +571,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.title}:${entry.similarityId}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -613,7 +616,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.ruleName}:${entry.ruleId}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -658,7 +661,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.imageName}:${entry.imageTag}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -788,7 +791,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const fileEntry = entry.files.find(f => f.path === relativePath);
 
 		return fileEntry && fileEntry.active;
@@ -802,7 +805,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.line === line);
 
 		return fileEntry && fileEntry.active;
@@ -810,7 +813,7 @@ export class IgnoreFileManager {
 
 	public removeMissingSecrets(currentResults: CxSecretsResult[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentSecrets = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -856,7 +859,7 @@ export class IgnoreFileManager {
 
 	public removeMissingIac(currentResults: CxIacResult[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentIacs = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -902,7 +905,7 @@ export class IgnoreFileManager {
 
 	public removeMissingAsca(currentResults: unknown[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentAsca = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -945,7 +948,7 @@ export class IgnoreFileManager {
 	}
 
 	public removeMissingContainers(currentResults: unknown[], filePath: string): boolean {
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		let hasChanges = false;
 
 		const currentImages = new Map<string, number[]>();
