@@ -48,7 +48,6 @@ export class IgnoreFileManager {
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
-	// פונקציה לנרמול paths - תמיד forward slashes לתאימות cross-platform
 	private normalizePath(filePath: string): string {
 		return path.relative(this.workspaceRootPath, filePath).replace(/\\/g, '/');
 	}
@@ -469,7 +468,6 @@ export class IgnoreFileManager {
 	}): void {
 		const countBefore = this.getIgnoredPackagesCount();
 
-		// עבור OSS, נשתמש רק ב-PackageManager:PackageName:PackageVersion בלי FilePath
 		const packageKey = `${entry.packageManager}:${entry.packageName}:${entry.packageVersion}`;
 		const relativePath = this.normalizePath(entry.filePath);
 
@@ -721,7 +719,7 @@ export class IgnoreFileManager {
 			PackageVersion?: string;
 		}> = [];
 		const addedContainers = new Set<string>();
-		const addedOssPackages = new Set<string>(); // עבור OSS deduplication
+		const addedOssPackages = new Set<string>();
 
 		Object.values(this.ignoreData).forEach(entry => {
 			const hasActiveFiles = entry.files.some(file => file.active);
@@ -737,7 +735,6 @@ export class IgnoreFileManager {
 					addedContainers.add(containerKey);
 				}
 			} else if (entry.type === constants.ossRealtimeScannerEngineName) {
-				// OSS - deduplication לפי PackageManager:PackageName:PackageVersion
 				const ossKey = `${entry.PackageManager}:${entry.PackageName}:${entry.PackageVersion}`;
 				if (!addedOssPackages.has(ossKey)) {
 					tempList.push({
@@ -748,7 +745,6 @@ export class IgnoreFileManager {
 					addedOssPackages.add(ossKey);
 				}
 			} else {
-				// עבור Secrets, IaC, ASCA - נשאר כמו שהיה (לכל קובץ בנפרד)
 				entry.files
 					.filter(file => file.active)
 					.forEach(file => {
@@ -781,10 +777,9 @@ export class IgnoreFileManager {
 	}
 
 	public isPackageIgnored(packageName: string, version: string, filePath: string, packageManager?: string): boolean {
-		// עבור OSS, נשתמש ב-PackageManager:PackageName:PackageVersion
 		const packageKey = packageManager ?
 			`${packageManager}:${packageName}:${version}` :
-			`${packageName}:${version}`; // fallback לתאימות לאחור
+			`${packageName}:${version}`;
 		const entry = this.ignoreData[packageKey];
 
 		if (!entry) {
