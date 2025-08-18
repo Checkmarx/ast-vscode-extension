@@ -54,6 +54,8 @@ export interface AscaHoverData {
   description: string;
   severity: string;
   remediationAdvise: string;
+  ruleId?: number;
+  filePath?: string;
   location?: {
     line: number;
     startIndex: number;
@@ -82,7 +84,10 @@ export interface IacHoverData {
   title: string;
   description: string;
   severity: string;
+  expectedValue: string;
+  actualValue: string;
   filePath: string;
+  originalFilePath?: string
   location?: {
     line: number;
     startIndex: number;

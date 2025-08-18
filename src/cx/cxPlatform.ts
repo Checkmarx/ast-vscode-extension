@@ -225,7 +225,7 @@ export interface CxPlatform {
    * Scan the edited file in the ASCA engine and show the results in the problem section
    * @param sourcePath the edited file sent to the ASCA engine
    */
-  scanAsca(sourcePath: string): Promise<CxAsca>;
+  scanAsca(sourcePath: string, ignorePath: string): Promise<CxAsca>;
 
   ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[] | undefined>;
 
@@ -233,9 +233,9 @@ export interface CxPlatform {
    * Scan the edited file in the Containers engine and show the results in the problem section
    * @param sourcePath the edited file sent to the Containers engine
    */
-  scanContainers(sourcePath: string): Promise<any>;
+  scanContainers(sourcePath: string, ignoredFilePath): Promise<any>;
 
-  iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined>;
+  iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 

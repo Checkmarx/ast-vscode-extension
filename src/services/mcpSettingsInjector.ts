@@ -3,12 +3,15 @@ import { jwtDecode } from "jwt-decode";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+import { isIDE } from "../utils/utils";
+import { constants } from "../utils/common/constants";
 interface DecodedJwt {
 	iss: string;
 }
 
 interface McpServer {
-	url: string;
+	serverUrl?: string;
+	url?: string;
 	headers: {
 		"cx-origin": string;
 		"Authorization": string;
@@ -46,8 +49,13 @@ function decodeJwt(apiKey: string): DecodedJwt | null {
 }
 
 function getMcpConfigPath(): string {
-	const homeDir = os.homedir();
-	return path.join(homeDir, ".cursor", "mcp.json");
+	if (isIDE(constants.cursorAgent)) {
+		const homeDir = os.homedir();
+		return path.join(homeDir, ".cursor", "mcp.json");
+	}
+	if (isIDE(constants.windsurfAgent)) {
+		return path.join(os.homedir(), ".codeium", "windsurf", "mcp_config.json");
+	}
 }
 
 async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
@@ -60,7 +68,7 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
 			mcpConfig = JSON.parse(fileContent);
 		} catch (error) {
-			console.warn("Failed to read existing mcp.json:", error);
+			console.warn("Failed to read existing mcp json:", error);
 		}
 	}
 
@@ -78,16 +86,15 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 
 		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 	} catch (error) {
-		throw new Error(`Failed to write mcp.json: ${error}`);
+		throw new Error(`Failed to write mcp json file: ${error}`);
 	}
 }
 
 export async function uninstallMcp() {
 	try {
-		const isCursor = vscode.env.appName.toLowerCase().includes("cursor");
 
-		if (isCursor) {
-			// Handle Cursor: Remove from .cursor/mcp.json file
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+			// Handle Cursor and Windsurf: Remove from mcp json file 
 			const mcpConfigPath = getMcpConfigPath();
 
 			if (!fs.existsSync(mcpConfigPath)) {
@@ -151,17 +158,15 @@ export async function initializeMcpConfiguration(apiKey: string) {
 
 		const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
 
-		const isCursor = vscode.env.appName.toLowerCase().includes("cursor");
-
 		const mcpServer: McpServer = {
-			url: fullUrl,
+			...(isIDE(constants.windsurfAgent) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": "VsCode",
+				"cx-origin": isIDE(constants.windsurfAgent) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
 				"Authorization": apiKey,
 			},
 		};
 
-		if (isCursor) {
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
 			const config = vscode.workspace.getConfiguration();

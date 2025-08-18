@@ -3,8 +3,20 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
-import { isCursorIDE, isSecretsHoverData, getWorkspaceFolder, getInitializedIgnoreManager, findAndIgnoreMatchingPackages, rescanFiles, isContainersHoverData, isAscaHoverData, isIacHoverData } from "../utils/utils";
-
+import {
+    isIDE,
+    getIDEName,
+    isSecretsHoverData,
+    getWorkspaceFolder,
+    getInitializedIgnoreManager,
+    findAndIgnoreMatchingPackages,
+    rescanFiles,
+    isContainersHoverData,
+    isAscaHoverData,
+    isIacHoverData,
+    findAndIgnoreMatchingContainersInWorkspace,
+    rescanContainerFiles
+} from "../utils/utils";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import {
     SCA_EXPLANATION_PROMPT,
@@ -21,7 +33,9 @@ import {
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
-
+import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
+import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
+import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
 import { cx } from "../cx";
 
 
@@ -30,17 +44,26 @@ export class CopilotChatCommand {
     logs: Logs;
     private ossScanner: OssScannerService;
     private secretsScanner: SecretsScannerService;
+    private iacScanner: IacScannerService;
+    private ascaScanner: AscaScannerService;
+    private containersScanner: ContainersScannerService;
 
     constructor(
         context: vscode.ExtensionContext,
         logs: Logs,
         ossScanner: OssScannerService,
-        secretsScanner: SecretsScannerService
+        secretsScanner: SecretsScannerService,
+        iacScanner: IacScannerService,
+        ascaScanner: AscaScannerService,
+        containersScanner: ContainersScannerService
     ) {
         this.context = context;
         this.logs = logs;
         this.ossScanner = ossScanner;
         this.secretsScanner = secretsScanner;
+        this.iacScanner = iacScanner;
+        this.ascaScanner = ascaScanner;
+        this.containersScanner = containersScanner;
     }
 
     private pressEnterWindows() {
@@ -77,41 +100,108 @@ export class CopilotChatCommand {
         }
     }
 
-    private async handleCursorIDE(question: string): Promise<void> {
+
+    private pasteCmdWindows() {
+        const script = `
+        Add-Type -AssemblyName System.Windows.Forms
+        [System.Windows.Forms.SendKeys]::SendWait("^v")
+        `;
+
+        spawn('powershell', ['-Command', script], { windowsHide: true });
+    }
+
+    private pasteCmdMac() {
+        const script = `tell application "System Events" to keystroke "v" using command down`;
+        spawn('osascript', ['-e', script]);
+    }
+
+    private async pasteCmd(): Promise<void> {
+        const platform = process.platform as Platform;
+
+        try {
+            switch (platform) {
+                case Platform.WINDOWS:
+                    await this.pasteCmdWindows();
+                    break;
+                case Platform.MAC:
+                    await this.pasteCmdMac();
+                    break;
+                default:
+                    throw new Error(`Unsupported platform: ${platform}`);
+            }
+        } catch (error) {
+            this.logs.error(`Failed to paste on platform ${platform}: ${error}`);
+            throw error;
+        }
+    }
+
+    private async restoreClipboard(originalClipboard: string, question: string): Promise<void> {
+        try {
+            const currentClipboard = await vscode.env.clipboard.readText();
+            if (currentClipboard !== question) {
+                await vscode.env.clipboard.writeText(originalClipboard);
+            }
+        } catch (clipboardError) {
+            this.logs.error('Error restoring clipboard:' + clipboardError);
+        }
+    }
+
+    private async executeWithClipboard(
+        question: string,
+        executeFunction: () => Promise<void>
+    ): Promise<void> {
         try {
             const originalClipboard = await vscode.env.clipboard.readText();
-            await vscode.commands.executeCommand("composer.closeComposerTab");
-
             await vscode.env.clipboard.writeText(question);
-            await vscode.commands.executeCommand("composer.newAgentChat");
-            await vscode.commands.executeCommand("aichat.newfollowupaction");
-            await new Promise(resolve => setTimeout(resolve, 100));
-            try {
-                await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
-                await this.pressEnter();
 
+            try {
+                await executeFunction();
                 await vscode.env.clipboard.writeText(originalClipboard);
             } catch (pasteErr) {
                 this.logs.error(`Failed to programmatically paste: ${pasteErr}`);
-                try {
-                    const originalClipboard = await vscode.env.clipboard.readText();
-                    if (originalClipboard !== question) {
-                        await vscode.env.clipboard.writeText(originalClipboard);
-                    }
-                } catch (clipboardError) {
-                    this.logs.error('Error restoring clipboard:' + clipboardError);
-                }
+                await this.restoreClipboard(originalClipboard, question);
             }
         } catch (err) {
-            this.logs.error(`Error in Cursor IDE integration: ${err}`);
-            vscode.window.showInformationMessage("Failed to open Cursor Chat.");
+            this.logs.error(`Error in IDE integration: ${err}`);
+            vscode.window.showInformationMessage("Failed to open Chat.");
         }
+    }
+
+    private async handleCursorIDE(question: string): Promise<void> {
+        const executeFunction = async () => {
+            await vscode.commands.executeCommand("composer.closeComposerTab");
+            await vscode.commands.executeCommand("composer.newAgentChat");
+            await vscode.commands.executeCommand("aichat.newfollowupaction");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
+            await this.pressEnter();
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
+    private async handleWindsurfIDE(question: string): Promise<void> {
+        const executeFunction = async () => {
+            await vscode.commands.executeCommand("windsurf.prioritized.chat.openNewConversation");
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await this.pasteCmd();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pressEnter();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
     }
 
     private async openChatWithPrompt(question: string): Promise<void> {
 
-        if (isCursorIDE()) {
+        if (isIDE(constants.cursorAgent)) {
             await this.handleCursorIDE(question);
+            return;
+        }
+
+        if (isIDE(constants.windsurfAgent)) {
+            await this.handleWindsurfIDE(question);
             return;
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
@@ -161,11 +251,11 @@ export class CopilotChatCommand {
                 if (isSecrets) {
                     question = SECRET_REMEDIATION_PROMPT(item.title, item.description, item.severity);
                 } else if (isAscaHoverData(item)) {
-                    question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise);
+                    question = ASCA_REMEDIATION_PROMPT(item.ruleName, item.description, item.severity, item.remediationAdvise, item.location.line);
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_REMEDIATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else if (isIacHoverData(item)) {
-                    question = IAC_REMEDIATION_PROMPT(item.title, item.description, item.severity, item.fileType);
+                    question = IAC_REMEDIATION_PROMPT(item.title, item.description, item.severity, item.fileType, item.expectedValue, item.actualValue, item.location.line);
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
@@ -191,7 +281,7 @@ export class CopilotChatCommand {
                 } else if (isContainersHoverData(item)) {
                     question = CONTAINERS_EXPLANATION_PROMPT(item.fileType, item.imageName, item.imageTag, item.status);
                 } else if (isIacHoverData(item)) {
-                    question = IAC_EXPLANATION_PROMPT(item.title, item.description, item.severity, item.fileType);
+                    question = IAC_EXPLANATION_PROMPT(item.title, item.description, item.severity, item.fileType, item.expectedValue, item.actualValue);
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
@@ -205,11 +295,25 @@ export class CopilotChatCommand {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData) => {
+            vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData | ContainersHoverData) => {
                 this.logUserEvent("click", constants.ignorePackage, item);
 
+
                 try {
-                    const workspaceFolder = getWorkspaceFolder(item.filePath);
+                    let workspaceFolder: vscode.WorkspaceFolder;
+
+                    if (isIacHoverData(item)) {
+                        const iacItem = item as IacHoverData & { originalFilePath?: string };
+                        workspaceFolder = getWorkspaceFolder(iacItem.originalFilePath);
+                    } else if (isContainersHoverData(item)) {
+                        workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (!workspaceFolder) {
+                            vscode.window.showErrorMessage("No workspace folder found.");
+                            return;
+                        }
+                    } else {
+                        workspaceFolder = getWorkspaceFolder(item.filePath);
+                    }
                     if (!workspaceFolder) {
                         vscode.window.showErrorMessage("No workspace folder found.");
                         return;
@@ -218,7 +322,29 @@ export class CopilotChatCommand {
                     const ignoreManager = IgnoreFileManager.getInstance();
                     ignoreManager.initialize(workspaceFolder);
 
-                    if (isSecretsHoverData(item)) {
+                    if (isIacHoverData(item)) {
+                        ignoreManager.addIgnoredEntryIac({
+                            title: item.title || "",
+                            similarityId: item.similarityId || "",
+                            filePath: item.originalFilePath,
+                            line: (item.location?.line || 0),
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+                        vscode.window.showInformationMessage(`IaC finding '${item.title}' ignored successfully.`);
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.originalFilePath)
+                            ?? await vscode.workspace.openTextDocument(item.originalFilePath);
+                        if (this.iacScanner && this.iacScanner.scan) {
+                            await this.iacScanner.scan(document, this.logs);
+                        }
+                        if (this.containersScanner.hasAnySeverityDecorations()) {
+                            await this.containersScanner.scan(document, this.logs);
+
+                        }
+
+                    }
+                    else if (isSecretsHoverData(item)) {
                         ignoreManager.addIgnoredEntrySecrets({
                             title: item.title || "",
                             filePath: item.filePath,
@@ -229,15 +355,57 @@ export class CopilotChatCommand {
                             secretValue: item.secretValue
                         });
 
-
-
                         vscode.window.showInformationMessage(`Secret '${item.title}' ignored successfully.`);
 
                         const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === item.filePath)
                             ?? await vscode.workspace.openTextDocument(item.filePath);
                         const secretsScannerForScan = this.secretsScanner as SecretsScannerService;
                         await secretsScannerForScan.scan(document, this.logs);
-                    } else {
+                    }
+                    else if (isAscaHoverData(item)) {
+                        ignoreManager.addIgnoredEntryAsca({
+                            ruleName: item.ruleName,
+                            ruleId: item.ruleId!,
+                            filePath: item.filePath || '',
+                            line: (item.location?.line || 0),
+                            severity: item.severity,
+                            description: item.description,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`ASCA rule '${item.ruleName}' ignored successfully.`);
+
+                        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === (item.filePath || ''))
+                            ?? await vscode.workspace.openTextDocument(item.filePath || '');
+                        if (this.ascaScanner && this.ascaScanner.scan) {
+                            await this.ascaScanner.scan(document, this.logs);
+                        }
+                    }
+                    else if (isContainersHoverData(item)) {
+                        ignoreManager.addIgnoredEntryContainers({
+                            imageName: item.imageName,
+                            imageTag: item.imageTag,
+                            filePath: vscode.window.activeTextEditor?.document.uri.fsPath || '',
+                            line: (item.location?.line || 0) + 1,
+                            severity: item.status,
+                            description: item.vulnerabilities && item.vulnerabilities.length > 0 ?
+                                item.vulnerabilities.map(v => `${v.cve}: ${v.severity}`).join(', ') :
+                                undefined,
+                            dateAdded: new Date().toISOString()
+                        });
+
+                        vscode.window.showInformationMessage(`Container ${item.imageName}:${item.imageTag} ignored successfully.`);
+
+                        const document = vscode.window.activeTextEditor?.document;
+                        if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
+                            await this.containersScanner.scan(document, this.logs);
+                        }
+                        if (this.iacScanner.hasAnySeverityDecorations()) {
+                            await this.iacScanner.scan(document, this.logs);
+
+                        }
+                    }
+                    else {
                         ignoreManager.addIgnoredEntry({
                             packageManager: item.packageManager,
                             packageName: item.packageName,
@@ -269,19 +437,38 @@ export class CopilotChatCommand {
 
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData) => {
+            vscode.commands.registerCommand(commands.ignoreAll, async (item: HoverData | ContainersHoverData) => {
                 this.logUserEvent("click", constants.ignoreAll, item);
                 try {
-                    const workspaceFolder = getWorkspaceFolder(item.filePath);
-                    const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
-                    const scanner = this.ossScanner as OssScannerService;
+                    if (isContainersHoverData(item)) {
+                        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (!workspaceFolder) {
+                            vscode.window.showErrorMessage("No workspace folder found.");
+                            return;
+                        }
 
-                    const affectedFiles = findAndIgnoreMatchingPackages(item, scanner, ignoreManager);
-                    await rescanFiles(affectedFiles, scanner, this.logs);
+                        const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
+                        const scanner = this.containersScanner as ContainersScannerService;
 
-                    vscode.window.showInformationMessage(
-                        `Ignored ${item.packageName}@${item.version} in ${affectedFiles.size} files.`
-                    );
+                        const affectedFiles = await findAndIgnoreMatchingContainersInWorkspace(item, scanner, ignoreManager, this.logs);
+                        await rescanContainerFiles(affectedFiles, scanner, this.logs);
+
+                        vscode.window.showInformationMessage(
+                            `Ignored ${item.imageName}@${item.imageTag} in ${affectedFiles.size} files.`
+                        );
+                    } else {
+                        const ossItem = item as HoverData;
+                        const workspaceFolder = getWorkspaceFolder(ossItem.filePath);
+                        const ignoreManager = getInitializedIgnoreManager(workspaceFolder);
+                        const scanner = this.ossScanner as OssScannerService;
+
+                        const affectedFiles = findAndIgnoreMatchingPackages(ossItem, scanner, ignoreManager);
+                        await rescanFiles(affectedFiles, scanner, this.logs);
+
+                        vscode.window.showInformationMessage(
+                            `Ignored ${ossItem.packageName}@${ossItem.version} in ${affectedFiles.size} files.`
+                        );
+                    }
                 } catch (err) {
                     this.logs.error(`Failed to ignore all: ${err}`);
                     vscode.window.showErrorMessage(`Failed to ignore all: ${err}`);
