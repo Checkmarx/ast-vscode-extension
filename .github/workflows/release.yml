@@ -215,7 +215,7 @@ jobs:
         PATH: "CHANGELOG.md"
 
     # PUBLISH TO MARKETPLACE
-    - name: Publish
+    - name: Publish to VSCode Marketplace
       env:
         MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
       if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
@@ -225,6 +225,14 @@ jobs:
         else
           vsce publish -p ${{ env.MARKET_TOKEN }}
         fi
+        
+    - name: Publish to Open VSX (ovsx)
+      if: env.OPEN_VSX_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+      env:
+        OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+      run: |
+        npm install -g ovsx
+        ovsx publish *.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
 
   notify:
     if: inputs.dev == false
