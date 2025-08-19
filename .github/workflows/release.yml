@@ -232,7 +232,7 @@ jobs:
         OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
       run: |
         npm install -g ovsx
-        ovsx publish *.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+        ovsx publish ast-results-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
 
   notify:
     if: inputs.dev == false
