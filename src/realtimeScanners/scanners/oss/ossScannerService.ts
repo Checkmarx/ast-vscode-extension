@@ -645,7 +645,6 @@ export class OssScannerService extends BaseScannerService {
       );
 
     activeEntries.forEach(item => {
-      // השתמש ב-packageKey הקיים (שכבר עודכן לפורמט החדש)
       const entryPackageKey = item.packageKey;
       const availableLines = existingFindingsByPackage.get(entryPackageKey);
 
