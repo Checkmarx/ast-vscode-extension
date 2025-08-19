@@ -13,7 +13,6 @@ import { IgnoreFileManager } from "../../common/ignoreFileManager";
 export class AscaScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private ascaHoverData = new Map<string, AscaHoverData[]>();
-	private ascaHoverDataFlat = new Map<string, AscaHoverData>();
 	private criticalDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private highDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private mediumDecorations = new Map<string, vscode.DecorationOptions[]>();
@@ -60,8 +59,8 @@ export class AscaScannerService extends BaseScannerService {
 			errorMessage: constants.errorAscaScanRealtime
 		};
 		super(config);
-
-		this.registerHoverDataMap(this.ascaHoverDataFlat);
+		
+		this.registerHoverDataMap(this.ascaHoverData);
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -143,7 +142,7 @@ export class AscaScannerService extends BaseScannerService {
 
 	private hasSecretsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
 		const secretsCollection = this.getOtherScannerCollection(constants.secretsScannerEngineName);
-		if (secretsCollection) {
+		 if (secretsCollection) {
 			const secretsDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
 				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
 				return diagnosticData?.cxType === constants.secretsScannerEngineName;
@@ -286,9 +285,6 @@ export class AscaScannerService extends BaseScannerService {
 
 			this.ascaHoverData.set(key, hoverProblems);
 
-			// Store flattened hover data for base scanner compatibility
-			this.ascaHoverDataFlat.set(key, hoverProblems[0]);
-
 			const highestSeverity = this.getHighestSeverity(lineResults.map(r => r.severity));
 			const decoration = { range };
 			switch (highestSeverity.toUpperCase()) {
@@ -359,7 +355,6 @@ export class AscaScannerService extends BaseScannerService {
 				}));
 
 				this.ascaHoverData.set(key, hoverProblems);
-				this.ascaHoverDataFlat.set(key, hoverProblems[0]);
 			}
 		}
 
@@ -379,7 +374,6 @@ export class AscaScannerService extends BaseScannerService {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
 		this.ascaHoverData.clear();
-		this.ascaHoverDataFlat.clear();
 		this.criticalDecorations.clear();
 		this.highDecorations.clear();
 		this.mediumDecorations.clear();
@@ -410,7 +404,6 @@ export class AscaScannerService extends BaseScannerService {
 		}
 		keysToDelete.forEach(key => {
 			this.ascaHoverData.delete(key);
-			this.ascaHoverDataFlat.delete(key);
 		});
 
 		this.criticalDecorations.delete(filePath);
@@ -513,14 +506,6 @@ export class AscaScannerService extends BaseScannerService {
 
 			this.ascaHoverData.set(newKey, hoverDataArray);
 			this.ascaHoverData.delete(oldKey);
-
-			// Also update the flattened hover data
-			const flatHoverData = this.ascaHoverDataFlat.get(oldKey);
-			if (flatHoverData && flatHoverData.location) {
-				flatHoverData.location.line = newLine;
-				this.ascaHoverDataFlat.set(newKey, flatHoverData);
-				this.ascaHoverDataFlat.delete(oldKey);
-			}
 		}
 	}
 
