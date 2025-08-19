@@ -556,7 +556,6 @@ export class OssScannerService extends BaseScannerService {
     const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 
     Object.entries(ignoredData).forEach(([, entry]) => {
-      // בדוק שזה OSS entry ושיש קובץ פעיל עבור הנתיב הנוכחי
       if (entry.type !== constants.ossRealtimeScannerEngineName) {
         return;
       }
@@ -621,7 +620,6 @@ export class OssScannerService extends BaseScannerService {
     const ignoredData = ignoreManager.getIgnoredPackagesData();
     const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', currentFilePath);
 
-    // יצירת מפה של findings קיימים לפי PackageManager:PackageName:PackageVersion
     const existingFindingsByPackage = new Map<string, number[]>();
     fullScanResults.forEach(result => {
       const packageKey = `${result.packageManager}:${result.packageName}:${result.version}`;
@@ -633,7 +631,6 @@ export class OssScannerService extends BaseScannerService {
       });
     });
 
-    // בדיקת ignored entries עם ה-packageKey החדש
     const activeEntries = Object.entries(ignoredData)
       .filter(([, entry]) => entry.type === constants.ossRealtimeScannerEngineName)
       .flatMap(([packageKey, entry]) =>

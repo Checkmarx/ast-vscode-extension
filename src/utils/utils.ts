@@ -329,7 +329,6 @@ export function findAndIgnoreMatchingPackages(
   manager: IgnoreFileManager
 ): Set<string> {
   const affected = new Set<string>();
-  // שימוש בפורמט עקבי: PackageManager:PackageName:PackageVersion
   const packageKey = `${item.packageManager}:${item.packageName}:${item.version}`;
 
   const packageToDataMap = buildPackageToDataMap(scanner);
@@ -364,7 +363,6 @@ function buildPackageToDataMap(scanner: OssScannerService): Map<string, HoverDat
     .map(diagnostic => (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item)
     .filter((d): d is HoverData => !!(d?.packageName && d?.version && d?.packageManager))
     .reduce((map, hoverData) => {
-      // שימוש בפורמט עקבי: PackageManager:PackageName:PackageVersion
       const packageKey = `${hoverData.packageManager}:${hoverData.packageName}:${hoverData.version}`;
 
       if (!map.has(packageKey)) {
