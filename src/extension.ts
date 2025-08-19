@@ -271,7 +271,7 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider,
     logs
   );
-  // Register refresh sca and results Tree Commmand
+  // Register refresh sca and results Tree Command
   treeCommand.registerRefreshCommands();
   // Register clear sca and results tree Command
   treeCommand.registerClearCommands();
@@ -284,7 +284,7 @@ export async function activate(context: vscode.ExtensionContext) {
   pickerCommand.registerPickerCommands();
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
-  // Registe Kics remediation command
+  // Register Kics remediation command
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
