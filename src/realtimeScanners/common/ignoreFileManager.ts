@@ -701,7 +701,7 @@ export class IgnoreFileManager {
 		}
 	}
 
-	private updateTempList(): void {
+	public updateTempList(): void {
 		const tempList: Array<{
 			Title?: string;
 			FilePath?: string;

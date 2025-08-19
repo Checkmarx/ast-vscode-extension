@@ -98,6 +98,9 @@ export class SecretsScannerService extends BaseScannerService {
 
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setScannedFilePath(filePath, tempFilePath);
+			if (ignoreManager.getIgnoredPackagesCount() > 0) {
+				ignoreManager.updateTempList();
+			}
 			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
 
 			const scanResults = await cx.secretsScanResults(tempFilePath, ignoredPackagesFile || "");
