@@ -898,28 +898,7 @@ export class ContainersScannerService extends BaseScannerService {
 		}
 	}
 
-	private getContainersSeverityAtLine(uri: vscode.Uri, lineNumber: number): string | undefined {
-		const filePath = uri.fsPath;
 
-		const severityMaps = [
-			{ severity: CxRealtimeEngineStatus.malicious, map: this.maliciousDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.critical, map: this.criticalDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.high, map: this.highDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.medium, map: this.mediumDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.low, map: this.lowDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.ok, map: this.okDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.unknown, map: this.unknownDecorationsMap }
-		];
-
-		for (const { severity, map } of severityMaps) {
-			const decorations = map.get(filePath) || [];
-			if (decorations.some(decoration => decoration.range.start.line === lineNumber)) {
-				return severity;
-			}
-		}
-
-		return undefined;
-	}
 
 	public recomputeGutterForLine(uri: vscode.Uri, lineNumber: number): void {
 		const filePath = uri.fsPath;

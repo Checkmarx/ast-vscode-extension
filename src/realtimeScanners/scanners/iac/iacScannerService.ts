@@ -566,25 +566,7 @@ export class IacScannerService extends BaseScannerService {
 		}
 	}
 
-	private getIacSeverityAtLine(uri: vscode.Uri, lineNumber: number): string | undefined {
-		const filePath = uri.fsPath;
 
-		const severityMaps = [
-			{ severity: CxRealtimeEngineStatus.critical, map: this.criticalDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.high, map: this.highDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.medium, map: this.mediumDecorationsMap },
-			{ severity: CxRealtimeEngineStatus.low, map: this.lowDecorationsMap }
-		];
-
-		for (const { severity, map } of severityMaps) {
-			const decorations = map.get(filePath) || [];
-			if (decorations.some(decoration => decoration.range.start.line === lineNumber)) {
-				return severity;
-			}
-		}
-
-		return undefined;
-	}
 
 	public recomputeGutterForLine(uri: vscode.Uri, lineNumber: number): void {
 		const filePath = uri.fsPath;
