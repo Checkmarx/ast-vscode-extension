@@ -40,7 +40,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let bench: Workbench;
   let driver: WebDriver;
 
-  it("Authentication: should authenticate using API key and verify button state", async function() {
+  it("Authentication: should authenticate using API key and verify button state", async function () {
     this.timeout(120000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
@@ -61,10 +61,10 @@ describe("Checkmarx VS Code Extension Tests", () => {
     console.log("Switched to WebView iframe");
 
     try {
-      // Find and select the API key radio button option
+      // Find and select the API key radio button   option
       const radioButtons = await webview.findWebElements(By.css("input[type='radio']"));
       console.log(`Found ${radioButtons.length} radio buttons`);
-      
+
       if (radioButtons.length >= 2) {
         const apiKeyRadio = radioButtons[1];
         await apiKeyRadio.click();
@@ -87,11 +87,11 @@ describe("Checkmarx VS Code Extension Tests", () => {
           const state = await authButton.getAttribute("disabled");
           return state !== "true";
         }, 5000, "Auth button did not become enabled");
-        
+
         // Verify that the auth button is now enabled
         disabledAttr = await authButton.getAttribute("disabled");
         expect(disabledAttr).to.not.equal("true", "Auth button should be enabled after API key entry");
-        
+
         // Click the auth button
         await authButton.click();
         console.log("Clicked 'Sign in' button");
@@ -162,5 +162,5 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(branch).is.not.undefined;
     });
   });
-  
+
 });
