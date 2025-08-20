@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-0.0...v2.35.1-findPerSection-1.0
+
+## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.35.1-cursor.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-cursor.0.0) - 2025-08-14 17:29:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
