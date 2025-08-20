@@ -31,7 +31,7 @@ import {
 // Load environment variables
 dotenv.config();
 const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const CxApiKey = process.env.CX_APIKEY;
+const CxApiKey = "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI2NGNmMjcwOC1mMjU0LTRkZDMtOWU2NS04OGE1ODIzZDZlZGIifQ.eyJpYXQiOjE3NTE0NjI1ODAsImp0aSI6IjViYzdjZThiLWNjMzktNDRhYy1hNTJhLWU0M2MzMWEwOTllYiIsImlzcyI6Imh0dHBzOi8vZGV1LmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2dhbGFjdGljYSIsImF1ZCI6Imh0dHBzOi8vZGV1LmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2dhbGFjdGljYSIsInN1YiI6ImIwMzQ5NWUyLTJkOGEtNDA4YS1hMzg0LTc2MGMxODEwMjBiZSIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJhc3QtYXBwIiwic2lkIjoiMDgyM2Q2OWItMjM1MC00MzExLTgyMDgtMjI1ZjRjZWNiOTU1Iiwic2NvcGUiOiJpYW0tYXBpIGFzdC1hcGkgcm9sZXMgZW1haWwgcHJvZmlsZSBvZmZsaW5lX2FjY2VzcyJ9.F1HCnoKiZG9xU7ZCvh3AcVddh47ee08GogupmPDU7ApRLBnKGBTZXZA6g5X3SrofxSeuY4J6aw98N6H5hllHng";
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -40,7 +40,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let bench: Workbench;
   let driver: WebDriver;
 
-  it("Authentication: should authenticate using API key and verify button state", async function() {
+  it("Authentication: should authenticate using API key and verify button state", async function () {
     this.timeout(120000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
@@ -64,7 +64,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       // Find and select the API key radio button option
       const radioButtons = await webview.findWebElements(By.css("input[type='radio']"));
       console.log(`Found ${radioButtons.length} radio buttons`);
-      
+
       if (radioButtons.length >= 2) {
         const apiKeyRadio = radioButtons[1];
         await apiKeyRadio.click();
@@ -87,11 +87,11 @@ describe("Checkmarx VS Code Extension Tests", () => {
           const state = await authButton.getAttribute("disabled");
           return state !== "true";
         }, 5000, "Auth button did not become enabled");
-        
+
         // Verify that the auth button is now enabled
         disabledAttr = await authButton.getAttribute("disabled");
         expect(disabledAttr).to.not.equal("true", "Auth button should be enabled after API key entry");
-        
+
         // Click the auth button
         await authButton.click();
         console.log("Clicked 'Sign in' button");
@@ -162,5 +162,5 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(branch).is.not.undefined;
     });
   });
-  
+
 });
