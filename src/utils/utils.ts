@@ -329,7 +329,7 @@ export function findAndIgnoreMatchingPackages(
   manager: IgnoreFileManager
 ): Set<string> {
   const affected = new Set<string>();
-  const packageKey = `${item.packageName}:${item.version}:${item.packageManager}`;
+  const packageKey = `${item.packageManager}:${item.packageName}:${item.version}`;
 
   const packageToDataMap = buildPackageToDataMap(scanner);
   const matchingData = packageToDataMap.get(packageKey);
@@ -363,7 +363,7 @@ function buildPackageToDataMap(scanner: OssScannerService): Map<string, HoverDat
     .map(diagnostic => (diagnostic as vscode.Diagnostic & { data?: { item?: HoverData } }).data?.item)
     .filter((d): d is HoverData => !!(d?.packageName && d?.version && d?.packageManager))
     .reduce((map, hoverData) => {
-      const packageKey = `${hoverData.packageName}:${hoverData.version}:${hoverData.packageManager}`;
+      const packageKey = `${hoverData.packageManager}:${hoverData.packageName}:${hoverData.version}`;
 
       if (!map.has(packageKey)) {
         map.set(packageKey, []);

@@ -48,7 +48,9 @@ export class IgnoreFileManager {
 	private statusBarUpdateCallback: (() => void) | undefined;
 	private uiRefreshCallback: (() => void) | undefined;
 
-
+	private normalizePath(filePath: string): string {
+		return path.relative(this.workspaceRootPath, filePath).replace(/\\/g, '/');
+	}
 
 	private constructor() { }
 
@@ -181,7 +183,7 @@ export class IgnoreFileManager {
 
 	public cleanupObsoletePackagesForFile(filePath: string, scanResults: Array<{ packageName: string; version: string }>): boolean {
 		try {
-			const relativePath = path.relative(this.workspaceRootPath, filePath);
+			const relativePath = this.normalizePath(filePath);
 
 			const currentPackages = new Set<string>();
 			for (const result of scanResults) {
@@ -396,7 +398,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const entry = this.ignoreData[packageKey];
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
@@ -421,7 +423,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const entry = this.ignoreData[packageKey];
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
@@ -466,13 +468,13 @@ export class IgnoreFileManager {
 	}): void {
 		const countBefore = this.getIgnoredPackagesCount();
 
-		const packageKey = `${entry.packageName}:${entry.packageVersion}`;
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const packageKey = `${entry.packageManager}:${entry.packageName}:${entry.packageVersion}`;
+		const relativePath = this.normalizePath(entry.filePath);
 
 		if (!this.ignoreData[packageKey]) {
 			this.ignoreData[packageKey] = {
 				files: [],
-				type: entry.packageManager ? constants.ossRealtimeScannerEngineName : constants.secretsScannerEngineName,
+				type: constants.ossRealtimeScannerEngineName,
 				PackageManager: entry.packageManager,
 				PackageName: entry.packageName,
 				PackageVersion: entry.packageVersion,
@@ -519,7 +521,7 @@ export class IgnoreFileManager {
 		secretValue: string;
 		filePath: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.title}:${entry.secretValue}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -567,7 +569,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.title}:${entry.similarityId}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -612,7 +614,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.ruleName}:${entry.ruleId}:${relativePath}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -657,7 +659,7 @@ export class IgnoreFileManager {
 		description?: string;
 		dateAdded?: string;
 	}): void {
-		const relativePath = path.relative(this.workspaceRootPath, entry.filePath);
+		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.imageName}:${entry.imageTag}`;
 
 		if (!this.ignoreData[packageKey]) {
@@ -717,6 +719,7 @@ export class IgnoreFileManager {
 			PackageVersion?: string;
 		}> = [];
 		const addedContainers = new Set<string>();
+		const addedOssPackages = new Set<string>();
 
 		Object.values(this.ignoreData).forEach(entry => {
 			const hasActiveFiles = entry.files.some(file => file.active);
@@ -730,6 +733,16 @@ export class IgnoreFileManager {
 						ImageTag: entry.imageTag
 					});
 					addedContainers.add(containerKey);
+				}
+			} else if (entry.type === constants.ossRealtimeScannerEngineName) {
+				const ossKey = `${entry.PackageManager}:${entry.PackageName}:${entry.PackageVersion}`;
+				if (!addedOssPackages.has(ossKey)) {
+					tempList.push({
+						PackageManager: entry.PackageManager,
+						PackageName: entry.PackageName,
+						PackageVersion: entry.PackageVersion
+					});
+					addedOssPackages.add(ossKey);
 				}
 			} else {
 				entry.files
@@ -755,13 +768,6 @@ export class IgnoreFileManager {
 								Line: file.line,
 								RuleID: entry.ruleId
 							});
-						} else {
-							tempList.push({
-								PackageManager: entry.PackageManager,
-								PackageName: entry.PackageName,
-								PackageVersion: entry.PackageVersion,
-								FilePath: scannedTempPath,
-							});
 						}
 					});
 			}
@@ -770,15 +776,17 @@ export class IgnoreFileManager {
 		fs.writeFileSync(this.getTempListPath(), JSON.stringify(tempList, null, 2));
 	}
 
-	public isPackageIgnored(packageName: string, version: string, filePath: string): boolean {
-		const packageKey = `${packageName}:${version}`;
+	public isPackageIgnored(packageName: string, version: string, filePath: string, packageManager?: string): boolean {
+		const packageKey = packageManager ?
+			`${packageManager}:${packageName}:${version}` :
+			`${packageName}:${version}`;
 		const entry = this.ignoreData[packageKey];
 
 		if (!entry) {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const fileEntry = entry.files.find(f => f.path === relativePath);
 
 		return fileEntry && fileEntry.active;
@@ -792,7 +800,7 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		const fileEntry = entry.files.find(f => f.path === relativePath && f.line === line);
 
 		return fileEntry && fileEntry.active;
@@ -800,7 +808,7 @@ export class IgnoreFileManager {
 
 	public removeMissingSecrets(currentResults: CxSecretsResult[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentSecrets = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -846,7 +854,7 @@ export class IgnoreFileManager {
 
 	public removeMissingIac(currentResults: CxIacResult[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentIacs = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -892,7 +900,7 @@ export class IgnoreFileManager {
 
 	public removeMissingAsca(currentResults: unknown[], filePath: string): boolean {
 		let hasChanges = false;
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 
 		const currentAsca = new Map<string, number[]>();
 		currentResults.forEach(result => {
@@ -935,7 +943,7 @@ export class IgnoreFileManager {
 	}
 
 	public removeMissingContainers(currentResults: unknown[], filePath: string): boolean {
-		const relativePath = path.relative(this.workspaceRootPath, filePath);
+		const relativePath = this.normalizePath(filePath);
 		let hasChanges = false;
 
 		const currentImages = new Map<string, number[]>();
