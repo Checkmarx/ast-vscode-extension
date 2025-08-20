@@ -1,24 +1,16 @@
 # CHANGELOG
 
-## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
+## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Fix issue of files being opened in a loop when "old" kics is running(AST-110001) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1249
-* Support publishing to Open VSX marketplaces (AST-109996) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1254
-* Asca with Secrets results. (AST-109995) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1251
-* corrected spell mistakes and updated placeholder (AST-0000) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1230
-* Remove filePath in oss Real time + Fix ignore path in windows+ Fix ignore icon for ignored secret findings  (AST-110000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1250
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-cursor.0.0...v2.35.1-findPerSection-0.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-0.0...v2.35.1-findPerSection-1.0
 
-### Fix
+## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
 
-- general:
-  - asca with secrets integration fix (#1251) ([7a2d08f](https://github.com/Checkmarx/ast-vscode-extension/commit/7a2d08f3cd4b4d04de5e939b14dce566c3269043)) ([#1251](https://github.com/Checkmarx/ast-vscode-extension/pull/1251))
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.35.1-cursor.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-cursor.0.0) - 2025-08-14 17:29:24
 
