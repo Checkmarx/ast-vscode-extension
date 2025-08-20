@@ -92,7 +92,7 @@ export class AstResultsProvider extends ResultsProvider {
     // get scan from state
     this.scan = getFromState(this.context, constants.scanIdKey);
     const fromTriage = getFromState(this.context, constants.triageUpdate)?.id;
-    // Case we come from triage we want to use the loaded results wich were modified in triage
+    // Case we come from triage we want to use the loaded results which were modified in triage
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan?.id) {
