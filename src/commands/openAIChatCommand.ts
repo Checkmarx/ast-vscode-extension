@@ -5,7 +5,6 @@ import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import {
     isIDE,
-    getIDEName,
     isSecretsHoverData,
     getWorkspaceFolder,
     getInitializedIgnoreManager,
@@ -338,10 +337,7 @@ export class CopilotChatCommand {
                         if (this.iacScanner && this.iacScanner.scan) {
                             await this.iacScanner.scan(document, this.logs);
                         }
-                        if (this.containersScanner.hasAnySeverityDecorations()) {
-                            await this.containersScanner.scan(document, this.logs);
-
-                        }
+                        this.containersScanner.recomputeGutterForLine(document.uri, item.location?.line || 0);
 
                     }
                     else if (isSecretsHoverData(item)) {
@@ -400,10 +396,10 @@ export class CopilotChatCommand {
                         if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
                             await this.containersScanner.scan(document, this.logs);
                         }
-                        if (this.iacScanner.hasAnySeverityDecorations()) {
-                            await this.iacScanner.scan(document, this.logs);
-
+                        if (document) {
+                            this.iacScanner.recomputeGutterForLine(document.uri, item.location?.line || 0);
                         }
+
                     }
                     else {
                         ignoreManager.addIgnoredEntry({
@@ -426,6 +422,7 @@ export class CopilotChatCommand {
                         if (scanner.shouldScanFile(document)) {
                             await scanner.scan(document, this.logs);
                         }
+                        await vscode.commands.executeCommand("editor.recomputeGutterForLine", { line: item.line - 1 });
                     }
                 } catch (err) {
                     this.logs.error(`Failed to ignore: ${err}`);
