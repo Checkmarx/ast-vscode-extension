@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [v2.35.1-validate.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-validate.0) - 2025-08-21 09:34:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Other/enable realtime from welcome page webview (AST-109997) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1259
+* Sync gutter icons on mixed IaC/Containers line after ignore (AST-109998) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1255
+* Vulnerability sorting and limit to top 10 in hover data (AST-0000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1258
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-1.0...v2.35.1-validate.0
+
+### Fix
+
+- general:
+  - improve vulnerability sorting and limit to top 10 in hover data (#1258) ([3c1481a](https://github.com/Checkmarx/ast-vscode-extension/commit/3c1481a74a00375bf2e7767d95c85844e31a4e6d)) ([#1258](https://github.com/Checkmarx/ast-vscode-extension/pull/1258))
+
 ## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
