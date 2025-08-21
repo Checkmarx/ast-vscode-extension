@@ -122,13 +122,21 @@ export class WelcomeWebview {
                     id="aiFeatureCheckIcon"
                     class="status-icon-img hidden"
                     src="${checkSvgUri}"
-                    alt="Checked Icon"
+                    alt="Real-time scanners enabled"
+                    role="button"
+                    tabindex="0"
+                    aria-pressed="true"
+                    aria-label="Real-time scanners are currently enabled. Click to disable all scanners."
                   />
                   <img
                     id="aiFeatureUncheckIcon"
                     class="status-icon-img hidden"
                     src="${uncheckSvgUri}"
-                    alt="Unchecked Icon"
+                    alt="Real-time scanners disabled"
+                    role="button"
+                    tabindex="0"
+                    aria-pressed="false"
+                    aria-label="Real-time scanners are currently disabled. Click to enable all scanners."
                   />
                 </div>
                 <span class="card-title">Code Smarter with CxOne Assist</span>
@@ -214,22 +222,30 @@ export class WelcomeWebview {
             false
           );
 
-          if (isFirstVisit && safeEnabled && !allScannersEnabled) {
-            for (const key of scannerConfigKeys) {
-              await config.update(key, true, vscode.ConfigurationTarget.Global);
+          if (isFirstVisit) {
+            if (safeEnabled && !allScannersEnabled) {
+              for (const key of scannerConfigKeys) {
+                await config.update(key, true, vscode.ConfigurationTarget.Global);
+              }
+            } else if (!safeEnabled) {
+              for (const key of scannerConfigKeys) {
+                await config.update(key, false, vscode.ConfigurationTarget.Global);
+              }
             }
-          }
 
-          panel.webview.postMessage({
-            type: "setAiFeatureState",
-            enabled: safeEnabled,
-            scannersSettings: isFirstVisit && safeEnabled ? true : safeEnabled && allScannersEnabled,
-          });
+            await context.globalState.update("cxFirstWelcome", true);
 
-          if (!safeEnabled) {
-            for (const key of scannerConfigKeys) {
-              await config.update(key, false, vscode.ConfigurationTarget.Global);
-            }
+            panel.webview.postMessage({
+              type: "setAiFeatureState",
+              enabled: safeEnabled,
+              scannersSettings: safeEnabled,
+            });
+          } else {
+            panel.webview.postMessage({
+              type: "setAiFeatureState",
+              enabled: safeEnabled,
+              scannersSettings: allScannersEnabled,
+            });
           }
         } catch (e) {
           console.error("Error retrieving AI state:", e);
