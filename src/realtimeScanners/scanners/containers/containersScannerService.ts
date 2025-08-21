@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
@@ -194,7 +195,6 @@ export class ContainersScannerService extends BaseScannerService {
 			return;
 		}
 
-		// Use the method to take care of in DockerFiles
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
 		logs.info("Scanning Containers in file: " + filePath);
@@ -248,8 +248,7 @@ export class ContainersScannerService extends BaseScannerService {
 				[],
 				[],
 				[],
-				[],
-
+				[]
 			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
@@ -767,5 +766,260 @@ export class ContainersScannerService extends BaseScannerService {
 			this.mediumDecorationsMap.size > 0 ||
 			this.lowDecorationsMap.size > 0
 		);
+	}
+
+	public hasAnyDecorationsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
+		const filePath = uri.fsPath;
+		const decorationMaps = [
+			this.maliciousDecorationsMap,
+			this.okDecorationsMap,
+			this.unknownDecorationsMap,
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations
+		];
+
+		return decorationMaps.some(map => {
+			const decorations = map.get(filePath) || [];
+			return decorations.some(decoration => decoration.range.start.line === lineNumber);
+		});
+	}
+
+	private removeGutterAtLine(filePath: string, lineNumber: number): void {
+		const decorationMaps = [
+			this.maliciousDecorationsMap,
+			this.okDecorationsMap,
+			this.unknownDecorationsMap,
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations,
+			this.maliciousIconDecorationsMap,
+			this.criticalIconDecorationsMap,
+			this.highIconDecorationsMap,
+			this.mediumIconDecorationsMap,
+			this.lowIconDecorationsMap
+		];
+
+		decorationMaps.forEach(map => {
+			const decorations = map.get(filePath) || [];
+			const filtered = decorations.filter(decoration => decoration.range.start.line !== lineNumber);
+			map.set(filePath, filtered);
+		});
+	}
+
+	private getAnyRangeAtLine(filePath: string, lineNumber: number): vscode.Range | undefined {
+		const decorationMaps = [
+			this.maliciousDecorationsMap,
+			this.okDecorationsMap,
+			this.unknownDecorationsMap,
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations
+		];
+
+		for (const map of decorationMaps) {
+			const decorations = map.get(filePath) || [];
+			const decoration = decorations.find(d => d.range.start.line === lineNumber);
+			if (decoration) {
+				return decoration.range;
+			}
+		}
+
+		return new vscode.Range(
+			new vscode.Position(lineNumber, 0),
+			new vscode.Position(lineNumber, 1)
+		);
+	}
+
+	private pushGutter(filePath: string, severity: string, range: vscode.Range): void {
+		const decoration = { range };
+
+		switch (severity.toUpperCase()) {
+			case CxRealtimeEngineStatus.malicious.toUpperCase(): {
+				const maliciousDecorations = this.maliciousDecorationsMap.get(filePath) || [];
+				maliciousDecorations.push(decoration);
+				this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.critical.toUpperCase(): {
+				const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
+				criticalDecorations.push(decoration);
+				this.criticalDecorationsMap.set(filePath, criticalDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.high.toUpperCase(): {
+				const highDecorations = this.highDecorationsMap.get(filePath) || [];
+				highDecorations.push(decoration);
+				this.highDecorationsMap.set(filePath, highDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.medium.toUpperCase(): {
+				const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
+				mediumDecorations.push(decoration);
+				this.mediumDecorationsMap.set(filePath, mediumDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.low.toUpperCase(): {
+				const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
+				lowDecorations.push(decoration);
+				this.lowDecorationsMap.set(filePath, lowDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.ok.toUpperCase(): {
+				const okDecorations = this.okDecorationsMap.get(filePath) || [];
+				okDecorations.push(decoration);
+				this.okDecorationsMap.set(filePath, okDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.unknown.toUpperCase(): {
+				const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
+				unknownDecorations.push(decoration);
+				this.unknownDecorationsMap.set(filePath, unknownDecorations);
+				break;
+			}
+			case "IGNORED": {
+				const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
+				ignoredDecorations.push(decoration);
+				this.ignoredDecorations.set(filePath, ignoredDecorations);
+				break;
+			}
+			default: {
+				const defaultDecorations = this.unknownDecorationsMap.get(filePath) || [];
+				defaultDecorations.push(decoration);
+				this.unknownDecorationsMap.set(filePath, defaultDecorations);
+				break;
+			}
+		}
+	}
+
+
+
+	public recomputeGutterForLine(uri: vscode.Uri, lineNumber: number): void {
+		const filePath = uri.fsPath;
+
+		this.removeGutterAtLine(filePath, lineNumber);
+
+		const range = this.getAnyRangeAtLine(filePath, lineNumber);
+		if (!range) {
+			return;
+		}
+
+		const containersSeverity = this.getContainersSeverityFromScanResults(uri, lineNumber);
+
+		const iacSeverity = this.exsistIacSeverityAtLine(uri, lineNumber);
+
+		let finalSeverity: string | undefined;
+		if (containersSeverity && iacSeverity) {
+			finalSeverity = this.getHighestSeverity([containersSeverity, iacSeverity]);
+		} else if (containersSeverity) {
+			finalSeverity = containersSeverity;
+		} else if (iacSeverity) {
+			finalSeverity = iacSeverity;
+		}
+
+		if (!finalSeverity) {
+			const hasIgnoredEntries = this.hasIgnoredEntriesOnLine(filePath, lineNumber);
+			if (hasIgnoredEntries) {
+				finalSeverity = "ignored";
+			}
+		}
+
+		if (finalSeverity) {
+			this.pushGutter(filePath, finalSeverity, range);
+		}
+
+		this.applyDecorations(uri);
+	}
+
+	private hasIgnoredEntriesOnLine(filePath: string, lineNumber: number): boolean {
+		const ignoreManager = IgnoreFileManager.getInstance();
+		const ignoredData = ignoreManager.getIgnoredPackagesData();
+		const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+
+		const lineNumber1Based = lineNumber + 1;
+
+		const hasIgnoredContainers = Object.values(ignoredData).some(entry => {
+			if (entry.type !== constants.containersRealtimeScannerEngineName) {
+				return false;
+			}
+			return entry.files.some(file =>
+				file.path === relativePath &&
+				file.active &&
+				file.line === lineNumber1Based
+			);
+		});
+
+		const hasIgnoredIac = Object.values(ignoredData).some(entry => {
+			if (entry.type !== constants.iacRealtimeScannerEngineName) {
+				return false;
+			}
+			return entry.files.some(file =>
+				file.path === relativePath &&
+				file.active &&
+				file.line === lineNumber1Based
+			);
+		});
+
+		return hasIgnoredContainers || hasIgnoredIac;
+	}
+
+	private getContainersSeverityFromScanResults(uri: vscode.Uri, lineNumber: number): string | undefined {
+		if (!this.lastFullScanResults || this.lastFullScanResults.length === 0) {
+			return undefined;
+		}
+
+		const filePath = uri.fsPath;
+		const ignoreManager = IgnoreFileManager.getInstance();
+		const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+
+		for (const result of this.lastFullScanResults) {
+			const containerResult = result as any;
+			if (containerResult.locations && Array.isArray(containerResult.locations)) {
+				for (const location of containerResult.locations) {
+					if (location.line === lineNumber) {
+						const isIgnored = this.isContainerResultIgnored(containerResult, filePath, ignoreManager, relativePath);
+						if (!isIgnored) {
+							return containerResult.status;
+						}
+					}
+				}
+			}
+		}
+
+		return undefined;
+	}
+
+	private isContainerResultIgnored(result: any, filePath: string, ignoreManager: IgnoreFileManager, relativePath: string): boolean {
+		const ignoredData = ignoreManager.getIgnoredPackagesData();
+
+		if (!result.imageName || !result.imageTag) {
+			return false;
+		}
+
+		const imageKey = `${result.imageName}:${result.imageTag}`;
+
+		const ignoredEntry = Object.values(ignoredData).find(entry => {
+			if (entry.type !== constants.containersRealtimeScannerEngineName) {
+				return false;
+			}
+			const entryImageKey = `${entry.imageName}:${entry.imageTag}`;
+			return entryImageKey === imageKey;
+		});
+
+		if (!ignoredEntry) {
+			return false;
+		}
+
+		const fileEntry = ignoredEntry.files.find(f =>
+			f.path === relativePath && f.active
+		);
+
+		return !!fileEntry;
 	}
 }
