@@ -137,7 +137,7 @@ export class AuthService {
           port: urlObj.port || (isHttps ? 443 : 80),
           path: urlObj.pathname + urlObj.search,
           method: 'GET',
-          timeout: 5000,
+          timeout: 50000,
           headers: {
             Accept: 'application/json',
           },
@@ -157,8 +157,8 @@ export class AuthService {
                   return resolve(false);
                 }
 
-                const redirectUrl = new URL(headers.location, urlStr).href;
-                return resolve(await fetchUrl(redirectUrl, redirectCount + 1));
+                //const redirectUrl = new URL(headers.location, urlStr).href;
+                return resolve(true);
               }
 
               if (isTenantCheck && (statusCode === 404 || statusCode === 405)) {

@@ -19,7 +19,6 @@
       if (message.command === "disableAuthButton") {
         const authButton = document.getElementById("authButton");
         if (authButton) {
-          debugger;
           authButton.disabled = true;
           document.getElementsByName("authMethod").forEach(input => {
             input.disabled = true;
