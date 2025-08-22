@@ -6,7 +6,7 @@ import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
 import { commands } from "../utils/common/commands";
 import { ProxyHelper } from '../utils/proxy/proxy';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from "axios";
 
 interface OAuthConfig {
   clientId: string;
@@ -125,7 +125,7 @@ export class AuthService {
       const proxyHelper = new ProxyHelper();
       const agent = proxyHelper.createHttpsProxyAgent();
 
-      const config: AxiosRequestConfig = {
+      const config = {
         url: urlToCheck,
         method: 'GET',
         timeout: 15000,

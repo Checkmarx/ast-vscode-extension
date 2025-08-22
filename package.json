@@ -1033,7 +1033,6 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/axios": "^0.9.36",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
     "@types/node": "^22.9.0",
@@ -1068,14 +1067,14 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
+    "https-proxy-agent": "^7.0.6",
     "install": "^0.13.0",
     "jsonstream-ts": "^1.3.6",
     "jwt-decode": "^4.0.0",
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
-    "validator": "^13.12.0",
-    "https-proxy-agent": "^7.0.6"
+    "validator": "^13.12.0"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
