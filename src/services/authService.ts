@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
-import * as https from 'https';
 import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
 import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
 import { commands } from "../utils/common/commands";
 import { ProxyHelper } from '../utils/proxy/proxy';
-
+import axios, { AxiosRequestConfig } from 'axios';
 
 interface OAuthConfig {
   clientId: string;
@@ -122,85 +121,33 @@ export class AuthService {
 
   // Helper function to check if a URL exists
   private async checkUrlExists(urlToCheck: string, isTenantCheck = false): Promise<boolean> {
-    const MAX_REDIRECTS = 5;
+    try {
+      const proxyHelper = new ProxyHelper();
+      const agent = proxyHelper.createHttpsProxyAgent();
 
-    const fetchUrl = async (urlStr: string, redirectCount: number): Promise<boolean> => {
-      try {
-        const urlObj = new URL(urlStr);
-        const isHttps = urlObj.protocol === 'https:';
-        const requestFn = isHttps ? https.request : http.request;
-        const proxyHelper = new ProxyHelper();
-        const agent = proxyHelper.createHttpsProxyAgent();
+      const config: AxiosRequestConfig = {
+        url: urlToCheck,
+        method: 'GET',
+        timeout: 15000,
+        maxRedirects: 5,
+        httpsAgent: agent,
+        httpAgent: agent,
+        validateStatus: () => true // don't throw for non-2xx
+      };
 
-        const options: https.RequestOptions = {
-          hostname: urlObj.hostname,
-          port: urlObj.port || (isHttps ? 443 : 80),
-          path: urlObj.pathname + urlObj.search,
-          method: 'GET',
-          timeout: 50000,
-          headers: {
-            Accept: 'application/json',
-          },
-          agent,
-        };
+      const res = await axios.request(config);
 
-        return await new Promise<boolean>((resolve, reject) => {
-          const req = requestFn(options, (res) => {
-            const { statusCode, headers } = res;
-            let body = '';
-
-            res.on('data', (chunk) => (body += chunk));
-            res.on('end', async () => {
-              if (statusCode && statusCode >= 300 && statusCode < 400 && headers.location) {
-                if (redirectCount >= MAX_REDIRECTS) {
-                  console.error('Too many redirects');
-                  return resolve(false);
-                }
-
-                //const redirectUrl = new URL(headers.location, urlStr).href;
-                return resolve(true);
-              }
-
-              if (isTenantCheck && (statusCode === 404 || statusCode === 405)) {
-                console.log(`Tenant check failed with ${statusCode}:`, body);
-                return resolve(false);
-              }
-
-              if (statusCode && statusCode < 400) {
-                return resolve(true);
-              }
-
-              console.log(`Final response status: ${statusCode}`);
-              console.log(`Response body: ${body}`);
-              return resolve(false);
-            });
-          });
-
-          req.on('error', (err) => {
-            console.error(`Request error: ${err.message}`);
-            //resolve(false);
-            reject(new Error(err.message));
-          });
-
-          req.on('timeout', () => {
-            console.error('Request timed out');
-            req.destroy();
-            resolve(false);
-            reject(new Error('Request timed out'));
-          });
-
-          req.end();
-        });
-      } catch (error) {
-        console.error('Unexpected error:', error);
+      if (isTenantCheck && (res.status === 404 || res.status === 405)) {
+        console.log(`Tenant check failed with ${res.status}:`, res.data);
         return false;
       }
-    };
 
-    return await fetchUrl(urlToCheck, 0);
+      return res.status < 400;
+    } catch (error) {
+      console.error('Request error in checkUrlExists:', error.message);
+      return false;
+    }
   }
-
-
 
   private async findAvailablePort(): Promise<number> {
     const MIN_PORT = 49152;
@@ -359,80 +306,39 @@ export class AuthService {
   }
 
   private async getRefreshToken(code: string, config: OAuthConfig): Promise<string> {
-    const MAX_REDIRECTS = 5;
-    const proxyHelper = new ProxyHelper();
-    const agent = proxyHelper.createHttpsProxyAgent();
-    const params = new URLSearchParams({
-      grant_type: 'authorization_code',
-      client_id: config.clientId,
-      code,
-      redirect_uri: config.redirectUri,
-      code_verifier: config.codeVerifier
-    });
+    try {
+      const proxyHelper = new ProxyHelper();
+      const agent = proxyHelper.createHttpsProxyAgent();
 
-    const postData = params.toString();
-
-    const makeRequest = (url: string, redirectCount = 0): Promise<string> => {
-      return new Promise((resolve, reject) => {
-        if (redirectCount > MAX_REDIRECTS) {
-          return reject(new Error('Too many redirects'));
-        }
-
-        const urlObj = new URL(url);
-        const isHttps = urlObj.protocol === 'https:';
-        const requestFn = isHttps ? https.request : http.request;
-
-        const options: https.RequestOptions = {
-          hostname: urlObj.hostname,
-          port: urlObj.port || (isHttps ? 443 : 80),
-          path: urlObj.pathname + urlObj.search,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(postData),
-          },
-          agent
-        };
-
-        const req = requestFn(options, (res) => {
-          let data = '';
-
-          res.on('data', (chunk) => data += chunk);
-          res.on('end', () => {
-            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-              const redirectUrl = /^https?:\/\//i.test(res.headers.location)
-                ? res.headers.location
-                : `${urlObj.protocol}//${urlObj.host}${res.headers.location}`;
-
-              console.log(`Redirecting to ${redirectUrl}`);
-              return resolve(makeRequest(redirectUrl, redirectCount + 1));
-            }
-
-            if (res.statusCode !== 200) {
-              return reject(new Error(`Request failed with status ${res.statusCode}. Body: ${data}`));
-            }
-
-            try {
-              const parsed = JSON.parse(data);
-              if (!parsed.refresh_token) {
-                return reject(new Error('Response did not include refresh_token'));
-              }
-              return resolve(parsed.refresh_token);
-            } catch (err: any) {
-              return reject(new Error(`Failed to parse response: ${err.message}`));
-            }
-          });
-        });
-
-        req.on('error', (err) => reject(new Error(`Request error: ${err.message}`)));
-
-        req.write(postData);
-        req.end();
+      const params = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: config.clientId,
+        code,
+        redirect_uri: config.redirectUri,
+        code_verifier: config.codeVerifier
       });
-    };
 
-    return makeRequest(config.tokenEndpoint);
+      const res = await axios.post(
+        config.tokenEndpoint,
+        params.toString(),
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          maxRedirects: 5,
+          httpsAgent: agent,
+          httpAgent: agent
+        }
+      );
+
+      if (!res.data?.refresh_token) {
+        throw new Error('Response did not include refresh_token');
+      }
+
+      return res.data.refresh_token;
+    } catch (err) {
+      throw new Error(`Failed to fetch refresh token: ${err.message}`);
+    }
   }
+
 
   private async saveURIAndTenant(context: vscode.ExtensionContext, url: string, tenant: string): Promise<void> {
     const urlMap = context.globalState.get<{ [key: string]: string[] }>("recentURLsAndTenant") || {};
