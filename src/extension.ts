@@ -34,7 +34,9 @@ import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionPr
 import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
 import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
 import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
-
+import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
+import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
+import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -269,7 +271,7 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider,
     logs
   );
-  // Register refresh sca and results Tree Commmand
+  // Register refresh sca and results Tree Command
   treeCommand.registerRefreshCommands();
   // Register clear sca and results tree Command
   treeCommand.registerClearCommands();
@@ -282,7 +284,7 @@ export async function activate(context: vscode.ExtensionContext) {
   pickerCommand.registerPickerCommands();
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
-  // Registe Kics remediation command
+  // Register Kics remediation command
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
@@ -301,14 +303,25 @@ export async function activate(context: vscode.ExtensionContext) {
   const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
   const secretScanner = secretCommand.getScannerService();
 
+  const iacCommand = scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName) as IacScannerCommand;
+  const iacScanner = iacCommand.getScannerService();
+
+  const ascaCommand = scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName) as AscaScannerCommand;
+  const ascaScanner = ascaCommand.getScannerService();
+
+  const containersCommand = scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName) as ContainersScannerCommand;
+  const containersScanner = containersCommand.getScannerService();
+
   ignoreFileManager.setOssScannerService(ossScanner);
   ignoreFileManager.setSecretsScannerService(secretScanner);
-
+  ignoreFileManager.setIacScannerService(iacScanner);
+  ignoreFileManager.setAscaScannerService(ascaScanner);
+  ignoreFileManager.setContainersScannerService(containersScanner);
   context.subscriptions.push({
     dispose: () => ignoreFileManager.dispose()
   });
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner);
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
 

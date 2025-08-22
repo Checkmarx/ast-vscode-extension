@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## [v2.36.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.0) - 2025-08-21 11:57:02
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.36.0 -->
+
+## What's Changed
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.141 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1260
+### Other Changes
+* Fix issue of files being opened in a loop when "old" kics is running(AST-110001) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1249
+* Support publishing to Open VSX marketplaces (AST-109996) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1254
+* Asca with Secrets results. (AST-109995) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1251
+* corrected spell mistakes and updated placeholder (AST-0000) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1230
+* Remove filePath in oss Real time + Fix ignore path in windows+ Fix ignore icon for ignored secret findings  (AST-110000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1250
+* Other/enable realtime from welcome page webview (AST-109997) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1259
+* Sync gutter icons on mixed IaC/Containers line after ignore (AST-109998) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1255
+* Vulnerability sorting and limit to top 10 in hover data (AST-0000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1258
+* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1261
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.0...v2.36.0
+
+## [v2.35.1-validate.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-validate.0) - 2025-08-21 09:34:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-0.0...v2.35.1-findPerSection-1.0
+
+## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.35.1-cursor.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-cursor.0.0) - 2025-08-14 17:29:24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.0...v2.35.1-cursor.0.0
+
+## [v2.35.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.0) - 2025-08-14 17:28:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.35.0 -->
+
 ## [v2.34.1-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-windsurf.0) - 2025-08-14 08:28:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -24,13 +73,21 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-auth-proxy-support1.0...v2.34.1-new-prompt-1.0
 
-## [v2.34.1-auth-proxy-support1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support1.0) - 2025-08-14 09:06:12
+## [v2.34.1-beta.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-beta.0) - 2025-08-14 15:17:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 15:26:27
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompts.0...v2.34.1-auth-proxy-support1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-beta.0...v2.34.1-auth-proxy-support.0
+
+## [v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0) - 2025-08-14 13:23:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 

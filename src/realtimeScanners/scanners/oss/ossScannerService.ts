@@ -12,7 +12,7 @@ import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-
+import { createHash } from "crypto";
 
 
 export class OssScannerService extends BaseScannerService {
@@ -434,10 +434,6 @@ export class OssScannerService extends BaseScannerService {
     const scanResults = problems as unknown as CxOssResult[];
     const filePath = uri.fsPath;
 
-
-
-    const previousDiagnostics = this.diagnosticsMap.get(filePath) || [];
-
     const diagnostics: vscode.Diagnostic[] = [];
 
     this.diagnosticCollection.delete(uri);
@@ -559,32 +555,38 @@ export class OssScannerService extends BaseScannerService {
     const ignoredData = ignoreManager.getIgnoredPackagesData();
     const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
 
-    Object.entries(ignoredData).forEach(([packageKey, entry]) => {
+    Object.entries(ignoredData).forEach(([, entry]) => {
+      if (entry.type !== constants.ossRealtimeScannerEngineName) {
+        return;
+      }
+
       const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
-      if (fileEntry && fileEntry.line !== undefined) {
-        const alreadyHasDecoration = ignoredDecorations.some(decoration =>
-          decoration.range.start.line === fileEntry.line
+      if (!fileEntry || !fileEntry.line) {
+        return;
+      }
+
+      const alreadyHasDecoration = ignoredDecorations.some(decoration =>
+        decoration.range.start.line === fileEntry.line
+      );
+
+      if (!alreadyHasDecoration) {
+        const range = new vscode.Range(
+          new vscode.Position(fileEntry.line, 0),
+          new vscode.Position(fileEntry.line, 1000)
         );
+        ignoredDecorations.push({ range });
 
-        if (!alreadyHasDecoration) {
-          const range = new vscode.Range(
-            new vscode.Position(fileEntry.line, 0),
-            new vscode.Position(fileEntry.line, 1000)
-          );
-          ignoredDecorations.push({ range });
-
-          const hoverKey = `${filePath}:${fileEntry.line}`;
-          if (!this.hoverMessages.has(hoverKey)) {
-            const hoverData: HoverData = {
-              packageName: entry.PackageName,
-              version: entry.PackageVersion,
-              packageManager: entry.PackageManager,
-              filePath: filePath,
-              line: fileEntry.line,
-              status: CxRealtimeEngineStatus.ok
-            };
-            this.hoverMessages.set(hoverKey, hoverData);
-          }
+        const hoverKey = `${filePath}:${fileEntry.line}`;
+        if (!this.hoverMessages.has(hoverKey)) {
+          const hoverData: HoverData = {
+            packageName: entry.PackageName,
+            version: entry.PackageVersion,
+            packageManager: entry.PackageManager,
+            filePath: filePath,
+            line: fileEntry.line,
+            status: CxRealtimeEngineStatus.ok
+          };
+          this.hoverMessages.set(hoverKey, hoverData);
         }
       }
     });
@@ -630,6 +632,7 @@ export class OssScannerService extends BaseScannerService {
     });
 
     const activeEntries = Object.entries(ignoredData)
+      .filter(([, entry]) => entry.type === constants.ossRealtimeScannerEngineName)
       .flatMap(([packageKey, entry]) =>
         entry.files
           .filter(file => file.active && file.path === relativePath)
@@ -641,28 +644,25 @@ export class OssScannerService extends BaseScannerService {
           }))
       );
 
-    let updatedCount = 0;
-    let removedCount = 0;
-
     activeEntries.forEach(item => {
-      const entryPackageKey = `${item.entry.PackageManager}:${item.entry.PackageName}:${item.entry.PackageVersion}`;
+      const entryPackageKey = item.packageKey;
       const availableLines = existingFindingsByPackage.get(entryPackageKey);
 
       if (availableLines && availableLines.length > 0) {
-        if (!availableLines.includes(item.currentLine)) {
+        if (item.currentLine && !availableLines.includes(item.currentLine)) {
           const newLine = availableLines[0];
           const success = ignoreManager.updatePackageLineNumber(item.packageKey, currentFilePath, newLine);
 
           if (success) {
             this.updateIgnoredDecorationLine(currentFilePath, item.currentLine, newLine);
             this.updateHoverDataLine(currentFilePath, item.currentLine, newLine);
-            updatedCount++;
           }
         }
       } else {
         ignoreManager.removePackageEntry(item.packageKey, relativePath);
-        this.removeIgnoredDecorationAtLine(currentFilePath, item.currentLine);
-        removedCount++;
+        if (item.currentLine) {
+          this.removeIgnoredDecorationAtLine(currentFilePath, item.currentLine);
+        }
       }
     });
   }
@@ -761,6 +761,15 @@ export class OssScannerService extends BaseScannerService {
 
 
 
+  protected generateFileHash(input: string): string {
+    const now = new Date();
+    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
+    return createHash("sha256")
+      .update(input + timeSuffix)
+      .digest("hex")
+      .substring(0, 16);
+  }
+
   private toSafeTempFileName(relativePath: string): string {
     const baseName = path.basename(relativePath);
     const hash = this.generateFileHash(relativePath);
@@ -774,7 +783,7 @@ export class OssScannerService extends BaseScannerService {
   getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
     return this.diagnosticsMap;
   }
-  
+
   private updateIgnoredDecorationLine(filePath: string, oldLine: number, newLine: number): void {
     const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
 

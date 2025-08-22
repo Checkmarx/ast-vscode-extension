@@ -63,8 +63,8 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			const actionList = [fixAction, explainAction, ignoreAction];
 
 			if (this.isEligibleForIgnoreAll(item)) {
-				const ignoreAllVulnerbility = "Ignore all of this type";
-				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerbility, vscode.CodeActionKind.QuickFix);
+				const ignoreAllVulnerability = "Ignore all of this type";
+				const ignoreAllAction = new vscode.CodeAction(ignoreAllVulnerability, vscode.CodeActionKind.QuickFix);
 				ignoreAllAction.command = {
 					command: commands.ignoreAll,
 					title: ignoreAllAction.title,

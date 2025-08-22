@@ -12,7 +12,7 @@ export abstract class BaseScannerService implements IScannerService {
   diagnosticCollection: vscode.DiagnosticCollection;
 
   private static diagnosticCollections = new Map<string, vscode.DiagnosticCollection>();
-  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData>>();
+  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData[]>>();
 
   constructor(config: IScannerConfig) {
     this.config = config;
@@ -26,10 +26,10 @@ export abstract class BaseScannerService implements IScannerService {
   protected getOtherScannerCollection(engineName: string): vscode.DiagnosticCollection | undefined {
     return BaseScannerService.diagnosticCollections.get(engineName);
   }
-  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData>): void {
+  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData[]>): void {
     BaseScannerService.hoverDataMaps.set(this.config.engineName, hoverDataMap);
   }
-  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData> | undefined {
+  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData[]> | undefined {
     return BaseScannerService.hoverDataMaps.get(engineName);
   }
 

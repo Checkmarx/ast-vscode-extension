@@ -132,6 +132,7 @@ export const constants = {
 
   projectLimit: "limit=10000",
   vsCodeAgent: "VS Code",
+  vsCodeAgentOrginalName : "Visual Studio Code",
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
   cxOne: "checkmarxOne",

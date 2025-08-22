@@ -82,7 +82,7 @@ export class IacScannerCommand extends BaseScannerCommand {
 			}
 
 			const args = encodeURIComponent(JSON.stringify([problem]));
-			const buttons = buildCommandButtons(args, true, false);
+			const buttons = buildCommandButtons(args, false, false);
 
 			md.appendMarkdown(this.renderSeverityIcon(problem.severity));
 			md.appendMarkdown(this.renderID(problem));
@@ -102,7 +102,7 @@ export class IacScannerCommand extends BaseScannerCommand {
 
 	private renderID(hoverData: IacHoverData): string {
 		return `
-<b>${hoverData.title}</b> - ${hoverData.description}
+<b>${hoverData.title}</b> - ${hoverData.actualValue}. ${hoverData.description}
 <i style="color: dimgrey;"> - IaC vulnerability<br></i>
 `;
 	}
@@ -111,5 +111,9 @@ export class IacScannerCommand extends BaseScannerCommand {
 		await super.dispose();
 		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
+	}
+
+	public getScannerService(): IacScannerService {
+		return this.scannerService as IacScannerService;
 	}
 }

@@ -70,7 +70,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     startColumn: number,
     fieldLength: number
   ) {
-    // Needed because vscode.workspace.workspaceFolders migth be undefined if no workspace is opened
+    // Needed because vscode.workspace.workspaceFolders might be undefined if no workspace is opened
     try {
       let fileOpened = false;
       const folder = vscode.workspace.workspaceFolders?.[0];

@@ -150,7 +150,7 @@ async function createPicker(
   quickPick.show();
 }
 
-// label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
+// label, funcao p ir buscar os projects/branches, etc override, onDidChange , funcao de "pre pick" p retornar um bool
 export async function projectPicker(
   context: vscode.ExtensionContext,
   logs: Logs

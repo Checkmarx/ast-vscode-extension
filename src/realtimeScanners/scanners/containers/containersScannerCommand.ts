@@ -156,4 +156,8 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		}
 		return super.dispose();
 	}
+
+	public getScannerService(): ContainersScannerService {
+		return this.scannerService as ContainersScannerService;
+	}
 }

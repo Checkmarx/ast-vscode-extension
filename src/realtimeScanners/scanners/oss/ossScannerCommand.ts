@@ -71,7 +71,16 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.supportHtml = true;
     md.isTrusted = true;
 
-    const args = encodeURIComponent(JSON.stringify([hoverData]));
+    const severityOrder = [CxRealtimeEngineStatus.critical.toLowerCase(), CxRealtimeEngineStatus.high.toLowerCase(), CxRealtimeEngineStatus.medium.toLowerCase(), CxRealtimeEngineStatus.low.toLowerCase()];
+    const allVulns = hoverData.vulnerabilities || [];
+    const sortedVulns = [...allVulns].sort((a, b) => {
+      const aIdx = severityOrder.indexOf(a.severity?.toLowerCase?.() || "");
+      const bIdx = severityOrder.indexOf(b.severity?.toLowerCase?.() || "");
+      return aIdx - bIdx;
+    });
+    const top10Vulns = sortedVulns.slice(0, 10);
+    const hoverDataForArgs = { ...hoverData, vulnerabilities: top10Vulns };
+    const args = encodeURIComponent(JSON.stringify([hoverDataForArgs]));
     const buttons = buildCommandButtons(args, true, false);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
@@ -84,7 +93,7 @@ export class OssScannerCommand extends BaseScannerCommand {
     }
     md.appendMarkdown(this.renderID(hoverData));
     if (isVulnerable) {
-      md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
+      md.appendMarkdown(this.renderVulnCounts(allVulns));
     }
 
     md.appendMarkdown(`${buttons}<br>`);
