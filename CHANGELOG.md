@@ -1,25 +1,16 @@
 # CHANGELOG
 
+## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.0...v2.36.1-oauth-proxy-support-2.0
+
 ## [v2.36.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.0) - 2025-08-21 11:57:02
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.36.0 -->
-
-## What's Changed
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.141 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1260
-### Other Changes
-* Fix issue of files being opened in a loop when "old" kics is running(AST-110001) by @cx-miryam-foifer in https://github.com/Checkmarx/ast-vscode-extension/pull/1249
-* Support publishing to Open VSX marketplaces (AST-109996) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1254
-* Asca with Secrets results. (AST-109995) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1251
-* corrected spell mistakes and updated placeholder (AST-0000) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1230
-* Remove filePath in oss Real time + Fix ignore path in windows+ Fix ignore icon for ignored secret findings  (AST-110000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1250
-* Other/enable realtime from welcome page webview (AST-109997) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1259
-* Sync gutter icons on mixed IaC/Containers line after ignore (AST-109998) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1255
-* Vulnerability sorting and limit to top 10 in hover data (AST-0000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1258
-* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1261
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.0...v2.36.0
 
 ## [v2.35.1-validate.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-validate.0) - 2025-08-21 09:34:13
 
