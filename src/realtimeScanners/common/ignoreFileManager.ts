@@ -430,7 +430,6 @@ export class IgnoreFileManager {
 		if (fileEntry) {
 			fileEntry.line = newLineNumber;
 
-			// For secrets, packageKey is now title:secretValue (no line number change needed)
 			this.saveIgnoreFile();
 			this.updateTempList();
 
