@@ -11,7 +11,6 @@ import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
-import { createHash } from "crypto";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
 export class ContainersScannerService extends BaseScannerService {
@@ -129,15 +128,6 @@ export class ContainersScannerService extends BaseScannerService {
 		}
 
 		return false;
-	}
-
-	protected generateFileHash(input: string): string {
-		const now = new Date();
-		const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
-		return createHash("sha256")
-			.update(input + timeSuffix)
-			.digest("hex")
-			.substring(0, 16);
 	}
 
 	private createSubFolderAndSaveFile(

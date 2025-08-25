@@ -87,8 +87,10 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
+    const now = new Date();
+    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
     return createHash("sha256")
-      .update(input)
+      .update(input + timeSuffix)
       .digest("hex")
       .substring(0, 16);
   }
@@ -109,20 +111,20 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected getHighestSeverity(severities: string[]): string {
-      const severityPriority = [
-        CxRealtimeEngineStatus.malicious,
-        CxRealtimeEngineStatus.critical,
-        CxRealtimeEngineStatus.high,
-        CxRealtimeEngineStatus.medium,
-        CxRealtimeEngineStatus.low,
-        CxRealtimeEngineStatus.unknown,
-        CxRealtimeEngineStatus.ok
-      ];
-  
-      for (const priority of severityPriority) {
-        if (severities.includes(priority)) {
-          return priority;
-        }
+    const severityPriority = [
+      CxRealtimeEngineStatus.malicious,
+      CxRealtimeEngineStatus.critical,
+      CxRealtimeEngineStatus.high,
+      CxRealtimeEngineStatus.medium,
+      CxRealtimeEngineStatus.low,
+      CxRealtimeEngineStatus.unknown,
+      CxRealtimeEngineStatus.ok
+    ];
+
+    for (const priority of severityPriority) {
+      if (severities.includes(priority)) {
+        return priority;
       }
     }
+  }
 }

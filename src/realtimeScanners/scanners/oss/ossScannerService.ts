@@ -12,7 +12,7 @@ import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-import { createHash } from "crypto";
+
 
 
 export class OssScannerService extends BaseScannerService {
@@ -761,14 +761,7 @@ export class OssScannerService extends BaseScannerService {
 
 
 
-  protected generateFileHash(input: string): string {
-    const now = new Date();
-    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
-    return createHash("sha256")
-      .update(input + timeSuffix)
-      .digest("hex")
-      .substring(0, 16);
-  }
+
 
   private toSafeTempFileName(relativePath: string): string {
     const baseName = path.basename(relativePath);
