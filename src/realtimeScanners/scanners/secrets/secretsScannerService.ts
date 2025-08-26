@@ -98,6 +98,9 @@ export class SecretsScannerService extends BaseScannerService {
 
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setScannedFilePath(filePath, tempFilePath);
+			if (ignoreManager.getIgnoredPackagesCount() > 0) {
+				ignoreManager.updateTempList();
+			}
 			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
 
 			const scanResults = await cx.secretsScanResults(tempFilePath, ignoredPackagesFile || "");
@@ -157,10 +160,17 @@ export class SecretsScannerService extends BaseScannerService {
 
 			this.ignoredDecorations.set(filePath, ignoredDecorations);
 			this.applyDecorations(document.uri);
-
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
+			this.storeAndApplyResults(
+				filePath,
+				document.uri,
+				[],
+				[],
+				[],
+				[]
+			);
 		} finally {
 			this.deleteTempFile(tempFilePath);
 		}
@@ -183,10 +193,10 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private removeAscaHoverDataAtLine(filePath: string, lineNumber: number): void {
 		const ascaHoverData = this.getOtherScannerHoverData(constants.ascaRealtimeScannerEngineName);
-		if (!ascaHoverData) { return; }
-
-		const key = `${filePath}:${lineNumber}`;
-		ascaHoverData.delete(key);
+		if (ascaHoverData) {
+			const key = `${filePath}:${lineNumber}`;
+			ascaHoverData.delete(key);
+		}
 	}
 
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
@@ -254,12 +264,31 @@ export class SecretsScannerService extends BaseScannerService {
 			}
 		}
 
+		this.storeAndApplyResults(
+			filePath,
+			uri,
+			diagnostics,
+			criticalDecorations,
+			highDecorations,
+			mediumDecorations
+		);
+	}
+	private storeAndApplyResults(
+		filePath: string,
+		uri: vscode.Uri,
+		diagnostics: vscode.Diagnostic[],
+		criticalDecorations: vscode.DecorationOptions[],
+		highDecorations: vscode.DecorationOptions[],
+		mediumDecorations: vscode.DecorationOptions[],
+	): void {
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
 
 		this.criticalDecorations.set(filePath, criticalDecorations);
 		this.highDecorations.set(filePath, highDecorations);
 		this.mediumDecorations.set(filePath, mediumDecorations);
+
+		this.applyDecorations(uri);
 	}
 
 	private applyDecorations(uri: vscode.Uri): void {

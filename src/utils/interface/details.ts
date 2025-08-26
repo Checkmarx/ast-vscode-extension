@@ -74,7 +74,7 @@ export class Details {
 		const comment =
 			this.result.type !== constants.sca
 				? `<div class="comment-container">
-        <textarea placeholder="Comment (optional)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
+        <textarea placeholder="Note (Optional or required based on tenant configuration)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
       </div>`
 				: ``;
 

@@ -119,7 +119,7 @@ export interface CxPlatform {
   triageShow(projectId: string, similarityId: string, scanType: string);
 
   /**
-   * Update the information about a results by aplying triage (used on the changes tab).
+   * Update the information about a results by applying triage (used on the changes tab).
    * @param projectId The project ID to update information.
    * @param similarityId The result's similarity ID to update information.
    * @param scanType The result's scan type (sca,sast,kics) to update information.
@@ -188,7 +188,7 @@ export interface CxPlatform {
    * @param kicsFile Path to the KICS realtime file where the fix needs to be applied.
    * @param engine The container engine name (example : docker,podman, etc...).
    * @param similarityIds The results similarity ID(s) to be fixed (optional, since if none is provided all the available fixes will be applied).
-   * @return A promise that when resolved returns the doccker process reference as well as the cli output for the remediation command.
+   * @return A promise that when resolved returns the docker process reference as well as the cli output for the remediation command.
    */
   kicsRemediation(
     resultsFile: string,
@@ -225,7 +225,7 @@ export interface CxPlatform {
    * Scan the edited file in the ASCA engine and show the results in the problem section
    * @param sourcePath the edited file sent to the ASCA engine
    */
-  scanAsca(sourcePath: string): Promise<CxAsca>;
+  scanAsca(sourcePath: string, ignorePath: string): Promise<CxAsca>;
 
   ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[] | undefined>;
 
@@ -233,9 +233,9 @@ export interface CxPlatform {
    * Scan the edited file in the Containers engine and show the results in the problem section
    * @param sourcePath the edited file sent to the Containers engine
    */
-  scanContainers(sourcePath: string): Promise<any>;
+  scanContainers(sourcePath: string, ignoredFilePath): Promise<any>;
 
-  iacScanResults(sourcePath: string, dockerProvider: string): Promise<CxIacResult[] | undefined>;
+  iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
 

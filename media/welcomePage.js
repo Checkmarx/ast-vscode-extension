@@ -18,25 +18,43 @@
       });
     }
 
-    checkIcon.addEventListener("click", () => {
+    function toggleScannerState(newState) {
       if (!serverEnabled) {
         return;
       }
-      checkIcon.classList.add("hidden");
-      uncheckIcon.classList.remove("hidden");
-      currentState = false;
-      vscode.postMessage({ type: "setOssRealtimeEnabled", value: false });
-    });
 
-    uncheckIcon.addEventListener("click", () => {
-      if (!serverEnabled) {
-        return;
+      currentState = newState;
+
+      if (newState) {
+        checkIcon.classList.remove("hidden");
+        uncheckIcon.classList.add("hidden");
+      } else {
+        checkIcon.classList.add("hidden");
+        uncheckIcon.classList.remove("hidden");
       }
-      checkIcon.classList.remove("hidden");
-      uncheckIcon.classList.add("hidden");
-      currentState = true;
-      vscode.postMessage({ type: "setOssRealtimeEnabled", value: true });
-    });
+
+      checkIcon.setAttribute("aria-pressed", newState.toString());
+      uncheckIcon.setAttribute("aria-pressed", (!newState).toString());
+
+      vscode.postMessage({ type: "changeAllScannersStatus", value: newState });
+    }
+
+    checkIcon.addEventListener("click", () => toggleScannerState(false));
+    uncheckIcon.addEventListener("click", () => toggleScannerState(true));
+
+    function handleKeydown(event, targetState) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleScannerState(targetState);
+      }
+    }
+
+    checkIcon.addEventListener("keydown", (event) =>
+      handleKeydown(event, false)
+    );
+    uncheckIcon.addEventListener("keydown", (event) =>
+      handleKeydown(event, true)
+    );
 
     if (previousState.aiFeatureLoaded) {
       loader.classList.add("hidden");
@@ -52,21 +70,6 @@
       if (message.type === "setAiFeatureState") {
         handleSetAiFeatureState(message);
       }
-
-      if (message.type === "setOssRealtimeEnabledFromSettings") {
-        if (!serverEnabled) {
-          return;
-        }
-        if (message.value) {
-          checkIcon.classList.remove("hidden");
-          uncheckIcon.classList.add("hidden");
-          currentState = true;
-        } else {
-          checkIcon.classList.add("hidden");
-          uncheckIcon.classList.remove("hidden");
-          currentState = false;
-        }
-      }
     });
 
     function handleSetAiFeatureState(message) {
@@ -74,24 +77,14 @@
       serverEnabled = message.enabled;
 
       if (message.enabled) {
-        if (message.ossSetting) {
-          checkIcon.classList.remove("hidden");
-          uncheckIcon.classList.add("hidden");
-          currentState = true;
-        } else {
-          checkIcon.classList.add("hidden");
-          uncheckIcon.classList.remove("hidden");
-          currentState = false;
-        }
+        toggleScannerState(message.scannersSettings);
 
         checkIcon.style.cursor = "pointer";
         uncheckIcon.style.cursor = "pointer";
       } else {
-        checkIcon.classList.add("hidden");
-        uncheckIcon.classList.remove("hidden");
+        toggleScannerState(false);
         aiBoxInfo.classList.remove("hidden");
         aiFeatureBoxWrapper.classList.remove("hidden");
-        currentState = false;
       }
 
       vscode.setState({

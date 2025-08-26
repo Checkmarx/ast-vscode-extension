@@ -12,7 +12,7 @@ export abstract class BaseScannerService implements IScannerService {
   diagnosticCollection: vscode.DiagnosticCollection;
 
   private static diagnosticCollections = new Map<string, vscode.DiagnosticCollection>();
-  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData>>();
+  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData[]>>();
 
   constructor(config: IScannerConfig) {
     this.config = config;
@@ -26,10 +26,10 @@ export abstract class BaseScannerService implements IScannerService {
   protected getOtherScannerCollection(engineName: string): vscode.DiagnosticCollection | undefined {
     return BaseScannerService.diagnosticCollections.get(engineName);
   }
-  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData>): void {
+  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData[]>): void {
     BaseScannerService.hoverDataMaps.set(this.config.engineName, hoverDataMap);
   }
-  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData> | undefined {
+  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData[]> | undefined {
     return BaseScannerService.hoverDataMaps.get(engineName);
   }
 
@@ -87,8 +87,10 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
+    const now = new Date();
+    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
     return createHash("sha256")
-      .update(input)
+      .update(input + timeSuffix)
       .digest("hex")
       .substring(0, 16);
   }
@@ -109,20 +111,20 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected getHighestSeverity(severities: string[]): string {
-      const severityPriority = [
-        CxRealtimeEngineStatus.malicious,
-        CxRealtimeEngineStatus.critical,
-        CxRealtimeEngineStatus.high,
-        CxRealtimeEngineStatus.medium,
-        CxRealtimeEngineStatus.low,
-        CxRealtimeEngineStatus.unknown,
-        CxRealtimeEngineStatus.ok
-      ];
-  
-      for (const priority of severityPriority) {
-        if (severities.includes(priority)) {
-          return priority;
-        }
+    const severityPriority = [
+      CxRealtimeEngineStatus.malicious,
+      CxRealtimeEngineStatus.critical,
+      CxRealtimeEngineStatus.high,
+      CxRealtimeEngineStatus.medium,
+      CxRealtimeEngineStatus.low,
+      CxRealtimeEngineStatus.unknown,
+      CxRealtimeEngineStatus.ok
+    ];
+
+    for (const priority of severityPriority) {
+      if (severities.includes(priority)) {
+        return priority;
       }
     }
+  }
 }

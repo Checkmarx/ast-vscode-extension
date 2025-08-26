@@ -1,5 +1,45 @@
 # CHANGELOG
 
+## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.0...v2.36.1-oauth-proxy-support-2.0
+
+## [v2.36.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.0) - 2025-08-21 11:57:02
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.36.0 -->
+
+## [v2.35.1-validate.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-validate.0) - 2025-08-21 09:34:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-0.0...v2.35.1-findPerSection-1.0
+
+## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.35.1-cursor.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-cursor.0.0) - 2025-08-14 17:29:24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.0...v2.35.1-cursor.0.0
+
+## [v2.35.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.0) - 2025-08-14 17:28:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.35.0 -->
+
 ## [v2.34.1-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-windsurf.0) - 2025-08-14 08:28:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -24,13 +64,21 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-auth-proxy-support1.0...v2.34.1-new-prompt-1.0
 
-## [v2.34.1-auth-proxy-support1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support1.0) - 2025-08-14 09:06:12
+## [v2.34.1-beta.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-beta.0) - 2025-08-14 15:17:45
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.34.1-auth-proxy-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-auth-proxy-support.0) - 2025-08-14 15:26:27
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompts.0...v2.34.1-auth-proxy-support1.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-beta.0...v2.34.1-auth-proxy-support.0
+
+## [v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.0-Ignore-ascaContainer-iac-WelcomePage-windsurf.0) - 2025-08-14 13:23:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.34.1-2.34.1-iac-and-asca-prompts.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-2.34.1-iac-and-asca-prompts.0) - 2025-08-12 17:15:50
 

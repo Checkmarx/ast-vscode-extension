@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from "vscode";
 import { Logs } from "../../../models/logs";
@@ -10,8 +11,8 @@ import path from "path";
 import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
-import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
 export class IacScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -20,6 +21,7 @@ export class IacScannerService extends BaseScannerService {
 	private highDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private mediumDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
+	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
 	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
@@ -28,7 +30,8 @@ export class IacScannerService extends BaseScannerService {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
-		low: this.createDecoration("realtimeEngines/low_severity.svg")
+		low: this.createDecoration("realtimeEngines/low_severity.svg"),
+		ignored: this.createDecoration("Ignored.svg")
 	};
 
 	private createDecoration(
@@ -80,14 +83,10 @@ export class IacScannerService extends BaseScannerService {
 		return false;
 	}
 
-	protected generateFileHash(input: string): string {
-		const now = new Date();
-		const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
-		return createHash("sha256")
-			.update(input + timeSuffix)
-			.digest("hex")
-			.substring(0, 16);
-	}
+
+
+
+
 
 	private createSubFolderAndSaveFile(
 		tempFolder: string,
@@ -128,7 +127,6 @@ export class IacScannerService extends BaseScannerService {
 		}
 		keysToDelete.forEach(key => this.iacHoverData.delete(key));
 
-		// Use the method to take care of in DockerFiles 
 		const filePath = await this.getFullPathWithOriginalCasing(document.uri);
 
 		logs.info("Scanning IaC in file: " + filePath);
@@ -145,10 +143,87 @@ export class IacScannerService extends BaseScannerService {
 			tempFilePath = saveResult.tempFilePath;
 			tempSubFolder = saveResult.tempSubFolder;
 
-			const containersManagementTool = this.getContainersManagementTool();
-			const scanResults = await cx.iacScanResults(tempFilePath, containersManagementTool);
+			const ignoreManager = IgnoreFileManager.getInstance();
+			ignoreManager.setScannedFilePath(filePath, tempFilePath);
+			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
+
+			const scanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), ignoredPackagesFile || "");
+
+			let fullScanResults = scanResults;
+			if (ignoreManager.getIgnoredPackagesCount() > 0) {
+				fullScanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), "");
+			}
+
+			ignoreManager.removeMissingIac(fullScanResults, filePath);
 
 			this.updateProblems(scanResults, document.uri);
+
+			const ignoredData = ignoreManager.getIgnoredPackagesData();
+			const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+			const ignoredDecorations: vscode.DecorationOptions[] = [];
+
+			const activeLineNumbers = new Set<number>();
+			scanResults.forEach(result => {
+				result.locations.forEach(loc => activeLineNumbers.add(loc.line));
+			});
+
+			const containerDiagnostics = vscode.languages.getDiagnostics(document.uri).filter(diagnostic => {
+				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				return diagnosticData?.cxType === constants.containersRealtimeScannerEngineName;
+			});
+
+			const iacLocations = new Map<string, number[]>();
+			fullScanResults.forEach(result => {
+				if (result.similarityID) {
+					const key = `${result.title}:${result.similarityID}:${relativePath}`;
+					const lines = iacLocations.get(key) || [];
+					result.locations.forEach(loc => lines.push(loc.line));
+					iacLocations.set(key, lines);
+				}
+			});
+
+			Object.entries(ignoredData).forEach(([, entry]) => {
+				if (entry.type !== constants.iacRealtimeScannerEngineName) { return; }
+				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+				if (!fileEntry) { return; }
+
+				const key = `${entry.PackageName}:${entry.similarityId}:${relativePath}`;
+				const lines = iacLocations.get(key) || [];
+
+				lines.forEach(line => {
+					const hasActiveIacFindings = activeLineNumbers.has(line);
+					const hasActiveContainerFindings = containerDiagnostics.some(diag => diag.range.start.line === line);
+
+					if (!hasActiveIacFindings && !hasActiveContainerFindings) {
+						const adjustedLine = line;
+						const range = new vscode.Range(
+							new vscode.Position(adjustedLine, 0),
+							new vscode.Position(adjustedLine, 1000)
+						);
+						ignoredDecorations.push({ range });
+
+						const hoverKey = `${filePath}:${adjustedLine}`;
+						if (!this.iacHoverData.has(hoverKey)) {
+							this.iacHoverData.set(hoverKey, [{
+								similarityId: entry.similarityId,
+								title: entry.PackageName,
+								description: entry.description,
+								severity: entry.severity,
+								filePath,
+								originalFilePath: filePath,
+								location: { line: adjustedLine, startIndex: 0, endIndex: 1000 },
+								fileType: path.extname(filePath).substring(1),
+								expectedValue: "",
+								actualValue: ""
+							}]);
+						}
+					}
+				});
+			});
+
+			this.ignoredDecorations.set(filePath, ignoredDecorations);
+			this.applyDecorations(document.uri);
+
 		} catch (error) {
 			this.storeAndApplyResults(
 				filePath,
@@ -158,7 +233,7 @@ export class IacScannerService extends BaseScannerService {
 				[],
 				[],
 				[]
-			)
+			);
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error.message}`);
 		} finally {
@@ -210,7 +285,10 @@ export class IacScannerService extends BaseScannerService {
 				title: result.title,
 				description: result.description,
 				severity: result.severity,
+				expectedValue: result.expectedValue,
+				actualValue: result.actualValue,
 				filePath: result.filepath,
+				originalFilePath: uri.fsPath,
 				location: result.locations[0],
 				fileType: fileType
 			}));
@@ -235,6 +313,8 @@ export class IacScannerService extends BaseScannerService {
 					severity: highestSeverity,
 					filePath: lineResults[0].filepath,
 					location: lineResults[0].locations[0],
+					expectedValue: lineResults[0].expectedValue,
+					actualValue: lineResults[0].actualValue,
 					fileType
 				}
 			};
@@ -320,6 +400,7 @@ export class IacScannerService extends BaseScannerService {
 			editor.setDecorations(this.decorationTypes.high, this.highDecorationsMap.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.medium, this.mediumDecorationsMap.get(filePath) || []);
 			editor.setDecorations(this.decorationTypes.low, this.lowDecorationsMap.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
 		}
 	}
 
@@ -332,6 +413,7 @@ export class IacScannerService extends BaseScannerService {
 		this.highDecorationsMap.delete(filePath);
 		this.mediumDecorationsMap.delete(filePath);
 		this.lowDecorationsMap.delete(filePath);
+		this.ignoredDecorations.delete(filePath);
 	}
 
 	public getHoverData(): Map<string, IacHoverData[]> {
@@ -364,5 +446,204 @@ export class IacScannerService extends BaseScannerService {
 		this.highDecorationsMap.clear();
 		this.mediumDecorationsMap.clear();
 		this.lowDecorationsMap.clear();
+		this.ignoredDecorations.clear();
+	}
+
+
+	public hasAnySeverityDecorations(): boolean {
+		return (
+			this.criticalDecorationsMap.size > 0 ||
+			this.highDecorationsMap.size > 0 ||
+			this.mediumDecorationsMap.size > 0 ||
+			this.lowDecorationsMap.size > 0
+		);
+	}
+
+	public hasAnyDecorationsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
+		const filePath = uri.fsPath;
+		const decorationMaps = [
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations
+		];
+
+		return decorationMaps.some(map => {
+			const decorations = map.get(filePath) || [];
+			return decorations.some(decoration => decoration.range.start.line === lineNumber);
+		});
+	}
+
+	private removeGutterAtLine(filePath: string, lineNumber: number): void {
+		const decorationMaps = [
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations
+		];
+
+		decorationMaps.forEach(map => {
+			const decorations = map.get(filePath) || [];
+			const filtered = decorations.filter(decoration => decoration.range.start.line !== lineNumber);
+			map.set(filePath, filtered);
+		});
+	}
+
+	private getAnyRangeAtLine(filePath: string, lineNumber: number): vscode.Range | undefined {
+		const decorationMaps = [
+			this.criticalDecorationsMap,
+			this.highDecorationsMap,
+			this.mediumDecorationsMap,
+			this.lowDecorationsMap,
+			this.ignoredDecorations
+		];
+
+		for (const map of decorationMaps) {
+			const decorations = map.get(filePath) || [];
+			const decoration = decorations.find(d => d.range.start.line === lineNumber);
+			if (decoration) {
+				return decoration.range;
+			}
+		}
+
+		return new vscode.Range(
+			new vscode.Position(lineNumber, 0),
+			new vscode.Position(lineNumber, 1000)
+		);
+	}
+
+	private pushGutter(filePath: string, severity: string, range: vscode.Range): void {
+		const decoration = { range };
+
+		switch (severity.toUpperCase()) {
+			case CxRealtimeEngineStatus.critical.toUpperCase(): {
+				const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
+				criticalDecorations.push(decoration);
+				this.criticalDecorationsMap.set(filePath, criticalDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.high.toUpperCase(): {
+				const highDecorations = this.highDecorationsMap.get(filePath) || [];
+				highDecorations.push(decoration);
+				this.highDecorationsMap.set(filePath, highDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.medium.toUpperCase(): {
+				const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
+				mediumDecorations.push(decoration);
+				this.mediumDecorationsMap.set(filePath, mediumDecorations);
+				break;
+			}
+			case CxRealtimeEngineStatus.low.toUpperCase(): {
+				const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
+				lowDecorations.push(decoration);
+				this.lowDecorationsMap.set(filePath, lowDecorations);
+				break;
+			}
+			case "IGNORED": {
+				const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
+				ignoredDecorations.push(decoration);
+				this.ignoredDecorations.set(filePath, ignoredDecorations);
+				break;
+			}
+			default: {
+				const defaultDecorations = this.lowDecorationsMap.get(filePath) || [];
+				defaultDecorations.push(decoration);
+				this.lowDecorationsMap.set(filePath, defaultDecorations);
+				break;
+			}
+		}
+	}
+
+
+
+	public recomputeGutterForLine(uri: vscode.Uri, lineNumber: number): void {
+		const filePath = uri.fsPath;
+
+		this.removeGutterAtLine(filePath, lineNumber);
+
+		const range = this.getAnyRangeAtLine(filePath, lineNumber);
+		if (!range) {
+			return;
+		}
+
+		const iacSeverity = this.getIacSeverityFromDiagnostics(uri, lineNumber);
+
+		const containersSeverity = this.exsistContainersSeverityAtLine(uri, lineNumber);
+
+		let finalSeverity: string | undefined;
+		if (iacSeverity && containersSeverity) {
+			finalSeverity = this.getHighestSeverity([iacSeverity, containersSeverity]);
+		} else if (iacSeverity) {
+			finalSeverity = iacSeverity;
+		} else if (containersSeverity) {
+			finalSeverity = containersSeverity;
+		}
+
+		if (!finalSeverity) {
+			const hasIgnoredEntries = this.hasIgnoredEntriesOnLine(filePath, lineNumber);
+			if (hasIgnoredEntries) {
+				finalSeverity = "ignored";
+			}
+		}
+
+		if (finalSeverity) {
+			this.pushGutter(filePath, finalSeverity, range);
+		}
+
+		this.applyDecorations(uri);
+	}
+
+	private hasIgnoredEntriesOnLine(filePath: string, lineNumber: number): boolean {
+		const ignoreManager = IgnoreFileManager.getInstance();
+		const ignoredData = ignoreManager.getIgnoredPackagesData();
+		const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', filePath);
+
+		const lineNumber1Based = lineNumber + 1;
+
+		const hasIgnoredContainers = Object.values(ignoredData).some(entry => {
+			if (entry.type !== constants.containersRealtimeScannerEngineName) {
+				return false;
+			}
+			return entry.files.some(file =>
+				file.path === relativePath &&
+				file.active &&
+				file.line === lineNumber1Based
+			);
+		});
+
+		const hasIgnoredIac = Object.values(ignoredData).some(entry => {
+			if (entry.type !== constants.iacRealtimeScannerEngineName) {
+				return false;
+			}
+			return entry.files.some(file =>
+				file.path === relativePath &&
+				file.active &&
+				file.line === lineNumber1Based
+			);
+		});
+
+		return hasIgnoredContainers || hasIgnoredIac;
+	}
+
+	private getIacSeverityFromDiagnostics(uri: vscode.Uri, lineNumber: number): string | undefined {
+		const iacDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
+			const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+			return diagnosticData?.cxType === constants.iacRealtimeScannerEngineName;
+		});
+
+		const iacAtLine = iacDiagnostics.filter(diagnostic => diagnostic.range.start.line === lineNumber);
+		if (iacAtLine.length > 0) {
+			const severities = iacAtLine.map(diag => {
+				const diagnosticData = (diag as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+				const item = diagnosticData?.item as any;
+				return item?.severity || CxRealtimeEngineStatus.low;
+			});
+			return this.getHighestSeverity(severities);
+		}
+
+		return undefined;
 	}
 }
