@@ -422,7 +422,6 @@ export class CopilotChatCommand {
                         if (scanner.shouldScanFile(document)) {
                             await scanner.scan(document, this.logs);
                         }
-                        await vscode.commands.executeCommand("editor.recomputeGutterForLine", { line: item.line - 1 });
                     }
                 } catch (err) {
                     this.logs.error(`Failed to ignore: ${err}`);
