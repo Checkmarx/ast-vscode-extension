@@ -251,13 +251,18 @@ export class AuthenticationWebview {
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  await authService.authenticate(baseUri, tenant);
-                  setTimeout(async () => {
-                    this._panel.dispose();
-                    await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context, isAiEnabled);
+                  const token = await authService.authenticate(baseUri, tenant);
+                  if (token !== "") {
+                    setTimeout(async () => {
+                      this._panel.dispose();
+                      await this.markFirstWelcomeAsShown();
+                      WelcomeWebview.show(this.context, isAiEnabled);
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                    }, 1000);
+                  }
+                  else {
                     this._panel.webview.postMessage({ command: "enableAuthButton" });
-                  }, 1000);
+                  }
                 } else if (message.authMethod === "apiKey") {
                   // New API Key handling
                   const authService = AuthService.getInstance(this.context);
