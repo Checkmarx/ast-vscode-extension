@@ -22,9 +22,6 @@ export class AscaScannerService extends BaseScannerService {
 	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
-		malicious: this.createDecoration("malicious.svg"),
-		ok: this.createDecoration("realtimeEngines/green_check.svg"),
-		unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
