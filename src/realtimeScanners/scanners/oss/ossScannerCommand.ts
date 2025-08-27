@@ -8,6 +8,7 @@ import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
+import * as util from 'util';
 
 export class OssScannerCommand extends BaseScannerCommand {
   constructor(
@@ -21,6 +22,7 @@ export class OssScannerCommand extends BaseScannerCommand {
 
   protected async initializeScanner(): Promise<void> {
     this.registerScanOnChangeText();
+    this.registerScanOnFileOpen();
     const scanner = this.scannerService as OssScannerService;
     scanner.initializeScanner();
 
@@ -157,8 +159,14 @@ export class OssScannerCommand extends BaseScannerCommand {
       const uris = await vscode.workspace.findFiles(pattern);
       for (const uri of uris) {
         try {
-          const document = await vscode.workspace.openTextDocument(uri);
-          await this.scannerService.scan(document, this.logs);
+          const fileContent = await vscode.workspace.fs.readFile(uri);
+          const text = new util.TextDecoder().decode(fileContent);
+
+          const fakeDocument = {
+            uri,
+            getText: () => text
+          } as vscode.TextDocument;
+          await this.scannerService.scan(fakeDocument, this.logs);
         } catch (err) {
           this.logs.warn(`Failed to scan manifest file: ${uri.fsPath}`);
         }

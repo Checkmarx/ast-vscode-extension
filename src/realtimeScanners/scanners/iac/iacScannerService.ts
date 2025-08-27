@@ -23,7 +23,6 @@ export class IacScannerService extends BaseScannerService {
 	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
-	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
@@ -82,11 +81,6 @@ export class IacScannerService extends BaseScannerService {
 
 		return false;
 	}
-
-
-
-
-
 
 	private createSubFolderAndSaveFile(
 		tempFolder: string,
@@ -433,7 +427,6 @@ export class IacScannerService extends BaseScannerService {
 	}
 
 	dispose(): void {
-		this.documentOpenListener?.dispose();
 		this.editorChangeListener?.dispose();
 
 		Object.values(this.decorationTypes).forEach((decoration) => {
