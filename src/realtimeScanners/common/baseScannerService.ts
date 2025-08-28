@@ -21,7 +21,7 @@ export abstract class BaseScannerService implements IScannerService {
       (this as any).applyDecorations(editor.document.uri);
     }
   }
-  
+
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -127,6 +127,39 @@ export abstract class BaseScannerService implements IScannerService {
       }
     }
     return undefined;
+  }
+  
+  private generateTempFileInfo(originalFilePath: string) {
+    const originalExt = path.extname(originalFilePath);
+    const baseName = path.basename(originalFilePath, originalExt);
+    const originalFileName = path.basename(originalFilePath);
+    const hash = this.generateFileHash(originalFilePath);
+
+    return {
+      originalExt,
+      baseName,
+      originalFileName,
+      hash
+    };
+  }
+
+  protected saveFile(tempFolder: string, originalFilePath: string, content: string): string {
+    const { originalExt, baseName, hash } = this.generateTempFileInfo(originalFilePath);
+    const tempFileName = `${baseName}-${hash}${originalExt}`;
+    const tempFilePath = path.join(tempFolder, tempFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return tempFilePath;
+  }
+
+  protected createSubFolderAndSaveFile(tempFolder: string, originalFilePath: string, content: string): { tempFilePath: string; tempSubFolder: string } {
+    const { originalFileName, hash } = this.generateTempFileInfo(originalFilePath);
+    const subFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
+    if (!fs.existsSync(subFolder)) {
+      fs.mkdirSync(subFolder, { recursive: true });
+    }
+    const tempFilePath = path.join(subFolder, originalFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return { tempFilePath, tempSubFolder: subFolder };
   }
 
   protected getHighestSeverity(severities: string[]): string {

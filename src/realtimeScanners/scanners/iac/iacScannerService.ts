@@ -80,25 +80,7 @@ export class IacScannerService extends BaseScannerService {
 
 		return false;
 	}
-
-	private createSubFolderAndSaveFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): { tempFilePath: string; tempSubFolder: string } {
-		const originalFileName = path.basename(originalFilePath);
-
-		const hash = this.generateFileHash(originalFilePath);
-		const iacFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
-		if (!fs.existsSync(iacFolder)) {
-			fs.mkdirSync(iacFolder, { recursive: true });
-		}
-
-		const tempFilePath = path.join(iacFolder, originalFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return { tempFilePath, tempSubFolder: iacFolder };
-	}
-
+ 
 	private getContainersManagementTool(): string {
 		const containersManagementTool = vscode.workspace
 			.getConfiguration(this.config.configSection)

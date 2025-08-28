@@ -128,24 +128,6 @@ export class ContainersScannerService extends BaseScannerService {
 		return false;
 	}
 
-	private createSubFolderAndSaveFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): { tempFilePath: string; tempSubFolder: string } {
-		const originalFileName = path.basename(originalFilePath);
-
-		const hash = this.generateFileHash(originalFilePath);
-		const dockerFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
-		if (!fs.existsSync(dockerFolder)) {
-			fs.mkdirSync(dockerFolder, { recursive: true });
-		}
-
-		const tempFilePath = path.join(dockerFolder, originalFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return { tempFilePath, tempSubFolder: dockerFolder };
-	}
-
 	private getHelmRelativePath(originalFilePath: string): string {
 		const normalizedPath = originalFilePath.replace(/\\/g, "/");
 		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");

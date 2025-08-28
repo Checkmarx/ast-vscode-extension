@@ -71,16 +71,6 @@ export class SecretsScannerService extends BaseScannerService {
 		return filePath.includes("/.vscode/.checkmarxIgnored") || filePath.includes("/.vscode/.checkmarxIgnoredTempList");
 	}
 
-	private saveFile(tempFolder: string, originalFilePath: string, content: string): string {
-		const originalExt = path.extname(originalFilePath);
-		const baseName = path.basename(originalFilePath, originalExt);
-		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
-		const tempFilePath = path.join(tempFolder, tempFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
-	}
-
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
 		if (!this.shouldScanFile(document)) {
 			return;
