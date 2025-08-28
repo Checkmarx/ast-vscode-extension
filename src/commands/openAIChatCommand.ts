@@ -222,13 +222,17 @@ export class CopilotChatCommand {
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
         const isSecrets = isSecretsHoverData(item);
         const isIac = isIacHoverData(item);
+        const isAsca = isAscaHoverData(item);
+        const isContainers = isContainersHoverData(item);
         const engine = isSecrets ? constants.secretsScannerEngineName :
             isIac ? constants.iacRealtimeScannerEngineName :
-                constants.ossRealtimeScannerEngineName;
+                isAsca ? constants.ascaRealtimeScannerEngineName :
+                    isContainers ? constants.containersRealtimeScannerEngineName :
+                        constants.ossRealtimeScannerEngineName;
         let problemSeverity: string | undefined;
         if (isSecrets) {
             problemSeverity = item.severity;
-        } else if (isAscaHoverData(item)) {
+        } else if (isAsca) {
             problemSeverity = item.severity;
         } else if (isIac) {
             problemSeverity = item.severity;
