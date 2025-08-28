@@ -986,9 +986,10 @@
           "CheckmarxSecurityChampion.model": {
             "order": 1,
             "type": "string",
-            "default": "gpt-4.1-mini",
+            "default": "gpt-5",
             "markdownDescription": "The OpenAI model used by AI Security Champion. This will be overridden if a user-defined model is specified below.",
             "enum": [
+              "gpt-5",
               "gpt-4.1-mini",
               "gpt-4.1",
               "o4-mini-high",
@@ -997,7 +998,8 @@
               "gpt-4"
             ],
             "enumDescriptions": [
-              "gpt-4.1-mini : (Recommended)",
+              "gpt-5 : (Recommended)",
+              "gpt-4.1-mini",
               "gpt-4.1",
               "o4-mini-high",
               "o3",

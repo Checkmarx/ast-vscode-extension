@@ -330,7 +330,7 @@ export class AuthService {
       );
 
       if (!res.data?.refresh_token) {
-        throw new Error('Response did not include refresh_token');
+        throw new Error('Response did not include refresh token');
       }
 
       return res.data.refresh_token;
