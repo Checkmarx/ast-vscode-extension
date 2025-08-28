@@ -430,14 +430,6 @@ export class IgnoreFileManager {
 		if (fileEntry) {
 			fileEntry.line = newLineNumber;
 
-			const oldPackageKey = packageKey;
-			const newPackageKey = `${entry.PackageName}:${newLineNumber}`;
-
-			if (oldPackageKey !== newPackageKey) {
-				this.ignoreData[newPackageKey] = { ...entry };
-				delete this.ignoreData[oldPackageKey];
-			}
-
 			this.saveIgnoreFile();
 			this.updateTempList();
 
@@ -720,6 +712,7 @@ export class IgnoreFileManager {
 		}> = [];
 		const addedContainers = new Set<string>();
 		const addedOssPackages = new Set<string>();
+		const addedSecrets = new Set<string>();
 
 		Object.values(this.ignoreData).forEach(entry => {
 			const hasActiveFiles = entry.files.some(file => file.active);
@@ -744,6 +737,15 @@ export class IgnoreFileManager {
 					});
 					addedOssPackages.add(ossKey);
 				}
+			} else if (entry.type === constants.secretsScannerEngineName) {
+				const secretKey = `${entry.PackageName}:${entry.secretValue}`;
+				if (!addedSecrets.has(secretKey)) {
+					tempList.push({
+						Title: entry.PackageName,
+						SecretValue: entry.secretValue
+					});
+					addedSecrets.add(secretKey);
+				}
 			} else {
 				entry.files
 					.filter(file => file.active)
@@ -751,13 +753,7 @@ export class IgnoreFileManager {
 						const originalPath = path.resolve(this.workspaceRootPath, file.path);
 						const scannedTempPath = this.scannedFileMap?.get(originalPath) || originalPath;
 
-						if (entry.type === constants.secretsScannerEngineName) {
-							tempList.push({
-								Title: entry.PackageName,
-								FilePath: scannedTempPath,
-								SecretValue: entry.secretValue
-							});
-						} else if (entry.type === constants.iacRealtimeScannerEngineName) {
+						if (entry.type === constants.iacRealtimeScannerEngineName) {
 							tempList.push({
 								Title: entry.PackageName,
 								SimilarityID: entry.similarityId
@@ -792,16 +788,16 @@ export class IgnoreFileManager {
 		return fileEntry && fileEntry.active;
 	}
 
-	public isSecretIgnored(title: string, line: number, filePath: string): boolean {
-		const packageKey = `${title}:${line}`;
+	public isSecretIgnored(title: string, secretValue: string, filePath: string): boolean {
+		const relativePath = this.normalizePath(filePath);
+		const packageKey = `${title}:${secretValue}:${relativePath}`;
 		const entry = this.ignoreData[packageKey];
 
 		if (!entry) {
 			return false;
 		}
 
-		const relativePath = this.normalizePath(filePath);
-		const fileEntry = entry.files.find(f => f.path === relativePath && f.line === line);
+		const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
 
 		return fileEntry && fileEntry.active;
 	}
