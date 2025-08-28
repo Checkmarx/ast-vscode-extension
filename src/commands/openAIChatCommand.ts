@@ -232,7 +232,7 @@ export class CopilotChatCommand {
         let problemSeverity: string | undefined;
         if (isSecrets) {
             problemSeverity = item.severity;
-        } else if (isAscaHoverData(item)) {
+        } else if (isAsca) {
             problemSeverity = item.severity;
         } else if (isIac) {
             problemSeverity = item.severity;
