@@ -23,7 +23,6 @@ export class IacScannerService extends BaseScannerService {
 	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
-	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
@@ -418,20 +417,8 @@ export class IacScannerService extends BaseScannerService {
 		return this.diagnosticsMap;
 	}
 
-	public initializeScanner(): void {
-		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (editor) {
-				this.applyDecorations(editor.document.uri);
-			}
-		});
-	}
-
 	dispose(): void {
-		this.editorChangeListener?.dispose();
-
-		Object.values(this.decorationTypes).forEach((decoration) => {
-			decoration.dispose();
-		});
+		super.dispose();
 
 		this.diagnosticsMap.clear();
 		this.iacHoverData.clear();

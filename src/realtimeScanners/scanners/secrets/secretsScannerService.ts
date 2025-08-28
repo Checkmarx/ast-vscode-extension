@@ -19,7 +19,6 @@ export class SecretsScannerService extends BaseScannerService {
 	private mediumDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
-	private editorChangeListener: vscode.Disposable | undefined;
 	public secretsHoverData: Map<string, SecretsHoverData> = new Map();
 
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
@@ -314,15 +313,6 @@ export class SecretsScannerService extends BaseScannerService {
 		this.ignoredDecorations.delete(filePath);
 	}
 
-	public async initializeScanner(): Promise<void> {
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(this.onEditorChange.bind(this));
-	}
-
-	private onEditorChange(editor: vscode.TextEditor | undefined): void {
-		if (editor && this.shouldScanFile(editor.document)) {
-			this.applyDecorations(editor.document.uri);
-		}
-	}
 
 	public async clearProblems(): Promise<void> {
 		await super.clearProblems();
@@ -331,10 +321,6 @@ export class SecretsScannerService extends BaseScannerService {
 		this.highDecorations.clear();
 		this.mediumDecorations.clear();
 		this.ignoredDecorations.clear();
-	}
-
-	public dispose(): void {
-		this.editorChangeListener?.dispose();
 	}
 
 	getHoverData(): Map<string, any> {

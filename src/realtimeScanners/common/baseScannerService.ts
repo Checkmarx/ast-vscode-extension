@@ -8,6 +8,20 @@ import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export abstract class BaseScannerService implements IScannerService {
+  protected editorChangeListener: vscode.Disposable | undefined;
+
+  public async initializeScanner(): Promise<void> {
+    this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
+      this.onEditorChange.bind(this)
+    );
+  }
+
+  protected onEditorChange(editor: vscode.TextEditor | undefined): void {
+    if (editor && this.shouldScanFile(editor.document) && typeof (this as any).applyDecorations === 'function') {
+      (this as any).applyDecorations(editor.document.uri);
+    }
+  }
+  
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -37,7 +51,12 @@ export abstract class BaseScannerService implements IScannerService {
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
 
-  abstract dispose(): void;
+
+  public dispose(): void {
+    if (this.editorChangeListener) {
+      this.editorChangeListener.dispose();
+    }
+  }
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();

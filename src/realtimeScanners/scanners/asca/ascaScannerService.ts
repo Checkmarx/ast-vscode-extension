@@ -19,7 +19,6 @@ export class AscaScannerService extends BaseScannerService {
 	private lowDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private ignoredDecorations = new Map<string, vscode.DecorationOptions[]>();
 
-	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
@@ -377,11 +376,6 @@ export class AscaScannerService extends BaseScannerService {
 		this.ignoredDecorations.clear();
 	}
 
-	public dispose(): void {
-		if (this.editorChangeListener) {
-			this.editorChangeListener.dispose();
-		}
-	}
 
 	public clearScanData(uri: vscode.Uri): void {
 		const filePath = uri.fsPath;
@@ -405,17 +399,7 @@ export class AscaScannerService extends BaseScannerService {
 		this.ignoredDecorations.delete(filePath);
 	}
 
-	public async initializeScanner(): Promise<void> {
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
-			this.onEditorChange.bind(this)
-		);
-	}
 
-	private onEditorChange(editor: vscode.TextEditor | undefined): void {
-		if (editor && this.shouldScanFile(editor.document)) {
-			this.applyDecorations(editor.document.uri);
-		}
-	}
 
 	private applyDecorations(uri: vscode.Uri): void {
 		const editor = vscode.window.visibleTextEditors.find(
