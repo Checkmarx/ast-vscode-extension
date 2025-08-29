@@ -136,7 +136,7 @@ describe("AuthService Tests", () => {
       );
       expect(result.isValid).to.be.false;
       expect(result.error).to.equal(
-        "Proxy is not reachable. Please check your proxy settings."
+        "Unable to reach the proxy server. Please verify your proxy settings and try again."
       );
     });
   });
