@@ -5,12 +5,34 @@ import {
   constants
 } from "../../utils/common/constants";
 import { Logs } from "../../models/logs";
-import { TreeItem } from "../../utils/tree/treeItem";
 import { messages } from "../../utils/common/messages";
 import { orderResults } from "../../utils/utils";
 import { ResultsProvider } from "../resultsProviders";
 import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
 
+/**
+ * Custom TreeItem that extends VS Code TreeItem
+ */
+export class TreeItem extends vscode.TreeItem {
+  children?: TreeItem[];
+
+  constructor(
+    label?: string,
+    contextValue?: string,
+    iconPath?: any,
+    children?: TreeItem[],
+    collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
+  ) {
+    super(label ?? "", collapsibleState);
+    this.contextValue = contextValue;
+    this.iconPath = iconPath;
+    this.children = children;
+  }
+}
+
+/**
+ * SCA Results Provider
+ */
 export class SCAResultsProvider extends ResultsProvider {
   public process;
   public issueFilter: GroupBy[] = [GroupBy.severity, GroupBy.queryName];
@@ -23,6 +45,7 @@ export class SCAResultsProvider extends ResultsProvider {
     GroupBy.severity,
     GroupBy.queryName,
   ];
+
   constructor(
     protected readonly context: vscode.ExtensionContext,
     private readonly logs: Logs,
@@ -47,7 +70,6 @@ export class SCAResultsProvider extends ResultsProvider {
     this.hideStatusBarItem();
   }
 
-
   generateTree(): TreeItem {
     const resultsTree = this.generateResultsTree();
     const issuesTree = this.generateErrorsTree();
@@ -56,16 +78,31 @@ export class SCAResultsProvider extends ResultsProvider {
       return new TreeItem(undefined, undefined, undefined, [new TreeItem(this.message)]);
     }
 
-    const statusTreeItem = new TreeItem(!issuesTree ? messages.scaSucces : messages.scaErrors, constants.statusItem, undefined, undefined);
+    const statusTreeItem = new TreeItem(
+      !issuesTree ? messages.scaSucces : messages.scaErrors,
+      constants.statusItem
+    );
+
     const summaryTreeItem = this.createSummaryItem(this.scaResults);
 
-    return new TreeItem("", undefined, undefined, [statusTreeItem, summaryTreeItem.label ? summaryTreeItem : undefined, resultsTree, issuesTree]);
+    return new TreeItem(
+      "",
+      undefined,
+      undefined,
+      [
+        statusTreeItem,
+        summaryTreeItem.label ? summaryTreeItem : undefined,
+        resultsTree,
+        issuesTree
+      ].filter(Boolean) // filter out undefined
+    );
   }
 
-  generateErrorsTree(): TreeItem {
+  generateErrorsTree(): TreeItem | undefined {
     if (!this.scaResultsErrors || this.scaResultsErrors.length === 0) {
       return undefined;
     }
+
     const errors = this.scaResultsErrors.map(error => {
       const messageItem = new TreeItem(error.message);
       return new TreeItem(error.filename, undefined, undefined, [messageItem]);
@@ -74,12 +111,21 @@ export class SCAResultsProvider extends ResultsProvider {
     return new TreeItem(messages.scaDependencyErros, undefined, undefined, errors);
   }
 
-  generateResultsTree(): TreeItem {
+  generateResultsTree(): TreeItem | undefined {
     const results = orderResults(this.scaResults);
     if (results.length === 0) {
       return undefined;
     }
-    const treeItem = this.groupBy(results, this.activeGroupBy, messages.scaVulnerabilities, this.diagnosticCollection, undefined, undefined);
+
+    const treeItem = this.groupBy(
+      results,
+      this.activeGroupBy,
+      messages.scaVulnerabilities,
+      this.diagnosticCollection,
+      undefined,
+      undefined
+    );
+
     treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     return treeItem;
   }
