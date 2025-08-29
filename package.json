@@ -986,9 +986,10 @@
           "CheckmarxSecurityChampion.model": {
             "order": 1,
             "type": "string",
-            "default": "gpt-4.1-mini",
+            "default": "gpt-5",
             "markdownDescription": "The OpenAI model used by AI Security Champion. This will be overridden if a user-defined model is specified below.",
             "enum": [
+              "gpt-5",
               "gpt-4.1-mini",
               "gpt-4.1",
               "o4-mini-high",
@@ -997,7 +998,8 @@
               "gpt-4"
             ],
             "enumDescriptions": [
-              "gpt-4.1-mini : (Recommended)",
+              "gpt-5 : (Recommended)",
+              "gpt-4.1-mini",
               "gpt-4.1",
               "o4-mini-high",
               "o3",
@@ -1033,7 +1035,6 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/axios": "^0.9.36",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
     "@types/node": "^22.9.0",
@@ -1067,6 +1068,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslintcc": "^0.8.3",
+    "https-proxy-agent": "^7.0.6",
     "install": "^0.13.0",
     "jsonstream-ts": "^1.3.6",
     "jwt-decode": "^4.0.0",
