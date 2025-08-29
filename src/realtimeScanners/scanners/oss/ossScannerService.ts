@@ -77,7 +77,6 @@ export class OssScannerService extends BaseScannerService {
   private ignoredIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
     new Map();
 
-  private documentOpenListener: vscode.Disposable | undefined;
   private editorChangeListener: vscode.Disposable | undefined;
 
   constructor() {
@@ -94,19 +93,9 @@ export class OssScannerService extends BaseScannerService {
   }
 
   public async initializeScanner(): Promise<void> {
-    this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(
-      this.onDocumentOpen.bind(this)
-    );
     this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
       this.onEditorChange.bind(this)
     );
-
-
-  }
-  private onDocumentOpen(document: vscode.TextDocument): void {
-    if (this.matchesManifestPattern(document.uri.fsPath)) {
-      this.applyDecorations(document.uri);
-    }
   }
 
   public clearScanData(uri: vscode.Uri): void {
@@ -739,10 +728,6 @@ export class OssScannerService extends BaseScannerService {
   }
 
   public dispose(): void {
-    if (this.documentOpenListener) {
-      this.documentOpenListener.dispose();
-    }
-
     if (this.editorChangeListener) {
       this.editorChangeListener.dispose();
     }
@@ -758,10 +743,6 @@ export class OssScannerService extends BaseScannerService {
     const relativePath = path.relative(workspaceFolder, document.uri.fsPath);
     return path.join(baseTempPath, this.toSafeTempFileName(relativePath));
   }
-
-
-
-
 
   private toSafeTempFileName(relativePath: string): string {
     const baseName = path.basename(relativePath);

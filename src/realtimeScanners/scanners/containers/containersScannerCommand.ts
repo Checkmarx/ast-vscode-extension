@@ -23,6 +23,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 
 	protected async initializeScanner(): Promise<void> {
 		this.registerScanOnChangeText();
+		this.registerScanOnFileOpen();
 		const scanner = this.scannerService as ContainersScannerService;
 		scanner.initializeScanner();
 

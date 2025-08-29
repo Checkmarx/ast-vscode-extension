@@ -9,6 +9,7 @@ export abstract class BaseScannerCommand implements IScannerCommand {
   protected config: IScannerConfig;
   protected scannerService: IScannerService;
   protected onDidChangeTextDocument: vscode.Disposable | undefined;
+  protected onDidOpenTextDocument: vscode.Disposable | undefined;
   protected configManager: ConfigurationManager;
   protected timeouts = new Map<string, NodeJS.Timeout>();
   protected pendingEvents = new Map<string, vscode.TextDocumentChangeEvent>();
@@ -50,7 +51,30 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       this.context.subscriptions.push(this.onDidChangeTextDocument);
       this.onDidChangeTextDocument = undefined;
     }
+    if (this.onDidOpenTextDocument) {
+      this.onDidOpenTextDocument.dispose();
+      this.context.subscriptions.push(this.onDidOpenTextDocument);
+      this.onDidOpenTextDocument = undefined;
+    }
     await this.scannerService.clearProblems();
+  }
+
+  protected registerScanOnFileOpen(): void {
+    if (this.onDidOpenTextDocument) {
+      this.onDidOpenTextDocument.dispose();
+      this.onDidOpenTextDocument = undefined;
+    }
+    this.onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(
+       (document) => {
+          try {
+            this.scannerService.scan(document, this.logs);
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      
+    );
+    this.context.subscriptions.push(this.onDidOpenTextDocument);
   }
   
   protected abstract initializeScanner(): Promise<void>;
