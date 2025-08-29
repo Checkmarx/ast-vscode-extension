@@ -80,7 +80,7 @@ export class AuthService {
       if (!isProxyReachable) {
         return {
           isValid: false,
-          error: "Proxy is not reachable. Please check your proxy settings."
+          error: "Unable to reach the proxy server. Please verify your proxy settings and try again."
         };
       }
 
