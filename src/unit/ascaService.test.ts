@@ -97,25 +97,25 @@ describe('AscaScannerService', () => {
             const diagnostics = mockDiagnosticCollection.set.getCall(0).args[1];
 
             // Check first diagnostic
-            expect(diagnostics[0].range.start.line).to.equal(0);
-            expect(diagnostics[0].range.start.character).to.equal(2);
+            expect(diagnostics[0].range.start.line).to.equal(0); 
+            expect(diagnostics[0].range.start.character).to.equal(2); 
             expect(diagnostics[0].range.end.line).to.equal(0);
             expect(diagnostics[0].range.end.character).to.equal(33);
-            expect(diagnostics[0].message).to.equal('Avoid Eval Usage');
+            expect(diagnostics[0].message).to.equal('Avoid Eval Usage'); 
             expect(diagnostics[0].source).to.equal(constants.cxAi);
             expect(diagnostics[0].severity).to.equal(0);
 
             // Check second diagnostic
-            expect(diagnostics[1].range.start.line).to.equal(1);
-            expect(diagnostics[1].range.start.character).to.equal(4);
+            expect(diagnostics[1].range.start.line).to.equal(1); 
+            expect(diagnostics[1].range.start.character).to.equal(4); 
             expect(diagnostics[1].range.end.line).to.equal(1);
             expect(diagnostics[1].range.end.character).to.equal(24);
-            expect(diagnostics[1].message).to.equal('Hardcoded Secret');
+            expect(diagnostics[1].message).to.equal('Hardcoded Secret'); 
             expect(diagnostics[1].source).to.equal(constants.cxAi);
             expect(diagnostics[1].severity).to.equal(0);
         });
 
-        it.skip('should store hover data correctly', () => {
+        it('should store hover data correctly', () => {
             const mockScanResult: CxAsca = {
                 scanDetails: [
                     {
@@ -124,8 +124,7 @@ describe('AscaScannerService', () => {
                         ruleName: 'Avoid Eval Usage',
                         description: 'Using eval() can lead to code injection vulnerabilities',
                         remediationAdvise: 'Use safer alternatives to eval()',
-                        severity: 'HIGH',
-                        ruleId: 12345
+                        severity: 'HIGH'
                     }
                 ]
             } as CxAsca;
@@ -134,23 +133,19 @@ describe('AscaScannerService', () => {
 
             const hoverData = ascaService.getHoverData();
             const key = `${mockUri.fsPath}:0`; // line - 1
-            const storedDataArray = hoverData.get(key);
+            const storedData = hoverData.get(key);
 
-            expect(storedDataArray).to.exist;
-            expect(storedDataArray).to.be.an('array');
-            expect(storedDataArray.length).to.equal(1);
-
-            const storedData = storedDataArray[0];
-            expect(storedData.ruleName).to.equal('Avoid Eval Usage');
-            expect(storedData.description).to.equal('Using eval() can lead to code injection vulnerabilities');
-            expect(storedData.severity).to.equal('HIGH');
-            expect(storedData.remediationAdvise).to.equal('Use safer alternatives to eval()');
-            expect(storedData.location.line).to.equal(0);
-            expect(storedData.location.startIndex).to.equal(2);
-            expect(storedData.location.endIndex).to.equal(33);
+            expect(storedData).to.exist;
+            expect(storedData[0].ruleName).to.equal('Avoid Eval Usage');
+            expect(storedData[0].description).to.equal('Using eval() can lead to code injection vulnerabilities');
+            expect(storedData[0].severity).to.equal('HIGH');
+            expect(storedData[0].remediationAdvise).to.equal('Use safer alternatives to eval()');
+            expect(storedData[0].location.line).to.equal(0);
+            expect(storedData[0].location.startIndex).to.equal(2);
+            expect(storedData[0].location.endIndex).to.equal(33);
         });
 
-        it.skip('should handle missing description by using remediationAdvise', () => {
+        it('should handle missing description by using remediationAdvise', () => {
             const mockScanResult: CxAsca = {
                 scanDetails: [
                     {
@@ -158,8 +153,7 @@ describe('AscaScannerService', () => {
                         problematicLine: '  const test = "value";',
                         ruleName: 'Test Rule',
                         remediationAdvise: 'Fix this issue',
-                        severity: 'MEDIUM',
-                        ruleId: 12346
+                        severity: 'MEDIUM'
                         // No description field
                     }
                 ]
@@ -227,7 +221,7 @@ describe('AscaScannerService', () => {
     });
 
     describe('clearProblems', () => {
-        it.skip('should clear all stored data', async () => {
+        it('should clear all stored data', async () => {
             // First add some data
             const mockScanResult: CxAsca = {
                 scanDetails: [
