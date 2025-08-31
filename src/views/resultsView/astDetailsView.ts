@@ -251,6 +251,13 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, path.join("media", "icon.png"))
     );
 
+    const codeBashingIcon = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        path.join("media", "icons", "codeBashing_logo.png")
+      )
+    );
+
     this.askKicsIcon = kicsIcon;
     this.kicsUserIcon = kicsUserIcon;
 
@@ -361,6 +368,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </div>
         <script>
           const vscode = acquireVsCodeApi();
+          window.codeBashingIconUri = "${codeBashingIcon}";
         </script>
         <script nonce="${nonce}" src="${scriptUri}"></script>	
         <script nonce="${nonce}" src="${scriptGptUri}"></script>	

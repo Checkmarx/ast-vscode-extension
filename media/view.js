@@ -403,11 +403,16 @@
 			let orangeColorSpan = document.createElement('span');
 			orangeColorSpan.setAttribute('class', 'orange-color');
 			orangeColorSpan.textContent = '>_';
-			let codeBashingSpan = document.createElement('span');
-			codeBashingSpan.setAttribute('class', 'codebashing-link-value');
+            let codeBashingSpan = document.createElement('img');
+			codeBashingSpan.setAttribute('src', window.codeBashingIconUri || './icons/codeBashing_logo.png');
 			codeBashingSpan.setAttribute('id', 'cx_codebashing');
 			codeBashingSpan.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
-			codeBashingSpan.textContent = 'codebashing';
+			codeBashingSpan.setAttribute('alt', 'CodeBashing');
+			if (document.body.classList.contains('vscode-light') || document.body.classList.contains('vscode-high-contrast-light')) {
+				codeBashingSpan.style.cssText = 'height:24px;width:auto;cursor:pointer;vertical-align:middle;filter:invert(1) brightness(0.8);margin-left:6px;';
+			} else {
+				codeBashingSpan.style.cssText = 'height:24px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
+			}
 			codebashingLinkSpan.appendChild(orangeColorSpan);
 			codebashingLinkSpan.appendChild(codeBashingSpan);
 			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
