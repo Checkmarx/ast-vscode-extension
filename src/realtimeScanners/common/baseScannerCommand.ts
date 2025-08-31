@@ -72,7 +72,6 @@ export abstract class BaseScannerCommand implements IScannerCommand {
           console.error(error);
         }
       }
-
     );
     this.context.subscriptions.push(this.onDidOpenTextDocument);
   }

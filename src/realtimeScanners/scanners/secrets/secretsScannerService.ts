@@ -303,7 +303,6 @@ export class SecretsScannerService extends BaseScannerService {
 		this.ignoredDecorations.delete(filePath);
 	}
 
-
 	public async clearProblems(): Promise<void> {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();

@@ -23,7 +23,6 @@ export class IacScannerService extends BaseScannerService {
 	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
 	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 
-
 	private decorationTypes = {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),

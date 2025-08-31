@@ -385,8 +385,6 @@ export class AscaScannerService extends BaseScannerService {
 		this.ignoredDecorations.delete(filePath);
 	}
 
-
-
 	private applyDecorations(uri: vscode.Uri): void {
 		const editor = vscode.window.visibleTextEditors.find(
 			e => e.document.uri.toString() === uri.toString()

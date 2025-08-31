@@ -32,7 +32,6 @@ export class ContainersScannerService extends BaseScannerService {
 	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private lastFullScanResults: unknown[] = [];
 
-
 	private decorationTypes = {
 		malicious: this.createDecoration("malicious.svg"),
 		ok: this.createDecoration("realtimeEngines/green_check.svg"),
@@ -625,7 +624,6 @@ export class ContainersScannerService extends BaseScannerService {
 		this.lowIconDecorationsMap.clear();
 		this.ignoredDecorations.clear();
 	}
-
 
 	public clearScanData(uri: vscode.Uri): void {
 		const filePath = uri.fsPath;

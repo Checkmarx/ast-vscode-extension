@@ -77,7 +77,6 @@ export class OssScannerService extends BaseScannerService {
   private ignoredIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
     new Map();
 
-
   constructor() {
     const config: IScannerConfig = {
       engineName: constants.ossRealtimeScannerEngineName,
@@ -90,7 +89,6 @@ export class OssScannerService extends BaseScannerService {
     super(config);
 
   }
-
 
   public clearScanData(uri: vscode.Uri): void {
     const filePath = uri.fsPath;
@@ -715,7 +713,6 @@ export class OssScannerService extends BaseScannerService {
     this.okDecorationsMap.clear();
     this.unknownDecorationsMap.clear();
   }
-
 
   protected getTempSubFolderPath(
     document: vscode.TextDocument,
