@@ -5,7 +5,6 @@ import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import {
     isIDE,
-    getIDEName,
     isSecretsHoverData,
     getWorkspaceFolder,
     getInitializedIgnoreManager,
@@ -223,13 +222,17 @@ export class CopilotChatCommand {
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
         const isSecrets = isSecretsHoverData(item);
         const isIac = isIacHoverData(item);
+        const isAsca = isAscaHoverData(item);
+        const isContainers = isContainersHoverData(item);
         const engine = isSecrets ? constants.secretsScannerEngineName :
             isIac ? constants.iacRealtimeScannerEngineName :
-                constants.ossRealtimeScannerEngineName;
+                isAsca ? constants.ascaRealtimeScannerEngineName :
+                    isContainers ? constants.containersRealtimeScannerEngineName :
+                        constants.ossRealtimeScannerEngineName;
         let problemSeverity: string | undefined;
         if (isSecrets) {
             problemSeverity = item.severity;
-        } else if (isAscaHoverData(item)) {
+        } else if (isAsca) {
             problemSeverity = item.severity;
         } else if (isIac) {
             problemSeverity = item.severity;
@@ -338,10 +341,7 @@ export class CopilotChatCommand {
                         if (this.iacScanner && this.iacScanner.scan) {
                             await this.iacScanner.scan(document, this.logs);
                         }
-                        if (this.containersScanner.hasAnySeverityDecorations()) {
-                            await this.containersScanner.scan(document, this.logs);
-
-                        }
+                        this.containersScanner.recomputeGutterForLine(document.uri, item.location?.line || 0);
 
                     }
                     else if (isSecretsHoverData(item)) {
@@ -400,10 +400,10 @@ export class CopilotChatCommand {
                         if (document && this.containersScanner && this.containersScanner.shouldScanFile(document)) {
                             await this.containersScanner.scan(document, this.logs);
                         }
-                        if (this.iacScanner.hasAnySeverityDecorations()) {
-                            await this.iacScanner.scan(document, this.logs);
-
+                        if (document) {
+                            this.iacScanner.recomputeGutterForLine(document.uri, item.location?.line || 0);
                         }
+
                     }
                     else {
                         ignoreManager.addIgnoredEntry({

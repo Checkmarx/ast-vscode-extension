@@ -1,5 +1,45 @@
 # CHANGELOG
 
+## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Use shared generateFileHash and remove filepath from secrets ignore entries(AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1262
+* Support Containers and Asca for telemtry log (AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1265
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-oauth-proxy-support-2.0...v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0
+
+## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.0...v2.36.1-oauth-proxy-support-2.0
+
+## [v2.36.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.0) - 2025-08-21 11:57:02
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.36.0 -->
+
+## [v2.35.1-validate.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-validate.0) - 2025-08-21 09:34:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.35.1-findPerSection-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-1.0) - 2025-08-20 12:26:16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.35.1-findPerSection-0.0...v2.35.1-findPerSection-1.0
+
+## [v2.35.1-findPerSection-0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-findPerSection-0.0) - 2025-08-20 07:03:10
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.35.1-cursor.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.35.1-cursor.0.0) - 2025-08-14 17:29:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -35,6 +75,7 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompt-1.0...v2.34.1-new-prompts-2.0
+
 
 ## [v2.34.1-new-prompt-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-new-prompt-1.0) - 2025-08-14 09:20:54
 
