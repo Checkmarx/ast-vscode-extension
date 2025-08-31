@@ -22,6 +22,7 @@ export class IacScannerCommand extends BaseScannerCommand {
 
 	protected async initializeScanner(): Promise<void> {
 		this.registerScanOnChangeText();
+		this.registerScanOnFileOpen();
 		const scanner = this.scannerService as IacScannerService;
 		scanner.initializeScanner();
 

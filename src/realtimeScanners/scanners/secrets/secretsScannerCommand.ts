@@ -25,6 +25,7 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 
 	protected async initializeScanner(): Promise<void> {
 		this.registerScanOnChangeText();
+		this.registerScanOnFileOpen();
 		const scanner = this.scannerService as SecretsScannerService;
 		scanner.initializeScanner();
 
