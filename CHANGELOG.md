@@ -76,6 +76,7 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompt-1.0...v2.34.1-new-prompts-2.0
 
+
 ## [v2.34.1-new-prompt-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-new-prompt-1.0) - 2025-08-14 09:20:54
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
