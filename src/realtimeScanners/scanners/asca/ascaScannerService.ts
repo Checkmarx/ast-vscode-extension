@@ -13,11 +13,13 @@ import { IgnoreFileManager } from "../../common/ignoreFileManager";
 export class AscaScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private ascaHoverData = new Map<string, AscaHoverData[]>();
-	private criticalDecorations = new Map<string, vscode.DecorationOptions[]>();
-	private highDecorations = new Map<string, vscode.DecorationOptions[]>();
-	private mediumDecorations = new Map<string, vscode.DecorationOptions[]>();
-	private lowDecorations = new Map<string, vscode.DecorationOptions[]>();
-	private ignoredDecorations = new Map<string, vscode.DecorationOptions[]>();
+	private decorationsMap = {
+		critical: new Map<string, vscode.DecorationOptions[]>(),
+		high: new Map<string, vscode.DecorationOptions[]>(),
+		medium: new Map<string, vscode.DecorationOptions[]>(),
+		low: new Map<string, vscode.DecorationOptions[]>(),
+		ignored: new Map<string, vscode.DecorationOptions[]>(),
+	};
 
 
 	private decorationTypes = {
@@ -342,11 +344,11 @@ export class AscaScannerService extends BaseScannerService {
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
 
-		this.criticalDecorations.set(filePath, criticalDecorations);
-		this.highDecorations.set(filePath, highDecorations);
-		this.mediumDecorations.set(filePath, mediumDecorations);
-		this.lowDecorations.set(filePath, lowDecorations);
-		this.ignoredDecorations.set(filePath, ignoredDecorations);
+		this.decorationsMap.critical.set(filePath, criticalDecorations);
+		this.decorationsMap.high.set(filePath, highDecorations);
+		this.decorationsMap.medium.set(filePath, mediumDecorations);
+		this.decorationsMap.low.set(filePath, lowDecorations);
+		this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 
 		this.applyDecorations(uri);
 	}
@@ -355,11 +357,7 @@ export class AscaScannerService extends BaseScannerService {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
 		this.ascaHoverData.clear();
-		this.criticalDecorations.clear();
-		this.highDecorations.clear();
-		this.mediumDecorations.clear();
-		this.lowDecorations.clear();
-		this.ignoredDecorations.clear();
+		Object.values(this.decorationsMap).forEach(map => map.clear());
 	}
 
 
@@ -378,11 +376,7 @@ export class AscaScannerService extends BaseScannerService {
 			this.ascaHoverData.delete(key);
 		});
 
-		this.criticalDecorations.delete(filePath);
-		this.highDecorations.delete(filePath);
-		this.mediumDecorations.delete(filePath);
-		this.lowDecorations.delete(filePath);
-		this.ignoredDecorations.delete(filePath);
+		Object.values(this.decorationsMap).forEach(map => map.delete(filePath));
 	}
 
 	private applyDecorations(uri: vscode.Uri): void {
@@ -394,16 +388,12 @@ export class AscaScannerService extends BaseScannerService {
 		}
 
 		const filePath = uri.fsPath;
-		const criticalDecorations = this.criticalDecorations.get(filePath) || [];
-		const highDecorations = this.highDecorations.get(filePath) || [];
-		const mediumDecorations = this.mediumDecorations.get(filePath) || [];
-		const lowDecorations = this.lowDecorations.get(filePath) || [];
-
-		editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
-		editor.setDecorations(this.decorationTypes.high, highDecorations);
-		editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
-		editor.setDecorations(this.decorationTypes.low, lowDecorations);
-		editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
+		const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
+		editor.setDecorations(this.decorationTypes.critical, get('critical'));
+		editor.setDecorations(this.decorationTypes.high, get('high'));
+		editor.setDecorations(this.decorationTypes.medium, get('medium'));
+		editor.setDecorations(this.decorationTypes.low, get('low'));
+		editor.setDecorations(this.decorationTypes.ignored, get('ignored'));
 	}
 
 	// Getter for hover data to be used by the command
@@ -417,7 +407,7 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	private updateIgnoredDecorationLine(filePath: string, oldLine: number, newLine: number): void {
-		const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
+		const ignoredDecorations = this.decorationsMap.ignored.get(filePath) || [];
 
 		const oldDecorationIndex = ignoredDecorations.findIndex(decoration =>
 			decoration.range.start.line === oldLine
@@ -433,7 +423,7 @@ export class AscaScannerService extends BaseScannerService {
 			);
 			ignoredDecorations.push({ range: newRange });
 
-			this.ignoredDecorations.set(filePath, ignoredDecorations);
+			this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 
 			const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
 			if (editor) {
@@ -461,19 +451,18 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	private removeIgnoredDecorationAtLine(filePath: string, line: number): void {
-		const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
+		const ignoredDecorations = this.decorationsMap.ignored.get(filePath) || [];
 
 		const filteredDecorations = ignoredDecorations.filter(decoration =>
 			decoration.range.start.line !== line
 		);
 
-		this.ignoredDecorations.set(filePath, filteredDecorations);
+		this.decorationsMap.ignored.set(filePath, filteredDecorations);
 
 		const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
 		if (editor) {
 			editor.setDecorations(this.decorationTypes.ignored, filteredDecorations);
 		}
-
 
 		const hoverKey = `${filePath}:${line}`;
 		this.ascaHoverData.delete(hoverKey);
