@@ -19,7 +19,6 @@ export class AscaScannerService extends BaseScannerService {
 	private lowDecorations = new Map<string, vscode.DecorationOptions[]>();
 	private ignoredDecorations = new Map<string, vscode.DecorationOptions[]>();
 
-	private documentOpenListener: vscode.Disposable | undefined;
 	private editorChangeListener: vscode.Disposable | undefined;
 
 	private decorationTypes = {
@@ -59,7 +58,7 @@ export class AscaScannerService extends BaseScannerService {
 			errorMessage: constants.errorAscaScanRealtime
 		};
 		super(config);
-		
+
 		this.registerHoverDataMap(this.ascaHoverData);
 	}
 
@@ -142,7 +141,7 @@ export class AscaScannerService extends BaseScannerService {
 
 	private hasSecretsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
 		const secretsCollection = this.getOtherScannerCollection(constants.secretsScannerEngineName);
-		 if (secretsCollection) {
+		if (secretsCollection) {
 			const secretsDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
 				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
 				return diagnosticData?.cxType === constants.secretsScannerEngineName;
@@ -382,10 +381,6 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	public dispose(): void {
-		if (this.documentOpenListener) {
-			this.documentOpenListener.dispose();
-		}
-
 		if (this.editorChangeListener) {
 			this.editorChangeListener.dispose();
 		}
@@ -414,18 +409,9 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	public async initializeScanner(): Promise<void> {
-		this.documentOpenListener = vscode.workspace.onDidOpenTextDocument(
-			this.onDocumentOpen.bind(this)
-		);
 		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
 			this.onEditorChange.bind(this)
 		);
-	}
-
-	private onDocumentOpen(document: vscode.TextDocument): void {
-		if (this.shouldScanFile(document)) {
-			this.applyDecorations(document.uri);
-		}
 	}
 
 	private onEditorChange(editor: vscode.TextEditor | undefined): void {

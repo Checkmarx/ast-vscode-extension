@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Use shared generateFileHash and remove filepath from secrets ignore entries(AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1262
+* Support Containers and Asca for telemtry log (AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1265
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-oauth-proxy-support-2.0...v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0
+
 ## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -63,6 +75,7 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompt-1.0...v2.34.1-new-prompts-2.0
+
 
 ## [v2.34.1-new-prompt-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-new-prompt-1.0) - 2025-08-14 09:20:54
 

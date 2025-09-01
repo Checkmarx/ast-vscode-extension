@@ -29,6 +29,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 			return;
 		}
 		this.registerScanOnChangeText();
+		this.registerScanOnFileOpen();
 		const scanner = this.scannerService as AscaScannerService;
 		scanner.initializeScanner();
 

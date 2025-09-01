@@ -38,6 +38,9 @@ const mock = {
             return undefined;
         },
         workspaceFolders: [{ uri: { fsPath: "/mock/path" } }],
+        getWorkspaceFolder: (uri: any) => {
+            return { uri: { fsPath: "/mock/path" } };
+        },
         openTextDocument: () => Promise.resolve({
             // Mock document properties
         }),
