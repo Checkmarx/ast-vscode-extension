@@ -17,16 +17,13 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 	) {
 		const scannerService = new SecretsScannerService();
 		super(context, logs, scannerService.config, scannerService, configManager);
-		this.debounceStrategy = "global";
 	}
 
 	private hoverProviderDisposable: vscode.Disposable | undefined;
 
-
-
 	protected async initializeScanner(): Promise<void> {
-		this.registerScanOnChangeText();
 		const scanner = this.scannerService as SecretsScannerService;
+		await super.initializeScanner();
 		scanner.initializeScanner();
 
 		if (this.hoverProviderDisposable) {
@@ -37,17 +34,6 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 			{ scheme: "file" },
 			{ provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
 		);
-
-		vscode.workspace.onDidRenameFiles(async (event) => {
-			for (const { oldUri, newUri } of event.files) {
-				scanner.clearScanData(oldUri);
-
-				const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
-				if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
-					await scanner.scan(reopenedDoc, this.logs);
-				}
-			}
-		});
 	}
 
 
@@ -55,37 +41,41 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 	private getHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		scanner: any
+		scanner: SecretsScannerService
 	) {
 		const key = `${document.uri.fsPath}:${position.line}`;
-		const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
+
+		const hoverData: SecretsHoverData = scanner.getHoverData().get(key);
+
+		const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
 		const hasDiagnostic = diagnostics.some(
 			(d) => d.range.start.line === position.line
 		);
 
-		if (!hasDiagnostic) {
+		if (!hoverData || !hasDiagnostic) {
 			return;
 		}
-		const hoverData: SecretsHoverData = scanner.secretsHoverData.get(key);
 		const md = new vscode.MarkdownString();
 		md.supportHtml = true;
 		md.isTrusted = true;
 		const args = encodeURIComponent(JSON.stringify([hoverData]));
 
-		const buttons = buildCommandButtons(args, true);
+		const buttons = buildCommandButtons(args, false, true);
 
-		md.appendMarkdown(`${hoverData.description}\n\n`);
-		md.appendMarkdown(this.renderSecretsIcon() + "<br>");
 		md.appendMarkdown(renderCxAiBadge() + "<br>");
-
-		md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
 		md.appendMarkdown(this.renderSeverityIcon(hoverData.severity));
+		md.appendMarkdown(this.renderID(hoverData));
+
+		md.appendMarkdown(`${buttons}<br>`);
 
 		return new vscode.Hover(md);
 	}
 
-	private renderSecretsIcon(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/secretsFinding.png" style="vertical-align: -12px;" />`;
+	private renderID(hoverData: SecretsHoverData): string {
+		return `
+<b>${hoverData.title}</b>
+<i style="color: dimgrey;"> - Secret finding <br></i>
+`;
 	}
 
 	private renderSeverityIcon(severity: string): string {
@@ -93,13 +83,17 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		if (!iconName) {
 			return "";
 		}
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconName}" width="10" height="11" style="vertical-align: -12px;" />`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
 
 
 	public async dispose(): Promise<void> {
 		await super.dispose();
-		(this.scannerService as SecretsScannerService).dispose();
+		this.scannerService.dispose();
 		this.hoverProviderDisposable?.dispose();
+	}
+
+	getScannerService(): SecretsScannerService {
+		return this.scannerService as SecretsScannerService;
 	}
 }

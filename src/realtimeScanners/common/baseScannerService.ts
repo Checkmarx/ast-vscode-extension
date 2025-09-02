@@ -3,23 +3,60 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { Logs } from "../../models/logs";
-import { IScannerService, IScannerConfig } from "./types";
+import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 
 export abstract class BaseScannerService implements IScannerService {
+  protected editorChangeListener: vscode.Disposable | undefined;
+
+  public async initializeScanner(): Promise<void> {
+    this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
+      this.onEditorChange.bind(this)
+    );
+  }
+
+  protected onEditorChange(editor: vscode.TextEditor | undefined): void {
+    if (editor && this.shouldScanFile(editor.document) && typeof (this as any).applyDecorations === 'function') {
+      (this as any).applyDecorations(editor.document.uri);
+    }
+  }
+
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
+
+  private static diagnosticCollections = new Map<string, vscode.DiagnosticCollection>();
+  private static hoverDataMaps = new Map<string, Map<string, SecretsHoverData | AscaHoverData[]>>();
 
   constructor(config: IScannerConfig) {
     this.config = config;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection(
       config.engineName
     );
+
+    BaseScannerService.diagnosticCollections.set(config.engineName, this.diagnosticCollection);
+  }
+
+  protected getOtherScannerCollection(engineName: string): vscode.DiagnosticCollection | undefined {
+    return BaseScannerService.diagnosticCollections.get(engineName);
+  }
+  protected registerHoverDataMap(hoverDataMap: Map<string, SecretsHoverData | AscaHoverData[]>): void {
+    BaseScannerService.hoverDataMaps.set(this.config.engineName, hoverDataMap);
+  }
+  protected getOtherScannerHoverData(engineName: string): Map<string, SecretsHoverData | AscaHoverData[]> | undefined {
+    return BaseScannerService.hoverDataMaps.get(engineName);
   }
 
   abstract scan(document: vscode.TextDocument, logs: Logs): Promise<void>;
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
+
+
+  public dispose(): void {
+    if (this.editorChangeListener) {
+      this.editorChangeListener.dispose();
+    }
+  }
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();
@@ -69,9 +106,77 @@ export abstract class BaseScannerService implements IScannerService {
   }
 
   protected generateFileHash(input: string): string {
+    const now = new Date();
+    const timeSuffix = `${now.getMinutes()}${now.getSeconds()}`;
     return createHash("sha256")
-      .update(input)
+      .update(input + timeSuffix)
       .digest("hex")
       .substring(0, 16);
+  }
+
+  async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
+    const dirPath = path.dirname(uri.fsPath);
+    const dirUri = vscode.Uri.file(dirPath);
+    const entries = await vscode.workspace.fs.readDirectory(dirUri);
+
+    const fileNameLower = path.basename(uri.fsPath).toLowerCase();
+
+    for (const [entryName, _type] of entries) {
+      if (entryName.toLowerCase() === fileNameLower) {
+        return path.join(dirPath, entryName);
+      }
+    }
+    return undefined;
+  }
+  
+  private generateTempFileInfo(originalFilePath: string) {
+    const originalExt = path.extname(originalFilePath);
+    const baseName = path.basename(originalFilePath, originalExt);
+    const originalFileName = path.basename(originalFilePath);
+    const hash = this.generateFileHash(originalFilePath);
+
+    return {
+      originalExt,
+      baseName,
+      originalFileName,
+      hash
+    };
+  }
+
+  protected saveFile(tempFolder: string, originalFilePath: string, content: string): string {
+    const { originalExt, baseName, hash } = this.generateTempFileInfo(originalFilePath);
+    const tempFileName = `${baseName}-${hash}${originalExt}`;
+    const tempFilePath = path.join(tempFolder, tempFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return tempFilePath;
+  }
+
+  protected createSubFolderAndSaveFile(tempFolder: string, originalFilePath: string, content: string): { tempFilePath: string; tempSubFolder: string } {
+    const { originalFileName, hash } = this.generateTempFileInfo(originalFilePath);
+    const subFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
+    if (!fs.existsSync(subFolder)) {
+      fs.mkdirSync(subFolder, { recursive: true });
+    }
+    const tempFilePath = path.join(subFolder, originalFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return { tempFilePath, tempSubFolder: subFolder };
+  }
+
+  protected getHighestSeverity(severities: string[]): string {
+    const severityPriority = [
+      CxRealtimeEngineStatus.malicious,
+      CxRealtimeEngineStatus.critical,
+      CxRealtimeEngineStatus.high,
+      CxRealtimeEngineStatus.medium,
+      CxRealtimeEngineStatus.low,
+      CxRealtimeEngineStatus.unknown,
+      CxRealtimeEngineStatus.ok
+    ];
+
+    for (const priority of severityPriority) {
+      if (severities.includes(priority)) {
+        return priority;
+      }
+    }
   }
 }

@@ -27,14 +27,14 @@ describe("FilterCommand", () => {
         } as any;
 
         const mockOutputChannel = {
-            append: () => {},
-            appendLine: () => {},
-            clear: () => {},
-            show: () => {},
-            hide: () => {},
-            dispose: () => {},
+            append: () => { },
+            appendLine: () => { },
+            clear: () => { },
+            show: () => { },
+            hide: () => { },
+            dispose: () => { },
             name: "Mock Output",
-            replace: () => {}
+            replace: () => { }
         } as vscode.OutputChannel;
 
         logs = new Logs(mockOutputChannel);
@@ -49,9 +49,9 @@ describe("FilterCommand", () => {
         sandbox.restore();
     });
 
-   
 
-   
+
+
     describe("registerFilters", () => {
         it("should register all filter commands", () => {
             const registerCommandStub = sandbox.stub(vscode.commands, "registerCommand");
@@ -71,6 +71,8 @@ describe("FilterCommand", () => {
             expect(registeredCommands).to.include(commands.filterUrgent);
             expect(registeredCommands).to.include(commands.filterNotIgnored);
             expect(registeredCommands).to.include(commands.filterIgnored);
+            expect(registeredCommands).to.include(commands.filterSCAHideDevTest);
+            expect(registeredCommands).to.include(commands.filterAllCustomStates);
         });
     });
 }); 

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { constants } from "../../utils/common/constants";
 
 export interface IScannerConfig {
   engineName: string;
@@ -17,11 +18,12 @@ export interface IScannerService {
   shouldScanFile(document: vscode.TextDocument): boolean;
   updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
   diagnosticCollection: vscode.DiagnosticCollection;
+  dispose(): void;
 }
 
 export interface IScannerCommand {
   register(): Promise<void>;
-  dispose(): Promise<void>;
+  dispose(): void;
 }
 
 export interface HoverData {
@@ -30,12 +32,30 @@ export interface HoverData {
   version: string;
   status: CxRealtimeEngineStatus;
   vulnerabilities?: Array<{ cve: string, description: string, severity: string }>;
+  filePath: string;
+  line: number;
 }
 
 export interface SecretsHoverData {
   title?: string;
   description: string;
   severity: string;
+  secretValue: string;
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+  filePath: string;
+}
+
+export interface AscaHoverData {
+  ruleName: string;
+  description: string;
+  severity: string;
+  remediationAdvise: string;
+  ruleId?: number;
+  filePath?: string;
   location?: {
     line: number;
     startIndex: number;
@@ -43,7 +63,47 @@ export interface SecretsHoverData {
   };
 }
 
+export interface ContainersHoverData {
+  imageName: string;
+  imageTag: string;
+  status: CxRealtimeEngineStatus;
+  vulnerabilities: Array<{
+    cve: string;
+    severity: string;
+  }>;
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+  fileType: string;
+}
+
+export interface IacHoverData {
+  similarityId: string;
+  title: string;
+  description: string;
+  severity: string;
+  expectedValue: string;
+  actualValue: string;
+  filePath: string;
+  originalFilePath?: string
+  location?: {
+    line: number;
+    startIndex: number;
+    endIndex: number;
+  };
+  fileType: string;
+}
+
+const scannerEngineNames = {
+  oss: constants.ossRealtimeScannerEngineName,
+  secrets: constants.secretsScannerEngineName,
+  asca: constants.ascaRealtimeScannerEngineName,
+  containers: constants.containersRealtimeScannerEngineName,
+  iac: constants.iacRealtimeScannerEngineName
+} as const;
 export interface CxDiagnosticData {
-  cxType: "oss" | "secrets";
-  item: HoverData | SecretsHoverData;
+  cxType: typeof scannerEngineNames[keyof typeof scannerEngineNames];
+  item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData;
 }

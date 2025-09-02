@@ -6,7 +6,7 @@ import { Logs } from "../models/logs";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
-import { initializeMcpConfiguration } from "../services/mcpSettingsInjector";
+import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -232,6 +232,7 @@ export class AuthenticationWebview {
                 vscode.window.showInformationMessage(
                   "Logged out successfully."
                 );
+                uninstallMcp();
               }
             });
         } else if (message.command === "authenticate") {
@@ -242,6 +243,7 @@ export class AuthenticationWebview {
               cancellable: false,
             },
             async () => {
+              await this._panel.webview.postMessage({ command: "disableAuthButton" });
               try {
                 if (message.authMethod === "oauth") {
                   // Existing OAuth handling
@@ -249,12 +251,18 @@ export class AuthenticationWebview {
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  await authService.authenticate(baseUri, tenant);
-                  setTimeout(async () => {
-                    this._panel.dispose();
-                    await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context, isAiEnabled);
-                  }, 1000);
+                  const token = await authService.authenticate(baseUri, tenant);
+                  if (token !== "") {
+                    setTimeout(async () => {
+                      this._panel.dispose();
+                      await this.markFirstWelcomeAsShown();
+                      WelcomeWebview.show(this.context, isAiEnabled);
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                    }, 1000);
+                  }
+                  else {
+                    this._panel.webview.postMessage({ command: "enableAuthButton" });
+                  }
                 } else if (message.authMethod === "apiKey") {
                   // New API Key handling
                   const authService = AuthService.getInstance(this.context);
@@ -263,7 +271,6 @@ export class AuthenticationWebview {
                   const isValid = await authService.validateApiKey(
                     message.apiKey
                   );
-
                   if (!isValid) {
                     // Sending an error message to the window
                     this._panel.webview.postMessage({
@@ -271,6 +278,7 @@ export class AuthenticationWebview {
                       message:
                         "API Key validation failed. Please check your key.",
                     });
+                    this._panel.webview.postMessage({ command: "enableAuthButton" });
                     return;
                   }
 
@@ -285,10 +293,13 @@ export class AuthenticationWebview {
                   setTimeout(async () => {
 
                     this._panel.dispose();
+                    this._panel.webview.postMessage({ command: "enableAuthButton" });
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
+                    } else {
+                      await uninstallMcp();
                     }
                     setTimeout(() => {
                       this._panel.webview.postMessage({
@@ -298,6 +309,7 @@ export class AuthenticationWebview {
                   }, 1000);
                 }
               } catch (error) {
+                this._panel.webview.postMessage({ command: "enableAuthButton" });
                 this._panel.webview.postMessage({
                   type: "validation-error",
                   message: `Authentication failed: ${error.message}`,

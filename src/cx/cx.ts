@@ -6,7 +6,7 @@ import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/projec
 import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
-import { getFilePath, getResultsFilePath } from "../utils/utils";
+import { getFilePath, getResultsFilePath, isIDE } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
@@ -107,13 +107,13 @@ export class Cx implements CxPlatform {
   }
 
   getGptConfig(): { gptToken: string; gptEngine: string } {
-    const gptToken = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptSettingsKey) as string;
+    const config = vscode.workspace.getConfiguration(constants.gptCommandName);
 
-    const gptEngine = vscode.workspace
-      .getConfiguration(constants.gptCommandName)
-      .get(constants.gptEngineKey) as string;
+    const gptToken = config.get<string>(constants.gptSettingsKey) || '';
+    const selectedModel = config.get<string>(constants.gptEngineKey) || '';
+    const customModel = config.get<string>(constants.gptCustomModelKey) || '';
+
+    const gptEngine = customModel.trim() !== '' ? customModel.trim() : selectedModel;
 
     return { gptToken, gptEngine };
   }
@@ -285,9 +285,8 @@ export class Cx implements CxPlatform {
     if (!config) {
       return [];
     }
-    const filter = `project-id=${projectId},${
-      branch ? `branch=${branch},` : ""
-    }limit=${limit},statuses=${statuses}`;
+    const filter = `project-id=${projectId},${branch ? `branch=${branch},` : ""
+      }limit=${limit},statuses=${statuses}`;
     const cx = new CxWrapper(config);
     const scans = await cx.scanList(filter);
     if (scans.payload) {
@@ -630,7 +629,7 @@ export class Cx implements CxPlatform {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.scanAsca(null, true, constants.vsCodeAgent);
+    const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -645,13 +644,13 @@ export class Cx implements CxPlatform {
     return errorRes;
   }
 
-  async scanAsca(sourcePath: string): Promise<CxAsca> {
+  async scanAsca(sourcePath: string, ignorePath: string): Promise<CxAsca> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent);
+    const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -659,13 +658,14 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+  async scanContainers(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
     const cx = new CxWrapper(config);
-    const scans = await cx.ossScanResults(sourcePath);
+
+    const scans = await cx.containersRealtimeScanResults(sourcePath, ignoredFilePath);
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -673,13 +673,46 @@ export class Cx implements CxPlatform {
     }
   }
 
-  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     let config = await this.getAstConfiguration();
     if (!config) {
       config = new CxConfig();
     }
+
     const cx = new CxWrapper(config);
-    const scans = await cx.secretsScanResults(sourcePath);
+    const scans = await cx.ossScanResults(sourcePath, ignoredFilePath);
+
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async iacScanResults(sourcePath: string, containersManagementTool: string, ignoredFilePath?: string): Promise<any[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+
+    const cx = new CxWrapper(config);
+    const scans = await cx.iacRealtimeScanResults(sourcePath, containersManagementTool, ignoredFilePath);
+
+    if (scans.payload && scans.exitCode === 0) {
+      return scans.payload[0];
+    } else {
+      throw new Error(scans.status);
+    }
+  }
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
+    let config = await this.getAstConfiguration();
+    if (!config) {
+      config = new CxConfig();
+    }
+
+    const cx = new CxWrapper(config);
+    const scans = await cx.secretsScanResults(sourcePath, ignoredFilePath);
+
     if (scans.payload && scans.exitCode === 0) {
       return scans.payload[0];
     } else {
@@ -721,5 +754,14 @@ export class Cx implements CxPlatform {
     }
 
     return r;
+  }
+
+  async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
+    const config = await this.getAstConfiguration();
+    const cx = new CxWrapper(config);
+    const aiProvider = isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
+    const agent = isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
+
+    cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity);
   }
 }

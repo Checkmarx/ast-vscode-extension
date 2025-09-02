@@ -38,6 +38,9 @@ const mock = {
             return undefined;
         },
         workspaceFolders: [{ uri: { fsPath: "/mock/path" } }],
+        getWorkspaceFolder: (uri: any) => {
+            return { uri: { fsPath: "/mock/path" } };
+        },
         openTextDocument: () => Promise.resolve({
             // Mock document properties
         }),
@@ -48,26 +51,30 @@ const mock = {
         showErrorMessage: () => Promise.resolve(),
         showInformationMessage: () => Promise.resolve(),
         createOutputChannel: () => ({
-            append: () => {},
-            appendLine: () => {},
-            clear: () => {},
-            show: () => {},
-            hide: () => {},
-            dispose: () => {},
-            replace: () => {},
+            append: () => { },
+            appendLine: () => { },
+            clear: () => { },
+            show: () => { },
+            hide: () => { },
+            dispose: () => { },
+            replace: () => { },
             name: "Test"
         }),
         createWebviewPanel: () => ({
             webview: {
                 html: "",
                 asWebviewUri: (uri: any) => uri,
-                onDidReceiveMessage: () => ({ dispose: () => {} }),
+                onDidReceiveMessage: () => ({ dispose: () => { } }),
                 postMessage: () => Promise.resolve()
             },
-            reveal: () => {},
-            dispose: () => {},
-            onDidDispose: () => ({ dispose: () => {} })
-        })
+            reveal: () => { },
+            dispose: () => { },
+            onDidDispose: () => ({ dispose: () => { } })
+        }),
+        createTextEditorDecorationType: () => ({
+            dispose: () => { }
+        }),
+        visibleTextEditors: []
     },
 
     commands: {
@@ -77,7 +84,7 @@ const mock = {
         },
         getCommands: () => Promise.resolve([]),
         registerCommand: (command: string, callback: (...args: any[]) => any) => {
-            return { dispose: () => {} };
+            return { dispose: () => { } };
         }
     },
 
@@ -99,7 +106,7 @@ const mock = {
     },
 
     Position: class Position {
-        constructor(public line: number, public character: number) {}
+        constructor(public line: number, public character: number) { }
         translate() { return this; }
         with() { return this; }
     },
@@ -108,7 +115,7 @@ const mock = {
         constructor(
             public start: { line: number; character: number },
             public end: { line: number; character: number }
-        ) {}
+        ) { }
         with() { return this; }
     },
 
@@ -117,12 +124,12 @@ const mock = {
         code?: string | number;
         relatedInformation?: any[];
         tags?: any[];
-        
+
         constructor(
             public range: { start: { line: number; character: number }; end: { line: number; character: number } },
             public message: string,
             public severity: number
-        ) {}
+        ) { }
     },
 
     ProgressLocation: {
@@ -130,7 +137,7 @@ const mock = {
     },
 
     Uri: {
-        file: (path: string) => ({ 
+        file: (path: string) => ({
             fsPath: path,
             scheme: 'file',
             path: path
@@ -150,7 +157,7 @@ const mock = {
     TreeItem: class {
         label: string;
         collapsibleState: any;
-        
+
         constructor(label: string, collapsibleState: any) {
             this.label = label;
             this.collapsibleState = collapsibleState;
@@ -161,6 +168,13 @@ const mock = {
         None: 0,
         Collapsed: 1,
         Expanded: 2
+    },
+
+    DecorationRangeBehavior: {
+        ClosedClosed: 0,
+        OpenOpen: 1,
+        OpenClosed: 2,
+        ClosedOpen: 3
     }
 };
 

@@ -8,6 +8,7 @@ import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
+import * as util from 'util';
 
 export class OssScannerCommand extends BaseScannerCommand {
   constructor(
@@ -17,12 +18,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   ) {
     const scannerService = new OssScannerService();
     super(context, logs, scannerService.config, scannerService, configManager);
-    this.debounceStrategy = "per-document";
   }
 
   protected async initializeScanner(): Promise<void> {
-    this.registerScanOnChangeText();
     const scanner = this.scannerService as OssScannerService;
+    await super.initializeScanner();
     scanner.initializeScanner();
 
     if (this.hoverProviderDisposable) {
@@ -34,20 +34,7 @@ export class OssScannerCommand extends BaseScannerCommand {
       { provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
     );
 
-    await this.scanAllManifestFilesInWorkspace();
-
-    vscode.workspace.onDidRenameFiles(async (event) => {
-      const scanner = this.scannerService as OssScannerService;
-
-      for (const { oldUri, newUri } of event.files) {
-        scanner.clearScanData(oldUri);
-
-        const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
-        if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
-          await scanner.scan(reopenedDoc, this.logs);
-        }
-      }
-    });
+    this.scanAllManifestFilesInWorkspace();
   }
 
   private hoverProviderDisposable: vscode.Disposable | undefined;
@@ -55,11 +42,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   private getHover(
     document: vscode.TextDocument,
     position: vscode.Position,
-    scanner: any
+    scanner: OssScannerService
   ) {
     const key = `${document.uri.fsPath}:${position.line}`;
-    const hoverData: HoverData = scanner.hoverMessages?.get(key);
-    const diagnostics = scanner.diagnosticsMap?.get(document.uri.fsPath) || [];
+    const hoverData: HoverData = scanner.getHoverData()?.get(key);
+    const diagnostics = scanner.getDiagnosticsMap()?.get(document.uri.fsPath) || [];
     const hasDiagnostic = diagnostics.some(
       (d) => d.range.start.line === position.line
     );
@@ -72,28 +59,32 @@ export class OssScannerCommand extends BaseScannerCommand {
     md.supportHtml = true;
     md.isTrusted = true;
 
-    const pkg = `**Package:** ${hoverData.packageName}@${hoverData.version}\n\n`;
-    const args = encodeURIComponent(JSON.stringify([hoverData]));
-    const buttons = buildCommandButtons(args, false);
+    const severityOrder = [CxRealtimeEngineStatus.critical.toLowerCase(), CxRealtimeEngineStatus.high.toLowerCase(), CxRealtimeEngineStatus.medium.toLowerCase(), CxRealtimeEngineStatus.low.toLowerCase()];
+    const allVulns = hoverData.vulnerabilities || [];
+    const sortedVulns = [...allVulns].sort((a, b) => {
+      const aIdx = severityOrder.indexOf(a.severity?.toLowerCase?.() || "");
+      const bIdx = severityOrder.indexOf(b.severity?.toLowerCase?.() || "");
+      return aIdx - bIdx;
+    });
+    const top10Vulns = sortedVulns.slice(0, 10);
+    const hoverDataForArgs = { ...hoverData, vulnerabilities: top10Vulns };
+    const args = encodeURIComponent(JSON.stringify([hoverDataForArgs]));
+    const buttons = buildCommandButtons(args, true, false);
     const isVulnerable = this.isVulnerableStatus(hoverData.status);
     const isMalicious = hoverData.status === CxRealtimeEngineStatus.malicious;
     if (isMalicious) {
-      md.appendMarkdown(this.renderMaliciousFinding() + "<br>");
       md.appendMarkdown(renderCxAiBadge() + "<br>");
+      md.appendMarkdown(this.renderMaliciousIcon() + " ");
     } else if (isVulnerable) {
-      md.appendMarkdown(
-        renderCxAiBadge() +
-        "<br>"
-      );
+      md.appendMarkdown(renderCxAiBadge() + "<br>");
+      md.appendMarkdown(this.renderPackageIcon() + " ");
     }
-    md.appendMarkdown(`${"&nbsp;".repeat(45)}${buttons}<br>`);
+    md.appendMarkdown(this.renderID(hoverData));
     if (isVulnerable) {
-      md.appendMarkdown(this.renderVulnCounts(hoverData.vulnerabilities || []));
-    }
-    if (isMalicious) {
-      md.appendMarkdown(this.renderMaliciousIcon());
+      md.appendMarkdown(this.renderVulnCounts(allVulns));
     }
 
+    md.appendMarkdown(`${buttons}<br>`);
     return new vscode.Hover(md);
   }
 
@@ -106,14 +97,25 @@ export class OssScannerCommand extends BaseScannerCommand {
     ].includes(status);
   }
 
-
-
-  private renderMaliciousFinding(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
+  private renderID(hoverData: HoverData): string {
+    if (hoverData.status == CxRealtimeEngineStatus.malicious) {
+      return `
+<b>${hoverData.packageName} @ ${hoverData.version}</b>
+<i style="color: dimgrey;"> - ${hoverData.status} Package <br></i>
+`;
+    }
+    return `
+<b>${hoverData.packageName} @ ${hoverData.version}</b>
+<i style="color: dimgrey;"> - ${hoverData.status} severity Package <br></i>
+`;
   }
 
   private renderMaliciousIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="10" height="11" style="vertical-align: -12px;"/>`;
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+  }
+
+  private renderPackageIcon(): string {
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(
@@ -128,10 +130,10 @@ export class OssScannerCommand extends BaseScannerCommand {
     }
 
     const severityDisplayItems = Object.entries(counts)
-      .filter(([_, count]) => count > 0)
+      .filter(([, count]) => count > 0)
       .map(
         ([sev, count]) =>
-          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
+          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
           }" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
       );
 
@@ -143,8 +145,14 @@ export class OssScannerCommand extends BaseScannerCommand {
       const uris = await vscode.workspace.findFiles(pattern);
       for (const uri of uris) {
         try {
-          const document = await vscode.workspace.openTextDocument(uri);
-          await this.scannerService.scan(document, this.logs);
+          const fileContent = await vscode.workspace.fs.readFile(uri);
+          const text = new util.TextDecoder().decode(fileContent);
+
+          const fakeDocument = {
+            uri,
+            getText: () => text
+          } as vscode.TextDocument;
+          await this.scannerService.scan(fakeDocument, this.logs);
         } catch (err) {
           this.logs.warn(`Failed to scan manifest file: ${uri.fsPath}`);
         }
@@ -153,7 +161,11 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
   public async dispose(): Promise<void> {
     await super.dispose();
-    (this.scannerService as OssScannerService).dispose();
+    this.scannerService.dispose();
     this.hoverProviderDisposable?.dispose();
+  }
+
+  getScannerService(): OssScannerService {
+    return this.scannerService as OssScannerService;
   }
 }

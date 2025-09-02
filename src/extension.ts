@@ -23,7 +23,7 @@ import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
-import { AscaCommand } from "./commands/ascaCommand";
+import { IgnoredView } from "./views/ignoredView/ignoredView";
 import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
@@ -31,6 +31,14 @@ import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
 import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
+import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
+import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
+import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
+import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
+import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
+import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+
+import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -62,6 +70,53 @@ export async function activate(context: vscode.ExtensionContext) {
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );
+  const ignoredStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left, 20
+
+  );
+
+  const configManager = new ConfigurationManager();
+  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
+  await scannerRegistry.activateAllScanners();
+  const configListener = configManager.registerConfigChangeListener(
+    (section) => {
+      const ossEffected = section(
+        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
+      );
+      if (ossEffected) {
+        scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const secretsEffected = section(
+        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
+      );
+      if (secretsEffected) {
+        scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
+        return;
+      }
+      const ascaEffected = section(
+        `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`
+      );
+      if (ascaEffected) {
+        scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const containersEffected = section(
+        `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`
+      );
+      if (containersEffected) {
+        scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
+        return;
+      }
+      const iacEffected = section(
+        `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+      );
+      if (iacEffected) {
+        scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName)?.register();
+        return;
+      }
+    });
+  context.subscriptions.push(configListener);
 
   await setScanButtonDefaultIfScanIsNotRunning(context);
 
@@ -192,30 +247,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
-  const ascaCommand = new AscaCommand(context, logs);
-  ascaCommand.registerAsca();
-
-  const configManager = new ConfigurationManager();
-  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
-  await scannerRegistry.activateAllScanners();
-  const configListener = configManager.registerConfigChangeListener(
-    (section) => {
-      const ossEffected = section(
-        `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`
-      );
-      if (ossEffected) {
-        scannerRegistry.getScanner("oss")?.register();
-        return;
-      }
-      const secretsEffected = section(
-        `${constants.secretsScanner}.${constants.activateSecretsScanner}`
-      );
-      if (secretsEffected) {
-        scannerRegistry.getScanner("secrets")?.register();
-        return;
-      }
-    });
-  context.subscriptions.push(configListener);
 
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
@@ -231,8 +262,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await executeCheckSettingsChange(
     context,
     kicsStatusBarItem,
-    logs,
-    ascaCommand
+    logs
   );
 
   const treeCommand = new TreeCommand(
@@ -241,7 +271,7 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider,
     logs
   );
-  // Register refresh sca and results Tree Commmand
+  // Register refresh sca and results Tree Command
   treeCommand.registerRefreshCommands();
   // Register clear sca and results tree Command
   treeCommand.registerClearCommands();
@@ -254,7 +284,7 @@ export async function activate(context: vscode.ExtensionContext) {
   pickerCommand.registerPickerCommands();
   // Visual feedback on wrapper errors
   commonCommand.registerErrors();
-  // Registe Kics remediation command
+  // Register Kics remediation command
   kicsScanCommand.registerKicsRemediation();
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
@@ -266,9 +296,70 @@ export async function activate(context: vscode.ExtensionContext) {
       AuthenticationWebview.show(context, webViewCommand, logs);
     })
   );
+  const ignoreFileManager = IgnoreFileManager.getInstance();
+  const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
+  const ossScanner = ossCommand.getScannerService();
 
-  const copilotChatCommand = new CopilotChatCommand(context, logs);
+  const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
+  const secretScanner = secretCommand.getScannerService();
+
+  const iacCommand = scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName) as IacScannerCommand;
+  const iacScanner = iacCommand.getScannerService();
+
+  const ascaCommand = scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName) as AscaScannerCommand;
+  const ascaScanner = ascaCommand.getScannerService();
+
+  const containersCommand = scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName) as ContainersScannerCommand;
+  const containersScanner = containersCommand.getScannerService();
+
+  ignoreFileManager.setOssScannerService(ossScanner);
+  ignoreFileManager.setSecretsScannerService(secretScanner);
+  ignoreFileManager.setIacScannerService(iacScanner);
+  ignoreFileManager.setAscaScannerService(ascaScanner);
+  ignoreFileManager.setContainersScannerService(containersScanner);
+  context.subscriptions.push({
+    dispose: () => ignoreFileManager.dispose()
+  });
+
+  const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
+  registerMcpSettingsInjector(context);
+
+
   copilotChatCommand.registerCopilotChatCommand();
+
+
+
+  const ignoredView = new IgnoredView(context);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.openIgnoredView, () => {
+      ignoredView.show();
+    })
+  );
+
+  function updateIgnoredStatusBar() {
+    const count = ignoreFileManager.getIgnoredPackagesCount();
+    const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
+
+    if (hasIgnoreFile) {
+      ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
+      ignoredStatusBarItem.tooltip = count > 0
+        ? `${count} ignored vulnerabilities - Click to view`
+        : `No ignored vulnerabilities - Click to view`;
+      ignoredStatusBarItem.command = commands.openIgnoredView;
+      ignoredStatusBarItem.show();
+    } else {
+      ignoredStatusBarItem.hide();
+    }
+  }
+
+  updateIgnoredStatusBar();
+
+  ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
+
+
+
+
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

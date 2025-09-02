@@ -3,16 +3,18 @@ import { jwtDecode } from "jwt-decode";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-
+import { isIDE } from "../utils/utils";
+import { constants } from "../utils/common/constants";
 interface DecodedJwt {
 	iss: string;
 }
 
 interface McpServer {
-	url: string;
+	serverUrl?: string;
+	url?: string;
 	headers: {
 		"cx-origin": string;
-		Authorization: string;
+		"Authorization": string;
 	};
 }
 
@@ -20,6 +22,22 @@ interface McpConfig {
 	servers?: Record<string, McpServer>;
 	mcpServers?: Record<string, McpServer>;
 }
+
+const checkmarxMcpServerName = "Checkmarx";
+
+
+export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
+	vscode.commands.registerCommand("ast-results.installMCP", async () => {
+		const apikey = await context.secrets.get("authCredential");
+		if (!apikey) {
+			vscode.window.showErrorMessage("Failed in install Checkmarx MCP: Authentication required");
+			return;
+		}
+		initializeMcpConfiguration(apikey);
+	});
+}
+
+
 
 function decodeJwt(apiKey: string): DecodedJwt | null {
 	try {
@@ -31,8 +49,13 @@ function decodeJwt(apiKey: string): DecodedJwt | null {
 }
 
 function getMcpConfigPath(): string {
-	const homeDir = os.homedir();
-	return path.join(homeDir, ".cursor", "mcp.json");
+	if (isIDE(constants.cursorAgent)) {
+		const homeDir = os.homedir();
+		return path.join(homeDir, ".cursor", "mcp.json");
+	}
+	if (isIDE(constants.windsurfAgent)) {
+		return path.join(os.homedir(), ".codeium", "windsurf", "mcp_config.json");
+	}
 }
 
 async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
@@ -45,7 +68,7 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
 			mcpConfig = JSON.parse(fileContent);
 		} catch (error) {
-			console.warn("Failed to read existing mcp.json:", error);
+			console.warn("Failed to read existing mcp json:", error);
 		}
 	}
 
@@ -53,7 +76,7 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 		mcpConfig.mcpServers = {};
 	}
 
-	mcpConfig.mcpServers["checkmarx"] = mcpServer;
+	mcpConfig.mcpServers[checkmarxMcpServerName] = mcpServer;
 
 	try {
 		const dir = path.dirname(mcpConfigPath);
@@ -63,7 +86,48 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 
 		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 	} catch (error) {
-		throw new Error(`Failed to write mcp.json: ${error}`);
+		throw new Error(`Failed to write mcp json file: ${error}`);
+	}
+}
+
+export async function uninstallMcp() {
+	try {
+
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+			// Handle Cursor and Windsurf: Remove from mcp json file 
+			const mcpConfigPath = getMcpConfigPath();
+
+			if (!fs.existsSync(mcpConfigPath)) {
+				return;
+			}
+
+			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
+			const mcpConfig: McpConfig = JSON.parse(fileContent);
+
+			if (mcpConfig.mcpServers && mcpConfig.mcpServers[checkmarxMcpServerName]) {
+				delete mcpConfig.mcpServers[checkmarxMcpServerName];
+
+				fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+			}
+		} else {
+			// Handle VSCode: Remove from settings
+			const config = vscode.workspace.getConfiguration();
+			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
+			const existingServers = fullMcp.servers || {};
+			if (existingServers[checkmarxMcpServerName]) {
+				// Create a new object without the Checkmarx server to avoid proxy issues
+				const updatedServers = { ...existingServers };
+				delete updatedServers[checkmarxMcpServerName];
+				await config.update(
+					"mcp",
+					{ servers: updatedServers },
+					vscode.ConfigurationTarget.Global
+				);
+			}
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to remove MCP configuration.";
+		vscode.window.showErrorMessage(message);
 	}
 }
 
@@ -94,28 +158,28 @@ export async function initializeMcpConfiguration(apiKey: string) {
 
 		const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
 
-		const isCursor = vscode.env.appName.toLowerCase().includes("cursor");
-
 		const mcpServer: McpServer = {
-			url: fullUrl,
+			...(isIDE(constants.windsurfAgent) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": "VsCode",
-				Authorization: apiKey,
+				"cx-origin": isIDE(constants.windsurfAgent) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
+				"Authorization": apiKey,
 			},
 		};
 
-		if (isCursor) {
+		if (!isIDE(constants.vsCodeAgentOrginalName)) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
 			const config = vscode.workspace.getConfiguration();
 			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
 			const existingServers = fullMcp.servers || {};
 
-			existingServers["checkmarx"] = mcpServer;
+			// Create a new object to avoid proxy issues
+			const updatedServers = { ...existingServers };
+			updatedServers[checkmarxMcpServerName] = mcpServer;
 
 			await config.update(
 				"mcp",
-				{ servers: existingServers },
+				{ servers: updatedServers },
 				vscode.ConfigurationTarget.Global
 			);
 		}

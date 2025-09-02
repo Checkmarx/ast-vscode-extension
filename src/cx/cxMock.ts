@@ -13,12 +13,16 @@ import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
 
   constructor(context?: vscode.ExtensionContext) {
     this.context = context;
+  }
+  async iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined> {
+    return [new CxIacResult()];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1461,12 +1465,43 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
- 
-  async ossScanResults(sourcePath: string): Promise<CxOssResult[]> {
+
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
     return [];
   }
- 
-  async secretsScanResults(sourcePath: string): Promise<CxSecretsResult[]> {
+
+
+  async scanContainers(sourcePath: string, ignoredFilePath): Promise<any> {
+    return {
+      Images: [
+        {
+          imageName: "nginx",
+          imageTag: "latest",
+          filePath: sourcePath,
+          locations: [
+            {
+              line: 1,
+              startIndex: 0,
+              endIndex: 20
+            }
+          ],
+          status: "Malicious",
+          vulnerabilities: [
+            {
+              CVE: "CVE-2023-12345",
+              Severity: "High"
+            },
+            {
+              CVE: "CVE-2023-67890",
+              Severity: "Medium"
+            }
+          ]
+        }
+      ]
+    };
+  }
+
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
     return [];
   }
 
@@ -1619,4 +1654,6 @@ export class CxMock implements CxPlatform {
       ],
     });
   }
+
+  setUserEventDataForLogs(): void { }
 }

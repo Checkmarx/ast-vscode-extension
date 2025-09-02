@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "../utils/utils";
+import { constants } from "../utils/common/constants";
 
 
 
@@ -57,6 +58,15 @@ export class WelcomeWebview {
       )
     );
 
+    const doubleCheckUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "double-check.svg"
+      )
+    );
+
     const cssUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
     );
@@ -67,10 +77,15 @@ export class WelcomeWebview {
 
     const nonce = getNonce();
 
-    const configKey =
-      "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime";
+    const scannerConfigKeys = [
+      `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`,
+      `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`,
+      `${constants.secretsScanner}.${constants.activateSecretsScanner}`,
+      `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`,
+      `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+    ];
+
     const config = vscode.workspace.getConfiguration();
-    let isOssEnabled = config.get<boolean>(configKey, false);
 
     panel.webview.html = `
       <!DOCTYPE html>
@@ -107,21 +122,30 @@ export class WelcomeWebview {
                     id="aiFeatureCheckIcon"
                     class="status-icon-img hidden"
                     src="${checkSvgUri}"
-                    alt="Checked Icon"
+                    alt="Real-time scanners enabled"
+                    role="button"
+                    tabindex="0"
+                    aria-pressed="true"
+                    aria-label="Real-time scanners are currently enabled. Click to disable all scanners."
                   />
                   <img
                     id="aiFeatureUncheckIcon"
                     class="status-icon-img hidden"
                     src="${uncheckSvgUri}"
-                    alt="Unchecked Icon"
+                    alt="Real-time scanners disabled"
+                    role="button"
+                    tabindex="0"
+                    aria-pressed="false"
+                    aria-label="Real-time scanners are currently disabled. Click to enable all scanners."
                   />
                 </div>
-                <span class="card-title">Code Smarter with AI</span>
+                <span class="card-title">Code Smarter with CxOne Assist</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code.</li>
                 <li>See suggested fixes for vulnerabilities across open source, config, and code.</li>
                 <li>Fix faster with intelligent, context-aware remediation inside your IDE.</li>
+                ${isAiMcpEnabled ? '<li>Checkmarx MCP Installed automatically - no need for manual integration</li>' : ''}
               </ul>
               <div class="ai-feature-box-wrapper hidden" id="aiFeatureBoxWrapper">
                 <img
@@ -138,12 +162,47 @@ export class WelcomeWebview {
               <li>Preview or rescan before committing.</li>
               <li>Triage & fix issues directly in the editor.</li>
             </ul>
+            <div style="margin-top: 40px; padding-left: 24px;">
+              <button id="closeButton" style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: transparent;
+                border: none;
+                color: #0E9BF7;
+                cursor: pointer;
+                font-size: 14px;
+                padding: 0;">
+                <img src="${doubleCheckUri}" alt="Double check" width="16" height="16" style="color: currentColor;" />
+                Mark Done
+              </button>
+            </div>
           </div>
           <div class="right-section">
             <img src="${scannerImgUri}" alt="AI Example" />
           </div>
         </div>
         <script nonce="${nonce}" src="${jsUri}"></script>
+        <script nonce="${nonce}">
+          const vscode = acquireVsCodeApi();
+
+          // Initial state check
+          vscode.postMessage({ type: 'getAiFeatureState' });
+
+          window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.type === 'setAiFeatureState') {
+              const mcpItem = document.getElementById('mcpStatusItem');
+              if (mcpItem) {
+                mcpItem.style.display = message.enabled ? 'list-item' : 'none';
+              }
+            }
+          });
+
+          document.getElementById('closeButton').addEventListener('click', () => {
+            vscode.postMessage({ type: 'close' });
+          });
+        </script>
       </body>
       </html>
     `;
@@ -154,71 +213,60 @@ export class WelcomeWebview {
           const isEnabled = isAiMcpEnabled;
           const safeEnabled = isEnabled === true;
 
-          isOssEnabled = vscode.workspace
-            .getConfiguration()
-            .get<boolean>(configKey, false);
+          const allScannersEnabled = scannerConfigKeys.every(key =>
+            config.get<boolean>(key, false)
+          );
 
           const isFirstVisit = context.globalState.get<boolean>(
             "cxFirstWelcome",
             false
           );
 
-          if (isFirstVisit && safeEnabled && !isOssEnabled) {
-            await config.update(
-              configKey,
-              true,
-              vscode.ConfigurationTarget.Global
-            );
-            isOssEnabled = true;
-          }
+          if (isFirstVisit) {
+            if (safeEnabled && !allScannersEnabled) {
+              for (const key of scannerConfigKeys) {
+                await config.update(key, true, vscode.ConfigurationTarget.Global);
+              }
+            } else if (!safeEnabled) {
+              for (const key of scannerConfigKeys) {
+                await config.update(key, false, vscode.ConfigurationTarget.Global);
+              }
+            }
 
-          panel.webview.postMessage({
-            type: "setAiFeatureState",
-            enabled: safeEnabled,
-            ossSetting:
-              isFirstVisit && safeEnabled ? true : safeEnabled && isOssEnabled,
-          });
+            await context.globalState.update("cxFirstWelcome", true);
 
-          if (!safeEnabled && isOssEnabled) {
-            await config.update(
-              configKey,
-              false,
-              vscode.ConfigurationTarget.Global
-            );
+            panel.webview.postMessage({
+              type: "setAiFeatureState",
+              enabled: safeEnabled,
+              scannersSettings: safeEnabled,
+            });
+          } else {
+            panel.webview.postMessage({
+              type: "setAiFeatureState",
+              enabled: safeEnabled,
+              scannersSettings: allScannersEnabled,
+            });
           }
         } catch (e) {
           console.error("Error retrieving AI state:", e);
           panel.webview.postMessage({
             type: "setAiFeatureState",
             enabled: false,
-            ossSetting: false,
+            scannersSettings: false,
           });
         }
+      } else if (message.type === 'close') {
+        panel.dispose();
+      } else if (message.type === 'changeAllScannersStatus') {
+        try {
+          const status = message.value;
+          for (const key of scannerConfigKeys) {
+            await config.update(key, status, vscode.ConfigurationTarget.Global);
+          }
+        } catch (e) {
+          console.error("Error updating scanner settings:", e);
+        }
       }
-
-      if (message.type === "setOssRealtimeEnabled") {
-        await config.update(
-          configKey,
-          message.value,
-          vscode.ConfigurationTarget.Global
-        );
-      }
-    });
-
-    const watcher = vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(configKey)) {
-        const updated = vscode.workspace
-          .getConfiguration()
-          .get<boolean>(configKey, false);
-        panel.webview.postMessage({
-          type: "setOssRealtimeEnabledFromSettings",
-          value: updated,
-        });
-      }
-    });
-
-    panel.onDidDispose(() => {
-      watcher.dispose();
     });
   }
 }

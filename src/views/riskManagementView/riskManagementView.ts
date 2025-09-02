@@ -247,7 +247,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 	<body>
 		<div id="loading" class="loading">
 			<div class="spinner-border" role="status">
-				<span class="visually-hidden">ASPM Results Loadind...</span>
+				<span class="visually-hidden">ASPM Results Loading...</span>
 			</div>
 		</div>
 		<div id="riskManagementContainer">
@@ -267,7 +267,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
           ? `<div class="no-results-message">
 				ASPM does not hold result data for this project
 			</div>`
-          : `<div class="ditales"
+          : `<div class="details"
 				data-bs-toggle="tooltip" data-bs-placement="auto"
 				title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
 
@@ -290,9 +290,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 					</button>
 					<div class="sort-menu" id="sortMenu">
             <div class="sort-option sort-title">SORT BY</div>
-						<div class="sort-option" data-sort="score">Aplication Risk Score</div>
-						<div class="sort-option" data-sort="az">Aplication Name A-Z</div>
-						<div class="sort-option" data-sort="za">Aplication Name Z-A</div>
+						<div class="sort-option" data-sort="score">Application Risk Score</div>
+						<div class="sort-option" data-sort="az">Application Name A-Z</div>
+						<div class="sort-option" data-sort="za">Application Name Z-A</div>
 					</div>
 				</div>
         <hr class="separator-vertical" />
