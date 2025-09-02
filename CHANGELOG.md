@@ -1,16 +1,25 @@
 # CHANGELOG
 
-## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+## [v2.36.1-refactor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-refactor.0) - 2025-08-31 09:08:12
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* OAuth Login Error in VSCode Plugin (AST-102392) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1244
+### New Features 🚀
+* Register file open event for scanners by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1263
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.142 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1266
 ### Other Changes
-* Use shared generateFileHash and remove filepath from secrets ignore entries(AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1262
-* Support Containers and Asca for telemtry log (AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1265
+* Fix ASCA Tests. (AST-109933) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1253
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-oauth-proxy-support-2.0...v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0...v2.36.1-refactor.0
+
+## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
 
@@ -75,7 +84,6 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompt-1.0...v2.34.1-new-prompts-2.0
-
 
 ## [v2.34.1-new-prompt-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-new-prompt-1.0) - 2025-08-14 09:20:54
 
