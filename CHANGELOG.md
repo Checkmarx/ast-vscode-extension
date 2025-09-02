@@ -1,8 +1,8 @@
 # CHANGELOG
 
-## [v2.36.1-refactor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-refactor.0) - 2025-08-31 09:08:12
+## [v2.37.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.0) - 2025-09-02 13:35:04
 
-<!-- Release notes generated using configuration in .github/release.yml at main -->
+<!-- Release notes generated using configuration in .github/release.yml at v2.37.0 -->
 
 ## What's Changed
 ### Bug Fixes 🐛
@@ -12,10 +12,18 @@
 ### Checkmarx One SDK Updates 🛠
 * Update AST CLI JavaScript Wrapper to version 0.0.142 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1266
 ### Other Changes
+* Use shared generateFileHash and remove filepath from secrets ignore entries(AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1262
+* Support Containers and Asca for telemtry log (AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1265
 * Fix ASCA Tests. (AST-109933) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1253
+* Feature/sara chen/refactor realtime scanners by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1267
+* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1269
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0...v2.36.1-refactor.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.0...v2.37.0
+
+## [v2.36.1-refactor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-refactor.0) - 2025-08-31 09:08:12
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
 
