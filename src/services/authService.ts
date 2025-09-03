@@ -426,6 +426,7 @@ export class AuthService {
 
     await this.validateAndUpdateState();
     await vscode.commands.executeCommand(commands.refreshTree);
+    await vscode.commands.executeCommand(commands.clear);
   }
 
   private getSuccessPageHtml(): string {
