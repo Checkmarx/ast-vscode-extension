@@ -400,9 +400,6 @@
 			let codebashingLinkSpan = document.createElement('span');
 			codebashingLinkSpan.setAttribute('class', 'codebashing-link');
 			codebashingLinkSpan.textContent = 'Learn more at ';
-			let orangeColorSpan = document.createElement('span');
-			orangeColorSpan.setAttribute('class', 'orange-color');
-			orangeColorSpan.textContent = '>_';
             let codeBashingSpan = document.createElement('img');
 			codeBashingSpan.setAttribute('src', window.codeBashingIconUri || './icons/codeBashing_logo.png');
 			codeBashingSpan.setAttribute('id', 'cx_codebashing');
@@ -413,7 +410,6 @@
 			} else {
 				codeBashingSpan.style.cssText = 'height:24px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
 			}
-			codebashingLinkSpan.appendChild(orangeColorSpan);
 			codebashingLinkSpan.appendChild(codeBashingSpan);
 			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
 			return headerItemCodebashingDiv.outerHTML;
