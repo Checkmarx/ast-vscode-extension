@@ -90,6 +90,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       StateLevel.toVerify,
       StateLevel.urgent,
       StateLevel.notIgnored,
+      StateLevel.customStates,
     ]
   ): TreeItem {
     const folder = vscode.workspace.workspaceFolders?.[0];
