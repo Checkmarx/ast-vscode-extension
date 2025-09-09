@@ -27,11 +27,11 @@ export abstract class BaseScannerCommand implements IScannerCommand {
     this.scannerService = scannerService;
     this.configManager = configManager;
   }
-  
+
   public async register(): Promise<void> {
     try {
       const isActive = this.configManager.isScannerActive(this.config);
-      
+
       if (isActive) {
         this.logs.info(this.config.enabledMessage);
         await this.initializeScanner();
@@ -44,7 +44,7 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       this.logs.error(this.config.errorMessage);
     }
   }
-  
+
   public async dispose(): Promise<void> {
     if (this.onDidChangeTextDocument) {
       this.onDidChangeTextDocument.dispose();
@@ -65,26 +65,28 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       this.onDidOpenTextDocument = undefined;
     }
     this.onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(
-       (document) => {
-          try {
-            this.scannerService.scan(document, this.logs);
-          } catch (error) {
-            console.error(error);
-          }
+      (document) => {
+        try {
+          this.scannerService.scan(document, this.logs);
+        } catch (error) {
+          console.error(error);
         }
-      
+      }
     );
     this.context.subscriptions.push(this.onDidOpenTextDocument);
   }
-  
-  protected abstract initializeScanner(): Promise<void>;
-  
+
+  protected async initializeScanner(): Promise<void> {
+    this.registerScanOnChangeText();
+    this.registerScanOnFileOpen();
+  }
+
   protected registerScanOnChangeText(): void {
     if (this.onDidChangeTextDocument) {
       this.onDidChangeTextDocument.dispose();
       this.onDidChangeTextDocument = undefined;
     }
-    
+
     this.onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
       (event) => {
         const uri = event.document.uri.toString();
@@ -105,7 +107,7 @@ export abstract class BaseScannerCommand implements IScannerCommand {
 
     this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
-  
+
   protected onTextChange(event: vscode.TextDocumentChangeEvent): void {
     try {
       this.scannerService.scan(event.document, this.logs);
@@ -120,16 +122,16 @@ export abstract class BaseScannerCommand implements IScannerCommand {
       try {
         const docUri = event.document.uri.toString();
         const existingTimeout = this.timeouts.get(docUri);
-        
+
         if (existingTimeout) {
           clearTimeout(existingTimeout);
         }
-        
+
         const later = () => {
           this.timeouts.delete(docUri);
           func.apply(this, [event]);
         };
-        
+
         const timeout = setTimeout(later, wait);
         this.timeouts.set(docUri, timeout);
       } catch (error) {
