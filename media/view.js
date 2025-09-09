@@ -406,9 +406,9 @@
 			codeBashingSpan.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
 			codeBashingSpan.setAttribute('alt', 'CodeBashing');
 			if (document.body.classList.contains('vscode-light') || document.body.classList.contains('vscode-high-contrast-light')) {
-				codeBashingSpan.style.cssText = 'height:24px;width:auto;cursor:pointer;vertical-align:middle;filter:invert(1) brightness(0.8);margin-left:6px;';
+				codeBashingSpan.style.cssText = 'height:40px;width:auto;cursor:pointer;vertical-align:middle;filter:invert(1) brightness(0.8);margin-left:6px;';
 			} else {
-				codeBashingSpan.style.cssText = 'height:24px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
+				codeBashingSpan.style.cssText = 'height:40px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
 			}
 			codebashingLinkSpan.appendChild(codeBashingSpan);
 			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
