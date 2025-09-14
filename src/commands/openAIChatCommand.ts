@@ -216,7 +216,12 @@ export class CopilotChatCommand {
             return;
         }
         await vscode.commands.executeCommand(constants.copilotNewChatOpen);
-        await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+        try { 
+            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+        } catch (error) {
+            await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            
+        }
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
