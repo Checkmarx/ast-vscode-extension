@@ -219,7 +219,9 @@ export class CopilotChatCommand {
         try { 
             await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
         } catch (error) {
-            await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
+                await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            }
             
         }
     }
