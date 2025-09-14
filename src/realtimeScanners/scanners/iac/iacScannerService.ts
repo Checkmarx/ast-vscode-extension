@@ -130,6 +130,8 @@ export class IacScannerService extends BaseScannerService {
 				fullScanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), "");
 			}
 
+			this.logScanResults("iac", fullScanResults);
+
 			ignoreManager.removeMissingIac(fullScanResults, filePath);
 
 			this.updateProblems(scanResults, document.uri);

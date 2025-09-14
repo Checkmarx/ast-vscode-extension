@@ -117,6 +117,8 @@ export class SecretsScannerService extends BaseScannerService {
 					secretLocations.set(key, lines);
 				}
 			});
+			
+			this.logScanResults("secrets", fullScanResults);
 
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }

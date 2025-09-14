@@ -102,15 +102,14 @@ export class AscaScannerService extends BaseScannerService {
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				ignoreManager.removeMissingAsca(fullScanResults.scanDetails, filePath);
 			}
-			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
-			const scanResults = await cx.scanAsca(tempFilePath, ignoredPackagesFile || "");
-
 			// Pass full results to updateProblems for proper ignored handling
 			this.updateProblems<CxAsca>(fullScanResults, document.uri);
 
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				this.cleanupIgnoredEntries(fullScanResults.scanDetails, filePath);
 			}
+			
+			this.logScanResults("asca", fullScanResults.scanDetails);
 
 			logs.info(`${fullScanResults.scanDetails.length} security best practice violations were found in ${filePath} (${fullScanResults.scanDetails.filter(r => !this.isAscaResultIgnored(r, filePath)).length} active, ${fullScanResults.scanDetails.filter(r => this.isAscaResultIgnored(r, filePath)).length} ignored)`);
 		} catch (error) {
