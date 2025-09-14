@@ -8,6 +8,14 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.37.0...v2.37.1-sca-realtime-fix.0
 
+## [v2.37.1-Fix-command.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.1-Fix-command.0) - 2025-09-04 14:12:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.37.1-sca-realtime-fix.0...v2.37.1-Fix-command.0
+
 ## [v2.37.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.0) - 2025-09-02 13:35:04
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.37.0 -->
