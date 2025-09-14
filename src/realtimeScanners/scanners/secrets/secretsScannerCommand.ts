@@ -21,12 +21,9 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 
 	private hoverProviderDisposable: vscode.Disposable | undefined;
 
-
-
 	protected async initializeScanner(): Promise<void> {
-		this.registerScanOnChangeText();
-		this.registerScanOnFileOpen();
 		const scanner = this.scannerService as SecretsScannerService;
+		await super.initializeScanner();
 		scanner.initializeScanner();
 
 		if (this.hoverProviderDisposable) {
@@ -37,17 +34,6 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 			{ scheme: "file" },
 			{ provideHover: (doc, pos) => this.getHover(doc, pos, scanner) }
 		);
-
-		vscode.workspace.onDidRenameFiles(async (event) => {
-			for (const { oldUri, newUri } of event.files) {
-				scanner.clearScanData(oldUri);
-
-				const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
-				if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
-					await scanner.scan(reopenedDoc, this.logs);
-				}
-			}
-		});
 	}
 
 

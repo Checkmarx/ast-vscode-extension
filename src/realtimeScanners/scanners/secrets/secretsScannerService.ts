@@ -14,12 +14,13 @@ import fs from "fs";
 
 export class SecretsScannerService extends BaseScannerService {
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
-	private criticalDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
-	private highDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
-	private mediumDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
-	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
+	private decorationsMap = {
+		critical: new Map<string, vscode.DecorationOptions[]>(),
+		high: new Map<string, vscode.DecorationOptions[]>(),
+		medium: new Map<string, vscode.DecorationOptions[]>(),
+		ignored: new Map<string, vscode.DecorationOptions[]>(),
+	};
 
-	private editorChangeListener: vscode.Disposable | undefined;
 	public secretsHoverData: Map<string, SecretsHoverData> = new Map();
 
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
@@ -70,16 +71,6 @@ export class SecretsScannerService extends BaseScannerService {
 
 	private isRealtimeIgnoreFile(filePath: string): boolean {
 		return filePath.includes("/.vscode/.checkmarxIgnored") || filePath.includes("/.vscode/.checkmarxIgnoredTempList");
-	}
-
-	private saveFile(tempFolder: string, originalFilePath: string, content: string): string {
-		const originalExt = path.extname(originalFilePath);
-		const baseName = path.basename(originalFilePath, originalExt);
-		const hash = this.generateFileHash(originalFilePath);
-		const tempFileName = `${baseName}-${hash}${originalExt}`;
-		const tempFilePath = path.join(tempFolder, tempFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return tempFilePath;
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
@@ -157,7 +148,7 @@ export class SecretsScannerService extends BaseScannerService {
 				});
 			});
 
-			this.ignoredDecorations.set(filePath, ignoredDecorations);
+			this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 			this.applyDecorations(document.uri);
 		} catch (error) {
 			console.error(error);
@@ -283,9 +274,9 @@ export class SecretsScannerService extends BaseScannerService {
 		this.diagnosticsMap.set(filePath, diagnostics);
 		this.diagnosticCollection.set(uri, diagnostics);
 
-		this.criticalDecorations.set(filePath, criticalDecorations);
-		this.highDecorations.set(filePath, highDecorations);
-		this.mediumDecorations.set(filePath, mediumDecorations);
+		this.decorationsMap.critical.set(filePath, criticalDecorations);
+		this.decorationsMap.high.set(filePath, highDecorations);
+		this.decorationsMap.medium.set(filePath, mediumDecorations);
 
 		this.applyDecorations(uri);
 	}
@@ -297,10 +288,10 @@ export class SecretsScannerService extends BaseScannerService {
 		if (!editor) { return; }
 
 		const filePath = uri.fsPath;
-		editor.setDecorations(this.decorationTypes.critical, this.criticalDecorations.get(filePath) || []);
-		editor.setDecorations(this.decorationTypes.high, this.highDecorations.get(filePath) || []);
-		editor.setDecorations(this.decorationTypes.medium, this.mediumDecorations.get(filePath) || []);
-		editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.critical, this.decorationsMap.critical.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.high, this.decorationsMap.high.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.medium, this.decorationsMap.medium.get(filePath) || []);
+		editor.setDecorations(this.decorationTypes.ignored, this.decorationsMap.ignored.get(filePath) || []);
 	}
 
 	public clearScanData(uri: vscode.Uri): void {
@@ -308,33 +299,14 @@ export class SecretsScannerService extends BaseScannerService {
 		this.diagnosticsMap.delete(filePath);
 		this.diagnosticCollection.delete(uri);
 		this.secretsHoverData.delete(filePath);
-		this.criticalDecorations.delete(filePath);
-		this.highDecorations.delete(filePath);
-		this.mediumDecorations.delete(filePath);
-		this.ignoredDecorations.delete(filePath);
+		Object.values(this.decorationsMap).forEach(map => map.delete(filePath));
 	}
 
-	public async initializeScanner(): Promise<void> {
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(this.onEditorChange.bind(this));
-	}
-
-	private onEditorChange(editor: vscode.TextEditor | undefined): void {
-		if (editor && this.shouldScanFile(editor.document)) {
-			this.applyDecorations(editor.document.uri);
-		}
-	}
 
 	public async clearProblems(): Promise<void> {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
-		this.criticalDecorations.clear();
-		this.highDecorations.clear();
-		this.mediumDecorations.clear();
-		this.ignoredDecorations.clear();
-	}
-
-	public dispose(): void {
-		this.editorChangeListener?.dispose();
+		Object.values(this.decorationsMap).forEach(map => map.clear());
 	}
 
 	getHoverData(): Map<string, any> {

@@ -1,5 +1,4 @@
 
-
 import * as vscode from "vscode";
 import * as path from "path";
 import fs from "fs";
@@ -13,10 +12,7 @@ import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper
 import { minimatch } from "minimatch";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 
-
-
 export class OssScannerService extends BaseScannerService {
-
 
   private createDecoration(
     iconName: string,
@@ -48,36 +44,23 @@ export class OssScannerService extends BaseScannerService {
 
   private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
   private hoverMessages: Map<string, HoverData> = new Map();
-  private maliciousDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private okDecorationsMap: Map<string, vscode.DecorationOptions[]> = new Map();
-  private unknownDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private criticalDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private highDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private mediumDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private lowDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
 
-  private maliciousIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private criticalIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private highIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private mediumIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private lowIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private ignoredDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-  private ignoredIconDecorationsMap: Map<string, vscode.DecorationOptions[]> =
-    new Map();
-
-  private editorChangeListener: vscode.Disposable | undefined;
+  private decorationsMap = {
+    malicious: new Map<string, vscode.DecorationOptions[]>(),
+    ok: new Map<string, vscode.DecorationOptions[]>(),
+    unknown: new Map<string, vscode.DecorationOptions[]>(),
+    critical: new Map<string, vscode.DecorationOptions[]>(),
+    high: new Map<string, vscode.DecorationOptions[]>(),
+    medium: new Map<string, vscode.DecorationOptions[]>(),
+    low: new Map<string, vscode.DecorationOptions[]>(),
+    ignored: new Map<string, vscode.DecorationOptions[]>(),
+    maliciousIcon: new Map<string, vscode.DecorationOptions[]>(),
+    criticalIcon: new Map<string, vscode.DecorationOptions[]>(),
+    highIcon: new Map<string, vscode.DecorationOptions[]>(),
+    mediumIcon: new Map<string, vscode.DecorationOptions[]>(),
+    lowIcon: new Map<string, vscode.DecorationOptions[]>(),
+    ignoredIcon: new Map<string, vscode.DecorationOptions[]>(),
+  };
 
   constructor() {
     const config: IScannerConfig = {
@@ -89,13 +72,6 @@ export class OssScannerService extends BaseScannerService {
       errorMessage: constants.errorOssScanRealtime,
     };
     super(config);
-
-  }
-
-  public async initializeScanner(): Promise<void> {
-    this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
-      this.onEditorChange.bind(this)
-    );
   }
 
   public clearScanData(uri: vscode.Uri): void {
@@ -103,13 +79,8 @@ export class OssScannerService extends BaseScannerService {
     this.diagnosticsMap.delete(filePath);
     this.diagnosticCollection.delete(uri);
     this.hoverMessages.delete(filePath);
-    this.maliciousDecorationsMap.delete(filePath);
-  }
 
-  private onEditorChange(editor: vscode.TextEditor | undefined): void {
-    if (editor && this.matchesManifestPattern(editor.document.uri.fsPath)) {
-      this.applyDecorations(editor.document.uri);
-    }
+    Object.values(this.decorationsMap).forEach(map => map.delete(filePath));
   }
 
   private applyDecorations(uri: vscode.Uri): void {
@@ -119,49 +90,27 @@ export class OssScannerService extends BaseScannerService {
     );
 
     if (editor) {
-      const maliciousDecorations =
-        this.maliciousDecorationsMap.get(filePath) || [];
-      const okDecorations = this.okDecorationsMap.get(filePath) || [];
-      const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
-      const criticalDecorations =
-        this.criticalDecorationsMap.get(filePath) || [];
-      const highDecorations = this.highDecorationsMap.get(filePath) || [];
-      const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
-      const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
+      const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
 
-      const maliciousIcons =
-        this.maliciousIconDecorationsMap.get(filePath) || [];
-      const criticalIcons = this.criticalIconDecorationsMap.get(filePath) || [];
-      const highIcons = this.highIconDecorationsMap.get(filePath) || [];
-      const mediumIcons = this.mediumIconDecorationsMap.get(filePath) || [];
-      const lowIcons = this.lowIconDecorationsMap.get(filePath) || [];
-      const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
-      const ignoredIcons = this.ignoredIconDecorationsMap.get(filePath) || [];
+      editor.setDecorations(this.decorationTypes.malicious, get('malicious'));
+      editor.setDecorations(this.decorationTypes.ok, get('ok'));
+      editor.setDecorations(this.decorationTypes.unknown, get('unknown'));
+      editor.setDecorations(this.decorationTypes.critical, get('critical'));
+      editor.setDecorations(this.decorationTypes.high, get('high'));
+      editor.setDecorations(this.decorationTypes.medium, get('medium'));
+      editor.setDecorations(this.decorationTypes.low, get('low'));
+      editor.setDecorations(this.decorationTypes.ignored, get('ignored'));
 
       const allUnderlineDecorations = [
-        ...maliciousIcons,
-        ...criticalIcons,
-        ...highIcons,
-        ...mediumIcons,
-        ...lowIcons,
-        ...ignoredIcons,
+        ...get('maliciousIcon'),
+        ...get('criticalIcon'),
+        ...get('highIcon'),
+        ...get('mediumIcon'),
+        ...get('lowIcon'),
+        ...get('ignoredIcon'),
       ];
 
-      editor.setDecorations(
-        this.decorationTypes.malicious,
-        maliciousDecorations
-      );
-      editor.setDecorations(this.decorationTypes.ok, okDecorations);
-      editor.setDecorations(this.decorationTypes.unknown, unknownDecorations);
-      editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
-      editor.setDecorations(this.decorationTypes.high, highDecorations);
-      editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
-      editor.setDecorations(this.decorationTypes.low, lowDecorations);
-      editor.setDecorations(this.decorationTypes.ignored, ignoredDecorations);
-      editor.setDecorations(
-        this.decorationTypes.underline,
-        allUnderlineDecorations
-      );
+      editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
     }
   }
 
@@ -266,20 +215,21 @@ export class OssScannerService extends BaseScannerService {
     lowIconDecorations: vscode.DecorationOptions[]
   ): void {
     this.diagnosticsMap.set(filePath, diagnostics);
-    this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
-    this.okDecorationsMap.set(filePath, okDecorations);
-    this.unknownDecorationsMap.set(filePath, unknownDecorations);
-    this.criticalDecorationsMap.set(filePath, criticalDecorations);
-    this.highDecorationsMap.set(filePath, highDecorations);
-    this.mediumDecorationsMap.set(filePath, mediumDecorations);
-    this.lowDecorationsMap.set(filePath, lowDecorations);
 
-    this.maliciousIconDecorationsMap.set(filePath, maliciousIconDecorations);
-    this.criticalIconDecorationsMap.set(filePath, criticalIconDecorations);
-    this.highIconDecorationsMap.set(filePath, highIconDecorations);
-    this.mediumIconDecorationsMap.set(filePath, mediumIconDecorations);
-    this.lowIconDecorationsMap.set(filePath, lowIconDecorations);
-    this.ignoredDecorationsMap.set(filePath, ignoredDecorations);
+    this.decorationsMap.malicious.set(filePath, maliciousDecorations);
+    this.decorationsMap.ok.set(filePath, okDecorations);
+    this.decorationsMap.unknown.set(filePath, unknownDecorations);
+    this.decorationsMap.critical.set(filePath, criticalDecorations);
+    this.decorationsMap.high.set(filePath, highDecorations);
+    this.decorationsMap.medium.set(filePath, mediumDecorations);
+    this.decorationsMap.low.set(filePath, lowDecorations);
+    this.decorationsMap.ignored.set(filePath, ignoredDecorations);
+
+    this.decorationsMap.maliciousIcon.set(filePath, maliciousIconDecorations);
+    this.decorationsMap.criticalIcon.set(filePath, criticalIconDecorations);
+    this.decorationsMap.highIcon.set(filePath, highIconDecorations);
+    this.decorationsMap.mediumIcon.set(filePath, mediumIconDecorations);
+    this.decorationsMap.lowIcon.set(filePath, lowIconDecorations);
 
     this.applyDiagnostics();
     this.applyDecorations(uri);
@@ -330,7 +280,6 @@ export class OssScannerService extends BaseScannerService {
     return "";
   }
 
-
   public updatePackageDecorationToIgnored(hoverData: HoverData): void {
     const filePath = hoverData.filePath;
     const fileUri = vscode.Uri.file(filePath);
@@ -360,9 +309,9 @@ export class OssScannerService extends BaseScannerService {
 
           this.removeFromAllDecorationMaps(filePath, range);
 
-          const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+          const ignoredDecorations = this.decorationsMap.ignored.get(filePath) || [];
           ignoredDecorations.push({ range });
-          this.ignoredDecorationsMap.set(filePath, ignoredDecorations);
+          this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 
           const editor = vscode.window.visibleTextEditors.find(
             (e) => e.document.uri.fsPath === filePath
@@ -370,7 +319,6 @@ export class OssScannerService extends BaseScannerService {
 
           if (editor) {
             editor.setDecorations(this.decorationTypes.ignored, ignoredDecorations);
-
             editor.setDecorations(this.decorationTypes.underline, []);
           }
 
@@ -390,32 +338,23 @@ export class OssScannerService extends BaseScannerService {
       );
     };
 
-    const maliciousDecorations = this.maliciousDecorationsMap.get(filePath) || [];
-    this.maliciousDecorationsMap.set(filePath, removeRange(maliciousDecorations));
-
-    const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
-    this.criticalDecorationsMap.set(filePath, removeRange(criticalDecorations));
-
-    const highDecorations = this.highDecorationsMap.get(filePath) || [];
-    this.highDecorationsMap.set(filePath, removeRange(highDecorations));
-
-    const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
-    this.mediumDecorationsMap.set(filePath, removeRange(mediumDecorations));
-
-    const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
-    this.lowDecorationsMap.set(filePath, removeRange(lowDecorations));
-
-    const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
-    this.ignoredDecorationsMap.set(filePath, removeRange(ignoredDecorations));
+    this.decorationsMap.malicious.set(filePath, removeRange(this.decorationsMap.malicious.get(filePath) || []));
+    this.decorationsMap.critical.set(filePath, removeRange(this.decorationsMap.critical.get(filePath) || []));
+    this.decorationsMap.high.set(filePath, removeRange(this.decorationsMap.high.get(filePath) || []));
+    this.decorationsMap.medium.set(filePath, removeRange(this.decorationsMap.medium.get(filePath) || []));
+    this.decorationsMap.low.set(filePath, removeRange(this.decorationsMap.low.get(filePath) || []));
+    this.decorationsMap.ignored.set(filePath, removeRange(this.decorationsMap.ignored.get(filePath) || []));
 
     const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
     if (editor) {
-      editor.setDecorations(this.decorationTypes.malicious, this.maliciousDecorationsMap.get(filePath) || []);
-      editor.setDecorations(this.decorationTypes.critical, this.criticalDecorationsMap.get(filePath) || []);
-      editor.setDecorations(this.decorationTypes.high, this.highDecorationsMap.get(filePath) || []);
-      editor.setDecorations(this.decorationTypes.medium, this.mediumDecorationsMap.get(filePath) || []);
-      editor.setDecorations(this.decorationTypes.low, this.lowDecorationsMap.get(filePath) || []);
-      editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorationsMap.get(filePath) || []);
+      const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
+
+      editor.setDecorations(this.decorationTypes.malicious, get('malicious'));
+      editor.setDecorations(this.decorationTypes.critical, get('critical'));
+      editor.setDecorations(this.decorationTypes.high, get('high'));
+      editor.setDecorations(this.decorationTypes.medium, get('medium'));
+      editor.setDecorations(this.decorationTypes.low, get('low'));
+      editor.setDecorations(this.decorationTypes.ignored, get('ignored'));
     }
   }
 
@@ -424,7 +363,6 @@ export class OssScannerService extends BaseScannerService {
     const filePath = uri.fsPath;
 
     const diagnostics: vscode.Diagnostic[] = [];
-
     this.diagnosticCollection.delete(uri);
 
     const maliciousDecorations: vscode.DecorationOptions[] = [];
@@ -442,8 +380,6 @@ export class OssScannerService extends BaseScannerService {
     const lowIconDecorations: vscode.DecorationOptions[] = [];
 
     for (const result of scanResults) {
-
-
       for (let i = 0; i < result.locations.length; i++) {
         const location = result.locations[i];
         const range = new vscode.Range(
@@ -451,8 +387,6 @@ export class OssScannerService extends BaseScannerService {
           new vscode.Position(location.line, location.endIndex)
         );
         const addDiagnostic = i === 0;
-
-
 
         switch (result.status) {
           case CxRealtimeEngineStatus.malicious:
@@ -538,6 +472,7 @@ export class OssScannerService extends BaseScannerService {
         }
       }
     }
+
     const ignoredDecorations: vscode.DecorationOptions[] = [];
     const ignoreManager = IgnoreFileManager.getInstance();
 
@@ -672,6 +607,7 @@ export class OssScannerService extends BaseScannerService {
       }
     }, 100);
   }
+
   private handleProblemStatus(
     diagnostics: vscode.Diagnostic[],
     decorations: vscode.DecorationOptions[],
@@ -704,7 +640,7 @@ export class OssScannerService extends BaseScannerService {
       };
       diagnostics.push(diagnostic);
     } else {
-      iconDecorations.push({ range });
+      iconDecorations?.push({ range });
     }
 
     const key = `${uri.fsPath}:${range.start.line}`;
@@ -722,15 +658,7 @@ export class OssScannerService extends BaseScannerService {
   public async clearProblems(): Promise<void> {
     await super.clearProblems();
     this.diagnosticsMap.clear();
-    this.maliciousDecorationsMap.clear();
-    this.okDecorationsMap.clear();
-    this.unknownDecorationsMap.clear();
-  }
-
-  public dispose(): void {
-    if (this.editorChangeListener) {
-      this.editorChangeListener.dispose();
-    }
+    Object.values(this.decorationsMap).forEach(map => map.clear());
   }
 
   protected getTempSubFolderPath(
@@ -759,7 +687,7 @@ export class OssScannerService extends BaseScannerService {
   }
 
   private updateIgnoredDecorationLine(filePath: string, oldLine: number, newLine: number): void {
-    const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+    const ignoredDecorations = this.decorationsMap.ignored.get(filePath) || [];
 
     const oldDecorationIndex = ignoredDecorations.findIndex(decoration =>
       decoration.range.start.line === oldLine
@@ -775,9 +703,9 @@ export class OssScannerService extends BaseScannerService {
       );
       ignoredDecorations.push({ range: newRange });
 
-      this.ignoredDecorationsMap.set(filePath, ignoredDecorations);
+      this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 
-      const ignoredIconDecorations = this.ignoredIconDecorationsMap.get(filePath) || [];
+      const ignoredIconDecorations = this.decorationsMap.ignoredIcon.get(filePath) || [];
       const oldIconIndex = ignoredIconDecorations.findIndex(decoration =>
         decoration.range.start.line === oldLine
       );
@@ -791,20 +719,22 @@ export class OssScannerService extends BaseScannerService {
           new vscode.Position(newLine, oldIconDecoration.range.end.character)
         );
         ignoredIconDecorations.push({ range: newIconRange });
-        this.ignoredIconDecorationsMap.set(filePath, ignoredIconDecorations);
+        this.decorationsMap.ignoredIcon.set(filePath, ignoredIconDecorations);
       }
 
       const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
       if (editor) {
         editor.setDecorations(this.decorationTypes.ignored, ignoredDecorations);
 
+        const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
+
         const allUnderlineDecorations = [
-          ...(this.maliciousIconDecorationsMap.get(filePath) || []),
-          ...(this.criticalIconDecorationsMap.get(filePath) || []),
-          ...(this.highIconDecorationsMap.get(filePath) || []),
-          ...(this.mediumIconDecorationsMap.get(filePath) || []),
-          ...(this.lowIconDecorationsMap.get(filePath) || []),
-          ...(this.ignoredIconDecorationsMap.get(filePath) || []),
+          ...(get("maliciousIcon") || []),
+          ...(get("criticalIcon") || []),
+          ...(get("highIcon") || []),
+          ...(get("mediumIcon") || []),
+          ...(get("lowIcon") || []),
+          ...(get("ignoredIcon") || []),
         ];
 
         editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
@@ -827,36 +757,36 @@ export class OssScannerService extends BaseScannerService {
 
 
   private removeIgnoredDecorationAtLine(filePath: string, line: number): void {
-    const ignoredDecorations = this.ignoredDecorationsMap.get(filePath) || [];
+    const ignoredDecorations = this.decorationsMap.ignored.get(filePath) || [];
 
     const filteredDecorations = ignoredDecorations.filter(decoration =>
       decoration.range.start.line !== line
     );
 
-    this.ignoredDecorationsMap.set(filePath, filteredDecorations);
+    this.decorationsMap.ignored.set(filePath, filteredDecorations);
 
-    const ignoredIconDecorations = this.ignoredIconDecorationsMap.get(filePath) || [];
+    const ignoredIconDecorations = this.decorationsMap.ignoredIcon.get(filePath) || [];
     const filteredIconDecorations = ignoredIconDecorations.filter(decoration =>
       decoration.range.start.line !== line
     );
-    this.ignoredIconDecorationsMap.set(filePath, filteredIconDecorations);
+    this.decorationsMap.ignoredIcon.set(filePath, filteredIconDecorations);
 
     const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.fsPath === filePath);
     if (editor) {
       editor.setDecorations(this.decorationTypes.ignored, filteredDecorations);
 
+      const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
+
       const allUnderlineDecorations = [
-        ...(this.maliciousIconDecorationsMap.get(filePath) || []),
-        ...(this.criticalIconDecorationsMap.get(filePath) || []),
-        ...(this.highIconDecorationsMap.get(filePath) || []),
-        ...(this.mediumIconDecorationsMap.get(filePath) || []),
-        ...(this.lowIconDecorationsMap.get(filePath) || []),
-        ...(this.ignoredIconDecorationsMap.get(filePath) || []),
+        ...(get("maliciousIcon") || []),
+        ...(get("criticalIcon") || []),
+        ...(get("highIcon") || []),
+        ...(get("mediumIcon") || []),
+        ...(get("lowIcon") || []),
+        ...(get("ignoredIcon") || []),
       ];
 
       editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
     }
-
   }
-
 }
