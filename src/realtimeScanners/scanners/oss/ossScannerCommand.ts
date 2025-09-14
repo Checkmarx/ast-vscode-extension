@@ -21,9 +21,8 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   protected async initializeScanner(): Promise<void> {
-    this.registerScanOnChangeText();
-    this.registerScanOnFileOpen();
     const scanner = this.scannerService as OssScannerService;
+    await super.initializeScanner();
     scanner.initializeScanner();
 
     if (this.hoverProviderDisposable) {
@@ -36,19 +35,6 @@ export class OssScannerCommand extends BaseScannerCommand {
     );
 
     this.scanAllManifestFilesInWorkspace();
-
-    vscode.workspace.onDidRenameFiles(async (event) => {
-      const scanner = this.scannerService as OssScannerService;
-
-      for (const { oldUri, newUri } of event.files) {
-        scanner.clearScanData(oldUri);
-
-        const reopenedDoc = await vscode.workspace.openTextDocument(newUri);
-        if (reopenedDoc && scanner.shouldScanFile(reopenedDoc)) {
-          await scanner.scan(reopenedDoc, this.logs);
-        }
-      }
-    });
   }
 
   private hoverProviderDisposable: vscode.Disposable | undefined;
