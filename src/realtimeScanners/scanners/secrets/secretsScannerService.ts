@@ -11,6 +11,7 @@ import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { cx } from "../../../cx";
 import fs from "fs";
+import {logScanResults} from "../common";
 
 export class SecretsScannerService extends BaseScannerService {
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
@@ -117,8 +118,8 @@ export class SecretsScannerService extends BaseScannerService {
 					secretLocations.set(key, lines);
 				}
 			});
-			
-			this.logScanResults("secrets", fullScanResults);
+
+			logScanResults("secrets", fullScanResults);
 
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }

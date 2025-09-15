@@ -9,6 +9,7 @@ import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAs
 import { cx } from "../../../cx";
 import fs from "fs";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
+import {logScanResults} from "../common";
 
 export class AscaScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -108,8 +109,8 @@ export class AscaScannerService extends BaseScannerService {
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				this.cleanupIgnoredEntries(fullScanResults.scanDetails, filePath);
 			}
-			
-			this.logScanResults("asca", fullScanResults.scanDetails);
+
+			logScanResults("asca", fullScanResults.scanDetails);
 
 			logs.info(`${fullScanResults.scanDetails.length} security best practice violations were found in ${filePath} (${fullScanResults.scanDetails.filter(r => !this.isAscaResultIgnored(r, filePath)).length} active, ${fullScanResults.scanDetails.filter(r => this.isAscaResultIgnored(r, filePath)).length} ignored)`);
 		} catch (error) {
