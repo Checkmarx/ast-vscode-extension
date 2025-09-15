@@ -181,7 +181,7 @@ export abstract class BaseScannerService implements IScannerService {
     }
   }
 
-  public logScanResults(scanType: string, fullScanResults: Array<{ severity?: unknown }>): void {
+  protected logScanResults(scanType: string, fullScanResults: Array<{ severity?: unknown }>): void {
     const LABELS = ['Critical', 'High', 'Medium', 'Low', 'Unknown'] as const;
     type Label = typeof LABELS[number];
 
