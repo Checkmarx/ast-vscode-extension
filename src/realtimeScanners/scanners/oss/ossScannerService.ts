@@ -409,7 +409,9 @@ export class OssScannerService extends BaseScannerService {
             }
             break;
           case CxRealtimeEngineStatus.unknown:
-            unknownDecorations.push({ range });
+            if (addDiagnostic) {
+              unknownDecorations.push({ range });
+            }
             break;
           case CxRealtimeEngineStatus.critical:
             this.handleProblemStatus(
