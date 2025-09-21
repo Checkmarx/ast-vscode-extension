@@ -135,6 +135,7 @@ export const constants = {
   vsCodeAgentOrginalName : "Visual Studio Code",
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
+  kiroAgent : "Kiro",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
