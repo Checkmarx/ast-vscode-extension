@@ -6,6 +6,7 @@ import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import {cx} from "../../cx";
 
 export abstract class BaseScannerService implements IScannerService {
   protected editorChangeListener: vscode.Disposable | undefined;

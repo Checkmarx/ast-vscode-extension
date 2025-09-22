@@ -257,7 +257,6 @@ export class AuthenticationWebview {
                       this._panel.dispose();
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
-                      this._panel.webview.postMessage({ command: "enableAuthButton" });
                     }, 1000);
                   }
                   else {
@@ -293,7 +292,6 @@ export class AuthenticationWebview {
                   setTimeout(async () => {
 
                     this._panel.dispose();
-                    this._panel.webview.postMessage({ command: "enableAuthButton" });
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
                     if (isAiEnabled) {

@@ -13,6 +13,7 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
+import {logScanResults} from "../common";
 
 export class IacScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -129,6 +130,8 @@ export class IacScannerService extends BaseScannerService {
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				fullScanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), "");
 			}
+
+			logScanResults("iac", fullScanResults);
 
 			ignoreManager.removeMissingIac(fullScanResults, filePath);
 
