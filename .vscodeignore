@@ -1,11 +1,39 @@
+# Development
 .vscode/**
 .vscode-test/**
 src/**
 .gitignore
-.yarnrc
-vsc-extension-quickstart.md
+.github/**
+coverage
+
+# Dependencies
+node_modules/.cache/**
+
+# Build configs
 **/tsconfig.json
 **/.eslintrc.json
-**/*.map
+vsc-extension-quickstart.md
+.yarnrc
+
+# Source files
 **/*.ts
+!out/**/*.js
+**/*.map
+
+# Tests
+test/**
 test-resources/**
+**/*.test.js
+
+# Documentation (keep only user docs)
+docs/contributing.md
+docs/development.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
