@@ -306,7 +306,11 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
 
 
 export function renderCxAiBadge(): string {
-  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
+  const currentTheme = vscode.window.activeColorTheme.kind;
+  const currentTheme1 = (currentTheme === vscode.ColorThemeKind.Light || currentTheme === vscode.ColorThemeKind.HighContrastLight)
+    ? (`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist_light.svg" style="vertical-align: -12px;"/>`)
+    : (`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/>`);
+  return currentTheme1;
 }
 
 
