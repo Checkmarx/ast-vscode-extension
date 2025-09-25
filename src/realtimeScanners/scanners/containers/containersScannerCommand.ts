@@ -48,11 +48,13 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 		const hoverData = scanner.getHoverData().get(key);
 
 		const diagnostics = scanner.getDiagnosticsMap().get(document.uri.fsPath) ?? [];
-		const hasDiagnostic = diagnostics.some(
-			(d) => d.range.start.line === position.line
+		const relevantDiagnostic = diagnostics.find(
+			(d) => d.range.start.line === position.line &&
+				position.character >= d.range.start.character &&
+				position.character <= d.range.end.character
 		);
 
-		if (!hoverData || !hasDiagnostic) {
+		if (!hoverData || !relevantDiagnostic) {
 			return;
 		}
 
