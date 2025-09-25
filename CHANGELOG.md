@@ -1,12 +1,12 @@
 # CHANGELOG
 
-## [v2.38.1-2.38.1-RemoveTestFolders.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-2.38.1-RemoveTestFolders.0) - 2025-09-21 12:29:55
+## [v2.38.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-0) - 2025-09-25 11:58:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-Kiro.0...v2.38.1-2.38.1-RemoveTestFolders.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-Kiro.0...v2.38.1-0
 
 ## [v2.38.1-Kiro.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-Kiro.0) - 2025-09-18 16:33:11
 
