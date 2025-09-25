@@ -10,3 +10,6 @@ vsc-extension-quickstart.md
 **/*.ts
 test-resources/**
 !out/**/*.js
+test/**
+**/*.test.js
+unit/**
