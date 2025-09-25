@@ -397,9 +397,9 @@
 			let headerItemCodebashingDiv = document.createElement('div');
 			headerItemCodebashingDiv.setAttribute('id', 'cx_header_codebashing');
 			headerItemCodebashingDiv.style.marginBottom = '20px';
-			let codebashingLinkSpan = document.createElement('span');
-			codebashingLinkSpan.setAttribute('class', 'codebashing-link');
-			codebashingLinkSpan.textContent = 'Learn more at ';
+			let codebashingLinkIcon = document.createElement('span');
+            codebashingLinkIcon.setAttribute('class', 'codebashing-link');
+            codebashingLinkIcon.textContent = 'Learn more at ';
             let codeBashingIcon = document.createElement('img');
             let iconSrc = window.codeBashingIconUriDark;
             if (document.body.classList.contains('vscode-light') || document.body.classList.contains('vscode-high-contrast-light')) {
@@ -410,8 +410,8 @@
             codeBashingIcon.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
             codeBashingIcon.setAttribute('alt', 'CodeBashing');
             codeBashingIcon.style.cssText = 'height:40px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
-			codebashingLinkSpan.appendChild(codeBashingIcon);
-			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
+            codebashingLinkIcon.appendChild(codeBashingIcon);
+			headerItemCodebashingDiv.appendChild(codebashingLinkIcon);
 			return headerItemCodebashingDiv.outerHTML;
 		}
 		return codeBashingSection;
