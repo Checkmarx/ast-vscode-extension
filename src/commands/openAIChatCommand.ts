@@ -192,6 +192,21 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private async handleKiroIDE(question: string) {
+        const executeFunction = async () => {
+            await vscode.commands.executeCommand("kiroAgent.focusContinueInputWithoutClear");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await vscode.commands.executeCommand("kiroAgent.newSession");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pasteCmd();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pressEnter();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
     private async openChatWithPrompt(question: string): Promise<void> {
 
         if (isIDE(constants.cursorAgent)) {
@@ -201,6 +216,12 @@ export class CopilotChatCommand {
 
         if (isIDE(constants.windsurfAgent)) {
             await this.handleWindsurfIDE(question);
+            return;
+        }
+
+        if (
+            isIDE(constants.kiroAgent)) {
+            await this.handleKiroIDE(question);
             return;
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
@@ -216,13 +237,13 @@ export class CopilotChatCommand {
             return;
         }
         await vscode.commands.executeCommand(constants.copilotNewChatOpen);
-        try { 
+        try {
             await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
         } catch (error) {
             if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
                 await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
             }
-            
+
         }
     }
 
