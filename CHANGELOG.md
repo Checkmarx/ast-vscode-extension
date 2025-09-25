@@ -1,16 +1,53 @@
 # CHANGELOG
 
-## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+## [v2.38.1-Kiro.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-Kiro.0) - 2025-09-18 16:33:11
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
+### Bug Fixes 🐛
+* Added custom state in enum (Bug/AST-111318) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1271
+* Fix Authentication(AST-000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1277
+### New Features 🚀
+* Fix results tree shows outdated data after switching environments (AST-92555)  by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1270
 ### Other Changes
-* Use shared generateFileHash and remove filepath from secrets ignore entries(AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1262
-* Support Containers and Asca for telemtry log (AST-00000) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1265
+* Add logging for scan results in secrets, iac, and asca scanners (AST-113145) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1274
+* OSS Real time: Show unknown gutter icon in first line (AST-113657) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1276
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.36.1-oauth-proxy-support-2.0...v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.0...v2.38.1-Kiro.0
+
+## [v2.38.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.0) - 2025-09-14 08:24:05
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.38.0 -->
+
+## [v2.37.1-sca-realtime-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.1-sca-realtime-fix.0) - 2025-09-04 14:08:36
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.37.0...v2.37.1-sca-realtime-fix.0
+
+## [v2.37.1-Fix-command.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.1-Fix-command.0) - 2025-09-04 14:12:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.37.1-sca-realtime-fix.0...v2.37.1-Fix-command.0
+
+## [v2.37.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.0) - 2025-09-02 13:35:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.37.0 -->
+
+## [v2.36.1-refactor.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-refactor.0) - 2025-08-31 09:08:12
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-2.36.0-Suppurt-asca-containers-telemtry.0) - 2025-08-28 14:14:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.36.1-oauth-proxy-support-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.36.1-oauth-proxy-support-2.0) - 2025-08-21 11:57:43
 
@@ -75,7 +112,6 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.34.1-new-prompt-1.0...v2.34.1-new-prompts-2.0
-
 
 ## [v2.34.1-new-prompt-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.34.1-new-prompt-1.0) - 2025-08-14 09:20:54
 

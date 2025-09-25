@@ -6,8 +6,23 @@ import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import {cx} from "../../cx";
 
 export abstract class BaseScannerService implements IScannerService {
+  protected editorChangeListener: vscode.Disposable | undefined;
+
+  public async initializeScanner(): Promise<void> {
+    this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
+      this.onEditorChange.bind(this)
+    );
+  }
+
+  protected onEditorChange(editor: vscode.TextEditor | undefined): void {
+    if (editor && this.shouldScanFile(editor.document) && typeof (this as any).applyDecorations === 'function') {
+      (this as any).applyDecorations(editor.document.uri);
+    }
+  }
+
   public config: IScannerConfig;
   diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -37,7 +52,12 @@ export abstract class BaseScannerService implements IScannerService {
 
   abstract updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void;
 
-  abstract dispose(): void;
+
+  public dispose(): void {
+    if (this.editorChangeListener) {
+      this.editorChangeListener.dispose();
+    }
+  }
 
   async clearProblems(): Promise<void> {
     this.diagnosticCollection.clear();
@@ -108,6 +128,39 @@ export abstract class BaseScannerService implements IScannerService {
       }
     }
     return undefined;
+  }
+  
+  private generateTempFileInfo(originalFilePath: string) {
+    const originalExt = path.extname(originalFilePath);
+    const baseName = path.basename(originalFilePath, originalExt);
+    const originalFileName = path.basename(originalFilePath);
+    const hash = this.generateFileHash(originalFilePath);
+
+    return {
+      originalExt,
+      baseName,
+      originalFileName,
+      hash
+    };
+  }
+
+  protected saveFile(tempFolder: string, originalFilePath: string, content: string): string {
+    const { originalExt, baseName, hash } = this.generateTempFileInfo(originalFilePath);
+    const tempFileName = `${baseName}-${hash}${originalExt}`;
+    const tempFilePath = path.join(tempFolder, tempFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return tempFilePath;
+  }
+
+  protected createSubFolderAndSaveFile(tempFolder: string, originalFilePath: string, content: string): { tempFilePath: string; tempSubFolder: string } {
+    const { originalFileName, hash } = this.generateTempFileInfo(originalFilePath);
+    const subFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
+    if (!fs.existsSync(subFolder)) {
+      fs.mkdirSync(subFolder, { recursive: true });
+    }
+    const tempFilePath = path.join(subFolder, originalFileName);
+    fs.writeFileSync(tempFilePath, content);
+    return { tempFilePath, tempSubFolder: subFolder };
   }
 
   protected getHighestSeverity(severities: string[]): string {

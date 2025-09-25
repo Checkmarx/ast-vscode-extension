@@ -16,23 +16,23 @@ import { IgnoreFileManager } from "../../common/ignoreFileManager";
 export class ContainersScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private containersHoverData = new Map<string, ContainersHoverData>();
-	private maliciousDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private okDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private unknownDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private criticalDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private highDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private mediumDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-
-	private maliciousIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private criticalIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private highIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private mediumIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private lowIconDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
 	private lastFullScanResults: unknown[] = [];
 
-	private editorChangeListener: vscode.Disposable | undefined;
+	private decorationsMap = {
+		malicious: new Map<string, vscode.DecorationOptions[]>(),
+		ok: new Map<string, vscode.DecorationOptions[]>(),
+		unknown: new Map<string, vscode.DecorationOptions[]>(),
+		critical: new Map<string, vscode.DecorationOptions[]>(),
+		high: new Map<string, vscode.DecorationOptions[]>(),
+		medium: new Map<string, vscode.DecorationOptions[]>(),
+		low: new Map<string, vscode.DecorationOptions[]>(),
+		ignored: new Map<string, vscode.DecorationOptions[]>(),
+		maliciousIcon: new Map<string, vscode.DecorationOptions[]>(),
+		criticalIcon: new Map<string, vscode.DecorationOptions[]>(),
+		highIcon: new Map<string, vscode.DecorationOptions[]>(),
+		mediumIcon: new Map<string, vscode.DecorationOptions[]>(),
+		lowIcon: new Map<string, vscode.DecorationOptions[]>(),
+	};
 
 	private decorationTypes = {
 		malicious: this.createDecoration("malicious.svg"),
@@ -49,10 +49,7 @@ export class ContainersScannerService extends BaseScannerService {
 		}),
 	};
 
-	private createDecoration(
-		iconName: string,
-		size: string = "auto"
-	): vscode.TextEditorDecorationType {
+	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
 		return vscode.window.createTextEditorDecorationType({
 			gutterIconPath: vscode.Uri.file(
 				path.join(__dirname, "..", "..", "..", "..", "media", "icons", iconName)
@@ -78,9 +75,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const dirPath = path.dirname(uri.fsPath);
 		const dirUri = vscode.Uri.file(dirPath);
 		const entries = await vscode.workspace.fs.readDirectory(dirUri);
-
 		const fileNameLower = path.basename(uri.fsPath).toLowerCase();
-
 		for (const [entryName] of entries) {
 			if (entryName.toLowerCase() === fileNameLower) {
 				return path.join(dirPath, entryName);
@@ -90,18 +85,11 @@ export class ContainersScannerService extends BaseScannerService {
 	}
 
 	private isDockerComposeFile(filePath: string): boolean {
-		const fileName = path.basename(filePath).toLowerCase();
-
-		if (fileName.includes('docker-compose')) {
-			return true;
-		}
-		return false;
+		return path.basename(filePath).toLowerCase().includes('docker-compose');
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
-		if (!super.shouldScanFile(document)) {
-			return false;
-		}
+		if (!super.shouldScanFile(document)) return false;
 
 		const filePath = document.uri.fsPath;
 		const normalizedPath = filePath.replace(/\\/g, "/");
@@ -117,52 +105,19 @@ export class ContainersScannerService extends BaseScannerService {
 		const fileExtension = path.extname(filePath).toLowerCase();
 		if (constants.containersHelmExtensions.includes(fileExtension)) {
 			const fileName = path.basename(filePath).toLowerCase();
-			if (constants.containersHelmExcludedFiles.includes(fileName)) {
-				return false;
-			}
-
-			const isInHelmFolder = normalizedPath.toLowerCase().includes("/helm/") ||
-				normalizedPath.toLowerCase().includes("\\helm\\");
-			return isInHelmFolder;
+			if (constants.containersHelmExcludedFiles.includes(fileName)) return false;
+			return normalizedPath.toLowerCase().includes("/helm/") || normalizedPath.toLowerCase().includes("\\helm\\");
 		}
-
 		return false;
-	}
-
-	private createSubFolderAndSaveFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): { tempFilePath: string; tempSubFolder: string } {
-		const originalFileName = path.basename(originalFilePath);
-
-		const hash = this.generateFileHash(originalFilePath);
-		const dockerFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
-		if (!fs.existsSync(dockerFolder)) {
-			fs.mkdirSync(dockerFolder, { recursive: true });
-		}
-
-		const tempFilePath = path.join(dockerFolder, originalFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return { tempFilePath, tempSubFolder: dockerFolder };
 	}
 
 	private getHelmRelativePath(originalFilePath: string): string {
 		const normalizedPath = originalFilePath.replace(/\\/g, "/");
 		const helmIndex = normalizedPath.toLowerCase().lastIndexOf("/helm/");
-
-		if (helmIndex !== -1) {
-			return normalizedPath.substring(helmIndex + 6);
-		} else {
-			return path.basename(originalFilePath);
-		}
+		return helmIndex !== -1 ? normalizedPath.substring(helmIndex + 6) : path.basename(originalFilePath);
 	}
 
-	private saveHelmFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): { tempFilePath: string; tempSubFolder: string } {
+	private saveHelmFile(tempFolder: string, originalFilePath: string, content: string): { tempFilePath: string; tempSubFolder: string } {
 		const hash = this.generateFileHash(originalFilePath);
 		const helmFolder = path.join(tempFolder, `helm-${hash}`);
 
@@ -170,11 +125,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 		const fullTargetPath = path.join(helmFolder, relativePath);
 		const targetDir = path.dirname(fullTargetPath);
-
-		if (!fs.existsSync(targetDir)) {
-			fs.mkdirSync(targetDir, { recursive: true });
-		}
-
+		if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 		fs.writeFileSync(fullTargetPath, content);
 		return { tempFilePath: fullTargetPath, tempSubFolder: helmFolder };
 	}
@@ -461,7 +412,7 @@ export class ContainersScannerService extends BaseScannerService {
 			});
 		});
 
-		this.ignoredDecorations.set(filePath, ignoredDecorations);
+		this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 
 		const hasContainerIgnores = Object.values(ignoredData).some(
 			entry => entry.type === constants.containersRealtimeScannerEngineName
@@ -543,19 +494,20 @@ export class ContainersScannerService extends BaseScannerService {
 		lowIconDecorations: vscode.DecorationOptions[]
 	): void {
 		this.diagnosticsMap.set(filePath, diagnostics);
-		this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
-		this.okDecorationsMap.set(filePath, okDecorations);
-		this.unknownDecorationsMap.set(filePath, unknownDecorations);
-		this.criticalDecorationsMap.set(filePath, criticalDecorations);
-		this.highDecorationsMap.set(filePath, highDecorations);
-		this.mediumDecorationsMap.set(filePath, mediumDecorations);
-		this.lowDecorationsMap.set(filePath, lowDecorations);
 
-		this.maliciousIconDecorationsMap.set(filePath, maliciousIconDecorations);
-		this.criticalIconDecorationsMap.set(filePath, criticalIconDecorations);
-		this.highIconDecorationsMap.set(filePath, highIconDecorations);
-		this.mediumIconDecorationsMap.set(filePath, mediumIconDecorations);
-		this.lowIconDecorationsMap.set(filePath, lowIconDecorations);
+		this.decorationsMap.malicious.set(filePath, maliciousDecorations);
+		this.decorationsMap.ok.set(filePath, okDecorations);
+		this.decorationsMap.unknown.set(filePath, unknownDecorations);
+		this.decorationsMap.critical.set(filePath, criticalDecorations);
+		this.decorationsMap.high.set(filePath, highDecorations);
+		this.decorationsMap.medium.set(filePath, mediumDecorations);
+		this.decorationsMap.low.set(filePath, lowDecorations);
+
+		this.decorationsMap.maliciousIcon.set(filePath, maliciousIconDecorations);
+		this.decorationsMap.criticalIcon.set(filePath, criticalIconDecorations);
+		this.decorationsMap.highIcon.set(filePath, highIconDecorations);
+		this.decorationsMap.mediumIcon.set(filePath, mediumIconDecorations);
+		this.decorationsMap.lowIcon.set(filePath, lowIconDecorations);
 
 		this.applyDiagnostics();
 		this.applyDecorations(uri);
@@ -630,98 +582,39 @@ export class ContainersScannerService extends BaseScannerService {
 		await super.clearProblems();
 		this.diagnosticsMap.clear();
 		this.containersHoverData.clear();
-		this.maliciousDecorationsMap.clear();
-		this.okDecorationsMap.clear();
-		this.unknownDecorationsMap.clear();
-		this.criticalDecorationsMap.clear();
-		this.highDecorationsMap.clear();
-		this.mediumDecorationsMap.clear();
-		this.lowDecorationsMap.clear();
-		this.maliciousIconDecorationsMap.clear();
-		this.criticalIconDecorationsMap.clear();
-		this.highIconDecorationsMap.clear();
-		this.mediumIconDecorationsMap.clear();
-		this.lowIconDecorationsMap.clear();
-		this.ignoredDecorations.clear();
+		Object.values(this.decorationsMap).forEach(map => map.clear());
 	}
 
-	public dispose(): void {
-		if (this.editorChangeListener) {
-			this.editorChangeListener.dispose();
-		}
-	}
 
 	public clearScanData(uri: vscode.Uri): void {
 		const filePath = uri.fsPath;
 		this.diagnosticsMap.delete(filePath);
 		this.diagnosticCollection.delete(uri);
 		this.containersHoverData.delete(filePath);
-		this.maliciousDecorationsMap.delete(filePath);
-		this.okDecorationsMap.delete(filePath);
-		this.unknownDecorationsMap.delete(filePath);
-		this.criticalDecorationsMap.delete(filePath);
-		this.highDecorationsMap.delete(filePath);
-		this.mediumDecorationsMap.delete(filePath);
-		this.lowDecorationsMap.delete(filePath);
-		this.maliciousIconDecorationsMap.delete(filePath);
-		this.criticalIconDecorationsMap.delete(filePath);
-		this.highIconDecorationsMap.delete(filePath);
-		this.mediumIconDecorationsMap.delete(filePath);
-		this.lowIconDecorationsMap.delete(filePath);
-		this.ignoredDecorations.delete(filePath);
-	}
-
-	public async initializeScanner(): Promise<void> {
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(
-			this.onEditorChange.bind(this)
-		);
-	}
-
-	private onEditorChange(editor: vscode.TextEditor | undefined): void {
-		if (editor && this.shouldScanFile(editor.document)) {
-			this.applyDecorations(editor.document.uri);
-		}
+		Object.values(this.decorationsMap).forEach(map => map.delete(filePath));
 	}
 
 	private applyDecorations(uri: vscode.Uri): void {
 		const filePath = uri.fsPath;
-		const editor = vscode.window.visibleTextEditors.find(
-			(e) => e.document.uri.toString() === uri.toString()
-		);
-
-		if (editor) {
-			const maliciousDecorations = this.maliciousDecorationsMap.get(filePath) || [];
-			const okDecorations = this.okDecorationsMap.get(filePath) || [];
-			const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
-			const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
-			const highDecorations = this.highDecorationsMap.get(filePath) || [];
-			const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
-			const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
-
-			const maliciousIcons = this.maliciousIconDecorationsMap.get(filePath) || [];
-			const criticalIcons = this.criticalIconDecorationsMap.get(filePath) || [];
-			const highIcons = this.highIconDecorationsMap.get(filePath) || [];
-			const mediumIcons = this.mediumIconDecorationsMap.get(filePath) || [];
-			const lowIcons = this.lowIconDecorationsMap.get(filePath) || [];
-
-			const allUnderlineDecorations = [
-				...maliciousIcons,
-				...criticalIcons,
-				...highIcons,
-				...mediumIcons,
-				...lowIcons,
-			];
-
-			editor.setDecorations(this.decorationTypes.malicious, maliciousDecorations);
-			editor.setDecorations(this.decorationTypes.ok, okDecorations);
-			editor.setDecorations(this.decorationTypes.unknown, unknownDecorations);
-			editor.setDecorations(this.decorationTypes.critical, criticalDecorations);
-			editor.setDecorations(this.decorationTypes.high, highDecorations);
-			editor.setDecorations(this.decorationTypes.medium, mediumDecorations);
-			editor.setDecorations(this.decorationTypes.low, lowDecorations);
-			editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
-		}
+		const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString());
+		if (!editor) return;
+		const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
+		const allUnderlineDecorations = [
+			...get('maliciousIcon'),
+			...get('criticalIcon'),
+			...get('highIcon'),
+			...get('mediumIcon'),
+			...get('lowIcon'),
+		];
+		editor.setDecorations(this.decorationTypes.malicious, get('malicious'));
+		editor.setDecorations(this.decorationTypes.ok, get('ok'));
+		editor.setDecorations(this.decorationTypes.unknown, get('unknown'));
+		editor.setDecorations(this.decorationTypes.critical, get('critical'));
+		editor.setDecorations(this.decorationTypes.high, get('high'));
+		editor.setDecorations(this.decorationTypes.medium, get('medium'));
+		editor.setDecorations(this.decorationTypes.low, get('low'));
+		editor.setDecorations(this.decorationTypes.ignored, get('ignored'));
+		editor.setDecorations(this.decorationTypes.underline, allUnderlineDecorations);
 	}
 
 	getHoverData(): Map<string, ContainersHoverData> {
@@ -733,80 +626,40 @@ export class ContainersScannerService extends BaseScannerService {
 	}
 
 	public hasAnySeverityDecorations(): boolean {
-		return (
-			this.maliciousDecorationsMap.size > 0 ||
-			this.okDecorationsMap.size > 0 ||
-			this.unknownDecorationsMap.size > 0 ||
-			this.criticalDecorationsMap.size > 0 ||
-			this.highDecorationsMap.size > 0 ||
-			this.mediumDecorationsMap.size > 0 ||
-			this.lowDecorationsMap.size > 0
-		);
+		return [
+			'malicious', 'ok', 'unknown', 'critical', 'high', 'medium', 'low'
+		].some(key => this.decorationsMap[key as keyof typeof this.decorationsMap].size > 0);
 	}
 
 	public hasAnyDecorationsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
 		const filePath = uri.fsPath;
-		const decorationMaps = [
-			this.maliciousDecorationsMap,
-			this.okDecorationsMap,
-			this.unknownDecorationsMap,
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations
-		];
-
-		return decorationMaps.some(map => {
-			const decorations = map.get(filePath) || [];
+		const severityKeys = [
+			...Object.values(CxRealtimeEngineStatus).map(s => s.toLowerCase()),
+			'ignored'
+		] as const;
+		return severityKeys.some(key => {
+			const decorations = this.decorationsMap[key as keyof typeof this.decorationsMap].get(filePath) || [];
 			return decorations.some(decoration => decoration.range.start.line === lineNumber);
 		});
 	}
 
 	private removeGutterAtLine(filePath: string, lineNumber: number): void {
-		const decorationMaps = [
-			this.maliciousDecorationsMap,
-			this.okDecorationsMap,
-			this.unknownDecorationsMap,
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations,
-			this.maliciousIconDecorationsMap,
-			this.criticalIconDecorationsMap,
-			this.highIconDecorationsMap,
-			this.mediumIconDecorationsMap,
-			this.lowIconDecorationsMap
-		];
-
-		decorationMaps.forEach(map => {
+		Object.values(this.decorationsMap).forEach(map => {
 			const decorations = map.get(filePath) || [];
-			const filtered = decorations.filter(decoration => decoration.range.start.line !== lineNumber);
-			map.set(filePath, filtered);
+			map.set(filePath, decorations.filter(decoration => decoration.range.start.line !== lineNumber));
 		});
 	}
 
 	private getAnyRangeAtLine(filePath: string, lineNumber: number): vscode.Range | undefined {
-		const decorationMaps = [
-			this.maliciousDecorationsMap,
-			this.okDecorationsMap,
-			this.unknownDecorationsMap,
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations
-		];
-
-		for (const map of decorationMaps) {
-			const decorations = map.get(filePath) || [];
+		const severityKeys = [
+			...Object.values(CxRealtimeEngineStatus).map(s => s.toLowerCase()),
+			'ignored'
+		] as const;
+		for (const key of severityKeys) {
+			const decorations = this.decorationsMap[key].get(filePath) || [];
 			const decoration = decorations.find(d => d.range.start.line === lineNumber);
-			if (decoration) {
-				return decoration.range;
-			}
+			if (decoration) return decoration.range;
 		}
-
 		return new vscode.Range(
 			new vscode.Position(lineNumber, 0),
 			new vscode.Position(lineNumber, 1)
@@ -815,63 +668,20 @@ export class ContainersScannerService extends BaseScannerService {
 
 	private pushGutter(filePath: string, severity: string, range: vscode.Range): void {
 		const decoration = { range };
-
-		switch (severity.toUpperCase()) {
-			case CxRealtimeEngineStatus.malicious.toUpperCase(): {
-				const maliciousDecorations = this.maliciousDecorationsMap.get(filePath) || [];
-				maliciousDecorations.push(decoration);
-				this.maliciousDecorationsMap.set(filePath, maliciousDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.critical.toUpperCase(): {
-				const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
-				criticalDecorations.push(decoration);
-				this.criticalDecorationsMap.set(filePath, criticalDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.high.toUpperCase(): {
-				const highDecorations = this.highDecorationsMap.get(filePath) || [];
-				highDecorations.push(decoration);
-				this.highDecorationsMap.set(filePath, highDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.medium.toUpperCase(): {
-				const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
-				mediumDecorations.push(decoration);
-				this.mediumDecorationsMap.set(filePath, mediumDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.low.toUpperCase(): {
-				const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
-				lowDecorations.push(decoration);
-				this.lowDecorationsMap.set(filePath, lowDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.ok.toUpperCase(): {
-				const okDecorations = this.okDecorationsMap.get(filePath) || [];
-				okDecorations.push(decoration);
-				this.okDecorationsMap.set(filePath, okDecorations);
-				break;
-			}
-			case CxRealtimeEngineStatus.unknown.toUpperCase(): {
-				const unknownDecorations = this.unknownDecorationsMap.get(filePath) || [];
-				unknownDecorations.push(decoration);
-				this.unknownDecorationsMap.set(filePath, unknownDecorations);
-				break;
-			}
-			case "IGNORED": {
-				const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
-				ignoredDecorations.push(decoration);
-				this.ignoredDecorations.set(filePath, ignoredDecorations);
-				break;
-			}
-			default: {
-				const defaultDecorations = this.unknownDecorationsMap.get(filePath) || [];
-				defaultDecorations.push(decoration);
-				this.unknownDecorationsMap.set(filePath, defaultDecorations);
-				break;
-			}
-		}
+		const sev = severity.toLowerCase();
+		const mapKey =
+			sev === CxRealtimeEngineStatus.malicious.toLowerCase() ? CxRealtimeEngineStatus.malicious.toLowerCase() :
+				sev === CxRealtimeEngineStatus.critical.toLowerCase() ? CxRealtimeEngineStatus.critical.toLowerCase() :
+					sev === CxRealtimeEngineStatus.high.toLowerCase() ? CxRealtimeEngineStatus.high.toLowerCase() :
+						sev === CxRealtimeEngineStatus.medium.toLowerCase() ? CxRealtimeEngineStatus.medium.toLowerCase() :
+							sev === CxRealtimeEngineStatus.low.toLowerCase() ? CxRealtimeEngineStatus.low.toLowerCase() :
+								sev === CxRealtimeEngineStatus.ok.toLowerCase() ? CxRealtimeEngineStatus.ok.toLowerCase() :
+									sev === CxRealtimeEngineStatus.unknown.toLowerCase() ? CxRealtimeEngineStatus.unknown.toLowerCase() :
+										sev === 'ignored' ? 'ignored' : CxRealtimeEngineStatus.unknown.toLowerCase();
+		const map = this.decorationsMap[mapKey as keyof typeof this.decorationsMap];
+		const arr = map.get(filePath) || [];
+		arr.push(decoration);
+		map.set(filePath, arr);
 	}
 
 

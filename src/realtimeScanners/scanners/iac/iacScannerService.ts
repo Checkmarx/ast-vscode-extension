@@ -13,17 +13,18 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
+import {logScanResults} from "../common";
 
 export class IacScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private iacHoverData = new Map<string, IacHoverData[]>();
-	private criticalDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private highDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private mediumDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private lowDecorationsMap = new Map<string, vscode.DecorationOptions[]>();
-	private ignoredDecorations: Map<string, vscode.DecorationOptions[]> = new Map();
-
-	private editorChangeListener: vscode.Disposable | undefined;
+	private decorationsMap = {
+		critical: new Map<string, vscode.DecorationOptions[]>(),
+		high: new Map<string, vscode.DecorationOptions[]>(),
+		medium: new Map<string, vscode.DecorationOptions[]>(),
+		low: new Map<string, vscode.DecorationOptions[]>(),
+		ignored: new Map<string, vscode.DecorationOptions[]>()
+	};
 
 	private decorationTypes = {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
@@ -82,24 +83,6 @@ export class IacScannerService extends BaseScannerService {
 		return false;
 	}
 
-	private createSubFolderAndSaveFile(
-		tempFolder: string,
-		originalFilePath: string,
-		content: string
-	): { tempFilePath: string; tempSubFolder: string } {
-		const originalFileName = path.basename(originalFilePath);
-
-		const hash = this.generateFileHash(originalFilePath);
-		const iacFolder = path.join(tempFolder, `${originalFileName}-${hash}`);
-		if (!fs.existsSync(iacFolder)) {
-			fs.mkdirSync(iacFolder, { recursive: true });
-		}
-
-		const tempFilePath = path.join(iacFolder, originalFileName);
-		fs.writeFileSync(tempFilePath, content);
-		return { tempFilePath, tempSubFolder: iacFolder };
-	}
-
 	private getContainersManagementTool(): string {
 		const containersManagementTool = vscode.workspace
 			.getConfiguration(this.config.configSection)
@@ -147,6 +130,8 @@ export class IacScannerService extends BaseScannerService {
 			if (ignoreManager.getIgnoredPackagesCount() > 0) {
 				fullScanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), "");
 			}
+
+			logScanResults("iac", fullScanResults);
 
 			ignoreManager.removeMissingIac(fullScanResults, filePath);
 
@@ -215,7 +200,7 @@ export class IacScannerService extends BaseScannerService {
 				});
 			});
 
-			this.ignoredDecorations.set(filePath, ignoredDecorations);
+			this.decorationsMap.ignored.set(filePath, ignoredDecorations);
 			this.applyDecorations(document.uri);
 
 		} catch (error) {
@@ -372,10 +357,10 @@ export class IacScannerService extends BaseScannerService {
 		lowDecorations: vscode.DecorationOptions[],
 	): void {
 		this.diagnosticsMap.set(filePath, diagnostics);
-		this.criticalDecorationsMap.set(filePath, criticalDecorations);
-		this.highDecorationsMap.set(filePath, highDecorations);
-		this.mediumDecorationsMap.set(filePath, mediumDecorations);
-		this.lowDecorationsMap.set(filePath, lowDecorations);
+		this.decorationsMap.critical.set(filePath, criticalDecorations);
+		this.decorationsMap.high.set(filePath, highDecorations);
+		this.decorationsMap.medium.set(filePath, mediumDecorations);
+		this.decorationsMap.low.set(filePath, lowDecorations);
 
 		if (diagnostics.length > 0) {
 			this.diagnosticCollection.set(uri, diagnostics);
@@ -390,11 +375,11 @@ export class IacScannerService extends BaseScannerService {
 		for (const editor of editors) {
 			const filePath = editor.document.uri.fsPath;
 
-			editor.setDecorations(this.decorationTypes.critical, this.criticalDecorationsMap.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.high, this.highDecorationsMap.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.medium, this.mediumDecorationsMap.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.low, this.lowDecorationsMap.get(filePath) || []);
-			editor.setDecorations(this.decorationTypes.ignored, this.ignoredDecorations.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.critical, this.decorationsMap.critical.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.high, this.decorationsMap.high.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.medium, this.decorationsMap.medium.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.low, this.decorationsMap.low.get(filePath) || []);
+			editor.setDecorations(this.decorationTypes.ignored, this.decorationsMap.ignored.get(filePath) || []);
 		}
 	}
 
@@ -403,11 +388,7 @@ export class IacScannerService extends BaseScannerService {
 		this.diagnosticCollection.delete(uri);
 		this.diagnosticsMap.delete(filePath);
 		this.iacHoverData.clear();
-		this.criticalDecorationsMap.delete(filePath);
-		this.highDecorationsMap.delete(filePath);
-		this.mediumDecorationsMap.delete(filePath);
-		this.lowDecorationsMap.delete(filePath);
-		this.ignoredDecorations.delete(filePath);
+		Object.values(this.decorationsMap).forEach(map => map.delete(filePath));
 	}
 
 	public getHoverData(): Map<string, IacHoverData[]> {
@@ -418,48 +399,32 @@ export class IacScannerService extends BaseScannerService {
 		return this.diagnosticsMap;
 	}
 
-	public initializeScanner(): void {
-		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (editor) {
-				this.applyDecorations(editor.document.uri);
-			}
-		});
-	}
-
 	dispose(): void {
-		this.editorChangeListener?.dispose();
-
-		Object.values(this.decorationTypes).forEach((decoration) => {
-			decoration.dispose();
-		});
+		super.dispose();
 
 		this.diagnosticsMap.clear();
 		this.iacHoverData.clear();
-		this.criticalDecorationsMap.clear();
-		this.highDecorationsMap.clear();
-		this.mediumDecorationsMap.clear();
-		this.lowDecorationsMap.clear();
-		this.ignoredDecorations.clear();
+		Object.values(this.decorationsMap).forEach(map => map.clear());
 	}
 
 
 	public hasAnySeverityDecorations(): boolean {
 		return (
-			this.criticalDecorationsMap.size > 0 ||
-			this.highDecorationsMap.size > 0 ||
-			this.mediumDecorationsMap.size > 0 ||
-			this.lowDecorationsMap.size > 0
+			this.decorationsMap.critical.size > 0 ||
+			this.decorationsMap.high.size > 0 ||
+			this.decorationsMap.medium.size > 0 ||
+			this.decorationsMap.low.size > 0
 		);
 	}
 
 	public hasAnyDecorationsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
 		const filePath = uri.fsPath;
 		const decorationMaps = [
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations
+			this.decorationsMap.critical,
+			this.decorationsMap.high,
+			this.decorationsMap.medium,
+			this.decorationsMap.low,
+			this.decorationsMap.ignored
 		];
 
 		return decorationMaps.some(map => {
@@ -470,11 +435,11 @@ export class IacScannerService extends BaseScannerService {
 
 	private removeGutterAtLine(filePath: string, lineNumber: number): void {
 		const decorationMaps = [
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations
+			this.decorationsMap.critical,
+			this.decorationsMap.high,
+			this.decorationsMap.medium,
+			this.decorationsMap.low,
+			this.decorationsMap.ignored
 		];
 
 		decorationMaps.forEach(map => {
@@ -486,11 +451,11 @@ export class IacScannerService extends BaseScannerService {
 
 	private getAnyRangeAtLine(filePath: string, lineNumber: number): vscode.Range | undefined {
 		const decorationMaps = [
-			this.criticalDecorationsMap,
-			this.highDecorationsMap,
-			this.mediumDecorationsMap,
-			this.lowDecorationsMap,
-			this.ignoredDecorations
+			this.decorationsMap.critical,
+			this.decorationsMap.high,
+			this.decorationsMap.medium,
+			this.decorationsMap.low,
+			this.decorationsMap.ignored
 		];
 
 		for (const map of decorationMaps) {
@@ -509,45 +474,30 @@ export class IacScannerService extends BaseScannerService {
 
 	private pushGutter(filePath: string, severity: string, range: vscode.Range): void {
 		const decoration = { range };
-
-		switch (severity.toUpperCase()) {
-			case CxRealtimeEngineStatus.critical.toUpperCase(): {
-				const criticalDecorations = this.criticalDecorationsMap.get(filePath) || [];
-				criticalDecorations.push(decoration);
-				this.criticalDecorationsMap.set(filePath, criticalDecorations);
+		let key: keyof typeof this.decorationsMap;
+		switch (severity.toLowerCase()) {
+			case CxRealtimeEngineStatus.critical.toLowerCase():
+				key = 'critical';
 				break;
-			}
-			case CxRealtimeEngineStatus.high.toUpperCase(): {
-				const highDecorations = this.highDecorationsMap.get(filePath) || [];
-				highDecorations.push(decoration);
-				this.highDecorationsMap.set(filePath, highDecorations);
+			case CxRealtimeEngineStatus.high.toLowerCase():
+				key = 'high';
 				break;
-			}
-			case CxRealtimeEngineStatus.medium.toUpperCase(): {
-				const mediumDecorations = this.mediumDecorationsMap.get(filePath) || [];
-				mediumDecorations.push(decoration);
-				this.mediumDecorationsMap.set(filePath, mediumDecorations);
+			case CxRealtimeEngineStatus.medium.toLowerCase():
+				key = 'medium';
 				break;
-			}
-			case CxRealtimeEngineStatus.low.toUpperCase(): {
-				const lowDecorations = this.lowDecorationsMap.get(filePath) || [];
-				lowDecorations.push(decoration);
-				this.lowDecorationsMap.set(filePath, lowDecorations);
+			case CxRealtimeEngineStatus.low.toLowerCase():
+				key = 'low';
 				break;
-			}
-			case "IGNORED": {
-				const ignoredDecorations = this.ignoredDecorations.get(filePath) || [];
-				ignoredDecorations.push(decoration);
-				this.ignoredDecorations.set(filePath, ignoredDecorations);
+			case 'ignored':
+				key = 'ignored';
 				break;
-			}
-			default: {
-				const defaultDecorations = this.lowDecorationsMap.get(filePath) || [];
-				defaultDecorations.push(decoration);
-				this.lowDecorationsMap.set(filePath, defaultDecorations);
-				break;
-			}
+			default:
+				key = 'low';
 		}
+		const map = this.decorationsMap[key];
+		const decorations = map.get(filePath) || [];
+		decorations.push(decoration);
+		map.set(filePath, decorations);
 	}
 
 
