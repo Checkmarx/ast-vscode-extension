@@ -251,6 +251,20 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, path.join("media", "icon.png"))
     );
 
+    const codeBashingIconDark = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        path.join("media", "icons", "codeBashing_logoDarkTheme.png")
+      )
+    );
+
+    const codeBashingIconLight = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        path.join("media", "icons", "codeBashing_logoLightTheme.png")
+      )
+    );
+
     this.askKicsIcon = kicsIcon;
     this.kicsUserIcon = kicsUserIcon;
 
@@ -361,6 +375,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </div>
         <script>
           const vscode = acquireVsCodeApi();
+          window.codeBashingIconUriDark = "${codeBashingIconDark}";
+          window.codeBashingIconUriLight = "${codeBashingIconLight}";
         </script>
         <script nonce="${nonce}" src="${scriptUri}"></script>	
         <script nonce="${nonce}" src="${scriptGptUri}"></script>	
