@@ -9,9 +9,3 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 test-resources/**
-out/test/**
-out/unit/**
-**/*.test.js
-!out/**/*.js
-out/**
-.github
