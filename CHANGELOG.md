@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.38.1-ignore-out-files.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-ignore-out-files.0) - 2025-09-25 17:57:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-2.38.0-test-ignored-folder.0...v2.38.1-ignore-out-files.0
+
 ## [v2.38.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-0) - 2025-09-25 11:58:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
