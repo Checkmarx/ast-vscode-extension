@@ -2,11 +2,109 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { constants } from '../../utils/common/constants';
 
-export function getCurrentTheme(): 'light' | 'dark' {
+// =============================================================================
+// TYPES AND INTERFACES
+// =============================================================================
+
+export interface FileInfo {
+	path: string;
+	active: boolean;
+	line?: number;
+}
+
+export type ThemeType = 'light' | 'dark';
+export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low' | 'malicious';
+export type ScannerType = 'oss' | 'secrets' | 'iac' | 'asca' | 'containers';
+
+// =============================================================================
+// CONFIGURATION AND MAPPINGS
+// =============================================================================
+
+/**
+ * Icon path configurations for different themes and scanners
+ */
+const ICON_CONFIG = {
+	themes: {
+		light: 'lightTheme',
+		dark: 'darkTheme'
+	},
+	severityIcons: {
+		critical: 'Vulnerability critical_ignore',
+		high: 'Vulnerability-high_ignore',
+		medium: 'Vulnerability-medium_ignore',
+		low: 'Vulnerability-low_ignore',
+		malicious: 'Vulnerability_malicious_ignore'
+	},
+	scannerFolders: {
+		oss: 'Packages',
+		secrets: 'Secrets',
+		iac: 'IacAsca',
+		asca: 'IacAsca',
+		containers: 'Containers'
+	},
+	ignoreIcons: {
+		oss: 'sca_ignore',
+		secrets: 'secrets_ignore',
+		iac: 'iac_ignore',
+		asca: 'asca_ignore',
+		containers: 'containers_ignore'
+	}
+} as const;
+
+/**
+ * Package display formatters configuration
+ */
+const PACKAGE_FORMATTERS = {
+	[constants.ossRealtimeScannerEngineName]: (key: string) => key.replace(':', '@'),
+	[constants.secretsScannerEngineName]: (key: string) => key.split(':')[0],
+	[constants.iacRealtimeScannerEngineName]: (key: string) => key.split(':')[0],
+	[constants.ascaRealtimeScannerEngineName]: (key: string) => key.split(':')[0],
+	[constants.containersRealtimeScannerEngineName]: (key: string) => {
+		const parts = key.split(':');
+		return parts.slice(0, 2).join('@');
+	}
+} as const;
+
+/**
+ * Time calculation constants
+ */
+const TIME_UNITS = {
+	day: 1,
+	week: 7,
+	month: 30,
+	year: 365
+} as const;
+
+// =============================================================================
+// CORE UTILITIES
+// =============================================================================
+
+/**
+ * Get current VS Code theme type
+ */
+export function getCurrentTheme(): ThemeType {
 	const currentTheme = vscode.window.activeColorTheme.kind;
 	return (currentTheme === vscode.ColorThemeKind.Light || currentTheme === vscode.ColorThemeKind.HighContrastLight)
 		? 'light'
 		: 'dark';
+}
+
+/**
+ * Create a webview URI for an icon file
+ */
+function createIconUri(webview: vscode.Webview, extensionPath: string, iconPath: string): string {
+	const uri = webview.asWebviewUri(
+		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', iconPath))
+	);
+	return uri?.toString() || '';
+}
+
+/**
+ * Build themed icon path using configuration
+ */
+function buildThemedIconPath(iconName: string, theme: ThemeType = getCurrentTheme()): string {
+	const themeDir = ICON_CONFIG.themes[theme];
+	return `${themeDir}/ignore/${iconName}.svg`.replace('_.svg', '.svg');
 }
 
 /**
@@ -15,211 +113,209 @@ export function getCurrentTheme(): 'light' | 'dark' {
 function createThemeAwareIconUri(
 	webview: vscode.Webview,
 	extensionPath: string,
-	lightIcon: string,
-	darkIcon: string
+	iconName: string
 ): string {
 	const currentTheme = getCurrentTheme();
-	const iconFileName = currentTheme === 'light' ? lightIcon : darkIcon;
-
-	const iconPath = webview.asWebviewUri(
-		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', iconFileName))
-	);
-	return iconPath?.toString() || '';
+	const lightPath = buildThemedIconPath(iconName, 'light');
+	const darkPath = buildThemedIconPath(iconName, 'dark');
+	const iconPath = currentTheme === 'light' ? lightPath : darkPath;
+	return createIconUri(webview, extensionPath, iconPath);
 }
 
+// =============================================================================
+// ICON PATH FUNCTIONS - VULNERABILITY SEVERITY
+// =============================================================================
+
 /**
- * Create a simple webview URI for an icon (no theme awareness)
+ * Get icon path for vulnerability severity indicators
  */
-function createSimpleIconUri(webview: vscode.Webview, extensionPath: string, iconPath: string): string {
-	const uri = webview.asWebviewUri(
-		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', iconPath))
-	);
-	return uri?.toString() || '';
-}
-
-// =============================================================================
-// VULNERABILITY SEVERITY ICONS
-// =============================================================================
-
-const VULNERABILITY_ICON_MAP: Record<string, string> = {
-	'critical': 'Vulnerability critical_ignore',
-	'high': 'Vulnerability-high_ignore',
-	'medium': 'Vulnerability-medium_ignore',
-	'low': 'Vulnerability-low_ignore}',
-	'malicious': 'Vulnerability_malicious_ignore'
-};
-
 export function getIconName(severity: string, webview: vscode.Webview, extensionPath: string): string {
-	const normalizedSeverity = severity?.toLowerCase();
-	const iconFile = VULNERABILITY_ICON_MAP[normalizedSeverity] || 'Vulnerability-medium_ignore';
-
-	return createSimpleIconUri(webview, extensionPath, `${iconFile}.svg`);
+	const normalizedSeverity = severity?.toLowerCase() as SeverityLevel;
+	const iconFile = ICON_CONFIG.severityIcons[normalizedSeverity] || ICON_CONFIG.severityIcons.medium;
+	return createIconUri(webview, extensionPath, `${iconFile}.svg`);
 }
 
 // =============================================================================
-// THEME-AWARE IGNORE ICONS
-// =============================================================================
-
-export function getReviveIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createSimpleIconUri(
-		webview,
-		extensionPath,
-		'arrow_ignore.svg'
-	);
-}
-
-export function getScaIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/sca_ignore_light.svg',
-		'sca_ignore.svg'
-	);
-}
-
-export function getSecretsIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/secrets_ignore_light.svg',
-		'secrets_ignore.svg'
-	);
-}
-
-export function getIacIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/iac_ignore_light.svg',
-		'iac_ignore.svg'
-	);
-}
-
-export function getAscaIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/asca_ignore_light.svg',
-		'asca_ignore.svg'
-	);
-}
-
-export function getContainersIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/containers_ignore_light.svg',
-		'containers_ignore.svg'
-	);
-}
-
-export function getCloseIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createSimpleIconUri(webview, extensionPath, 'Close.svg');
-}
-
-export function getGenericFileIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createThemeAwareIconUri(
-		webview,
-		extensionPath,
-		'lightTheme/genericFile_light.svg',
-		'genericFile.svg'
-	);
-}
-
-// =============================================================================
-// STATIC ICONS (NO THEME AWARENESS)
-// =============================================================================
-
-export function getNoIgnoreVulIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createSimpleIconUri(webview, extensionPath, 'no_ignore_vul.svg');
-}
-
-// =============================================================================
-// SEVERITY-BASED ICONS WITH HOVER SUPPORT
+// ICON PATH FUNCTIONS - THEME AWARE IGNORE ICONS
 // =============================================================================
 
 /**
- * Create severity-based icon with optional hover state
+ * Get revive/restore icon path
+ */
+export function getReviveIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return createIconUri(webview, extensionPath, 'arrow_ignore.svg');
+}
+
+/**
+ * Get scanner-specific ignore icon path
+ */
+function getScannerIgnoreIconPath(
+	scannerType: ScannerType,
+	webview: vscode.Webview,
+	extensionPath: string
+): string {
+	const iconName = ICON_CONFIG.ignoreIcons[scannerType];
+	return createThemeAwareIconUri(webview, extensionPath, iconName);
+}
+
+/**
+ * Get SCA (Software Composition Analysis) ignore icon path
+ */
+export function getScaIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return getScannerIgnoreIconPath('oss', webview, extensionPath);
+}
+
+/**
+ * Get Secrets scanner ignore icon path
+ */
+export function getSecretsIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return getScannerIgnoreIconPath('secrets', webview, extensionPath);
+}
+
+/**
+ * Get IaC (Infrastructure as Code) scanner ignore icon path
+ */
+export function getIacIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return getScannerIgnoreIconPath('iac', webview, extensionPath);
+}
+
+/**
+ * Get ASCA scanner ignore icon path
+ */
+export function getAscaIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return getScannerIgnoreIconPath('asca', webview, extensionPath);
+}
+
+/**
+ * Get Containers scanner ignore icon path
+ */
+export function getContainersIgnoreIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return getScannerIgnoreIconPath('containers', webview, extensionPath);
+}
+
+/**
+ * Get close/dismiss icon path
+ */
+export function getCloseIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return createThemeAwareIconUri(webview, extensionPath, 'Close');
+}
+
+/**
+ * Get generic file icon path
+ */
+export function getGenericFileIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return createThemeAwareIconUri(webview, extensionPath, 'genericFile');
+}
+
+// =============================================================================
+// ICON PATH FUNCTIONS - STATIC ICONS
+// =============================================================================
+
+/**
+ * Get "no ignored vulnerabilities" state icon path
+ */
+export function getNoIgnoreVulIconPath(webview: vscode.Webview, extensionPath: string): string {
+	return createIconUri(webview, extensionPath, 'no_ignore_vul.svg');
+}
+
+// =============================================================================
+// ICON PATH FUNCTIONS - SEVERITY-BASED WITH HOVER SUPPORT
+// =============================================================================
+
+/**
+ * Create severity-based icon path with optional hover state
  */
 function createSeverityIcon(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
-	subFolder: string,
+	scannerType: ScannerType,
 	isHover: boolean = false,
-	defaultSeverity: string = 'medium'
+	defaultSeverity: SeverityLevel = 'medium'
 ): string {
-	const normalizedSeverity = severity?.toLowerCase() || defaultSeverity;
+	const currentTheme = getCurrentTheme();
+	const themeDirectory = ICON_CONFIG.themes[currentTheme];
+	const normalizedSeverity = (severity?.toLowerCase() as SeverityLevel) || defaultSeverity;
 	const iconName = isHover ? `${normalizedSeverity}_hover` : normalizedSeverity;
-
-	return createSimpleIconUri(webview, extensionPath, `${subFolder}/${iconName}.svg`);
+	const subFolder = ICON_CONFIG.scannerFolders[scannerType];
+	return createIconUri(webview, extensionPath, `${themeDirectory}/${subFolder}/${iconName}.svg`);
 }
 
+/**
+ * Get package severity icon path
+ */
 export function getPackageIconPath(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
 	isHover: boolean = false
 ): string {
-	return createSeverityIcon(severity, webview, extensionPath, 'Packages', isHover);
+	return createSeverityIcon(severity, webview, extensionPath, 'oss', isHover);
 }
 
+/**
+ * Get secrets severity icon path
+ */
 export function getSecretsIconPath(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
 	isHover: boolean = false
 ): string {
-	return createSeverityIcon(severity, webview, extensionPath, 'Secrets', isHover);
+	return createSeverityIcon(severity, webview, extensionPath, 'secrets', isHover);
 }
 
+/**
+ * Get IaC severity icon path
+ */
 export function getIacIconPath(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
 	isHover: boolean = false
 ): string {
-	return createSeverityIcon(severity, webview, extensionPath, 'IacAsca', isHover);
+	return createSeverityIcon(severity, webview, extensionPath, 'iac', isHover);
 }
 
+/**
+ * Get ASCA severity icon path
+ */
 export function getAscaIconPath(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
 	isHover: boolean = false
 ): string {
-	return createSeverityIcon(severity, webview, extensionPath, 'IacAsca', isHover);
+	return createSeverityIcon(severity, webview, extensionPath, 'asca', isHover);
 }
 
+/**
+ * Get containers severity icon path
+ */
 export function getContainersIconPath(
 	severity: string,
 	webview: vscode.Webview,
 	extensionPath: string,
 	isHover: boolean = false
 ): string {
-	return createSeverityIcon(severity, webview, extensionPath, 'Containers', isHover);
+	return createSeverityIcon(severity, webview, extensionPath, 'containers', isHover);
 }
 
 // =============================================================================
-// FORMATTING UTILITIES
+// FORMATTING AND TEXT UTILITIES
 // =============================================================================
 
-const PACKAGE_DISPLAY_FORMATTERS: Record<string, (packageKey: string) => string> = {
-	[constants.ossRealtimeScannerEngineName]: (packageKey) => packageKey.replace(':', '@'),
-	[constants.secretsScannerEngineName]: (packageKey) => packageKey.split(':')[0],
-	[constants.iacRealtimeScannerEngineName]: (packageKey) => packageKey.split(':')[0],
-	[constants.ascaRealtimeScannerEngineName]: (packageKey) => packageKey.split(':')[0],
-	[constants.containersRealtimeScannerEngineName]: (packageKey) => {
-		const parts = packageKey.split(':');
-		return parts.slice(0, 2).join('@');
-	}
-};
-
+/**
+ * Format package display name based on scanner type
+ */
 export function formatPackageDisplayName(packageKey: string, packageType: string): string {
-	const formatter = PACKAGE_DISPLAY_FORMATTERS[packageType];
+	const formatter = PACKAGE_FORMATTERS[packageType];
 	return formatter ? formatter(packageKey) : packageKey;
 }
 
+/**
+ * Get risk description text for severity level
+ */
 export function getRiskText(severity: string): string {
 	return severity?.toLowerCase() === 'malicious'
 		? 'malicious-package detected'
@@ -227,16 +323,12 @@ export function getRiskText(severity: string): string {
 }
 
 // =============================================================================
-// DATE UTILITIES
+// DATE AND TIME UTILITIES
 // =============================================================================
 
-const TIME_UNITS = {
-	day: 1,
-	week: 7,
-	month: 30,
-	year: 365
-};
-
+/**
+ * Calculate and format relative time since a given date
+ */
 export function getLastUpdated(dateAdded: string | undefined): string {
 	if (!dateAdded) {
 		return 'Unknown';
@@ -281,15 +373,12 @@ export function getLastUpdated(dateAdded: string | undefined): string {
 }
 
 // =============================================================================
-// HTML GENERATION
+// HTML GENERATION UTILITIES
 // =============================================================================
 
-interface FileInfo {
-	path: string;
-	active: boolean;
-	line?: number;
-}
-
+/**
+ * Create a file button HTML element
+ */
 function createFileButton(
 	file: FileInfo,
 	fileIconUri: string,
@@ -313,6 +402,9 @@ function createFileButton(
 	</div>`;
 }
 
+/**
+ * Generate HTML for file buttons with expand/collapse functionality
+ */
 export function generateFileButtons(
 	files: Array<FileInfo>,
 	webview: vscode.Webview,
