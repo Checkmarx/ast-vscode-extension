@@ -304,13 +304,35 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
   return 'similarityId' in item && 'title' in item;
 }
 
+/**
+ * Configuration for CxAI badge rendering
+ */
+const CX_AI_BADGE_CONFIG = {
+  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/ignorePage/',
+  style: 'vertical-align: -12px;',
+  icons: {
+    light: 'lightTheme/ignore/CxOne_Assist.svg',
+    dark: 'darkTheme/ignore/CxOne_Assist.png'
+  }
+} as const;
 
-export function renderCxAiBadge(): string {
+/**
+ * Determines if the current theme is a light theme
+ */
+function isLightTheme(): boolean {
   const currentTheme = vscode.window.activeColorTheme.kind;
-  const currentTheme1 = (currentTheme === vscode.ColorThemeKind.Light || currentTheme === vscode.ColorThemeKind.HighContrastLight)
-    ? (`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist_light.svg" style="vertical-align: -12px;"/>`)
-    : (`<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/>`);
-  return currentTheme1;
+  return currentTheme === vscode.ColorThemeKind.Light ||
+    currentTheme === vscode.ColorThemeKind.HighContrastLight;
+}
+
+/**
+ * Renders the CxAI badge with appropriate theming
+ */
+export function renderCxAiBadge(): string {
+  const iconFile = isLightTheme() ? CX_AI_BADGE_CONFIG.icons.light : CX_AI_BADGE_CONFIG.icons.dark;
+  const iconUrl = `${CX_AI_BADGE_CONFIG.baseUrl}/${iconFile}`;
+
+  return `<img src="${iconUrl}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
 }
 
 
