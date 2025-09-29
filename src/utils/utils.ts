@@ -311,7 +311,7 @@ const CX_AI_BADGE_CONFIG = {
   baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/ignorePage/',
   style: 'vertical-align: -12px;',
   icons: {
-    light: 'lightTheme/ignore/CxOne_Assist.svg',
+    light: 'lightTheme/ignore/CxOne_Assist.png',
     dark: 'darkTheme/ignore/CxOne_Assist.png'
   }
 } as const;
