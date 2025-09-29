@@ -1,17 +1,28 @@
 # CHANGELOG
 
+## [v2.38.1-ignore-out-files.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-ignore-out-files.0) - 2025-09-25 17:57:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-2.38.0-test-ignored-folder.0...v2.38.1-ignore-out-files.0
+
+## [v2.38.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-0) - 2025-09-25 11:58:24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-Kiro.0...v2.38.1-0
+
+## [v2.38.1-Kiro.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-Kiro.0) - 2025-09-18 16:33:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.38.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.0) - 2025-09-14 08:24:05
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.38.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* New command to open Copilot Chat (AST-0000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1272
-### Other Changes
-* Update Version - Automated Changes by @cx-daniel-greenspan in https://github.com/Checkmarx/ast-vscode-extension/pull/1273
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.37.0...v2.38.0
 
 ## [v2.37.1-sca-realtime-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.37.1-sca-realtime-fix.0) - 2025-09-04 14:08:36
 
