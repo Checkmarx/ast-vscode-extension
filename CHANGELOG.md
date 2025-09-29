@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [v2.39.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.0) - 2025-09-29 13:20:19
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.39.0 -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Added custom state in enum (Bug/AST-111318) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1271
+* Fix Authentication(AST-000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1277
+### New Features 🚀
+* Fix results tree shows outdated data after switching environments (AST-92555)  by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1270
+* Update CodeBashing string to icon (AST-111629) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1282
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.144 by @ast-phoenix in https://github.com/Checkmarx/ast-vscode-extension/pull/1283
+### Other Changes
+* Add logging for scan results in secrets, iac, and asca scanners (AST-113145) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1274
+* OSS Real time: Show unknown gutter icon in first line (AST-113657) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1276
+* Remove the malicious package and verify that the output folder contains only *.js files by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1280
+* Show hover card only on problem line (AST-113855) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1281
+* updating new gif with new logo(AST-113032) by @cx-sumit-morchhale in https://github.com/Checkmarx/ast-vscode-extension/pull/1275
+* Add support for Kiro IDE (AST-113486) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1278
+* Update Version - Automated Changes by @cx-anurag-dalke in https://github.com/Checkmarx/ast-vscode-extension/pull/1284
+
+## New Contributors
+* @cx-anurag-dalke made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1284
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.0...v2.39.0
+
 ## [v2.38.1-ignore-out-files.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-ignore-out-files.0) - 2025-09-25 17:57:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
