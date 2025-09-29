@@ -38,8 +38,8 @@ const ICON_CONFIG = {
 	scannerFolders: {
 		oss: 'Packages',
 		secrets: 'Secrets',
-		iac: 'IacAsca',
-		asca: 'IacAsca',
+		iac: 'Iac-Asca',
+		asca: 'Iac-Asca',
 		containers: 'Containers'
 	},
 	ignoreIcons: {

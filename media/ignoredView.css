@@ -338,10 +338,6 @@ body {
   flex-shrink: 0;
 }
 
-.file-btn:hover {
-  background-color: var(--vscode-button-secondaryHoverBackground, #444);
-}
-
 .col-updated {
   color: var(--vscode-editor-foreground);
   font-size: 14px;
