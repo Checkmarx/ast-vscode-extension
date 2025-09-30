@@ -215,7 +215,7 @@ export function getGenericFileIconPath(webview: vscode.Webview, extensionPath: s
  * Get "no ignored vulnerabilities" state icon path
  */
 export function getNoIgnoreVulIconPath(webview: vscode.Webview, extensionPath: string): string {
-	return createIconUri(webview, extensionPath, 'no_ignore_vul.svg');
+	return createThemeAwareIconUri(webview, extensionPath, 'no_ignore_vul');
 }
 
 // =============================================================================

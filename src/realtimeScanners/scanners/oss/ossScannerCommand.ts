@@ -110,12 +110,23 @@ export class OssScannerCommand extends BaseScannerCommand {
 `;
   }
 
+  /**
+   * Determines if the current theme is a light theme
+   */
+  private isLightTheme(): boolean {
+    const currentTheme = vscode.window.activeColorTheme.kind;
+    return currentTheme === vscode.ColorThemeKind.Light ||
+      currentTheme === vscode.ColorThemeKind.HighContrastLight;
+  }
+
   private renderMaliciousIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconFile = this.isLightTheme() ? 'malicious.png' : 'malicious_light.png';
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderPackageIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconFile = this.isLightTheme() ? 'Package.png' : 'Package_light.png';
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(

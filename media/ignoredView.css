@@ -61,9 +61,18 @@ body {
   background-color: rgba(70, 150, 255, 0.1);
 }
 
+body[data-vscode-theme-kind*="dark"]
 .refresh-btn.disabled,
 .refresh-btn:disabled {
   color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+body[data-vscode-theme-kind*="light"]
+.refresh-btn.disabled,
+.refresh-btn:disabled {
+  color: rgba(36, 35, 35, 0.3);
   cursor: not-allowed;
   pointer-events: none;
 }
