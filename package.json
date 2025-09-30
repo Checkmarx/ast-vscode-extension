@@ -883,7 +883,7 @@
         "id": "cxone-assist",
         "order": 1,
         "properties": {
-          "checkmarx.mcp": {
+          "checkmarx.MCP": {
             "type": "",
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"

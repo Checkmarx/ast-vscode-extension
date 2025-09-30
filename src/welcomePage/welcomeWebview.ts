@@ -157,7 +157,7 @@ export class WelcomeWebview {
               </div>
             </div>
             <ul class="main-feature-list">
-              <li>Run SAST, SCA, IaC & Secrets scans.</li>
+              <li>Run SAST, SCA, IaC, Container & Secrets scans.</li>
               <li>Create a new Checkmarx branch from your local workspace.</li>
               <li>Preview or rescan before committing.</li>
               <li>Triage & fix issues directly in the editor.</li>
