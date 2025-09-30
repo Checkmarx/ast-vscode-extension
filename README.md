@@ -11,6 +11,7 @@
 
 </div>
 
+
 <br />
 <p align="center">
   <a href="https://github.com/Checkmarx/ast-vscode-extension">
