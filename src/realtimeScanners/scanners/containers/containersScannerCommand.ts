@@ -8,6 +8,7 @@ import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { ContainersHoverData } from "../../common/types";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class ContainersScannerCommand extends BaseScannerCommand {
 	constructor(
@@ -99,17 +100,8 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 `;
 	}
 
-	/**
-	 * Determines if the current theme is a light theme
-	 */
-	private isLightTheme(): boolean {
-		const currentTheme = vscode.window.activeColorTheme.kind;
-		return currentTheme === vscode.ColorThemeKind.Light ||
-			currentTheme === vscode.ColorThemeKind.HighContrastLight;
-	}
-
 	private renderImageIcon(): string {
-		const iconFile = this.isLightTheme() ? 'container_image.png' : 'container_image_light.png';
+		const iconFile = ThemeUtils.selectIconByTheme('container_image_light.png', 'container_image.png');
 		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
@@ -127,7 +119,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 	}
 
 	private renderMaliciousIcon(): string {
-		const iconFile = this.isLightTheme() ? 'malicious.png' : 'malicious_light.png';
+		const iconFile = ThemeUtils.selectIconByTheme('malicious_light.png', 'malicious.png');
 		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
 	}
 

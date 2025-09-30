@@ -15,6 +15,7 @@ import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerSe
 import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
 import { Logs } from "../models/logs";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
+import { ThemeUtils } from "./themeUtils";
 
 
 export function getProperty(
@@ -317,19 +318,10 @@ const CX_AI_BADGE_CONFIG = {
 } as const;
 
 /**
- * Determines if the current theme is a light theme
- */
-function isLightTheme(): boolean {
-  const currentTheme = vscode.window.activeColorTheme.kind;
-  return currentTheme === vscode.ColorThemeKind.Light ||
-    currentTheme === vscode.ColorThemeKind.HighContrastLight;
-}
-
-/**
  * Renders the CxAI badge with appropriate theming
  */
 export function renderCxAiBadge(): string {
-  const iconFile = isLightTheme() ? CX_AI_BADGE_CONFIG.icons.light : CX_AI_BADGE_CONFIG.icons.dark;
+  const iconFile = ThemeUtils.selectIconByTheme(CX_AI_BADGE_CONFIG.icons.light, CX_AI_BADGE_CONFIG.icons.dark);
   const iconUrl = `${CX_AI_BADGE_CONFIG.baseUrl}/${iconFile}`;
 
   return `<img src="${iconUrl}" style="${CX_AI_BADGE_CONFIG.style}"/>`;

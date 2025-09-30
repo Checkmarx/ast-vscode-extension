@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { constants } from '../../utils/common/constants';
+import { ThemeUtils } from '../../utils/themeUtils';
 
 // =============================================================================
 // TYPES AND INTERFACES
@@ -83,10 +84,7 @@ const TIME_UNITS = {
  * Get current VS Code theme type
  */
 export function getCurrentTheme(): ThemeType {
-	const currentTheme = vscode.window.activeColorTheme.kind;
-	return (currentTheme === vscode.ColorThemeKind.Light || currentTheme === vscode.ColorThemeKind.HighContrastLight)
-		? 'light'
-		: 'dark';
+	return ThemeUtils.getThemeType();
 }
 
 /**
