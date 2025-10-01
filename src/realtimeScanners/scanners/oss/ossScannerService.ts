@@ -486,7 +486,7 @@ export class OssScannerService extends BaseScannerService {
         return;
       }
 
-      const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+      const fileEntry = this.findActiveFileEntry(entry, relativePath);
       if (!fileEntry || !fileEntry.line) {
         return;
       }
