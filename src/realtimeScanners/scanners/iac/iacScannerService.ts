@@ -13,7 +13,7 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-import {logScanResults} from "../common";
+import { logScanResults } from "../common";
 
 export class IacScannerService extends BaseScannerService {
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
@@ -163,7 +163,7 @@ export class IacScannerService extends BaseScannerService {
 
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.iacRealtimeScannerEngineName) { return; }
-				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+				const fileEntry = this.findActiveFileEntry(entry, relativePath);
 				if (!fileEntry) { return; }
 
 				const key = `${entry.PackageName}:${entry.similarityId}:${relativePath}`;

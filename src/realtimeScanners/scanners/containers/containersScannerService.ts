@@ -89,7 +89,7 @@ export class ContainersScannerService extends BaseScannerService {
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
-		if (!super.shouldScanFile(document)) return false;
+		if (!super.shouldScanFile(document)) {return false;}
 
 		const filePath = document.uri.fsPath;
 		const normalizedPath = filePath.replace(/\\/g, "/");
@@ -105,7 +105,7 @@ export class ContainersScannerService extends BaseScannerService {
 		const fileExtension = path.extname(filePath).toLowerCase();
 		if (constants.containersHelmExtensions.includes(fileExtension)) {
 			const fileName = path.basename(filePath).toLowerCase();
-			if (constants.containersHelmExcludedFiles.includes(fileName)) return false;
+			if (constants.containersHelmExcludedFiles.includes(fileName)) { return false; }
 			return normalizedPath.toLowerCase().includes("/helm/") || normalizedPath.toLowerCase().includes("\\helm\\");
 		}
 		return false;
@@ -125,7 +125,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 		const fullTargetPath = path.join(helmFolder, relativePath);
 		const targetDir = path.dirname(fullTargetPath);
-		if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+		if (!fs.existsSync(targetDir)) { fs.mkdirSync(targetDir, { recursive: true }); }
 		fs.writeFileSync(fullTargetPath, content);
 		return { tempFilePath: fullTargetPath, tempSubFolder: helmFolder };
 	}
@@ -368,7 +368,7 @@ export class ContainersScannerService extends BaseScannerService {
 
 		Object.entries(ignoredData).forEach(([, entry]) => {
 			if (entry.type !== constants.containersRealtimeScannerEngineName) { return; }
-			const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+			const fileEntry = this.findActiveFileEntry(entry, relativePath);
 			if (!fileEntry) { return; }
 
 			const imageKey = `${entry.imageName}:${entry.imageTag}`;
@@ -597,7 +597,7 @@ export class ContainersScannerService extends BaseScannerService {
 	private applyDecorations(uri: vscode.Uri): void {
 		const filePath = uri.fsPath;
 		const editor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString());
-		if (!editor) return;
+		if (!editor) { return; }
 		const get = (key: keyof typeof this.decorationsMap) => this.decorationsMap[key].get(filePath) || [];
 		const allUnderlineDecorations = [
 			...get('maliciousIcon'),
@@ -658,7 +658,7 @@ export class ContainersScannerService extends BaseScannerService {
 		for (const key of severityKeys) {
 			const decorations = this.decorationsMap[key].get(filePath) || [];
 			const decoration = decorations.find(d => d.range.start.line === lineNumber);
-			if (decoration) return decoration.range;
+			if (decoration) { return decoration.range; }
 		}
 		return new vscode.Range(
 			new vscode.Position(lineNumber, 0),

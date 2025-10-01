@@ -6,7 +6,6 @@ import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
-import {cx} from "../../cx";
 
 export abstract class BaseScannerService implements IScannerService {
   protected editorChangeListener: vscode.Disposable | undefined;
@@ -129,7 +128,7 @@ export abstract class BaseScannerService implements IScannerService {
     }
     return undefined;
   }
-  
+
   private generateTempFileInfo(originalFilePath: string) {
     const originalExt = path.extname(originalFilePath);
     const baseName = path.basename(originalFilePath, originalExt);
@@ -179,5 +178,19 @@ export abstract class BaseScannerService implements IScannerService {
         return priority;
       }
     }
+  }
+
+  /**
+   * Helper function to find an active file entry by relative path with normalized path comparison
+   * @param entry - The ignored package entry
+   * @param relativePath - The relative path to find
+   * @returns The matching file entry or undefined
+   */
+  protected findActiveFileEntry(
+    entry: { files: Array<{ path: string; active: boolean; line?: number }> },
+    relativePath: string
+  ): { path: string; active: boolean; line?: number } | undefined {
+    const normalizedRelativePath = path.normalize(relativePath);
+    return entry.files.find(f => path.normalize(f.path) === normalizedRelativePath && f.active);
   }
 }
