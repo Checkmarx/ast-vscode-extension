@@ -61,13 +61,15 @@ body {
   background-color: rgba(70, 150, 255, 0.1);
 }
 
-body[data-vscode-theme-kind*="dark"]
-.refresh-btn.disabled,
-.refresh-btn:disabled {
+body[data-vscode-theme-kind*="dark"] .refresh-btn.disabled,
+body[data-vscode-theme-kind*="dark"] .refresh-btn:disabled,
+body[data-vscode-theme-kind="vscode-high-contrast"] .refresh-btn.disabled,
+body[data-vscode-theme-kind="vscode-high-contrast"] .refresh-btn:disabled {
   color: rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
   pointer-events: none;
 }
+
 
 body[data-vscode-theme-kind*="light"]
 .refresh-btn.disabled,
@@ -364,9 +366,10 @@ body[data-vscode-theme-kind*="light"]
   justify-content: flex-end;
   padding-top: 4px;
 }
-
 body[data-vscode-theme-kind*="dark"] .revive-btn,
-body[data-vscode-theme-kind*="dark"].revive-all-btn{
+body[data-vscode-theme-kind*="dark"] .revive-all-btn,
+body[data-vscode-theme-kind="vscode-high-contrast"] .revive-btn,
+body[data-vscode-theme-kind="vscode-high-contrast"] .revive-all-btn {
   background: var(--fill-container, #2a2a2a);
 }
 
@@ -591,7 +594,8 @@ body[data-vscode-theme-kind*="light"] .selection-bar {
 }
 
 /* Dark theme */
-body[data-vscode-theme-kind*="dark"] .selection-bar {
+body[data-vscode-theme-kind*="dark"] .selection-bar,
+body[data-vscode-theme-kind="vscode-high-contrast"] .selection-bar {
   border: 1px solid var(--disabled, rgba(255, 255, 255, 0.3))
 }
 .selection-info {
