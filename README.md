@@ -64,7 +64,7 @@ The extension enables you to navigate from a vulnerability to the relevant sourc
 ![Running a Scan from the IDE](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif "Running a Scan from the IDE")
 
 **GIF - Loading and Viewing Results**
-![Loading and Viewing Results](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_running_scan.gif "Loading and Viewing Results")
+![Loading and Viewing Results](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_loading_scan_results.gif "Loading and Viewing Results")
 
 ### Key Features
 

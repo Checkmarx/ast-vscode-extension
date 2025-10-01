@@ -1,21 +1,36 @@
 # CHANGELOG
 
-## [v2.38.1-Kiro.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-Kiro.0) - 2025-09-18 16:33:11
+## [v2.39.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.0) - 2025-09-29 13:20:19
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.39.0 -->
+
+## [v2.38.1-CxOneAssist-LightTheme-Support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-CxOneAssist-LightTheme-Support.0) - 2025-09-29 13:21:02
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Bug Fixes 🐛
-* Added custom state in enum (Bug/AST-111318) by @cx-rah-pid in https://github.com/Checkmarx/ast-vscode-extension/pull/1271
-* Fix Authentication(AST-000) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1277
-### New Features 🚀
-* Fix results tree shows outdated data after switching environments (AST-92555)  by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1270
-### Other Changes
-* Add logging for scan results in secrets, iac, and asca scanners (AST-113145) by @cx-ben-alvo in https://github.com/Checkmarx/ast-vscode-extension/pull/1274
-* OSS Real time: Show unknown gutter icon in first line (AST-113657) by @cx-itay-paz in https://github.com/Checkmarx/ast-vscode-extension/pull/1276
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.0...v2.38.1-Kiro.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.39.0...v2.38.1-CxOneAssist-LightTheme-Support.0
+
+## [v2.38.1-ignore-out-files.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-ignore-out-files.0) - 2025-09-25 17:57:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-2.38.0-test-ignored-folder.0...v2.38.1-ignore-out-files.0
+
+## [v2.38.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-0) - 2025-09-25 11:58:24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.38.1-Kiro.0...v2.38.1-0
+
+## [v2.38.1-Kiro.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-Kiro.0) - 2025-09-18 16:33:11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.38.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.0) - 2025-09-14 08:24:05
 

@@ -397,20 +397,21 @@
 			let headerItemCodebashingDiv = document.createElement('div');
 			headerItemCodebashingDiv.setAttribute('id', 'cx_header_codebashing');
 			headerItemCodebashingDiv.style.marginBottom = '20px';
-			let codebashingLinkSpan = document.createElement('span');
-			codebashingLinkSpan.setAttribute('class', 'codebashing-link');
-			codebashingLinkSpan.textContent = 'Learn more at ';
-			let orangeColorSpan = document.createElement('span');
-			orangeColorSpan.setAttribute('class', 'orange-color');
-			orangeColorSpan.textContent = '>_';
-			let codeBashingSpan = document.createElement('span');
-			codeBashingSpan.setAttribute('class', 'codebashing-link-value');
-			codeBashingSpan.setAttribute('id', 'cx_codebashing');
-			codeBashingSpan.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
-			codeBashingSpan.textContent = 'codebashing';
-			codebashingLinkSpan.appendChild(orangeColorSpan);
-			codebashingLinkSpan.appendChild(codeBashingSpan);
-			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
+			let codebashingLinkIcon = document.createElement('span');
+            codebashingLinkIcon.setAttribute('class', 'codebashing-link');
+            codebashingLinkIcon.textContent = 'Learn more at ';
+            let codeBashingIcon = document.createElement('img');
+            let iconSrc = window.codeBashingIconUriDark;
+            if (document.body.classList.contains('vscode-light') || document.body.classList.contains('vscode-high-contrast-light')) {
+                iconSrc = window.codeBashingIconUriLight;
+            }
+            codeBashingIcon.setAttribute('src', iconSrc);
+            codeBashingIcon.setAttribute('id', 'cx_codebashing');
+            codeBashingIcon.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
+            codeBashingIcon.setAttribute('alt', 'CodeBashing');
+            codeBashingIcon.style.cssText = 'height:40px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
+            codebashingLinkIcon.appendChild(codeBashingIcon);
+			headerItemCodebashingDiv.appendChild(codebashingLinkIcon);
 			return headerItemCodebashingDiv.outerHTML;
 		}
 		return codeBashingSection;
