@@ -1,16 +1,16 @@
 # CHANGELOG
 
-## [v2.39.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.0) - 2025-09-29 13:20:19
-
-<!-- Release notes generated using configuration in .github/release.yml at v2.39.0 -->
-
-## [v2.38.1-CxOneAssist-LightTheme-Support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-CxOneAssist-LightTheme-Support.0) - 2025-09-29 13:21:02
+## [v2.39.1-CxOneAssist_light_theme_support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.1-CxOneAssist_light_theme_support.0) - 2025-09-30 13:58:13
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.39.0...v2.38.1-CxOneAssist-LightTheme-Support.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.39.0...v2.39.1-CxOneAssist_light_theme_support.0
+
+## [v2.39.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.0) - 2025-09-29 13:20:19
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.39.0 -->
 
 ## [v2.38.1-ignore-out-files.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.38.1-ignore-out-files.0) - 2025-09-25 17:57:29
 
