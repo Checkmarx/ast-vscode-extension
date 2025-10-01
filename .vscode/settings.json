@@ -13,5 +13,10 @@
   },
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": true,
+  "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": true,
+  "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": true,
+  "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": true,
+  "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": true
 }

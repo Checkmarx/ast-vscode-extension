@@ -9,10 +9,19 @@ export class IgnoredView {
 	private context: vscode.ExtensionContext;
 	private autoRefreshTimer: NodeJS.Timeout | undefined;
 	private lastRefreshDate: string;
+	private themeChangeListener: vscode.Disposable | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
 		this.lastRefreshDate = new Date().toDateString();
+
+		// Listen for theme changes
+		this.themeChangeListener = vscode.window.onDidChangeActiveColorTheme(() => {
+			if (this.panel) {
+				// Refresh the webview content when theme changes
+				this.refresh();
+			}
+		});
 	}
 
 	public show(): void {
@@ -49,6 +58,8 @@ export class IgnoredView {
 			this.stopAutoRefresh();
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setUiRefreshCallback(undefined);
+			// Dispose theme change listener
+			this.themeChangeListener?.dispose();
 		});
 
 		this.panel.webview.onDidReceiveMessage(
@@ -427,5 +438,9 @@ export class IgnoredView {
 		`;
 	}
 
-
+	public dispose(): void {
+		this.panel?.dispose();
+		this.themeChangeListener?.dispose();
+		this.stopAutoRefresh();
+	}
 }

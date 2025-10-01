@@ -15,6 +15,7 @@ import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerSe
 import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
 import { Logs } from "../models/logs";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
+import { ThemeUtils } from "./themeUtils";
 
 
 export function getProperty(
@@ -304,9 +305,26 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
   return 'similarityId' in item && 'title' in item;
 }
 
+/**
+ * Configuration for CxAI badge rendering
+ */
+const CX_AI_BADGE_CONFIG = {
+  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/',
+  style: 'vertical-align: -12px;',
+  icons: {
+    light: 'CxOne_Assist_light.png',
+    dark: 'CxOne_Assist.png'
+  }
+} as const;
 
+/**
+ * Renders the CxAI badge with appropriate theming
+ */
 export function renderCxAiBadge(): string {
-  return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/CxOne_Assist.png" style="vertical-align: -12px;"/> `;
+  const iconFile = ThemeUtils.selectIconByTheme(CX_AI_BADGE_CONFIG.icons.light, CX_AI_BADGE_CONFIG.icons.dark);
+  const iconUrl = `${CX_AI_BADGE_CONFIG.baseUrl}/${iconFile}`;
+
+  return `<img src="${iconUrl}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
 }
 
 

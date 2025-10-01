@@ -250,8 +250,8 @@ export class AuthenticationWebview {
                   const baseUri = message.baseUri.trim();
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
                   const token = await authService.authenticate(baseUri, tenant);
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
                   if (token !== "") {
                     setTimeout(async () => {
                       this._panel.dispose();
