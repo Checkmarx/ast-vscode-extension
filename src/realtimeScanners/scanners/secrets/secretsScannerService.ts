@@ -10,8 +10,7 @@ import path from "path";
 import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { cx } from "../../../cx";
-import fs from "fs";
-import {logScanResults} from "../common";
+import { logScanResults } from "../common";
 
 export class SecretsScannerService extends BaseScannerService {
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
@@ -123,7 +122,7 @@ export class SecretsScannerService extends BaseScannerService {
 
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }
-				const fileEntry = entry.files.find(f => f.path === relativePath && f.active);
+				const fileEntry = this.findActiveFileEntry(entry, relativePath);
 				if (!fileEntry) { return; }
 
 				const key = `${entry.PackageName}:${entry.secretValue}:${relativePath}`;

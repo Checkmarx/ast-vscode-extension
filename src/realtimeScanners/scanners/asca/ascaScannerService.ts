@@ -150,7 +150,7 @@ export class AscaScannerService extends BaseScannerService {
 			return false;
 		}
 
-		const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
+		const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath).replace(/\\/g, '/');
 		const packageKey = `${result.ruleName}:${result.ruleId}:${relativePath}`;
 
 		const ignoreEntry = ignoreData[packageKey];
