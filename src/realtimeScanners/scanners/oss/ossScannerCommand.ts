@@ -8,6 +8,7 @@ import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
+import { ThemeUtils } from "../../../utils/themeUtils";
 import * as util from 'util';
 
 export class OssScannerCommand extends BaseScannerCommand {
@@ -98,7 +99,7 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private renderID(hoverData: HoverData): string {
-    if (hoverData.status == CxRealtimeEngineStatus.malicious) {
+    if (hoverData.status === CxRealtimeEngineStatus.malicious) {
       return `
 <b>${hoverData.packageName} @ ${hoverData.version}</b>
 <i style="color: dimgrey;"> - ${hoverData.status} Package <br></i>
@@ -111,11 +112,13 @@ export class OssScannerCommand extends BaseScannerCommand {
   }
 
   private renderMaliciousIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/malicious.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconFile = ThemeUtils.selectIconByTheme('malicious_light.png', 'malicious.png');
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderPackageIcon(): string {
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/Package.png" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconFile = ThemeUtils.selectIconByTheme('Package_light.png', 'Package.png');
+    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(
