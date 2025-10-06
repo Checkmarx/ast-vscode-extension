@@ -132,10 +132,10 @@ export const constants = {
 
   projectLimit: "limit=10000",
   vsCodeAgent: "VS Code",
-  vsCodeAgentOrginalName : "Visual Studio Code",
+  vsCodeAgentOrginalName: "Visual Studio Code",
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
-  kiroAgent : "Kiro",
+  kiroAgent: "Kiro",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -264,7 +264,7 @@ export const constants = {
     "**/*.terraform.tfvars",
   ],
 
-  cxAi: 'CxAI',
+  cxAi: 'CxOne Assist',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
