@@ -9,7 +9,14 @@ export class ThemeUtils {
 	 * @returns true if the current theme is light or high contrast light, false otherwise
 	 */
 	public static isLightTheme(): boolean {
-		const currentTheme = vscode.window.activeColorTheme.kind;
+		// Handle case where activeColorTheme might be undefined (e.g., in tests)
+		const activeTheme = vscode.window.activeColorTheme;
+		if (!activeTheme) {
+			// Default to dark theme if theme is not available
+			return false;
+		}
+
+		const currentTheme = activeTheme.kind;
 		return currentTheme === vscode.ColorThemeKind.Light ||
 			currentTheme === vscode.ColorThemeKind.HighContrastLight;
 	}
