@@ -11,8 +11,10 @@ import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { minimatch } from "minimatch";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class OssScannerService extends BaseScannerService {
+  private themeChangeListener: vscode.Disposable | undefined;
 
   private createDecoration(
     iconName: string,
@@ -27,20 +29,24 @@ export class OssScannerService extends BaseScannerService {
     });
   }
 
-  private decorationTypes = {
-    malicious: this.createDecoration("malicious.svg"),
-    ok: this.createDecoration("realtimeEngines/green_check.svg"),
-    unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
-    critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
-    high: this.createDecoration("realtimeEngines/high_severity.svg"),
-    medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
-    low: this.createDecoration("realtimeEngines/low_severity.svg"),
-    ignored: this.createDecoration("Ignored.svg"),
-    underline: vscode.window.createTextEditorDecorationType({
-      textDecoration: "underline wavy #f14c4c",
-      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
-    }),
-  };
+  private createDecorationTypes() {
+    return {
+      malicious: this.createDecoration("malicious.svg"),
+      ok: this.createDecoration("realtimeEngines/green_check.svg"),
+      unknown: this.createDecoration("realtimeEngines/question_mark.svg"),
+      critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
+      high: this.createDecoration("realtimeEngines/high_severity.svg"),
+      medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
+      low: this.createDecoration("realtimeEngines/low_severity.svg"),
+      ignored: this.createDecoration(ThemeUtils.selectIconByTheme('Ignored_light.svg', "Ignored.svg")),
+      underline: vscode.window.createTextEditorDecorationType({
+        textDecoration: "underline wavy #f14c4c",
+        rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+      }),
+    };
+  }
+
+  private decorationTypes = this.createDecorationTypes();
 
   private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
   private hoverMessages: Map<string, HoverData> = new Map();
@@ -72,6 +78,9 @@ export class OssScannerService extends BaseScannerService {
       errorMessage: constants.errorOssScanRealtime,
     };
     super(config);
+
+    // Set up theme change listener using common method
+    this.themeChangeListener = BaseScannerService.createThemeChangeHandler(this, 'Ignored_light.svg');
   }
 
   public clearScanData(uri: vscode.Uri): void {
@@ -661,6 +670,26 @@ export class OssScannerService extends BaseScannerService {
     await super.clearProblems();
     this.diagnosticsMap.clear();
     Object.values(this.decorationsMap).forEach(map => map.clear());
+  }
+
+  public dispose(): void {
+    // Dispose theme change listener
+    if (this.themeChangeListener) {
+      this.themeChangeListener.dispose();
+      this.themeChangeListener = undefined;
+    }
+
+    // Dispose decoration types
+    Object.values(this.decorationTypes).forEach(decoration => {
+      if (decoration && typeof decoration.dispose === 'function') {
+        decoration.dispose();
+      }
+    });
+
+    // Call parent dispose if it exists
+    if (super.dispose && typeof super.dispose === 'function') {
+      super.dispose();
+    }
   }
 
   protected getTempSubFolderPath(

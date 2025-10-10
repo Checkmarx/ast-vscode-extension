@@ -11,8 +11,10 @@ import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { cx } from "../../../cx";
 import { logScanResults } from "../common";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class SecretsScannerService extends BaseScannerService {
+	private themeChangeListener: vscode.Disposable | undefined;
 	private diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
 	private decorationsMap = {
 		critical: new Map<string, vscode.DecorationOptions[]>(),
@@ -37,7 +39,7 @@ export class SecretsScannerService extends BaseScannerService {
 		critical: this.createDecoration("realtimeEngines/critical_severity.svg", "12px"),
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
-		ignored: this.createDecoration("Ignored.svg")
+		ignored: this.createDecoration(ThemeUtils.selectIconByTheme('Ignored_light.svg', "Ignored.svg")),
 	};
 
 	constructor() {
@@ -52,6 +54,9 @@ export class SecretsScannerService extends BaseScannerService {
 		super(config);
 
 		this.registerHoverDataMap(this.secretsHoverData);
+
+		// Set up theme change listener using common method
+		this.themeChangeListener = BaseScannerService.createThemeChangeHandler(this, 'Ignored_light.svg');
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
@@ -317,5 +322,18 @@ export class SecretsScannerService extends BaseScannerService {
 
 	getDiagnosticsMap(): Map<string, vscode.Diagnostic[]> {
 		return this.diagnosticsMap;
+	}
+
+	public dispose(): void {
+		// Dispose theme change listener
+		if (this.themeChangeListener) {
+			this.themeChangeListener.dispose();
+			this.themeChangeListener = undefined;
+		}
+
+		// Call parent dispose if it exists
+		if (super.dispose && typeof super.dispose === 'function') {
+			super.dispose();
+		}
 	}
 }

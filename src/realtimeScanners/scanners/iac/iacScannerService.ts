@@ -14,8 +14,10 @@ import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 import { logScanResults } from "../common";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class IacScannerService extends BaseScannerService {
+	private themeChangeListener: vscode.Disposable | undefined;
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private iacHoverData = new Map<string, IacHoverData[]>();
 	private decorationsMap = {
@@ -31,7 +33,7 @@ export class IacScannerService extends BaseScannerService {
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
 		low: this.createDecoration("realtimeEngines/low_severity.svg"),
-		ignored: this.createDecoration("Ignored.svg")
+		ignored: this.createDecoration(ThemeUtils.selectIconByTheme('Ignored_light.svg', "Ignored.svg")),
 	};
 
 	private createDecoration(
@@ -57,6 +59,9 @@ export class IacScannerService extends BaseScannerService {
 			errorMessage: constants.errorIacScanRealtime
 		};
 		super(config);
+
+		// Set up theme change listener using common method
+		this.themeChangeListener = BaseScannerService.createThemeChangeHandler(this, 'Ignored_light.svg');
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
