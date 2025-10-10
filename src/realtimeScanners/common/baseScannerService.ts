@@ -22,6 +22,16 @@ export abstract class BaseScannerService implements IScannerService {
     scannerInstance: any,
     iconPath: string = 'Ignored_light.svg'
   ): vscode.Disposable {
+    // Handle case where VS Code APIs might not be available (e.g., in tests)
+    if (!vscode.window.onDidChangeActiveColorTheme) {
+      // Return a mock disposable for test environments
+      return {
+        dispose: () => {
+          // No-op for test environments
+        }
+      };
+    }
+
     return vscode.window.onDidChangeActiveColorTheme(() => {
       // Dispose old ignored decoration and recreate with new theme
       if (scannerInstance.decorationTypes?.ignored) {
@@ -31,11 +41,13 @@ export abstract class BaseScannerService implements IScannerService {
         );
 
         // Reapply decorations to all visible editors
-        vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-          if (scannerInstance.shouldScanFile(editor.document)) {
-            scannerInstance.applyDecorations(editor.document.uri);
-          }
-        });
+        if (vscode.window.visibleTextEditors) {
+          vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
+            if (scannerInstance.shouldScanFile(editor.document)) {
+              scannerInstance.applyDecorations(editor.document.uri);
+            }
+          });
+        }
       }
     });
   }
