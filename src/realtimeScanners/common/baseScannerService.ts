@@ -6,9 +6,39 @@ import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { ThemeUtils } from "../../utils/themeUtils";
 
 export abstract class BaseScannerService implements IScannerService {
   protected editorChangeListener: vscode.Disposable | undefined;
+
+  /**
+   * Common theme change handler that can be used by all scanner services
+   * @param scannerInstance - The scanner instance with decorationTypes and applyDecorations method
+   * @param iconPath - The light theme icon path (defaults to 'Ignored_light.svg')
+   * @returns Disposable for the theme change listener
+   */
+  protected static createThemeChangeHandler(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    scannerInstance: any,
+    iconPath: string = 'Ignored_light.svg'
+  ): vscode.Disposable {
+    return vscode.window.onDidChangeActiveColorTheme(() => {
+      // Dispose old ignored decoration and recreate with new theme
+      if (scannerInstance.decorationTypes?.ignored) {
+        scannerInstance.decorationTypes.ignored.dispose();
+        scannerInstance.decorationTypes.ignored = scannerInstance.createDecoration(
+          ThemeUtils.selectIconByTheme(iconPath, "Ignored.svg")
+        );
+
+        // Reapply decorations to all visible editors
+        vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
+          if (scannerInstance.shouldScanFile(editor.document)) {
+            scannerInstance.applyDecorations(editor.document.uri);
+          }
+        });
+      }
+    });
+  }
 
   public async initializeScanner(): Promise<void> {
     this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(

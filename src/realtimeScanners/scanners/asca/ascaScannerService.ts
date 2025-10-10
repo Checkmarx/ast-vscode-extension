@@ -9,9 +9,11 @@ import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAs
 import { cx } from "../../../cx";
 import fs from "fs";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-import {logScanResults} from "../common";
+import { logScanResults } from "../common";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class AscaScannerService extends BaseScannerService {
+	private themeChangeListener: vscode.Disposable | undefined;
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private ascaHoverData = new Map<string, AscaHoverData[]>();
 	private decorationsMap = {
@@ -28,7 +30,7 @@ export class AscaScannerService extends BaseScannerService {
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
 		low: this.createDecoration("realtimeEngines/low_severity.svg"),
-		ignored: this.createDecoration("Ignored.svg"),
+		ignored: this.createDecoration(ThemeUtils.selectIconByTheme('Ignored_light.svg', "Ignored.svg")),
 		underline: vscode.window.createTextEditorDecorationType({
 			textDecoration: "underline wavy #f14c4c",
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -59,6 +61,9 @@ export class AscaScannerService extends BaseScannerService {
 		super(config);
 
 		this.registerHoverDataMap(this.ascaHoverData);
+
+		// Set up theme change listener using common method
+		this.themeChangeListener = BaseScannerService.createThemeChangeHandler(this, 'Ignored_light.svg');
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {

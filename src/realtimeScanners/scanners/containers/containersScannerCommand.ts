@@ -104,7 +104,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 
 	private renderImageIcon(): string {
 		const iconFile = ThemeUtils.selectIconByTheme('container_image_light.png', 'container_image.png');
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
 	private isVulnerableStatus(status: string): boolean {
@@ -122,7 +122,7 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 
 	private renderMaliciousIcon(): string {
 		const iconFile = ThemeUtils.selectIconByTheme('malicious_light.png', 'malicious.png');
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/AST-114409/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
+		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
 	}
 
 	private renderVulnCounts(vulnerabilities: Array<{ severity: string }>): string {

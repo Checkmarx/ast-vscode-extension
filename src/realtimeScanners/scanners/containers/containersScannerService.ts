@@ -12,8 +12,10 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
+import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class ContainersScannerService extends BaseScannerService {
+	private themeChangeListener: vscode.Disposable | undefined;
 	private diagnosticsMap = new Map<string, vscode.Diagnostic[]>();
 	private containersHoverData = new Map<string, ContainersHoverData>();
 	private lastFullScanResults: unknown[] = [];
@@ -42,7 +44,7 @@ export class ContainersScannerService extends BaseScannerService {
 		high: this.createDecoration("realtimeEngines/high_severity.svg"),
 		medium: this.createDecoration("realtimeEngines/medium_severity.svg"),
 		low: this.createDecoration("realtimeEngines/low_severity.svg"),
-		ignored: this.createDecoration("Ignored.svg"),
+		ignored: this.createDecoration(ThemeUtils.selectIconByTheme('Ignored_light.svg', "Ignored.svg")),
 		underline: vscode.window.createTextEditorDecorationType({
 			textDecoration: "underline wavy #f14c4c",
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -69,6 +71,9 @@ export class ContainersScannerService extends BaseScannerService {
 			errorMessage: constants.errorContainersScanRealtime
 		};
 		super(config);
+
+		// Set up theme change listener using common method
+		this.themeChangeListener = BaseScannerService.createThemeChangeHandler(this, 'Ignored_light.svg');
 	}
 
 	async getFullPathWithOriginalCasing(uri: vscode.Uri): Promise<string | undefined> {
@@ -89,7 +94,7 @@ export class ContainersScannerService extends BaseScannerService {
 	}
 
 	shouldScanFile(document: vscode.TextDocument): boolean {
-		if (!super.shouldScanFile(document)) {return false;}
+		if (!super.shouldScanFile(document)) { return false; }
 
 		const filePath = document.uri.fsPath;
 		const normalizedPath = filePath.replace(/\\/g, "/");
