@@ -73,6 +73,18 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.viewIgnoredVulnerabilities",
+        "category": "ast-results",
+        "title": "View Ignored vulnerabilities",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.assistDocumentation",
+        "category": "ast-results",
+        "title": "Documentation",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.groupBySeverityActive",
         "category": "ast-results",
         "title": "✓ Group by: Severity",
@@ -811,9 +823,19 @@
           "when": "view == astResults && ast-results-groupByDirectDependency"
         },
         {
+          "command": "ast-results.viewIgnoredVulnerabilities",
+          "group": "@settings@1",
+          "when": "view == astCxOneAssist"
+        },
+        {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan"
+          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist"
+        },
+        {
+          "command": "ast-results.assistDocumentation",
+          "group": "@settings@3",
+          "when": "view == astCxOneAssist"
         },
         {
           "command": "ast-results.clear",
@@ -843,6 +865,11 @@
           "id": "astResults",
           "type": "tree",
           "name": "Checkmarx One Results"
+        },
+        {
+          "id": "astCxOneAssist",
+          "type": "tree",
+          "name": "Checkmarx One Assist"
         },
         {
           "id": "scaAutoScan",
