@@ -21,6 +21,7 @@ import { FilterCommand } from "./commands/filterCommand";
 import { WebViewCommand } from "./commands/webViewCommand";
 import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
+import { CxOneAssistProvider } from "./views/cxOneAssistView/cxOneAssistProvider";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { IgnoredView } from "./views/ignoredView/ignoredView";
@@ -218,9 +219,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.env.openExternal(vscode.Uri.parse(url));
       }
     }
-  });
-
-  // SCA auto scanning commands register
+  });  // SCA auto scanning commands register
   const scaScanCommand = new ScanSCACommand(
     context,
     runSCAScanStatusBar,
@@ -321,6 +320,12 @@ export async function activate(context: vscode.ExtensionContext) {
     dispose: () => ignoreFileManager.dispose()
   });
 
+  // CxOne Assist view
+  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider("astCxOneAssist", cxOneAssistProvider)
+  );
+
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
@@ -351,6 +356,9 @@ export async function activate(context: vscode.ExtensionContext) {
     } else {
       ignoredStatusBarItem.hide();
     }
+
+    // Update CxOne Assist webview content
+    cxOneAssistProvider.updateWebviewContent();
   }
 
   updateIgnoredStatusBar();
