@@ -1,24 +1,16 @@
 # CHANGELOG
 
+## [v2.40.1-2.40.0-rc-ai-gen.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-2.40.0-rc-ai-gen.0) - 2025-10-16 15:22:58
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.0...v2.40.1-2.40.0-rc-ai-gen.0
+
 ## [v2.40.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.0) - 2025-10-16 15:22:18
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.40.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Fixed ignored vulnearability gutter icon issue(AST-114769) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1286
-* updated ignore light icon and ontheme change event(AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1288
-### New Features 🚀
-* VS Code -  Ignored Vulnerabilities and CxOne Assist Popover UI Not Supported in Light Theme (AST-114409) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1285
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.145 by @cx-anurag-dalke in https://github.com/Checkmarx/ast-vscode-extension/pull/1290
-### Other Changes
-* Update the label CxAI to CxOne Assist(AST-115599) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1287
-* Fix vulnerability update tar-fs from version 2.1.3 to 2.1.4 (AST-116563) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1289
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1291
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.39.0...v2.40.0
 
 ## [v2.39.1-ignored-icon-bugFix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.39.1-ignored-icon-bugFix.0) - 2025-09-30 14:13:20
 
