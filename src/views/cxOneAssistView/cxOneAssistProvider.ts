@@ -88,8 +88,8 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	 */
 	private handleWebviewMessage(message: CxOneAssistMessage): void {
 		switch (message.command) {
-			case 'viewIgnoredVulnerabilities':
-				vscode.commands.executeCommand('ast-results.viewIgnoredVulnerabilities');
+			case 'openIgnoredView':
+				vscode.commands.executeCommand('ast-results.openIgnoredView');
 				break;
 			default:
 				console.warn(`Unknown command received from CxOne Assist webview: ${message.command}`);
