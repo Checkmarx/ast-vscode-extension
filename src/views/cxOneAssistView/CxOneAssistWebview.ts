@@ -4,23 +4,23 @@ import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 
 export class CxOneAssistWebview {
-	/**
-	 * Generates the HTML content for the CxOne Assist webview
-	 */
-	public static generateHtml(
-		context: vscode.ExtensionContext,
-		webview: vscode.Webview,
-		state: CxOneAssistWebviewState
-	): string {
-		const cubeImageUri = webview.asWebviewUri(
-			vscode.Uri.file(path.join(context.extensionPath, "media", "icons", "cxone-assist-cube.svg"))
-		);
+  /**
+   * Generates the HTML content for the CxOne Assist webview
+   */
+  public static generateHtml(
+    context: vscode.ExtensionContext,
+    webview: vscode.Webview,
+    state: CxOneAssistWebviewState
+  ): string {
+    const cubeImageUri = webview.asWebviewUri(
+      vscode.Uri.file(path.join(context.extensionPath, "media", "icons", "cxone-assist-cube.svg"))
+    );
 
-		const showIgnoredButton = CxOneAssistUtils.shouldShowIgnoredButton(state);
-		const ignoredText = CxOneAssistUtils.formatIgnoredText(state.ignoredCount);
-		const ignoredTooltip = CxOneAssistUtils.getIgnoredTooltip(state.ignoredCount);
+    const showIgnoredButton = CxOneAssistUtils.shouldShowIgnoredButton(state);
+    const ignoredText = CxOneAssistUtils.formatIgnoredText(state.ignoredCount);
+    const ignoredTooltip = CxOneAssistUtils.getIgnoredTooltip(state.ignoredCount);
 
-		return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -42,7 +42,7 @@ export class CxOneAssistWebview {
             </div>
             
             ${showIgnoredButton ? `
-            <div id="view-ignored-vuln-btn"><button class="action-link" id="ignored-vuln-button" onclick="viewIgnored()" title="${ignoredTooltip}">
+            <div id="view-ignored-vuln-btn"><button class="action-link" id="ignored-vuln-button" onclick="openIgnoredView()" title="${ignoredTooltip}">
                 ${ignoredText}
             </button></div>
             ` : ''}
@@ -53,13 +53,13 @@ export class CxOneAssistWebview {
         </script>
     </body>
     </html>`;
-	}
+  }
 
-	/**
-	 * Returns the CSS styles for the webview
-	 */
-	private static getStyles(): string {
-		return `
+  /**
+   * Returns the CSS styles for the webview
+   */
+  private static getStyles(): string {
+    return `
       body {
         margin: 0;
         padding: 16px;
@@ -174,13 +174,13 @@ export class CxOneAssistWebview {
         display: none !important;
       }
     `;
-	}
+  }
 
-	/**
-	 * Returns the JavaScript for the webview
-	 */
-	private static getScript(): string {
-		return `
+  /**
+   * Returns the JavaScript for the webview
+   */
+  private static getScript(): string {
+    return `
       // VS Code API
       const vscode = acquireVsCodeApi();
       
@@ -207,9 +207,9 @@ export class CxOneAssistWebview {
         }
       }
       
-      function viewIgnored() {
+      function openIgnoredView() {
         vscode.postMessage({ 
-          command: 'viewIgnoredVulnerabilities' 
+          command: 'openIgnoredView' 
         });
       }
       
@@ -244,5 +244,5 @@ export class CxOneAssistWebview {
         }
       }
     `;
-	}
+  }
 }
