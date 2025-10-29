@@ -6,21 +6,16 @@ export class CxOneAssistUtils {
 	/**
 	 * Gets the current state of ignored vulnerabilities and authentication
 	 */
-	public static async getWebviewState(ignoreFileManager: IgnoreFileManager, context?: vscode.ExtensionContext): Promise<CxOneAssistWebviewState> {
+	public static async getWebviewState(
+		ignoreFileManager: IgnoreFileManager,
+		context: vscode.ExtensionContext
+	): Promise<CxOneAssistWebviewState> {
 		const ignoredCount = ignoreFileManager.getIgnoredPackagesCount();
 		const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
+		const token = await context.secrets.get("authCredential");
+		const isAuthenticated = !!token;
 
-		let isAuthenticated = false;
-		if (context && context.secrets) {
-			const token = await context.secrets.get("authCredential");
-			isAuthenticated = !!token;
-		}
-
-		return {
-			ignoredCount,
-			hasIgnoreFile,
-			isAuthenticated
-		};
+		return { ignoredCount, hasIgnoreFile, isAuthenticated };
 	}
 
 	/**
@@ -34,19 +29,13 @@ export class CxOneAssistUtils {
 	 * Formats the ignored vulnerabilities count text
 	 */
 	public static formatIgnoredText(count: number): string {
-		if (count === 0) {
-			return "No ignored vulnerabilities";
-		}
-		return `View ignored vulnerabilities (${count})`;
+		return count === 0 ? "No ignored vulnerabilities" : `View ignored vulnerabilities (${count})`;
 	}
 
 	/**
 	 * Gets the tooltip text for the ignored vulnerabilities button
 	 */
 	public static getIgnoredTooltip(count: number): string {
-		if (count === 0) {
-			return "No ignored vulnerabilities found";
-		}
-		return `Click to view ${count} ignored vulnerabilities`;
+		return count === 0 ? "No ignored vulnerabilities found" : `Click to view ${count} ignored vulnerabilities`;
 	}
 }

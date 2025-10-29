@@ -16,7 +16,3 @@ export interface CxOneAssistMessage {
 	command: string;
 	data?: unknown;
 }
-
-export interface WebviewUpdateCallback {
-	(state: CxOneAssistWebviewState): void;
-}
