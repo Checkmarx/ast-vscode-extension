@@ -1,17 +1,25 @@
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
 import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
+import * as vscode from "vscode";
 
 export class CxOneAssistUtils {
 	/**
-	 * Gets the current state of ignored vulnerabilities
+	 * Gets the current state of ignored vulnerabilities and authentication
 	 */
-	public static getWebviewState(ignoreFileManager: IgnoreFileManager): CxOneAssistWebviewState {
+	public static async getWebviewState(ignoreFileManager: IgnoreFileManager, context?: vscode.ExtensionContext): Promise<CxOneAssistWebviewState> {
 		const ignoredCount = ignoreFileManager.getIgnoredPackagesCount();
 		const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 
+		let isAuthenticated = false;
+		if (context && context.secrets) {
+			const token = await context.secrets.get("authCredential");
+			isAuthenticated = !!token;
+		}
+
 		return {
 			ignoredCount,
-			hasIgnoreFile
+			hasIgnoreFile,
+			isAuthenticated
 		};
 	}
 

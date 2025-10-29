@@ -14,7 +14,12 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 			context,
 			ignoreFileManager
 		};
-		this.currentState = CxOneAssistUtils.getWebviewState(this.dependencies.ignoreFileManager);
+		// Initialize with default state (will be updated in resolveWebviewView)
+		this.currentState = {
+			ignoredCount: 0,
+			hasIgnoreFile: false,
+			isAuthenticated: false
+		};
 	}
 
 	public resolveWebviewView(
@@ -38,34 +43,54 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	/**
 	 * Updates the webview content with current state
 	 */
-	public updateWebviewContent(): void {
+	public async updateWebviewContent(): Promise<void> {
 		if (!this.webviewView) {
 			return;
 		}
 
-		this.currentState = CxOneAssistUtils.getWebviewState(this.dependencies.ignoreFileManager);
-
-		this.webviewView.webview.html = CxOneAssistWebview.generateHtml(
-			this.dependencies.context,
-			this.webviewView.webview,
-			this.currentState
+		this.currentState = await CxOneAssistUtils.getWebviewState(
+			this.dependencies.ignoreFileManager,
+			this.dependencies.context
 		);
+
+		if (this.currentState.isAuthenticated) {
+			this.webviewView.webview.html = CxOneAssistWebview.generateHtml(
+				this.dependencies.context,
+				this.webviewView.webview,
+				this.currentState
+			);
+		} else {
+			this.webviewView.webview.html = CxOneAssistWebview.generateUnauthenticatedHtml(
+				this.dependencies.context,
+				this.webviewView.webview
+			);
+		}
 	}
 
 	/**
 	 * Updates the webview state dynamically without regenerating HTML
 	 */
-	public updateState(): void {
+	public async updateState(): Promise<void> {
 		if (!this.webviewView) {
 			return;
 		}
 
-		this.currentState = CxOneAssistUtils.getWebviewState(this.dependencies.ignoreFileManager);
+		this.currentState = await CxOneAssistUtils.getWebviewState(
+			this.dependencies.ignoreFileManager,
+			this.dependencies.context
+		);
 
 		this.webviewView.webview.postMessage({
 			command: 'updateState',
 			state: this.currentState
 		});
+	}
+
+	/**
+	 * Called when authentication state changes to refresh the entire webview
+	 */
+	public async onAuthenticationChanged(): Promise<void> {
+		await this.updateWebviewContent();
 	}
 
 	/**

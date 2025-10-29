@@ -369,6 +369,8 @@ export class AuthService {
     if (isValid) {
       vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
       await vscode.commands.executeCommand(commands.refreshTree);
+      // Update CxOne Assist view to show authenticated state
+      await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
     }
 
   }
@@ -427,6 +429,9 @@ export class AuthService {
     await this.validateAndUpdateState();
     await vscode.commands.executeCommand(commands.refreshTree);
     await vscode.commands.executeCommand(commands.clear);
+
+    // Trigger a custom command to update CxOne Assist view
+    await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
   }
 
   private getSuccessPageHtml(): string {

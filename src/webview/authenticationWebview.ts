@@ -257,6 +257,7 @@ export class AuthenticationWebview {
                       this._panel.dispose();
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
+                      await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
                     }, 1000);
                   }
                   else {
@@ -294,6 +295,7 @@ export class AuthenticationWebview {
                     this._panel.dispose();
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
+                    await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {
