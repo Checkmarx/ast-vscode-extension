@@ -10,16 +10,8 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private readonly dependencies: CxOneAssistDependencies;
 
 	constructor(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager) {
-		this.dependencies = {
-			context,
-			ignoreFileManager
-		};
-		// Initialize with default state (will be updated in resolveWebviewView)
-		this.currentState = {
-			ignoredCount: 0,
-			hasIgnoreFile: false,
-			isAuthenticated: false
-		};
+		this.dependencies = { context, ignoreFileManager };
+		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isAuthenticated: false };
 	}
 
 	public resolveWebviewView(
@@ -31,9 +23,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [
-				vscode.Uri.file(this.dependencies.context.extensionPath).with({ path: this.dependencies.context.extensionPath + "/media" })
-			]
+			localResourceRoots: [vscode.Uri.file(this.dependencies.context.extensionPath + "/media")]
 		};
 
 		this.updateWebviewContent();
@@ -65,25 +55,6 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 				this.webviewView.webview
 			);
 		}
-	}
-
-	/**
-	 * Updates the webview state dynamically without regenerating HTML
-	 */
-	public async updateState(): Promise<void> {
-		if (!this.webviewView) {
-			return;
-		}
-
-		this.currentState = await CxOneAssistUtils.getWebviewState(
-			this.dependencies.ignoreFileManager,
-			this.dependencies.context
-		);
-
-		this.webviewView.webview.postMessage({
-			command: 'updateState',
-			state: this.currentState
-		});
 	}
 
 	/**
