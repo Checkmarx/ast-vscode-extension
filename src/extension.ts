@@ -326,6 +326,20 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider("astCxOneAssist", cxOneAssistProvider)
   );
 
+  // Register CxOne Assist update command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.updateCxOneAssist", async () => {
+      await cxOneAssistProvider.onAuthenticationChanged();
+    })
+  );
+
+  // Register authentication command used by CxOne Assist
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.authentication", () => {
+      vscode.commands.executeCommand("ast-results.showAuth");
+    })
+  );
+
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 

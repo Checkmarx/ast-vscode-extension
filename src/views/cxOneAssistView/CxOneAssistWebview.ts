@@ -79,7 +79,8 @@ export class CxOneAssistWebview {
         display: flex;
         align-items: center;
         justify-content: center;
-        perspective: 1000px;
+        width: 100%;
+        height: 100%;
       }
       
       .cube-image {
@@ -242,7 +243,199 @@ export class CxOneAssistWebview {
         } else {
           button.style.display = 'none';
         }
+    `;
+  }
+
+  /**
+   * Generates the HTML content for unauthenticated users
+   */
+  public static generateUnauthenticatedHtml(
+    context: vscode.ExtensionContext,
+    webview: vscode.Webview
+  ): string {
+    const cubeImageUri = webview.asWebviewUri(
+      vscode.Uri.file(path.join(context.extensionPath, "media", "icons", "cxone-assist-cube.svg"))
+    );
+
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CxOne Assist</title>
+        <style>
+          ${this.getUnauthenticatedStyles()}
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="cube-container">
+                <div class="particles" id="particles"></div>
+                <img src="${cubeImageUri}" alt="CxOne Assist 3D Cube" class="cube-image" />
+            </div>
+
+            <div class="login-title">Catch Vulnerabilities as You Code</div>
+
+            <div class="login-description">
+                Go beyond scanning. Our AI feature spots risks instantly and guides you with smart fixes, without leaving VS Code.
+            </div>
+            
+            <div class="login-button">
+                Contact your admin for more information
+            </div>
+        </div>
+        
+        <script>
+          ${this.getUnauthenticatedScript()}
+        </script>
+    </body>
+    </html>`;
+  }
+
+  /**
+   * Returns the CSS styles for unauthenticated view
+   */
+  private static getUnauthenticatedStyles(): string {
+    return `
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: var(--vscode-font-family);
+        background: var(--vscode-sideBar-background);
+        color: var(--vscode-sideBar-foreground);
+        overflow-x: hidden;
       }
+      
+      .login-container {
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+      }
+      
+      .cube-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+      
+      .cube-image {
+        width: 100%;
+        height: 100%;
+      }
+      
+      .login-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--vscode-descriptionForeground);
+        text-align: center;
+      }
+
+      .login-description {
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--vscode-descriptionForeground);
+        margin: 10px 0 10px 0;
+        text-align: center;
+      }
+      
+      .login-button {
+        color: var(--vscode-descriptionForeground);
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: var(--vscode-font-family);
+        transition: all 0.2s ease;
+        outline: none;
+      }
+      
+      .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      
+      .particle {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: var(--vscode-textLink-foreground);
+        border-radius: 50%;
+        opacity: 0.6;
+        animation: particleFloat 8s infinite linear;
+      }
+      
+      @keyframes float {
+        0%, 100% { 
+          transform: translateY(0px) rotateY(0deg); 
+        }
+        50% { 
+          transform: translateY(-10px) rotateY(180deg); 
+        }
+      }
+      
+      @keyframes particleFloat {
+        from {
+          transform: translateY(200px) translateX(0px);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.6;
+        }
+        90% {
+          opacity: 0.6;
+        }
+        to {
+          transform: translateY(-20px) translateX(20px);
+          opacity: 0;
+        }
+      }
+    `;
+  }
+
+  /**
+   * Returns the JavaScript for unauthenticated view
+   */
+  private static getUnauthenticatedScript(): string {
+    return `
+      // VS Code API
+      const vscode = acquireVsCodeApi();
+      
+      // Create floating particles
+      function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        
+        for (let i = 0; i < 6; i++) {
+          setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+            container.appendChild(particle);
+            
+            setTimeout(() => {
+              if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+              }
+            }, 10000);
+          }, i * 500);
+        }
+      }
+      
+      // Initialize
+      createParticles();
+      setInterval(createParticles, 8000);
     `;
   }
 }
