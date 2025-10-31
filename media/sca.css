@@ -176,6 +176,22 @@
 	margin: 15px;
 }
 
+.score-card .left-CRITICAL {
+  background: #C43737; 
+  border-radius: 3px 0 0 3px;
+  width: 5rem;
+  text-align: center;
+  color: #fff; 
+}
+
+.score-card .right-CRITICAL {
+  background: #E57272;
+  width: 7rem;
+  text-align: center;
+  color: #fff;
+}
+
+
 .score-card .left-HIGH {
 	background: #F1605D;
 	border-radius: 3px 0px 0px 3px;
@@ -248,6 +264,20 @@
 	color: #6bb0c7;
 }
 
+.score-card .severity-inner-CRITICAL {
+  box-sizing: border-box;
+  border: 1px solid #B53030; /* darker border for definition */
+  border-radius: 2px;
+  width: 3rem;
+  margin-left: 2rem;
+}
+
+.score-card .severity-bar-CRITICAL {
+  background: #C43737; /* main red from the image */
+  width: 2rem;
+  height: 1rem;
+}
+
 .score-card .severity-inner-HIGH {
 	box-sizing: border-box;
 	border: 1px solid #D94B48;
@@ -305,7 +335,6 @@
 }
 .info-cards {
 	box-sizing: border-box;
-	background: #303035;
 	border: 1px solid #3F3C3C;
 	border-radius: 4px;
 	display: flex;
@@ -314,6 +343,23 @@
 	align-items: center;
 	margin-top: 15px;
 	margin-bottom: 15px;
+}
+
+body[data-vscode-theme-kind*="dark"],
+body[data-vscode-theme-kind="vscode-high-contrast"]{
+	.info-cards,
+	.remediation-version-disabled,
+	.remediation-icon-disabled {
+		background: #303035;
+	}
+}
+
+body[data-vscode-theme-kind*="light"] {
+	.info-cards,
+	.remediation-version-disabled,
+	.remediation-icon-disabled {
+		background:rgb(245, 245, 245);
+	}
 }
 
 .info-cards .info-cards-text {
@@ -325,14 +371,14 @@
 }
 
 .info-cards .info-cards-description {
-	color: white;
+	color: var(--vscode-input-foreground);
 	font-size: 0.9em;
 	margin-left: 1rem;
 }
 
 .info-cards .info-cards-value {
 	margin-left: 1rem;
-	color: white;
+	color: var(--vscode-input-foreground);
 }
 
 .cvss-selected {
@@ -353,6 +399,10 @@
 	border-bottom: 1px solid;
 	border-bottom-color: rgba(64, 166, 255, 0.4);
 	cursor: default !important;
+}
+
+.cvss-button-selected:hover{
+	color: #fff !important
 }
 
 .cvss-button-not-selected {
@@ -450,7 +500,7 @@
 
 .remediation-description {
 	font-size: 0.9em;
-	color: rgba(249, 174, 77, 0.9);	
+	color: rgb(217 126 9 / 90%);
 }
 
 .remediation-links-container {
@@ -489,7 +539,7 @@
 
 .remediation-links-text {
 	font-size: 0.8em;
-	color: #F9AE4D;
+	color: rgb(217 126 9 / 90%);
 	cursor: pointer;
 }
 
