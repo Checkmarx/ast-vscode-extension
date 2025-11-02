@@ -18,24 +18,22 @@ const PROGRESS_HEADER: vscode.ProgressOptions = {
 };
 
 export async function getCodebashingLink(
-  cweId: string,
-  language: string,
-  queryName: string,
+  queryId: string,
   logs: Logs
 ) {
   vscode.window.withProgress(PROGRESS_HEADER, async (progress, token) => {
     token.onCancellationRequested(() => logs.info(messages.cancelCodebashingLoad));
     try {
-      await handleExistingLink(logs, cweId, language, queryName);
+      await handleExistingLink(logs, queryId);
     } catch (err) {
       handleUnexistingLink(logs, err);
     }
   });
 }
 
-async function handleExistingLink(logs: Logs, cweId: string, language: string, queryName: string) {
+async function handleExistingLink(logs: Logs, queryId: string) {   ///NEED TO REPLACE TO queryID only
   logs.info(messages.fetchCodebashing);
-  const codeBashingArray = await cx.getCodeBashing(cweId, language, queryName.replaceAll("_", " "));
+  const codeBashingArray = await cx.getCodeBashing(queryId);    ///NEED TO REPLACE TO queryID only
   vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.path));
 }
 

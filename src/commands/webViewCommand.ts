@@ -253,11 +253,9 @@ export class WebViewCommand {
           break;
         // Catch get codebashing link and open a browser page
         case "codebashing":
-          if (result.cweId) {
+          if (result.queryId) {   //TODO Need to change from sending  result.cweId,result.language,result.queryName,   -----> NEED TO REPLACE WITH THE NEW FIELDS result.queryId
             await getCodebashingLink(
-              result.cweId,
-              result.language,
-              result.queryName,
+              result.queryId,
               this.logs
             );
           }
