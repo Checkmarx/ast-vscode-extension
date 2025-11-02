@@ -34,7 +34,7 @@ export async function getCodebashingLink(
 async function handleExistingLink(logs: Logs, queryId: string) {   ///NEED TO REPLACE TO queryID only
   logs.info(messages.fetchCodebashing);
   const codeBashingArray = await cx.getCodeBashing(queryId);    ///NEED TO REPLACE TO queryID only
-  vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.path));
+  vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.lessonUrl));
 }
 
 function handleUnexistingLink(logs: Logs, err) {
