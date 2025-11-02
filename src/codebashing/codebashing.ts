@@ -31,9 +31,9 @@ export async function getCodebashingLink(
   });
 }
 
-async function handleExistingLink(logs: Logs, queryId: string) {   ///NEED TO REPLACE TO queryID only
+async function handleExistingLink(logs: Logs, queryId: string) {
   logs.info(messages.fetchCodebashing);
-  const codeBashingArray = await cx.getCodeBashing(queryId);    ///NEED TO REPLACE TO queryID only
+  const codeBashingArray = await cx.getCodeBashing(queryId);
   vscode.env.openExternal(vscode.Uri.parse(codeBashingArray?.lessonUrl));
 }
 

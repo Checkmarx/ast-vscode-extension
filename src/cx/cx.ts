@@ -472,20 +472,20 @@ export class Cx implements CxPlatform {
         }
     }
 
-    async getCodeBashing(     ///NEED TO REPLACE TO queryID only
+    async getCodeBashing(
         queryId: string
     ): Promise<CxCodeBashing | undefined> {
-        const config = await this.getAstConfiguration();   ////NO NEED TO CHANGE  CURRRENT LINE
+        const config = await this.getAstConfiguration();
         if (!config) {
             throw new Error("Configuration error");
         }
-        if (!queryId) {  ///NEED TO CHAGE TO queryID only
+        if (!queryId) {
             throw new Error(
                 "Missing mandatory parameters queryId "
             );
         }
-        const cx = new CxWrapper(config);   ///No NEED TO CHANGE CURRENT LINE
-        const codebashing = await cx.codeBashingList(     ///NEED TO REPLACE TO queryID only
+        const cx = new CxWrapper(config);
+        const codebashing = await cx.codeBashingList(
             queryId
         );
         if (codebashing.exitCode === 0) {
