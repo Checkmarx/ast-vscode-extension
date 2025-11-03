@@ -8,6 +8,14 @@
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-0...v2.40.1-light-theme-UI-changes.0
 
+## [v2.40.1-light-theme-UI-change-2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-light-theme-UI-change-2.0) - 2025-11-03 14:07:33
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-light-theme-UI-changes.0...v2.40.1-light-theme-UI-change-2.0
+
 ## [v2.40.1-2.40.1-CB-New-Link.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-2.40.1-CB-New-Link.0) - 2025-11-03 07:44:01
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
