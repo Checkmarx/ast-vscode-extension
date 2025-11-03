@@ -286,8 +286,7 @@ input ~ .tab {
   opacity: 1 !important;
 }
 
-body[data-vscode-theme-kind*="dark"],
-body[data-vscode-theme-kind="vscode-high-contrast"] {
+body[data-vscode-theme-kind*="dark"] {
   .history-container,
   .select-critical,
   .select-high,
@@ -303,6 +302,25 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 
   button:hover {
     background: var(--vscode-button-hoverBackground);
+  }
+}
+
+body[data-vscode-theme-kind="vscode-high-contrast"] {
+  .history-container,
+  .select-critical,
+  .select-high,
+  .select-medium,
+  .select-info,
+  .select-low,
+  .state,
+  .comment,
+  .submit, 
+  .details-table tr{
+    background-color: rgb(54 53 53);
+  }
+
+  button:hover {
+    background-color: #1177bb !important;
   }
 }
 

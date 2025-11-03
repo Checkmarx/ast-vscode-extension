@@ -19,6 +19,16 @@ body {
 	width: 100%;
 }
 
+body[data-vscode-theme-kind="vscode-high-contrast"] {
+
+	.auth-container {
+		background: #3c3c3c
+	}
+	.auth-button{
+		background: #0e639c
+	}
+}
+
 .auth-form{
 	position: relative;
 }
