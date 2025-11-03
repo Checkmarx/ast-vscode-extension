@@ -1,12 +1,12 @@
 # CHANGELOG
 
-## [v2.40.1-rc-NewCodeBashingLink.0.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-rc-NewCodeBashingLink.0.0) - 2025-10-27 13:19:36
+## [v2.40.1-rc-NewCodeBashingLink.1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-rc-NewCodeBashingLink.1.0) - 2025-11-02 15:13:17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-2.40.0-rc-ai-gen.0...v2.40.1-rc-NewCodeBashingLink.0.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-2.40.0-rc-ai-gen.0...v2.40.1-rc-NewCodeBashingLink.1.0
 
 ## [v2.40.1-2.40.0-rc-ai-gen.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-2.40.0-rc-ai-gen.0) - 2025-10-16 15:22:58
 
