@@ -42,7 +42,9 @@ body.vscode-high-contrast-light.vscode-high-contrast .custom-header {
 }
 
 body.vscode-high-contrast-light.vscode-high-contrast .accordion button:hover,
-body.vscode-high-contrast .accordion button:hover {
+body.vscode-high-contrast .accordion button:hover,
+body.vscode-high-contrast-light.vscode-high-contrast .filter-category:hover,
+body.vscode-high-contrast .accordion .filter-category:hover {
   background: #5c5656 !important;
   filter: brightness(1.5);
   color: #fff !important;
