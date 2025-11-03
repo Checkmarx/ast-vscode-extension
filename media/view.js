@@ -277,6 +277,7 @@
 				codeLoaderContainer.style.display = 'block';
 				registerCodebashingEventListener();
 				break;
+			}
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
 			// 	let index =  message.index.index;
