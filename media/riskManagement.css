@@ -25,6 +25,29 @@ body {
   font-size: 11px;
 }
 
+.result:hover {
+  background: var(--vscode-textPreformat-background);
+} 
+
+/* For VS Code Dark High Contrast theme */
+body.vscode-high-contrast .result:hover,
+body.vscode-high-contrast .custom-header {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* For VS Code Light High Contrast theme */
+body.vscode-high-contrast-light.vscode-high-contrast .result:hover,
+body.vscode-high-contrast-light.vscode-high-contrast .custom-header {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+body.vscode-high-contrast-light.vscode-high-contrast .accordion button:hover,
+body.vscode-high-contrast .accordion button:hover {
+  background: #5c5656 !important;
+  filter: brightness(1.5);
+  color: #fff !important;
+}
+
 .result {
   cursor: pointer;
   height: 22px;
@@ -32,10 +55,6 @@ body {
   display: flex;
   align-items: center;
   column-gap: 6px;
-}
-
-.result:hover {
-  background: var(--vscode-textPreformat-background);
 }
 
 .results {
@@ -125,6 +144,12 @@ button:hover {
   filter: brightness(1.5);
 }
 
+.accordion button:hover {
+  background: #5c5656 !important;
+  filter: brightness(1.5);
+  color: #fff !important;
+}
+
 svg {
   vertical-align: text-top;
   color: var(--cx-main-color);
@@ -142,6 +167,21 @@ svg {
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+body[data-vscode-theme-kind*="dark"] .tooltip .tooltip-inner,
+body[data-vscode-theme-kind="vscode-high-contrast"] .tooltip .tooltip-inner {
+  background-color: #000 !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+
+body[data-vscode-theme-kind*="light"] .tooltip .tooltip-inner,
+body[data-vscode-theme-kind*="vscode-light-high-contrast"] .tooltip .tooltip-inner {
+  background-color: #fff !important;
+  color: #333 !important;
+  border: 1px solid #ccc !important;
+}
+
 
 .app-header {
   text-align: left;
@@ -475,7 +515,7 @@ hr.separator-vertical {
 .filter-submenu label[for="vuln-all"],
 .filter-submenu label[for="trait-all"] {
   font-weight: bold;
-  color: #ffffff;
+  color: var(--cx-main-color);
 }
 
 .toggle-switch {

@@ -37,7 +37,7 @@
 }
 
 .division {
-  border-top: 1px solid var(--vscode-input-background);
+  border-top: 1px solid var(--vscode-input-foreground);
   border-radius: 1px;
   margin: 0.5em 0em 0.5em 0em;
   opacity: 40%;
@@ -262,6 +262,30 @@ input ~ .tab {
   padding: 0.5em;
 }
 
+#askGroup textarea{
+    background-color: var(--vscode-input-background) !important;
+    color: var(--vscode-foreground) !important;
+}
+
+#askGroup button{
+    background-color: var(--vscode-input-background) !important;
+    color: var(--vscode-foreground) !important;
+    border-style :solid !important;
+}
+
+#askGroup textarea:focus {
+  border-style: solid !important;
+  border-color: var(--vscode-focusBorder) !important; /* matches VS Code focus outline */
+  outline: none !important; /* prevents double focus outlines */
+  box-shadow: 0 0 0 2px var(--vscode-focusBorder)40; /* optional soft glow */
+}
+
+
+#askGroup textarea::placeholder {
+  color: var(--vscode-input-placeholderForeground) !important;
+  opacity: 1 !important;
+}
+
 body[data-vscode-theme-kind*="dark"],
 body[data-vscode-theme-kind="vscode-high-contrast"] {
   .history-container,
@@ -282,7 +306,8 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
   }
 }
 
-body[data-vscode-theme-kind*="light"] {
+body[data-vscode-theme-kind*="light"],
+body[data-vscode-theme-kind*="vscode-light-high-contrast"] {
   .history-container,
   .select-critical,
   .select-high,
@@ -301,6 +326,9 @@ body[data-vscode-theme-kind*="light"] {
   }
 }
 
+#headingOne button:hover{
+  color: #fff !important;
+}
 .history-container:hover{
   border-left: 2px solid var(--vscode-input-foreground);
 }
@@ -442,4 +470,13 @@ body[data-vscode-theme-kind*="light"] {
 
 .code-sample{
   white-space: pre-wrap;
+}
+
+body.vscode-high-contrast code {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* For VS Code Light High Contrast theme */
+body.vscode-high-contrast-light.vscode-high-contrast code{
+  background: rgba(0, 0, 0, 0.1) !important;
 }
