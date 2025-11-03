@@ -10,11 +10,14 @@ import { Logs } from "../../models/logs";
 import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { GptResult } from "../../models/gptResult";
 import { constants } from "../../utils/common/constants";
+import { ThemeUtils } from "../../utils/themeUtils";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private askKicsIcon;
   private kicsUserIcon;
+  private themeChangeDisposable?: vscode.Disposable;
+
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private result: AstResult,
@@ -22,7 +25,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     private loadChanges: boolean,
     private logs: Logs,
     private type?: string
-  ) {}
+  ) { }
 
   public getWebView() {
     return this._view;
@@ -47,6 +50,44 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
   public getAskKicsUserIcon() {
     return this.kicsUserIcon;
   }
+
+  public setupThemeChangeListener(webview: vscode.Webview) {
+    // Dispose any existing theme listener
+    if (this.themeChangeDisposable) {
+      this.themeChangeDisposable.dispose();
+    }
+
+    // Listen for theme changes and refresh only the CodeBashing icon
+    this.themeChangeDisposable = vscode.window.onDidChangeActiveColorTheme(async (theme) => {
+      try {
+        // Generate new CodeBashing icon URI for the current theme
+        const codeBashingIcon = webview.asWebviewUri(
+          vscode.Uri.joinPath(
+            this._extensionUri,
+            path.join("media", "icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
+          )
+        );
+
+        // Send message to webview to update the icon
+        webview.postMessage({
+          command: 'updateThemeIcon',
+          iconUri: codeBashingIcon.toString()
+        });
+      } catch (error) {
+        console.error('Error updating icon on theme change:', error);
+      }
+    });
+
+    // Register the disposable with the extension context
+    this.context.subscriptions.push(this.themeChangeDisposable);
+  }
+
+  public disposeThemeListener() {
+    if (this.themeChangeDisposable) {
+      this.themeChangeDisposable.dispose();
+      this.themeChangeDisposable = undefined;
+    }
+  }
   public async resolveWebviewView(
     webviewView: vscode.WebviewView,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -62,6 +103,14 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     webviewView.webview.html = await this.getDetailsWebviewContent(
       webviewView.webview
     );
+
+    // Setup theme change listener
+    this.setupThemeChangeListener(webviewView.webview);
+
+    // Dispose theme listener when webview is disposed
+    webviewView.onDidDispose(() => {
+      this.disposeThemeListener();
+    });
   }
 
   public async loadDecorations(
@@ -251,17 +300,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, path.join("media", "icon.png"))
     );
 
-    const codeBashingIconDark = webview.asWebviewUri(
+    const codeBashingIcon = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
-        path.join("media", "icons", "codeBashing_logoDarkTheme.png")
-      )
-    );
-
-    const codeBashingIconLight = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        path.join("media", "icons", "codeBashing_logoLightTheme.png")
+        path.join("media", "icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
       )
     );
 
@@ -280,7 +322,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         masked = await cx.mask(gptResult.filename);
         this.logs.info(
           `Masked Secrets by ${constants.aiSecurityChampion}: ` +
-            (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0")
+          (masked && masked.maskedSecrets ? masked.maskedSecrets.length : "0")
         );
       } catch (error) {
         this.logs.info(error);
@@ -296,16 +338,14 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           <link href="${styleMainUri}" rel="stylesheet">
           <link href="${styleDetails}" rel="stylesheet">
           <link href="${scaDetails}" rel="stylesheet">
-          ${
-            this.result.type !== "sca"
-              ? `<link href="${styleBootStrap}" rel="stylesheet">`
-              : ""
-          }
-          ${
-            this.result.type !== "sca"
-              ? `<link href="${styleGptUri}" rel="stylesheet">`
-              : ""
-          }
+          ${this.result.type !== "sca"
+        ? `<link href="${styleBootStrap}" rel="stylesheet">`
+        : ""
+      }
+          ${this.result.type !== "sca"
+        ? `<link href="${styleGptUri}" rel="stylesheet">`
+        : ""
+      }
           <script nonce="${nonce}" src="${scriptJquery}"></script>
           <script nonce="${nonce}" src="${scriptBootStrap}"></script>
           <script nonce="${nonce}" src="${scriptHighlight}"></script>
@@ -317,66 +357,64 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
         </head>
         <div id="main_div">
           ${this.result.type !== "sca" ? html.header(severityPath) : ""}
-          ${
-            this.result.type === "sast"
-              ? html.tab(
-                  html.generalTab(cxPath),
-                  html.detailsTab(),
-                  html.changes(selectClassname),
-                  messages.generalTab,
-                  messages.descriptionTab,
-                  messages.triageTab,
-                  messages.remediationExamplesTab,
-                  messages.noRemediationExamplesTab,
-                  isAIEnabled ? `${constants.aiSecurityChampion}` : "",
-                  isAIEnabled
-                    ? html.guidedRemediationSastTab(cxIcon, masked)
-                    : ""
-                )
-              : this.result.type === "sca"
-              ? html.scaView(
-                  severityPath,
-                  scaAtackVector,
-                  scaComplexity,
-                  scaAuthentication,
-                  scaConfidentiality,
-                  scaIntegrity,
-                  scaAvailability,
-                  scaUpgrade,
-                  scaUrl,
-                  this.type
-                )
-              : this.result.type === constants.scsSecretDetection
-              ? html.tab(
-                  html.secretDetectiongeneralTab(),
-                  html.secretDetectionDetailsDescriptionTab(),
-                  html.secretDetectionDetailsRemediationTab(),
-                  messages.generalTab,
-                  messages.descriptionTab,
-                  messages.remediationExamplesTab,
-                  "",
-                  "",
-                  "",
-                  ""
-                )
-              : html.tab(
-                  html.generalTab(cxPath),
-                  "",
-                  html.changes(selectClassname),
-                  messages.generalTab,
-                  "",
-                  messages.triageTab,
-                  "",
-                  "",
-                  isAIEnabled ? `${constants.aiSecurityChampion}` : "",
-                  isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
-                )
-          }
+          ${this.result.type === "sast"
+        ? html.tab(
+          html.generalTab(cxPath),
+          html.detailsTab(),
+          html.changes(selectClassname),
+          messages.generalTab,
+          messages.descriptionTab,
+          messages.triageTab,
+          messages.remediationExamplesTab,
+          messages.noRemediationExamplesTab,
+          isAIEnabled ? `${constants.aiSecurityChampion}` : "",
+          isAIEnabled
+            ? html.guidedRemediationSastTab(cxIcon, masked)
+            : ""
+        )
+        : this.result.type === "sca"
+          ? html.scaView(
+            severityPath,
+            scaAtackVector,
+            scaComplexity,
+            scaAuthentication,
+            scaConfidentiality,
+            scaIntegrity,
+            scaAvailability,
+            scaUpgrade,
+            scaUrl,
+            this.type
+          )
+          : this.result.type === constants.scsSecretDetection
+            ? html.tab(
+              html.secretDetectiongeneralTab(),
+              html.secretDetectionDetailsDescriptionTab(),
+              html.secretDetectionDetailsRemediationTab(),
+              messages.generalTab,
+              messages.descriptionTab,
+              messages.remediationExamplesTab,
+              "",
+              "",
+              "",
+              ""
+            )
+            : html.tab(
+              html.generalTab(cxPath),
+              "",
+              html.changes(selectClassname),
+              messages.generalTab,
+              "",
+              messages.triageTab,
+              "",
+              "",
+              isAIEnabled ? `${constants.aiSecurityChampion}` : "",
+              isAIEnabled ? html.guidedRemediationTab(kicsIcon, masked) : ""
+            )
+      }
         </div>
         <script>
           const vscode = acquireVsCodeApi();
-          window.codeBashingIconUriDark = "${codeBashingIconDark}";
-          window.codeBashingIconUriLight = "${codeBashingIconLight}";
+          window.codeBashingIconUri = "${codeBashingIcon}";
         </script>
         <script nonce="${nonce}" src="${scriptUri}"></script>	
         <script nonce="${nonce}" src="${scriptGptUri}"></script>	
