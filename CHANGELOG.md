@@ -1,13 +1,5 @@
 # CHANGELOG
 
-## [v2.40.1-oauth-light-theme-support.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-oauth-light-theme-support.0) - 2025-11-03 05:10:05
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-2.40.0-rc-ai-gen.0...v2.40.1-oauth-light-theme-support.0
-
 ## [v2.40.1-2.40.1-CB-New-Link.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-2.40.1-CB-New-Link.0) - 2025-11-03 07:44:01
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -15,6 +7,14 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-oauth-light-theme-support.0...v2.40.1-2.40.1-CB-New-Link.0
+
+## [v2.40.1-0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-0) - 2025-11-03 12:17:13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.1-2.40.1-CB-New-Link.0...v2.40.1-0
 
 ## [v2.40.1-2.40.0-rc-ai-gen.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-2.40.0-rc-ai-gen.0) - 2025-10-16 15:22:58
 
