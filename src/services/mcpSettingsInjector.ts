@@ -9,7 +9,7 @@
  * - Earlier versions: Not supported
  * 
  * For older VS Code versions (1.88-1.98), the configuration is saved to:
- * ~/.vscode/settings.json and manual events are used to trigger MCP functionality.
+ * .vscode/settings.json and manual events are used to trigger MCP functionality.
  */
 
 import * as vscode from "vscode";
@@ -75,8 +75,7 @@ function getVSCodeVersionInfo(): { version: string; majorVersion: number; minorV
  * Shows manual installation instructions for older VS Code versions (1.88-1.98)
  */
 async function showManualMCPInstallationInstructions(mcpServer: McpServer) {
-	const versionInfo = getVSCodeVersionInfo();
-	const configPath = path.join(os.homedir(), '.vscode', 'settings.json');
+	const configPath = path.join(__dirname, '..', '..', '.vscode', 'settings.json');
 
 	const mcpConfig = {
 		servers: {
@@ -107,45 +106,14 @@ async function showManualMCPInstallationInstructions(mcpServer: McpServer) {
 		mcp: {
 			...existingSettings.mcp,
 			...mcpConfig
-		},
-		// Add metadata as a comment-like property
-		checkmarxMcpMetadata: {
-			note: "Manual MCP configuration for VS Code versions 1.88-1.98",
-			vsCodeVersion: versionInfo.version,
-			installDate: new Date().toISOString(),
-			steps: [
-				"1. Configuration saved to ~/.vscode/settings.json",
-				"2. Restart VS Code to apply changes",
-				"3. MCP features will be available through this extension"
-			]
 		}
 	};
 
 	// Write the updated settings file
 	fs.writeFileSync(configPath, JSON.stringify(updatedSettings, null, 2), 'utf-8');
 
-	// Show information message with instructions
-	const message = `MCP configuration completed for VS Code ${versionInfo.version}!\n\n` +
-		`Since your VS Code version doesn't support native MCP installation, ` +
-		`the configuration has been saved manually to:\n${configPath}\n\n` +
-		`Please restart VS Code to activate MCP features.`;
-
-	const action = await vscode.window.showInformationMessage(
-		message,
-		'Open Config File',
-		'Copy Config Path',
-		'View Documentation'
-	);
-
-	if (action === 'Open Config File') {
-		const configUri = vscode.Uri.file(configPath);
-		await vscode.window.showTextDocument(configUri);
-	} else if (action === 'Copy Config Path') {
-		await vscode.env.clipboard.writeText(configPath);
-		vscode.window.showInformationMessage('Config file path copied to clipboard!');
-	} else if (action === 'View Documentation') {
-		vscode.env.openExternal(vscode.Uri.parse('https://docs.checkmarx.com/mcp-installation'));
-	}
+	const configUri = vscode.Uri.file(configPath);
+	await vscode.window.showTextDocument(configUri);
 }
 
 /**
@@ -153,7 +121,7 @@ async function showManualMCPInstallationInstructions(mcpServer: McpServer) {
  */
 function loadManualMCPConfiguration(): McpServer | null {
 	try {
-		const configPath = path.join(os.homedir(), '.vscode', 'settings.json');
+		const configPath = path.join(__dirname, '..', '..', '.vscode', 'settings.json');
 		if (fs.existsSync(configPath)) {
 			const configContent = fs.readFileSync(configPath, 'utf-8');
 			const config = JSON.parse(configContent) as VSCodeSettings;

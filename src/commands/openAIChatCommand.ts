@@ -281,7 +281,12 @@ export class CopilotChatCommand {
         }
 
         try {
-            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (versionInfo.supportsNewChatCommand) {
+                await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+            }
+            else {
+                await vscode.commands.executeCommand(constants.copilotNewChatOpenLegacy, { query: `${question}` });
+            }
         } catch (error) {
             if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
                 await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
