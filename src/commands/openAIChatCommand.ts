@@ -65,6 +65,23 @@ export class CopilotChatCommand {
         this.containersScanner = containersScanner;
     }
 
+    private getVSCodeVersionInfo(): { version: string; majorVersion: number; minorVersion: number; supportsNewChatCommand: boolean } {
+        const vscodeVersion = vscode.version;
+        const versionParts = vscodeVersion.split('.');
+        const majorVersion = parseInt(versionParts[0], 10);
+        const minorVersion = parseInt(versionParts[1], 10);
+
+        // New chat command is supported in VS Code 1.97 and above
+        const supportsNewChatCommand = majorVersion > 1 || (majorVersion === 1 && minorVersion >= 97);
+
+        return {
+            version: vscodeVersion,
+            majorVersion,
+            minorVersion,
+            supportsNewChatCommand
+        };
+    }
+
     private pressEnterWindows() {
         const script = `
         Add-Type -AssemblyName System.Windows.Forms
@@ -236,7 +253,33 @@ export class CopilotChatCommand {
             }
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+
+        // Check VS Code version to determine which command to use
+        const versionInfo = this.getVSCodeVersionInfo();
+
+        try {
+            if (versionInfo.supportsNewChatCommand) {
+                // Use new command for VS Code 1.97 and above
+                await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+            } else {
+                // Use legacy command for VS Code versions below 1.97
+                await vscode.commands.executeCommand(constants.copilotNewChatOpenLegacy);
+            }
+        } catch (commandError) {
+            this.logs.error(`Failed to open chat with primary command: ${commandError}`);
+            // Fallback: try the other command if the first one fails
+            try {
+                if (versionInfo.supportsNewChatCommand) {
+                    await vscode.commands.executeCommand(constants.copilotNewChatOpenLegacy);
+                } else {
+                    await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+                }
+            } catch (fallbackError) {
+                this.logs.error(`Failed to open chat with fallback command: ${fallbackError}`);
+                throw new Error(`Both chat commands failed: ${commandError}, ${fallbackError}`);
+            }
+        }
+
         try {
             await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
         } catch (error) {

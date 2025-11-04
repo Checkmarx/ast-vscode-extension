@@ -274,6 +274,7 @@ export const constants = {
 
   copilotChatExtensionId: "GitHub.copilot-chat",
   copilotNewChatOpen: "workbench.action.chat.newChat",
+  copilotNewChatOpenLegacy: "github.copilot.chat.open",
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 

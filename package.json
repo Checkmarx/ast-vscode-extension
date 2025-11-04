@@ -549,6 +549,18 @@
         "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
+      },
+      {
+        "command": "ast-results.installMCP",
+        "title": "Install MCP (Model Context Protocol)",
+        "category": "Checkmarx",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.triggerMCP",
+        "title": "Trigger MCP (Manual Event)",
+        "category": "Checkmarx",
+        "enablement": "ast-results.isValidCredentials"
       }
     ],
     "submenus": [
