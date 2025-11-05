@@ -1075,7 +1075,7 @@
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
-    "validator": "^13.12.0"
+    "validator": "^13.15.20"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
