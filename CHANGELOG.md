@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [v2.41.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.41.0) - 2025-11-06 10:50:25
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.41.0 -->
+
+## What's Changed
+### Checkmarx One SDK Updates 🛠
+* Update AST CLI JavaScript Wrapper to version 0.0.146 by @cx-anurag-dalke in https://github.com/Checkmarx/ast-vscode-extension/pull/1296
+### Other Changes
+* Fix vulnerability validator 13.12.0, update to 13.15.20 by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1294
+* Passing-false-to-update-vorpal(AST-119733) by @cx-hitesh-madgulkar in https://github.com/Checkmarx/ast-vscode-extension/pull/1295
+* Support light theme and minor UI Fixes (AST-115631) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1293
+* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1297
+
+## New Contributors
+* @cx-hitesh-madgulkar made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1295
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.40.0...v2.41.0
+
 ## [v2.40.1-LightTheme-UI-Changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.40.1-LightTheme-UI-Changes.0) - 2025-11-03 16:09:24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
