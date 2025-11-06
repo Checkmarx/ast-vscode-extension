@@ -235,7 +235,17 @@
 	window.addEventListener('message', event => {
 		const message = event.data;
 		switch (message.command) {
-			case 'loadChanges':
+			case 'updateThemeIcon': {
+				// Update the CodeBashing icon for theme change
+				const codeBashingIcon = document.getElementById('cx_codebashing');
+				if (codeBashingIcon && message.iconUri) {
+					codeBashingIcon.setAttribute('src', message.iconUri);
+					// Also update the global variable for future use
+					window.codeBashingIconUri = message.iconUri;
+				}
+				break;
+			}
+			case 'loadChanges': {
 				let changes = message.changes;
 				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
@@ -245,15 +255,17 @@
 					loaderContainer.style.padding = '0.4em';
 				}
 				break;
-			case 'loader':
+			}
+			case 'loader': {
 				// html do loader
-				loaderContainer = document.getElementById('history-container-loader');
+				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
 					loaderContainer.innerHTML = loader();
 					loaderContainer.style.display = 'block';
 				}
 				break;
-			case 'loadLearnMore':
+			}
+			case 'loadLearnMore': {
 				let learn = message.learn;
 				let learnLoaderContainer = document.getElementById('learn-container-loader');
 				learnLoaderContainer.style.display = 'none';
@@ -265,6 +277,7 @@
 				codeLoaderContainer.style.display = 'block';
 				registerCodebashingEventListener();
 				break;
+			}
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
 			// 	let index =  message.index.index;
@@ -401,10 +414,7 @@
             codebashingLinkIcon.setAttribute('class', 'codebashing-link');
             codebashingLinkIcon.textContent = 'Learn more at ';
             let codeBashingIcon = document.createElement('img');
-            let iconSrc = window.codeBashingIconUriDark;
-            if (document.body.classList.contains('vscode-light') || document.body.classList.contains('vscode-high-contrast-light')) {
-                iconSrc = window.codeBashingIconUriLight;
-            }
+            let iconSrc = window.codeBashingIconUri;
             codeBashingIcon.setAttribute('src', iconSrc);
             codeBashingIcon.setAttribute('id', 'cx_codebashing');
             codeBashingIcon.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");

@@ -510,7 +510,7 @@ export class Details {
 			<div class="col">
 				<div class="input-group" style="display:flex" id="askGroup">
 					<textarea
-						style="width:90%;background:#6769725c;color:white;resize:none;border:1px solid #3794FF;border-style:solid none solid solid"
+						style="width:90%;resize:none;border:1px solid #3794FF;"
 						class="form-control custom-control" id="askQuestion" rows="1"
 						placeholder="Ask a question"></textarea>
 					<button

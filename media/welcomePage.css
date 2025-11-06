@@ -1,6 +1,6 @@
 body {
-  background-color: #1e1e1e;
-  color: white;
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
   margin: 0;
   padding: 147px 185.081px 190px 156px;
@@ -24,7 +24,7 @@ body {
 }
 
 h1 {
-  color: #fff;
+  color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
   font-size: 26px;
   font-style: normal;
@@ -39,7 +39,6 @@ h1 {
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.7);
   font-family: Inter, sans-serif;
   font-size: 13px;
   font-style: normal;
@@ -47,14 +46,23 @@ h1 {
 }
 
 .feature-card {
-  background-color: #2a2a2a;
   padding: 18px;
   width: 410px;
   min-height: auto;
   border-radius: 10px;
-  border: 1px solid #444;
   box-sizing: border-box;
   margin-bottom: 46px;
+}
+
+body[data-vscode-theme-kind*="dark"] .feature-card,
+body[data-vscode-theme-kind="vscode-high-contrast"] .feature-card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+body[data-vscode-theme-kind*="light"] .feature-card {
+    background-color: rgb(245, 245, 245);
+    border: 1px solid rgb(245, 245, 245);
 }
 
 .card-header {
@@ -85,7 +93,7 @@ h1 {
 }
 
 .card-title {
-  color: #fff;
+  color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
   font-size: 13px;
   font-style: normal;
@@ -100,7 +108,7 @@ h1 {
 }
 
 .card-list li {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
   font-size: 13px;
   font-style: normal;
@@ -127,7 +135,7 @@ h1 {
 }
 
 .main-feature-list li {
-  color: #fff;
+  color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
   font-size: 13px;
   font-style: normal;

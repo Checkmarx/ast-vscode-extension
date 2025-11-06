@@ -103,6 +103,13 @@ export class WebViewCommand {
             this.detailsPanel.webview
           );
 
+        // Setup theme change listener for the webview
+        detailsDetachedView.setupThemeChangeListener(this.detailsPanel.webview);
+        // Dispose theme listener when panel is disposed
+        this.detailsPanel.onDidDispose(() => {
+          detailsDetachedView.disposeThemeListener();
+        });
+
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
         await this.loadAsyncTabsContent(result);
 

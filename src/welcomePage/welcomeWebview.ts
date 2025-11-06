@@ -1,93 +1,25 @@
 import * as vscode from "vscode";
 import { getNonce } from "../utils/utils";
 import { constants } from "../utils/common/constants";
+import { ThemeUtils } from "../utils/themeUtils";
 
 
 
 export class WelcomeWebview {
-  public static async show(context: vscode.ExtensionContext, isAiMcpEnabled: boolean) {
-    const panel = vscode.window.createWebviewPanel(
-      "checkmarxWelcome",
-      "Welcome to Checkmarx",
-      vscode.ViewColumn.One,
-      { enableScripts: true, retainContextWhenHidden: true }
-    );
-
-    const bootstrapCssUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "bootstrap",
-        "bootstrap.min.css"
-      )
-    );
-
-    const scannerImgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "welcomePageScanner.svg"
-      )
-    );
-
-    const aiBoxinfo = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "cxAIError.svg"
-      )
-    );
-
-    const checkSvgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "tabler-icon-check.svg"
-      )
-    );
-
-    const uncheckSvgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "tabler-icon-uncheck.svg"
-      )
-    );
-
-    const doubleCheckUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "double-check.svg"
-      )
-    );
-
-    const cssUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
-    );
-
-    const jsUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.js")
-    );
-
-    const nonce = getNonce();
-
-    const scannerConfigKeys = [
-      `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`,
-      `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`,
-      `${constants.secretsScanner}.${constants.activateSecretsScanner}`,
-      `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`,
-      `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
-    ];
-
-    const config = vscode.workspace.getConfiguration();
-
-    panel.webview.html = `
+  private static generateHtml(
+    bootstrapCssUri: vscode.Uri,
+    scannerImgUri: vscode.Uri,
+    aiBoxinfo: vscode.Uri,
+    checkSvgUri: vscode.Uri,
+    uncheckSvgUri: vscode.Uri,
+    doubleCheckUri: vscode.Uri,
+    cssUri: vscode.Uri,
+    jsUri: vscode.Uri,
+    nonce: string,
+    isAiMcpEnabled: boolean,
+    panel: vscode.WebviewPanel
+  ): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -206,6 +138,155 @@ export class WelcomeWebview {
       </body>
       </html>
     `;
+  }
+
+  public static async show(context: vscode.ExtensionContext, isAiMcpEnabled: boolean) {
+    const panel = vscode.window.createWebviewPanel(
+      "checkmarxWelcome",
+      "Welcome to Checkmarx",
+      vscode.ViewColumn.One,
+      { enableScripts: true, retainContextWhenHidden: true }
+    );
+
+    const bootstrapCssUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "bootstrap",
+        "bootstrap.min.css"
+      )
+    );
+
+    const scannerImgUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg")
+      )
+    );
+
+    const aiBoxinfo = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg")
+      )
+    );
+
+    const checkSvgUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "tabler-icon-check.svg"
+      )
+    );
+
+    const uncheckSvgUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        "tabler-icon-uncheck.svg"
+      )
+    );
+
+    const doubleCheckUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        context.extensionUri,
+        "media",
+        "icons",
+        ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg")
+      )
+    );
+
+    const cssUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
+    );
+
+    const jsUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.js")
+    );
+
+    const nonce = getNonce();
+
+    const scannerConfigKeys = [
+      `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`,
+      `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`,
+      `${constants.secretsScanner}.${constants.activateSecretsScanner}`,
+      `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`,
+      `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+    ];
+
+    const config = vscode.workspace.getConfiguration();
+
+    // Set initial HTML using the reusable function
+    panel.webview.html = this.generateHtml(
+      bootstrapCssUri,
+      scannerImgUri,
+      aiBoxinfo,
+      checkSvgUri,
+      uncheckSvgUri,
+      doubleCheckUri,
+      cssUri,
+      jsUri,
+      nonce,
+      isAiMcpEnabled,
+      panel
+    );
+
+    // Listen for theme changes and refresh the webview content
+    const themeChangeDisposable = vscode.window.onDidChangeActiveColorTheme(() => {
+      // Regenerate all URIs with new theme-appropriate icons
+      const newScannerImgUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(
+          context.extensionUri,
+          "media",
+          "icons",
+          ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg")
+        )
+      );
+
+      const newAiBoxinfo = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(
+          context.extensionUri,
+          "media",
+          "icons",
+          ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg")
+        )
+      );
+
+      const newDoubleCheckUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(
+          context.extensionUri,
+          "media",
+          "icons",
+          ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg")
+        )
+      );
+
+      // Regenerate HTML with new theme-appropriate icons using the reusable function
+      panel.webview.html = this.generateHtml(
+        bootstrapCssUri,
+        newScannerImgUri,
+        newAiBoxinfo,
+        checkSvgUri,
+        uncheckSvgUri,
+        newDoubleCheckUri,
+        cssUri,
+        jsUri,
+        nonce,
+        isAiMcpEnabled,
+        panel
+      );
+    });
+
+    // Dispose theme listener when panel is disposed
+    panel.onDidDispose(() => {
+      themeChangeDisposable.dispose();
+    });
 
     panel.webview.onDidReceiveMessage(async (message) => {
       if (message.type === "getAiFeatureState") {
