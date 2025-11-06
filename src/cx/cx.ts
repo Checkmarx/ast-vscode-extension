@@ -629,7 +629,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, false, constants.vsCodeAgent, null);
+        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
