@@ -37,33 +37,43 @@ export class AuthenticationWebview {
   }
 
   private async initialize() {
-    this._panel.webview.postMessage({ type: "showLoader" });
+    console.log("[AuthenticationWebview.initialize] posting showLoader message");
+    await this._panel.webview.postMessage({ type: "showLoader" });
     const authService = AuthService.getInstance(this.context, this.logs);
     let hasToken = false;
 
     try {
+      console.log("[AuthenticationWebview.initialize] validating and updating auth state...");
       hasToken = await authService.validateAndUpdateState();
+      console.log("[AuthenticationWebview.initialize] validateAndUpdateState result:", hasToken);
     } catch (error) {
       console.error("Error validating authentication state:", error);
     }
-    this._panel.webview.postMessage({
-      type: "setAuthState",
-      isAuthenticated: hasToken,
-    });
+    const setAuthStateMessage = { type: "setAuthState", isAuthenticated: hasToken };
+    console.log("[AuthenticationWebview.initialize] posting setAuthState message:", setAuthStateMessage);
+    await this._panel.webview.postMessage(setAuthStateMessage);
 
     const urls = this.getURIs(this.context);
-    this._panel.webview.postMessage({ type: "setUrls", items: urls });
+    const setUrlsMessage = { type: "setUrls", items: urls };
+    console.log("[AuthenticationWebview.initialize] posting setUrls message:", setUrlsMessage);
+    await this._panel.webview.postMessage(setUrlsMessage);
 
     const tenants = this.getTenants(this.context);
-    this._panel.webview.postMessage({ type: "setTenants", items: tenants });
-    this._panel.webview.postMessage({ type: "hideLoader" });
+    const setTenantsMessage = { type: "setTenants", items: tenants };
+    console.log("[AuthenticationWebview.initialize] posting setTenants message:", setTenantsMessage);
+    await this._panel.webview.postMessage(setTenantsMessage);
+    console.log("[AuthenticationWebview.initialize] posting hideLoader message");
+    await this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
   public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
+    console.log("[AuthenticationWebview.show] invoked");
     if (AuthenticationWebview.currentPanel) {
+      console.log("[AuthenticationWebview.show] revealing existing panel");
       AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
       return;
     }
+    console.log("[AuthenticationWebview.show] creating new webview panel");
     const panel = vscode.window.createWebviewPanel(
       AuthenticationWebview.viewType,
       "Checkmarx One Authentication",
@@ -74,12 +84,14 @@ export class AuthenticationWebview {
         localResourceRoots: [context.extensionUri],
       }
     );
+    console.log("[AuthenticationWebview.show] webview panel created, instantiating AuthenticationWebview");
     AuthenticationWebview.currentPanel = new AuthenticationWebview(
       panel,
       context,
       logs,
       webViewCommand
     );
+    console.log("[AuthenticationWebview.show] AuthenticationWebview instance created and stored in currentPanel");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -114,6 +126,7 @@ export class AuthenticationWebview {
   }
 
   private _getWebviewContent(): string {
+    console.log("[AuthenticationWebview._getWebviewContent] generating webview HTML");
     const styleBootStrap = this.setWebUri(
       "media",
       "bootstrap",
@@ -131,6 +144,17 @@ export class AuthenticationWebview {
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
     const nonce = getNonce();
+    console.log("[AuthenticationWebview._getWebviewContent] resource URIs", {
+      styleBootStrap: styleBootStrap.toString(),
+      scriptBootStrap: scriptBootStrap.toString(),
+      scriptUri: scriptUri.toString(),
+      styleAuth: styleAuth.toString(),
+      loginIcon: loginIcon.toString(),
+      logoutIcon: logoutIcon.toString(),
+      successIcon: successIcon.toString(),
+      errorIcon: errorIcon.toString(),
+      nonce
+    });
 
     return `<!DOCTYPE html>
 <html>
