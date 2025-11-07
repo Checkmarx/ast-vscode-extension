@@ -1,16 +1,16 @@
 # CHANGELOG
 
+## [v2.42.1-remote-ssh-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-remote-ssh-fix.0) - 2025-11-06 11:24:03
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.42.0...v2.42.1-remote-ssh-fix.0
+
 ## [v2.42.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.0) - 2025-11-06 11:23:24
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.42.0 -->
-
-## What's Changed
-### Other Changes
-* passing-true-to-update-vorpal-while-installing by @cx-hitesh-madgulkar in https://github.com/Checkmarx/ast-vscode-extension/pull/1298
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1299
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.41.0...v2.42.0
 
 ## [v2.41.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.41.0) - 2025-11-06 10:50:25
 
