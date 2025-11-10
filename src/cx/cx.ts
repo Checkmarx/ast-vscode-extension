@@ -378,6 +378,28 @@ export class Cx implements CxPlatform {
         return enabled;
     }
 
+    async isStandaloneEnabled(logs: Logs): Promise<boolean> {
+        let enabled = false;
+        const token = await this.context.secrets.get("authCredential");
+        if (!token) {
+            return enabled;
+        }
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return enabled;
+        }
+        config.apiKey = token;
+        const cx = new CxWrapper(config);
+        try {
+            enabled = await cx.standaloneEnabled();
+        } catch (error) {
+            const errMsg = `Error checking tenant configuration: ${error}`;
+            logs.error(errMsg);
+            return enabled;
+        }
+        return enabled;
+    }
+
     async isAiMcpServerEnabled(): Promise<boolean> {
         let enabled = false;
         const token = await this.context.secrets.get("authCredential");

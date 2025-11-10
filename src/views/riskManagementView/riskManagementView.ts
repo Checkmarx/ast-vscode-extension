@@ -12,10 +12,13 @@ import { constants } from "../../utils/common/constants";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { ICONS } from "./constants";
 import { PromotionalCardView } from "../shared/PromotionalCardView";
+import { cx } from "../../cx";
+import { Logs } from "../../models/logs";
 export class riskManagementView implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private riskManagementService: riskManagementService;
   private cxResults: CxResult[] = [];
+  private logs: Logs;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -24,6 +27,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     this.riskManagementService = riskManagementService.getInstance(
       this.context
     );
+    this.logs = new Logs(vscode.window.createOutputChannel("Checkmarx Risk Management"));
   }
 
   public async resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -113,7 +117,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     this.cxResults = cxResults;
 
     if (!project && !scan) {
-      this.view.webview.html = this.getWebviewContent(
+      this.view.webview.html = await this.getWebviewContent(
         undefined,
         undefined,
         false,
@@ -137,7 +141,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
           project.id,
           scan.id
         );
-      this.view.webview.html = this.getWebviewContent(
+      this.view.webview.html = await this.getWebviewContent(
         projectToDisplay,
         scanToDisplay,
         isLatestScan,
@@ -206,12 +210,12 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     );
   }
 
-  private getWebviewContent(
+  private async getWebviewContent(
     projectName: string,
     scan: string,
     isLatestScan: boolean,
     ASPMResults: { results: any; applicationNameIDMap: any[] }
-  ): string {
+  ): Promise<string> {
     const styleResetUri = this.setWebUri("media", "reset.css");
     const styleVSCodeUri = this.setWebUri("media", "vscode.css");
     const styleMainUri = this.setWebUri("media", "main.css");
@@ -242,6 +246,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     );
     const nonce = getNonce();
 
+    // Check if standalone mode is enabled - similar to isAIGuidedRemediationEnabled
+    const isStandalone = await cx.isStandaloneEnabled(this.logs);
+
     // Get promotional card configuration
     const promoConfig = PromotionalCardView.getAspmConfig();
     const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
@@ -264,6 +271,8 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 		<title>Risks Management</title>
 		<style>
 			${promoCardStyles}
+			${isStandalone ? '' : '.promotional-card { display: none !important; }'}
+			${!isStandalone ? '' : '#riskManagementContainer { display: none !important; }'}
 		</style>
 	</head>
 
@@ -274,10 +283,10 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 			</div>
 		</div>
 		
-		<!-- Reusable Promotional Card -->
-		${promoCardHtml}
+		<!-- Reusable Promotional Card - Show only if standalone is enabled -->
+		${isStandalone ? promoCardHtml : ''}
 		
-		<div id="riskManagementContainer">
+		<div id="riskManagementContainer" ${isStandalone ? 'style="display: none;"' : ''}>
 			${!projectName || !scan || !isLatestScan
         ? `<div class="no-results-message">
 				ASPM data is only shown when the most recent scan of a project is selected
@@ -354,7 +363,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
       }</div>
 		<script nonce="${nonce}">
 			const vscode = acquireVsCodeApi();
-			${promoCardScript}
+			${isStandalone ? promoCardScript : ''}
 		</script>
 		<script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 		<script src=${popperUri}></script>
