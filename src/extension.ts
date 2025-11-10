@@ -262,6 +262,8 @@ export async function activate(context: vscode.ExtensionContext) {
   commonCommand.executeCheckSettings();
   // Scan from IDE enablement
   await commonCommand.executeCheckScanEnabled();
+
+  await commonCommand.executeCheckStandaloneEnabled();
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change

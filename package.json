@@ -76,7 +76,7 @@
         "command": "ast-results.openIgnoredView",
         "category": "ast-results",
         "title": "View Ignored vulnerabilities",
-        "enablement": "ast-results.isValidCredentials"
+        "enablement": "ast-results.isValidCredentials && ast-results.isStandaloneEnabled"
       },
       {
         "command": "ast-results.assistDocumentation",
