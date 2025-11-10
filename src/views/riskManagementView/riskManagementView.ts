@@ -117,6 +117,12 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     this.cxResults = cxResults;
 
     if (!project && !scan) {
+      // Standalone and promo card logic moved here
+      const isStandalone = await cx.isStandaloneEnabled(this.logs);
+      const promoConfig = PromotionalCardView.getAspmConfig();
+      const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
+      const promoCardStyles = PromotionalCardView.generateStyles();
+      const promoCardScript = PromotionalCardView.generateScript();
       this.view.webview.html = await this.getWebviewContent(
         undefined,
         undefined,
@@ -124,7 +130,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         {
           applicationNameIDMap: [],
           results: undefined,
-        }
+        },
+        isStandalone,
+        promoCardHtml,
+        promoCardStyles,
+        promoCardScript
       );
       this.view.webview.postMessage({ command: "hideLoader" });
       return;
@@ -141,11 +151,21 @@ export class riskManagementView implements vscode.WebviewViewProvider {
           project.id,
           scan.id
         );
+      // Standalone and promo card logic moved here
+      const isStandalone = await cx.isStandaloneEnabled(this.logs);
+      const promoConfig = PromotionalCardView.getAspmConfig();
+      const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
+      const promoCardStyles = PromotionalCardView.generateStyles();
+      const promoCardScript = PromotionalCardView.generateScript();
       this.view.webview.html = await this.getWebviewContent(
         projectToDisplay,
         scanToDisplay,
         isLatestScan,
-        riskManagementResults as { results: any; applicationNameIDMap: any[] }
+        riskManagementResults as { results: any; applicationNameIDMap: any[] },
+        isStandalone,
+        promoCardHtml,
+        promoCardStyles,
+        promoCardScript
       );
       this.view.webview.postMessage({
         command: "getRiskManagementResults",
@@ -214,7 +234,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     projectName: string,
     scan: string,
     isLatestScan: boolean,
-    ASPMResults: { results: any; applicationNameIDMap: any[] }
+    ASPMResults: { results: any; applicationNameIDMap: any[] },
+    isStandalone: boolean,
+    promoCardHtml: string,
+    promoCardStyles: string,
+    promoCardScript: string
   ): Promise<string> {
     const styleResetUri = this.setWebUri("media", "reset.css");
     const styleVSCodeUri = this.setWebUri("media", "vscode.css");
@@ -245,15 +269,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
       "bootstrap.min.js"
     );
     const nonce = getNonce();
-
-    // Check if standalone mode is enabled - similar to isAIGuidedRemediationEnabled
-    const isStandalone = await cx.isStandaloneEnabled(this.logs);
-
-    // Get promotional card configuration
-    const promoConfig = PromotionalCardView.getAspmConfig();
-    const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
-    const promoCardStyles = PromotionalCardView.generateStyles();
-    const promoCardScript = PromotionalCardView.generateScript();
 
     return `<!DOCTYPE html>
 <html lang="en">

@@ -137,7 +137,7 @@ export class PromotionalCardView {
 			title: "Unlock Full Security Coverage",
 			description: "This feature is part of the full Checkmarx platform. Upgrade to give your organization complete application security.",
 			buttonText: "Learn more",
-			buttonUrl: "https://checkmarx.com/product/application-security-posture-management/",
+			buttonUrl: "https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_section-idm234938984608896",
 			showCard: true
 		};
 	}
