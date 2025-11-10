@@ -243,6 +243,7 @@ export class CxOneAssistWebview {
         } else {
           button.style.display = 'none';
         }
+    } 
     `;
   }
 
