@@ -1,6 +1,8 @@
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
 import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import * as vscode from "vscode";
+import { Cx } from "../../cx/cx";
+import { Logs } from "../../models/logs";
 
 export class CxOneAssistUtils {
 	/**
@@ -12,10 +14,12 @@ export class CxOneAssistUtils {
 	): Promise<CxOneAssistWebviewState> {
 		const ignoredCount = ignoreFileManager.getIgnoredPackagesCount();
 		const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
-		const token = await context.secrets.get("authCredential");
-		const isAuthenticated = !!token;
+		const cxInstance = new Cx(context);
+		const isAuthenticated = await cxInstance.isValidConfiguration();
+		const logs = new Logs(vscode.window.createOutputChannel("Checkmarx One"));
+		const isStandaloneEnabled = await cxInstance.isStandaloneEnabled(logs);
 
-		return { ignoredCount, hasIgnoreFile, isAuthenticated };
+		return { ignoredCount, hasIgnoreFile, isStandaloneEnabled, isAuthenticated };
 	}
 
 	/**

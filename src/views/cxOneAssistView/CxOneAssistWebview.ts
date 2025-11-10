@@ -250,7 +250,7 @@ export class CxOneAssistWebview {
   /**
    * Generates the HTML content for unauthenticated users
    */
-  public static generateUnauthenticatedHtml(
+  public static renderDisabledStandaloneHtml(
     context: vscode.ExtensionContext,
     webview: vscode.Webview
   ): string {
