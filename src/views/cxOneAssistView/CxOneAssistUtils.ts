@@ -36,6 +36,6 @@ export class CxOneAssistUtils {
 	 * Gets the tooltip text for the ignored vulnerabilities button
 	 */
 	public static getIgnoredTooltip(count: number): string {
-		return count === 0 ? "No ignored vulnerabilities found" : `Click to view ${count} ignored vulnerabilities`;
+		return count === 0 ? "No ignored vulnerabilities found" : `${count} ignored vulnerabilities - Click to view`;
 	}
 }
