@@ -11,6 +11,7 @@ import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { ICONS } from "./constants";
+import { PromotionalCardView } from "../shared/PromotionalCardView";
 export class riskManagementView implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private riskManagementService: riskManagementService;
@@ -47,6 +48,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   private async handleMessage(message: {
     command: string;
     result?: { hash: string, riskScore: number, severity: string, traits: { [key: string]: string } };
+    url?: string;
   }): Promise<void> {
     switch (message.command) {
       case "openVulnerabilityDetails": {
@@ -56,6 +58,18 @@ export class riskManagementView implements vscode.WebviewViewProvider {
           await vscode.commands.executeCommand(commands.newDetails, astResult);
         } else {
           vscode.window.showErrorMessage("Result not found");
+        }
+        break;
+      }
+      case "openPromotionalLink": {
+        // Use the reusable promotional card handler
+        PromotionalCardView.handleMessage(message);
+        break;
+      }
+      // Keep backward compatibility
+      case "openLearnMore": {
+        if (message.url) {
+          vscode.env.openExternal(vscode.Uri.parse(message.url));
         }
         break;
       }
@@ -228,6 +242,12 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     );
     const nonce = getNonce();
 
+    // Get promotional card configuration
+    const promoConfig = PromotionalCardView.getAspmConfig();
+    const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
+    const promoCardStyles = PromotionalCardView.generateStyles();
+    const promoCardScript = PromotionalCardView.generateScript();
+
     return `<!DOCTYPE html>
 <html lang="en">
 
@@ -242,6 +262,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 		<link rel="stylesheet" href="${codiconsUri}">
 
 		<title>Risks Management</title>
+		<style>
+			${promoCardStyles}
+		</style>
 	</head>
 
 	<body>
@@ -250,32 +273,34 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 				<span class="visually-hidden">ASPM Results Loading...</span>
 			</div>
 		</div>
+		
+		<!-- Reusable Promotional Card -->
+		${promoCardHtml}
+		
 		<div id="riskManagementContainer">
-			${
-        !projectName || !scan || !isLatestScan
-          ? `<div class="no-results-message">
+			${!projectName || !scan || !isLatestScan
+        ? `<div class="no-results-message">
 				ASPM data is only shown when the most recent scan of a project is selected
 				in the Checkmarx One Results tab
 			</div>`
-          : ASPMResults.applicationNameIDMap.length === 0
+        : ASPMResults.applicationNameIDMap.length === 0
           ? `<div
 				class="no-results-message">
 				This project is not associated with any application in the ASPM
 			</div>`
           : ASPMResults.applicationNameIDMap.length > 0 &&
             ASPMResults.results.length === 0
-          ? `<div class="no-results-message">
+            ? `<div class="no-results-message">
 				ASPM does not hold result data for this project
 			</div>`
-          : `<div class="details"
+            : `<div class="details"
 				data-bs-toggle="tooltip" data-bs-placement="auto"
 				title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
 
 				<div class="ellipsis"><i class="codicon codicon-project"></i>Project:
 					${projectName ?? ""}</div>
-				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${
-          scan ?? ""
-        }</div>
+				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""
+            }</div>
 			</div>
 
 			<hr class="separator" />
@@ -328,8 +353,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 			`
       }</div>
 		<script nonce="${nonce}">
-    const vscode = acquireVsCodeApi();
-</script>
+			const vscode = acquireVsCodeApi();
+			${promoCardScript}
+		</script>
 		<script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 		<script src=${popperUri}></script>
 		<script nonce="${nonce}" src="${scriptBootStrap}"></script>
