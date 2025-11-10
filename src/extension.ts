@@ -40,9 +40,16 @@ import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScanner
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
+import { DOC_LINKS } from "./constants/documentation";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Register assistDocumentation command to open Checkmarx docs using DOC_LINKS
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.assistDocumentation, () => {
+      vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
+    })
+  );
   // Initialize cx first
   initialize(context);
 
@@ -328,7 +335,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register CxOne Assist update command
   context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.updateCxOneAssist", async () => {
+    vscode.commands.registerCommand(commands.updateCxOneAssist, async () => {
       await cxOneAssistProvider.onAuthenticationChanged();
     })
   );
