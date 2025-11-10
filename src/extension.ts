@@ -303,6 +303,11 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
   const ignoreFileManager = IgnoreFileManager.getInstance();
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+  if (workspaceFolder) {
+    ignoreFileManager.initialize(workspaceFolder);
+  }
   const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
   const ossScanner = ossCommand.getScannerService();
 
