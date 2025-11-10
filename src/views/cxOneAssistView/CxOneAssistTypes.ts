@@ -9,6 +9,7 @@ export interface CxOneAssistDependencies {
 export interface CxOneAssistWebviewState {
 	ignoredCount: number;
 	hasIgnoreFile: boolean;
+	isStandaloneEnabled: boolean;
 	isAuthenticated: boolean;
 }
 
