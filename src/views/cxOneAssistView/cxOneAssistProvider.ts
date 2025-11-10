@@ -11,7 +11,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 	constructor(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager) {
 		this.dependencies = { context, ignoreFileManager };
-		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isAuthenticated: false };
+		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isStandaloneEnabled: false, isAuthenticated: false };
 	}
 
 	public resolveWebviewView(
@@ -45,17 +45,21 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 			this.dependencies.context
 		);
 
-		if (this.currentState.isAuthenticated) {
+		if (this.currentState.isAuthenticated && !this.currentState.isStandaloneEnabled) {
+			this.webviewView.webview.html = CxOneAssistWebview.renderDisabledStandaloneHtml(
+				this.dependencies.context,
+				this.webviewView.webview
+			);
+		}
+		else if (this.currentState.isAuthenticated && this.currentState.isStandaloneEnabled) {
 			this.webviewView.webview.html = CxOneAssistWebview.generateHtml(
 				this.dependencies.context,
 				this.webviewView.webview,
 				this.currentState
 			);
-		} else {
-			this.webviewView.webview.html = CxOneAssistWebview.generateUnauthenticatedHtml(
-				this.dependencies.context,
-				this.webviewView.webview
-			);
+		} else if (!this.currentState.isAuthenticated) {
+			// Authenticated but standalone not enabled
+			this.webviewView.webview.html = "";
 		}
 	}
 
