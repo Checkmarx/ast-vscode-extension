@@ -73,7 +73,7 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
-        "command": "ast-results.viewIgnoredVulnerabilities",
+        "command": "ast-results.openIgnoredView",
         "category": "ast-results",
         "title": "View Ignored vulnerabilities",
         "enablement": "ast-results.isValidCredentials"
@@ -81,8 +81,7 @@
       {
         "command": "ast-results.assistDocumentation",
         "category": "ast-results",
-        "title": "Documentation",
-        "enablement": "ast-results.isValidCredentials"
+        "title": "Documentation"
       },
       {
         "command": "ast-results.groupBySeverityActive",
@@ -823,7 +822,7 @@
           "when": "view == astResults && ast-results-groupByDirectDependency"
         },
         {
-          "command": "ast-results.viewIgnoredVulnerabilities",
+          "command": "ast-results.openIgnoredView",
           "group": "@settings@1",
           "when": "view == astCxOneAssist"
         },
