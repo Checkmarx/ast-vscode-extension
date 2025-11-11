@@ -67,7 +67,7 @@ export class AuthenticationWebview {
       return;
     }
     const panel = vscode.window.createWebviewPanel(
-      AuthenticationWebview.viewType,
+      commands.astResultsPromo,
       "Checkmarx One Authentication",
       vscode.ViewColumn.One,
       {

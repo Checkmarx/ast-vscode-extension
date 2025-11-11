@@ -9,6 +9,7 @@ export const commands = {
   setings: `${constants.extensionName}.viewSettings`,
   isValidCredentials: `${constants.extensionName}.isValidCredentials`,
 
+  authentication: `${constants.extensionName}.authentication`,
   showAuth: `${constants.extensionName}.showAuth`,
 
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
@@ -130,4 +131,7 @@ export const commands = {
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
   assistDocumentation: `${constants.extensionName}.assistDocumentation`,
   updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
+  astCxOneAssist: "astCxOneAssist",
+  astResultsPromo: "astResultsPromo",
+  docAndFeedback: "docAndFeedback"
 };
