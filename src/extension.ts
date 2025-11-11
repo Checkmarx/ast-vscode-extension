@@ -44,13 +44,53 @@ import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 import { DOC_LINKS } from "./constants/documentation";
 let globalContext: vscode.ExtensionContext;
 
-export async function activate(context: vscode.ExtensionContext) {
-  // Register assistDocumentation command to open Checkmarx docs using DOC_LINKS
+// --- Helper wrappers for refactored snippet ---
+function registerAssistDocumentation(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(commands.assistDocumentation, () => {
       vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
     })
   );
+}
+
+function registerPromoResultsWebview(context: vscode.ExtensionContext, logs: Logs) {
+  const promoProvider = new AstResultsPromoProvider(context, logs);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(commands.astResultsPromo, promoProvider)
+  );
+  return promoProvider;
+}
+
+function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager) {
+  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider)
+  );
+  return cxOneAssistProvider;
+}
+
+function registerAssistRelatedCommands(context: vscode.ExtensionContext, cxOneAssistProvider: CxOneAssistProvider) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.updateCxOneAssist, async () => {
+      await cxOneAssistProvider.onAuthenticationChanged();
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.authentication, () => {
+      vscode.commands.executeCommand(commands.showAuth);
+    })
+  );
+}
+
+function registerAuthenticationLauncher(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs: Logs) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.showAuth, () => {
+      AuthenticationWebview.show(context, webViewCommand, logs);
+    })
+  );
+}
+
+export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
   initialize(context);
 
@@ -63,6 +103,9 @@ export async function activate(context: vscode.ExtensionContext) {
   // Integrity check on startup
   const authService = AuthService.getInstance(context, logs);
   await authService.validateAndUpdateState();
+  // Register docs & promo webview now that logs exist
+  registerAssistDocumentation(context);
+  registerPromoResultsWebview(context, logs);
 
   // Status bars creation
   const runScanStatusBar = vscode.window.createStatusBarItem(
@@ -215,7 +258,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Documentation & Feedback view
   const docAndFeedback = new DocAndFeedbackView();
 
-  const docAndFeedbackTree = vscode.window.createTreeView("docAndFeedback", {
+  const docAndFeedbackTree = vscode.window.createTreeView(commands.docAndFeedback, {
     treeDataProvider: docAndFeedback,
   });
 
@@ -227,9 +270,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.env.openExternal(vscode.Uri.parse(url));
       }
     }
-  });
-
-  // SCA auto scanning commands register
+  });  // SCA auto scanning commands register
   const scaScanCommand = new ScanSCACommand(
     context,
     runSCAScanStatusBar,
@@ -282,11 +323,7 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider,
     logs
   );
-  // Register promo results webview (standalone mode)
-  const promoProvider = new AstResultsPromoProvider(context, logs);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('astResultsPromo', promoProvider)
-  );
+  // Promo webview already registered above
 
   // Register refresh sca and results Tree Command
   treeCommand.registerRefreshCommands();
@@ -306,13 +343,8 @@ export async function activate(context: vscode.ExtensionContext) {
   // Refresh sca tree with start scan message
   scaResultsProvider.refreshData(constants.scaStartScan);
 
-  // Register authentication command
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.showAuth", () => {
-      AuthenticationWebview.show(context, webViewCommand, logs);
-    })
-  );
+  // Authentication launcher
+  registerAuthenticationLauncher(context, webViewCommand, logs);
   const ignoreFileManager = IgnoreFileManager.getInstance();
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
@@ -343,25 +375,9 @@ export async function activate(context: vscode.ExtensionContext) {
     dispose: () => ignoreFileManager.dispose()
   });
 
-  // CxOne Assist view
-  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("astCxOneAssist", cxOneAssistProvider)
-  );
-
-  // Register CxOne Assist update command
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.updateCxOneAssist, async () => {
-      await cxOneAssistProvider.onAuthenticationChanged();
-    })
-  );
-
-  // Register authentication command used by CxOne Assist
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.authentication", () => {
-      vscode.commands.executeCommand("ast-results.showAuth");
-    })
-  );
+  // CxOne Assist view & its commands
+  const cxOneAssistProvider = registerAssistView(context, ignoreFileManager);
+  registerAssistRelatedCommands(context, cxOneAssistProvider);
 
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);

@@ -3,7 +3,6 @@ import { PromotionalCardView } from '../shared/PromotionalCardView';
 import { Logs } from '../../models/logs';
 
 export class AstResultsPromoProvider implements vscode.WebviewViewProvider {
-	public static readonly viewType = 'astResultsPromo';
 	private _view?: vscode.WebviewView;
 
 	constructor(private readonly context: vscode.ExtensionContext, private readonly logs: Logs) { }
