@@ -7,6 +7,7 @@ import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
+import { CommonCommand } from "../commands/commonCommand";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -252,6 +253,8 @@ export class AuthenticationWebview {
                   const authService = AuthService.getInstance(this.context);
                   const token = await authService.authenticate(baseUri, tenant);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
                   if (token !== "") {
                     setTimeout(async () => {
                       this._panel.dispose();
@@ -286,6 +289,8 @@ export class AuthenticationWebview {
                   authService.saveToken(this.context, message.apiKey);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
                   // Sending a success message to the window
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",
