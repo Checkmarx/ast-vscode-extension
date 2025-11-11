@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
+import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import {
@@ -279,6 +280,12 @@ export async function activate(context: vscode.ExtensionContext) {
     scaResultsProvider,
     logs
   );
+  // Register promo results webview (standalone mode)
+  const promoProvider = new AstResultsPromoProvider(context, logs);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('astResultsPromo', promoProvider)
+  );
+
   // Register refresh sca and results Tree Command
   treeCommand.registerRefreshCommands();
   // Register clear sca and results tree Command
