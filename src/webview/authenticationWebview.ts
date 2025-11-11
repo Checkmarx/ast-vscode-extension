@@ -8,6 +8,7 @@ import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 import { CommonCommand } from "../commands/commonCommand";
+import { commands } from "../utils/common/commands";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -260,7 +261,7 @@ export class AuthenticationWebview {
                       this._panel.dispose();
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
-                      await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
+                      await vscode.commands.executeCommand(commands.updateCxOneAssist);
                     }, 1000);
                   }
                   else {
@@ -300,7 +301,7 @@ export class AuthenticationWebview {
                     this._panel.dispose();
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
-                    await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
+                    await vscode.commands.executeCommand(commands.updateCxOneAssist);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {

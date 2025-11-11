@@ -227,7 +227,9 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.env.openExternal(vscode.Uri.parse(url));
       }
     }
-  });  // SCA auto scanning commands register
+  });
+
+  // SCA auto scanning commands register
   const scaScanCommand = new ScanSCACommand(
     context,
     runSCAScanStatusBar,
