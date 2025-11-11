@@ -432,6 +432,10 @@ export class AuthService {
 
     // Trigger a custom command to update CxOne Assist view
     await vscode.commands.executeCommand('ast-results.updateCxOneAssist');
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isStandaloneEnabled,
+      false);
   }
 
   private getSuccessPageHtml(): string {

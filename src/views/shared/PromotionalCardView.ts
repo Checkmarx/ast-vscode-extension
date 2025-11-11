@@ -46,7 +46,7 @@ export class PromotionalCardView {
             
             .promotional-description {
                 font-size: 14px;
-                color: #cccccc;
+                color: rgb(140,140,140);
                 margin-bottom: 20px;
                 line-height: 1.4;
             }
@@ -63,6 +63,7 @@ export class PromotionalCardView {
                 transition: all 0.2s ease;
                 text-transform: none;
                 letter-spacing: 0.5px;
+				width: 100%;
             }
             
             .promotional-button:hover {
