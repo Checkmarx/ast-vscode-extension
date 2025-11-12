@@ -42,6 +42,7 @@ import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 import { DOC_LINKS } from "./constants/documentation";
+import { cx } from "./cx";
 let globalContext: vscode.ExtensionContext;
 
 // --- Helper wrappers for refactored snippet ---
@@ -395,24 +396,34 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  function updateIgnoredStatusBar() {
-    const count = ignoreFileManager.getIgnoredPackagesCount();
-    const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
+  async function updateIgnoredStatusBar() {
+    // Show ignored status bar only when configuration is valid
+    if (await cx.isValidConfiguration() && await cx.isStandaloneEnabled(logs)) {
+      const count = ignoreFileManager.getIgnoredPackagesCount();
+      const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 
-    if (hasIgnoreFile) {
-      ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
-      ignoredStatusBarItem.tooltip = count > 0
-        ? `${count} ignored vulnerabilities - Click to view`
-        : `No ignored vulnerabilities - Click to view`;
-      ignoredStatusBarItem.command = commands.openIgnoredView;
-      ignoredStatusBarItem.show();
-    } else {
-      ignoredStatusBarItem.hide();
+      if (hasIgnoreFile) {
+        ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
+        ignoredStatusBarItem.tooltip = count > 0
+          ? `${count} ignored vulnerabilities - Click to view`
+          : `No ignored vulnerabilities - Click to view`;
+        ignoredStatusBarItem.command = commands.openIgnoredView;
+        ignoredStatusBarItem.show();
+      } else {
+        ignoredStatusBarItem.hide();
+      }
+
+      // Update CxOne Assist webview content
+      cxOneAssistProvider.updateWebviewContent();
     }
-
-    // Update CxOne Assist webview content
-    cxOneAssistProvider.updateWebviewContent();
   }
+
+  // Expose ignored status bar refresh via command so auth webview can trigger after login/logout
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.refreshIgnoredStatusBar, async () => {
+      await updateIgnoredStatusBar();
+    })
+  );
 
   updateIgnoredStatusBar();
 
