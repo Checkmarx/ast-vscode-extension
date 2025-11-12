@@ -116,7 +116,23 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Left
   );
   runSCAScanStatusBar.text = messages.scaStatusBarConnect;
-  runSCAScanStatusBar.show();
+  async function updateScaStatusBar() {
+    //const isValid = await cx.isValidConfiguration();
+    const isStandalone = await cx.isStandaloneEnabled(logs);
+    if (!isStandalone) { //isValid && !isStandalone
+      runSCAScanStatusBar.show();
+    } else {
+      runSCAScanStatusBar.hide();
+    }
+  }
+  // Initial status bar update
+  await updateScaStatusBar();
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.refreshScaStatusBar, async () => {
+      await updateScaStatusBar();
+    })
+  );
   const kicsStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
   );

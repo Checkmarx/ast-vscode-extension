@@ -235,8 +235,9 @@ export class AuthenticationWebview {
                   "Logged out successfully."
                 );
                 uninstallMcp();
-                // Update ignored status bar after logout
+                // Update status bars after logout
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
               }
             });
         } else if (message.command === "authenticate") {
@@ -265,6 +266,7 @@ export class AuthenticationWebview {
                       WelcomeWebview.show(this.context, isAiEnabled);
                       await vscode.commands.executeCommand(commands.updateCxOneAssist);
                       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                     }, 1000);
                   }
                   else {
@@ -306,6 +308,7 @@ export class AuthenticationWebview {
                     WelcomeWebview.show(this.context, isAiEnabled);
                     await vscode.commands.executeCommand(commands.updateCxOneAssist);
                     await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {
