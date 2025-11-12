@@ -131,6 +131,7 @@ export const commands = {
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
   refreshIgnoredStatusBar: `${constants.extensionName}.refreshIgnoredStatusBar`,
   refreshScaStatusBar: `${constants.extensionName}.refreshScaStatusBar`,
+  refreshKicsStatusBar: `${constants.extensionName}.refreshKicsStatusBar`,
   assistDocumentation: `${constants.extensionName}.assistDocumentation`,
   updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
   astCxOneAssist: "astCxOneAssist",

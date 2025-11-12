@@ -208,6 +208,16 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   const kicsScanCommand = new KICSRealtimeCommand(context, kicsProvider, logs);
   kicsScanCommand.registerKicsScans();
+  // Refresh KICS status bar after auth changes
+  // Register KICS status bar refresh (standalone guard)
+  context.subscriptions.push(vscode.commands.registerCommand(commands.refreshKicsStatusBar, async () => {
+    const standalone = await cx.isStandaloneEnabled(logs);
+    if (!standalone) {
+      kicsStatusBarItem.show();
+    } else {
+      kicsStatusBarItem.hide();
+    }
+  }));
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(
     constants.extensionName

@@ -238,6 +238,7 @@ export class AuthenticationWebview {
                 // Update status bars after logout
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
               }
             });
         } else if (message.command === "authenticate") {
@@ -267,6 +268,7 @@ export class AuthenticationWebview {
                       await vscode.commands.executeCommand(commands.updateCxOneAssist);
                       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                       await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
                     }, 1000);
                   }
                   else {
@@ -309,6 +311,7 @@ export class AuthenticationWebview {
                     await vscode.commands.executeCommand(commands.updateCxOneAssist);
                     await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                     await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {
