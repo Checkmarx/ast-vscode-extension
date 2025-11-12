@@ -129,6 +129,7 @@ export const commands = {
   ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
   ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
+  refreshIgnoredStatusBar: `${constants.extensionName}.refreshIgnoredStatusBar`,
   assistDocumentation: `${constants.extensionName}.assistDocumentation`,
   updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
   astCxOneAssist: "astCxOneAssist",

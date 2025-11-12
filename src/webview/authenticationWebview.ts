@@ -221,7 +221,7 @@ export class AuthenticationWebview {
               "Yes",
               "Cancel"
             )
-            .then((selection) => {
+            .then(async (selection) => {
               if (selection === "Yes") {
                 const authService = AuthService.getInstance(this.context);
                 authService.logout();
@@ -235,6 +235,8 @@ export class AuthenticationWebview {
                   "Logged out successfully."
                 );
                 uninstallMcp();
+                // Update ignored status bar after logout
+                await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
               }
             });
         } else if (message.command === "authenticate") {
@@ -262,6 +264,7 @@ export class AuthenticationWebview {
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
                       await vscode.commands.executeCommand(commands.updateCxOneAssist);
+                      await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                     }, 1000);
                   }
                   else {
@@ -302,6 +305,7 @@ export class AuthenticationWebview {
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
                     await vscode.commands.executeCommand(commands.updateCxOneAssist);
+                    await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {
