@@ -379,7 +379,6 @@ export class AuthService {
     try {
       const token = await this.context.secrets.get("authCredential");
 
-
       if (!token) {
         vscode.commands.executeCommand(
           commands.setContext,
