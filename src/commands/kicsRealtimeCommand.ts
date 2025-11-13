@@ -51,7 +51,6 @@ export class KICSRealtimeCommand {
         ) => {
           // Skip remediation entirely in standalone mode
           if (await cx.isStandaloneEnabled(this.logs)) {
-            this.logs.info("Standalone mode enabled: skipping KICS remediation command execution.");
             return;
           }
           await this.kicsProvider.kicsRemediation(
@@ -75,7 +74,6 @@ export class KICSRealtimeCommand {
         async () => {
           // Skip scan trigger in standalone mode
           if (await cx.isStandaloneEnabled(this.logs)) {
-            this.logs.info("Standalone mode enabled: skipping KICS realtime scan command execution.");
             return;
           }
           await this.kicsProvider.runKicsIfEnabled();

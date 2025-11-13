@@ -87,6 +87,10 @@ export function addRealTimeSaveListener(
 ) {
     // Listen to save action in a KICS file
     vscode.workspace.onDidSaveTextDocument(async (e) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(this.logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
@@ -111,6 +115,10 @@ export function addRealTimeSaveListener(
 
     // Listen to open action in a KICS file
     vscode.workspace.onDidOpenTextDocument(async (e: vscode.TextDocument) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(this.logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);

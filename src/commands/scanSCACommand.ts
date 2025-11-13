@@ -3,6 +3,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
 import { createSCAScan } from "../views/scaView/scaCreateScanProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
+import { cx } from "../cx";
 
 export class ScanSCACommand {
   context: vscode.ExtensionContext;
@@ -21,7 +22,10 @@ export class ScanSCACommand {
     this.logs = logs;
   }
 
-  public registerScaScans() {
+  public async registerScaScans() {
+     if (await cx.isStandaloneEnabled(this.logs)) {
+            return;
+      }
     this.createScanCommand();
   }
 
