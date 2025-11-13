@@ -239,6 +239,8 @@ export class AuthenticationWebview {
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                 await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                // Refresh Risk Management view to reflect unauthenticated state
+                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
               }
             });
         } else if (message.command === "authenticate") {
@@ -269,6 +271,7 @@ export class AuthenticationWebview {
                       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                       await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                       await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshRiskManagementView);
                     }, 1000);
                   }
                   else {
@@ -312,6 +315,7 @@ export class AuthenticationWebview {
                     await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                     await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                     await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshRiskManagementView);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {
