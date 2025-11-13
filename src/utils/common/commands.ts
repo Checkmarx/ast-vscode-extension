@@ -136,5 +136,6 @@ export const commands = {
   updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
   astCxOneAssist: "astCxOneAssist",
   astResultsPromo: "astResultsPromo",
+  scaAutoScanPromo: "scaAutoScanPromo",
   docAndFeedback: "docAndFeedback"
 };

@@ -829,7 +829,7 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo"
+          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo"
         },
         {
           "command": "ast-results.assistDocumentation",
@@ -880,7 +880,14 @@
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Checkmarx SCA Realtime Scanner"
+          "name": "Checkmarx SCA Realtime Scanner",
+          "when": "!ast-results.isStandaloneEnabled"
+        },
+        {
+          "id": "scaAutoScanPromo",
+          "type": "webview",
+          "name": "Checkmarx SCA Realtime Scanner",
+          "when": "ast-results.isStandaloneEnabled"
         },
         {
           "id": "riskManagement",
