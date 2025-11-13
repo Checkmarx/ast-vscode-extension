@@ -190,17 +190,25 @@
         break;
       }
       case "showLoader": {
-        document.getElementById("loading").classList.remove("hidden");
-        document
-          .getElementById("riskManagementContainer")
-          .classList.add("hidden");
+        const loadingEl = document.getElementById("loading");
+        const containerEl = document.getElementById("riskManagementContainer");
+        // Show spinner
+        loadingEl && loadingEl.classList.remove("hidden");
+        // Hide ASPM container if it exists (non-standalone mode)
+        if (containerEl) {
+          containerEl.classList.add("hidden");
+        }
         break;
       }
       case "hideLoader": {
-        document.getElementById("loading").classList.add("hidden");
-        document
-          .getElementById("riskManagementContainer")
-          .classList.remove("hidden");
+        const loadingEl = document.getElementById("loading");
+        const containerEl = document.getElementById("riskManagementContainer");
+        // Hide spinner
+        loadingEl && loadingEl.classList.add("hidden");
+        // Reveal ASPM container only if present
+        if (containerEl) {
+          containerEl.classList.remove("hidden");
+        }
         break;
       }
     }
@@ -495,7 +503,7 @@
   function extractTraits(results) {
     const traitsSet = new Set();
 
-    results.results.forEach((r) => {
+    results?.results.forEach((r) => {
       if (r.traits && typeof r.traits === "object") {
         Object.values(r.traits).forEach((t) => traitsSet.add(t));
       }
