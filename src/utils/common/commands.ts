@@ -137,5 +137,6 @@ export const commands = {
   astCxOneAssist: "astCxOneAssist",
   astResultsPromo: "astResultsPromo",
   scaAutoScanPromo: "scaAutoScanPromo",
-  docAndFeedback: "docAndFeedback"
+  docAndFeedback: "docAndFeedback",
+  refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`
 };

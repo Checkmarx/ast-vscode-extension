@@ -44,6 +44,12 @@ export class AstResultsProvider extends ResultsProvider {
         this.riskManagementView
       )
     );
+    // Command to allow external refresh (e.g., after logout) without re-registering provider
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.refreshRiskManagementView, async () => {
+        this.riskManagementView.updateContent();
+      })
+    );
 
     // Syncing with AST everytime the extension gets opened
     this.openRefreshData()
