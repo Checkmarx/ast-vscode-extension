@@ -6,6 +6,7 @@ import {
 } from "../utils/common/commands";
 import { constants } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
+import { cx } from "../cx";
 
 export class KICSRealtimeCommand {
   context: vscode.ExtensionContext;
@@ -48,6 +49,11 @@ export class KICSRealtimeCommand {
           fixAll,
           fixLine
         ) => {
+          // Skip remediation entirely in standalone mode
+          if (await cx.isStandaloneEnabled(this.logs)) {
+            this.logs.info("Standalone mode enabled: skipping KICS remediation command execution.");
+            return;
+          }
           await this.kicsProvider.kicsRemediation(
             fixedResults,
             kicsResults,
@@ -66,7 +72,14 @@ export class KICSRealtimeCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.kicsRealtime,
-        async () => await this.kicsProvider.runKicsIfEnabled()
+        async () => {
+          // Skip scan trigger in standalone mode
+          if (await cx.isStandaloneEnabled(this.logs)) {
+            this.logs.info("Standalone mode enabled: skipping KICS realtime scan command execution.");
+            return;
+          }
+          await this.kicsProvider.runKicsIfEnabled();
+        }
       )
     );
   }
