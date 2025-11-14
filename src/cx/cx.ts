@@ -307,7 +307,7 @@ export class Cx implements CxPlatform {
     }
 
     async getAstConfiguration() {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return undefined;
@@ -319,7 +319,7 @@ export class Cx implements CxPlatform {
     }
 
     async isValidConfiguration(): Promise<boolean> {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return false;
@@ -337,7 +337,7 @@ export class Cx implements CxPlatform {
 
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -359,7 +359,7 @@ export class Cx implements CxPlatform {
 
     async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
         let enabled = true;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -379,30 +379,63 @@ export class Cx implements CxPlatform {
     }
 
     async isStandaloneEnabled(logs: Logs): Promise<boolean> {
-        let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
-            return enabled;
+            await this.clearStandaloneFlag();
+            return false;
         }
+
+        // Return cached value if present
+    const cached = this.context.globalState.get<boolean>(constants.standaloneEnabledGlobalState);
+        if (cached !== undefined) {
+            return cached;
+        }
+
         const config = await this.getAstConfiguration();
         if (!config) {
-            return enabled;
+            await this.setStandaloneFlag(false);
+            return false;
         }
-        config.apiKey = token;
+
         const cx = new CxWrapper(config);
         try {
-            enabled = await cx.standaloneEnabled();
-        } catch (error) {
-            const errMsg = `Error checking tenant configuration: ${error}`;
-            logs.error(errMsg);
+            const enabled = await cx.standaloneEnabled();
+            await this.setStandaloneFlag(enabled);
             return enabled;
+        } catch (error) {
+            logs.error(`Error checking tenant configuration: ${error}`);
+            await this.setStandaloneFlag(false);
+            return false;
         }
-        return enabled;
+    }
+
+    /**
+     * Forces a re-fetch of the standalone enablement flag ignoring any cached value.
+     */
+    async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
+    await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        return this.isStandaloneEnabled(logs);
+    }
+
+    /**
+     * Explicitly clears the cached standalone flag (used on logout or token invalidation).
+     */
+    clearStandaloneEnabledCache(): void {
+    this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    // --- Standalone cache helpers ---
+    private async setStandaloneFlag(value: boolean): Promise<void> {
+    await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
+    }
+
+    private async clearStandaloneFlag(): Promise<void> {
+    await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
     }
 
     async isAiMcpServerEnabled(): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return enabled;

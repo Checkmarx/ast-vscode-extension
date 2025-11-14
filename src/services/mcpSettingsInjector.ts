@@ -35,7 +35,7 @@ const checkmarxMcpServerName = "Checkmarx";
 
 export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand("ast-results.installMCP", async () => {
-		const apikey = await context.secrets.get("authCredential");
+		const apikey = await context.secrets.get(constants.authCredentialSecretKey);
 		if (!apikey) {
 			vscode.window.showErrorMessage("Failed in install Checkmarx MCP: Authentication required");
 			return;
@@ -182,7 +182,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 				],
 				disabled: false,
 				autoApprove: ["codeRemediation", "imageRemediation", "packageRemediation"]
-			}
+			};
 			await updateMcpJsonFile(kiroMcpServer);
 			return;
 		}
