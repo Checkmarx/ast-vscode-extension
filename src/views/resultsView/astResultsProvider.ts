@@ -17,7 +17,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
-import { validateConfigurationDetails } from "../../utils/common/configGuards";
+import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -69,7 +69,7 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    if (await validateConfigurationDetails(this.logs)) {
+    if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
       this.data =  treeItem.children;
@@ -79,7 +79,7 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async openRefreshData(): Promise<void> {
-    if (await validateConfigurationDetails(this.logs)) {
+    if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       this.loadedResults = undefined;
       const scanIDItem = getFromState(this.context, constants.scanIdKey);
