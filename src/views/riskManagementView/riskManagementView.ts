@@ -199,7 +199,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   }
 
   private async isAuthenticated(): Promise<boolean> {
-    const token = await this.context.secrets.get("authCredential");
+    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
     return !!token;
   }
 
