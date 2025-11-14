@@ -7,6 +7,8 @@ import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
+import { CommonCommand } from "../commands/commonCommand";
+import { commands } from "../utils/common/commands";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -65,7 +67,7 @@ export class AuthenticationWebview {
       return;
     }
     const panel = vscode.window.createWebviewPanel(
-      AuthenticationWebview.viewType,
+      commands.astResultsPromo,
       "Checkmarx One Authentication",
       vscode.ViewColumn.One,
       {
@@ -219,7 +221,7 @@ export class AuthenticationWebview {
               "Yes",
               "Cancel"
             )
-            .then((selection) => {
+            .then(async (selection) => {
               if (selection === "Yes") {
                 const authService = AuthService.getInstance(this.context);
                 authService.logout();
@@ -233,6 +235,12 @@ export class AuthenticationWebview {
                   "Logged out successfully."
                 );
                 uninstallMcp();
+                // Update status bars after logout
+                await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                // Refresh Risk Management view to reflect unauthenticated state
+                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
               }
             });
         } else if (message.command === "authenticate") {
@@ -252,11 +260,18 @@ export class AuthenticationWebview {
                   const authService = AuthService.getInstance(this.context);
                   const token = await authService.authenticate(baseUri, tenant);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
                   if (token !== "") {
                     setTimeout(async () => {
                       this._panel.dispose();
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
+                      await vscode.commands.executeCommand(commands.updateCxOneAssist);
+                      await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                      await vscode.commands.executeCommand(commands.refreshRiskManagementView);
                     }, 1000);
                   }
                   else {
@@ -285,6 +300,8 @@ export class AuthenticationWebview {
                   authService.saveToken(this.context, message.apiKey);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
                   // Sending a success message to the window
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",
@@ -294,6 +311,11 @@ export class AuthenticationWebview {
                     this._panel.dispose();
                     await this.markFirstWelcomeAsShown();
                     WelcomeWebview.show(this.context, isAiEnabled);
+                    await vscode.commands.executeCommand(commands.updateCxOneAssist);
+                    await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                    await vscode.commands.executeCommand(commands.refreshRiskManagementView);
                     if (isAiEnabled) {
                       await initializeMcpConfiguration(message.apiKey);
                     } else {

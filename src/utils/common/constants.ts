@@ -1,6 +1,8 @@
 export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
+  standaloneEnabledGlobalState: "standaloneEnabled",
+  authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
