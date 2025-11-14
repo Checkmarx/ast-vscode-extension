@@ -521,7 +521,7 @@
       return;
     }
 
-    submenu.classList.add("hidden");
+    submenu?.classList.add("hidden");
     category.classList.remove("hidden");
     category.classList.remove("expanded");
 
