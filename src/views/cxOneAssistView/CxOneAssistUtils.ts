@@ -3,6 +3,7 @@ import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import * as vscode from "vscode";
 import { Cx } from "../../cx/cx";
 import { Logs } from "../../models/logs";
+import { constants } from "../../utils/common/constants";
 
 export class CxOneAssistUtils {
 	/**
@@ -16,7 +17,8 @@ export class CxOneAssistUtils {
 		const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 		const cxInstance = new Cx(context);
 		const isAuthenticated = await cxInstance.isValidConfiguration();
-		const logs = new Logs(vscode.window.createOutputChannel("Checkmarx One"));
+		// Reuse main extension output channel name for consistency
+		const logs = new Logs(vscode.window.createOutputChannel(constants.extensionFullName));
 		const isStandaloneEnabled = await cxInstance.isStandaloneEnabled(logs);
 
 		return { ignoredCount, hasIgnoreFile, isStandaloneEnabled, isAuthenticated };
