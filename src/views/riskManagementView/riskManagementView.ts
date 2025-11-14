@@ -27,7 +27,8 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     this.riskManagementService = riskManagementService.getInstance(
       this.context
     );
-    this.logs = new Logs(vscode.window.createOutputChannel("Checkmarx Risk Management"));
+    // Reuse main extension output channel name for consistency
+    this.logs = new Logs(vscode.window.createOutputChannel(constants.extensionFullName));
   }
 
   public async resolveWebviewView(webviewView: vscode.WebviewView) {
