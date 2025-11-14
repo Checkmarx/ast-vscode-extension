@@ -1306,7 +1306,7 @@ export class CxMock implements CxPlatform {
   }
 
   async getAstConfiguration() {
-    const token = await this.context.secrets.get("authCredential");
+    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
     if (!token) {
       return undefined;
