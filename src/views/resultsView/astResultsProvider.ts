@@ -76,6 +76,10 @@ export class AstResultsProvider extends ResultsProvider {
       this._onDidChangeTreeData.fire(undefined);
       this.hideStatusBarItem();
     }
+    else {
+      this.data =  [];
+      this._onDidChangeTreeData.fire(undefined);
+    }
   }
 
   async openRefreshData(): Promise<void> {

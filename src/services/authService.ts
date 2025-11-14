@@ -432,7 +432,7 @@ export class AuthService {
 
     // Trigger a custom command to update CxOne Assist view
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
-    vscode.commands.executeCommand(
+    await vscode.commands.executeCommand(
       commands.setContext,
       commands.isStandaloneEnabled,
       false);

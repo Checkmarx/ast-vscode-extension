@@ -28,7 +28,7 @@ export class PromotionalCardView {
             .promotional-card {
                 background-color: var(--vscode-background);
                 border-radius: 12px;
-                padding: 24px;
+                padding-top: 5px;
                 text-align: center;
             }
             
