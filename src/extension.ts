@@ -235,8 +235,8 @@ function registerScaPromoWebview(context: vscode.ExtensionContext, logs: Logs) {
   return promoProvider;
 }
 
-function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager) {
-  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager);
+function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
+  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider)
   );
@@ -465,7 +465,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // ignoreFileManager already initialized & wired in setupRealtimeScanners
 
   // CxOne Assist view & its commands
-  const cxOneAssistProvider = registerAssistView(context, ignoreFileManager);
+  const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
   registerAssistRelatedCommands(context, cxOneAssistProvider);
 
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);

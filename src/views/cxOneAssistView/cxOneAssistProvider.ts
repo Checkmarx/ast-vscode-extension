@@ -3,15 +3,18 @@ import { CxOneAssistDependencies, CxOneAssistMessage, CxOneAssistWebviewState } 
 import { CxOneAssistWebview } from "./CxOneAssistWebview";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
+import { Logs } from "../../models/logs";
 
 export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private webviewView?: vscode.WebviewView;
 	private currentState: CxOneAssistWebviewState;
 	private readonly dependencies: CxOneAssistDependencies;
+	private logs: Logs;
 
-	constructor(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager) {
+	constructor(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
 		this.dependencies = { context, ignoreFileManager };
 		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isStandaloneEnabled: false, isAuthenticated: false };
+		this.logs = logs;
 	}
 
 	public resolveWebviewView(
@@ -42,7 +45,8 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 		this.currentState = await CxOneAssistUtils.getWebviewState(
 			this.dependencies.ignoreFileManager,
-			this.dependencies.context
+			this.dependencies.context,
+			this.logs
 		);
 
 		if (this.currentState.isAuthenticated && !this.currentState.isStandaloneEnabled) {
