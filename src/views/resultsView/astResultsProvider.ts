@@ -36,7 +36,7 @@ export class AstResultsProvider extends ResultsProvider {
     super(context, statusBarItem);
     this.loadedResults = undefined;
 
-    this.riskManagementView = new riskManagementView(context.extensionUri, context);
+    this.riskManagementView = new riskManagementView(context.extensionUri, context, logs);
 
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(

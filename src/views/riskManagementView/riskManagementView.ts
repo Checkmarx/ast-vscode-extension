@@ -22,13 +22,13 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly context: vscode.ExtensionContext
+    private readonly context: vscode.ExtensionContext,
+    logs: Logs 
   ) {
     this.riskManagementService = riskManagementService.getInstance(
       this.context
     );
-    // Reuse main extension output channel name for consistency
-    this.logs = new Logs(vscode.window.createOutputChannel(constants.extensionFullName));
+    this.logs = logs;
   }
 
   public async resolveWebviewView(webviewView: vscode.WebviewView) {

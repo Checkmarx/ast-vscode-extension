@@ -23,21 +23,18 @@ export class ScanSCACommand {
   }
 
   public async registerScaScans() {
-     if (await cx.isStandaloneEnabled(this.logs)) {
-            return;
-      }
     this.createScanCommand();
   }
 
   private createScanCommand() {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.createScaScan, async () => {
-        await createSCAScan(
+        !await cx.isStandaloneEnabled(this.logs) ? await createSCAScan(
           this.context,
           this.runSCAScanStatusBar,
           this.logs,
           this.scaResultsProvider
-        );
+        ) : undefined;
       })
     );
   }
