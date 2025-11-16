@@ -115,6 +115,36 @@ export class AuthenticationWebview {
     await this.context.globalState.update("cxFirstWelcome", true);
   }
 
+  // Centralized post-authentication UI and environment refresh
+  private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
+    setTimeout(async () => {
+      try {
+        this._panel.dispose();
+        await this.markFirstWelcomeAsShown();
+        WelcomeWebview.show(this.context, isAiEnabled);
+        await vscode.commands.executeCommand(commands.updateCxOneAssist);
+        await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+        await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+        await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+        await vscode.commands.executeCommand(commands.refreshRiskManagementView);
+        await vscode.commands.executeCommand(commands.clearKicsDiagnostics);
+        if (options?.apiKey) {
+          if (isAiEnabled) {
+            await initializeMcpConfiguration(options.apiKey);
+          } else {
+            await uninstallMcp();
+          }
+          setTimeout(() => {
+            this._panel.webview.postMessage({ type: "clear-message-api-validation" });
+          }, 500);
+        }
+      } catch (e) {
+        // Non-blocking; log if logs available
+        this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
+      }
+    }, 1000);
+  }
+
   private _getWebviewContent(): string {
     const styleBootStrap = this.setWebUri(
       "media",
@@ -263,16 +293,7 @@ export class AuthenticationWebview {
                   const commonCommand = new CommonCommand(this.context, this.logs);
                   await commonCommand.executeCheckStandaloneEnabled();
                   if (token !== "") {
-                    setTimeout(async () => {
-                      this._panel.dispose();
-                      await this.markFirstWelcomeAsShown();
-                      WelcomeWebview.show(this.context, isAiEnabled);
-                      await vscode.commands.executeCommand(commands.updateCxOneAssist);
-                      await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
-                      await vscode.commands.executeCommand(commands.refreshScaStatusBar);
-                      await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
-                      await vscode.commands.executeCommand(commands.refreshRiskManagementView);
-                    }, 1000);
+                    this.schedulePostAuth(isAiEnabled);
                   }
                   else {
                     this._panel.webview.postMessage({ command: "enableAuthButton" });
@@ -306,27 +327,7 @@ export class AuthenticationWebview {
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
-                  setTimeout(async () => {
-
-                    this._panel.dispose();
-                    await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context, isAiEnabled);
-                    await vscode.commands.executeCommand(commands.updateCxOneAssist);
-                    await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
-                    await vscode.commands.executeCommand(commands.refreshScaStatusBar);
-                    await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
-                    await vscode.commands.executeCommand(commands.refreshRiskManagementView);
-                    if (isAiEnabled) {
-                      await initializeMcpConfiguration(message.apiKey);
-                    } else {
-                      await uninstallMcp();
-                    }
-                    setTimeout(() => {
-                      this._panel.webview.postMessage({
-                        type: "clear-message-api-validation",
-                      });
-                    }, 500);
-                  }, 1000);
+                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
