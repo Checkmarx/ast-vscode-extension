@@ -304,6 +304,15 @@ export async function activate(context: vscode.ExtensionContext) {
     constants.extensionName
   );
 
+  // Command to allow other components (e.g., auth webview) to clear KICS remediation diagnostics
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.clearKicsDiagnostics, async () => {
+      if (await cx.isStandaloneEnabled(logs)) {
+        kicsDiagnosticCollection.clear();
+      }
+    })
+  );
+
   const { kicsScanCommand } = setupKicsRealtime(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(
