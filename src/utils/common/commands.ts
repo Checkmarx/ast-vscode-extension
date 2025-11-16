@@ -138,5 +138,6 @@ export const commands = {
   astResultsPromo: "astResultsPromo",
   scaAutoScanPromo: "scaAutoScanPromo",
   docAndFeedback: "docAndFeedback",
-  refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`
+  refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
+  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`
 };
