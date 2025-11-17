@@ -15,6 +15,7 @@ export const commands = {
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
   isStandaloneEnabled: `${constants.extensionName}.isStandaloneEnabled`,
+  isCxOneAssistEnabled: `${constants.extensionName}.isCxOneAssistEnabled`,
   filterCriticalToggle: `${constants.extensionName}.filterCritical_toggle`,
   filterCriticalUntoggle: `${constants.extensionName}.filterCritical_untoggle`,
   filterCritical: `${constants.extensionName}.filterCritical`,

@@ -269,7 +269,6 @@ export class AuthenticationWebview {
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                 await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
-                // Refresh Risk Management view to reflect unauthenticated state
                 await vscode.commands.executeCommand(commands.refreshRiskManagementView);
               }
             });
@@ -292,6 +291,7 @@ export class AuthenticationWebview {
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
                   const commonCommand = new CommonCommand(this.context, this.logs);
                   await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   if (token !== "") {
                     this.schedulePostAuth(isAiEnabled);
                   }
@@ -323,6 +323,7 @@ export class AuthenticationWebview {
                   // Sending a success message to the window
                   const commonCommand = new CommonCommand(this.context, this.logs);
                   await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",

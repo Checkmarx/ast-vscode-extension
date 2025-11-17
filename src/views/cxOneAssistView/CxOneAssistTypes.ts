@@ -11,6 +11,7 @@ export interface CxOneAssistWebviewState {
 	hasIgnoreFile: boolean;
 	isStandaloneEnabled: boolean;
 	isAuthenticated: boolean;
+	isCxOneAssistEnabled: boolean;
 }
 
 export interface CxOneAssistMessage {

@@ -71,6 +71,14 @@ export class CommonCommand {
     );
   }
 
+  public async executeCheckCxOneAssistEnabled() {
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isCxOneAssistEnabled,
+      await cx.isCxOneAssistEnabled(this.logs)
+    );
+  }
+
   public async executeCheckScaScanEnabled() {
     vscode.commands.executeCommand(
       commands.setContext,

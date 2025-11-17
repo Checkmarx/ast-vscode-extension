@@ -76,7 +76,7 @@
         "command": "ast-results.openIgnoredView",
         "category": "ast-results",
         "title": "View Ignored vulnerabilities",
-        "enablement": "ast-results.isValidCredentials && ast-results.isStandaloneEnabled"
+        "enablement": "ast-results.isValidCredentials && ast-results.isCxOneAssistEnabled"
       },
       {
         "command": "ast-results.assistDocumentation",
@@ -829,7 +829,7 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo"
+          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
         },
         {
           "command": "ast-results.assistDocumentation",
