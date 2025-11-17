@@ -17,10 +17,9 @@ export class CxOneAssistUtils {
 		const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
 		const cxInstance = new Cx(context);
 		const isAuthenticated = await cxInstance.isValidConfiguration();
-		// Reuse main extension output channel name for consistency
 		const isStandaloneEnabled = await cxInstance.isStandaloneEnabled(logs);
-
-		return { ignoredCount, hasIgnoreFile, isStandaloneEnabled, isAuthenticated };
+		const isCxOneAssistEnabled = await cxInstance.isCxOneAssistEnabled(logs);
+		return { ignoredCount, hasIgnoreFile, isStandaloneEnabled, isAuthenticated, isCxOneAssistEnabled };
 	}
 
 	/**

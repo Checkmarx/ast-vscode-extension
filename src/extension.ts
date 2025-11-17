@@ -181,7 +181,7 @@ function setupIgnoredStatusBar(
   cxOneAssistProvider: CxOneAssistProvider
 ) {
   async function updateIgnoredStatusBar() {
-    if (await cx.isValidConfiguration()) {
+    if (await cx.isValidConfiguration() && await cx.isCxOneAssistEnabled(logs)) {
       const count = ignoreFileManager.getIgnoredPackagesCount();
       const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
       if (hasIgnoreFile) {
@@ -434,6 +434,8 @@ export async function activate(context: vscode.ExtensionContext) {
   await commonCommand.executeCheckScanEnabled();
 
   await commonCommand.executeCheckStandaloneEnabled();
+  
+  await commonCommand.executeCheckCxOneAssistEnabled();
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();
   // execute command to listen to settings change

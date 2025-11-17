@@ -2,6 +2,7 @@ export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
   standaloneEnabledGlobalState: "standaloneEnabled",
+  cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
   authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",

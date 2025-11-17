@@ -379,34 +379,26 @@ export class Cx implements CxPlatform {
     }
 
     async isStandaloneEnabled(logs: Logs): Promise<boolean> {
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
-        if (!token) {
-            await this.clearStandaloneFlag();
-            return false;
-        }
+        return this.getCachedFeatureEnabled(
+            constants.standaloneEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => cx.standaloneEnabled(),
+            "tenant configuration"
+        );
+    }
 
-        // Return cached value if present
-    const cached = this.context.globalState.get<boolean>(constants.standaloneEnabledGlobalState);
-        if (cached !== undefined) {
-            return cached;
-        }
 
-        const config = await this.getAstConfiguration();
-        if (!config) {
-            await this.setStandaloneFlag(false);
-            return false;
-        }
-
-        const cx = new CxWrapper(config);
-        try {
-            const enabled = await cx.standaloneEnabled();
-            await this.setStandaloneFlag(enabled);
-            return enabled;
-        } catch (error) {
-            logs.error(`Error checking tenant configuration: ${error}`);
-            await this.setStandaloneFlag(false);
-            return false;
-        }
+    async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
+        // Gracefully handle missing wrapper method by using optional access.
+        return this.getCachedFeatureEnabled(
+            constants.cxOneAssistEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => {
+                const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
+                return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
+            },
+            "tenant configuration (CxOne Assist)"
+        );
     }
 
     /**
@@ -431,6 +423,52 @@ export class Cx implements CxPlatform {
 
     private async clearStandaloneFlag(): Promise<void> {
     await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    // Generic cached feature enablement helper to reduce duplication between feature checks.
+    private async getCachedFeatureEnabled(
+        globalStateKey: string,
+        logs: Logs,
+        remoteCheck: (cx: CxWrapper) => Promise<boolean>,
+        errorContext: string
+    ): Promise<boolean> {
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        if (!token) {
+            // Clear cached flag when token missing
+            await this.context.globalState.update(globalStateKey, undefined);
+            return false;
+        }
+
+        const cached = this.context.globalState.get<boolean>(globalStateKey);
+        if (cached !== undefined) {
+            return cached;
+        }
+
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            await this.context.globalState.update(globalStateKey, false);
+            return false;
+        }
+
+        const cx = new CxWrapper(config);
+        try {
+            const enabled = await remoteCheck(cx);
+            // Use specialized setter for standalone to preserve existing helper usage.
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(enabled);
+            } else {
+                await this.context.globalState.update(globalStateKey, enabled);
+            }
+            return enabled;
+        } catch (error) {
+            logs.error(`Error checking ${errorContext}: ${error}`);
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(false);
+            } else {
+                await this.context.globalState.update(globalStateKey, false);
+            }
+            return false;
+        }
     }
 
     async isAiMcpServerEnabled(): Promise<boolean> {
