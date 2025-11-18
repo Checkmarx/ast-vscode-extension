@@ -13,7 +13,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 	constructor(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
 		this.dependencies = { context, ignoreFileManager };
-		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isStandaloneEnabled: false, isAuthenticated: false,isCxOneAssistEnabled: false };
+		this.currentState = { ignoredCount: 0, hasIgnoreFile: false, isStandaloneEnabled: false, isAuthenticated: false, isCxOneAssistEnabled: false };
 		this.logs = logs;
 	}
 
@@ -35,9 +35,6 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 		this.setupMessageHandling();
 	}
 
-	/**
-	 * Updates the webview content with current state
-	 */
 	public async updateWebviewContent(): Promise<void> {
 		if (!this.webviewView) {
 			return;
@@ -59,7 +56,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 				this.currentState
 			);
 		}
-		else{
+		else {
 			this.webviewView.webview.html = CxOneAssistWebview.renderDisabledStandaloneHtml(
 				this.dependencies.context,
 				this.webviewView.webview
@@ -115,16 +112,11 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 		}
 		return text;
 	}
-	/**
-	 * Called when authentication state changes to refresh the entire webview
-	 */
+
 	public async onAuthenticationChanged(): Promise<void> {
 		await this.updateWebviewContent();
 	}
 
-	/**
-	 * Sets up message handling from the webview
-	 */
 	private setupMessageHandling(): void {
 		if (!this.webviewView) {
 			return;
@@ -137,9 +129,6 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 		);
 	}
 
-	/**
-	 * Handles messages received from the webview
-	 */
 	private handleWebviewMessage(message: CxOneAssistMessage): void {
 		switch (message.command) {
 			case 'openIgnoredView':

@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
 
-/**
- * Configuration for promotional card
- */
 export interface PromotionalCardConfig {
 	title: string;
 	description: string;
@@ -14,15 +11,8 @@ export interface PromotionalCardConfig {
 	showCard?: boolean;
 }
 
-/**
- * Reusable promotional card view component
- * Can be embedded in any webview that needs promotional content
- */
 export class PromotionalCardView {
 
-	/**
-	 * Generate CSS styles for the promotional card
-	 */
 	public static generateStyles(): string {
 		return `
             .promotional-card {
@@ -76,9 +66,6 @@ export class PromotionalCardView {
         `;
 	}
 
-	/**
-	 * Generate HTML for the promotional card
-	 */
 	public static generateHtml(config: PromotionalCardConfig): string {
 		if (!config.showCard) {
 			return '';
@@ -105,9 +92,6 @@ export class PromotionalCardView {
         </div>`;
 	}
 
-	/**
-	 * Generate JavaScript for handling promotional card interactions
-	 */
 	public static generateScript(): string {
 		return `
             function handlePromotionalAction(url) {
@@ -121,18 +105,12 @@ export class PromotionalCardView {
         `;
 	}
 
-	/**
-	 * Handle promotional card messages in the webview provider
-	 */
 	public static handleMessage(message: { command: string; url?: string }): void {
 		if (message.command === 'openPromotionalLink' && message.url) {
 			vscode.env.openExternal(vscode.Uri.parse(message.url));
 		}
 	}
 
-	/**
-	 * Get default ASPM promotional configuration
-	 */
 	public static getAspmConfig(): PromotionalCardConfig {
 		return {
 			title: "Unlock Full Security Coverage",
@@ -143,9 +121,6 @@ export class PromotionalCardView {
 		};
 	}
 
-	/**
-	 * Get default SAST promotional configuration
-	 */
 	public static getSastConfig(): PromotionalCardConfig {
 		return {
 			title: "Enhanced SAST Features Available",
@@ -156,9 +131,6 @@ export class PromotionalCardView {
 		};
 	}
 
-	/**
-	 * Get default SCA promotional configuration
-	 */
 	public static getScaConfig(): PromotionalCardConfig {
 		return {
 			title: "Enhanced SCA Features Available",
@@ -169,9 +141,6 @@ export class PromotionalCardView {
 		};
 	}
 
-	/**
-	 * Create a complete HTML structure with promotional card embedded
-	 */
 	public static embedInWebview(
 		config: PromotionalCardConfig,
 		existingContent: string,

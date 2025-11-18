@@ -44,7 +44,6 @@ export class AstResultsProvider extends ResultsProvider {
         this.riskManagementView
       )
     );
-    // Command to allow external refresh (e.g., after logout) without re-registering provider
     context.subscriptions.push(
       vscode.commands.registerCommand(commands.refreshRiskManagementView, async () => {
         this.riskManagementView.updateContent();
@@ -72,12 +71,12 @@ export class AstResultsProvider extends ResultsProvider {
     if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
-      this.data =  treeItem.children;
+      this.data = treeItem.children;
       this._onDidChangeTreeData.fire(undefined);
       this.hideStatusBarItem();
     }
     else {
-      this.data =  [];
+      this.data = [];
       this._onDidChangeTreeData.fire(undefined);
     }
   }

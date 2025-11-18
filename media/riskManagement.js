@@ -192,9 +192,7 @@
       case "showLoader": {
         const loadingEl = document.getElementById("loading");
         const containerEl = document.getElementById("riskManagementContainer");
-        // Show spinner
         loadingEl && loadingEl.classList.remove("hidden");
-        // Hide ASPM container if it exists (non-standalone mode)
         if (containerEl) {
           containerEl.classList.add("hidden");
         }
@@ -203,9 +201,7 @@
       case "hideLoader": {
         const loadingEl = document.getElementById("loading");
         const containerEl = document.getElementById("riskManagementContainer");
-        // Hide spinner
         loadingEl && loadingEl.classList.add("hidden");
-        // Reveal ASPM container only if present
         if (containerEl) {
           containerEl.classList.remove("hidden");
         }

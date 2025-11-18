@@ -23,7 +23,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly context: vscode.ExtensionContext,
-    logs: Logs 
+    logs: Logs
   ) {
     this.riskManagementService = riskManagementService.getInstance(
       this.context
@@ -67,11 +67,9 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         break;
       }
       case "openPromotionalLink": {
-        // Use the reusable promotional card handler
         PromotionalCardView.handleMessage(message);
         break;
       }
-      // Keep backward compatibility
       case "openLearnMore": {
         if (message.url) {
           vscode.env.openExternal(vscode.Uri.parse(message.url));
@@ -119,7 +117,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
     const isStandalone = await cx.isStandaloneEnabled(this.logs);
     if (isStandalone) {
-      // Always render promo card when standalone, regardless of project/scan selection
       const promoConfig = PromotionalCardView.getAspmConfig();
       const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
       const promoCardStyles = PromotionalCardView.generateStyles();
@@ -132,7 +129,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
       this.view.webview.postMessage({ command: "hideLoader" });
       return;
     }
-    // Non-standalone: if no project/scan yet selected, show ASPM empty state container
     if (!project && !scan) {
       this.view.webview.html = await this.getAspmWebviewContent(
         undefined,

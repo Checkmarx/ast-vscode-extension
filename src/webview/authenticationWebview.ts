@@ -115,7 +115,6 @@ export class AuthenticationWebview {
     await this.context.globalState.update("cxFirstWelcome", true);
   }
 
-  // Centralized post-authentication UI and environment refresh
   private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
     setTimeout(async () => {
       try {
@@ -139,7 +138,6 @@ export class AuthenticationWebview {
           }, 500);
         }
       } catch (e) {
-        // Non-blocking; log if logs available
         this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
       }
     }, 1000);
@@ -265,7 +263,6 @@ export class AuthenticationWebview {
                   "Logged out successfully."
                 );
                 uninstallMcp();
-                // Update status bars after logout
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                 await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
@@ -317,10 +314,8 @@ export class AuthenticationWebview {
                     return;
                   }
 
-                  // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
                   authService.saveToken(this.context, message.apiKey);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  // Sending a success message to the window
                   const commonCommand = new CommonCommand(this.context, this.logs);
                   await commonCommand.executeCheckStandaloneEnabled();
                   await commonCommand.executeCheckCxOneAssistEnabled();

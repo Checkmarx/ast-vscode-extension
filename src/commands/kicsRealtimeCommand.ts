@@ -49,7 +49,6 @@ export class KICSRealtimeCommand {
           fixAll,
           fixLine
         ) => {
-          // Skip remediation entirely in standalone mode
           if (await cx.isStandaloneEnabled(this.logs)) {
             return;
           }
@@ -72,7 +71,6 @@ export class KICSRealtimeCommand {
       vscode.commands.registerCommand(
         commands.kicsRealtime,
         async () => {
-          // Skip scan trigger in standalone mode
           if (await cx.isStandaloneEnabled(this.logs)) {
             return;
           }

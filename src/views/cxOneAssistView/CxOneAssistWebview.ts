@@ -4,9 +4,6 @@ import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 
 export class CxOneAssistWebview {
-  /**
-   * Generates the HTML content for the CxOne Assist webview
-   */
   public static generateHtml(
     context: vscode.ExtensionContext,
     webview: vscode.Webview,
@@ -55,9 +52,6 @@ export class CxOneAssistWebview {
     </html>`;
   }
 
-  /**
-   * Returns the CSS styles for the webview
-   */
   private static getStyles(): string {
     return `
       body {
@@ -170,22 +164,16 @@ export class CxOneAssistWebview {
         }
       }
       
-      /* Hide button when not visible */
       .hidden {
         display: none !important;
       }
     `;
   }
 
-  /**
-   * Returns the JavaScript for the webview
-   */
   private static getScript(): string {
     return `
-      // VS Code API
       const vscode = acquireVsCodeApi();
       
-      // Create floating particles
       function createParticles() {
         const container = document.getElementById('particles');
         if (!container) return;
@@ -213,12 +201,10 @@ export class CxOneAssistWebview {
           command: 'openIgnoredView' 
         });
       }
-      
-      // Initialize
+
       createParticles();
       setInterval(createParticles, 8000);
       
-      // Listen for updates from the extension
       window.addEventListener('message', event => {
         const message = event.data;
         if (message.command === 'updateState') {
@@ -247,9 +233,6 @@ export class CxOneAssistWebview {
     `;
   }
 
-  /**
-   * Generates the HTML content for unauthenticated users
-   */
   public static renderDisabledStandaloneHtml(
     context: vscode.ExtensionContext,
     webview: vscode.Webview
@@ -293,9 +276,6 @@ export class CxOneAssistWebview {
     </html>`;
   }
 
-  /**
-   * Returns the CSS styles for unauthenticated view
-   */
   private static getUnauthenticatedStyles(): string {
     return `
       body {
@@ -403,9 +383,6 @@ export class CxOneAssistWebview {
     `;
   }
 
-  /**
-   * Returns the JavaScript for unauthenticated view
-   */
   private static getUnauthenticatedScript(): string {
     return `
       // VS Code API
