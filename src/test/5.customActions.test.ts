@@ -50,7 +50,7 @@ describe("filter and groups actions tests", () => {
   });
 
 
-  it.skip("should click on all group by", async function () {
+  it("should click on all group by", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -81,7 +81,7 @@ describe("filter and groups actions tests", () => {
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it.skip("should click on all group by", async function () {
+  it("should click on all group by", async function () {
     const commands = [CX_GROUP_LANGUAGE, CX_GROUP_STATUS, CX_GROUP_STATE, CX_GROUP_QUERY_NAME, CX_GROUP_FILE];
     // Get scan node
     const treeScans = await initialize();
