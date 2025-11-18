@@ -135,10 +135,9 @@ export class AstResult extends CxResult {
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
 
-      // Assign a unique ID for accurate tracking and reference of the vulnerability.
-      const resultLabel = this.label; // Use the label that was set in constructor
+      // Assign unique ID for accurate tracking
       this.sastNodes.forEach((node: SastNode, index: number) => {
-        node.uniqueId = `${resultLabel}_${node.fileName}_${node.line}_${node.column}_${index}`;
+        node.uniqueId = `${this.label}_${node.fileName}_${node.line}_${node.column}_${index}`;
       });
 
       this.fileName = result.data.nodes[0].fileName;
