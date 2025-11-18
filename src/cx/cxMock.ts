@@ -35,7 +35,7 @@ export class CxMock implements CxPlatform {
         label: "sca",
         severity: "HIGH",
         description:
-            "decode-uri-component is vulnerable to Improper Input Validation resulting in DoS.",
+          "decode-uri-component is vulnerable to Improper Input Validation resulting in DoS.",
         data: {
           nodes: [
             {
@@ -121,7 +121,7 @@ export class CxMock implements CxPlatform {
             label: "IaC Security",
             id: "150256",
             similarityId:
-                "92742543fa8505b3ba24ff54894c94594d0d9e3873b05fb38dbcbdef40aa3062",
+              "92742543fa8505b3ba24ff54894c94594d0d9e3873b05fb38dbcbdef40aa3062",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "LOW",
@@ -130,12 +130,12 @@ export class CxMock implements CxPlatform {
             foundAt: "2022-09-02T10:45:29Z",
             firstScanId: "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
             description:
-                "Ensure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working",
+              "Ensure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working",
             descriptionHTML:
-                "\u003cp\u003eEnsure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working\u003c/p\u003e\n",
+              "\u003cp\u003eEnsure that HEALTHCHECK is being used. The HEALTHCHECK instruction tells Docker how to test a container to check that it is still working\u003c/p\u003e\n",
             data: {
               queryId:
-                  "b03a748a-542d-44f4-bb86-9199ab4fd2d5 [Taken from query_id]",
+                "b03a748a-542d-44f4-bb86-9199ab4fd2d5 [Taken from query_id]",
               queryName: "Healthcheck Instruction Missing",
               group: "Insecure Configurations [Taken from category]",
               line: 3,
@@ -155,7 +155,7 @@ export class CxMock implements CxPlatform {
             label: "IaC Security",
             id: "150255",
             similarityId:
-                "bca11aa6fe8840e47585aaa38048073afc521dc953151be020fb8fc4cc38f54a",
+              "bca11aa6fe8840e47585aaa38048073afc521dc953151be020fb8fc4cc38f54a",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "MEDIUM",
@@ -164,21 +164,21 @@ export class CxMock implements CxPlatform {
             foundAt: "2022-09-02T10:45:29Z",
             firstScanId: "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
             description:
-                "Package version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes",
+              "Package version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes",
             descriptionHTML:
-                "\u003cp\u003ePackage version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes\u003c/p\u003e\n",
+              "\u003cp\u003ePackage version pinning reduces the range of versions that can be installed, reducing the chances of failure due to unanticipated changes\u003c/p\u003e\n",
             data: {
               queryId:
-                  "d3499f6d-1651-41bb-a9a7-de925fea487b [Taken from query_id]",
+                "d3499f6d-1651-41bb-a9a7-de925fea487b [Taken from query_id]",
               queryName: "Unpinned Package Version in Apk Add",
               group: "Supply-Chain [Taken from category]",
               line: 6,
               platform: "Dockerfile",
               issueType: "IncorrectValue",
               expectedValue:
-                  "RUN instruction with 'apk add \u003cpackage\u003e' should use package pinning form 'apk add \u003cpackage\u003e=\u003cversion\u003e'",
+                "RUN instruction with 'apk add \u003cpackage\u003e' should use package pinning form 'apk add \u003cpackage\u003e=\u003cversion\u003e'",
               value:
-                  "RUN instruction apk --no-cache add git python3 py-lxml     \u0026\u0026 rm -rf /var/cache/apk/* does not use package pinning form",
+                "RUN instruction apk --no-cache add git python3 py-lxml     \u0026\u0026 rm -rf /var/cache/apk/* does not use package pinning form",
               filename: "/Dockerfile",
             },
             comments: {},
@@ -199,9 +199,9 @@ export class CxMock implements CxPlatform {
             foundAt: "2022-09-02T10:45:54Z",
             firstScanId: "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
             description:
-                "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
+              "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
             descriptionHTML:
-                "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
+              "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
             data: {
               // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
               queryId: 5157925289005576664,
@@ -221,7 +221,7 @@ export class CxMock implements CxPlatform {
                   domType: "UnknownReference",
                   fileName: "/insecure.php",
                   fullName:
-                      "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
+                    "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
                   typeName: "CxDefaultObject",
                   methodLine: 1,
                   definitions: "1",
@@ -316,9 +316,9 @@ export class CxMock implements CxPlatform {
             foundAt: "2022-09-02T10:45:54Z",
             firstScanId: "cb834dcd-aaec-4e1f-a099-089d5fbe503e",
             description:
-                "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
+              "The method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
             descriptionHTML:
-                "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
+              "\u003cp\u003eThe method $PageLoad embeds untrusted data in generated output with echo, at line 11 of /insecure.php. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\u003c/p\u003e\n\n\u003cp\u003eThe attacker would be able to alter the returned web page by simply providing modified data in the user input _POST, which is read by the $PageLoad method at line 10 of /insecure.php. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\u003c/p\u003e\n",
             data: {
               // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
               queryId: 5157925289005576664,
@@ -338,7 +338,7 @@ export class CxMock implements CxPlatform {
                   domType: "UnknownReference",
                   fileName: "/insecure.php",
                   fullName:
-                      "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
+                    "$NS_insecure_a3ce4a23.$Cls_insecure_a3ce4a23._POST",
                   typeName: "CxDefaultObject",
                   methodLine: 1,
                   definitions: "1",
@@ -434,9 +434,9 @@ export class CxMock implements CxPlatform {
             foundAt: "2023-04-21T10:34:40Z",
             firstScanId: "eaa0f3ea-ce32-4059-9836-db13d16fb2c8",
             description:
-                "It was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.",
+              "It was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.",
             descriptionHTML:
-                "\u003cp\u003eIt was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.\u003c/p\u003e\n",
+              "\u003cp\u003eIt was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.\u003c/p\u003e\n",
             data: {},
             comments: {},
             vulnerabilityDetails: {
@@ -455,7 +455,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "49zX0DLkU5pXNroqUZ8IM57sO5U=",
             similarityId:
-                "7dd5481569c41f10fa3eff060673446480940fbc853b960b5b240029088ce639",
+              "7dd5481569c41f10fa3eff060673446480940fbc853b960b5b240029088ce639",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -473,11 +473,11 @@ export class CxMock implements CxPlatform {
               snippet: "eyJh***",
               slsaStep: "Source",
               ruleDescription:
-                  "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
+                "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -487,7 +487,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "/5o5sN0v5K2I8J934plrSE6A8RQ=",
             similarityId:
-                "c7b19748c8985c3717885512828eb8b43962af069a71543fd7354c12f291dadc",
+              "c7b19748c8985c3717885512828eb8b43962af069a71543fd7354c12f291dadc",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -497,7 +497,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: no update tool detected:\nWarn: tool 'RenovateBot' is not used\nWarn: tool 'Dependabot' is not used\nWarn: tool 'PyUp' is not used",
+              "score is 0: no update tool detected:\nWarn: tool 'RenovateBot' is not used\nWarn: tool 'Dependabot' is not used\nWarn: tool 'PyUp' is not used",
             data: {
               ruleId: "DependencyUpdateToolID",
               ruleName: "Dependency-Update-Tool",
@@ -506,11 +506,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Dependencies",
               ruleDescription:
-                  "Determines if the project uses a dependency update tool.",
+                "Determines if the project uses a dependency update tool.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#dependency-update-tool",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#dependency-update-tool",
               remediationAdditional: null,
               validity: null,
             },
@@ -521,7 +521,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "A1hsrnELDUxAcOtjBGsP6GtlEBA=",
             similarityId:
-                "023c7542148f63613c00f016af227e6aa5e8c617d7ca53e7522feaf91539249f",
+              "023c7542148f63613c00f016af227e6aa5e8c617d7ca53e7522feaf91539249f",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -531,7 +531,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: 1 commit(s) and 0 issue activity found in the last 90 days -- score normalized to 0",
+              "score is 0: 1 commit(s) and 0 issue activity found in the last 90 days -- score normalized to 0",
             data: {
               ruleId: "MaintainedID",
               ruleName: "Maintained",
@@ -540,11 +540,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Source",
               ruleDescription:
-                  'Determines if the project is "actively maintained".',
+                'Determines if the project is "actively maintained".',
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained",
               remediationAdditional: null,
               validity: null,
             },
@@ -555,7 +555,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "AtXoUC0MXjbfw9pmPtR8LbsdvXk=",
             similarityId:
-                "4a6ddb4a8d5a9cbcbc8b4c45d35e710bd753b1cb824e594fc0c44831273fa53e",
+              "4a6ddb4a8d5a9cbcbc8b4c45d35e710bd753b1cb824e594fc0c44831273fa53e",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -565,7 +565,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "stripe-access-token has detected secret for file /secrets.go.",
+              "stripe-access-token has detected secret for file /secrets.go.",
             data: {
               ruleId: "stripe-access-token",
               ruleName: "Stripe-Access-Token",
@@ -574,11 +574,11 @@ export class CxMock implements CxPlatform {
               snippet: "sk_t***",
               slsaStep: "Source",
               ruleDescription:
-                  "Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data.",
+                "Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -588,7 +588,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "hJTinqcw2jva0HvKrXSM1hU3cgk=",
             similarityId:
-                "23fa634d6ae404d07586c36f4bb7eee8682805ed003e514354f89408eb0d840d",
+              "23fa634d6ae404d07586c36f4bb7eee8682805ed003e514354f89408eb0d840d",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "LOW",
@@ -598,7 +598,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: no effort to earn an OpenSSF best practices badge detected",
+              "score is 0: no effort to earn an OpenSSF best practices badge detected",
             data: {
               ruleId: "CIIBestPracticesID",
               ruleName: "CII-Best-Practices",
@@ -607,11 +607,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Source",
               ruleDescription:
-                  "Determines if the project has an OpenSSF (formerly CII) Best Practices Badge.",
+                "Determines if the project has an OpenSSF (formerly CII) Best Practices Badge.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#cii-best-practices",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#cii-best-practices",
               remediationAdditional: null,
               validity: null,
             },
@@ -622,7 +622,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "hzIL93W8mGkglJVJvtU5LWPFWCs=",
             similarityId:
-                "ff67df300cd3e181ce0d5c11534f17b05d1634427c0974737645fe6140546b7b",
+              "ff67df300cd3e181ce0d5c11534f17b05d1634427c0974737645fe6140546b7b",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -632,7 +632,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: branch protection not enabled on development/release branches:\nWarn: branch protection not enabled for branch 'main'",
+              "score is 0: branch protection not enabled on development/release branches:\nWarn: branch protection not enabled for branch 'main'",
             data: {
               ruleId: "BranchProtectionID",
               ruleName: "Branch-Protection",
@@ -641,11 +641,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Source",
               ruleDescription:
-                  "Determines if the default and release branches are protected with GitHub's branch protection settings.",
+                "Determines if the default and release branches are protected with GitHub's branch protection settings.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection",
               remediationAdditional: null,
               validity: null,
             },
@@ -656,7 +656,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "JiP6l2/7A1eZy/IJw5xb0K773VY=",
             similarityId:
-                "7dd5481569c41f10fa3eff060673446480940fbc853b960b5b240029088ce639",
+              "7dd5481569c41f10fa3eff060673446480940fbc853b960b5b240029088ce639",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -674,11 +674,11 @@ export class CxMock implements CxPlatform {
               snippet: "eyJh***",
               slsaStep: "Source",
               ruleDescription:
-                  "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
+                "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -688,7 +688,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "jIQToNyflbBa1oNDxw9KL/tRsJA=",
             similarityId:
-                "a28bc5175d1eea7caca193f7e419d331b063de90005eb0dee86caf5beaf5efef",
+              "a28bc5175d1eea7caca193f7e419d331b063de90005eb0dee86caf5beaf5efef",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -698,7 +698,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "aws-access-token has detected secret for file /secrets.go.",
+              "aws-access-token has detected secret for file /secrets.go.",
             data: {
               ruleId: "aws-access-token",
               ruleName: "Aws-Access-Token",
@@ -707,11 +707,11 @@ export class CxMock implements CxPlatform {
               snippet: "AKIA***",
               slsaStep: "Source",
               ruleDescription:
-                  "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+                "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -721,7 +721,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "lPQHovRXLnCOS084YFJztmmOgUs=",
             similarityId:
-                "6012016a4cf3c90eb32ccc1f002be3df48fd50c564a258b66b68d41102deabcf",
+              "6012016a4cf3c90eb32ccc1f002be3df48fd50c564a258b66b68d41102deabcf",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "MEDIUM",
@@ -731,7 +731,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: security policy file not detected:\nWarn: no security policy file detected\nWarn: no security file to analyze\nWarn: no security file to analyze\nWarn: no security file to analyze",
+              "score is 0: security policy file not detected:\nWarn: no security policy file detected\nWarn: no security file to analyze\nWarn: no security file to analyze\nWarn: no security file to analyze",
             data: {
               ruleId: "SecurityPolicyID",
               ruleName: "Security-Policy",
@@ -740,11 +740,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Source",
               ruleDescription:
-                  "Determines if the project has published a security policy.",
+                "Determines if the project has published a security policy.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#security-policy",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#security-policy",
               remediationAdditional: null,
               validity: null,
             },
@@ -755,7 +755,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "NEz6oBIVFxHpCSKo5eXrva9Kk9A=",
             similarityId:
-                "0475e70493b2eb38b92c8379ab51b0e7ca99732f0de79d09973931be8c439228",
+              "0475e70493b2eb38b92c8379ab51b0e7ca99732f0de79d09973931be8c439228",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -765,7 +765,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: found 2 unreviewed changesets out of 2 -- score normalized to 0",
+              "score is 0: found 2 unreviewed changesets out of 2 -- score normalized to 0",
             data: {
               ruleId: "CodeReviewID",
               ruleName: "Code-Review",
@@ -774,11 +774,11 @@ export class CxMock implements CxPlatform {
               snippet: null,
               slsaStep: "Source",
               ruleDescription:
-                  "Determines if the project requires human code review before pull requests (aka merge requests) are merged.",
+                "Determines if the project requires human code review before pull requests (aka merge requests) are merged.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#code-review",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#code-review",
               remediationAdditional: null,
               validity: null,
             },
@@ -789,7 +789,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "qKGhcZ6Jd5mm4KaMTvg7c5d/+ro=",
             similarityId:
-                "a28bc5175d1eea7caca193f7e419d331b063de90005eb0dee86caf5beaf5efef",
+              "a28bc5175d1eea7caca193f7e419d331b063de90005eb0dee86caf5beaf5efef",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -799,7 +799,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "aws-access-token has detected secret for file /secrets.go.",
+              "aws-access-token has detected secret for file /secrets.go.",
             data: {
               ruleId: "aws-access-token",
               ruleName: "Aws-Access-Token",
@@ -808,11 +808,11 @@ export class CxMock implements CxPlatform {
               snippet: "AKIA***",
               slsaStep: "Source",
               ruleDescription:
-                  "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+                "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -822,7 +822,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "TJWZcBouTD0JnYWO52XdEkQ2lpA=",
             similarityId:
-                "4a6ddb4a8d5a9cbcbc8b4c45d35e710bd753b1cb824e594fc0c44831273fa53e",
+              "4a6ddb4a8d5a9cbcbc8b4c45d35e710bd753b1cb824e594fc0c44831273fa53e",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -832,7 +832,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "stripe-access-token has detected secret for file /secrets.go.",
+              "stripe-access-token has detected secret for file /secrets.go.",
             data: {
               ruleId: "stripe-access-token",
               ruleName: "Stripe-Access-Token",
@@ -841,11 +841,11 @@ export class CxMock implements CxPlatform {
               snippet: "sk_t***",
               slsaStep: "Source",
               ruleDescription:
-                  "Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data.",
+                "Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -855,7 +855,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-scorecard",
             id: "tPes1zHT9L1Q5AP8T9iC5vZBG9U=",
             similarityId:
-                "da8f116022d814a1d338444a27719a71e19cb3083bd6fe618649a00878ae8c25",
+              "da8f116022d814a1d338444a27719a71e19cb3083bd6fe618649a00878ae8c25",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "MEDIUM",
@@ -865,7 +865,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "score is 0: project is not fuzzed:\nWarn: no OSSFuzz integration found\nWarn: no GoBuiltInFuzzer integration found\nWarn: no PythonAtherisFuzzer integration found\nWarn: no CLibFuzzer integration found\nWarn: no CppLibFuzzer integration found\nWarn: no SwiftLibFuzzer integration found\nWarn: no RustCargoFuzzer integration found\nWarn: no JavaJazzerFuzzer integration found\nWarn: no ClusterFuzzLite integration found\nWarn: no HaskellPropertyBasedTesting integration found\nWarn: no TypeScriptPropertyBasedTesting integration found\nWarn: no JavaScriptPropertyBasedTesting integration found",
+              "score is 0: project is not fuzzed:\nWarn: no OSSFuzz integration found\nWarn: no GoBuiltInFuzzer integration found\nWarn: no PythonAtherisFuzzer integration found\nWarn: no CLibFuzzer integration found\nWarn: no CppLibFuzzer integration found\nWarn: no SwiftLibFuzzer integration found\nWarn: no RustCargoFuzzer integration found\nWarn: no JavaJazzerFuzzer integration found\nWarn: no ClusterFuzzLite integration found\nWarn: no HaskellPropertyBasedTesting integration found\nWarn: no TypeScriptPropertyBasedTesting integration found\nWarn: no JavaScriptPropertyBasedTesting integration found",
             data: {
               ruleId: "FuzzingID",
               ruleName: "Fuzzing",
@@ -875,9 +875,9 @@ export class CxMock implements CxPlatform {
               slsaStep: "Package",
               ruleDescription: "Determines if the project uses fuzzing.",
               remediation:
-                  "Implement the remediation recommendations provided in the URL",
+                "Implement the remediation recommendations provided in the URL",
               remediationLink:
-                  "https://github.com/ossf/scorecard/blob/main/docs/checks.md#fuzzing",
+                "https://github.com/ossf/scorecard/blob/main/docs/checks.md#fuzzing",
               remediationAdditional: null,
               validity: null,
             },
@@ -888,7 +888,7 @@ export class CxMock implements CxPlatform {
             type: "sscs-secret-detection",
             id: "yfZPTrZsBH5X3BpleyRKUDS10BM=",
             similarityId:
-                "0870b429f0107daadc62c70e36cbb47683a7605b38a76b32922e3e0ac6f85f85",
+              "0870b429f0107daadc62c70e36cbb47683a7605b38a76b32922e3e0ac6f85f85",
             status: "NEW",
             state: "TO_VERIFY",
             severity: "HIGH",
@@ -898,7 +898,7 @@ export class CxMock implements CxPlatform {
             foundAt: "2024-09-06T12:15:06Z",
             firstScanId: "b57170dc-fb77-442b-a9b5-0f788654b8ee",
             description:
-                "generic-api-key has detected secret for file /secrets.go.",
+              "generic-api-key has detected secret for file /secrets.go.",
             data: {
               ruleId: "generic-api-key",
               ruleName: "Generic-Api-Key",
@@ -907,11 +907,11 @@ export class CxMock implements CxPlatform {
               snippet: "abc1***",
               slsaStep: "Source",
               ruleDescription:
-                  "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+                "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
               remediation: "Remove secret",
               remediationLink: null,
               remediationAdditional:
-                  "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
+                "Remove or mask the secret value shown in your file/artifact. If your secret is still valid, you should revoke it, in order to prevent malicious use of compromised secrets.",
               validity: "Unknown",
             },
             comments: {},
@@ -921,11 +921,11 @@ export class CxMock implements CxPlatform {
       };
     }
     writeFileSync(
-        getFilePath() + "/ast-results.json",
-        JSON.stringify(results),
-        {
-          flag: "w+",
-        }
+      getFilePath() + "/ast-results.json",
+      JSON.stringify(results),
+      {
+        flag: "w+",
+      }
     );
   }
 
@@ -980,7 +980,7 @@ export class CxMock implements CxPlatform {
   }
 
   async getProjectListWithParams(
-      params: string
+    params: string
   ): Promise<CxProject[] | undefined> {
     if (params) {
       if (this.getOffsetValue(params) === "0") {
@@ -1217,8 +1217,8 @@ export class CxMock implements CxPlatform {
   }
 
   async getBranchesWithParams(
-      projectId: string | undefined,
-      params?: string | undefined
+    projectId: string | undefined,
+    params?: string | undefined
   ): Promise<string[] | undefined> {
     if (params) {
       if (this.getBranchName(params) === "main") {
@@ -1262,8 +1262,8 @@ export class CxMock implements CxPlatform {
   }
 
   async getScans(
-      projectId: string | undefined,
-      branch: string | undefined
+    projectId: string | undefined,
+    branch: string | undefined
   ): Promise<CxScan[] | undefined> {
     if (branch === constants.localBranch) {
       return [];
@@ -1299,8 +1299,8 @@ export class CxMock implements CxPlatform {
   getBaseAstConfiguration() {
     const config = new CxConfig();
     config.additionalParameters = vscode.workspace
-        .getConfiguration("checkmarxOne")
-        .get("additionalParams") as string;
+      .getConfiguration("checkmarxOne")
+      .get("additionalParams") as string;
 
     return config;
   }
@@ -1328,13 +1328,13 @@ export class CxMock implements CxPlatform {
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
     return true;
   }
-  
+
   async isStandaloneEnabled(): Promise<boolean> {
-    return true;
+    return false;
   }
 
   async isCxOneAssistEnabled(): Promise<boolean> {
-    return true;
+    return false;
   }
 
   async isAuthenticated(): Promise<boolean> {
@@ -1398,12 +1398,12 @@ export class CxMock implements CxPlatform {
         queryName: "Reflected_XSS_All_Clients",
         queryDescriptionId: "Reflected_XSS_All_Clients",
         resultDescription:
-            "The method @DestinationMethod embeds untrusted data in generated output with @DestinationElement, at line @DestinationLine of @DestinationFile. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input @SourceElement, which is read by the @SourceMethod method at line @SourceLine of @SourceFile. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
+          "The method @DestinationMethod embeds untrusted data in generated output with @DestinationElement, at line @DestinationLine of @DestinationFile. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input @SourceElement, which is read by the @SourceMethod method at line @SourceLine of @SourceFile. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
         risk: "A successful XSS exploit would allow an attacker to rewrite web pages and insert malicious scripts which would alter the intended output. This could include HTML fragments, CSS styling rules, arbitrary JavaScript, or references to third party code. An attacker could use this to steal users' passwords, collect personal data such as credit card details, provide false information, or run malware. From the victim's point of view, this is performed by the genuine website, and the victim would blame the site for incurred damage.\n\nThe attacker could use social engineering to cause the user to send the website modified input, which will be returned in the requested web page.\n\n",
         cause:
-            "The application creates web pages that include untrusted data, whether from user input, the application's database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
+          "The application creates web pages that include untrusted data, whether from user input, the application's database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
         generalRecommendations:
-            '*   Fully encode all dynamic data, regardless of source, before embedding it in output.\r\n*   Encoding should be context-sensitive. For example:\r\n    *   HTML encoding for HTML content\r\n    *   HTML Attribute encoding for data output to attribute values\r\n    *   JavaScript encoding for server-generated JavaScript\r\n*   It is recommended to use the platform-provided encoding functionality, or known security libraries for encoding output.\r\n*   Implement a Content Security Policy (CSP) with explicit whitelists for the application\'s resources only. \r\n*   As an extra layer of protection, validate all untrusted data, regardless of source (note this is not a replacement for encoding). Validation should be based on a whitelist: accept only data fitting a specified structure, rather than reject bad patterns. Check for:\r\n    *   Data type\r\n    *   Size\r\n    *   Range\r\n    *   Format\r\n    *   Expected values\r\n*   In the `Content-Type` HTTP response header, explicitly define character encoding (charset) for the entire page. \r\n*   Set the `HTTPOnly` flag on the session cookie for "Defense in Depth", to prevent any successful XSS exploits from stealing the cookie.\n*   Consider that many native PHP methods for sanitizing values, such as htmlspecialchars and htmlentities, do not inherently encode values for Javascript contexts and ignore certain enclosure characters such as apostrophe (\'), quotes (") and backticks (\\`). Always consider the output context of inputs before choosing either of these functions as sanitizers.',
+          '*   Fully encode all dynamic data, regardless of source, before embedding it in output.\r\n*   Encoding should be context-sensitive. For example:\r\n    *   HTML encoding for HTML content\r\n    *   HTML Attribute encoding for data output to attribute values\r\n    *   JavaScript encoding for server-generated JavaScript\r\n*   It is recommended to use the platform-provided encoding functionality, or known security libraries for encoding output.\r\n*   Implement a Content Security Policy (CSP) with explicit whitelists for the application\'s resources only. \r\n*   As an extra layer of protection, validate all untrusted data, regardless of source (note this is not a replacement for encoding). Validation should be based on a whitelist: accept only data fitting a specified structure, rather than reject bad patterns. Check for:\r\n    *   Data type\r\n    *   Size\r\n    *   Range\r\n    *   Format\r\n    *   Expected values\r\n*   In the `Content-Type` HTTP response header, explicitly define character encoding (charset) for the entire page. \r\n*   Set the `HTTPOnly` flag on the session cookie for "Defense in Depth", to prevent any successful XSS exploits from stealing the cookie.\n*   Consider that many native PHP methods for sanitizing values, such as htmlspecialchars and htmlentities, do not inherently encode values for Javascript contexts and ignore certain enclosure characters such as apostrophe (\'), quotes (") and backticks (\\`). Always consider the output context of inputs before choosing either of these functions as sanitizers.',
         samples: [
           {
             progLanguage: "PHP",
@@ -1443,21 +1443,21 @@ export class CxMock implements CxPlatform {
   async runSastGpt() {
     await this.sleep(1000);
     return [
-      {conversationId: "0", response: ["Mock message response from gpt"]},
+      { conversationId: "0", response: ["Mock message response from gpt"] },
     ];
   }
 
   async runGpt() {
     await this.sleep(1000);
     return [
-      {conversationId: "0", response: ["Mock message response from gpt"]},
+      { conversationId: "0", response: ["Mock message response from gpt"] },
     ];
   }
 
   async mask() {
     await this.sleep(1000);
     return [
-      {conversationId: "0", response: ["Mock message response from gpt"]},
+      { conversationId: "0", response: ["Mock message response from gpt"] },
     ];
   }
 
@@ -1466,9 +1466,9 @@ export class CxMock implements CxPlatform {
   }
 
   updateStatusBarItem(
-      text: string,
-      show: boolean,
-      statusBarItem: vscode.StatusBarItem
+    text: string,
+    show: boolean,
+    statusBarItem: vscode.StatusBarItem
   ) {
     statusBarItem.text = text;
     show ? statusBarItem.show() : statusBarItem.hide();
@@ -1526,8 +1526,8 @@ export class CxMock implements CxPlatform {
   }
 
   public getRiskManagementResults(
-      projectId: string,
-      scanId: string
+    projectId: string,
+    scanId: string
   ): Promise<{
     projectID: string;
     scanID: string;
