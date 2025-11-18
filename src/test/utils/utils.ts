@@ -23,9 +23,9 @@ export async function createView(
 export async function createTree(
   view: SideBarView | undefined
 ): Promise<CustomTreeSection | undefined> {
-  const content = view?.getContent();
-  if (!content) return undefined;
-  return await content.getSection<CustomTreeSection>("Checkmarx One Results", CustomTreeSection);
+  return (await view
+    ?.getContent()
+    .getSection("Checkmarx One Results")) as CustomTreeSection;
 }
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
@@ -49,9 +49,9 @@ export async function initializeSCA(): Promise<CustomTreeSection | undefined> {
 export async function createTreeSCA(
   view: SideBarView | undefined
 ): Promise<CustomTreeSection | undefined> {
-  const content = view?.getContent();
-  if (!content) return undefined;
-  return await content.getSection<CustomTreeSection>("Checkmarx SCA Realtime Scanner", CustomTreeSection);
+  return (await view
+    ?.getContent()
+    .getSection("Checkmarx SCA Realtime Scanner")) as CustomTreeSection;
 }
 
 export async function quickPickSelector(input: InputBox) {
