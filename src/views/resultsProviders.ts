@@ -37,6 +37,32 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     return element.children;
   }
+
+  public getParent(element: TreeItem): vscode.ProviderResult<TreeItem> {
+    // Required for tree.reveal() to work - it needs to know the parent hierarchy
+    if (!this.data) {
+      return undefined;
+    }
+
+    // Search for the parent of the given element
+    const findParent = (items: TreeItem[], target: TreeItem, parent?: TreeItem): TreeItem | undefined => {
+      for (const item of items) {
+        if (item === target) {
+          return parent;
+        }
+        if (item.children) {
+          const found = findParent(item.children, target, item);
+          if (found !== undefined) {
+            return found;
+          }
+        }
+      }
+      return undefined;
+    };
+
+    return findParent(this.data, element);
+  }
+
   protected hideStatusBarItem() {
     this.statusBarItem.text = constants.extensionName;
     this.statusBarItem.tooltip = undefined;
@@ -163,7 +189,8 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
             obj.getSeverityCode(),
             obj.sastNodes[0],
             folder,
-            map
+            map,
+            obj
           );
         }
         node = groups.reduce(
@@ -181,7 +208,8 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     severity: vscode.DiagnosticSeverity,
     node: SastNode,
     folder: vscode.WorkspaceFolder | undefined,
-    map: Map<string, vscode.Diagnostic[]>
+    map: Map<string, vscode.Diagnostic[]>,
+    resultForLink: AstResult
   ) {
     if (!folder) {
       return;
@@ -196,6 +224,15 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     const range = new vscode.Range(startPosition, endPosition);
 
     const diagnostic = new vscode.Diagnostic(range, label, severity);
+
+    //Add uniqueId to SASTNode object
+    (diagnostic as vscode.Diagnostic & { data?: unknown }).data = {
+      label: resultForLink.label,
+      fileName: node.fileName,
+      line: node.line,
+      uniqueId: node.uniqueId
+    };
+
     if (map.has(filePath)) {
       map.get(filePath)?.push(diagnostic);
     } else {

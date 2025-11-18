@@ -37,6 +37,9 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+import { TreeItem as CxTreeItem } from "./utils/tree/treeItem";
+import { AstResult } from "./models/results";
+import { SastNode } from "./models/sastNode";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -189,10 +192,134 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  // Problems panel link handler: open details by matching label/file/line
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.openDetailsFromDiagnostic", async (payload?: { label?: string; fileName?: string; line?: number; uniqueId?: string }) => {
+      try {
+        logs.info(`[openDetailsFromDiagnostic] Command triggered with payload: ${JSON.stringify(payload)}`);
+
+        if (!payload) {
+          logs.warn("[openDetailsFromDiagnostic] No payload provided");
+          return;
+        }
+        const { uniqueId, fileName, line } = payload;
+        // Traverse current results tree to find the matching result by uniqueId
+        const providerLike = astResultsProvider as unknown as { data?: CxTreeItem[] };
+        const root = providerLike.data;
+        if (!root || root.length === 0) {
+          logs.warn("[openDetailsFromDiagnostic] No tree data available");
+          return;
+        }
+
+        logs.info(`[openDetailsFromDiagnostic] Searching for match: uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
+
+        const stack: CxTreeItem[] = [...root];
+        while (stack.length) {
+          const node = stack.pop() as CxTreeItem;
+          if (node?.result) {
+            const res = node.result as AstResult;
+            const sastNodesArray = Array.isArray(res.sastNodes) ? res.sastNodes : [];
+
+            // If we have a uniqueId, use it for precise matching (new approach)
+            if (uniqueId && sastNodesArray.length > 0) {
+              logs.info(`[openDetailsFromDiagnostic] Checking result: ${res.label}, sastNodes count: ${sastNodesArray.length}`);
+
+              // Debug: Log all sastNode uniqueIds in this result
+              sastNodesArray.forEach((sn, idx) => {
+                const snWithId = sn as { uniqueId?: string };
+                logs.info(`[openDetailsFromDiagnostic]   sastNode[${idx}].uniqueId = "${snWithId.uniqueId}"`);
+              });
+              logs.info(`[openDetailsFromDiagnostic] Looking for uniqueId: "${uniqueId}"`);
+
+              // Check if ANY sastNode has a matching uniqueId
+              const matchedNode = sastNodesArray.find((sastNode: SastNode) => {
+                const sastNodeWithId = sastNode as { uniqueId?: string };
+                const matches = sastNodeWithId.uniqueId === uniqueId;
+                if (matches) {
+                  logs.info(`[openDetailsFromDiagnostic]   ✓ MATCH FOUND with sastNode.uniqueId="${sastNodeWithId.uniqueId}"`);
+                }
+                return matches;
+              });
+
+              if (matchedNode) {
+                logs.info(`[openDetailsFromDiagnostic] Match found by uniqueId! Opening details for: ${res.label}`);
+                // Perfect match found! Reveal and highlight the node in the tree (like mouseover, without clicking)
+                await tree.reveal(node, { select: true, focus: false, expand: true });
+                await vscode.commands.executeCommand(commands.newDetails, res);
+                return;
+              } else {
+                logs.warn(`[openDetailsFromDiagnostic] No match found for uniqueId="${uniqueId}" in result: ${res.label}`);
+              }
+            }
+            // Fallback: if no uniqueId (backwards compatibility), try to match by fileName/line
+            else if (fileName !== undefined && line !== undefined && sastNodesArray.length > 0) {
+              const firstNode = sastNodesArray[0];
+              const matchLoc = firstNode.fileName === fileName && Number(firstNode.line) === Number(line);
+              if (matchLoc) {
+                logs.info(`[openDetailsFromDiagnostic] Match found by fileName/line! Opening details for: ${res.label}`);
+                await tree.reveal(node, { select: true, focus: false, expand: true });
+                await vscode.commands.executeCommand(commands.newDetails, res);
+                return;
+              }
+              // Try basename match as last resort
+              const n1 = firstNode.fileName.split("/").pop()?.split("\\").pop();
+              const n2 = fileName.split("/").pop()?.split("\\").pop();
+              if (n1 && n2 && n1 === n2 && Number(firstNode.line) === Number(line)) {
+                logs.info(`[openDetailsFromDiagnostic] Match found by basename! Opening details for: ${res.label}`);
+                await tree.reveal(node, { select: true, focus: false, expand: true });
+                await vscode.commands.executeCommand(commands.newDetails, res);
+                return;
+              }
+            }
+          }
+          if (Array.isArray(node?.children)) {
+            stack.push(...node.children as CxTreeItem[]);
+          }
+        }
+        logs.warn("[openDetailsFromDiagnostic] No matching node found in tree");
+      } catch (error) {
+        logs.error(`[openDetailsFromDiagnostic] Error: ${error}`);
+      }
+    })
+  );
+
+  // Thin hyperlink inside hover: expose "Open details" without adding a Problems link
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file" },
+      {
+        provideHover(doc, position) {
+          const diagnostics = vscode.languages.getDiagnostics(doc.uri) || [];
+          const hit = diagnostics.find(d => {
+            // Show when hovering within the diagnostic line
+            return d.range.start.line === position.line;
+          }) as (vscode.Diagnostic & { data?: { label?: string; fileName?: string; line?: number; uniqueId?: string } }) | undefined;
+          const data = hit?.data;
+          if (!data || !data.label || !data.fileName || typeof data.line !== "number") {
+            return;
+          }
+          const payload = {
+            label: data.label,
+            fileName: data.fileName,
+            line: data.line,
+            uniqueId: data.uniqueId
+          };
+          // VSCode command URIs require arguments to be in an array
+          const args = encodeURIComponent(JSON.stringify([payload]));
+          const md = new vscode.MarkdownString(`[CxOne Results](command:ast-results.openDetailsFromDiagnostic?${args})`);
+          md.isTrusted = true;
+          return new vscode.Hover(md);
+        }
+      }
+    )
+  );
   // Webview detailsPanel to show result details on the side
   const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
   webViewCommand.registerGpt();
   webViewCommand.registerNewDetails();
+
+
   // Branch change Listener
   await gitExtensionListener(context, logs);
   // SCA Auto Scanning view
