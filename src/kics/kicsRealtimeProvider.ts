@@ -38,7 +38,6 @@ export class KicsProvider {
         : messages.kicsStatusBarDisconnect;
     this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
     this.kicsStatusBarItem.command = commands.kicsSetings;
-    // Delegate visibility logic to central command (extension.ts)
     vscode.commands.executeCommand(commands.refreshKicsStatusBar);
     this.fixableResults = [];
     this.fixableResultsByLine = [];

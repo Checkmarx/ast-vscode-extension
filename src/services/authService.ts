@@ -368,7 +368,6 @@ export class AuthService {
     if (isValid) {
       vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
       await vscode.commands.executeCommand(commands.refreshTree);
-      // Update CxOne Assist view to show authenticated state
       await vscode.commands.executeCommand(commands.updateCxOneAssist);
     }
 
@@ -423,14 +422,12 @@ export class AuthService {
   public async logout(): Promise<void> {
     // Delete only the token
     await this.context.secrets.delete(constants.authCredentialSecretKey);
-    // Clear cached standalone enablement flag
-   await this.context.secrets.delete(constants.standaloneEnabledGlobalState);
+    await this.context.secrets.delete(constants.standaloneEnabledGlobalState);
 
     await this.validateAndUpdateState();
     await vscode.commands.executeCommand(commands.refreshTree);
     await vscode.commands.executeCommand(commands.clear);
 
-    // Trigger a custom command to update CxOne Assist view
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
     await vscode.commands.executeCommand(
       commands.setContext,

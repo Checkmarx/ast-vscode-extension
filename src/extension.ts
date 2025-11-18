@@ -45,7 +45,6 @@ import { DOC_LINKS } from "./constants/documentation";
 import { cx } from "./cx";
 let globalContext: vscode.ExtensionContext;
 
-// ------------------ Extraction Helpers (Refactor) ------------------
 async function setupStatusBars(context: vscode.ExtensionContext, logs: Logs) {
   const runScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const runSCAScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -410,7 +409,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   scaTree.onDidChangeSelection(async (item) => {
     if (await cx.isStandaloneEnabled(this.logs)) {
-            return;
+      return;
     }
     if (item.selection.length > 0) {
       if (!item.selection[0].contextValue && !item.selection[0].children) {
@@ -434,7 +433,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await commonCommand.executeCheckScanEnabled();
 
   await commonCommand.executeCheckStandaloneEnabled();
-  
+
   await commonCommand.executeCheckCxOneAssistEnabled();
   // SCA auto scanning enablement
   await commonCommand.executeCheckScaScanEnabled();

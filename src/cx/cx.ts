@@ -389,7 +389,6 @@ export class Cx implements CxPlatform {
 
 
     async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
-        // Gracefully handle missing wrapper method by using optional access.
         return this.getCachedFeatureEnabled(
             constants.cxOneAssistEnabledGlobalState,
             logs,
@@ -401,31 +400,23 @@ export class Cx implements CxPlatform {
         );
     }
 
-    /**
-     * Forces a re-fetch of the standalone enablement flag ignoring any cached value.
-     */
     async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
-    await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
         return this.isStandaloneEnabled(logs);
     }
 
-    /**
-     * Explicitly clears the cached standalone flag (used on logout or token invalidation).
-     */
     clearStandaloneEnabledCache(): void {
-    this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
     }
 
-    // --- Standalone cache helpers ---
     private async setStandaloneFlag(value: boolean): Promise<void> {
-    await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
     }
 
     private async clearStandaloneFlag(): Promise<void> {
-    await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
     }
 
-    // Generic cached feature enablement helper to reduce duplication between feature checks.
     private async getCachedFeatureEnabled(
         globalStateKey: string,
         logs: Logs,
@@ -434,7 +425,6 @@ export class Cx implements CxPlatform {
     ): Promise<boolean> {
         const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
-            // Clear cached flag when token missing
             await this.context.globalState.update(globalStateKey, undefined);
             return false;
         }
@@ -453,7 +443,6 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         try {
             const enabled = await remoteCheck(cx);
-            // Use specialized setter for standalone to preserve existing helper usage.
             if (globalStateKey === constants.standaloneEnabledGlobalState) {
                 await this.setStandaloneFlag(enabled);
             } else {
