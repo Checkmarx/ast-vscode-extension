@@ -40,18 +40,30 @@ describe("Scan ID load results test", () => {
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
-        while (treeScans === undefined) {
+        let retryCount = 0;
+        while (treeScans === undefined && retryCount < 10) {
+            console.log(`treeScans is undefined, retrying (${retryCount + 1}/10)`);
             treeScans = await initialize();
+            retryCount++;
         }
+        console.log('treeScans:', treeScans);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
-		await scan?.expand();
+        console.log('scan:', scan);
+        await scan?.expand();
         let scanChildren = await scan?.getChildren();
-        let scanResults = await scanChildren[0].getChildren();
+        console.log('scanChildren:', scanChildren);
+        if (!scanChildren || scanChildren.length === 0) {
+            console.warn('No children found for scan node. Check if the scan ID and label are correct, and if test data is loaded.');
+        }
+        expect(scanChildren).to.not.be.undefined;
+        expect(scanChildren.length).to.be.greaterThan(0);
+        let scanResults = scanChildren[0]?.getChildren ? await scanChildren[0].getChildren() : undefined;
+        console.log('scanResults:', scanResults);
         expect(scanResults).not.to.be.undefined;
         expect(scanResults.length).to.be.equal(0);
-	});
+    });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
         
         await bench.executeCommand(CX_LOOK_SCAN);
