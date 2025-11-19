@@ -21,7 +21,7 @@ describe("Scan ID load results test", () => {
     let driver: WebDriver;
 
     before(async function () {
-        this.timeout(600000);
+        this.timeout(100000);
         bench = new Workbench();
         driver = VSBrowser.instance.driver;
     });
@@ -40,15 +40,24 @@ describe("Scan ID load results test", () => {
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
-        while (treeScans === undefined) {
+        let retryCount = 0;
+        while (treeScans === undefined && retryCount < 10) {
+            console.log(`treeScans is undefined, retrying (${retryCount + 1}/10)`);
             treeScans = await initialize();
+            retryCount++;
         }
+        console.log('treeScans:', treeScans);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
+        console.log('scan:', scan);
         await scan?.expand();
         let scanChildren = await scan?.getChildren();
-        let scanResults = await scanChildren[0].getChildren();
+        console.log('scanChildren:', scanChildren);
+        expect(scanChildren).to.not.be.undefined;
+        expect(scanChildren.length).to.be.greaterThan(0);
+        let scanResults = scanChildren[0]?.getChildren ? await scanChildren[0].getChildren() : undefined;
+        console.log('scanResults:', scanResults);
         expect(scanResults).not.to.be.undefined;
         expect(scanResults.length).to.be.equal(0);
     });
