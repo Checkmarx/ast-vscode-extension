@@ -8,7 +8,7 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout } from "./utils/utils";
+import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout, sleep } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
@@ -35,29 +35,21 @@ describe("Scan ID load results test", () => {
         let input = await new InputBox();
         await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
         await input.confirm();
+        sleep(5000)
     });
 
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
-        let retryCount = 0;
-        while (treeScans === undefined && retryCount < 10) {
-            console.log(`treeScans is undefined, retrying (${retryCount + 1}/10)`);
+        while (treeScans === undefined) {
             treeScans = await initialize();
-            retryCount++;
         }
-        console.log('treeScans:', treeScans);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
-        console.log('scan:', scan);
         await scan?.expand();
         let scanChildren = await scan?.getChildren();
-        console.log('scanChildren:', scanChildren);
-        expect(scanChildren).to.not.be.undefined;
-        expect(scanChildren.length).to.be.greaterThan(0);
-        let scanResults = scanChildren[0]?.getChildren ? await scanChildren[0].getChildren() : undefined;
-        console.log('scanResults:', scanResults);
+        let scanResults = await scanChildren[0].getChildren();
         expect(scanResults).not.to.be.undefined;
         expect(scanResults.length).to.be.equal(0);
     });
