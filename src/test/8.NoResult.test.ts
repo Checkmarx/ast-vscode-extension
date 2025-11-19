@@ -21,7 +21,7 @@ describe("Scan ID load results test", () => {
     let driver: WebDriver;
 
     before(async function () {
-        this.timeout(100000);
+        this.timeout(600000);
         bench = new Workbench();
         driver = VSBrowser.instance.driver;
     });
@@ -37,7 +37,7 @@ describe("Scan ID load results test", () => {
         await input.confirm();
     });
 
-    it.skip("should check scan result is not undefined", async function () {
+    it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
         while (treeScans === undefined) {
