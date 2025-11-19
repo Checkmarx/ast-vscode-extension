@@ -190,17 +190,21 @@
         break;
       }
       case "showLoader": {
-        document.getElementById("loading").classList.remove("hidden");
-        document
-          .getElementById("riskManagementContainer")
-          .classList.add("hidden");
+        const loadingEl = document.getElementById("loading");
+        const containerEl = document.getElementById("riskManagementContainer");
+        loadingEl && loadingEl.classList.remove("hidden");
+        if (containerEl) {
+          containerEl.classList.add("hidden");
+        }
         break;
       }
       case "hideLoader": {
-        document.getElementById("loading").classList.add("hidden");
-        document
-          .getElementById("riskManagementContainer")
-          .classList.remove("hidden");
+        const loadingEl = document.getElementById("loading");
+        const containerEl = document.getElementById("riskManagementContainer");
+        loadingEl && loadingEl.classList.add("hidden");
+        if (containerEl) {
+          containerEl.classList.remove("hidden");
+        }
         break;
       }
     }
@@ -495,7 +499,7 @@
   function extractTraits(results) {
     const traitsSet = new Set();
 
-    results.results.forEach((r) => {
+    results?.results.forEach((r) => {
       if (r.traits && typeof r.traits === "object") {
         Object.values(r.traits).forEach((t) => traitsSet.add(t));
       }
@@ -513,6 +517,9 @@
       return;
     }
 
+    if(!submenu || !category) {
+      return;
+    }
     submenu.classList.add("hidden");
     category.classList.remove("hidden");
     category.classList.remove("expanded");
