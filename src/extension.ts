@@ -37,6 +37,9 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+import { TreeItem as CxTreeItem } from "./utils/tree/treeItem";
+import { AstResult } from "./models/results";
+import { SastNode } from "./models/sastNode";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -189,10 +192,73 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  // Problems panel link handler: open details by matching uniqueId or fileName/line
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ast-results.openDetailsFromDiagnostic", async (payload?: { label?: string; fileName?: string; line?: number; uniqueId?: string }) => {
+      try {
+        if (!payload) {
+          return;
+        }
+
+        const { uniqueId } = payload;
+        const providerLike = astResultsProvider as unknown as { data?: CxTreeItem[] };
+        const root = providerLike.data;
+        if (!root || root.length === 0) {
+          return;
+        }
+
+        const stack: CxTreeItem[] = [...root];
+        while (stack.length) {
+          const node = stack.pop() as CxTreeItem;
+          if (node?.result) {
+            const res = node.result as AstResult;
+            const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
+
+            // Match by uniqueId (preferred method)
+            if (uniqueId && sastNodes.some((sn: SastNode) => sn.uniqueId === uniqueId)) {
+              await tree.reveal(node, { select: true, focus: false, expand: true });
+              await vscode.commands.executeCommand(commands.newDetails, res);
+              return;
+            }
+
+          }
+          if (Array.isArray(node?.children)) {
+            stack.push(...node.children as CxTreeItem[]);
+          }
+        }
+      } catch (error) {
+        logs.error(`[openDetailsFromDiagnostic] Error: ${error}`);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file" },
+      {
+        provideHover(doc, position) {
+          const diagnostics = vscode.languages.getDiagnostics(doc.uri) || [];
+          const hit = diagnostics.find(d => d.range.start.line === position.line) as (vscode.Diagnostic & { data?: { label?: string; fileName?: string; line?: number; uniqueId?: string } }) | undefined;
+          const data = hit?.data;
+          if (!data?.label || !data.fileName || typeof data.line !== "number") {
+            return;
+          }
+
+          const args = encodeURIComponent(JSON.stringify([{ label: data.label, fileName: data.fileName, line: data.line, uniqueId: data.uniqueId }]));
+          const md = new vscode.MarkdownString(`[CxOne Results](command:ast-results.openDetailsFromDiagnostic?${args})`);
+          md.isTrusted = true;
+          return new vscode.Hover(md);
+        }
+      }
+    )
+  );
   // Webview detailsPanel to show result details on the side
   const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
   webViewCommand.registerGpt();
   webViewCommand.registerNewDetails();
+
+
   // Branch change Listener
   await gitExtensionListener(context, logs);
   // SCA Auto Scanning view

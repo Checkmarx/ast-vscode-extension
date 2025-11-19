@@ -134,6 +134,12 @@ export class AstResult extends CxResult {
     // Relevant for sast, sca , kicks because , they have the filename inside result.data.nodes
     if (result.data.nodes && result.data.nodes[0]) {
       this.sastNodes = result.data.nodes;
+
+      // Assign unique ID for accurate tracking
+      this.sastNodes.forEach((node: SastNode, index: number) => {
+        node.uniqueId = `${this.label}_${node.fileName}_${node.line}_${node.column}_${index}`;
+      });
+
       this.fileName = result.data.nodes[0].fileName;
       const shortFilename =
         this.fileName && this.fileName.includes("/")
