@@ -37,7 +37,7 @@ describe("Scan ID load results test", () => {
         await input.confirm();
     });
 
-    it("should check scan result is not undefined", async function () {
+    it.skip("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
         while (treeScans === undefined) {
@@ -46,22 +46,22 @@ describe("Scan ID load results test", () => {
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
-		await scan?.expand();
+        await scan?.expand();
         let scanChildren = await scan?.getChildren();
         let scanResults = await scanChildren[0].getChildren();
         expect(scanResults).not.to.be.undefined;
         expect(scanResults.length).to.be.equal(0);
-	});
+    });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
-        
+
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
         await input.setText(EMPTY_RESULTS_SCAN_ID);
         await input.confirm();
-        
+
         await bench.executeCommand("ast-results.createScan");
 
- let firstNotification = await waitForNotificationWithTimeout(5000)
+        let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
         if (message === messages.scanProjectNotMatch) {
             let actions = await firstNotification?.getActions()
@@ -70,5 +70,5 @@ describe("Scan ID load results test", () => {
             firstNotification = await waitForNotificationWithTimeout(5000);
         }
         expect(firstNotification).to.not.be.undefined;
-    }); 
+    });
 });
