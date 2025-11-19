@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.42.1-2.42.2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-2.42.2.0) - 2025-11-07 04:58:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.42.1-remote-ssh-fix.0...v2.42.1-2.42.2.0
+
 ## [v2.42.1-remote-ssh-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-remote-ssh-fix.0) - 2025-11-06 11:24:03
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
