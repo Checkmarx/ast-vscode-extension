@@ -1,7 +1,5 @@
-// Add console.log to check DOMContentLoaded registration and call
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOMContentLoaded event registered and called");
     const vscode = acquireVsCodeApi();
     const authButton = document.getElementById("authButton");
     const messageBox = document.getElementById("messageBox");
@@ -15,15 +13,9 @@
     const authenticatedMessage = document.getElementById(
       "authenticatedMessage"
     );
-    // Debug: initial classList of loginForm
-    if (loginForm) {
-      console.log("loginForm.classList initial:", Array.from(loginForm.classList));
-    }
 
     window.addEventListener("message", (event) => {
-      console.log("window message event received (auth button enable/disable):", event.data);
       const message = event.data;
-      console.log("parsed message object (auth button enable/disable):", message);
       if (message.command === "disableAuthButton") {
         const authButton = document.getElementById("authButton");
         if (authButton) {
@@ -53,7 +45,6 @@
     
     document.querySelectorAll('input[name="authMethod"]').forEach((radio) => {
       radio.addEventListener("change", (e) => {
-        console.log("authMethod radio change event:", e.target.value);
         const isOAuth = e.target.value === "oauth";
         document
           .getElementById("oauthForm")
@@ -67,7 +58,6 @@
     });
 
     authButton.addEventListener("click", () => {
-      console.log("authButton clicked");
       messageBox.style.display = "none";
 
       vscode.postMessage({
@@ -81,15 +71,12 @@
     });
 
     function handleInputApiKey() {
-      console.log("apiKey input event");
       messageBox.style.display = "none";
       isBtnDisabled();
     }
     apiKeyInput.addEventListener("input", handleInputApiKey);
 
     function isBtnDisabled() {
-      // Add log to check when isBtnDisabled is called
-      console.log("isBtnDisabled called");
       const authMethod = document.querySelector(
         "input[name='authMethod']:checked"
       ).value;
@@ -104,7 +91,6 @@
     }
 
     function showMessage(text, isError) {
-      console.log("showMessage called:", text, isError);
       document.getElementById("messageText").textContent = text;
       messageBox.style.display = "flex";
       if (isError) {
@@ -121,9 +107,7 @@
     }
 
     window.addEventListener("message", (event) => {
-      console.log("window message event received (auth state, loader, etc):", event.data);
       const message = event.data;
-      console.log("parsed message object (auth state, loader, etc):", message);
       if (message.type === "setAuthState") {
         const logoutButton = document.getElementById("logoutButton");
 
@@ -132,18 +116,15 @@
           authenticatedMessage.classList.remove("hidden");
           logoutButton.classList.remove("hidden");
           messageBox.style.display = "none";
-          console.log("loginForm.classList after authenticated:", Array.from(loginForm.classList));
         } else {
           loginForm.classList.remove("hidden");
           authenticatedMessage.classList.add("hidden");
           logoutButton.classList.add("hidden");
-          console.log("loginForm.classList after unauthenticated:", Array.from(loginForm.classList));
         }
         logoutButton.replaceWith(logoutButton.cloneNode(true));
         document
           .getElementById("logoutButton")
           .addEventListener("click", () => {
-            console.log("logoutButton clicked");
             vscode.postMessage({ command: "requestLogoutConfirmation" });
           });
       } else if (message.type === "showLoader") {
@@ -192,10 +173,8 @@
     ) {
       window.addEventListener("message", (event) => {
         if (event.data.type === messageType) {
-          console.log(`Autocomplete message received for ${messageType}:`, event.data.items);
           const items = event.data.items;
           inputElement.addEventListener("input", function () {
-            console.log(`Autocomplete input event for ${messageType}:`, this.value);
             const query = this.value.toLowerCase();
             listElement.innerHTML = "";
             if (validateCallback) {
@@ -228,7 +207,6 @@
               div.classList.add("autocomplete-item");
               div.innerHTML = '<i class="fas fa-check-circle"></i> ' + item;
               div.addEventListener("click", function () {
-                console.log(`Autocomplete item clicked for ${messageType}:`, item);
                 inputElement.value = item;
                 listElement.innerHTML = "";
                 listElement.style.display = "none";
@@ -242,8 +220,6 @@
       });
 
       document.addEventListener("click", function (event) {
-        // Add log for document click in autocomplete
-        console.log("Document click event for autocomplete");
         if (event.target !== inputElement) {
           listElement.innerHTML = "";
           listElement.style.display = "none";
@@ -256,7 +232,6 @@
     }
 
     setupAutocomplete(urlInput, urlsList, "setUrls", (query) => {
-      console.log("setupAutocomplete validateCallback for setUrls:", query);
       vscode.postMessage({ command: "validateURL", baseUri: query });
     });
     setupAutocomplete(tenantInput, tenantList, "setTenants");
