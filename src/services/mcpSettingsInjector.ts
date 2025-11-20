@@ -5,6 +5,7 @@ import * as path from "path";
 import * as os from "os";
 import { isIDE } from "../utils/utils";
 import { constants } from "../utils/common/constants";
+import { cx } from "../cx";
 interface DecodedJwt {
 	iss: string;
 }
@@ -40,7 +41,14 @@ export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
 			vscode.window.showErrorMessage("Failed in install Checkmarx MCP: Authentication required");
 			return;
 		}
-		initializeMcpConfiguration(apikey);
+		else if (!await cx.isAiMcpServerEnabled()) {
+			vscode.window.showErrorMessage("Failed to install Checkmarx MCP: This feature has not been enabled for your tenant account.");
+			uninstallMcp();
+			return;
+		}
+		else {
+			initializeMcpConfiguration(apikey);
+		}
 	});
 }
 
@@ -182,7 +190,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 				],
 				disabled: false,
 				autoApprove: ["codeRemediation", "imageRemediation", "packageRemediation"]
-			}
+			};
 			await updateMcpJsonFile(kiroMcpServer);
 			return;
 		}
