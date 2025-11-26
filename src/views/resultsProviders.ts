@@ -12,6 +12,7 @@ import { Counter } from "../models/counter";
 import { AstResult } from "../models/results";
 import { SastNode } from "../models/sastNode";
 import { getProperty } from "../utils/utils";
+import { commands } from "../utils/common/commands";
 export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   protected _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
     new EventEmitter<TreeItem | undefined>();
@@ -232,6 +233,19 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       line: node.line,
       uniqueId: node.uniqueId
     };
+
+    if (resultForLink.type === constants.sast) {
+      const args = encodeURIComponent(JSON.stringify([{
+        label: resultForLink.label,
+        fileName: node.fileName,
+        line: node.line,
+        uniqueId: node.uniqueId
+      }]));
+      diagnostic.code = {
+        value: "CxOne Result",
+        target: vscode.Uri.parse(`command:${commands.openDetailsFromDiagnostic}?${args}`)
+      };
+    }
 
     if (map.has(filePath)) {
       map.get(filePath)?.push(diagnostic);

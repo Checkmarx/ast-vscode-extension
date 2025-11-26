@@ -195,13 +195,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Problems panel link handler: open details by matching uniqueId or fileName/line
   context.subscriptions.push(
-    vscode.commands.registerCommand("ast-results.openDetailsFromDiagnostic", async (payload?: { label?: string; fileName?: string; line?: number; uniqueId?: string }) => {
+    vscode.commands.registerCommand(commands.openDetailsFromDiagnostic, async (payload?: { label?: string; fileName?: string; line?: number; uniqueId?: string }) => {
       try {
         if (!payload) {
           return;
         }
 
-        const { uniqueId } = payload;
+        const { uniqueId, fileName, line } = payload;
         const providerLike = astResultsProvider as unknown as { data?: CxTreeItem[] };
         const root = providerLike.data;
         if (!root || root.length === 0) {
@@ -219,6 +219,25 @@ export async function activate(context: vscode.ExtensionContext) {
             if (uniqueId && sastNodes.some((sn: SastNode) => sn.uniqueId === uniqueId)) {
               await tree.reveal(node, { select: true, focus: false, expand: true });
               await vscode.commands.executeCommand(commands.newDetails, res);
+
+              // Open the file at the correct line
+              if (fileName && typeof line === "number") {
+                const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                if (workspaceFolder) {
+                  const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, fileName);
+                  const document = await vscode.workspace.openTextDocument(fileUri);
+                  const editor = await vscode.window.showTextDocument(document, {
+                    viewColumn: vscode.ViewColumn.One,
+                    preserveFocus: false
+                  });
+
+                  // Move cursor to the specific line (line is 1-based, convert to 0-based)
+                  const position = new vscode.Position(line - 1, 0);
+                  editor.selection = new vscode.Selection(position, position);
+                  editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+                }
+              }
+
               return;
             }
 
@@ -245,8 +264,7 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
           }
 
-          const args = encodeURIComponent(JSON.stringify([{ label: data.label, fileName: data.fileName, line: data.line, uniqueId: data.uniqueId }]));
-          const md = new vscode.MarkdownString(`[CxOne Results](command:ast-results.openDetailsFromDiagnostic?${args})`);
+          const md = new vscode.MarkdownString();
           md.isTrusted = true;
           return new vscode.Hover(md);
         }
