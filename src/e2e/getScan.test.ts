@@ -49,7 +49,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
     // Execute the authentication command
     await bench.executeCommand(CX_AUTHENTICATION_COMMAND);
     console.log("Authentication command executed");
-    await sleep(5000);
+    await sleep(50000);
 
     const editorView = new EditorView();
     await editorView.openEditor("Checkmarx One Authentication");
