@@ -1088,6 +1088,9 @@
     },
     "vscode-extension-tester": {
       "glob": "11.1.0"
+    },
+    "codecov": {
+      "js-yaml": "3.14.2"
     }
   },
   "lint-staged": {
