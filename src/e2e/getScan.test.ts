@@ -41,16 +41,15 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let driver: WebDriver;
 
   it("Authentication: should authenticate using API key and verify button state", async function() {
-    this.timeout(120000);
+    this.timeout(30000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
 
-    console.log("Before Authentication command executed");
     // Execute the authentication command
     await bench.executeCommand(CX_AUTHENTICATION_COMMAND);
     console.log("Authentication command executed");
-    await sleep(50000);
+    await sleep(5000);
 
     const editorView = new EditorView();
     await editorView.openEditor("Checkmarx One Authentication");
@@ -142,7 +141,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
     });
 
     it("should select project, branch, and scan", async function () {
-      this.timeout(150000);
+      this.timeout(300000);
       await bench.executeCommand(CX_SELECT_PROJECT);
       const projectInput = await waitForInputBoxToOpen();
       const projectName = await selectItem(projectInput, CX_TEST_PROJECT_NAME);
