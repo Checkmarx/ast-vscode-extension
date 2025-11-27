@@ -1030,7 +1030,7 @@
     "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
     "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
     "unit-coverage": "npx nyc npm run unit-test",
-    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r .",
+    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.1 -i -r .",
     "win-test:ui-end-to-end": "set TEST=uiEndToEnd&& npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.1 -i -r ."
   },
   "devDependencies": {
