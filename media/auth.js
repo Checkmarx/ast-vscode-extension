@@ -14,7 +14,7 @@
       "authenticatedMessage"
     );
 
-    window.addEventListener("message", (event) => {
+     window.addEventListener("message", (event) => {
       const message = event.data;
       if (message.command === "disableAuthButton") {
         const authButton = document.getElementById("authButton");
@@ -205,7 +205,7 @@
             filteredItems.forEach((item) => {
               const div = document.createElement("div");
               div.classList.add("autocomplete-item");
-              div.innerHTML = '<i class="fas fa-check-circle"></i> ' + item;
+              div.innerHTML = `<i class="fas fa-check-circle"></i> ${item}`;
               div.addEventListener("click", function () {
                 inputElement.value = item;
                 listElement.innerHTML = "";
@@ -231,9 +231,9 @@
       });
     }
 
-    setupAutocomplete(urlInput, urlsList, "setUrls", (query) => {
-      vscode.postMessage({ command: "validateURL", baseUri: query });
-    });
+    setupAutocomplete(urlInput, urlsList, "setUrls", (query) =>
+      vscode.postMessage({ command: "validateURL", baseUri: query })
+    );
     setupAutocomplete(tenantInput, tenantList, "setTenants");
   });
 })();

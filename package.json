@@ -1082,7 +1082,16 @@
     "bluebird": "^3.7.2",
     "xml2js": "^0.6.2",
     "tar-fs": "^2.1.4",
-    "tmp": "^0.2.5"
+    "tmp": "^0.2.5",
+    "c8": {
+      "glob": "10.5.0"
+    },
+    "vscode-extension-tester": {
+      "glob": "11.1.0"
+    },
+    "codecov": {
+      "js-yaml": "3.14.2"
+    }
   },
   "lint-staged": {
     "**/*.{js,ts}": [
