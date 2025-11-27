@@ -11,6 +11,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { Counter } from "../models/counter";
 import { AstResult } from "../models/results";
 import { SastNode } from "../models/sastNode";
+import { ScaNode } from "../models/scaNode";
 import { getProperty } from "../utils/utils";
 export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   protected _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
@@ -37,6 +38,32 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
     return element.children;
   }
+
+  // Required for tree.reveal() to work - it needs to know the parent hierarchy
+  public getParent(element: TreeItem): vscode.ProviderResult<TreeItem> {
+
+    if (!this.data) {
+      return undefined;
+    }
+
+    const findParent = (items: TreeItem[], target: TreeItem, parent?: TreeItem): TreeItem | undefined => {
+      for (const item of items) {
+        if (item === target) {
+          return parent;
+        }
+        if (item.children) {
+          const found = findParent(item.children, target, item);
+          if (found !== undefined) {
+            return found;
+          }
+        }
+      }
+      return undefined;
+    };
+
+    return findParent(this.data, element);
+  }
+
   protected hideStatusBarItem() {
     this.statusBarItem.text = constants.extensionName;
     this.statusBarItem.tooltip = undefined;
@@ -163,8 +190,22 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
             obj.getSeverityCode(),
             obj.sastNodes[0],
             folder,
-            map
+            map,
+            obj
           );
+        } else if (isScaNode) {
+          // Diagnostic from SCA dependencyPath locations
+          const scaNodeWithLocation = this.extractScaFileLocation(obj);
+          if (scaNodeWithLocation) {
+            this.createScaDiagnostic(
+              obj.label,
+              obj.getSeverityCode(),
+              scaNodeWithLocation,
+              folder,
+              map,
+              obj
+            );
+          }
         }
         node = groups.reduce(
           (previousValue: TreeItem, currentValue: string) =>
@@ -176,26 +217,137 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
   }
 
+  private extractScaFileLocation(result: AstResult): (ScaNode & { fileName: string; line: number; column: number; length: number; uniqueId: string }) | null {
+    try {
+      if (!result.scaNode?.scaPackageData) {
+        return null;
+      }
+
+      const { scaPackageData } = result.scaNode;
+
+      if (!scaPackageData.dependencyPaths || scaPackageData.dependencyPaths.length === 0) {
+        return null;
+      }
+
+      const firstPath = scaPackageData.dependencyPaths[0];
+      if (!firstPath || !Array.isArray(firstPath) || firstPath.length === 0) {
+        return null;
+      }
+
+      const firstDependency = firstPath[0];
+      if (!firstDependency.locations || firstDependency.locations.length === 0) {
+        return null;
+      }
+
+      const location = firstDependency.locations[0];
+
+      // Add file location metadata to scaNode for diagnostic creation
+      const scaNodeWithLocation = result.scaNode as ScaNode & { fileName: string; line: number; column: number; length: number; uniqueId: string };
+      scaNodeWithLocation.fileName = location;
+      scaNodeWithLocation.line = 1;
+      scaNodeWithLocation.column = 1;
+      scaNodeWithLocation.length = 1;
+      scaNodeWithLocation.uniqueId = `${result.id}_${result.scaNode.packageIdentifier}_${location}`;
+
+      return scaNodeWithLocation;
+    } catch (error) {
+      console.error(`[extractScaFileLocation] Error:`, error);
+      return null;
+    }
+  }
+
+  private createScaDiagnostic(
+    label: string,
+    severity: vscode.DiagnosticSeverity,
+    scaNode: ScaNode & { fileName: string; line: number; uniqueId: string },
+    folder: vscode.WorkspaceFolder | undefined,
+    map: Map<string, vscode.Diagnostic[]>,
+    resultForLink: AstResult
+  ) {
+    if (!folder) {
+      return;
+    }
+
+    const fileName = scaNode.fileName;
+    const line = scaNode.line || 1;
+    const uniqueId = scaNode.uniqueId;
+
+    // For SCA set diagnostic at end of file so underline is not visible
+    const range = new vscode.Range(
+      new vscode.Position(Number.MAX_SAFE_INTEGER, 0),
+      new vscode.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
+    );
+
+    const metadata = {
+      label: resultForLink.label,
+      fileName: fileName,
+      line: line,
+      uniqueId: uniqueId,
+      packageIdentifier: scaNode.packageIdentifier,
+      resultId: resultForLink.id
+    };
+
+    this.addDiagnosticToMap(label, severity, fileName, range, metadata, folder, map);
+  }
+
   private createDiagnostic(
     label: string,
     severity: vscode.DiagnosticSeverity,
     node: SastNode,
     folder: vscode.WorkspaceFolder | undefined,
-    map: Map<string, vscode.Diagnostic[]>
+    map: Map<string, vscode.Diagnostic[]>,
+    resultForLink: AstResult
   ) {
     if (!folder) {
       return;
     }
-    const filePath = vscode.Uri.joinPath(folder?.uri, node.fileName).toString();
+
     // Needed because vscode uses zero based line number
     const column = node.column > 0 ? +node.column - 1 : 1;
     const line = node.line > 0 ? +node.line - 1 : 1;
     const length = column + node.length;
-    const startPosition = new vscode.Position(line, column);
-    const endPosition = new vscode.Position(line, length);
-    const range = new vscode.Range(startPosition, endPosition);
+    const range = new vscode.Range(
+      new vscode.Position(line, column),
+      new vscode.Position(line, length)
+    );
 
+    const metadata = {
+      label: resultForLink.label,
+      fileName: node.fileName,
+      line: node.line,
+      uniqueId: node.uniqueId
+    };
+
+    // Only add code link for SAST results
+    const shouldAddCodeLink = resultForLink.type === constants.sast;
+    this.addDiagnosticToMap(label, severity, node.fileName, range, metadata, folder, map, shouldAddCodeLink);
+  }
+
+  private addDiagnosticToMap(
+    label: string,
+    severity: vscode.DiagnosticSeverity,
+    fileName: string,
+    range: vscode.Range,
+    metadata: Record<string, unknown>,
+    folder: vscode.WorkspaceFolder,
+    map: Map<string, vscode.Diagnostic[]>,
+    shouldAddCodeLink: boolean = true
+  ) {
+    const filePath = vscode.Uri.joinPath(folder.uri, fileName).toString();
     const diagnostic = new vscode.Diagnostic(range, label, severity);
+
+    // Add metadata for diagnostic
+    (diagnostic as vscode.Diagnostic & { data?: unknown }).data = metadata;
+
+    // Add "CxOne Result" link
+    if (shouldAddCodeLink) {
+      const args = encodeURIComponent(JSON.stringify(metadata));
+      diagnostic.code = {
+        value: "CxOne Result",
+        target: vscode.Uri.parse(`command:ast-results.openDetailsFromDiagnostic?${args}`)
+      };
+    }
+
     if (map.has(filePath)) {
       map.get(filePath)?.push(diagnostic);
     } else {

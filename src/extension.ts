@@ -37,6 +37,9 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+import { TreeItem as CxTreeItem } from "./utils/tree/treeItem";
+import { AstResult } from "./models/results";
+import { SastNode } from "./models/sastNode";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -189,6 +192,154 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  // Problems panel link handler for  open relevant info for SAST and SCA
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.openDetailsFromDiagnostic, async (payload?: {
+      label?: string;
+      fileName?: string;
+      line?: number;
+      uniqueId?: string;
+      packageIdentifier?: string;
+      resultId?: string;
+    }) => {
+      try {
+        if (!payload) {
+          return;
+        }
+
+        const { uniqueId, fileName, line } = payload;
+        logs.info(`[openDetailsFromDiagnostic] Searching for: uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
+
+        const providerLike = astResultsProvider as unknown as { data?: CxTreeItem[] };
+        const root = providerLike.data;
+
+        if (!root?.length) {
+          logs.error(`[openDetailsFromDiagnostic] No data in results tree`);
+          return;
+        }
+
+        const stack: CxTreeItem[] = [...root];
+
+        while (stack.length) {
+          const node = stack.pop() as CxTreeItem;
+
+          if (node?.result) {
+            const res = node.result as AstResult;
+
+            // Handle SCA results differently
+            if (res.type === constants.sca && res.scaNode) {
+              logs.info(`[openDetailsFromDiagnostic] Checking SCA result: ${res.label}`);
+              logs.info(`[openDetailsFromDiagnostic] - packageIdentifier: ${res.scaNode.packageIdentifier}`);
+              logs.info(`[openDetailsFromDiagnostic] - result.id: ${res.id}`);
+
+              // Match by uniqueId or result.id
+              const scaUniqueId = `${res.id}_${res.scaNode.packageIdentifier}_${fileName}`;
+              logs.info(`[openDetailsFromDiagnostic] - Expected uniqueId: ${scaUniqueId}`);
+              logs.info(`[openDetailsFromDiagnostic] - Received uniqueId: ${uniqueId}`);
+
+              if (uniqueId === scaUniqueId || res.id === payload.resultId) {
+                logs.info(`[openDetailsFromDiagnostic] Match found for SCA result: ${res.label}`);
+
+                // Open the package file without highlighting
+                const folder = vscode.workspace.workspaceFolders?.[0];
+                if (folder && fileName) {
+                  try {
+                    const filePath = vscode.Uri.joinPath(folder.uri, fileName);
+                    const document = await vscode.workspace.openTextDocument(filePath);
+                    await vscode.window.showTextDocument(document, {
+                      viewColumn: vscode.ViewColumn.One,
+                      preserveFocus: false,
+                    });
+                  } catch (fileError) {
+                    logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
+                  }
+                }
+
+                await tree.reveal(node, { select: true, focus: false, expand: true });
+                await vscode.commands.executeCommand(commands.newDetails, res);
+                return;
+              }
+            }
+
+            // Handle SAST/KICS results with sastNodes
+            const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
+
+            if (sastNodes.length === 0) {
+              continue;
+            }
+
+            let matchedNode: SastNode | undefined;
+
+            if (uniqueId) {
+              logs.info(`[openDetailsFromDiagnostic] Checking result: ${res.queryName}`);
+              sastNodes.forEach((sn: SastNode, idx: number) => {
+                logs.info(`[openDetailsFromDiagnostic]   Node ${idx} uniqueId: ${sn.uniqueId}`);
+              });
+              matchedNode = sastNodes.find((sn: SastNode) => sn.uniqueId === uniqueId);
+              if (!matchedNode) {
+                logs.warn(`[openDetailsFromDiagnostic] No exact uniqueId match found for: ${uniqueId}`);
+              }
+            }
+
+            // Fallback if uniqueId was not provided
+            if (!matchedNode && !uniqueId && fileName && line !== undefined) {
+              logs.info(`[openDetailsFromDiagnostic] Using fallback match by fileName and line`);
+              matchedNode = sastNodes.find((sn: SastNode) =>
+                sn.fileName === fileName && Number(sn.line) === Number(line)
+              );
+            }
+
+            if (matchedNode) {
+              logs.info(`[openDetailsFromDiagnostic] Match found for: ${res.label}`);
+
+              // Open the source file at the correct location
+              const folder = vscode.workspace.workspaceFolders?.[0];
+              if (folder && matchedNode.fileName) {
+                try {
+                  const filePath = vscode.Uri.joinPath(folder.uri, matchedNode.fileName);
+                  const document = await vscode.workspace.openTextDocument(filePath);
+                  const position = new vscode.Position(
+                    matchedNode.line > 0 ? matchedNode.line - 1 : 0,
+                    matchedNode.column > 0 ? matchedNode.column - 1 : 0
+                  );
+                  await vscode.window.showTextDocument(document, {
+                    viewColumn: vscode.ViewColumn.One,
+                    selection: new vscode.Range(position, position),
+                  });
+                } catch (fileError) {
+                  logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
+                }
+              }
+
+              await tree.reveal(node, { select: true, focus: false, expand: true });
+              await vscode.commands.executeCommand(commands.newDetails, res);
+              return;
+            }
+          }
+
+          if (Array.isArray(node?.children)) {
+            stack.push(...node.children as CxTreeItem[]);
+          }
+        }
+
+        logs.error(`[openDetailsFromDiagnostic] No match found for uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
+      } catch (error) {
+        logs.error(`[openDetailsFromDiagnostic] Error: ${error}`);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file" },
+      {
+        provideHover() {
+          return undefined;
+        }
+      }
+    )
+  );
   // Webview detailsPanel to show result details on the side
   const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
   webViewCommand.registerGpt();
