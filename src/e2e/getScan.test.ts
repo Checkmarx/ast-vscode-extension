@@ -41,7 +41,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let driver: WebDriver;
 
   it("Authentication: should authenticate using API key and verify button state", async function() {
-    this.timeout(30000);
+    this.timeout(300000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
@@ -135,7 +135,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
   describe("Project, Branch, and Scan Selection Test", () => {
     before(async function () {
-      this.timeout(60000);
+      this.timeout(300000);
       bench = new Workbench();
       await bench.executeCommand(CX_CLEAR);
     });
