@@ -49,7 +49,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 		if (!this.currentState.isAuthenticated) {
 			this.webviewView.webview.html = this.renderUnauthenticatedHtml();
 		}
-		else if (this.currentState.isCxOneAssistEnabled) {
+		else if (this.currentState.isCxOneAssistEnabled || this.currentState.isStandaloneEnabled) {
 			this.webviewView.webview.html = CxOneAssistWebview.generateHtml(
 				this.dependencies.context,
 				this.webviewView.webview,

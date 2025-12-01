@@ -76,7 +76,7 @@
         "command": "ast-results.openIgnoredView",
         "category": "ast-results",
         "title": "View Ignored vulnerabilities",
-        "enablement": "ast-results.isValidCredentials && ast-results.isCxOneAssistEnabled"
+        "enablement": "ast-results.isValidCredentials && (ast-results.isCxOneAssistEnabled || ast-results.isStandaloneEnabled)"
       },
       {
         "command": "ast-results.assistDocumentation",
@@ -1099,7 +1099,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "v0.0.147-rc-standalone-changes.0",
+    "@checkmarxdev/ast-cli-javascript-wrapper": "v0.0.147-rc-standalone-1.0",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.12.2",

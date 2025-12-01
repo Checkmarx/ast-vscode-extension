@@ -1,20 +1,20 @@
 import * as vscode from "vscode";
 
 export interface PromotionalCardConfig {
-	title: string;
-	description: string;
-	buttonText: string;
-	buttonUrl: string;
-	backgroundColor?: string;
-	textColor?: string;
-	buttonColor?: string;
-	showCard?: boolean;
+    title: string;
+    description: string;
+    buttonText: string;
+    buttonUrl: string;
+    backgroundColor?: string;
+    textColor?: string;
+    buttonColor?: string;
+    showCard?: boolean;
 }
 
 export class PromotionalCardView {
 
-	public static generateStyles(): string {
-		return `
+    public static generateStyles(): string {
+        return `
             .promotional-card {
                 background-color: var(--vscode-background);
                 border-radius: 12px;
@@ -64,19 +64,19 @@ export class PromotionalCardView {
                 display: none;
             }
         `;
-	}
+    }
 
-	public static generateHtml(config: PromotionalCardConfig): string {
-		if (!config.showCard) {
-			return '';
-		}
+    public static generateHtml(config: PromotionalCardConfig): string {
+        if (!config.showCard) {
+            return '';
+        }
 
-		const cardStyle = config.backgroundColor ? `style="background-color: ${config.backgroundColor};"` : '';
-		const titleStyle = config.textColor ? `style="color: ${config.textColor};"` : '';
-		const descStyle = config.textColor ? `style="color: ${config.textColor};"` : '';
-		const buttonStyle = config.buttonColor ? `style="background-color: ${config.buttonColor};"` : '';
+        const cardStyle = config.backgroundColor ? `style="background-color: ${config.backgroundColor};"` : '';
+        const titleStyle = config.textColor ? `style="color: ${config.textColor};"` : '';
+        const descStyle = config.textColor ? `style="color: ${config.textColor};"` : '';
+        const buttonStyle = config.buttonColor ? `style="background-color: ${config.buttonColor};"` : '';
 
-		return `
+        return `
         <div class="promotional-card" ${cardStyle}>
             <div class="promotional-content">
                 <h2 class="promotional-title" ${titleStyle}>${config.title}</h2>
@@ -90,10 +90,10 @@ export class PromotionalCardView {
                 </button>
             </div>
         </div>`;
-	}
+    }
 
-	public static generateScript(): string {
-		return `
+    public static generateScript(): string {
+        return `
             function handlePromotionalAction(url) {
                 if (typeof vscode !== 'undefined') {
                     vscode.postMessage({
@@ -103,64 +103,64 @@ export class PromotionalCardView {
                 }
             }
         `;
-	}
+    }
 
-	public static handleMessage(message: { command: string; url?: string }): void {
-		if (message.command === 'openPromotionalLink' && message.url) {
-			vscode.env.openExternal(vscode.Uri.parse(message.url));
-		}
-	}
+    public static handleMessage(message: { command: string; url?: string }): void {
+        if (message.command === 'openPromotionalLink' && message.url) {
+            vscode.env.openExternal(vscode.Uri.parse(message.url));
+        }
+    }
 
-	public static getAspmConfig(): PromotionalCardConfig {
-		return {
-			title: "Unlock Full Security Coverage",
-			description: "This feature is part of the full Checkmarx platform. Upgrade to give your organization complete application security.",
-			buttonText: "Learn more",
-			buttonUrl: "https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_section-idm234938984608896",
-			showCard: true
-		};
-	}
+    public static getAspmConfig(): PromotionalCardConfig {
+        return {
+            title: "Unlock Full Security Coverage",
+            description: "This feature is part of the full Checkmarx platform. Upgrade to give your organization complete application security.",
+            buttonText: "Learn more",
+            buttonUrl: "https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1_section-idm234938984608896",
+            showCard: true
+        };
+    }
 
-	public static getSastConfig(): PromotionalCardConfig {
-		return {
-			title: "Enhanced SAST Features Available",
-			description: "Get advanced static analysis with AI-powered remediation, custom rules, and enterprise-grade reporting.",
-			buttonText: "Explore SAST+",
-			buttonUrl: "https://checkmarx.com/product/static-application-security-testing/",
-			showCard: true
-		};
-	}
+    public static getSastConfig(): PromotionalCardConfig {
+        return {
+            title: "Unlock Full Security Coverage",
+            description: "This feature is part of the full Checkmarx platform. Upgrade to give your organization complete application security.",
+            buttonText: "Learn more",
+            buttonUrl: "https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1",
+            showCard: true
+        };
+    }
 
-	public static getScaConfig(): PromotionalCardConfig {
-		return {
-			title: "Enhanced SCA Features Available",
-			description: "Get advanced open source security with license compliance, policy enforcement, and remediation guidance.",
-			buttonText: "Explore SCA+",
-			buttonUrl: "https://checkmarx.com/product/software-composition-analysis/",
-			showCard: true
-		};
-	}
+    public static getScaConfig(): PromotionalCardConfig {
+        return {
+            title: "Unlock Full Security Coverage",
+            description: "This feature is part of the full Checkmarx platform. Upgrade to give your organization complete application security.",
+            buttonText: "Learn more",
+            buttonUrl: "https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html#UUID-f6ae9b23-44c8-fcf3-bef2-7b136b9001a1",
+            showCard: true
+        };
+    }
 
-	public static embedInWebview(
-		config: PromotionalCardConfig,
-		existingContent: string,
-		position: 'top' | 'bottom' = 'top'
-	): string {
-		const promotionalHtml = this.generateHtml(config);
-		const script = this.generateScript();
+    public static embedInWebview(
+        config: PromotionalCardConfig,
+        existingContent: string,
+        position: 'top' | 'bottom' = 'top'
+    ): string {
+        const promotionalHtml = this.generateHtml(config);
+        const script = this.generateScript();
 
-		if (position === 'top') {
-			return `
+        if (position === 'top') {
+            return `
                 ${promotionalHtml}
                 ${existingContent}
                 <script>${script}</script>
             `;
-		} else {
-			return `
+        } else {
+            return `
                 ${existingContent}
                 ${promotionalHtml}
                 <script>${script}</script>
             `;
-		}
-	}
+        }
+    }
 }

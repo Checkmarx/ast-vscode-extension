@@ -154,7 +154,6 @@ export class Cx implements CxPlatform {
         params.set(CxParamType.S, sourcePath);
         params.set(CxParamType.BRANCH, branchName);
         params.set(CxParamType.PROJECT_NAME, projectName);
-        params.set(CxParamType.AGENT, constants.vsCodeAgent);
         params.set(
             CxParamType.ADDITIONAL_PARAMETERS,
             constants.scanCreateAdditionalParameters
@@ -193,8 +192,7 @@ export class Cx implements CxPlatform {
             scanId,
             constants.resultsFileExtension,
             constants.resultsFileName,
-            getFilePath(),
-            constants.vsCodeAgent
+            getFilePath()
         );
     }
 
@@ -303,6 +301,7 @@ export class Cx implements CxPlatform {
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
 
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
 
@@ -711,7 +710,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
+        const scans = await cx.scanAsca(null, true, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -732,7 +731,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
+        const scans = await cx.scanAsca(sourcePath, false, ignorePath);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -845,16 +844,14 @@ export class Cx implements CxPlatform {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
-        const agent = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
-
-        cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity, "", "", 0);
+        cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
     async setUserEventDataForDetectionLogs(scanType: string, status: string, totalCount: number) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "", "",
+            cx.telemetryAIEvent("", "", "", "", "",
                 scanType, status, totalCount);
         }
     }

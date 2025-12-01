@@ -4,8 +4,11 @@ import { Logs } from '../../models/logs';
 
 export class AstResultsPromoProvider implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
+	private readonly isSca: boolean;
 
-	constructor(private readonly context: vscode.ExtensionContext, private readonly logs: Logs) { }
+	constructor(private readonly context: vscode.ExtensionContext, private readonly logs: Logs, isSca: boolean = false) {
+		this.isSca = isSca;
+	}
 
 	resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
 		this._view = webviewView;
@@ -17,7 +20,9 @@ export class AstResultsPromoProvider implements vscode.WebviewViewProvider {
 	}
 
 	private render() {
-		const promoConfig = PromotionalCardView.getAspmConfig();
+		const promoConfig = this.isSca
+			? PromotionalCardView.getScaConfig()
+			: PromotionalCardView.getSastConfig();
 		const styles = PromotionalCardView.generateStyles();
 		const html = PromotionalCardView.generateHtml(promoConfig);
 		const script = PromotionalCardView.generateScript();

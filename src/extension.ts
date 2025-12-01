@@ -180,7 +180,7 @@ function setupIgnoredStatusBar(
   cxOneAssistProvider: CxOneAssistProvider
 ) {
   async function updateIgnoredStatusBar() {
-    if (await cx.isValidConfiguration() && await cx.isCxOneAssistEnabled(logs)) {
+    if (await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs))) {
       const count = ignoreFileManager.getIgnoredPackagesCount();
       const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
       if (hasIgnoreFile) {
@@ -227,7 +227,7 @@ function registerPromoResultsWebview(context: vscode.ExtensionContext, logs: Log
 
 function registerScaPromoWebview(context: vscode.ExtensionContext, logs: Logs) {
   // Reuse AstResultsPromoProvider for SCA promo; adjust later if SCA-specific content needed
-  const promoProvider = new AstResultsPromoProvider(context, logs);
+  const promoProvider = new AstResultsPromoProvider(context, logs, true);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(commands.scaAutoScanPromo, promoProvider)
   );
