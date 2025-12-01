@@ -115,7 +115,7 @@ export class AuthenticationWebview {
     await this.context.globalState.update("cxFirstWelcome", true);
   }
 
-  private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
+  private schedulePostAuth(isAiEnabled: boolean) {
     setTimeout(async () => {
       try {
         this._panel.dispose();
@@ -127,16 +127,14 @@ export class AuthenticationWebview {
         await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
         await vscode.commands.executeCommand(commands.refreshRiskManagementView);
         await vscode.commands.executeCommand(commands.clearKicsDiagnostics);
-        if (options?.apiKey) {
-          if (isAiEnabled) {
-            await initializeMcpConfiguration(options.apiKey);
-          } else {
-            await uninstallMcp();
-          }
-          setTimeout(() => {
-            this._panel.webview.postMessage({ type: "clear-message-api-validation" });
-          }, 500);
+        if (isAiEnabled) {
+          await initializeMcpConfiguration(options.apiKey);
+        } else {
+          await uninstallMcp();
         }
+        setTimeout(() => {
+          this._panel.webview.postMessage({ type: "clear-message-api-validation" });
+        }, 500);
       } catch (e) {
         this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
       }
@@ -323,7 +321,7 @@ export class AuthenticationWebview {
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
-                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
+                  this.schedulePostAuth(isAiEnabled);
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
