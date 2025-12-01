@@ -11,7 +11,6 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { Counter } from "../models/counter";
 import { AstResult } from "../models/results";
 import { SastNode } from "../models/sastNode";
-import { ScaNode } from "../models/scaNode";
 import { getProperty } from "../utils/utils";
 export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
   protected _onDidChangeTreeData: EventEmitter<TreeItem | undefined> =
@@ -193,19 +192,6 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
             map,
             obj
           );
-        } else if (isScaNode) {
-          // Diagnostic from SCA dependencyPath locations
-          const scaNodeWithLocation = this.extractScaFileLocation(obj);
-          if (scaNodeWithLocation) {
-            this.createScaDiagnostic(
-              obj.label,
-              obj.getSeverityCode(),
-              scaNodeWithLocation,
-              folder,
-              map,
-              obj
-            );
-          }
         }
         node = groups.reduce(
           (previousValue: TreeItem, currentValue: string) =>
@@ -215,79 +201,6 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         node.children?.push(item);
       }
     }
-  }
-
-  private extractScaFileLocation(result: AstResult): (ScaNode & { fileName: string; line: number; column: number; length: number; uniqueId: string }) | null {
-    try {
-      if (!result.scaNode?.scaPackageData) {
-        return null;
-      }
-
-      const { scaPackageData } = result.scaNode;
-
-      if (!scaPackageData.dependencyPaths || scaPackageData.dependencyPaths.length === 0) {
-        return null;
-      }
-
-      const firstPath = scaPackageData.dependencyPaths[0];
-      if (!firstPath || !Array.isArray(firstPath) || firstPath.length === 0) {
-        return null;
-      }
-
-      const firstDependency = firstPath[0];
-      if (!firstDependency.locations || firstDependency.locations.length === 0) {
-        return null;
-      }
-
-      const location = firstDependency.locations[0];
-
-      // Add file location metadata to scaNode for diagnostic creation
-      const scaNodeWithLocation = result.scaNode as ScaNode & { fileName: string; line: number; column: number; length: number; uniqueId: string };
-      scaNodeWithLocation.fileName = location;
-      scaNodeWithLocation.line = 1;
-      scaNodeWithLocation.column = 1;
-      scaNodeWithLocation.length = 1;
-      scaNodeWithLocation.uniqueId = `${result.id}_${result.scaNode.packageIdentifier}_${location}`;
-
-      return scaNodeWithLocation;
-    } catch (error) {
-      console.error(`[extractScaFileLocation] Error:`, error);
-      return null;
-    }
-  }
-
-  private createScaDiagnostic(
-    label: string,
-    severity: vscode.DiagnosticSeverity,
-    scaNode: ScaNode & { fileName: string; line: number; uniqueId: string },
-    folder: vscode.WorkspaceFolder | undefined,
-    map: Map<string, vscode.Diagnostic[]>,
-    resultForLink: AstResult
-  ) {
-    if (!folder) {
-      return;
-    }
-
-    const fileName = scaNode.fileName;
-    const line = scaNode.line || 1;
-    const uniqueId = scaNode.uniqueId;
-
-    // For SCA set diagnostic at end of file so underline is not visible
-    const range = new vscode.Range(
-      new vscode.Position(Number.MAX_SAFE_INTEGER, 0),
-      new vscode.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
-    );
-
-    const metadata = {
-      label: resultForLink.label,
-      fileName: fileName,
-      line: line,
-      uniqueId: uniqueId,
-      packageIdentifier: scaNode.packageIdentifier,
-      resultId: resultForLink.id
-    };
-
-    this.addDiagnosticToMap(label, severity, fileName, range, metadata, folder, map);
   }
 
   private createDiagnostic(
