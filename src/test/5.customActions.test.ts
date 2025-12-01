@@ -59,10 +59,6 @@ describe("filter and groups actions tests", () => {
     ];
     // Get scan node
     const treeScans = await initialize();
-    await bench.executeCommand(CX_LOOK_SCAN);
-    const input = await InputBox.create();
-    await input.setText(SCAN_ID);
-    await input.confirm();
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
     while (scan === undefined) {
       scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
@@ -88,10 +84,6 @@ describe("filter and groups actions tests", () => {
     const commands = [CX_GROUP_LANGUAGE, CX_GROUP_STATUS, CX_GROUP_STATE, CX_GROUP_QUERY_NAME, CX_GROUP_FILE];
     // Get scan node
     const treeScans = await initialize();
-    await bench.executeCommand(CX_LOOK_SCAN);
-    const input = await InputBox.create();
-    await input.setText(SCAN_ID);
-    await input.confirm();
     let scan = await treeScans?.findItem(
       SCAN_KEY_TREE_LABEL
     );
