@@ -115,7 +115,7 @@ export class AuthenticationWebview {
     await this.context.globalState.update("cxFirstWelcome", true);
   }
 
-  private schedulePostAuth(isAiEnabled: boolean) {
+  private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
     setTimeout(async () => {
       try {
         this._panel.dispose();
@@ -321,7 +321,7 @@ export class AuthenticationWebview {
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
-                  this.schedulePostAuth(isAiEnabled);
+                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
