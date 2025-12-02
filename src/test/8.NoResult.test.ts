@@ -43,6 +43,7 @@ describe("Scan ID load results test", () => {
         while (treeScans === undefined) {
             treeScans = await initialize();
         }
+        await sleep(10000);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
