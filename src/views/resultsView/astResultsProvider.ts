@@ -68,21 +68,14 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
       this.data = await cx.isValidConfiguration() ? treeItem.children : [];
       this._onDidChangeTreeData.fire(undefined);
       this.hideStatusBarItem();
-    }
-    else {
-      this.data = [];
-      this._onDidChangeTreeData.fire(undefined);
-    }
   }
 
   async openRefreshData(): Promise<void> {
-    if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       this.loadedResults = undefined;
       const scanIDItem = getFromState(this.context, constants.scanIdKey);
@@ -95,7 +88,6 @@ export class AstResultsProvider extends ResultsProvider {
         await vscode.commands.executeCommand(commands.refreshTree);
         this.hideStatusBarItem();
       }
-    }
   }
 
   async generateTree(): Promise<TreeItem> {
