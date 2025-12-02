@@ -41,6 +41,11 @@ describe("Scan ID load results test", () => {
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         console.log("Starting scan result check test...");
+        await bench.executeCommand(CX_LOOK_SCAN);
+        let input = await new InputBox();
+        await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
+        await input.confirm();
+        await sleep(5000)
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
