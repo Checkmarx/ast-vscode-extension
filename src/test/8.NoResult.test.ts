@@ -61,26 +61,10 @@ describe("Scan ID load results test", () => {
             const children = await scan.getChildren();
             console.log("Inside driverWait - children" + children);
             return children !== undefined;
-        }, 20000, 'scan children not ready');
+        }, 5000, 'scan children not ready');
 
         const scanChildren = await scan.getChildren();
-
-        let scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
-        if (scanChildren && scanChildren.length > 0) {
-            console.log("scanChildren greater than zero" + scanChildren);
-            await scanChildren[0].expand();
-            console.log("scanChildren expanded");
-            await driverWait(async () => {
-                console.log("Inside driverWait1");
-                const children = await scanChildren[0].getChildren();
-                console.log("Inside driverWait1 - children" + children);
-                return children !== undefined;
-            }, 10000, 'child descendants not ready');
-            scanResults = await scanChildren[0].getChildren();
-        } else {
-            // No engine children under scan; treat as zero results
-            scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
-        }
+        let scanResults = await scanChildren[0].getChildren();
         console.log("scanResults:" + scanResults);
         expect(scanResults).not.to.be.undefined;
         console.log("scanResults length:" + scanResults.length);
