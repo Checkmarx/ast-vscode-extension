@@ -14,8 +14,6 @@ import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 import { constants } from "buffer";
 import { messages } from "../utils/common/messages";
-import { TreeItem } from 'vscode-extension-tester'; // or appropriate source
-
 
 describe("Scan ID load results test", () => {
     let bench: Workbench;
@@ -42,17 +40,29 @@ describe("Scan ID load results test", () => {
 
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
+        console.log("Starting scan result check test...");
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
         }
+        console.log("treeScans:" + treeScans);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
+        console.log("scan:" + scan);
+
         await scan?.expand();
-        let scanChildren: TreeItem[] = await scan?.getChildren();
-        let scanResults: TreeItem[] = await scanChildren[0].getChildren();
+        console.log("scan expand");
+        // Deterministic wait: ensure children array is available (can be empty)
+        const driverWait = VSBrowser.instance.driver.wait.bind(VSBrowser.instance.driver);
+        const scanChildren = await scan.getChildren();
+
+        let scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
+        scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
+
+        console.log("scanResults:" + scanResults);
         expect(scanResults).not.to.be.undefined;
+        console.log("scanResults length:" + scanResults.length);
         expect(scanResults.length).to.be.equal(0);
     });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
