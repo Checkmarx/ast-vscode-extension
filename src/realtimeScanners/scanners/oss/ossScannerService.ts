@@ -251,8 +251,75 @@ export class OssScannerService extends BaseScannerService {
   ): string {
     const fileName = path.basename(originalFilePath);
     const tempFilePath = path.join(tempFolder, fileName);
+
+    if (fileName === "package.json") {
+      content = this.cleanPackageJsonVersions(content);
+    }
+
     fs.writeFileSync(tempFilePath, content);
     return tempFilePath;
+  }
+
+  private cleanPackageJsonVersions(content: string): string {
+    try {
+      const packageJson = JSON.parse(content);
+      const dependencySections = [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+        "optionalDependencies"
+      ];
+
+      dependencySections.forEach(section => {
+        if (packageJson[section]) {
+          Object.keys(packageJson[section]).forEach(packageName => {
+            const version = packageJson[section][packageName];
+            packageJson[section][packageName] = this.cleanVersionString(version);
+          });
+        }
+      });
+
+      return JSON.stringify(packageJson, null, 2);
+    } catch (error) {
+      return content;
+    }
+  }
+
+  private cleanVersionString(version: string): string {
+    if (!version || typeof version !== "string") {
+      return version;
+    }
+
+    const versionPattern = /^[\^~>=<v\s]+/;
+    const versionString = version.trim();
+
+    // Handle range versions (for example ">1.2.5 <=1.2.6")  - should return version 1.2.6
+    const isRangeVersion = versionString.includes(" ");
+    if (isRangeVersion) {
+      const parts = versionString.split(" ");
+
+      const upperBoundPart = parts.find(part => part.includes("<="));
+      if (upperBoundPart) {
+        return upperBoundPart.replace("<=", "").trim();
+      }
+
+      const exactVersionPart = parts.find(
+        part => part.includes("=") && !part.includes(">") && !part.includes("<")
+      );
+      if (exactVersionPart) {
+        return exactVersionPart.replace(versionPattern, "");
+      }
+
+      for (const part of parts) {
+        const cleanedPart = part.replace(versionPattern, "");
+        if (cleanedPart) {
+          return cleanedPart;
+        }
+      }
+    }
+
+    // Handle ^1.2.3 or ~1.2.3 cases
+    return versionString.replace(versionPattern, "");
   }
 
   private saveCompanionFile(
