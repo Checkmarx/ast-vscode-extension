@@ -41,11 +41,6 @@ describe("Scan ID load results test", () => {
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         console.log("Starting scan result check test...");
-        await bench.executeCommand(CX_LOOK_SCAN);
-        let input = await new InputBox();
-        await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
-        await input.confirm();
-        await sleep(5000)
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
@@ -58,8 +53,18 @@ describe("Scan ID load results test", () => {
 
         await scan?.expand();
         console.log("scan expand");
-        let scanChildren = await scan?.getChildren();
-        let scanResults = await scanChildren[0].getChildren();
+        async function waitForChildren(item, min = 1, timeout = 15000) {
+            const start = Date.now();
+            while (Date.now() - start < timeout) {
+                const children = await item.getChildren();
+                if (children && children.length >= min) { return children; }
+                await new Promise(r => setTimeout(r, 300));
+            }
+            throw new Error('Timeout waiting for children');
+        }
+
+        let scanChildren = await waitForChildren(scan);
+        let scanResults = await waitForChildren(scanChildren[0]);
         console.log("scanResults:" + scanResults);
         expect(scanResults).not.to.be.undefined;
         console.log("scanResults length:" + scanResults.length);
