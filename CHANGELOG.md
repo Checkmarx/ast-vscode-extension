@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v2.42.1-standalone.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-standalone.0) - 2025-11-28 10:59:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* VS Code | Dev Assist | MCP is not getting installed when user logins using OAuth login (AST-121722) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1305
+### Other Changes
+* Fix (AST-122003) and (AST-85900) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1308
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.42.1-2.42.2.0...v2.42.1-standalone.0
+
 ## [v2.42.1-2.42.2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-2.42.2.0) - 2025-11-07 04:58:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
