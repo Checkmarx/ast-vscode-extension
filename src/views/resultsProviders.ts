@@ -215,25 +215,39 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       return;
     }
 
-    // Needed because vscode uses zero based line number
-    const column = node.column > 0 ? +node.column - 1 : 1;
     const line = node.line > 0 ? +node.line - 1 : 1;
-    const length = column + node.length;
-    const range = new vscode.Range(
-      new vscode.Position(line, column),
-      new vscode.Position(line, length)
-    );
+
+    let range: vscode.Range;
+
+    // For SCA results, highlight at the end of the file page
+    if (resultForLink.type === constants.sca) {
+      range = new vscode.Range(
+        new vscode.Position(Number.MAX_SAFE_INTEGER, 0),
+        new vscode.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
+      );
+    } else {
+      // For SAST, use the original highlighting
+      const column = node.column > 0 ? +node.column - 1 : 1;
+      const length = column + node.length;
+      range = new vscode.Range(
+        new vscode.Position(line, column),
+        new vscode.Position(line, length)
+      );
+    }
 
     const metadata = {
       label: resultForLink.label,
       fileName: node.fileName,
       line: node.line,
-      uniqueId: node.uniqueId
+      uniqueId: node.uniqueId,
+      packageIdentifier: resultForLink.scaNode?.packageIdentifier,
+      resultId: resultForLink.id
     };
 
-    // Only add code link for SAST results
-    const shouldAddCodeLink = resultForLink.type === constants.sast;
-    this.addDiagnosticToMap(label, severity, node.fileName, range, metadata, folder, map, shouldAddCodeLink);
+    // Link name for both SAST and SCA results
+    const shouldAddCodeLink = resultForLink.type === constants.sast || resultForLink.type === constants.sca;
+    const linkText = resultForLink.type === constants.sca ? "Cx SCA Realtime Result" : "CxOne Result";
+    this.addDiagnosticToMap(label, severity, node.fileName, range, metadata, folder, map, shouldAddCodeLink, linkText);
   }
 
   private addDiagnosticToMap(
@@ -244,19 +258,18 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     metadata: Record<string, unknown>,
     folder: vscode.WorkspaceFolder,
     map: Map<string, vscode.Diagnostic[]>,
-    shouldAddCodeLink: boolean = true
+    shouldAddCodeLink: boolean = true,
+    linkText: string = "CxOne Result"
   ) {
     const filePath = vscode.Uri.joinPath(folder.uri, fileName).toString();
     const diagnostic = new vscode.Diagnostic(range, label, severity);
 
-    // Add metadata for diagnostic
     (diagnostic as vscode.Diagnostic & { data?: unknown }).data = metadata;
 
-    // Add "CxOne Result" link
     if (shouldAddCodeLink) {
       const args = encodeURIComponent(JSON.stringify(metadata));
       diagnostic.code = {
-        value: "CxOne Result",
+        value: linkText,
         target: vscode.Uri.parse(`command:ast-results.openDetailsFromDiagnostic?${args}`)
       };
     }

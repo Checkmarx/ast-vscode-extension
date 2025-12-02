@@ -227,42 +227,8 @@ export async function activate(context: vscode.ExtensionContext) {
           if (node?.result) {
             const res = node.result as AstResult;
 
-            // Handle SCA results differently
-            if (res.type === constants.sca && res.scaNode) {
-              logs.info(`[openDetailsFromDiagnostic] Checking SCA result: ${res.label}`);
-              logs.info(`[openDetailsFromDiagnostic] - packageIdentifier: ${res.scaNode.packageIdentifier}`);
-              logs.info(`[openDetailsFromDiagnostic] - result.id: ${res.id}`);
-
-              // Match by uniqueId or result.id
-              const scaUniqueId = `${res.id}_${res.scaNode.packageIdentifier}_${fileName}`;
-              logs.info(`[openDetailsFromDiagnostic] - Expected uniqueId: ${scaUniqueId}`);
-              logs.info(`[openDetailsFromDiagnostic] - Received uniqueId: ${uniqueId}`);
-
-              if (uniqueId === scaUniqueId || res.id === payload.resultId) {
-                logs.info(`[openDetailsFromDiagnostic] Match found for SCA result: ${res.label}`);
-
-                // Open the package file without highlighting
-                const folder = vscode.workspace.workspaceFolders?.[0];
-                if (folder && fileName) {
-                  try {
-                    const filePath = vscode.Uri.joinPath(folder.uri, fileName);
-                    const document = await vscode.workspace.openTextDocument(filePath);
-                    await vscode.window.showTextDocument(document, {
-                      viewColumn: vscode.ViewColumn.One,
-                      preserveFocus: false,
-                    });
-                  } catch (fileError) {
-                    logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
-                  }
-                }
-
-                await tree.reveal(node, { select: true, focus: false, expand: true });
-                await vscode.commands.executeCommand(commands.newDetails, res);
-                return;
-              }
-            }
-
-            // Handle SAST/KICS results with sastNodes
+            // Handle SAST results only (SCA results are handled in scaAutoScan tree)
+            // Handle sastNodes results
             const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
 
             if (sastNodes.length === 0) {
@@ -320,6 +286,64 @@ export async function activate(context: vscode.ExtensionContext) {
 
           if (Array.isArray(node?.children)) {
             stack.push(...node.children as CxTreeItem[]);
+          }
+        }
+
+        // Search in scaAutoScan tree for SCA Realtime results only
+        logs.info(`[openDetailsFromDiagnostic] Searching in scaAutoScan tree for SCA Realtime results...`);
+        const scaProviderLike = scaResultsProvider as unknown as { data?: CxTreeItem[] };
+        const scaRoot = scaProviderLike.data;
+
+        if (scaRoot?.length) {
+          const scaStack: CxTreeItem[] = [...scaRoot];
+
+          while (scaStack.length) {
+            const scaNode = scaStack.pop() as CxTreeItem;
+
+            if (scaNode?.result) {
+              const res = scaNode.result as AstResult;
+
+              // Handle SCA Realtime results only (they use sastNodes like SAST)
+              const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
+
+              if (sastNodes.length > 0) {
+                logs.info(`[openDetailsFromDiagnostic] Checking SCA Realtime result: ${res.label}`);
+
+                const matchedNode = sastNodes.find((sn: SastNode) => sn.uniqueId === uniqueId);
+
+                if (matchedNode) {
+                  logs.info(`[openDetailsFromDiagnostic] Match found for SCA Realtime result: ${res.label}`);
+
+                  // Open the package file and highlight the location
+                  const folder = vscode.workspace.workspaceFolders?.[0];
+                  if (folder && matchedNode.fileName) {
+                    try {
+                      const filePath = vscode.Uri.joinPath(folder.uri, matchedNode.fileName);
+                      const document = await vscode.workspace.openTextDocument(filePath);
+                      const position = new vscode.Position(
+                        matchedNode.line > 0 ? matchedNode.line - 1 : 0,
+                        matchedNode.column > 0 ? matchedNode.column - 1 : 0
+                      );
+                      await vscode.window.showTextDocument(document, {
+                        viewColumn: vscode.ViewColumn.One,
+                        selection: new vscode.Range(position, position),
+                      });
+                    } catch (fileError) {
+                      logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
+                    }
+                  }
+
+                  // Navigate to the result in the scaAutoScan tree and open relevant details page
+                  await scaTree.reveal(scaNode, { select: true, focus: false, expand: true });
+                  await vscode.commands.executeCommand(commands.newDetails, res, constants.realtime);
+                  return;
+                }
+              }
+            }
+
+            if (Array.isArray(scaNode?.children)) {
+              scaStack.push(...scaNode.children as CxTreeItem[]);
+            }
           }
         }
 
