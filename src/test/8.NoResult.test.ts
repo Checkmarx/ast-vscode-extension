@@ -53,18 +53,25 @@ describe("Scan ID load results test", () => {
 
         await scan?.expand();
         console.log("scan expand");
-        async function waitForChildren(item, min = 1, timeout = 15000) {
-            const start = Date.now();
-            while (Date.now() - start < timeout) {
-                const children = await item.getChildren();
-                if (children && children.length >= min) { return children; }
-                await new Promise(r => setTimeout(r, 300));
-            }
-            throw new Error('Timeout waiting for children');
-        }
+        // Deterministic wait: expand and wait until SAST child appears or children exist
+        const driverWait = VSBrowser.instance.driver.wait.bind(VSBrowser.instance.driver);
 
-        let scanChildren = await waitForChildren(scan);
-        let scanResults = await waitForChildren(scanChildren[0]);
+        // Wait for at least one child under scan
+        await driverWait(async () => {
+            const children = await scan.getChildren();
+            return !!(children && children.length >= 1);
+        }, 20000, 'engine nodes not ready');
+
+        const scanChildren = await scan.getChildren();
+        await scanChildren[0].expand();
+
+        // Wait for descendants of the first child to be loaded (can be zero for empty results)
+        await driverWait(async () => {
+            const children = await scanChildren[0].getChildren();
+            return children !== undefined;
+        }, 10000, 'child descendants not ready');
+
+        const scanResults = await scanChildren[0].getChildren();
         console.log("scanResults:" + scanResults);
         expect(scanResults).not.to.be.undefined;
         console.log("scanResults length:" + scanResults.length);
