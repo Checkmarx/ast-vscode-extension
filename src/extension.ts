@@ -37,9 +37,6 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
-import { TreeItem as CxTreeItem } from "./utils/tree/treeItem";
-import { AstResult } from "./models/results";
-import { SastNode } from "./models/sastNode";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -193,7 +190,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // Problems panel link handler for  open relevant info for SAST and SCA
+  // Problems panel link handler for open relevant info for SAST and SCA
   context.subscriptions.push(
     vscode.commands.registerCommand(commands.openDetailsFromDiagnostic, async (payload?: {
       label?: string;
@@ -211,140 +208,28 @@ export async function activate(context: vscode.ExtensionContext) {
         const { uniqueId, fileName, line } = payload;
         logs.info(`[openDetailsFromDiagnostic] Searching for: uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
 
-        const providerLike = astResultsProvider as unknown as { data?: CxTreeItem[] };
-        const root = providerLike.data;
-
-        if (!root?.length) {
-          logs.error(`[openDetailsFromDiagnostic] No data in results tree`);
+        // Try SAST results tree
+        const sastHandled = await astResultsProvider.handleOpenDetailsFromDiagnostic(
+          { uniqueId, fileName, line },
+          tree,
+          commands.newDetails
+        );
+        if (sastHandled) {
+          logs.info(`[openDetailsFromDiagnostic] Match found and handled in SAST results`);
           return;
         }
 
-        const stack: CxTreeItem[] = [...root];
-
-        while (stack.length) {
-          const node = stack.pop() as CxTreeItem;
-
-          if (node?.result) {
-            const res = node.result as AstResult;
-
-            // Handle SAST results only (SCA results are handled in scaAutoScan tree)
-            // Handle sastNodes results
-            const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
-
-            if (sastNodes.length === 0) {
-              continue;
-            }
-
-            let matchedNode: SastNode | undefined;
-
-            if (uniqueId) {
-              logs.info(`[openDetailsFromDiagnostic] Checking result: ${res.queryName}`);
-              sastNodes.forEach((sn: SastNode, idx: number) => {
-                logs.info(`[openDetailsFromDiagnostic]   Node ${idx} uniqueId: ${sn.uniqueId}`);
-              });
-              matchedNode = sastNodes.find((sn: SastNode) => sn.uniqueId === uniqueId);
-              if (!matchedNode) {
-                logs.warn(`[openDetailsFromDiagnostic] No exact uniqueId match found for: ${uniqueId}`);
-              }
-            }
-
-            // Fallback if uniqueId was not provided
-            if (!matchedNode && !uniqueId && fileName && line !== undefined) {
-              logs.info(`[openDetailsFromDiagnostic] Using fallback match by fileName and line`);
-              matchedNode = sastNodes.find((sn: SastNode) =>
-                sn.fileName === fileName && Number(sn.line) === Number(line)
-              );
-            }
-
-            if (matchedNode) {
-              logs.info(`[openDetailsFromDiagnostic] Match found for: ${res.label}`);
-
-              // Open the source file at the correct location
-              const folder = vscode.workspace.workspaceFolders?.[0];
-              if (folder && matchedNode.fileName) {
-                try {
-                  const filePath = vscode.Uri.joinPath(folder.uri, matchedNode.fileName);
-                  const document = await vscode.workspace.openTextDocument(filePath);
-                  const position = new vscode.Position(
-                    matchedNode.line > 0 ? matchedNode.line - 1 : 0,
-                    matchedNode.column > 0 ? matchedNode.column - 1 : 0
-                  );
-                  await vscode.window.showTextDocument(document, {
-                    viewColumn: vscode.ViewColumn.One,
-                    selection: new vscode.Range(position, position),
-                  });
-                } catch (fileError) {
-                  logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
-                }
-              }
-
-              await tree.reveal(node, { select: true, focus: false, expand: true });
-              await vscode.commands.executeCommand(commands.newDetails, res);
-              return;
-            }
-          }
-
-          if (Array.isArray(node?.children)) {
-            stack.push(...node.children as CxTreeItem[]);
-          }
-        }
-
-        // Search in scaAutoScan tree for SCA Realtime results only
-        logs.info(`[openDetailsFromDiagnostic] Searching in scaAutoScan tree for SCA Realtime results...`);
-        const scaProviderLike = scaResultsProvider as unknown as { data?: CxTreeItem[] };
-        const scaRoot = scaProviderLike.data;
-
-        if (scaRoot?.length) {
-          const scaStack: CxTreeItem[] = [...scaRoot];
-
-          while (scaStack.length) {
-            const scaNode = scaStack.pop() as CxTreeItem;
-
-            if (scaNode?.result) {
-              const res = scaNode.result as AstResult;
-
-              // Handle SCA Realtime results only (they use sastNodes like SAST)
-              const sastNodes = Array.isArray(res.sastNodes) ? res.sastNodes : [];
-
-              if (sastNodes.length > 0) {
-                logs.info(`[openDetailsFromDiagnostic] Checking SCA Realtime result: ${res.label}`);
-
-                const matchedNode = sastNodes.find((sn: SastNode) => sn.uniqueId === uniqueId);
-
-                if (matchedNode) {
-                  logs.info(`[openDetailsFromDiagnostic] Match found for SCA Realtime result: ${res.label}`);
-
-                  // Open the package file and highlight the location
-                  const folder = vscode.workspace.workspaceFolders?.[0];
-                  if (folder && matchedNode.fileName) {
-                    try {
-                      const filePath = vscode.Uri.joinPath(folder.uri, matchedNode.fileName);
-                      const document = await vscode.workspace.openTextDocument(filePath);
-                      const position = new vscode.Position(
-                        matchedNode.line > 0 ? matchedNode.line - 1 : 0,
-                        matchedNode.column > 0 ? matchedNode.column - 1 : 0
-                      );
-                      await vscode.window.showTextDocument(document, {
-                        viewColumn: vscode.ViewColumn.One,
-                        selection: new vscode.Range(position, position),
-                      });
-                    } catch (fileError) {
-                      logs.error(`[openDetailsFromDiagnostic] Failed to open file: ${fileError}`);
-                    }
-                  }
-
-                  // Navigate to the result in the scaAutoScan tree and open relevant details page
-                  await scaTree.reveal(scaNode, { select: true, focus: false, expand: true });
-                  await vscode.commands.executeCommand(commands.newDetails, res, constants.realtime);
-                  return;
-                }
-              }
-            }
-
-            if (Array.isArray(scaNode?.children)) {
-              scaStack.push(...scaNode.children as CxTreeItem[]);
-            }
-          }
+        // Try SCA Realtime results tree
+        logs.info(`[openDetailsFromDiagnostic] Searching in SCA Realtime tree...`);
+        const scaHandled = await scaResultsProvider.handleOpenDetailsFromDiagnostic(
+          { uniqueId, fileName, line },
+          scaTree,
+          commands.newDetails,
+          [constants.realtime]
+        );
+        if (scaHandled) {
+          logs.info(`[openDetailsFromDiagnostic] Match found and handled in SCA Realtime results`);
+          return;
         }
 
         logs.error(`[openDetailsFromDiagnostic] No match found for uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
