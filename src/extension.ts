@@ -37,6 +37,7 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+import { DiagnosticCommand } from "./commands/diagnosticCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -190,55 +191,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // Problems panel link handler for open relevant info for SAST and SCA
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.openDetailsFromDiagnostic, async (payload?: {
-      label?: string;
-      fileName?: string;
-      line?: number;
-      uniqueId?: string;
-      packageIdentifier?: string;
-      resultId?: string;
-    }) => {
-      try {
-        if (!payload) {
-          return;
-        }
-
-        const { uniqueId, fileName, line } = payload;
-        logs.info(`[openDetailsFromDiagnostic] Searching for: uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
-
-        // Try SAST results tree
-        const sastHandled = await astResultsProvider.handleOpenDetailsFromDiagnostic(
-          { uniqueId, fileName, line },
-          tree,
-          commands.newDetails
-        );
-        if (sastHandled) {
-          logs.info(`[openDetailsFromDiagnostic] Match found and handled in SAST results`);
-          return;
-        }
-
-        // Try SCA Realtime results tree
-        logs.info(`[openDetailsFromDiagnostic] Searching in SCA Realtime tree...`);
-        const scaHandled = await scaResultsProvider.handleOpenDetailsFromDiagnostic(
-          { uniqueId, fileName, line },
-          scaTree,
-          commands.newDetails,
-          [constants.realtime]
-        );
-        if (scaHandled) {
-          logs.info(`[openDetailsFromDiagnostic] Match found and handled in SCA Realtime results`);
-          return;
-        }
-
-        logs.error(`[openDetailsFromDiagnostic] No match found for uniqueId=${uniqueId}, fileName=${fileName}, line=${line}`);
-      } catch (error) {
-        logs.error(`[openDetailsFromDiagnostic] Error: ${error}`);
-      }
-    })
-  );
-
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(
       { scheme: "file" },
@@ -307,6 +259,17 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  // Problems panel link handler for open relevant info for SAST and SCA
+  const diagnosticCommand = new DiagnosticCommand(
+    context,
+    logs,
+    astResultsProvider,
+    scaResultsProvider,
+    tree,
+    scaTree
+  );
+  diagnosticCommand.registerOpenDetailsFromDiagnostic();
 
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
