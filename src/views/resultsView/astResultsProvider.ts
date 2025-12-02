@@ -71,7 +71,7 @@ export class AstResultsProvider extends ResultsProvider {
     if (await validateConfigurationAndLicense(this.logs)) {
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
-      this.data = treeItem.children;
+      this.data = await cx.isValidConfiguration() ? treeItem.children : [];
       this._onDidChangeTreeData.fire(undefined);
       this.hideStatusBarItem();
     }

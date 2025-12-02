@@ -8,7 +8,7 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout, sleep } from "./utils/utils";
+import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
@@ -35,34 +35,21 @@ describe("Scan ID load results test", () => {
         let input = await new InputBox();
         await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
         await input.confirm();
-        sleep(5000)
     });
 
     it("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
-        console.log("Starting scan result check test...");
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
         }
-        console.log("treeScans:" + treeScans);
         let scan = await treeScans?.findItem(
             SCAN_KEY_TREE_LABEL
         );
-        console.log("scan:" + scan);
-
         await scan?.expand();
-        console.log("scan expand");
-        // Deterministic wait: ensure children array is available (can be empty)
-        const driverWait = VSBrowser.instance.driver.wait.bind(VSBrowser.instance.driver);
-        const scanChildren = await scan.getChildren();
-
-        let scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
-        scanResults = [] as unknown as Awaited<ReturnType<typeof scan.getChildren>>;
-
-        console.log("scanResults:" + scanResults);
+        let scanChildren = await scan?.getChildren();
+        let scanResults = await scanChildren[0].getChildren();
         expect(scanResults).not.to.be.undefined;
-        console.log("scanResults length:" + scanResults.length);
         expect(scanResults.length).to.be.equal(0);
     });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
