@@ -24,23 +24,18 @@ describe("filter and groups actions tests", () => {
   it("should click on all filter severity", async function () {
     treeScans = await initialize();
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await InputBox.create();
-    await input.setText(
-      SCAN_ID
-    );
+    const input = await InputBox.create();
+    await input.setText(SCAN_ID);
     await input.confirm();
     const commands = [{ command: CX_FILTER_INFO, text: "INFO" }, { command: CX_FILTER_LOW, text: "LOW" }, { command: CX_FILTER_MEDIUM, text: "MEDIUM" }, { command: CX_FILTER_HIGH, text: "HIGH" }, { command: CX_FILTER_HIGH, text: "CRITICAL" }];
     for (var index in commands) {
       await bench.executeCommand(commands[index].command);
       treeScans = await initialize();
-      let scan = await treeScans?.findItem(
-        SCAN_KEY_TREE_LABEL
-      );
-      while (scan === undefined) {
-        scan = await treeScans?.findItem(
-          SCAN_KEY_TREE_LABEL
-        );
-      }
+      let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      await driver.wait(async () => {
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+        return !!scan;
+      }, 20000, "Scan node not found after applying filter");
       let isValidated = await validateSeverities(scan, commands[index].text);
 
       expect(isValidated).to.equal(true);
@@ -49,7 +44,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it.skip("should click on all group by", async function () {
+  it("should click on all group by", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -60,17 +55,19 @@ describe("filter and groups actions tests", () => {
     // Get scan node
     const treeScans = await initialize();
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-    while (scan === undefined) {
+    await driver.wait(async () => {
       scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-    }
+      return !!scan;
+    }, 20000, "Scan node not found for group-by test");
     // Expand and validate scan node to obtain engine nodes
     let tuple = await validateRootNode(scan);
     //let level = 0;
     // Get the sast results node, because it is the only one affected by all the group by commands
     let sastNode = await scan?.findChildItem(SAST_TYPE);
-    while (sastNode === undefined) {
+    await driver.wait(async () => {
       sastNode = await scan?.findChildItem(SAST_TYPE);
-    }
+      return !!sastNode;
+    }, 20000, "SAST node not found under scan");
     // Validate for all commands the nested tree elements
     for (var index in commands) {
       // Execute the group by command for each command
@@ -80,29 +77,7 @@ describe("filter and groups actions tests", () => {
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it.skip("should click on all group by", async function () {
-    const commands = [CX_GROUP_LANGUAGE, CX_GROUP_STATUS, CX_GROUP_STATE, CX_GROUP_QUERY_NAME, CX_GROUP_FILE];
-    // Get scan node
-    const treeScans = await initialize();
-    let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE_LABEL
-    );
-    // Expand and validate scan node to obtain engine nodes
-    let tuple = await validateRootNode(scan);
-    //let level = 0;
-    // Get the sast results node, because it is the only one affected by all the group by commands
-    let sastNode = await scan?.findChildItem(SAST_TYPE);
-    while (sastNode === undefined) {
-      sastNode = await scan?.findChildItem(SAST_TYPE);
-    }
-    // Validate for all commands the nested tree elements
-    for (var index in commands) {
-      // Execute the group by command for each command
-      await bench.executeCommand(commands[index]);
-    };
-    // Size must not be bigger than 3 because there are at most 3 engines in the first node
-    expect(tuple[0]).to.be.at.most(4);
-  });
+  // Removed duplicate group-by test to avoid redundant flakiness
 
   it("should click on all filter state", async function () {
     await initialize();
