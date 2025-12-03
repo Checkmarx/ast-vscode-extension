@@ -118,6 +118,7 @@ export const commands = {
 
   newDetails: `${constants.extensionName}.newDetails`,
   gpt: `${constants.extensionName}.gpt`,
+  openDetailsFromDiagnostic: `${constants.extensionName}.openDetailsFromDiagnostic`,
 
   setContext: "setContext",
 
