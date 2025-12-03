@@ -867,7 +867,6 @@
           "name": "Checkmarx One Results",
           "when": "!ast-results.isStandaloneEnabled"
         },
-        ,
         {
           "id": "astResultsPromo",
           "type": "webview",
