@@ -821,7 +821,6 @@
           "group": "@groupBy@7",
           "when": "view == astResults && ast-results-groupByDirectDependency"
         },
-        ,
         {
           "command": "ast-results.openIgnoredView",
           "group": "@settings@1",
