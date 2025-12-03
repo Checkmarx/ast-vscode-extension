@@ -1,7 +1,7 @@
 .header {
 	display: flex;
 	/* background-color: var(--vscode-minimapSlider-hoverBackground); */
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	min-height: 40px;
 	align-items: center;
 	justify-content: center;
@@ -104,12 +104,12 @@
 }
 
 .left-content .header-content {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	margin-left: 25px;
 }
 
 .left-content .description {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	margin: 25px;
 	margin-bottom: 20px;
 }
@@ -119,7 +119,7 @@
 }
 
 .right-content {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	border-left: 1px solid;
 	border-color: rgb(128, 128, 128,0.5);
 	border-bottom: 1px solid;
@@ -127,18 +127,18 @@
 }
 
 .right-content .header-content-selected {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	flex: 50rem;
 	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .right-content .header-content-not-selected {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	flex: 50rem;
 }
 
 .right-content .header-content-right {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	margin-left: 25px;
 	flex: 50rem;
 	display: flex;
@@ -155,7 +155,7 @@
 .card-content {
 	display: flex;
 	flex-wrap: wrap;
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 }
 
 .cvss-selected {
