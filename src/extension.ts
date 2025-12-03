@@ -37,6 +37,7 @@ import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
+import { DiagnosticCommand } from "./commands/diagnosticCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 let globalContext: vscode.ExtensionContext;
@@ -189,6 +190,17 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file" },
+      {
+        provideHover() {
+          return undefined;
+        }
+      }
+    )
+  );
   // Webview detailsPanel to show result details on the side
   const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
   webViewCommand.registerGpt();
@@ -247,6 +259,17 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
+
+  // Problems panel link handler for open relevant info for SAST and SCA
+  const diagnosticCommand = new DiagnosticCommand(
+    context,
+    logs,
+    astResultsProvider,
+    scaResultsProvider,
+    tree,
+    scaTree
+  );
+  diagnosticCommand.registerOpenDetailsFromDiagnostic();
 
   // Register Settings
   const commonCommand = new CommonCommand(context, logs);
