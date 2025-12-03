@@ -61,13 +61,19 @@ describe("filter and groups actions tests", () => {
     }, 20000, "Scan node not found for group-by test");
     // Expand and validate scan node to obtain engine nodes
     let tuple = await validateRootNode(scan);
+    // Force a fresh expand to ensure children are materialized
+    await scan?.collapse();
+    await scan?.expand();
     //let level = 0;
     // Get the sast results node, because it is the only one affected by all the group by commands
     let sastNode = await scan?.findChildItem(SAST_TYPE);
+    // Retry with deterministic waits; re-expand if needed
     await driver.wait(async () => {
+      // Re-query after a brief expand to handle lazy population
+      await scan?.expand();
       sastNode = await scan?.findChildItem(SAST_TYPE);
       return !!sastNode;
-    }, 20000, "SAST node not found under scan");
+    }, 60000, "SAST node not found under scan");
     // Validate for all commands the nested tree elements
     for (var index in commands) {
       // Execute the group by command for each command
