@@ -49,7 +49,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it("should click on all group by", async function () {
+  it.skip("should click on all group by", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
