@@ -378,25 +378,46 @@ export class Cx implements CxPlatform {
     }
 
     async isStandaloneEnabled(logs: Logs): Promise<boolean> {
-        return this.getCachedFeatureEnabled(
-            constants.standaloneEnabledGlobalState,
-            logs,
-            async (cx: CxWrapper) => cx.standaloneEnabled(),
-            "tenant configuration"
-        );
+        let enabled = false;
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        if (!token) {
+            return enabled;
+        }
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return enabled;
+        }
+        config.apiKey = token;
+        const cx = new CxWrapper(config);
+        try {
+            enabled = await cx.standaloneEnabled();
+        } catch (error) {
+            logs.error(error);
+            return false;
+        }
+        return enabled;
     }
 
 
     async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
-        return this.getCachedFeatureEnabled(
-            constants.cxOneAssistEnabledGlobalState,
-            logs,
-            async (cx: CxWrapper) => {
-                const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
-                return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
-            },
-            "tenant configuration (CxOne Assist)"
-        );
+        let enabled = false;
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        if (!token) {
+            return enabled;
+        }
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return enabled;
+        }
+        config.apiKey = token;
+        const cx = new CxWrapper(config);
+        try {
+            enabled = await cx.cxOneAssistEnabled();
+        } catch (error) {
+            logs.error(error);
+            return false;
+        }
+        return enabled;
     }
 
     async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
