@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [v2.42.1-standalone.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-standalone.0) - 2025-11-28 10:59:26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.42.1-2.42.2.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-2.42.2.0) - 2025-11-07 04:58:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
