@@ -847,7 +847,7 @@
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Checkmarx SCA Realtime Scanner",
+          "name": "Checkmarx SCA Realtime Scanner"
         },
         {
           "id": "riskManagement",
