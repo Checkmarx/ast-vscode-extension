@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
-import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import {
@@ -220,15 +219,6 @@ function registerAssistDocumentation(context: vscode.ExtensionContext) {
 
 
 
-function registerScaPromoWebview(context: vscode.ExtensionContext, logs: Logs) {
-  // Reuse AstResultsPromoProvider for SCA promo; adjust later if SCA-specific content needed
-  const promoProvider = new AstResultsPromoProvider(context, logs, true);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.scaAutoScanPromo, promoProvider)
-  );
-  return promoProvider;
-}
-
 function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
   const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
   context.subscriptions.push(
@@ -273,7 +263,6 @@ export async function activate(context: vscode.ExtensionContext) {
   await authService.validateAndUpdateState();
   // Register docs & promo webview now that logs exist
   registerAssistDocumentation(context);
-  registerScaPromoWebview(context, logs);
 
   // --- Setup grouped UI elements ---
   const {

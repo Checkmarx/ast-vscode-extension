@@ -11,7 +11,6 @@ import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { ICONS } from "./constants";
-import { PromotionalCardView } from "../shared/PromotionalCardView";
 import { cx } from "../../cx";
 import { Logs } from "../../models/logs";
 export class riskManagementView implements vscode.WebviewViewProvider {
@@ -67,7 +66,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
         break;
       }
       case "openPromotionalLink": {
-        PromotionalCardView.handleMessage(message);
         break;
       }
       case "openLearnMore": {
@@ -115,20 +113,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
     this.cxResults = cxResults;
 
-    const isStandalone = await cx.isStandaloneEnabled(this.logs);
-    if (isStandalone) {
-      const promoConfig = PromotionalCardView.getAspmConfig();
-      const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
-      const promoCardStyles = PromotionalCardView.generateStyles();
-      const promoCardScript = PromotionalCardView.generateScript();
-      this.view.webview.html = await this.getPromoWebviewContent(
-        promoCardHtml,
-        promoCardStyles,
-        promoCardScript
-      );
-      this.view.webview.postMessage({ command: "hideLoader" });
-      return;
-    }
     if (!project && !scan) {
       this.view.webview.html = await this.getAspmWebviewContent(
         undefined,
