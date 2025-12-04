@@ -20,6 +20,13 @@ const typeToIconMap: Map<string, string> = new Map([
   ["low-severity", "circle-outline"],      // Low severity
   ["info-severity", "circle-outline"],     // Info severity
   ["dast-alert-item", "bug"],              // DAST alert/vulnerability
+  ["dast-instance-item", "link"],          // DAST instance
+  ["dast-method-get", "arrow-right"],      // GET request
+  ["dast-method-post", "arrow-up"],        // POST request
+  ["dast-method-put", "arrow-swap"],       // PUT request
+  ["dast-method-delete", "trash"],         // DELETE request
+  ["dast-method-patch", "edit"],           // PATCH request
+  ["more-items", "ellipsis"],              // More items indicator
   ["error", "error"],                      // Error state
 ]);
 

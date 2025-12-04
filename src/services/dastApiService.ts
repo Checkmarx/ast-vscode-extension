@@ -118,6 +118,36 @@ export interface AlertLevelResultList {
   pagesNumber: number;        // JSON: pages_number
 }
 
+/**
+ * Alert info - detailed information about a specific alert type
+ */
+export interface AlertInfo {
+	name: string;
+	severity: string;
+	description: string;
+	solution: string;
+}
+
+/**
+ * Alert instance - a specific occurrence of an alert
+ */
+export interface AlertInstance {
+	similarityId2: string;  // JSON: similarity_id_2
+	method: string;
+	path: string;
+	url: string;
+	status: string;
+}
+
+/**
+ * Response from alert instances API
+ */
+export interface AlertInstanceList {
+	instances: AlertInstance[];
+	total: number;
+	pagesNumber: number;  // JSON: pages_number
+}
+
 // Legacy interface - keeping for potential future use
 export interface DastResult {
   id: string;
@@ -499,6 +529,108 @@ export class DastApiService {
       throw error;
     }
   }
+
+	/**
+	 * Fetch detailed info about a specific alert
+	 * @param environmentId The environment ID
+	 * @param scanId The scan ID
+	 * @param alertSimilarityId The alert similarity ID
+	 */
+	async getAlertInfo(
+		environmentId: string,
+		scanId: string,
+		alertSimilarityId: string
+	): Promise<AlertInfo | undefined> {
+		try {
+			const client = await this.createAxiosInstance();
+			const url = `/api/dast/mfe-results/results/environment/${environmentId}/${scanId}/alert/${alertSimilarityId}/info`;
+
+			console.log(`Fetching DAST alert info: ${url}`);
+			const response = await client.get(url);
+
+			const data = response.data;
+			if (data) {
+				return {
+					name: data.name,
+					severity: data.severity,
+					description: data.description,
+					solution: data.solution
+				};
+			}
+
+			return undefined;
+		} catch (error) {
+			console.error(`Failed to fetch alert info for ${alertSimilarityId}:`, error);
+			if (axios.isAxiosError(error)) {
+				if (error.response?.status === 404) {
+					return undefined;
+				}
+				throw new Error(`Failed to fetch alert info: ${error.response?.data?.message || error.message}`);
+			}
+			throw error;
+		}
+	}
+
+	/**
+	 * Fetch instances of a specific alert
+	 * @param environmentId The environment ID
+	 * @param scanId The scan ID
+	 * @param alertSimilarityId The alert similarity ID
+	 * @param page Page number (1-based)
+	 * @param perPage Results per page
+	 * @param search Optional search string
+	 * @param sortBy Sort order, defaults to "url:asc"
+	 */
+	async getAlertInstances(
+		environmentId: string,
+		scanId: string,
+		alertSimilarityId: string,
+		page: number = 1,
+		perPage: number = 50,
+		search?: string,
+		sortBy: string = "url:asc"
+	): Promise<{ instances: AlertInstance[]; total: number; pagesNumber: number }> {
+		try {
+			const client = await this.createAxiosInstance();
+
+			let url = `/api/dast/mfe-results/results/environment/${environmentId}/${scanId}/alert/${alertSimilarityId}/instances?page=${page}&per_page=${perPage}&sort_by=${encodeURIComponent(sortBy)}`;
+			if (search) {
+				url += `&search=${encodeURIComponent(search)}`;
+			}
+
+			console.log(`Fetching DAST alert instances: ${url}`);
+			const response = await client.get<AlertInstanceList>(url);
+
+			const data = response.data;
+			if (data && Array.isArray(data.instances)) {
+				console.log(`Found ${data.instances.length} instances (total: ${data.total})`);
+
+				// Map snake_case to camelCase
+				const instances = data.instances.map(instance => ({
+					similarityId2: (instance as any).similarity_id_2 || instance.similarityId2,
+					method: instance.method,
+					path: instance.path,
+					url: instance.url,
+					status: instance.status
+				}));
+
+				return {
+					instances,
+					total: data.total,
+					pagesNumber: (data as any).pages_number ?? data.pagesNumber ?? 1
+				};
+			}
+
+			console.warn("No instances in response or unexpected format:", data);
+			return { instances: [], total: 0, pagesNumber: 0 };
+		} catch (error) {
+			console.error(`Failed to fetch alert instances for ${alertSimilarityId}:`, error);
+			if (axios.isAxiosError(error)) {
+				throw new Error(`Failed to fetch instances: ${error.response?.data?.message || error.message}`);
+			}
+			throw error;
+		}
+	}
 
   /**
    * Fetch DAST results for a specific scan (legacy method)

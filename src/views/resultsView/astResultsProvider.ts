@@ -17,7 +17,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
-import { DastApiService, AlertLevelResult } from "../../services/dastApiService";
+import { DastApiService, AlertLevelResult, AlertInstance } from "../../services/dastApiService";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -208,10 +208,16 @@ export class AstResultsProvider extends ResultsProvider {
             const resultsNode = new TreeItem(`Results (${total})`, "summary-item", undefined, []);
             resultsNode.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
 
-            // Add severity groups
+            // Add severity groups with instances
             for (const [severity, severityAlerts] of Object.entries(alertsBySeverity)) {
               if (severityAlerts.length > 0) {
-                const severityNode = this.createSeverityNode(severity, severityAlerts);
+                const severityNode = await this.createSeverityNodeWithInstances(
+                  severity,
+                  severityAlerts,
+                  dastService,
+                  envFromState.id,
+                  scanFromState.id
+                );
                 resultsNode.children?.push(severityNode);
               }
             }
@@ -292,6 +298,104 @@ export class AstResultsProvider extends ResultsProvider {
     severityNode.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
     return severityNode;
+  }
+
+  /**
+   * Create a tree node for a severity level with its alerts and instances
+   */
+  private async createSeverityNodeWithInstances(
+    severity: string,
+    alerts: AlertLevelResult[],
+    dastService: DastApiService,
+    environmentId: string,
+    scanId: string
+  ): Promise<TreeItem> {
+    const severityIconMap: Record<string, string> = {
+      "CRITICAL": "critical-severity",
+      "HIGH": "high-severity",
+      "MEDIUM": "medium-severity",
+      "LOW": "low-severity",
+      "INFO": "info-severity"
+    };
+
+    // Build alert items with instances
+    const alertItems: TreeItem[] = [];
+
+    for (const alert of alerts) {
+      const instanceText = alert.numInstances === 1 ? "1 instance" : `${alert.numInstances} instances`;
+
+      // Fetch instances for this alert
+      let instanceNodes: TreeItem[] = [];
+      try {
+        const { instances } = await dastService.getAlertInstances(
+          environmentId,
+          scanId,
+          alert.alertSimilarityId,
+          1,
+          20  // Limit to first 20 instances
+        );
+
+        instanceNodes = instances.map(instance => this.createInstanceNode(instance));
+
+        // Add "more..." indicator if there are more instances
+        if (alert.numInstances > 20) {
+          instanceNodes.push(new TreeItem(`... and ${alert.numInstances - 20} more`, "more-items"));
+        }
+      } catch (error) {
+        this.logs.error(`Failed to fetch instances for alert ${alert.alertSimilarityId}: ${error}`);
+        instanceNodes = [new TreeItem("Error loading instances", "error")];
+      }
+
+      const alertNode = new TreeItem(
+        alert.name,
+        "dast-alert-item",
+        undefined,
+        instanceNodes
+      );
+      alertNode.description = `${instanceText} | ${alert.state}`;
+      alertNode.tooltip = `${alert.name}\nSeverity: ${alert.severity}\nInstances: ${alert.numInstances}\nState: ${alert.state}\nStatus: ${alert.status}${alert.owasp?.length ? '\nOWASP: ' + alert.owasp.join(', ') : ''}`;
+      alertNode.contextValue = "dast-alert-item";
+      alertNode.collapsibleState = instanceNodes.length > 0
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None;
+
+      alertItems.push(alertNode);
+    }
+
+    const severityNode = new TreeItem(
+      `${severity} (${alerts.length})`,
+      severityIconMap[severity] || "info-severity",
+      undefined,
+      alertItems
+    );
+    severityNode.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+
+    return severityNode;
+  }
+
+  /**
+   * Create a tree node for an alert instance
+   */
+  private createInstanceNode(instance: AlertInstance): TreeItem {
+    const methodColors: Record<string, string> = {
+      "GET": "dast-method-get",
+      "POST": "dast-method-post",
+      "PUT": "dast-method-put",
+      "DELETE": "dast-method-delete",
+      "PATCH": "dast-method-patch"
+    };
+
+    const instanceNode = new TreeItem(
+      `${instance.method} ${instance.path}`,
+      methodColors[instance.method] || "dast-instance-item",
+      undefined,
+      []
+    );
+    instanceNode.description = instance.status;
+    instanceNode.tooltip = `Method: ${instance.method}\nPath: ${instance.path}\nURL: ${instance.url}\nStatus: ${instance.status}`;
+    instanceNode.contextValue = "dast-instance-item";
+
+    return instanceNode;
   }
 
   createRootItems(): TreeItem[] {
