@@ -776,4 +776,71 @@ export class Cx implements CxPlatform {
                 scanType, status, totalCount);
         }
     }
+
+    /**
+     * Send telemetry for AI fix suggestion outcomes
+     * Tracks whether users adopted MCP suggestions, used alternatives, or rejected fixes
+     * @param eventType The outcome event type (ai_fix_requested, ai_fix_mcp_adopted, ai_fix_alt_used, ai_fix_rejected)
+     * @param scannerType The scanner type (Oss, Secrets, Asca, Containers, IaC)
+     * @param severity The severity of the vulnerability
+     * @param mcpSuggestedVersion The version suggested by MCP (if applicable)
+     * @param actualVersion The version actually applied by user (if different)
+     * @param retryCount Number of check attempts
+     * @param additionalData Additional JSON data for the event
+     */
+    async sendAIFixOutcomeTelemetry(
+        eventType: string,
+        scannerType: string,
+        severity: string,
+        mcpSuggestedVersion?: string,
+        actualVersion?: string,
+        retryCount?: number,
+        additionalData?: string
+    ): Promise<void> {
+        try {
+            const config = await this.getAstConfiguration();
+            if (!config) {
+                console.warn("Cannot send AI fix telemetry: no configuration");
+                return;
+            }
+            
+            const cxWrapper = new CxWrapper(config);
+            const aiProvider = isIDE(constants.kiroAgent) 
+                ? constants.kiroAgent 
+                : isIDE(constants.cursorAgent) 
+                    ? constants.cursorAgent 
+                    : isIDE(constants.windsurfAgent) 
+                        ? "Cascade" 
+                        : "Copilot";
+            const agent = isIDE(constants.kiroAgent) 
+                ? constants.kiroAgent 
+                : isIDE(constants.cursorAgent) 
+                    ? constants.cursorAgent 
+                    : isIDE(constants.windsurfAgent) 
+                        ? constants.windsurfAgent 
+                        : constants.vsCodeAgent;
+
+            // Build subType with fix outcome details
+            const subTypeData = {
+                mcpSuggestedVersion,
+                actualVersion,
+                retryCount,
+                ...(additionalData ? JSON.parse(additionalData) : {})
+            };
+
+            cxWrapper.telemetryAIEvent(
+                aiProvider,
+                agent,
+                eventType,
+                JSON.stringify(subTypeData),
+                scannerType,
+                severity,
+                "",
+                "",
+                0
+            );
+        } catch (error) {
+            console.error(`Failed to send AI fix outcome telemetry: ${error}`);
+        }
+    }
 }

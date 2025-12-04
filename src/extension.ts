@@ -40,6 +40,8 @@ import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers
 import { DiagnosticCommand } from "./commands/diagnosticCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
+import { AISuggestionTracker } from "./aiTracking/AISuggestionTracker";
+import { McpClient } from "./aiTracking/mcpClient";
 let globalContext: vscode.ExtensionContext;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -347,6 +349,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
+  // Initialize AI fix tracking for outcome monitoring
+  McpClient.initialize(context);
+  const aiSuggestionTracker = AISuggestionTracker.initialize(context, logs);
+  context.subscriptions.push({
+    dispose: () => aiSuggestionTracker.dispose()
+  });
+  logs.info("AI suggestion tracker initialized for fix outcome monitoring");
 
   copilotChatCommand.registerCopilotChatCommand();
 

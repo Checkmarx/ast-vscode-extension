@@ -1664,4 +1664,17 @@ export class CxMock implements CxPlatform {
 
   setUserEventDataForDetectionLogs(): void {
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async sendAIFixOutcomeTelemetry(
+    _eventType: string,
+    _scannerType: string,
+    _severity: string,
+    _mcpSuggestedVersion?: string,
+    _actualVersion?: string,
+    _retryCount?: number,
+    _additionalData?: string
+  ): Promise<void> {
+    // Mock implementation - no-op
+  }
 }
