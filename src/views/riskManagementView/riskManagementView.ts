@@ -11,18 +11,24 @@ import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
 import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { ICONS } from "./constants";
+import { PromotionalCardView } from "../shared/PromotionalCardView";
+import { cx } from "../../cx";
+import { Logs } from "../../models/logs";
 export class riskManagementView implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private riskManagementService: riskManagementService;
   private cxResults: CxResult[] = [];
+  private logs: Logs;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly context: vscode.ExtensionContext
+    private readonly context: vscode.ExtensionContext,
+    logs: Logs
   ) {
     this.riskManagementService = riskManagementService.getInstance(
       this.context
     );
+    this.logs = logs;
   }
 
   public async resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -47,6 +53,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   private async handleMessage(message: {
     command: string;
     result?: { hash: string, riskScore: number, severity: string, traits: { [key: string]: string } };
+    url?: string;
   }): Promise<void> {
     switch (message.command) {
       case "openVulnerabilityDetails": {
@@ -56,6 +63,16 @@ export class riskManagementView implements vscode.WebviewViewProvider {
           await vscode.commands.executeCommand(commands.newDetails, astResult);
         } else {
           vscode.window.showErrorMessage("Result not found");
+        }
+        break;
+      }
+      case "openPromotionalLink": {
+        PromotionalCardView.handleMessage(message);
+        break;
+      }
+      case "openLearnMore": {
+        if (message.url) {
+          vscode.env.openExternal(vscode.Uri.parse(message.url));
         }
         break;
       }
@@ -98,15 +115,26 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
     this.cxResults = cxResults;
 
+    const isStandalone = await cx.isStandaloneEnabled(this.logs);
+    if (isStandalone) {
+      const promoConfig = PromotionalCardView.getAspmConfig();
+      const promoCardHtml = PromotionalCardView.generateHtml(promoConfig);
+      const promoCardStyles = PromotionalCardView.generateStyles();
+      const promoCardScript = PromotionalCardView.generateScript();
+      this.view.webview.html = await this.getPromoWebviewContent(
+        promoCardHtml,
+        promoCardStyles,
+        promoCardScript
+      );
+      this.view.webview.postMessage({ command: "hideLoader" });
+      return;
+    }
     if (!project && !scan) {
-      this.view.webview.html = this.getWebviewContent(
+      this.view.webview.html = await this.getAspmWebviewContent(
         undefined,
         undefined,
         false,
-        {
-          applicationNameIDMap: [],
-          results: undefined,
-        }
+        { results: undefined, applicationNameIDMap: [] }
       );
       this.view.webview.postMessage({ command: "hideLoader" });
       return;
@@ -118,16 +146,16 @@ export class riskManagementView implements vscode.WebviewViewProvider {
       );
       const projectToDisplay = this.extractData(project.name, "Project:");
       const scanToDisplay = this.extractData(scan.displayScanId, "Scan:");
-      const riskManagementResults =
-        await this.riskManagementService.getRiskManagementResults(
-          project.id,
-          scan.id
-        );
-      this.view.webview.html = this.getWebviewContent(
+      interface RiskManagementResults { results: CxResult[]; applicationNameIDMap: { name: string; id: string }[] }
+      const riskManagementResults = await this.riskManagementService.getRiskManagementResults(
+        project.id,
+        scan.id
+      ) as RiskManagementResults;
+      this.view.webview.html = await this.getAspmWebviewContent(
         projectToDisplay,
         scanToDisplay,
         isLatestScan,
-        riskManagementResults as { results: any; applicationNameIDMap: any[] }
+        riskManagementResults
       );
       this.view.webview.postMessage({
         command: "getRiskManagementResults",
@@ -168,7 +196,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   }
 
   private async isAuthenticated(): Promise<boolean> {
-    const token = await this.context.secrets.get("authCredential");
+    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
     return !!token;
   }
 
@@ -192,12 +220,11 @@ export class riskManagementView implements vscode.WebviewViewProvider {
     );
   }
 
-  private getWebviewContent(
-    projectName: string,
-    scan: string,
-    isLatestScan: boolean,
-    ASPMResults: { results: any; applicationNameIDMap: any[] }
-  ): string {
+  private async getPromoWebviewContent(
+    promoCardHtml: string,
+    promoCardStyles: string,
+    promoCardScript: string
+  ): Promise<string> {
     const styleResetUri = this.setWebUri("media", "reset.css");
     const styleVSCodeUri = this.setWebUri("media", "vscode.css");
     const styleMainUri = this.setWebUri("media", "main.css");
@@ -230,110 +257,113 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
     return `<!DOCTYPE html>
 <html lang="en">
-
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="${styleResetUri}" rel="stylesheet">
-		<link href="${styleVSCodeUri}" rel="stylesheet">
-		<link href="${styleMainUri}" rel="stylesheet">
-		<link href="${styleBootStrap}" rel="stylesheet">
-		<link href="${styleUri}" rel="stylesheet">
-		<link rel="stylesheet" href="${codiconsUri}">
-
-		<title>Risks Management</title>
-	</head>
-
-	<body>
-		<div id="loading" class="loading">
-			<div class="spinner-border" role="status">
-				<span class="visually-hidden">ASPM Results Loading...</span>
-			</div>
-		</div>
-		<div id="riskManagementContainer">
-			${
-        !projectName || !scan || !isLatestScan
-          ? `<div class="no-results-message">
-				ASPM data is only shown when the most recent scan of a project is selected
-				in the Checkmarx One Results tab
-			</div>`
-          : ASPMResults.applicationNameIDMap.length === 0
-          ? `<div
-				class="no-results-message">
-				This project is not associated with any application in the ASPM
-			</div>`
-          : ASPMResults.applicationNameIDMap.length > 0 &&
-            ASPMResults.results.length === 0
-          ? `<div class="no-results-message">
-				ASPM does not hold result data for this project
-			</div>`
-          : `<div class="details"
-				data-bs-toggle="tooltip" data-bs-placement="auto"
-				title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
-
-				<div class="ellipsis"><i class="codicon codicon-project"></i>Project:
-					${projectName ?? ""}</div>
-				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${
-          scan ?? ""
-        }</div>
-			</div>
-
-			<hr class="separator" />
-			<div class="app-header">
-				<span>${ICONS.union}</span> ${ASPMResults.applicationNameIDMap.length}
-				Applications
-				  <div class="app-icons">
-            <div class="sort-wrapper">
-					<button class="sort-button" id="sortButton">
-						<span>${ICONS.sort}</span>
-						<span id="currentSort"></span>
-					</button>
-					<div class="sort-menu" id="sortMenu">
-            <div class="sort-option sort-title">SORT BY</div>
-						<div class="sort-option" data-sort="score">Application Risk Score</div>
-						<div class="sort-option" data-sort="az">Application Name A-Z</div>
-						<div class="sort-option" data-sort="za">Application Name Z-A</div>
-					</div>
-				</div>
-        <hr class="separator-vertical" />
-
-        <div class="sort-wrapper">
-      <button class="filter-button" id="filterButton">
-      <span class="center-badge">${ICONS.filter}</span>
-      </button>
-      <div class="filter-menu" id="filterMenu">
-  <div class="filter-title-option">Showing</div>
-
-  <div class="filter-category" data-toggle="vuln-type">
-   <span class="chevron">›</span>
-  <span class="category-label">Vulnerability Type</span>
-   <span class="filter-count"></span>
-</div>
-
-  <div class="filter-submenu hidden" id="submenu-vuln-type"></div>
-
- <div class="filter-category" data-toggle="traits">
-   <span class="chevron">›</span>
-  <span class="category-label">Additional Trait</span>
-   <span class="filter-count"></span>
-</div>
-
-  <div class="filter-submenu hidden" id="submenu-traits"></div>
-</div>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${styleResetUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link href="${styleMainUri}" rel="stylesheet">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleUri}" rel="stylesheet">
+    <link rel="stylesheet" href="${codiconsUri}">
+    <title>Risks Management</title>
+    <style>${promoCardStyles}</style>
+  </head>
+  <body>
+    <div id="loading" class="loading">
+      <div class="spinner-border" role="status"><span class="visually-hidden">ASPM Results Loading...</span></div>
     </div>
-  </div>
-</div>
+    ${promoCardHtml}
+    <script nonce="${nonce}">const vscode = acquireVsCodeApi();${promoCardScript}</script>
+    <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
+    <script src="${popperUri}"></script>
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+  </body>
+</html>`;
+  }
 
-			<div class="accordion" id="applicationsContainer"></div>
-			`
-      }</div>
-		<script nonce="${nonce}">
-    const vscode = acquireVsCodeApi();
-</script>
-		<script type="module" nonce="${nonce}" src="${scriptUri}"></script>
-		<script src=${popperUri}></script>
-		<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	</body>
+  private async getAspmWebviewContent(
+    projectName: string,
+    scan: string,
+    isLatestScan: boolean,
+    aspmResults: { results: CxResult[]; applicationNameIDMap: { name: string; id: string }[] }
+  ): Promise<string> {
+    const styleResetUri = this.setWebUri("media", "reset.css");
+    const styleVSCodeUri = this.setWebUri("media", "vscode.css");
+    const styleMainUri = this.setWebUri("media", "main.css");
+    const scriptUri = this.setWebUri("media", "riskManagement.js");
+    const styleUri = this.setWebUri("media", "riskManagement.css");
+    const codiconsUri = this.setWebUri("node_modules", "@vscode/codicons", "dist", "codicon.css");
+    const popperUri = this.setWebUri("node_modules", "@popperjs/core", "dist", "umd", "popper.min.js");
+    const styleBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.css");
+    const scriptBootStrap = this.setWebUri("media", "bootstrap", "bootstrap.min.js");
+    const nonce = getNonce();
+    return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${styleResetUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link href="${styleMainUri}" rel="stylesheet">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleUri}" rel="stylesheet">
+    <link rel="stylesheet" href="${codiconsUri}">
+    <title>Risks Management</title>
+  </head>
+  <body>
+    <div id="loading" class="loading">
+      <div class="spinner-border" role="status"><span class="visually-hidden">ASPM Results Loading...</span></div>
+    </div>
+    <div id="riskManagementContainer">
+      ${!projectName || !scan || !isLatestScan
+        ? `<div class="no-results-message">ASPM data is only shown when the most recent scan of a project is selected in the Checkmarx One Results tab</div>`
+        : aspmResults.applicationNameIDMap.length === 0
+          ? `<div class="no-results-message">This project is not associated with any application in the ASPM</div>`
+          : aspmResults.applicationNameIDMap.length > 0 && aspmResults.results.length === 0
+            ? `<div class="no-results-message">ASPM does not hold result data for this project</div>`
+            : `<div class="details" data-bs-toggle="tooltip" data-bs-placement="auto" title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
+                <div class="ellipsis"><i class="codicon codicon-project"></i>Project: ${projectName ?? ""}</div>
+                <div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${scan ?? ""}</div>
+              </div>
+              <hr class="separator" />
+              <div class="app-header">
+                <span>${ICONS.union}</span> ${aspmResults.applicationNameIDMap.length} Applications
+                <div class="app-icons">
+                  <div class="sort-wrapper">
+                    <button class="sort-button" id="sortButton">
+                      <span>${ICONS.sort}</span>
+                      <span id="currentSort"></span>
+                    </button>
+                    <div class="sort-menu" id="sortMenu">
+                      <div class="sort-option sort-title">SORT BY</div>
+                      <div class="sort-option" data-sort="score">Application Risk Score</div>
+                      <div class="sort-option" data-sort="az">Application Name A-Z</div>
+                      <div class="sort-option" data-sort="za">Application Name Z-A</div>
+                    </div>
+                  </div>
+                  <hr class="separator-vertical" />
+                  <div class="sort-wrapper">
+                    <button class="filter-button" id="filterButton">
+                      <span class="center-badge">${ICONS.filter}</span>
+                    </button>
+                    <div class="filter-menu" id="filterMenu">
+                      <div class="filter-title-option">Showing</div>
+                      <div class="filter-category" data-toggle="vuln-type"><span class="chevron">›</span><span class="category-label">Vulnerability Type</span><span class="filter-count"></span></div>
+                      <div class="filter-submenu hidden" id="submenu-vuln-type"></div>
+                      <div class="filter-category" data-toggle="traits"><span class="chevron">›</span><span class="category-label">Additional Trait</span><span class="filter-count"></span></div>
+                      <div class="filter-submenu hidden" id="submenu-traits"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion" id="applicationsContainer"></div>`}
+    </div>
+    <script nonce="${nonce}">const vscode = acquireVsCodeApi();</script>
+    <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
+    <script src="${popperUri}"></script>
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+  </body>
 </html>`;
   }
 }
