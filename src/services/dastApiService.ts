@@ -381,17 +381,33 @@ export class DastApiService {
     }
   }
 
-	/**
-	 * Fetch a single DAST scan by ID
-	 * @param scanId The scan ID
-	 * @param environmentId The environment ID
-	 */
-	async getScan(scanId: string, environmentId: string): Promise<DastScan | undefined> {
+  /**
+   * Fetch a single DAST scan by ID
+   * @param scanId The scan ID
+   */
+	async getScan(scanId: string): Promise<DastScan | undefined> {
 		try {
-			const scans = await this.getScans(environmentId, 1, 50);
-			return scans.find(s => s.scanId === scanId);
+			const client = await this.createAxiosInstance();
+			const url = `/api/dast/scans/scan/${scanId}`;
+
+			console.log(`Fetching DAST scan: ${url}`);
+			const response = await client.get<DastScan>(url);
+
+			if (response.data) {
+				console.log(`Found scan: ${response.data.scanId}`);
+				return response.data;
+			}
+
+			console.warn("No scan data in response");
+			return undefined;
 		} catch (error) {
 			console.error(`Failed to fetch scan ${scanId}:`, error);
+			if (axios.isAxiosError(error)) {
+				if (error.response?.status === 404) {
+					return undefined;
+				}
+				throw new Error(`Failed to fetch scan: ${error.response?.data?.message || error.message}`);
+			}
 			return undefined;
 		}
 	}

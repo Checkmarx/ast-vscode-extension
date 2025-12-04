@@ -269,7 +269,7 @@ export async function dastMultiStepInput(
     
     // Fetch scan details to get proper display info
     const dastService = DastApiService.getInstance(context);
-    const scan = await dastService.getScan(lastScanId, selectedEnvironment.id);
+    const scan = await dastService.getScan(lastScanId);
     
     if (scan) {
       const formattedDate = new Date(scan.created).toLocaleDateString() + " " + new Date(scan.created).toLocaleTimeString();
