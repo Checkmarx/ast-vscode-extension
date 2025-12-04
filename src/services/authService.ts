@@ -5,7 +5,6 @@ import { URL, URLSearchParams } from 'url';
 import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
 import { commands } from "../utils/common/commands";
-import { constants } from "../utils/common/constants";
 import { ProxyHelper } from '../utils/proxy/proxy';
 import axios from "axios";
 
@@ -296,7 +295,8 @@ export class AuthService {
 
   public async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      await this.context.secrets.store(constants.authCredentialSecretKey, apiKey);
+
+      await this.context.secrets.store("authCredential", apiKey);
       const cx = getCx();
       return await cx.authValidate(this.logs);
 
@@ -360,7 +360,8 @@ export class AuthService {
   }
 
   public async saveToken(context: vscode.ExtensionContext, token: string) {
-    await this.context.secrets.store(constants.authCredentialSecretKey, token);
+
+    await this.context.secrets.store("authCredential", token);
     console.log("Token stored in secrets");
     const isValid = await this.validateAndUpdateState();
     console.log("Token validation result:", isValid);
@@ -368,14 +369,14 @@ export class AuthService {
     if (isValid) {
       vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
       await vscode.commands.executeCommand(commands.refreshTree);
-      await vscode.commands.executeCommand(commands.updateCxOneAssist);
     }
 
   }
 
   public async validateAndUpdateState(): Promise<boolean> {
     try {
-      const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+      const token = await this.context.secrets.get("authCredential");
+
 
       if (!token) {
         vscode.commands.executeCommand(
@@ -416,23 +417,16 @@ export class AuthService {
   }
 
   public async getToken(): Promise<string | undefined> {
-    return await this.context.secrets.get(constants.authCredentialSecretKey);
+    return await this.context.secrets.get("authCredential");
   }
 
   public async logout(): Promise<void> {
     // Delete only the token
-    await this.context.secrets.delete(constants.authCredentialSecretKey);
-    await this.context.secrets.delete(constants.standaloneEnabledGlobalState);
+    await this.context.secrets.delete("authCredential");
 
     await this.validateAndUpdateState();
     await vscode.commands.executeCommand(commands.refreshTree);
     await vscode.commands.executeCommand(commands.clear);
-
-    await vscode.commands.executeCommand(commands.updateCxOneAssist);
-    await vscode.commands.executeCommand(
-      commands.setContext,
-      commands.isStandaloneEnabled,
-      false);
   }
 
   private getSuccessPageHtml(): string {

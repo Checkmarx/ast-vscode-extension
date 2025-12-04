@@ -38,7 +38,7 @@ export class KicsProvider {
         : messages.kicsStatusBarDisconnect;
     this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
     this.kicsStatusBarItem.command = commands.kicsSetings;
-    vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+    this.kicsStatusBarItem.show();
     this.fixableResults = [];
     this.fixableResultsByLine = [];
   }
@@ -62,7 +62,7 @@ export class KicsProvider {
     this.kicsStatusBarItem.text =
       messages.kicsAutoScanRunning;
     this.kicsStatusBarItem.tooltip = messages.kicsRunning;
-    await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+    this.kicsStatusBarItem.show();
     // Get current file, either from global state or from the current open file
     const file = await this.getCurrentFile(this.context, this.logs);
     if (!file) {

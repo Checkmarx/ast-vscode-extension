@@ -273,10 +273,7 @@ export function getStateIdForTriage(selectedStateName: string): number {
 }
 
 export function getIDEName(): string {
-  const appName = (vscode && vscode.env && typeof vscode.env.appName === 'string')
-    ? vscode.env.appName
-    : '';
-  return appName.toLowerCase();
+  return (vscode.env.appName || '').toLowerCase();
 }
 
 export function isIDE(ideName: string): boolean {

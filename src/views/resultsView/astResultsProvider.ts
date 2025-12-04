@@ -17,7 +17,6 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
-import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -36,18 +35,13 @@ export class AstResultsProvider extends ResultsProvider {
     super(context, statusBarItem);
     this.loadedResults = undefined;
 
-    this.riskManagementView = new riskManagementView(context.extensionUri, context, logs);
+    this.riskManagementView = new riskManagementView(context.extensionUri, context);
 
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         'riskManagement',
         this.riskManagementView
       )
-    );
-    context.subscriptions.push(
-      vscode.commands.registerCommand(commands.refreshRiskManagementView, async () => {
-        this.riskManagementView.updateContent();
-      })
     );
 
     // Syncing with AST everytime the extension gets opened
@@ -68,33 +62,25 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    if (await validateConfigurationAndLicense(this.logs)) {
-      this.showStatusBarItem(messages.commandRunning);
-      const treeItem = await this.generateTree();
-      this.data = treeItem.children;
-      this._onDidChangeTreeData.fire(undefined);
-      this.hideStatusBarItem();
-    }
-    else {
-      this.data = [];
-      this._onDidChangeTreeData.fire(undefined);
-    }
+    this.showStatusBarItem(messages.commandRunning);
+    const treeItem = await this.generateTree();
+    this.data = await cx.isValidConfiguration() ? treeItem.children : [];
+    this._onDidChangeTreeData.fire(undefined);
+    this.hideStatusBarItem();
   }
 
   async openRefreshData(): Promise<void> {
-    if (await validateConfigurationAndLicense(this.logs)) {
-      this.showStatusBarItem(messages.commandRunning);
-      this.loadedResults = undefined;
-      const scanIDItem = getFromState(this.context, constants.scanIdKey);
-      let scanId = undefined;
-      if (scanIDItem && scanIDItem.name) {
-        scanId = getFromState(this.context, constants.scanIdKey).name;
-      }
-      if (scanId) {
-        await getResultsWithProgress(this.logs, scanId);
-        await vscode.commands.executeCommand(commands.refreshTree);
-        this.hideStatusBarItem();
-      }
+    this.showStatusBarItem(messages.commandRunning);
+    this.loadedResults = undefined;
+    const scanIDItem = getFromState(this.context, constants.scanIdKey);
+    let scanId = undefined;
+    if (scanIDItem && scanIDItem.name) {
+      scanId = getFromState(this.context, constants.scanIdKey).name;
+    }
+    if (scanId) {
+      await getResultsWithProgress(this.logs, scanId);
+      await vscode.commands.executeCommand(commands.refreshTree);
+      this.hideStatusBarItem();
     }
   }
 
