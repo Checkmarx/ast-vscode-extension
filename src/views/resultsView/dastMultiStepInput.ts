@@ -69,6 +69,7 @@ async function showSearchableEnvironmentPicker(
     // Debounce timer for search
     let searchTimer: NodeJS.Timeout | undefined;
     const debounceMs = 300;
+    let resolved = false; // Prevent double resolution
 
     // Load initial environments
     logs.info("Loading initial DAST environments...");
@@ -95,20 +96,27 @@ async function showSearchableEnvironmentPicker(
 
     // Handle selection
     quickPick.onDidAccept(() => {
+      if (resolved) {return;}
+      resolved = true;
+      
       const selected = quickPick.selectedItems[0];
-      quickPick.dispose();
       if (searchTimer) {
         clearTimeout(searchTimer);
       }
+      quickPick.hide();
+      quickPick.dispose();
       resolve(selected);
     });
 
-    // Handle dismiss
+    // Handle dismiss (Escape or click outside)
     quickPick.onDidHide(() => {
-      quickPick.dispose();
+      if (resolved) {return;}
+      resolved = true;
+      
       if (searchTimer) {
         clearTimeout(searchTimer);
       }
+      quickPick.dispose();
       resolve(undefined);
     });
   });
@@ -178,14 +186,29 @@ export async function dastMultiStepInput(
 ) {
   // Step 1: Pick environment with search support
   logs.info("Starting DAST environment selection...");
+  
   const selectedEnvironment = await showSearchableEnvironmentPicker(logs, context);
-
+  
   if (!selectedEnvironment || !selectedEnvironment.id) {
     logs.info("Environment selection cancelled or invalid");
     return;
   }
 
   logs.info(`Selected environment: ${selectedEnvironment.label} (${selectedEnvironment.id})`);
+
+  // Save environment immediately so it shows in the tree
+  await context.workspaceState.update(constants.environmentIdKey, {
+    id: selectedEnvironment.id,
+    name: `${constants.environmentLabel} ${selectedEnvironment.label}`,
+    displayScanId: undefined,
+    scanDatetime: undefined
+  });
+  
+  // Clear previous scan selection when environment changes
+  await context.workspaceState.update(constants.scanIdKey, undefined);
+  
+  // Refresh tree to show selected environment
+  await vscode.commands.executeCommand(commands.refreshTree);
 
   // Step 2: Pick scan for the selected environment
   const scanItems = await getDastScansPickItems(logs, selectedEnvironment.id, context);
@@ -197,40 +220,24 @@ export async function dastMultiStepInput(
 
   if (!selectedScan || !selectedScan.id) {
     logs.info("Scan selection cancelled or invalid");
+    // Environment is still saved, just no scan selected
     return;
   }
 
   logs.info(`Selected scan: ${selectedScan.label} (${selectedScan.id})`);
 
-  // Build state object for compatibility
-  const state = {
-    environment: selectedEnvironment,
-    scanId: selectedScan,
-  };
-  
-  // Store environment in state
-  updateState(context, constants.environmentIdKey, {
-    id: state.environment.id,
-    name: `${constants.environmentLabel}${state.environment.label}`,
-    displayScanId: undefined,
-    scanDatetime: undefined
-  });
-  
-  // Store scan in state (reusing existing scan state key)
-  updateState(context, constants.scanIdKey, {
-    id: state.scanId.id,
-    name: `${constants.scanLabel}${state.scanId.label}`,
-    displayScanId: `${constants.scanLabel}${state.scanId.formattedId}`,
-    scanDatetime: state.scanId.datetime
+  // Store scan in state - await the save
+  await context.workspaceState.update(constants.scanIdKey, {
+    id: selectedScan.id,
+    name: `${constants.scanLabel} ${selectedScan.label}`,
+    displayScanId: `${constants.scanLabel} ${selectedScan.formattedId}`,
+    scanDatetime: selectedScan.datetime
   });
 
-  if (state.scanId?.id) {
-    // TODO: Load DAST results - for now show a message
-    vscode.window.showInformationMessage(`DAST POC: Would load results for scan ${state.scanId.id} from environment ${state.environment.label}`);
-    
-    // TODO: Replace with actual DAST results loading
-    // await getDastResultsWithProgress(logs, state.scanId.id);
-    vscode.commands.executeCommand(commands.refreshTree);
-  }
+  // TODO: Load DAST results - for now show a message
+  vscode.window.showInformationMessage(`DAST POC: Would load results for scan ${selectedScan.id} from environment ${selectedEnvironment.label}`);
+  
+  // Refresh tree to show selected scan
+  await vscode.commands.executeCommand(commands.refreshTree);
 }
 
