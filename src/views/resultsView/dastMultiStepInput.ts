@@ -163,7 +163,7 @@ async function getDastScansPickItems(logs: Logs, environmentId: string, context:
       const formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
       // Build description with status and risk info
-      const riskInfo = dastService.formatRiskLevel(scan.riskLevel);
+      const riskInfo = dastService.formatRiskLevel(scan.alertRiskLevel);
       const durationInfo = scan.scanDuration > 0
         ? ` | ${Math.floor(scan.scanDuration / 60)}m`
         : "";
