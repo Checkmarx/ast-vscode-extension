@@ -235,11 +235,11 @@ export class AstResultsProvider extends ResultsProvider {
    */
   private groupAlertsBySeverity(alerts: AlertLevelResult[]): Record<string, AlertLevelResult[]> {
     const groups: Record<string, AlertLevelResult[]> = {
-      Critical: [],
-      High: [],
-      Medium: [],
-      Low: [],
-      Informational: []
+      CRITICAL: [],
+      HIGH: [],
+      MEDIUM: [],
+      LOW: [],
+      INFO: []
     };
 
     for (const alert of alerts) {
@@ -259,11 +259,11 @@ export class AstResultsProvider extends ResultsProvider {
    */
   private createSeverityNode(severity: string, alerts: AlertLevelResult[]): TreeItem {
     const severityIconMap: Record<string, string> = {
-      "Critical": "critical-severity",
-      "High": "high-severity",
-      "Medium": "medium-severity",
-      "Low": "low-severity",
-      "Informational": "info-severity"
+      "CRITICAL": "critical-severity",
+      "HIGH": "high-severity",
+      "MEDIUM": "medium-severity",
+      "LOW": "low-severity",
+      "INFO": "info-severity"
     };
 
     const alertItems = alerts.map(alert => {
