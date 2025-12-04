@@ -378,6 +378,7 @@ export class Cx implements CxPlatform {
     }
 
     async isStandaloneEnabled(logs: Logs): Promise<boolean> {
+        return false;
         return this.getCachedFeatureEnabled(
             constants.standaloneEnabledGlobalState,
             logs,
