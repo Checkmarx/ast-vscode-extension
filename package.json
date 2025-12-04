@@ -829,7 +829,7 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
+          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist  || view==scaAutoScanPromo || view==riskManagement"
         },
         {
           "command": "ast-results.assistDocumentation",
@@ -863,14 +863,7 @@
         {
           "id": "astResults",
           "type": "tree",
-          "name": "Checkmarx One Results",
-          "when": "!ast-results.isStandaloneEnabled"
-        },
-        {
-          "id": "astResultsPromo",
-          "type": "webview",
-          "name": "Checkmarx One Results",
-          "when": "ast-results.isStandaloneEnabled"
+          "name": "Checkmarx One Results"
         },
         {
           "id": "astCxOneAssist",
