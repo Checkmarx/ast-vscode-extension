@@ -1,0 +1,1074 @@
+import * as vscode from "vscode";
+import { randomUUID } from "crypto";
+import { Logs } from "../models/logs";
+import {
+  PendingAIFix,
+  FixOutcome,
+  FixOutcomeTelemetry,
+  TrackerConfig,
+  DEFAULT_TRACKER_CONFIG,
+  ScannerType,
+  McpRecommendation
+} from "./types";
+import { McpClient } from "./mcpClient";
+import {
+  HoverData,
+  SecretsHoverData,
+  AscaHoverData,
+  ContainersHoverData,
+  IacHoverData,
+  CxDiagnosticData
+} from "../realtimeScanners/common/types";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import {
+  isSecretsHoverData,
+  isAscaHoverData,
+  isContainersHoverData,
+  isIacHoverData
+} from "../utils/utils";
+import { cx } from "../cx";
+
+type AnyHoverData = HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData;
+
+/**
+ * Singleton service to track AI fix requests and their outcomes.
+ * Monitors whether users adopt MCP suggestions, use alternatives, or reject fixes.
+ */
+export class AISuggestionTracker {
+  private static instance: AISuggestionTracker;
+
+  /** Map of vulnerability key -> pending fix tracking data */
+  private pendingFixes: Map<string, PendingAIFix> = new Map();
+
+  /** Configuration for retry intervals and limits */
+  private config: TrackerConfig;
+
+  /** Extension context for accessing secrets and services */
+  private context: vscode.ExtensionContext;
+
+  /** Logger instance */
+  private logs: Logs;
+
+  /** File save listener disposable */
+  private saveListener: vscode.Disposable | undefined;
+
+  /** File change listener disposable */
+  private changeListener: vscode.Disposable | undefined;
+
+  /** Debounce timers for file changes */
+  private changeDebounceTimers: Map<string, NodeJS.Timeout> = new Map();
+
+  /** Track if a fix was detected (pending confirmation via save) */
+  private pendingConfirmation: Map<string, { detectedAt: number; detectedValue: string | null }> = new Map();
+
+  /** MCP client for fetching recommendations */
+  private mcpClient: McpClient;
+
+  private constructor(context: vscode.ExtensionContext, logs: Logs, config?: Partial<TrackerConfig>) {
+    this.context = context;
+    this.logs = logs;
+    this.config = { ...DEFAULT_TRACKER_CONFIG, ...config };
+    this.mcpClient = McpClient.getInstance(context);
+
+    // Register file save listener
+    if (this.config.checkOnSave) {
+      this.registerSaveListener();
+      this.registerChangeListener();
+    }
+
+    this.logs.info("[AITracker] Initialized with config: " + JSON.stringify(this.config));
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(context?: vscode.ExtensionContext, logs?: Logs): AISuggestionTracker {
+    if (!AISuggestionTracker.instance) {
+      if (!context || !logs) {
+        throw new Error("AISuggestionTracker must be initialized with context and logs first");
+      }
+      AISuggestionTracker.instance = new AISuggestionTracker(context, logs);
+    }
+    return AISuggestionTracker.instance;
+  }
+
+  /**
+   * Initialize the tracker with extension context
+   */
+  static initialize(context: vscode.ExtensionContext, logs: Logs, config?: Partial<TrackerConfig>): AISuggestionTracker {
+    AISuggestionTracker.instance = new AISuggestionTracker(context, logs, config);
+    return AISuggestionTracker.instance;
+  }
+
+  /**
+   * Register listener for file save events
+   */
+  private registerSaveListener(): void {
+    this.saveListener = vscode.workspace.onDidSaveTextDocument(
+      (document) => this.onFileSaved(document)
+    );
+    this.logs.info("[AITracker] File save listener registered");
+  }
+
+  /**
+   * Register listener for file change events (edits without save)
+   */
+  private registerChangeListener(): void {
+    this.changeListener = vscode.workspace.onDidChangeTextDocument(
+      (event) => this.onFileChanged(event)
+    );
+    this.logs.info("[AITracker] File change listener registered");
+  }
+
+  /**
+   * Handle file change event - debounced check for pending fixes
+   * NOTE: On file edit (not save), we only detect potential fixes but do NOT finalize.
+   * This allows users to Undo before we report the outcome.
+   */
+  private onFileChanged(event: vscode.TextDocumentChangeEvent): void {
+    const filePath = event.document.uri.fsPath;
+
+    // Only process if there are actual content changes
+    if (event.contentChanges.length === 0) {
+      return;
+    }
+
+    // Find all pending fixes for this file
+    const fixesForFile = Array.from(this.pendingFixes.values())
+      .filter(fix => fix.filePath === filePath);
+
+    if (fixesForFile.length === 0) {
+      return;
+    }
+
+    this.logs.info(`[AITracker] File EDITED (not saved) with ${fixesForFile.length} pending AI fix(es): ${filePath}`);
+    this.logs.info(`[AITracker] Content changes count: ${event.contentChanges.length}`);
+
+    // Debounce the check - wait 2 seconds after last change before checking
+    const existingTimer = this.changeDebounceTimers.get(filePath);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const debounceTimer = setTimeout(async () => {
+      this.changeDebounceTimers.delete(filePath);
+      this.logs.info(`[AITracker] Debounce complete, checking fix status (NOT finalizing - waiting for save): ${filePath}`);
+
+      for (const fix of fixesForFile) {
+        // Pass isFromSave=false to indicate we should NOT finalize positive outcomes
+        await this.checkFixOutcome(fix, false);
+      }
+    }, 2000); // 2 second debounce
+
+    this.changeDebounceTimers.set(filePath, debounceTimer);
+  }
+
+  /**
+   * Handle file save event - check if any pending fixes were applied
+   * NOTE: On file SAVE, we can finalize the outcome because user confirmed they want to keep changes.
+   */
+  private async onFileSaved(document: vscode.TextDocument): Promise<void> {
+    const filePath = document.uri.fsPath;
+
+    // Clear any pending debounce timer since file was saved
+    const existingTimer = this.changeDebounceTimers.get(filePath);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.changeDebounceTimers.delete(filePath);
+    }
+
+    // Find all pending fixes for this file
+    const fixesForFile = Array.from(this.pendingFixes.values())
+      .filter(fix => fix.filePath === filePath);
+
+    if (fixesForFile.length === 0) {
+      return;
+    }
+
+    this.logs.info(`[AITracker] File SAVED with ${fixesForFile.length} pending AI fix(es): ${filePath}`);
+    this.logs.info(`[AITracker] User confirmed changes by saving - will finalize outcomes`);
+
+    // Check each pending fix - pass isFromSave=true to finalize positive outcomes
+    for (const fix of fixesForFile) {
+      await this.checkFixOutcome(fix, true);
+    }
+  }
+
+  /**
+   * Generate a unique vulnerability key for deduplication
+   */
+  private getVulnerabilityKey(item: AnyHoverData, scannerType: ScannerType): string {
+    const filePath = this.getFilePath(item);
+
+    switch (scannerType) {
+      case 'Oss': {
+        const ossItem = item as HoverData;
+        return `oss:${ossItem.packageManager}:${ossItem.packageName}:${ossItem.version}:${filePath}`;
+      }
+      case 'Secrets': {
+        const secretItem = item as SecretsHoverData;
+        const line = secretItem.location?.line ?? 0;
+        return `secrets:${secretItem.title}:${filePath}:${line}`;
+      }
+      case 'Asca': {
+        const ascaItem = item as AscaHoverData;
+        const line = ascaItem.location?.line ?? 0;
+        return `asca:${ascaItem.ruleName}:${ascaItem.ruleId}:${filePath}:${line}`;
+      }
+      case 'Containers': {
+        const containerItem = item as ContainersHoverData;
+        const line = containerItem.location?.line ?? 0;
+        return `containers:${containerItem.imageName}:${containerItem.imageTag}:${filePath}:${line}`;
+      }
+      case 'IaC': {
+        const iacItem = item as IacHoverData;
+        const line = iacItem.location?.line ?? 0;
+        return `iac:${iacItem.similarityId}:${filePath}:${line}`;
+      }
+      default:
+        return `unknown:${filePath}:${Date.now()}`;
+    }
+  }
+
+  /**
+   * Get file path from hover data item
+   */
+  private getFilePath(item: AnyHoverData): string {
+    if ('filePath' in item && item.filePath) {
+      return item.filePath;
+    }
+    // Fallback to active editor
+    return vscode.window.activeTextEditor?.document.uri.fsPath || '';
+  }
+
+  /**
+   * Get line number from hover data item
+   */
+  private getLine(item: AnyHoverData): number {
+    if ('line' in item && typeof item.line === 'number') {
+      return item.line;
+    }
+    if ('location' in item && item.location?.line !== undefined) {
+      return item.location.line;
+    }
+    return 0;
+  }
+
+  /**
+   * Determine scanner type from hover data
+   */
+  private getScannerType(item: AnyHoverData): ScannerType {
+    if (isSecretsHoverData(item)) { return 'Secrets'; }
+    if (isAscaHoverData(item)) { return 'Asca'; }
+    if (isContainersHoverData(item)) { return 'Containers'; }
+    if (isIacHoverData(item)) { return 'IaC'; }
+    return 'Oss';
+  }
+
+  /**
+   * Get original value (version, secret type, etc.) from hover data
+   */
+  private getOriginalValue(item: AnyHoverData, scannerType: ScannerType): string {
+    switch (scannerType) {
+      case 'Oss':
+        return (item as HoverData).version;
+      case 'Secrets':
+        return (item as SecretsHoverData).title || 'secret';
+      case 'Asca':
+        return (item as AscaHoverData).ruleName;
+      case 'Containers':
+        return `${(item as ContainersHoverData).imageName}:${(item as ContainersHoverData).imageTag}`;
+      case 'IaC':
+        return (item as IacHoverData).title;
+      default:
+        return 'unknown';
+    }
+  }
+
+  /**
+   * Get severity from hover data
+   */
+  private getSeverity(item: AnyHoverData): string {
+    if ('severity' in item && item.severity) {
+      return item.severity;
+    }
+    if ('status' in item) {
+      return String(item.status);
+    }
+    return 'unknown';
+  }
+
+  /**
+   * Track a new AI fix request
+   * Called when user clicks "Fix with CxOne Assist"
+   */
+  async trackFixRequest(item: AnyHoverData): Promise<string> {
+    const scannerType = this.getScannerType(item);
+    const vulnKey = this.getVulnerabilityKey(item, scannerType);
+    const filePath = this.getFilePath(item);
+    const originalValue = this.getOriginalValue(item, scannerType);
+
+    this.logs.info(`[AITracker] ========== NEW FIX REQUEST ==========`);
+    this.logs.info(`[AITracker] Scanner Type: ${scannerType}`);
+    this.logs.info(`[AITracker] Vulnerability Key: ${vulnKey}`);
+    this.logs.info(`[AITracker] File Path: ${filePath}`);
+    this.logs.info(`[AITracker] Original Value: ${originalValue}`);
+    this.logs.info(`[AITracker] Severity: ${this.getSeverity(item)}`);
+
+    // Check for duplicate request
+    const existing = this.pendingFixes.get(vulnKey);
+    if (existing) {
+      existing.requestCount++;
+      existing.requestedAt = Date.now();
+      this.logs.info(`[AITracker] DUPLICATE request detected for ${vulnKey}`);
+      this.logs.info(`[AITracker] Total request count: ${existing.requestCount}`);
+
+      // Send duplicate telemetry
+      this.sendTelemetry('ai_fix_duplicate', {
+        scannerType,
+        severity: this.getSeverity(item),
+        vulnerabilityKey: vulnKey,
+        requestCount: existing.requestCount
+      });
+
+      return existing.id;
+    }
+
+    // Fetch MCP recommendation
+    let mcpRecommendation: McpRecommendation | undefined;
+    this.logs.info(`[AITracker] Fetching MCP recommendation...`);
+    try {
+      mcpRecommendation = await this.fetchMcpRecommendation(item, scannerType);
+      this.logs.info(`[AITracker] MCP Response:`);
+      this.logs.info(`[AITracker]   - Suggested Version: ${mcpRecommendation?.suggestedVersion || 'N/A'}`);
+      this.logs.info(`[AITracker]   - Suggested Action: ${mcpRecommendation?.suggestedAction || 'N/A'}`);
+      this.logs.info(`[AITracker]   - Fix Instructions: ${mcpRecommendation?.fixInstructions?.substring(0, 100) || 'N/A'}...`);
+      if (mcpRecommendation?.error) {
+        this.logs.warn(`[AITracker]   - MCP Error: ${mcpRecommendation.error}`);
+      }
+    } catch (error) {
+      this.logs.warn(`[AITracker] Failed to fetch MCP recommendation: ${error}`);
+    }
+
+    // Create new tracking entry
+    const fix: PendingAIFix = {
+      id: randomUUID(),
+      vulnerabilityKey: vulnKey,
+      filePath: filePath,
+      line: this.getLine(item),
+      scannerType,
+      severity: this.getSeverity(item),
+      originalValue: originalValue,
+      mcpSuggestedVersion: mcpRecommendation?.suggestedVersion,
+      mcpSuggestedAction: mcpRecommendation?.suggestedAction,
+      mcpFullResponse: mcpRecommendation,
+      requestedAt: Date.now(),
+      checkCount: 0,
+      maxRetries: this.config.maxRetries,
+      retryIntervalMs: this.config.retryIntervalMs,
+      requestCount: 1,
+      originalItem: item
+    };
+
+    this.pendingFixes.set(vulnKey, fix);
+    this.logs.info(`[AITracker] Created tracking entry with ID: ${fix.id}`);
+    this.logs.info(`[AITracker] Total pending fixes: ${this.pendingFixes.size}`);
+
+    // Start check timer
+    this.startCheckTimer(fix);
+    this.logs.info(`[AITracker] Started check timer (${this.config.retryIntervalMs}ms interval, max ${this.config.maxRetries} retries)`);
+
+    // Send request telemetry
+    this.sendTelemetry('ai_fix_requested', {
+      scannerType,
+      severity: fix.severity,
+      vulnerabilityKey: vulnKey,
+      mcpSuggestedVersion: mcpRecommendation?.suggestedVersion,
+      mcpSuggestedAction: mcpRecommendation?.suggestedAction
+    });
+
+    this.logs.info(`[AITracker] ========== FIX REQUEST TRACKED ==========`);
+
+    return fix.id;
+  }
+
+  /**
+   * Fetch MCP recommendation based on scanner type
+   */
+  private async fetchMcpRecommendation(item: AnyHoverData, scannerType: ScannerType): Promise<McpRecommendation> {
+    switch (scannerType) {
+      case 'Oss': {
+        const ossItem = item as HoverData;
+        const isMalicious = ossItem.status === CxRealtimeEngineStatus.malicious;
+        return this.mcpClient.getRecommendation({
+          scannerType: 'Oss',
+          packageName: ossItem.packageName,
+          packageVersion: ossItem.version,
+          packageManager: ossItem.packageManager,
+          issueType: isMalicious ? 'malicious' : 'CVE',
+          filePath: ossItem.filePath,
+          line: ossItem.line
+        });
+      }
+      case 'Secrets': {
+        const secretItem = item as SecretsHoverData;
+        return this.mcpClient.getRecommendation({
+          scannerType: 'Secrets',
+          secretType: secretItem.title,
+          filePath: secretItem.filePath,
+          line: secretItem.location?.line ?? 0
+        });
+      }
+      case 'Asca': {
+        const ascaItem = item as AscaHoverData;
+        return this.mcpClient.getRecommendation({
+          scannerType: 'Asca',
+          ruleName: ascaItem.ruleName,
+          filePath: ascaItem.filePath || '',
+          line: ascaItem.location?.line ?? 0
+        });
+      }
+      case 'Containers': {
+        const containerItem = item as ContainersHoverData;
+        return this.mcpClient.getRecommendation({
+          scannerType: 'Containers',
+          imageName: containerItem.imageName,
+          imageTag: containerItem.imageTag,
+          filePath: vscode.window.activeTextEditor?.document.uri.fsPath || '',
+          line: containerItem.location?.line ?? 0
+        });
+      }
+      case 'IaC': {
+        const iacItem = item as IacHoverData;
+        return this.mcpClient.getRecommendation({
+          scannerType: 'IaC',
+          ruleName: iacItem.title,
+          filePath: iacItem.filePath,
+          line: iacItem.location?.line ?? 0
+        });
+      }
+      default:
+        return { suggestedAction: 'upgrade', error: 'Unknown scanner type' };
+    }
+  }
+
+  /**
+   * Start the check timer for a pending fix
+   */
+  private startCheckTimer(fix: PendingAIFix): void {
+    // Clear existing timer if any
+    if (fix.timerId) {
+      clearTimeout(fix.timerId);
+    }
+
+    fix.timerId = setTimeout(async () => {
+      // On timeout, check if we've reached max retries
+      // If this is the last retry, we can finalize (either rejected or adopted after long wait)
+      const isLastRetry = fix.checkCount >= fix.maxRetries;
+
+      if (isLastRetry) {
+        this.logs.info(`[AITracker] Timer fired - FINAL check (will finalize)`);
+        // On final timeout, we can finalize - user had enough time
+        await this.checkFixOutcome(fix, true);
+      } else {
+        this.logs.info(`[AITracker] Timer fired - checking status (not final)`);
+        // Not final timeout - don't finalize positive outcomes yet
+        await this.checkFixOutcome(fix, false);
+      }
+    }, fix.retryIntervalMs);
+  }
+
+  /**
+   * Check if a fix was applied and determine outcome
+   * @param fix The pending fix to check
+   * @param isFromSave If true, we can finalize positive outcomes. If false, only track potential fixes.
+   */
+  private async checkFixOutcome(fix: PendingAIFix, isFromSave: boolean = true): Promise<void> {
+    fix.checkCount++;
+
+    this.logs.info(`[AITracker] ========== CHECKING FIX OUTCOME ==========`);
+    this.logs.info(`[AITracker] Trigger: ${isFromSave ? 'FILE SAVE (can finalize)' : 'FILE EDIT (cannot finalize positive outcomes)'}`);
+    this.logs.info(`[AITracker] Vulnerability Key: ${fix.vulnerabilityKey}`);
+    this.logs.info(`[AITracker] Check attempt: ${fix.checkCount}/${fix.maxRetries + 1}`);
+    this.logs.info(`[AITracker] Original Value: ${fix.originalValue}`);
+    this.logs.info(`[AITracker] MCP Suggested Version: ${fix.mcpSuggestedVersion || 'N/A'}`);
+    this.logs.info(`[AITracker] Time since request: ${Date.now() - fix.requestedAt}ms`);
+
+    // Get current diagnostics for the file
+    const currentValue = await this.getCurrentValue(fix);
+    const isFixed = currentValue === null; // Vulnerability no longer present
+
+    this.logs.info(`[AITracker] Current Value from diagnostics: ${currentValue === null ? 'NULL (vulnerability not found)' : currentValue}`);
+    this.logs.info(`[AITracker] Is Fixed: ${isFixed}`);
+
+    // Check pending confirmation status
+    const pendingConf = this.pendingConfirmation.get(fix.vulnerabilityKey);
+    if (pendingConf) {
+      this.logs.info(`[AITracker] Pending confirmation exists from: ${new Date(pendingConf.detectedAt).toISOString()}`);
+    }
+
+    if (isFixed) {
+      // Get the actual version that was applied (read from file if possible)
+      const actualVersion = await this.getActualVersionFromFile(fix);
+
+      // Determine if user used MCP suggestion or alternative
+      const outcome = this.determineOutcomeWithVersion(fix, actualVersion);
+      this.logs.info(`[AITracker] DECISION: Vulnerability appears FIXED`);
+      this.logs.info(`[AITracker] Actual version in file: ${actualVersion || '(not found/removed)'}`);
+      this.logs.info(`[AITracker] Potential outcome: ${outcome}`);
+
+      if (isFromSave) {
+        // User saved the file - they confirmed they want to keep the fix
+        this.logs.info(`[AITracker] User SAVED file - finalizing as: ${outcome}`);
+        this.pendingConfirmation.delete(fix.vulnerabilityKey);
+        await this.finalizeFix(fix, outcome, actualVersion);
+      } else {
+        // File was edited but not saved - track potential fix but don't finalize
+        // User might still Undo
+        this.logs.info(`[AITracker] File edited but NOT saved - tracking potential fix (waiting for save to confirm)`);
+        this.logs.info(`[AITracker] User can still UNDO. Will only finalize when file is SAVED.`);
+
+        // Store pending confirmation
+        this.pendingConfirmation.set(fix.vulnerabilityKey, {
+          detectedAt: Date.now(),
+          detectedValue: currentValue
+        });
+
+        // Don't finalize, don't schedule retry - wait for save or timeout
+      }
+    } else {
+      // Vulnerability still present
+
+      // Clear any pending confirmation since vulnerability came back (user might have undone)
+      if (pendingConf) {
+        this.logs.info(`[AITracker] Vulnerability REAPPEARED - user likely clicked UNDO`);
+        this.logs.info(`[AITracker] Clearing pending confirmation`);
+        this.pendingConfirmation.delete(fix.vulnerabilityKey);
+      }
+
+      if (fix.checkCount <= fix.maxRetries) {
+        // Not fixed yet, schedule retry
+        this.logs.info(`[AITracker] DECISION: Vulnerability still present, scheduling retry`);
+        this.logs.info(`[AITracker] Next check in: ${fix.retryIntervalMs}ms`);
+        this.startCheckTimer(fix);
+      } else {
+        // Max retries reached, mark as rejected
+        this.logs.info(`[AITracker] DECISION: Max retries reached, marking as REJECTED`);
+        await this.finalizeFix(fix, 'fix_rejected', currentValue || undefined);
+      }
+    }
+
+    this.logs.info(`[AITracker] ========== CHECK COMPLETE ==========`);
+  }
+
+  /**
+   * Get current value from diagnostics to check if vulnerability still exists
+   * Returns null if vulnerability is no longer present (fixed)
+   * Returns the current value if still present
+   */
+  private async getCurrentValue(fix: PendingAIFix): Promise<string | null> {
+    const uri = vscode.Uri.file(fix.filePath);
+    const diagnostics = vscode.languages.getDiagnostics(uri);
+
+    this.logs.info(`[AITracker] Scanning diagnostics for: ${fix.filePath}`);
+    this.logs.info(`[AITracker] Total diagnostics found: ${diagnostics.length}`);
+
+    let matchingDiagnosticCount = 0;
+
+    // Look for diagnostic matching our vulnerability
+    for (const diagnostic of diagnostics) {
+      const data = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+      if (!data?.item) {
+        continue;
+      }
+
+      // Log each CxDiagnostic we find
+      this.logs.info(`[AITracker] Found CxDiagnostic: type=${data.cxType}, line=${diagnostic.range.start.line}`);
+
+      // Check if this diagnostic matches our tracked vulnerability
+      if (this.diagnosticMatchesFix(data, fix)) {
+        matchingDiagnosticCount++;
+        // Still present - extract current value
+        const currentValue = this.extractValueFromDiagnostic(data, fix.scannerType);
+        this.logs.info(`[AITracker] MATCH FOUND! Vulnerability still present`);
+        this.logs.info(`[AITracker] Current value: ${currentValue}`);
+        return currentValue;
+      }
+    }
+
+    // Vulnerability not found in diagnostics - it was fixed
+    this.logs.info(`[AITracker] No matching diagnostic found - vulnerability appears to be FIXED`);
+    this.logs.info(`[AITracker] Scanned ${diagnostics.length} diagnostics, found ${matchingDiagnosticCount} matches`);
+    return null;
+  }
+
+  /**
+   * Check if a diagnostic matches the tracked fix
+   */
+  private diagnosticMatchesFix(data: CxDiagnosticData, fix: PendingAIFix): boolean {
+    const item = data.item;
+
+    switch (fix.scannerType) {
+      case 'Oss': {
+        if (!('packageName' in item)) {
+          return false;
+        }
+        const ossItem = item as HoverData;
+        const originalOss = fix.originalItem as HoverData;
+        const matches = ossItem.packageName === originalOss.packageName &&
+          ossItem.packageManager === originalOss.packageManager;
+        if (matches) {
+          this.logs.info(`[AITracker] OSS Match: ${ossItem.packageName}@${ossItem.version} (original: ${originalOss.version})`);
+        }
+        return matches;
+      }
+      case 'Secrets': {
+        if (!('secretValue' in item)) {
+          return false;
+        }
+        const secretItem = item as SecretsHoverData;
+        const originalSecret = fix.originalItem as SecretsHoverData;
+        const matches = secretItem.title === originalSecret.title &&
+          secretItem.location?.line === originalSecret.location?.line;
+        if (matches) {
+          this.logs.info(`[AITracker] Secrets Match: ${secretItem.title} at line ${secretItem.location?.line}`);
+        }
+        return matches;
+      }
+      case 'Asca': {
+        if (!('ruleName' in item)) {
+          return false;
+        }
+        const ascaItem = item as AscaHoverData;
+        const originalAsca = fix.originalItem as AscaHoverData;
+        const matches = ascaItem.ruleId === originalAsca.ruleId &&
+          ascaItem.location?.line === originalAsca.location?.line;
+        if (matches) {
+          this.logs.info(`[AITracker] ASCA Match: ${ascaItem.ruleName} (ruleId: ${ascaItem.ruleId}) at line ${ascaItem.location?.line}`);
+        }
+        return matches;
+      }
+      case 'Containers': {
+        if (!('imageName' in item)) {
+          return false;
+        }
+        const containerItem = item as ContainersHoverData;
+        const originalContainer = fix.originalItem as ContainersHoverData;
+        const matches = containerItem.imageName === originalContainer.imageName;
+        if (matches) {
+          this.logs.info(`[AITracker] Containers Match: ${containerItem.imageName}:${containerItem.imageTag}`);
+        }
+        return matches;
+      }
+      case 'IaC': {
+        if (!('similarityId' in item)) {
+          return false;
+        }
+        const iacItem = item as IacHoverData;
+        const originalIac = fix.originalItem as IacHoverData;
+        const matches = iacItem.similarityId === originalIac.similarityId;
+        if (matches) {
+          this.logs.info(`[AITracker] IaC Match: ${iacItem.title} (similarityId: ${iacItem.similarityId})`);
+        }
+        return matches;
+      }
+      default:
+        this.logs.warn(`[AITracker] Unknown scanner type: ${fix.scannerType}`);
+        return false;
+    }
+  }
+
+  /**
+   * Extract value from diagnostic for comparison
+   */
+  private extractValueFromDiagnostic(data: CxDiagnosticData, scannerType: ScannerType): string {
+    const item = data.item;
+
+    switch (scannerType) {
+      case 'Oss':
+        return (item as HoverData).version;
+      case 'Containers':
+        return `${(item as ContainersHoverData).imageName}:${(item as ContainersHoverData).imageTag}`;
+      default:
+        return 'present';
+    }
+  }
+
+  /**
+   * Get the actual version from the file for OSS packages
+   */
+  private async getActualVersionFromFile(fix: PendingAIFix): Promise<string | undefined> {
+    if (fix.scannerType !== 'Oss') {
+      return undefined;
+    }
+
+    try {
+      const document = await vscode.workspace.openTextDocument(fix.filePath);
+      const text = document.getText();
+      const originalItem = fix.originalItem as HoverData;
+      const packageName = originalItem.packageName;
+
+      // Try to find the package version in the file
+      // Common patterns: "package": "version" or "package": "^version" or "package": "~version"
+      const patterns = [
+        new RegExp(`"${this.escapeRegex(packageName)}"\\s*:\\s*"([^"]+)"`, 'i'),
+        new RegExp(`'${this.escapeRegex(packageName)}'\\s*:\\s*'([^']+)'`, 'i'),
+      ];
+
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+          // Clean version string (remove ^ ~ >= etc.)
+          const version = match[1].replace(/^[\^~>=<]+/, '');
+          this.logs.info(`[AITracker] Found actual version in file: ${packageName}@${version}`);
+          return version;
+        }
+      }
+
+      this.logs.info(`[AITracker] Could not find ${packageName} version in file`);
+      return undefined;
+    } catch (error) {
+      this.logs.warn(`[AITracker] Error reading file for version: ${error}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * Escape special regex characters
+   */
+  private escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Determine the outcome of a fix attempt with actual version info
+   */
+  private determineOutcomeWithVersion(fix: PendingAIFix, actualVersion: string | undefined): FixOutcome['status'] {
+    this.logs.info(`[AITracker] Determining outcome with version info...`);
+    this.logs.info(`[AITracker]   - Original Value: ${fix.originalValue}`);
+    this.logs.info(`[AITracker]   - MCP Suggested: ${fix.mcpSuggestedVersion || 'N/A'}`);
+    this.logs.info(`[AITracker]   - Actual Version: ${actualVersion || '(not found)'}`);
+
+    // CRITICAL: If actual version is SAME as original, nothing was fixed!
+    if (actualVersion && actualVersion === fix.originalValue) {
+      this.logs.info(`[AITracker]   -> Actual version is SAME as original (${actualVersion}), NO FIX APPLIED`);
+      this.logs.info(`[AITracker]   -> This should NOT happen if vulnerability is gone from diagnostics`);
+      this.logs.info(`[AITracker]   -> Returning FIX_REJECTED (false positive detection)`);
+      return 'fix_rejected';
+    }
+
+    // For OSS packages, compare versions
+    if (fix.scannerType === 'Oss' && actualVersion) {
+      // Check if it matches MCP suggestion
+      if (fix.mcpSuggestedVersion && actualVersion === fix.mcpSuggestedVersion) {
+        this.logs.info(`[AITracker]   -> Actual version MATCHES MCP suggestion (${actualVersion}), MCP_ADOPTED`);
+        return 'mcp_adopted';
+      }
+
+      // Version changed but not to MCP suggestion
+      if (actualVersion !== fix.originalValue) {
+        if (fix.mcpSuggestedVersion) {
+          this.logs.info(`[AITracker]   -> Actual version (${actualVersion}) DIFFERS from MCP suggestion (${fix.mcpSuggestedVersion}), ALT_FIX_USED`);
+        } else {
+          this.logs.info(`[AITracker]   -> Version changed to ${actualVersion} (no MCP suggestion available), ALT_FIX_USED`);
+        }
+        return 'alt_fix_used';
+      }
+    }
+
+    // For non-OSS or if package was removed entirely (no actual version found)
+    if (!actualVersion) {
+      // Package might have been removed entirely
+      this.logs.info(`[AITracker]   -> Package/vulnerability removed from file, MCP_ADOPTED`);
+      return 'mcp_adopted';
+    }
+
+    // Fallback - should not reach here if logic is correct
+    this.logs.warn(`[AITracker]   -> UNEXPECTED STATE: Could not determine outcome`);
+    this.logs.warn(`[AITracker]   -> Original: ${fix.originalValue}, Actual: ${actualVersion}, MCP: ${fix.mcpSuggestedVersion || 'N/A'}`);
+    return 'fix_rejected';
+  }
+
+  /**
+   * Determine the outcome of a fix attempt (legacy, for compatibility)
+   */
+  private determineOutcome(fix: PendingAIFix, currentValue: string | null): FixOutcome['status'] {
+    this.logs.info(`[AITracker] Determining outcome...`);
+    this.logs.info(`[AITracker]   - Current Value: ${currentValue}`);
+    this.logs.info(`[AITracker]   - Original Value: ${fix.originalValue}`);
+    this.logs.info(`[AITracker]   - MCP Suggested: ${fix.mcpSuggestedVersion || 'N/A'}`);
+
+    if (currentValue === null) {
+      // Vulnerability is gone
+      // For OSS, we could compare versions but since it's gone, we consider it adopted
+      // In the future, we could read the file to see the actual version used
+      this.logs.info(`[AITracker]   -> Vulnerability GONE, assuming MCP_ADOPTED`);
+      return 'mcp_adopted';
+    }
+
+    // For OSS packages, compare versions
+    if (fix.scannerType === 'Oss' && fix.mcpSuggestedVersion) {
+      if (currentValue === fix.mcpSuggestedVersion) {
+        this.logs.info(`[AITracker]   -> Current matches MCP suggestion, MCP_ADOPTED`);
+        return 'mcp_adopted';
+      } else if (currentValue !== fix.originalValue) {
+        this.logs.info(`[AITracker]   -> Current differs from both original and MCP, ALT_FIX_USED`);
+        return 'alt_fix_used';
+      }
+    }
+
+    this.logs.info(`[AITracker]   -> No fix detected, FIX_REJECTED`);
+    return 'fix_rejected';
+  }
+
+  /**
+   * Get the MCP suggested version - always returns a value
+   * Returns: version if available, action name (e.g., 'remove') if no version but action exists, or 'unknown' if MCP failed
+   */
+  private getMcpSuggestedVersionValue(fix: PendingAIFix): string {
+    // If we have a suggested version, use it
+    if (fix.mcpSuggestedVersion) {
+      return fix.mcpSuggestedVersion;
+    }
+
+    // If MCP suggested an action without version (e.g., 'remove' for malicious packages), use the action
+    if (fix.mcpSuggestedAction) {
+      return fix.mcpSuggestedAction;
+    }
+
+    // If MCP call failed or returned no useful info
+    if (fix.mcpFullResponse?.error) {
+      return 'error';
+    }
+
+    return 'unknown';
+  }
+
+  /**
+   * Finalize a fix tracking and send telemetry
+   */
+  private async finalizeFix(fix: PendingAIFix, status: FixOutcome['status'], actualVersion?: string): Promise<void> {
+    this.logs.info(`[AITracker] ========== FINALIZING FIX ==========`);
+    this.logs.info(`[AITracker] Vulnerability Key: ${fix.vulnerabilityKey}`);
+    this.logs.info(`[AITracker] Final Status: ${status}`);
+
+    // Clear timer
+    if (fix.timerId) {
+      clearTimeout(fix.timerId);
+      this.logs.info(`[AITracker] Cleared pending timer`);
+    }
+
+    // Get relative path (clean up the path)
+    const relativePath = this.getRelativePath(fix.filePath);
+
+    // Calculate time for logging only (not sent in telemetry)
+    const timeToFixMs = Date.now() - fix.requestedAt;
+
+    // Send telemetry with clean data
+    // Build event name: ai_fix_mcp_adopted, ai_fix_alt_used, ai_fix_rejected (not ai_fix_fix_rejected)
+    const eventName = status.startsWith('fix_') ? `ai_${status}` : `ai_fix_${status}`;
+
+    // Get package/vulnerability name
+    const itemName = this.getItemName(fix);
+
+    // Get MCP suggested version - always has a value
+    const mcpSuggestedVersion = this.getMcpSuggestedVersionValue(fix);
+
+    // Calculate versionAdopted based on status
+    // For mcp_adopted: use mcpSuggestedVersion if it's a real version, otherwise actualVersion
+    // For alt_fix_used: use actualVersion
+    // For fix_rejected: null (no version was adopted)
+    let versionAdopted: string | null = null;
+    if (status === 'mcp_adopted') {
+      // Only use mcpSuggestedVersion if it looks like a version (not an action like 'remove')
+      versionAdopted = fix.mcpSuggestedVersion || actualVersion || null;
+    } else if (status === 'alt_fix_used') {
+      versionAdopted = actualVersion || null;
+    }
+
+    this.logs.info(`[AITracker] Outcome Details:`);
+    this.logs.info(`[AITracker]   - Scanner: ${fix.scannerType}`);
+    this.logs.info(`[AITracker]   - Severity: ${fix.severity}`);
+    this.logs.info(`[AITracker]   - File: ${relativePath}`);
+    this.logs.info(`[AITracker]   - Package: ${itemName}`);
+    this.logs.info(`[AITracker]   - Original Version: ${fix.originalValue}`);
+    this.logs.info(`[AITracker]   - MCP Suggested Version: ${mcpSuggestedVersion}`);
+    this.logs.info(`[AITracker]   - Actual Version in File: ${actualVersion || '(removed/fixed)'}`);
+    this.logs.info(`[AITracker]   - Version Adopted: ${versionAdopted || 'N/A'}`);
+    this.logs.info(`[AITracker]   - Time to Fix: ${timeToFixMs}ms (${(timeToFixMs / 1000).toFixed(1)}s)`);
+    this.logs.info(`[AITracker]   - Check Count: ${fix.checkCount}`);
+    this.logs.info(`[AITracker]   - Duplicate Requests: ${fix.requestCount - 1}`);
+    this.logs.info(`[AITracker] Sending telemetry event: ${eventName}`);
+
+    // Build unified telemetry data - same structure for all outcomes (mcp_adopted, alt_fix_used, fix_rejected)
+    const telemetryData: FixOutcomeTelemetry = {
+      mcpSuggestedVersion,
+      actualVersion: actualVersion || null,
+      status,
+      scannerType: fix.scannerType,
+      severity: fix.severity,
+      filePath: relativePath,
+      packageName: itemName,
+      originalVersion: fix.originalValue,
+      versionAdopted,
+      duplicateRequests: fix.requestCount - 1
+    };
+
+    await this.sendTelemetry(eventName, telemetryData);
+
+    // Remove from pending
+    this.pendingFixes.delete(fix.vulnerabilityKey);
+    this.logs.info(`[AITracker] Removed from pending. Remaining pending fixes: ${this.pendingFixes.size}`);
+    this.logs.info(`[AITracker] ========== FIX FINALIZED ==========`);
+  }
+
+  /**
+   * Get relative path from absolute path (clean, no escaped backslashes)
+   */
+  private getRelativePath(absolutePath: string): string {
+    // First normalize the path - replace all backslashes with forward slashes
+    const normalizedPath = absolutePath.replace(/\\/g, '/');
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      // No workspace, return just the filename
+      return normalizedPath.split('/').pop() || normalizedPath;
+    }
+
+    // Find which workspace folder contains this file
+    for (const folder of workspaceFolders) {
+      const folderPath = folder.uri.fsPath.replace(/\\/g, '/');
+      if (normalizedPath.toLowerCase().startsWith(folderPath.toLowerCase())) {
+        // Return relative path with forward slashes
+        return normalizedPath
+          .substring(folderPath.length)
+          .replace(/^\/+/, ''); // Remove leading slashes
+      }
+    }
+
+    // Not in workspace, return just the filename
+    return normalizedPath.split('/').pop() || normalizedPath;
+  }
+
+  /**
+   * Get the package/item name from the fix data
+   */
+  private getItemName(fix: PendingAIFix): string {
+    switch (fix.scannerType) {
+      case 'Oss': {
+        const ossItem = fix.originalItem as HoverData;
+        return ossItem.packageName || 'unknown';
+      }
+      case 'Secrets': {
+        const secretItem = fix.originalItem as SecretsHoverData;
+        return secretItem.title || 'secret';
+      }
+      case 'Asca': {
+        const ascaItem = fix.originalItem as AscaHoverData;
+        return ascaItem.ruleName || 'unknown';
+      }
+      case 'Containers': {
+        const containerItem = fix.originalItem as ContainersHoverData;
+        return `${containerItem.imageName}:${containerItem.imageTag}`;
+      }
+      case 'IaC': {
+        const iacItem = fix.originalItem as IacHoverData;
+        return iacItem.title || 'unknown';
+      }
+      default:
+        return 'unknown';
+    }
+  }
+
+  /**
+   * Send telemetry event
+   */
+  private async sendTelemetry(eventName: string, data: FixOutcomeTelemetry | Record<string, unknown>): Promise<void> {
+    try {
+      const telemetryData = data as FixOutcomeTelemetry;
+
+      // Use the dedicated AI fix outcome telemetry method
+      await cx.sendAIFixOutcomeTelemetry(
+        eventName,
+        telemetryData.scannerType || '',
+        telemetryData.severity || '',
+        telemetryData.mcpSuggestedVersion,
+        telemetryData.actualVersion || undefined,
+        undefined, // retryCount removed from telemetry
+        JSON.stringify(data)
+      );
+    } catch (error) {
+      this.logs.warn(`Failed to send telemetry: ${error}`);
+    }
+  }
+
+  /**
+   * Get number of pending fixes being tracked
+   */
+  getPendingCount(): number {
+    return this.pendingFixes.size;
+  }
+
+  /**
+   * Get pending fix by vulnerability key
+   */
+  getPendingFix(vulnKey: string): PendingAIFix | undefined {
+    return this.pendingFixes.get(vulnKey);
+  }
+
+  /**
+   * Cancel tracking for a specific vulnerability
+   */
+  cancelTracking(vulnKey: string): void {
+    const fix = this.pendingFixes.get(vulnKey);
+    if (fix) {
+      if (fix.timerId) {
+        clearTimeout(fix.timerId);
+      }
+      this.pendingFixes.delete(vulnKey);
+      this.logs.info(`Cancelled tracking for ${vulnKey}`);
+    }
+  }
+
+  /**
+   * Dispose all resources
+   */
+  dispose(): void {
+    this.logs.info("[AITracker] Disposing tracker...");
+
+    // Clear all fix timers
+    for (const fix of this.pendingFixes.values()) {
+      if (fix.timerId) {
+        clearTimeout(fix.timerId);
+      }
+    }
+    this.logs.info(`[AITracker] Cleared ${this.pendingFixes.size} pending fix timers`);
+    this.pendingFixes.clear();
+
+    // Clear all debounce timers
+    for (const timer of this.changeDebounceTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.logs.info(`[AITracker] Cleared ${this.changeDebounceTimers.size} debounce timers`);
+    this.changeDebounceTimers.clear();
+
+    // Clear pending confirmations
+    this.logs.info(`[AITracker] Cleared ${this.pendingConfirmation.size} pending confirmations`);
+    this.pendingConfirmation.clear();
+
+    // Dispose save listener
+    if (this.saveListener) {
+      this.saveListener.dispose();
+      this.logs.info("[AITracker] Save listener disposed");
+    }
+
+    // Dispose change listener
+    if (this.changeListener) {
+      this.changeListener.dispose();
+      this.logs.info("[AITracker] Change listener disposed");
+    }
+
+    this.logs.info("[AITracker] Tracker disposed successfully");
+  }
+}
+
