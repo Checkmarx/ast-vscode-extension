@@ -111,12 +111,12 @@ export class WebViewCommand {
         });
 
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
-        await this.loadAsyncTabsContent(result);
+        await this.loadAsyncTabsContent(result, detailsDetachedView);
 
         // The event is intended for loading data to the results of SAST, when returning to the plugin tab from another tab
         this.detailsPanel.onDidChangeViewState(async (e) => {
           if (e.webviewPanel.visible) {
-            await this.loadAsyncTabsContent(result);
+            await this.loadAsyncTabsContent(result, detailsDetachedView);
           }
         });
 
@@ -209,12 +209,12 @@ export class WebViewCommand {
     this.context.subscriptions.push(gpt);
   }
 
-  private async loadAsyncTabsContent(result: AstResult) {
+  private async loadAsyncTabsContent(result: AstResult, detailsDetachedView?: AstDetailsDetached) {
     if (result.type === "sast") {
       await getLearnMore(this.logs, this.context, result, this.detailsPanel);
     }
     if (result.type === "sast" || result.type === "kics") {
-      await getChanges(this.logs, this.context, result, this.detailsPanel);
+      await getChanges(this.logs, this.context, result, this.detailsPanel, detailsDetachedView, this.resultsProvider);
     }
   }
 
@@ -254,7 +254,9 @@ export class WebViewCommand {
               this.logs,
               this.context,
               result,
-              this.detailsPanel
+              this.detailsPanel,
+              detailsDetachedView,
+              this.resultsProvider
             );
           }
           break;
