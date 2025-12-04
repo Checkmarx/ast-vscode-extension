@@ -52,7 +52,7 @@ describe.skip("Using a local branch if Git exists", () => {
 		} catch (error) {
 			gitExistedBefore = false;
 			execSync("git init");
-			execSync("git commit --allow-empty -m 'Initial commit'");
+			execSync("git commit --allow-empty -m \"Initial commit\"");
 		}
 		switchToBranch(branchName);
 
