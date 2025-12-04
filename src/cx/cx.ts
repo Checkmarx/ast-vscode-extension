@@ -424,37 +424,37 @@ export class Cx implements CxPlatform {
     ): Promise<boolean> {
         const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
-            await this.context.globalState.update(globalStateKey, undefined);
+            //await this.context.globalState.update(globalStateKey, undefined);
             return false;
         }
 
-        const cached = this.context.globalState.get<boolean>(globalStateKey);
-        if (cached !== undefined) {
-            return cached;
-        }
+        // const cached = this.context.globalState.get<boolean>(globalStateKey);
+        // if (cached !== undefined) {
+        //     return cached;
+        // }
 
         const config = await this.getAstConfiguration();
-        if (!config) {
-            await this.context.globalState.update(globalStateKey, false);
-            return false;
-        }
+        // if (!config) {
+        //     await this.context.globalState.update(globalStateKey, false);
+        //     return false;
+        // }
 
         const cx = new CxWrapper(config);
         try {
             const enabled = await remoteCheck(cx);
-            if (globalStateKey === constants.standaloneEnabledGlobalState) {
-                await this.setStandaloneFlag(enabled);
-            } else {
-                await this.context.globalState.update(globalStateKey, enabled);
-            }
+            // if (globalStateKey === constants.standaloneEnabledGlobalState) {
+            //     await this.setStandaloneFlag(enabled);
+            // } else {
+            //     await this.context.globalState.update(globalStateKey, enabled);
+            // }
             return enabled;
         } catch (error) {
             logs.error(`Error checking ${errorContext}: ${error}`);
-            if (globalStateKey === constants.standaloneEnabledGlobalState) {
-                await this.setStandaloneFlag(false);
-            } else {
-                await this.context.globalState.update(globalStateKey, false);
-            }
+            // if (globalStateKey === constants.standaloneEnabledGlobalState) {
+            //     await this.setStandaloneFlag(false);
+            // } else {
+            //     await this.context.globalState.update(globalStateKey, false);
+            // }
             return false;
         }
     }
