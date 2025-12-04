@@ -44,15 +44,16 @@ export class AstResultsProvider extends ResultsProvider {
         this.riskManagementView
       )
     );
+
+    // Syncing with AST everytime the extension gets opened
+    this.openRefreshData()
+      .then(() => logs.info(messages.dataRefreshed));
+
     context.subscriptions.push(
       vscode.commands.registerCommand(commands.refreshRiskManagementView, async () => {
         this.riskManagementView.updateContent();
       })
     );
-
-    // Syncing with AST everytime the extension gets opened
-    this.openRefreshData()
-      .then(() => logs.info(messages.dataRefreshed));
   }
 
   async clean(): Promise<void> {
