@@ -1333,6 +1333,10 @@ export class CxMock implements CxPlatform {
     return false;
   }
 
+  async isCxOneAssistEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isAuthenticated(): Promise<boolean> {
     return true;
   }
