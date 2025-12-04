@@ -267,7 +267,7 @@ export function getStateIdForTriage(selectedStateName: string): number {
   }[];
 
   const matchedCustom = customStates.find(
-    (state) => state.name.toLowerCase() === selectedStateName.toLowerCase()
+    (state) => (state.name.trim() === selectedStateName.trim())
   );
   return matchedCustom.id;
 }

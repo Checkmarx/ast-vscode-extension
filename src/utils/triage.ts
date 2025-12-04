@@ -81,7 +81,7 @@ export async function triageSubmit(
   if (data.stateSelection.length > 0) {
     logs.info(messages.triageUpdateState(data.stateSelection));
     // Update severity of the result
-    result.setState(data.stateSelection.replaceAll(" ", "_").toUpperCase());
+    result.setState(data.stateSelection);
   }
 
   // Case the submit is sent without any change
@@ -104,7 +104,7 @@ export async function triageSubmit(
     });
     await vscode.commands.executeCommand(commands.refreshTree);
     if (result.type === "sast" || result.type === "kics") {
-      await getChanges(logs, context, result, detailsPanel);
+      await getChanges(logs, context, result, detailsPanel, detailsDetachedView, resultsProvider);
     }
     if (result.type === "sast") {
       await getLearnMore(logs, context, result, detailsPanel);
@@ -125,13 +125,57 @@ export async function getChanges(
   logs: Logs,
   context: vscode.ExtensionContext,
   result: AstResult,
-  detailsPanel: vscode.WebviewPanel
+  detailsPanel: vscode.WebviewPanel,
+  detailsDetachedView: AstDetailsDetached,
+  resultsProvider: AstResultsProvider
 ) {
   const projectId = getFromState(context, constants.projectIdKey)?.id;
   if (projectId) {
-    cx.triageShow(projectId, result.similarityId, result.type)
-      .then((changes) => {
-        detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
+    await cx.triageShow(projectId, result.similarityId, result.type)
+      .then(async (changes) => {
+        const latest = Array.isArray(changes) && changes.length > 0 ? changes[0] : undefined;
+        const changedSeverity = latest && latest.Severity && latest.Severity !== result.severity ? latest.Severity : undefined;
+        const changedState = latest && latest.State && latest.State !== result.state ? latest.State : undefined;
+
+        if (changedSeverity || changedState) {
+          if (changedSeverity) {
+            result.setSeverity(changedSeverity);
+            if (detailsPanel && detailsPanel.title) {
+              detailsPanel.title = "(" + result.severity + ") " + result.label.replaceAll("_", " ");
+            }
+          }
+          if (changedState) {
+            result.setState(changedState);
+          }
+
+          // Update local results array for this result
+          const resultHash = result.getResultHash();
+          const idx = resultsProvider.loadedResults.findIndex((e: AstResult) => (e.data.resultHash === resultHash || e.id === resultHash));
+          if (idx !== -1) {
+            const r = resultsProvider.loadedResults[idx];
+            r.severity = result.severity;
+            r.state = result.state;
+            r.status = result.status;
+          }
+
+          updateState(context, constants.triageUpdate, {
+            id: true,
+            name: constants.triageUpdate,
+            scanDatetime: "",
+            displayScanId: "",
+          });
+          await vscode.commands.executeCommand(commands.refreshTree);
+
+          if (result.type === "sast") {
+            await getLearnMore(logs, context, result, detailsPanel);
+          }
+          detailsDetachedView?.setResult(result);
+          detailsDetachedView.setLoad(true);
+          detailsPanel.webview.html = await detailsDetachedView.getDetailsWebviewContent(detailsPanel?.webview);
+        }
+
+        // Always inform the webview of changes once
+        await detailsPanel?.webview.postMessage({ command: "loadChanges", changes });
       })
       .catch((err) => {
         detailsPanel?.webview.postMessage({
