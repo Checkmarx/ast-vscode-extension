@@ -85,6 +85,18 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async generateTree(): Promise<TreeItem> {
+    const scanMode = this.getCurrentScanMode();
+
+    // Handle DAST mode separately
+    if (scanMode === constants.scanModeDast) {
+      return this.generateDastTree();
+    }
+
+    // SAST/SCA mode - original logic
+    return this.generateSastTree();
+  }
+
+  private async generateSastTree(): Promise<TreeItem> {
     const resultJsonPath = getResultsFilePath();
     this.diagnosticCollection.clear();
     // createBaseItems
@@ -101,15 +113,11 @@ export class AstResultsProvider extends ResultsProvider {
             this.logs.error(`Error reading results: ${error.message}`);
             return undefined;
           });
-
-
-
       }
       // otherwise the results must be cleared
       else {
         this.loadedResults = undefined;
         this.riskManagementView.updateContent();
-
       }
     }
     // Case we come from triage we must update the state to load results from the correct place
@@ -152,6 +160,71 @@ export class AstResultsProvider extends ResultsProvider {
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
     }
+    return new TreeItem("", undefined, undefined, treeItems);
+  }
+
+  private async generateDastTree(): Promise<TreeItem> {
+    this.diagnosticCollection.clear();
+    let treeItems = this.createRootItems();
+
+    // Get DAST scan details from state
+    const dastScanDetails = this.context.workspaceState.get<{
+      scanId: string;
+      created: string;
+      lastStatus: string;
+      riskLevel: { criticalCount: number; highCount: number; mediumCount: number; lowCount: number; infoCount: number };
+      alertRiskLevel: { criticalCount: number; highCount: number; mediumCount: number; lowCount: number; infoCount: number };
+      riskRating: string;
+      scanDuration: number;
+      hasResults: boolean;
+    }>(constants.dastScanDetailsKey);
+
+    if (dastScanDetails) {
+      // Add scan date
+      const scanDate = new Date(dastScanDetails.created);
+      const formattedDate = scanDate.toLocaleDateString() + " " + scanDate.toLocaleTimeString();
+      treeItems = treeItems.concat(new TreeItem(formattedDate, constants.calendarItem));
+
+      // Add risk summary from alertRiskLevel (vulnerabilities found)
+      const riskLevel = dastScanDetails.alertRiskLevel;
+      if (riskLevel) {
+        const summaryItems: TreeItem[] = [];
+
+        if (riskLevel.criticalCount > 0) {
+          summaryItems.push(new TreeItem(`Critical: ${riskLevel.criticalCount}`, "critical-severity"));
+        }
+        if (riskLevel.highCount > 0) {
+          summaryItems.push(new TreeItem(`High: ${riskLevel.highCount}`, "high-severity"));
+        }
+        if (riskLevel.mediumCount > 0) {
+          summaryItems.push(new TreeItem(`Medium: ${riskLevel.mediumCount}`, "medium-severity"));
+        }
+        if (riskLevel.lowCount > 0) {
+          summaryItems.push(new TreeItem(`Low: ${riskLevel.lowCount}`, "low-severity"));
+        }
+        if (riskLevel.infoCount > 0) {
+          summaryItems.push(new TreeItem(`Info: ${riskLevel.infoCount}`, "info-severity"));
+        }
+
+        if (summaryItems.length > 0) {
+          const summaryNode = new TreeItem("Vulnerabilities", "summary-item", undefined, summaryItems);
+          summaryNode.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+          treeItems = treeItems.concat(summaryNode);
+        } else {
+          treeItems = treeItems.concat(new TreeItem("No vulnerabilities found", undefined));
+        }
+      }
+
+      // Add scan status
+      if (dastScanDetails.lastStatus) {
+        treeItems = treeItems.concat(new TreeItem(`Status: ${dastScanDetails.lastStatus}`, constants.statusItem));
+      }
+
+      // TODO: Add actual DAST results loading here in the future
+      // For now, show a placeholder
+      treeItems = treeItems.concat(new TreeItem("DAST results details coming soon...", constants.bookItem));
+    }
+
     return new TreeItem("", undefined, undefined, treeItems);
   }
 

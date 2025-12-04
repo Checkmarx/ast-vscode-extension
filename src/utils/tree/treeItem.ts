@@ -13,6 +13,12 @@ const typeToIconMap: Map<string, string> = new Map([
   [constants.environmentItem, "globe"],    // DAST environment icon
   [constants.dastScanItem, "checklist"],   // DAST scan icon
   ["dast-mode-indicator", "beaker"],       // DAST mode indicator
+  ["summary-item", "list-unordered"],      // Summary node
+  ["critical-severity", "error"],          // Critical severity
+  ["high-severity", "warning"],            // High severity  
+  ["medium-severity", "info"],             // Medium severity
+  ["low-severity", "circle-outline"],      // Low severity
+  ["info-severity", "circle-outline"],     // Info severity
 ]);
 
 export class TreeItem extends vscode.TreeItem {

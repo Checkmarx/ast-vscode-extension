@@ -220,13 +220,20 @@ export async function dastScanPicker(
 
   logs.info(`Selected scan: ${selectedScan.label} (${selectedScan.id})`);
 
-  // Store scan in state
+  // Store scan ID in state
   await context.workspaceState.update(constants.scanIdKey, {
     id: selectedScan.id,
     name: `${constants.scanLabel} ${selectedScan.label}`,
     displayScanId: `${constants.scanLabel} ${selectedScan.formattedId}`,
     scanDatetime: selectedScan.datetime
   });
+
+  // Fetch and store full scan details for tree display
+  const dastService = DastApiService.getInstance(context);
+  const fullScanData = await dastService.getScan(selectedScan.id);
+  if (fullScanData) {
+    await context.workspaceState.update(constants.dastScanDetailsKey, fullScanData);
+  }
 
   // Refresh tree to show selected scan
   await vscode.commands.executeCommand(commands.refreshTree);
@@ -274,13 +281,16 @@ export async function dastMultiStepInput(
     if (scan) {
       const formattedDate = new Date(scan.created).toLocaleDateString() + " " + new Date(scan.created).toLocaleTimeString();
       
-      // Store scan in state
+      // Store scan ID in state
       await context.workspaceState.update(constants.scanIdKey, {
         id: scan.scanId,
         name: `${constants.scanLabel} DAST Scan - ${formattedDate}`,
         displayScanId: `${constants.scanLabel} ${scan.scanId.substring(0, 8)}`,
         scanDatetime: scan.created
       });
+
+      // Store full scan details for tree display (includes risk levels)
+      await context.workspaceState.update(constants.dastScanDetailsKey, scan);
 
       vscode.window.showInformationMessage(`Auto-selected latest scan from ${selectedEnvironment.label}`);
       await vscode.commands.executeCommand(commands.refreshTree);
@@ -305,7 +315,7 @@ export async function dastMultiStepInput(
 
   logs.info(`Selected scan: ${selectedScan.label} (${selectedScan.id})`);
 
-  // Store scan in state - await the save
+  // Store scan ID in state
   await context.workspaceState.update(constants.scanIdKey, {
     id: selectedScan.id,
     name: `${constants.scanLabel} ${selectedScan.label}`,
@@ -313,9 +323,13 @@ export async function dastMultiStepInput(
     scanDatetime: selectedScan.datetime
   });
 
-  // TODO: Load DAST results - for now show a message
-  vscode.window.showInformationMessage(`DAST POC: Would load results for scan ${selectedScan.id} from environment ${selectedEnvironment.label}`);
-  
+  // Fetch and store full scan details for tree display
+  const dastService = DastApiService.getInstance(context);
+  const fullScanData = await dastService.getScan(selectedScan.id);
+  if (fullScanData) {
+    await context.workspaceState.update(constants.dastScanDetailsKey, fullScanData);
+  }
+
   // Refresh tree to show selected scan
   await vscode.commands.executeCommand(commands.refreshTree);
 }

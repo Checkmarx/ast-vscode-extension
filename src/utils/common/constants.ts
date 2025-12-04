@@ -97,6 +97,7 @@ export const constants = {
   environmentPlaceholder: "Select environment",
   environmentItem: "environment-item",
   dastScanItem: "dast-scan-item",
+  dastScanDetailsKey: "ast-results-dast-scan-details",  // Full DAST scan data with risk levels
   dastScanPickerTitle: "Checkmarx One DAST Scan selection",
 
   errorRegex:

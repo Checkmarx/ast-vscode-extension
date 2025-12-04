@@ -170,26 +170,31 @@ export class PickerCommand {
 
     // Clear DAST-specific state from active keys
     await this.context.workspaceState.update(constants.environmentIdKey, undefined);
+    await this.context.workspaceState.update(constants.dastScanDetailsKey, undefined);
   }
 
-  // Save DAST state (environment, scan) to mode-specific keys
+  // Save DAST state (environment, scan, scan details) to mode-specific keys
   private async saveDastState() {
     const environment = getFromState(this.context, constants.environmentIdKey);
     const scan = getFromState(this.context, constants.scanIdKey);
+    const scanDetails = this.context.workspaceState.get(constants.dastScanDetailsKey);
 
     // Always save current state (even if undefined) to the mode-specific keys
     await this.context.workspaceState.update(constants.dastEnvironmentIdKey, environment);
     await this.context.workspaceState.update(constants.dastScanIdKey, scan);
+    await this.context.workspaceState.update("ast-results-saved-dast-scan-details", scanDetails);
   }
 
   // Restore DAST state from mode-specific keys (or clear if none)
   private async restoreDastState() {
     const savedEnvironment = getFromState(this.context, constants.dastEnvironmentIdKey);
     const savedScan = getFromState(this.context, constants.dastScanIdKey);
+    const savedScanDetails = this.context.workspaceState.get("ast-results-saved-dast-scan-details");
 
     // Restore DAST state to active keys (will be undefined if never set)
     await this.context.workspaceState.update(constants.environmentIdKey, savedEnvironment);
     await this.context.workspaceState.update(constants.scanIdKey, savedScan);
+    await this.context.workspaceState.update(constants.dastScanDetailsKey, savedScanDetails);
 
     // Clear SAST-specific state from active keys
     await this.context.workspaceState.update(constants.projectIdKey, undefined);
