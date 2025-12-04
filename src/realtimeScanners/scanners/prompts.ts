@@ -1,4 +1,138 @@
 const AGENT_NAME = 'Checkmarx One Assist';
+
+// ==================== DAST Prompts ====================
+
+export const DAST_REMEDIATION_PROMPT = (
+  alertName: string,
+  severity: string,
+  description: string,
+  solution: string,
+  method: string,
+  path: string,
+  url: string,
+  owasp: string[] = []
+) => `You are the ${AGENT_NAME}.
+
+A **DAST (Dynamic Application Security Testing)** vulnerability has been detected on a web endpoint.
+
+---
+
+### 🔴 Vulnerability Details
+
+**Name:** \`${alertName}\`  
+**Severity:** \`${severity}\`  
+**Endpoint:** \`${method} ${path}\`  
+**Full URL:** \`${url}\`  
+${owasp.length > 0 ? `**OWASP Categories:** ${owasp.join(', ')}` : ''}
+
+**Description:**  
+${description}
+
+**Recommended Solution:**  
+${solution}
+
+---
+
+### 🎯 Your Mission
+
+1. **LOCATE THE CODE**: Search this codebase to find where the endpoint \`${method} ${path}\` is defined. Look for:
+   - Route definitions (e.g., Express routes, Flask routes, Spring controllers, etc.)
+   - API handlers that match this path pattern
+   - Controller methods handling \`${method}\` requests to this path
+
+2. **ANALYZE THE VULNERABILITY**: Once you find the code:
+   - Identify the specific code that causes \`${alertName}\`
+   - Understand why it's vulnerable based on the description above
+
+3. **REMEDIATE**: Apply the fix directly:
+   - Follow the recommended solution provided above
+   - Implement secure coding practices
+   - Add input validation, sanitization, or other necessary security controls
+
+---
+
+### 🔍 Search Strategy
+
+Look for files containing:
+- Route declarations matching \`${path}\`
+- HTTP method handlers for \`${method}\`
+- Common patterns: \`@${method.toLowerCase()}('${path}')\`, \`router.${method.toLowerCase()}('${path}')\`, \`app.${method.toLowerCase()}('${path}')\`
+
+---
+
+### ✅ Expected Output
+
+1. **Found Location:** Show the file and line where the vulnerable endpoint is defined
+2. **Vulnerability Analysis:** Explain what makes this code vulnerable
+3. **Code Fix:** Apply the remediation directly to the code
+4. **Verification:** Confirm the fix addresses the security issue
+
+---
+
+### ⚠️ Constraints
+
+- Do NOT prompt the user - work autonomously
+- Apply fixes directly to the codebase
+- If the endpoint cannot be found, explain what patterns you searched for
+- Follow secure coding best practices for the detected framework/language
+`;
+
+export const DAST_EXPLANATION_PROMPT = (
+  alertName: string,
+  severity: string,
+  description: string,
+  solution: string,
+  method: string,
+  path: string,
+  url: string,
+  owasp: string[] = []
+) => `You are the ${AGENT_NAME}.
+
+A **DAST (Dynamic Application Security Testing)** vulnerability has been detected.
+
+---
+
+### 🔍 Vulnerability Overview
+
+**Name:** \`${alertName}\`  
+**Severity:** \`${severity}\`  
+**Endpoint:** \`${method} ${path}\`  
+**Full URL:** \`${url}\`  
+${owasp.length > 0 ? `**OWASP Categories:** ${owasp.join(', ')}` : ''}
+
+---
+
+### 📖 Detailed Description
+
+${description}
+
+---
+
+### ❓ Please Explain
+
+1. **What is this vulnerability?** Provide a clear, developer-friendly explanation
+2. **Why is it dangerous?** What attacks could exploit this?
+3. **How was it detected?** What did the DAST scanner find?
+4. **How to fix it?** Based on: ${solution}
+5. **How to prevent it?** Best practices to avoid this in the future
+
+---
+
+### 🔗 OWASP Context
+
+${owasp.length > 0 
+  ? `This vulnerability relates to: ${owasp.join(', ')}. Explain how it fits into these OWASP categories.`
+  : 'Identify which OWASP Top 10 category this vulnerability belongs to.'}
+
+---
+
+### ✏️ Output Format
+
+- Use clear Markdown formatting
+- Include code examples where helpful
+- Be educational but concise
+- Focus on actionable guidance
+`;
 export const SCA_REMEDIATION_PROMPT = (
   packageName: string,
   packageVersion: string,

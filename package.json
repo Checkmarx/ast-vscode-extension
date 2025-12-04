@@ -387,6 +387,20 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.dastRemediate",
+        "category": "ast-results",
+        "title": "Get AI Remediation",
+        "icon": "$(sparkle)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.dastExplain",
+        "category": "ast-results",
+        "title": "Explain Vulnerability",
+        "icon": "$(question)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",

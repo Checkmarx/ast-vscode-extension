@@ -335,7 +335,7 @@ export class AstResultsProvider extends ResultsProvider {
           20  // Limit to first 20 instances
         );
 
-        instanceNodes = instances.map(instance => this.createInstanceNode(instance));
+        instanceNodes = instances.map(instance => this.createInstanceNode(instance, alert, environmentId, scanId));
 
         // Add "more..." indicator if there are more instances
         if (alert.numInstances > 20) {
@@ -376,7 +376,12 @@ export class AstResultsProvider extends ResultsProvider {
   /**
    * Create a tree node for an alert instance
    */
-  private createInstanceNode(instance: AlertInstance): TreeItem {
+  private createInstanceNode(
+    instance: AlertInstance,
+    alert: AlertLevelResult,
+    environmentId: string,
+    scanId: string
+  ): TreeItem {
     const methodColors: Record<string, string> = {
       "GET": "dast-method-get",
       "POST": "dast-method-post",
@@ -392,8 +397,28 @@ export class AstResultsProvider extends ResultsProvider {
       []
     );
     instanceNode.description = instance.status;
-    instanceNode.tooltip = `Method: ${instance.method}\nPath: ${instance.path}\nURL: ${instance.url}\nStatus: ${instance.status}`;
+    instanceNode.tooltip = `Method: ${instance.method}\nPath: ${instance.path}\nURL: ${instance.url}\nStatus: ${instance.status}\n\n🤖 Click to get AI remediation`;
     instanceNode.contextValue = "dast-instance-item";
+
+    // Make clickable - trigger remediation command
+    instanceNode.command = {
+      command: commands.dastRemediate,
+      title: "Get AI Remediation",
+      arguments: [{
+        alertSimilarityId: alert.alertSimilarityId,
+        alertName: alert.name,
+        severity: alert.severity,
+        owasp: alert.owasp,
+        instance: {
+          method: instance.method,
+          path: instance.path,
+          url: instance.url,
+          status: instance.status
+        },
+        environmentId,
+        scanId
+      }]
+    };
 
     return instanceNode;
   }

@@ -27,8 +27,11 @@ import {
     CONTAINERS_REMEDIATION_PROMPT,
     CONTAINERS_EXPLANATION_PROMPT,
     IAC_REMEDIATION_PROMPT,
-    IAC_EXPLANATION_PROMPT
+    IAC_EXPLANATION_PROMPT,
+    DAST_REMEDIATION_PROMPT,
+    DAST_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
+import { DastApiService } from "../services/dastApiService";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
@@ -500,6 +503,104 @@ export class CopilotChatCommand {
                 } catch (err) {
                     this.logs.error(`Failed to ignore all: ${err}`);
                     vscode.window.showErrorMessage(`Failed to ignore all: ${err}`);
+                }
+            })
+        );
+
+        // DAST Remediation Command
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.dastRemediate, async (data: {
+                alertSimilarityId: string;
+                alertName: string;
+                severity: string;
+                owasp: string[];
+                instance: {
+                    method: string;
+                    path: string;
+                    url: string;
+                    status: string;
+                };
+                environmentId: string;
+                scanId: string;
+            }) => {
+                try {
+                    this.logs.info(`DAST Remediation requested for ${data.alertName}`);
+                    
+                    // Fetch alert info for description and solution
+                    const dastService = DastApiService.getInstance(this.context);
+                    const alertInfo = await dastService.getAlertInfo(
+                        data.environmentId,
+                        data.scanId,
+                        data.alertSimilarityId
+                    );
+                    
+                    const description = alertInfo?.description || "No description available";
+                    const solution = alertInfo?.solution || "No solution available";
+                    
+                    const question = DAST_REMEDIATION_PROMPT(
+                        data.alertName,
+                        data.severity,
+                        description,
+                        solution,
+                        data.instance.method,
+                        data.instance.path,
+                        data.instance.url,
+                        data.owasp
+                    );
+                    
+                    await this.openChatWithPrompt(question);
+                } catch (error) {
+                    this.logs.error(`Error opening DAST remediation chat: ${error}`);
+                    vscode.window.showErrorMessage(`Failed to open AI chat: ${error}`);
+                }
+            })
+        );
+
+        // DAST Explanation Command
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.dastExplain, async (data: {
+                alertSimilarityId: string;
+                alertName: string;
+                severity: string;
+                owasp: string[];
+                instance: {
+                    method: string;
+                    path: string;
+                    url: string;
+                    status: string;
+                };
+                environmentId: string;
+                scanId: string;
+            }) => {
+                try {
+                    this.logs.info(`DAST Explanation requested for ${data.alertName}`);
+                    
+                    // Fetch alert info for description and solution
+                    const dastService = DastApiService.getInstance(this.context);
+                    const alertInfo = await dastService.getAlertInfo(
+                        data.environmentId,
+                        data.scanId,
+                        data.alertSimilarityId
+                    );
+                    
+                    const description = alertInfo?.description || "No description available";
+                    const solution = alertInfo?.solution || "No solution available";
+                    
+                    const question = DAST_EXPLANATION_PROMPT(
+                        data.alertName,
+                        data.severity,
+                        description,
+                        solution,
+                        data.instance.method,
+                        data.instance.path,
+                        data.instance.url,
+                        data.owasp
+                    );
+                    
+                    await this.openChatWithPrompt(question);
+                } catch (error) {
+                    this.logs.error(`Error opening DAST explanation chat: ${error}`);
+                    vscode.window.showErrorMessage(`Failed to open AI chat: ${error}`);
                 }
             })
         );

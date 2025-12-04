@@ -118,6 +118,8 @@ export const commands = {
   environmentPick: `${constants.extensionName}.environmentPick`,
   dastGeneralPick: `${constants.extensionName}.dastGeneralPick`,
   dastScanPick: `${constants.extensionName}.dastScanPick`,
+  dastRemediate: `${constants.extensionName}.dastRemediate`,
+  dastExplain: `${constants.extensionName}.dastExplain`,
 
   createScaScan: `${constants.extensionName}.createSCAScan`,
   refreshScaTree: `${constants.extensionName}.refreshSCATree`,
