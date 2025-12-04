@@ -103,12 +103,7 @@ describe("filter and groups actions tests", () => {
     // Get scan node
     console.log("Calling initialize()...");
     const treeScans = await initialize();
-    await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await InputBox.create();
-    await input.setText(
-      SCAN_ID
-    );
-    await input.confirm();
+
     console.log("initialize() returned:", treeScans);
 
     console.log(`Searching for scan: '${SCAN_KEY_TREE_LABEL}'`);

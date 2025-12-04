@@ -84,6 +84,7 @@ export async function validateSeverities(
 ): Promise<boolean> {
   var r = true;
   let children = await scan.getChildren();
+  console.log("children:" + children);
   children.forEach((element: { getLabel: () => any }) => {
     if (element.getLabel() === severity) {
       r = false;
