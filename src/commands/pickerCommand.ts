@@ -90,13 +90,13 @@ export class PickerCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.switchToSastMode, async () => {
         // Save current DAST state before switching
-        this.saveDastState();
+        await this.saveDastState();
 
         // Restore SAST state
-        this.restoreSastState();
+        await this.restoreSastState();
 
         // Update mode
-        updateState(this.context, constants.scanModeKey, {
+        await this.context.workspaceState.update(constants.scanModeKey, {
           id: constants.scanModeSast,
           name: constants.scanModeSast,
           displayScanId: undefined,
@@ -104,9 +104,9 @@ export class PickerCommand {
         });
 
         // Set context for UI visibility
-        vscode.commands.executeCommand(commands.setContext, "ast-results.scanMode", constants.scanModeSast);
+        await vscode.commands.executeCommand(commands.setContext, "ast-results.scanMode", constants.scanModeSast);
         vscode.window.showInformationMessage("Switched to SAST/SCA mode");
-        vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.refreshTree);
       })
     );
   }
@@ -115,13 +115,13 @@ export class PickerCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.switchToDastMode, async () => {
         // Save current SAST state before switching
-        this.saveSastState();
+        await this.saveSastState();
 
         // Restore DAST state (or clear if none)
-        this.restoreDastState();
+        await this.restoreDastState();
 
         // Update mode
-        updateState(this.context, constants.scanModeKey, {
+        await this.context.workspaceState.update(constants.scanModeKey, {
           id: constants.scanModeDast,
           name: constants.scanModeDast,
           displayScanId: undefined,
@@ -129,68 +129,62 @@ export class PickerCommand {
         });
 
         // Set context for UI visibility
-        vscode.commands.executeCommand(commands.setContext, "ast-results.scanMode", constants.scanModeDast);
+        await vscode.commands.executeCommand(commands.setContext, "ast-results.scanMode", constants.scanModeDast);
         vscode.window.showInformationMessage("Switched to DAST mode");
-        vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.refreshTree);
       })
     );
   }
 
   // Save SAST state (project, branch, scan) to mode-specific keys
-  private saveSastState() {
+  private async saveSastState() {
     const project = getFromState(this.context, constants.projectIdKey);
     const branch = getFromState(this.context, constants.branchIdKey);
     const scan = getFromState(this.context, constants.scanIdKey);
 
-    if (project) {
-      updateState(this.context, constants.sastProjectIdKey, project);
-    }
-    if (branch) {
-      updateState(this.context, constants.sastBranchIdKey, branch);
-    }
-    if (scan) {
-      updateState(this.context, constants.sastScanIdKey, scan);
-    }
+    // Always save current state (even if undefined) to the mode-specific keys
+    await this.context.workspaceState.update(constants.sastProjectIdKey, project);
+    await this.context.workspaceState.update(constants.sastBranchIdKey, branch);
+    await this.context.workspaceState.update(constants.sastScanIdKey, scan);
   }
 
   // Restore SAST state from mode-specific keys
-  private restoreSastState() {
+  private async restoreSastState() {
     const savedProject = getFromState(this.context, constants.sastProjectIdKey);
     const savedBranch = getFromState(this.context, constants.sastBranchIdKey);
     const savedScan = getFromState(this.context, constants.sastScanIdKey);
 
-    updateState(this.context, constants.projectIdKey, savedProject || undefined);
-    updateState(this.context, constants.branchIdKey, savedBranch || undefined);
-    updateState(this.context, constants.scanIdKey, savedScan || undefined);
+    // Restore SAST state to active keys
+    await this.context.workspaceState.update(constants.projectIdKey, savedProject);
+    await this.context.workspaceState.update(constants.branchIdKey, savedBranch);
+    await this.context.workspaceState.update(constants.scanIdKey, savedScan);
 
     // Clear DAST-specific state from active keys
-    updateState(this.context, constants.environmentIdKey, undefined);
+    await this.context.workspaceState.update(constants.environmentIdKey, undefined);
   }
 
   // Save DAST state (environment, scan) to mode-specific keys
-  private saveDastState() {
+  private async saveDastState() {
     const environment = getFromState(this.context, constants.environmentIdKey);
     const scan = getFromState(this.context, constants.scanIdKey);
 
-    if (environment) {
-      updateState(this.context, constants.dastEnvironmentIdKey, environment);
-    }
-    if (scan) {
-      updateState(this.context, constants.dastScanIdKey, scan);
-    }
+    // Always save current state (even if undefined) to the mode-specific keys
+    await this.context.workspaceState.update(constants.dastEnvironmentIdKey, environment);
+    await this.context.workspaceState.update(constants.dastScanIdKey, scan);
   }
 
   // Restore DAST state from mode-specific keys (or clear if none)
-  private restoreDastState() {
+  private async restoreDastState() {
     const savedEnvironment = getFromState(this.context, constants.dastEnvironmentIdKey);
     const savedScan = getFromState(this.context, constants.dastScanIdKey);
 
-    updateState(this.context, constants.environmentIdKey, savedEnvironment || undefined);
-    updateState(this.context, constants.scanIdKey, savedScan || undefined);
+    // Restore DAST state to active keys (will be undefined if never set)
+    await this.context.workspaceState.update(constants.environmentIdKey, savedEnvironment);
+    await this.context.workspaceState.update(constants.scanIdKey, savedScan);
 
     // Clear SAST-specific state from active keys
-    updateState(this.context, constants.projectIdKey, undefined);
-    updateState(this.context, constants.branchIdKey, undefined);
+    await this.context.workspaceState.update(constants.projectIdKey, undefined);
+    await this.context.workspaceState.update(constants.branchIdKey, undefined);
   }
 
   // Helper to get current scan mode

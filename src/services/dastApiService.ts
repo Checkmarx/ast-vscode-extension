@@ -340,13 +340,24 @@ export class DastApiService {
    * @param environmentId The environment ID
    * @param from Starting index for pagination
    * @param to Ending index for pagination
+   * @param search Optional search string
+   * @param sort Sort order, defaults to "created:desc" for newest first
    */
-  async getScans(environmentId: string, from: number = 1, to: number = 50): Promise<DastScan[]> {
+	async getScans(
+		environmentId: string,
+		from: number = 1,
+		to: number = 10,
+		search?: string,
+		sort: string = "created:desc"
+	): Promise<DastScan[]> {
     try {
       const client = await this.createAxiosInstance();
       
-      // Endpoint for scans of an environment
-      const url = `/api/dast/scans/environments/${environmentId}/scans?from=${from}&to=${to}`;
+		// Build URL with query parameters
+		let url = `/api/dast/scans/scans?environmentId=${environmentId}&from=${from}&to=${to}&sort=${sort}`;
+		if (search) {
+			url += `&search=${encodeURIComponent(search)}`;
+		}
       
       console.log(`Fetching DAST scans: ${url}`);
       const response = await client.get<ScansResponse>(url);
@@ -369,6 +380,21 @@ export class DastApiService {
       throw error;
     }
   }
+
+	/**
+	 * Fetch a single DAST scan by ID
+	 * @param scanId The scan ID
+	 * @param environmentId The environment ID
+	 */
+	async getScan(scanId: string, environmentId: string): Promise<DastScan | undefined> {
+		try {
+			const scans = await this.getScans(environmentId, 1, 50);
+			return scans.find(s => s.scanId === scanId);
+		} catch (error) {
+			console.error(`Failed to fetch scan ${scanId}:`, error);
+			return undefined;
+		}
+	}
 
   /**
    * Fetch DAST results for a specific scan

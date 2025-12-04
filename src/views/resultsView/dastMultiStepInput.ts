@@ -5,17 +5,23 @@ import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { commands } from "../../utils/common/commands";
 import { constants } from "../../utils/common/constants";
-import { updateState } from "../../utils/common/globalState";
 import {
   CxQuickPickItem,
-  MultiStepInput,
 } from "../../utils/pickers/multiStepUtils";
-import { DastApiService } from "../../services/dastApiService";
+import { DastApiService, DastEnvironment } from "../../services/dastApiService";
+
+/**
+ * Extended picker item that includes the full environment data
+ */
+interface EnvironmentPickItem extends CxQuickPickItem {
+  environment?: DastEnvironment;
+}
 
 /**
  * Fetch DAST environments from the API with optional search
+ * Returns extended picker items that include the full environment data
  */
-async function fetchEnvironments(logs: Logs, context: vscode.ExtensionContext, search?: string): Promise<CxQuickPickItem[]> {
+async function fetchEnvironments(logs: Logs, context: vscode.ExtensionContext, search?: string): Promise<EnvironmentPickItem[]> {
   try {
     const dastService = DastApiService.getInstance(context);
     const environments = await dastService.getEnvironments(1, 50, search);
@@ -38,7 +44,8 @@ async function fetchEnvironments(logs: Logs, context: vscode.ExtensionContext, s
       return {
         label: env.domain || env.url || "Unknown",
         id: env.environmentId,
-        description: `${env.url}${riskInfo}${statusInfo}`
+        description: `${env.url}${riskInfo}${statusInfo}`,
+        environment: env  // Include full environment data for lastScanID access
       };
     });
   } catch (error) {
@@ -58,9 +65,9 @@ async function fetchEnvironments(logs: Logs, context: vscode.ExtensionContext, s
 async function showSearchableEnvironmentPicker(
   logs: Logs,
   context: vscode.ExtensionContext
-): Promise<CxQuickPickItem | undefined> {
+): Promise<EnvironmentPickItem | undefined> {
   return new Promise(async (resolve) => {
-    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    const quickPick = vscode.window.createQuickPick<EnvironmentPickItem>();
     quickPick.title = constants.dastScanPickerTitle;
     quickPick.placeholder = "Type to search environments...";
     quickPick.busy = true;
@@ -210,7 +217,34 @@ export async function dastMultiStepInput(
   // Refresh tree to show selected environment
   await vscode.commands.executeCommand(commands.refreshTree);
 
-  // Step 2: Pick scan for the selected environment
+  // Check if environment has a lastScanID - auto-select it
+  const lastScanId = selectedEnvironment.environment?.lastScanID;
+  if (lastScanId) {
+    logs.info(`Environment has lastScanID: ${lastScanId}, auto-selecting...`);
+    
+    // Fetch scan details to get proper display info
+    const dastService = DastApiService.getInstance(context);
+    const scan = await dastService.getScan(lastScanId, selectedEnvironment.id);
+    
+    if (scan) {
+      const formattedDate = new Date(scan.created).toLocaleDateString() + " " + new Date(scan.created).toLocaleTimeString();
+      
+      // Store scan in state
+      await context.workspaceState.update(constants.scanIdKey, {
+        id: scan.scanId,
+        name: `${constants.scanLabel} DAST Scan - ${formattedDate}`,
+        displayScanId: `${constants.scanLabel} ${scan.scanId.substring(0, 8)}`,
+        scanDatetime: scan.created
+      });
+
+      vscode.window.showInformationMessage(`Auto-selected latest scan from ${selectedEnvironment.label}`);
+      await vscode.commands.executeCommand(commands.refreshTree);
+      return;
+    }
+  }
+
+  // No lastScanID or couldn't fetch it - show scan picker
+  logs.info("No lastScanID found, showing scan picker...");
   const scanItems = await getDastScansPickItems(logs, selectedEnvironment.id, context);
 
   const selectedScan = await vscode.window.showQuickPick(scanItems, {
