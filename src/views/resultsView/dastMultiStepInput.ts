@@ -10,110 +10,203 @@ import {
   CxQuickPickItem,
   MultiStepInput,
 } from "../../utils/pickers/multiStepUtils";
+import { DastApiService } from "../../services/dastApiService";
 
-// Mock data for POC - replace with actual API calls later
-async function getEnvironmentsPickItems(logs: Logs, context: vscode.ExtensionContext): Promise<CxQuickPickItem[]> {
-  logs.info("Fetching DAST environments...");
-  
-  // TODO: Replace with actual API call to fetch environments
-  // const environments = await cx.getEnvironments();
-  
-  // Mock data for POC
-  const mockEnvironments: CxQuickPickItem[] = [
-    { label: "Production", id: "env-prod-001", description: "https://app.example.com" },
-    { label: "Staging", id: "env-staging-001", description: "https://staging.example.com" },
-    { label: "Development", id: "env-dev-001", description: "https://dev.example.com" },
-    { label: "QA", id: "env-qa-001", description: "https://qa.example.com" },
-  ];
+/**
+ * Fetch DAST environments from the API with optional search
+ */
+async function fetchEnvironments(logs: Logs, context: vscode.ExtensionContext, search?: string): Promise<CxQuickPickItem[]> {
+  try {
+    const dastService = DastApiService.getInstance(context);
+    const environments = await dastService.getEnvironments(1, 50, search);
 
-  return mockEnvironments;
+    if (environments.length === 0) {
+      return [{
+        label: search ? `No environments matching "${search}"` : "No environments found",
+        id: "",
+        description: search ? "Try a different search term" : "Create an environment in Checkmarx One first"
+      }];
+    }
+
+    return environments.map(env => {
+      // Build description with domain, URL, and risk info
+      const riskInfo = env.riskRating && env.riskRating !== "No risk"
+        ? ` | ${env.riskRating}`
+        : "";
+      const statusInfo = env.lastStatus ? ` | Last: ${env.lastStatus}` : "";
+
+      return {
+        label: env.domain || env.url || "Unknown",
+        id: env.environmentId,
+        description: `${env.url}${riskInfo}${statusInfo}`
+      };
+    });
+  } catch (error) {
+    logs.error(`Failed to fetch DAST environments: ${error}`);
+    return [{
+      label: "Error loading environments",
+      id: "",
+      description: error.message || "Check your connection"
+    }];
+  }
 }
 
+/**
+ * Show a searchable QuickPick for environments
+ * Re-queries the API when the user types
+ */
+async function showSearchableEnvironmentPicker(
+  logs: Logs,
+  context: vscode.ExtensionContext
+): Promise<CxQuickPickItem | undefined> {
+  return new Promise(async (resolve) => {
+    const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+    quickPick.title = constants.dastScanPickerTitle;
+    quickPick.placeholder = "Type to search environments...";
+    quickPick.busy = true;
+    quickPick.show();
+
+    // Debounce timer for search
+    let searchTimer: NodeJS.Timeout | undefined;
+    const debounceMs = 300;
+
+    // Load initial environments
+    logs.info("Loading initial DAST environments...");
+    const initialItems = await fetchEnvironments(logs, context);
+    quickPick.items = initialItems;
+    quickPick.busy = false;
+
+    // Handle search input with debouncing
+    quickPick.onDidChangeValue(async (value) => {
+      // Clear previous timer
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+
+      // Debounce the search
+      searchTimer = setTimeout(async () => {
+        quickPick.busy = true;
+        logs.info(`Searching DAST environments: "${value}"`);
+        const items = await fetchEnvironments(logs, context, value || undefined);
+        quickPick.items = items;
+        quickPick.busy = false;
+      }, debounceMs);
+    });
+
+    // Handle selection
+    quickPick.onDidAccept(() => {
+      const selected = quickPick.selectedItems[0];
+      quickPick.dispose();
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+      resolve(selected);
+    });
+
+    // Handle dismiss
+    quickPick.onDidHide(() => {
+      quickPick.dispose();
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+      resolve(undefined);
+    });
+  });
+}
+
+/**
+ * Fetch DAST scans for a specific environment from the API
+ */
 async function getDastScansPickItems(logs: Logs, environmentId: string, context: vscode.ExtensionContext): Promise<CxQuickPickItem[]> {
   logs.info(`Fetching DAST scans for environment: ${environmentId}`);
   
-  // TODO: Replace with actual API call to fetch DAST scans for environment
-  // const scans = await cx.getDastScans(environmentId);
-  
-  // Mock data for POC
-  const mockScans: CxQuickPickItem[] = [
-    { 
-      label: "DAST Scan - Dec 4, 2024 10:30 AM", 
-      id: "dast-scan-001", 
-      description: "Completed - 12 vulnerabilities found",
-      datetime: "2024-12-04T10:30:00Z",
-      formattedId: "dast-scan-001"
-    },
-    { 
-      label: "DAST Scan - Dec 3, 2024 2:15 PM", 
-      id: "dast-scan-002", 
-      description: "Completed - 8 vulnerabilities found",
-      datetime: "2024-12-03T14:15:00Z",
-      formattedId: "dast-scan-002"
-    },
-    { 
-      label: "DAST Scan - Dec 2, 2024 9:00 AM", 
-      id: "dast-scan-003", 
-      description: "Completed - 15 vulnerabilities found",
-      datetime: "2024-12-02T09:00:00Z",
-      formattedId: "dast-scan-003"
-    },
-  ];
+  if (!environmentId) {
+    return [{
+      label: "No environment selected",
+      id: "",
+      description: "Please select an environment first"
+    }];
+  }
 
-  return mockScans;
+  try {
+    const dastService = DastApiService.getInstance(context);
+    const scans = await dastService.getScans(environmentId, 1, 50);
+
+    if (scans.length === 0) {
+      logs.info("No DAST scans found for this environment");
+      return [{
+        label: "No scans found",
+        id: "",
+        description: "Run a DAST scan in Checkmarx One first"
+      }];
+    }
+
+    return scans.map(scan => {
+      // Format date from created field
+      const date = new Date(scan.created);
+      const formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+
+      // Build description with status and risk info
+      const riskInfo = dastService.formatRiskLevel(scan.riskLevel);
+      const durationInfo = scan.scanDuration > 0
+        ? ` | ${Math.floor(scan.scanDuration / 60)}m`
+        : "";
+
+      return {
+        label: `DAST Scan - ${formattedDate}`,
+        id: scan.scanId,
+        description: `${scan.lastStatus}${durationInfo} | ${riskInfo}`,
+        datetime: scan.created,
+        formattedId: scan.scanId.substring(0, 8) // Short ID for display
+      };
+    });
+  } catch (error) {
+    logs.error(`Failed to fetch DAST scans: ${error}`);
+    vscode.window.showErrorMessage(`Failed to fetch DAST scans: ${error.message}`);
+
+    return [{
+      label: "Error loading scans",
+      id: "",
+      description: "Click to retry or check your connection"
+    }];
+  }
 }
 
 export async function dastMultiStepInput(
   logs: Logs,
   context: vscode.ExtensionContext
 ) {
-  interface State {
-    title: string;
-    step: number;
-    totalSteps: number;
-    environment: CxQuickPickItem;
-    scanId: CxQuickPickItem;
+  // Step 1: Pick environment with search support
+  logs.info("Starting DAST environment selection...");
+  const selectedEnvironment = await showSearchableEnvironmentPicker(logs, context);
+
+  if (!selectedEnvironment || !selectedEnvironment.id) {
+    logs.info("Environment selection cancelled or invalid");
+    return;
   }
 
-  async function collectInputs() {
-    const state = {} as Partial<State>;
-    await MultiStepInput.run((input) => pickEnvironment(input, state));
-    return state as State;
+  logs.info(`Selected environment: ${selectedEnvironment.label} (${selectedEnvironment.id})`);
+
+  // Step 2: Pick scan for the selected environment
+  const scanItems = await getDastScansPickItems(logs, selectedEnvironment.id, context);
+
+  const selectedScan = await vscode.window.showQuickPick(scanItems, {
+    title: constants.dastScanPickerTitle,
+    placeHolder: constants.scanPlaceholder,
+  });
+
+  if (!selectedScan || !selectedScan.id) {
+    logs.info("Scan selection cancelled or invalid");
+    return;
   }
 
-  async function pickEnvironment(input: MultiStepInput, state: Partial<State>) {
-    state.environment = await input.showQuickPick({
-      title: constants.dastScanPickerTitle,
-      step: 1,
-      totalSteps: 2,
-      placeholder: constants.environmentPlaceholder,
-      items: await getEnvironmentsPickItems(logs, context),
-      shouldResume: shouldResume,
-    });
-    return (input: MultiStepInput) => pickDastScan(input, state);
-  }
+  logs.info(`Selected scan: ${selectedScan.label} (${selectedScan.id})`);
 
-  async function pickDastScan(input: MultiStepInput, state: Partial<State>) {
-    let environmentId = "";
-    if (state.environment && state.environment.id) {
-      environmentId = state.environment.id;
-    }
-
-    state.scanId = await input.showQuickPick({
-      title: constants.dastScanPickerTitle,
-      step: 2,
-      totalSteps: 2,
-      placeholder: constants.scanPlaceholder,
-      items: await getDastScansPickItems(logs, environmentId, context),
-      shouldResume: shouldResume,
-    });
-  }
-
-  function shouldResume() {
-    return new Promise<boolean>(() => { });
-  }
-
-  const state = await collectInputs();
+  // Build state object for compatibility
+  const state = {
+    environment: selectedEnvironment,
+    scanId: selectedScan,
+  };
   
   // Store environment in state
   updateState(context, constants.environmentIdKey, {
