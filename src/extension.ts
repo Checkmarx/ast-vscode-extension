@@ -176,8 +176,7 @@ function setupIgnoredStatusBar(
   context: vscode.ExtensionContext,
   logs: Logs,
   ignoreFileManager: IgnoreFileManager,
-  ignoredStatusBarItem: vscode.StatusBarItem,
-  cxOneAssistProvider: CxOneAssistProvider
+  ignoredStatusBarItem: vscode.StatusBarItem
 ) {
   async function updateIgnoredStatusBar() {
     if (await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs))) {
@@ -188,12 +187,10 @@ function setupIgnoredStatusBar(
         ignoredStatusBarItem.tooltip = count > 0
           ? `${count} ignored vulnerabilities - Click to view`
           : `No ignored vulnerabilities - Click to view`;
-        ignoredStatusBarItem.command = commands.openIgnoredView;
         ignoredStatusBarItem.show();
       } else {
         ignoredStatusBarItem.hide();
       }
-      cxOneAssistProvider.updateWebviewContent();
     } else {
       ignoredStatusBarItem.hide();
     }
@@ -208,24 +205,8 @@ function setupIgnoredStatusBar(
   return { updateIgnoredStatusBar };
 }
 
-// --- Helper wrappers for refactored snippet ---
-function registerAssistDocumentation(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.assistDocumentation, () => {
-      vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
-    })
-  );
-}
 
 
-
-function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
-  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider)
-  );
-  return cxOneAssistProvider;
-}
 
 function registerAssistRelatedCommands(context: vscode.ExtensionContext, cxOneAssistProvider: CxOneAssistProvider) {
   context.subscriptions.push(
@@ -261,8 +242,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // Integrity check on startup
   const authService = AuthService.getInstance(context, logs);
   await authService.validateAndUpdateState();
-  // Register docs & promo webview now that logs exist
-  registerAssistDocumentation(context);
 
   // --- Setup grouped UI elements ---
   const {
@@ -480,23 +459,13 @@ export async function activate(context: vscode.ExtensionContext) {
   // ignoreFileManager already initialized & wired in setupRealtimeScanners
 
   // CxOne Assist view & its commands
-  const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
-  registerAssistRelatedCommands(context, cxOneAssistProvider);
 
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
   copilotChatCommand.registerCopilotChatCommand();
 
-  const ignoredView = new IgnoredView(context);
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.openIgnoredView, () => {
-      ignoredView.show();
-    })
-  );
-
-  setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
+  setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem);
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

@@ -196,11 +196,6 @@ export class CxOneAssistWebview {
         }
       }
       
-      function openIgnoredView() {
-        vscode.postMessage({ 
-          command: 'openIgnoredView' 
-        });
-      }
 
       createParticles();
       setInterval(createParticles, 8000);

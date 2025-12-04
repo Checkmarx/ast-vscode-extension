@@ -131,9 +131,6 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 	private handleWebviewMessage(message: CxOneAssistMessage): void {
 		switch (message.command) {
-			case 'openIgnoredView':
-				vscode.commands.executeCommand('ast-results.openIgnoredView');
-				break;
 			case 'openSettings':
 				vscode.commands.executeCommand('ast-results.viewSettings');
 				break;

@@ -73,17 +73,6 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
-        "command": "ast-results.openIgnoredView",
-        "category": "ast-results",
-        "title": "View Ignored vulnerabilities",
-        "enablement": "ast-results.isValidCredentials && (ast-results.isCxOneAssistEnabled || ast-results.isStandaloneEnabled)"
-      },
-      {
-        "command": "ast-results.assistDocumentation",
-        "category": "ast-results",
-        "title": "Documentation"
-      },
-      {
         "command": "ast-results.groupBySeverityActive",
         "category": "ast-results",
         "title": "✓ Group by: Severity",
@@ -822,19 +811,9 @@
           "when": "view == astResults && ast-results-groupByDirectDependency"
         },
         {
-          "command": "ast-results.openIgnoredView",
-          "group": "@settings@1",
-          "when": "view == astCxOneAssist"
-        },
-        {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist  || view==scaAutoScanPromo || view==riskManagement"
-        },
-        {
-          "command": "ast-results.assistDocumentation",
-          "group": "@settings@3",
-          "when": "view == astCxOneAssist"
+          "when": "view == astResults || view==scaAutoScan"
         },
         {
           "command": "ast-results.clear",
@@ -866,21 +845,9 @@
           "name": "Checkmarx One Results"
         },
         {
-          "id": "astCxOneAssist",
-          "type": "webview",
-          "name": "Checkmarx One Assist"
-        },
-        {
           "id": "scaAutoScan",
           "type": "tree",
           "name": "Checkmarx SCA Realtime Scanner",
-          "when": "!ast-results.isStandaloneEnabled"
-        },
-        {
-          "id": "scaAutoScanPromo",
-          "type": "webview",
-          "name": "Checkmarx SCA Realtime Scanner",
-          "when": "ast-results.isStandaloneEnabled"
         },
         {
           "id": "riskManagement",
