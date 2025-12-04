@@ -173,7 +173,7 @@ export class AstResultsProvider extends ResultsProvider {
         ),
         new TreeItem(
           `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
-          constants.scanItem
+          constants.dastScanItem  // Use DAST-specific scan item
         )
       ];
     }

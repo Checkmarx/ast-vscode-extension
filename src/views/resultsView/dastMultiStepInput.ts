@@ -66,6 +66,7 @@ async function showSearchableEnvironmentPicker(
   logs: Logs,
   context: vscode.ExtensionContext
 ): Promise<EnvironmentPickItem | undefined> {
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     const quickPick = vscode.window.createQuickPick<EnvironmentPickItem>();
     quickPick.title = constants.dastScanPickerTitle;
@@ -185,6 +186,50 @@ async function getDastScansPickItems(logs: Logs, environmentId: string, context:
       description: "Click to retry or check your connection"
     }];
   }
+}
+
+/**
+ * Pick only a DAST scan for the currently selected environment
+ */
+export async function dastScanPicker(
+  logs: Logs,
+  context: vscode.ExtensionContext
+) {
+  // Get the currently selected environment
+  const currentEnv = context.workspaceState.get<{ id: string; name: string }>(constants.environmentIdKey);
+
+  if (!currentEnv || !currentEnv.id) {
+    vscode.window.showWarningMessage("Please select an environment first");
+    return;
+  }
+
+  logs.info(`Picking DAST scan for environment: ${currentEnv.id}`);
+
+  // Show scan picker
+  const scanItems = await getDastScansPickItems(logs, currentEnv.id, context);
+
+  const selectedScan = await vscode.window.showQuickPick(scanItems, {
+    title: constants.dastScanPickerTitle,
+    placeHolder: constants.scanPlaceholder,
+  });
+
+  if (!selectedScan || !selectedScan.id) {
+    logs.info("Scan selection cancelled or invalid");
+    return;
+  }
+
+  logs.info(`Selected scan: ${selectedScan.label} (${selectedScan.id})`);
+
+  // Store scan in state
+  await context.workspaceState.update(constants.scanIdKey, {
+    id: selectedScan.id,
+    name: `${constants.scanLabel} ${selectedScan.label}`,
+    displayScanId: `${constants.scanLabel} ${selectedScan.formattedId}`,
+    scanDatetime: selectedScan.datetime
+  });
+
+  // Refresh tree to show selected scan
+  await vscode.commands.executeCommand(commands.refreshTree);
 }
 
 export async function dastMultiStepInput(

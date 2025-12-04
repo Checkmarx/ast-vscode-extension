@@ -5,7 +5,7 @@ import {
 } from "../utils/common/commands";
 import { constants } from "../utils/common/constants";
 import { multiStepInput } from "../views/resultsView/astMultiStepInput";
-import { dastMultiStepInput } from "../views/resultsView/dastMultiStepInput";
+import { dastMultiStepInput, dastScanPicker } from "../views/resultsView/dastMultiStepInput";
 import {
   branchPicker,
   projectPicker,
@@ -33,6 +33,7 @@ export class PickerCommand {
     this.createScanInputCommand();
     // DAST commands
     this.createDastGeneralPickCommand();
+    this.createDastScanPickCommand();
     this.createSwitchToSastModeCommand();
     this.createSwitchToDastModeCommand();
   }
@@ -82,6 +83,14 @@ export class PickerCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.dastGeneralPick, async () => {
         await dastMultiStepInput(this.logs, this.context);
+      })
+    );
+  }
+
+  private createDastScanPickCommand() {
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(commands.dastScanPick, async () => {
+        await dastScanPicker(this.logs, this.context);
       })
     );
   }
