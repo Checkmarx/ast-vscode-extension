@@ -257,6 +257,11 @@ export class AuthenticationWebview {
                       this._panel.dispose();
                       await this.markFirstWelcomeAsShown();
                       WelcomeWebview.show(this.context, isAiEnabled);
+                      if (isAiEnabled) {
+                        await initializeMcpConfiguration(token);
+                      } else {
+                        await uninstallMcp();
+                      }
                     }, 1000);
                   }
                   else {

@@ -247,6 +247,19 @@
 			}
 			case 'loadChanges': {
 				let changes = message.changes;
+				for (const change of changes) {
+					if (!change) {continue;}
+
+					const setVal = (selId, id) => {
+						const opt = document.querySelector(`#${selId} option[value="${id}"]`);
+						if (opt) {document.getElementById(selId).value = opt.value || opt.textContent;}
+					};
+
+					setVal('select_state', change.State);
+					setVal('select_severity', change.Severity);
+					break;
+				}
+
 				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
 					loaderContainer.style.display = 'none';
