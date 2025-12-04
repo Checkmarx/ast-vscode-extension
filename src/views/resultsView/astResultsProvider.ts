@@ -17,6 +17,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
+import { DastApiService, AlertLevelResult } from "../../services/dastApiService";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -167,6 +168,10 @@ export class AstResultsProvider extends ResultsProvider {
     this.diagnosticCollection.clear();
     let treeItems = this.createRootItems();
 
+    // Get environment and scan from state
+    const envFromState = getFromState(this.context, constants.environmentIdKey);
+    const scanFromState = getFromState(this.context, constants.scanIdKey);
+
     // Get DAST scan details from state
     const dastScanDetails = this.context.workspaceState.get<{
       scanId: string;
@@ -185,47 +190,108 @@ export class AstResultsProvider extends ResultsProvider {
       const formattedDate = scanDate.toLocaleDateString() + " " + scanDate.toLocaleTimeString();
       treeItems = treeItems.concat(new TreeItem(formattedDate, constants.calendarItem));
 
-      // Add risk summary from alertRiskLevel (vulnerabilities found)
-      const riskLevel = dastScanDetails.alertRiskLevel;
-      if (riskLevel) {
-        const summaryItems: TreeItem[] = [];
-
-        if (riskLevel.criticalCount > 0) {
-          summaryItems.push(new TreeItem(`Critical: ${riskLevel.criticalCount}`, "critical-severity"));
-        }
-        if (riskLevel.highCount > 0) {
-          summaryItems.push(new TreeItem(`High: ${riskLevel.highCount}`, "high-severity"));
-        }
-        if (riskLevel.mediumCount > 0) {
-          summaryItems.push(new TreeItem(`Medium: ${riskLevel.mediumCount}`, "medium-severity"));
-        }
-        if (riskLevel.lowCount > 0) {
-          summaryItems.push(new TreeItem(`Low: ${riskLevel.lowCount}`, "low-severity"));
-        }
-        if (riskLevel.infoCount > 0) {
-          summaryItems.push(new TreeItem(`Info: ${riskLevel.infoCount}`, "info-severity"));
-        }
-
-        if (summaryItems.length > 0) {
-          const summaryNode = new TreeItem("Vulnerabilities", "summary-item", undefined, summaryItems);
-          summaryNode.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-          treeItems = treeItems.concat(summaryNode);
-        } else {
-          treeItems = treeItems.concat(new TreeItem("No vulnerabilities found", undefined));
-        }
-      }
-
       // Add scan status
       if (dastScanDetails.lastStatus) {
         treeItems = treeItems.concat(new TreeItem(`Status: ${dastScanDetails.lastStatus}`, constants.statusItem));
       }
 
-      // TODO: Add actual DAST results loading here in the future
-      // For now, show a placeholder
-      treeItems = treeItems.concat(new TreeItem("DAST results details coming soon...", constants.bookItem));
+      // Fetch and display alerts if we have environment and scan IDs
+      if (envFromState?.id && scanFromState?.id) {
+        try {
+          const dastService = DastApiService.getInstance(this.context);
+          const { alerts, total } = await dastService.getAlerts(envFromState.id, scanFromState.id);
+
+          if (alerts.length > 0) {
+            // Group alerts by severity
+            const alertsBySeverity = this.groupAlertsBySeverity(alerts);
+
+            const resultsNode = new TreeItem(`Results (${total})`, "summary-item", undefined, []);
+            resultsNode.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+
+            // Add severity groups
+            for (const [severity, severityAlerts] of Object.entries(alertsBySeverity)) {
+              if (severityAlerts.length > 0) {
+                const severityNode = this.createSeverityNode(severity, severityAlerts);
+                resultsNode.children?.push(severityNode);
+              }
+            }
+
+            treeItems = treeItems.concat(resultsNode);
+          } else {
+            treeItems = treeItems.concat(new TreeItem("No vulnerabilities found", undefined));
+          }
+        } catch (error) {
+          this.logs.error(`Failed to fetch DAST alerts: ${error}`);
+          treeItems = treeItems.concat(new TreeItem("Error loading results", "error"));
+        }
+      }
     }
 
     return new TreeItem("", undefined, undefined, treeItems);
+  }
+
+  /**
+   * Group alerts by severity level
+   */
+  private groupAlertsBySeverity(alerts: AlertLevelResult[]): Record<string, AlertLevelResult[]> {
+    const groups: Record<string, AlertLevelResult[]> = {
+      Critical: [],
+      High: [],
+      Medium: [],
+      Low: [],
+      Informational: []
+    };
+
+    for (const alert of alerts) {
+      const severity = alert.severity || "Informational";
+      if (groups[severity]) {
+        groups[severity].push(alert);
+      } else {
+        groups["Informational"].push(alert);
+      }
+    }
+
+    return groups;
+  }
+
+  /**
+   * Create a tree node for a severity level with its alerts
+   */
+  private createSeverityNode(severity: string, alerts: AlertLevelResult[]): TreeItem {
+    const severityIconMap: Record<string, string> = {
+      "Critical": "critical-severity",
+      "High": "high-severity",
+      "Medium": "medium-severity",
+      "Low": "low-severity",
+      "Informational": "info-severity"
+    };
+
+    const alertItems = alerts.map(alert => {
+      const instanceText = alert.numInstances === 1 ? "1 instance" : `${alert.numInstances} instances`;
+      const alertNode = new TreeItem(
+        alert.name,
+        "dast-alert-item",
+        undefined,
+        []
+      );
+      alertNode.description = `${instanceText} | ${alert.state}`;
+      alertNode.tooltip = `${alert.name}\nSeverity: ${alert.severity}\nInstances: ${alert.numInstances}\nState: ${alert.state}\nStatus: ${alert.status}${alert.owasp?.length ? '\nOWASP: ' + alert.owasp.join(', ') : ''}`;
+
+      // Store alert data for potential click handling
+      alertNode.contextValue = "dast-alert-item";
+
+      return alertNode;
+    });
+
+    const severityNode = new TreeItem(
+      `${severity} (${alerts.length})`,
+      severityIconMap[severity] || "info-severity",
+      undefined,
+      alertItems
+    );
+    severityNode.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+
+    return severityNode;
   }
 
   createRootItems(): TreeItem[] {

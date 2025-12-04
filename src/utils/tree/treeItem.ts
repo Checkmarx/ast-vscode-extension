@@ -19,6 +19,8 @@ const typeToIconMap: Map<string, string> = new Map([
   ["medium-severity", "info"],             // Medium severity
   ["low-severity", "circle-outline"],      // Low severity
   ["info-severity", "circle-outline"],     // Info severity
+  ["dast-alert-item", "bug"],              // DAST alert/vulnerability
+  ["error", "error"],                      // Error state
 ]);
 
 export class TreeItem extends vscode.TreeItem {

@@ -93,7 +93,32 @@ export interface ScansResponse {
   totalScans: number;
 }
 
-// Keeping for future use when we implement results
+// ==================== Alert Level Results ====================
+
+/**
+ * Alert level result - represents a vulnerability type with multiple instances
+ */
+export interface AlertLevelResult {
+  alertSimilarityId: string;  // JSON: alert_similarity_id
+  state: string;
+  severity: string;
+  name: string;
+  numInstances: number;       // JSON: num_instances
+  status: string;
+  owasp: string[];
+  numNotes: number;           // JSON: num_notes
+}
+
+/**
+ * Response from alert level results API
+ */
+export interface AlertLevelResultList {
+  results: AlertLevelResult[];
+  total: number;
+  pagesNumber: number;        // JSON: pages_number
+}
+
+// Legacy interface - keeping for potential future use
 export interface DastResult {
   id: string;
   scanId: string;
@@ -413,7 +438,70 @@ export class DastApiService {
 	}
 
   /**
-   * Fetch DAST results for a specific scan
+   * Fetch alert-level results for a DAST scan
+   * Each alert represents a vulnerability type that may have multiple instances
+   * @param environmentId The environment ID
+   * @param scanId The scan ID
+   * @param page Page number (1-based)
+   * @param perPage Results per page
+   * @param search Optional search string
+   * @param sortBy Sort order, defaults to "severity:desc"
+   */
+  async getAlerts(
+    environmentId: string,
+    scanId: string,
+    page: number = 1,
+    perPage: number = 50,
+    search?: string,
+    sortBy: string = "severity:desc"
+  ): Promise<{ alerts: AlertLevelResult[]; total: number; pagesNumber: number }> {
+    try {
+      const client = await this.createAxiosInstance();
+      
+      let url = `/api/dast/mfe-results/results/environment/${environmentId}/${scanId}/alert_level?page=${page}&per_page=${perPage}&sort_by=${encodeURIComponent(sortBy)}`;
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+      }
+      
+      console.log(`Fetching DAST alerts: ${url}`);
+      const response = await client.get<AlertLevelResultList>(url);
+      
+      const data = response.data;
+      if (data && Array.isArray(data.results)) {
+        console.log(`Found ${data.results.length} alerts (total: ${data.total})`);
+        
+        // Map snake_case to camelCase
+        const alerts = data.results.map(alert => ({
+          alertSimilarityId: (alert as any).alert_similarity_id || alert.alertSimilarityId,
+          state: alert.state,
+          severity: alert.severity,
+          name: alert.name,
+          numInstances: (alert as any).num_instances ?? alert.numInstances ?? 0,
+          status: alert.status,
+          owasp: alert.owasp || [],
+          numNotes: (alert as any).num_notes ?? alert.numNotes ?? 0
+        }));
+        
+        return {
+          alerts,
+          total: data.total,
+          pagesNumber: (data as any).pages_number ?? data.pagesNumber ?? 1
+        };
+      }
+      
+      console.warn("No alerts in response or unexpected format:", data);
+      return { alerts: [], total: 0, pagesNumber: 0 };
+    } catch (error) {
+      console.error("Failed to fetch DAST alerts:", error);
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch alerts: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch DAST results for a specific scan (legacy method)
    * @param scanId The scan ID
    * @param environmentId The environment ID
    */
