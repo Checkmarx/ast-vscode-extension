@@ -21,7 +21,6 @@ import { FilterCommand } from "./commands/filterCommand";
 import { WebViewCommand } from "./commands/webViewCommand";
 import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
-import { CxOneAssistProvider } from "./views/cxOneAssistView/cxOneAssistProvider";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { IgnoredView } from "./views/ignoredView/ignoredView";
@@ -172,41 +171,6 @@ function setupKicsRealtime(
   return { kicsProvider, kicsScanCommand };
 }
 
-function setupIgnoredStatusBar(
-  context: vscode.ExtensionContext,
-  logs: Logs,
-  ignoreFileManager: IgnoreFileManager,
-  ignoredStatusBarItem: vscode.StatusBarItem,
-  cxOneAssistProvider: CxOneAssistProvider
-) {
-  async function updateIgnoredStatusBar() {
-    if (await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs))) {
-      const count = ignoreFileManager.getIgnoredPackagesCount();
-      const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
-      if (hasIgnoreFile) {
-        ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
-        ignoredStatusBarItem.tooltip = count > 0
-          ? `${count} ignored vulnerabilities - Click to view`
-          : `No ignored vulnerabilities - Click to view`;
-        ignoredStatusBarItem.command = commands.openIgnoredView;
-        ignoredStatusBarItem.show();
-      } else {
-        ignoredStatusBarItem.hide();
-      }
-      cxOneAssistProvider.updateWebviewContent();
-    } else {
-      ignoredStatusBarItem.hide();
-    }
-  }
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.refreshIgnoredStatusBar, async () => {
-      await updateIgnoredStatusBar();
-    })
-  );
-  ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
-  updateIgnoredStatusBar();
-  return { updateIgnoredStatusBar };
-}
 
 // --- Helper wrappers for refactored snippet ---
 function registerAssistDocumentation(context: vscode.ExtensionContext) {
@@ -218,27 +182,6 @@ function registerAssistDocumentation(context: vscode.ExtensionContext) {
 }
 
 
-
-function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
-  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider)
-  );
-  return cxOneAssistProvider;
-}
-
-function registerAssistRelatedCommands(context: vscode.ExtensionContext, cxOneAssistProvider: CxOneAssistProvider) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.updateCxOneAssist, async () => {
-      await cxOneAssistProvider.onAuthenticationChanged();
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.authentication, () => {
-      vscode.commands.executeCommand(commands.showAuth);
-    })
-  );
-}
 
 function registerAuthenticationLauncher(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs: Logs) {
   context.subscriptions.push(
@@ -479,10 +422,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerAuthenticationLauncher(context, webViewCommand, logs);
   // ignoreFileManager already initialized & wired in setupRealtimeScanners
 
-  // CxOne Assist view & its commands
-  const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
-  registerAssistRelatedCommands(context, cxOneAssistProvider);
-
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
@@ -496,7 +435,6 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
