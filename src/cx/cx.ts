@@ -422,7 +422,6 @@ export class Cx implements CxPlatform {
         remoteCheck: (cx: CxWrapper) => Promise<boolean>,
         errorContext: string
     ): Promise<boolean> {
-        return false;
         const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             await this.context.globalState.update(globalStateKey, undefined);
