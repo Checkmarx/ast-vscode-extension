@@ -2,6 +2,126 @@ const AGENT_NAME = 'Checkmarx One Assist';
 
 // ==================== DAST Prompts ====================
 
+export const DAST_TRIAGE_PROMPT = (
+  alertName: string,
+  severity: string,
+  description: string,
+  solution: string,
+  owasp: string[] = [],
+  instances: Array<{ method: string; path: string; url: string }> = []
+) => {
+  const instanceList = instances.slice(0, 5).map(i => `- \`${i.method} ${i.path}\``).join('\n');
+  const moreCount = instances.length > 5 ? `\n- ... and ${instances.length - 5} more` : '';
+  
+  return `You are the ${AGENT_NAME}.
+
+A **DAST (Dynamic Application Security Testing)** scan found a vulnerability. Your job is to **triage and guide** the developer on where and how to fix it.
+
+---
+
+## 🛡️ Alert: ${alertName}
+
+**Severity:** \`${severity}\`  
+${owasp.length > 0 ? `**OWASP:** ${owasp.join(', ')}` : ''}
+
+**Description:**  
+${description}
+
+**Recommended Solution:**  
+${solution}
+
+---
+
+## 📍 Affected Endpoints (${instances.length} instances)
+
+${instanceList}${moreCount}
+
+---
+
+## 🎯 Your Task: Triage & Guide
+
+### Step 1: CLASSIFY the Fix Location
+
+Based on the vulnerability type "${alertName}", determine WHERE the fix most likely belongs:
+
+| Category | Examples | Confidence |
+|----------|----------|------------|
+| **🖥️ BACKEND CODE** | SQL injection, command injection, auth bypass, IDOR | |
+| **🎨 FRONTEND CODE** | DOM XSS, client-side validation issues | |
+| **⚙️ SERVER CONFIG** | Missing headers (CSP, HSTS, X-Frame), TLS issues, CORS | |
+| **🔧 MIDDLEWARE/FRAMEWORK** | CSRF protection, session config, cookie settings | |
+| **🏗️ INFRASTRUCTURE** | SSL/TLS, load balancer config, WAF rules | |
+
+**Provide your classification with confidence level (High/Medium/Low).**
+
+### Step 2: EXPLAIN in Plain English
+
+- What is this vulnerability?
+- Why is it dangerous?
+- What could an attacker do?
+
+### Step 3: LOCATE (if applicable)
+
+If this is likely a **code issue** (backend/frontend):
+- Search this codebase for relevant files
+- Look for route definitions, controllers, or handlers
+- Identify the specific code pattern causing the issue
+
+If this is a **config issue**:
+- List common config file locations to check
+- Provide example configurations for common setups (nginx, Apache, Express, etc.)
+
+### Step 4: PROVIDE Actionable Fix
+
+Based on your classification, provide:
+
+**If BACKEND CODE:**
+- Show the vulnerable pattern to look for
+- Provide secure code example
+
+**If SERVER CONFIG:**
+- Show config snippets for common servers (nginx, Apache, Express/helmet, etc.)
+
+**If MIDDLEWARE:**
+- Show how to enable/configure the protection in popular frameworks
+
+---
+
+## 📋 Output Format
+
+\`\`\`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛡️ ${alertName}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 FIX LOCATION: [Category] (Confidence: High/Medium/Low)
+
+🔍 WHAT IS THIS?
+   [Plain English explanation]
+
+⚠️ RISK:
+   [What could an attacker do]
+
+🔧 WHERE TO LOOK:
+   [Specific files/configs to check in this codebase]
+
+✅ HOW TO FIX:
+   [Concrete steps with code/config examples]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\`\`\`
+
+---
+
+## ⚠️ Important
+
+- Be honest about confidence levels
+- If the fix location is ambiguous, explain why
+- Provide options for different tech stacks when relevant
+- Don't guess - if you can't find the code, say so and explain what to look for
+`;
+};
+
 export const DAST_REMEDIATION_PROMPT = (
   alertName: string,
   severity: string,
@@ -13,7 +133,7 @@ export const DAST_REMEDIATION_PROMPT = (
   owasp: string[] = []
 ) => `You are the ${AGENT_NAME}.
 
-A **DAST (Dynamic Application Security Testing)** vulnerability has been detected on a web endpoint.
+A **DAST (Dynamic Application Security Testing)** vulnerability has been detected on a specific endpoint.
 
 ---
 

@@ -353,11 +353,26 @@ export class AstResultsProvider extends ResultsProvider {
         instanceNodes
       );
       alertNode.description = `${instanceText} | ${alert.state}`;
-      alertNode.tooltip = `${alert.name}\nSeverity: ${alert.severity}\nInstances: ${alert.numInstances}\nState: ${alert.state}\nStatus: ${alert.status}${alert.owasp?.length ? '\nOWASP: ' + alert.owasp.join(', ') : ''}`;
+      alertNode.tooltip = `${alert.name}\nSeverity: ${alert.severity}\nInstances: ${alert.numInstances}\nState: ${alert.state}\nStatus: ${alert.status}${alert.owasp?.length ? '\nOWASP: ' + alert.owasp.join(', ') : ''}\n\n🤖 Click for AI triage & guidance`;
       alertNode.contextValue = "dast-alert-item";
       alertNode.collapsibleState = instanceNodes.length > 0
         ? vscode.TreeItemCollapsibleState.Collapsed
         : vscode.TreeItemCollapsibleState.None;
+      
+      // Make alert clickable - trigger triage command
+      alertNode.command = {
+        command: commands.dastTriage,
+        title: "Get AI Triage",
+        arguments: [{
+          alertSimilarityId: alert.alertSimilarityId,
+          alertName: alert.name,
+          severity: alert.severity,
+          owasp: alert.owasp || [],
+          numInstances: alert.numInstances,
+          environmentId,
+          scanId
+        }]
+      };
 
       alertItems.push(alertNode);
     }

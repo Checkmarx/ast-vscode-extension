@@ -401,6 +401,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.dastTriage",
+        "category": "ast-results",
+        "title": "Triage & Guide",
+        "icon": "$(compass)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",

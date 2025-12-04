@@ -120,6 +120,7 @@ export const commands = {
   dastScanPick: `${constants.extensionName}.dastScanPick`,
   dastRemediate: `${constants.extensionName}.dastRemediate`,
   dastExplain: `${constants.extensionName}.dastExplain`,
+  dastTriage: `${constants.extensionName}.dastTriage`,
 
   createScaScan: `${constants.extensionName}.createSCAScan`,
   refreshScaTree: `${constants.extensionName}.refreshSCATree`,

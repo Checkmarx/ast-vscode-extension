@@ -29,7 +29,8 @@ import {
     IAC_REMEDIATION_PROMPT,
     IAC_EXPLANATION_PROMPT,
     DAST_REMEDIATION_PROMPT,
-    DAST_EXPLANATION_PROMPT
+    DAST_EXPLANATION_PROMPT,
+    DAST_TRIAGE_PROMPT
 } from "../realtimeScanners/scanners/prompts";
 import { DastApiService } from "../services/dastApiService";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
@@ -600,6 +601,63 @@ export class CopilotChatCommand {
                     await this.openChatWithPrompt(question);
                 } catch (error) {
                     this.logs.error(`Error opening DAST explanation chat: ${error}`);
+                    vscode.window.showErrorMessage(`Failed to open AI chat: ${error}`);
+                }
+            })
+        );
+
+        // DAST Triage Command - triggered when clicking on an alert
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(commands.dastTriage, async (data: {
+                alertSimilarityId: string;
+                alertName: string;
+                severity: string;
+                owasp: string[];
+                numInstances: number;
+                environmentId: string;
+                scanId: string;
+            }) => {
+                try {
+                    this.logs.info(`DAST Triage requested for ${data.alertName}`);
+                    
+                    const dastService = DastApiService.getInstance(this.context);
+                    
+                    // Fetch alert info for description and solution
+                    const alertInfo = await dastService.getAlertInfo(
+                        data.environmentId,
+                        data.scanId,
+                        data.alertSimilarityId
+                    );
+                    
+                    // Fetch sample instances to show patterns
+                    const instancesResponse = await dastService.getAlertInstances(
+                        data.environmentId,
+                        data.scanId,
+                        data.alertSimilarityId,
+                        1,  // page
+                        10  // get up to 10 instances for analysis
+                    );
+                    
+                    const description = alertInfo?.description || "No description available";
+                    const solution = alertInfo?.solution || "No solution available";
+                    const instances = instancesResponse?.instances?.map(i => ({
+                        method: i.method,
+                        path: i.path,
+                        url: i.url
+                    })) || [];
+                    
+                    const question = DAST_TRIAGE_PROMPT(
+                        data.alertName,
+                        data.severity,
+                        description,
+                        solution,
+                        data.owasp,
+                        instances
+                    );
+                    
+                    await this.openChatWithPrompt(question);
+                } catch (error) {
+                    this.logs.error(`Error opening DAST triage chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open AI chat: ${error}`);
                 }
             })
