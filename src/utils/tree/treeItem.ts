@@ -10,6 +10,8 @@ const typeToIconMap: Map<string, string> = new Map([
   [constants.requestChangesItem, "request-changes"],
   [constants.mailItem, "mail"],
   [constants.calendarItem, "calendar"],
+  [constants.environmentItem, "globe"],  // DAST environment icon
+  ["dast-mode-indicator", "beaker"],     // DAST mode indicator
 ]);
 
 export class TreeItem extends vscode.TreeItem {

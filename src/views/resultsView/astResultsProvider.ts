@@ -156,6 +156,27 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   createRootItems(): TreeItem[] {
+    const scanMode = this.getCurrentScanMode();
+    
+    if (scanMode === constants.scanModeDast) {
+      // DAST mode: Environment → Scan
+      return [
+        new TreeItem(
+          `[DAST Mode]`,
+          "dast-mode-indicator"
+        ),
+        new TreeItem(
+          getFromState(this.context, constants.environmentIdKey)?.name ?? constants.environmentLabel,
+          constants.environmentItem
+        ),
+        new TreeItem(
+          `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
+          constants.scanItem
+        )
+      ];
+    }
+    
+    // Default SAST/SCA mode: Project → Branch → Scan
     return [
       new TreeItem(
         getFromState(this.context, constants.projectIdKey)?.name ?? constants.projectLabel,
@@ -170,5 +191,11 @@ export class AstResultsProvider extends ResultsProvider {
         constants.scanItem
       )
     ];
+  }
+
+  // Helper to get current scan mode
+  private getCurrentScanMode(): string {
+    const mode = getFromState(this.context, constants.scanModeKey);
+    return mode?.id ?? constants.scanModeSast; // Default to SAST
   }
 }

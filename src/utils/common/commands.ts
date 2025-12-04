@@ -112,6 +112,12 @@ export const commands = {
   scanPick: `${constants.extensionName}.scanPick`,
   scanInput: `${constants.extensionName}.scanInput`,
 
+  // DAST commands
+  switchToSastMode: `${constants.extensionName}.switchToSastMode`,
+  switchToDastMode: `${constants.extensionName}.switchToDastMode`,
+  environmentPick: `${constants.extensionName}.environmentPick`,
+  dastGeneralPick: `${constants.extensionName}.dastGeneralPick`,
+
   createScaScan: `${constants.extensionName}.createSCAScan`,
   refreshScaTree: `${constants.extensionName}.refreshSCATree`,
   clearSca: `${constants.extensionName}.clearSca`,

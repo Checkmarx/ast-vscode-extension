@@ -352,6 +352,34 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.switchToSastMode",
+        "category": "ast-results",
+        "title": "Switch to SAST/SCA Mode",
+        "icon": "$(code)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.switchToDastMode",
+        "category": "ast-results",
+        "title": "Switch to DAST Mode",
+        "icon": "$(globe)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.environmentPick",
+        "category": "ast-results",
+        "title": "Select Environment",
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.dastGeneralPick",
+        "category": "ast-results",
+        "title": "Select DAST Scan",
+        "icon": "$(search)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",
@@ -672,9 +700,29 @@
           "command": "ast-results.scanInput",
           "group": "inline",
           "when": "viewItem == scan-item"
+        },
+        {
+          "command": "ast-results.dastGeneralPick",
+          "group": "inline",
+          "when": "viewItem == environment-item"
+        },
+        {
+          "command": "ast-results.switchToSastMode",
+          "group": "inline",
+          "when": "viewItem == dast-mode-indicator"
         }
       ],
       "view/title": [
+        {
+          "command": "ast-results.switchToDastMode",
+          "group": "navigation@-2",
+          "when": "view == astResults && ast-results.scanMode != DAST"
+        },
+        {
+          "command": "ast-results.switchToSastMode",
+          "group": "navigation@-2",
+          "when": "view == astResults && ast-results.scanMode == DAST"
+        },
         {
           "command": "ast-results.createSCAScan",
           "group": "navigation@1",

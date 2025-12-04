@@ -73,8 +73,30 @@ export const constants = {
   sast: "sast",
   kics: "kics",
   sca: "sca",
+  dast: "dast",
   secretDetection: "secret detection",
   scsSecretDetection: "sscs-secret-detection",
+
+  // Scan modes
+  scanModeKey: "ast-results-scan-mode",
+  scanModeSast: "SAST",
+  scanModeDast: "DAST",
+
+  // SAST-specific state keys (for saving/restoring when switching modes)
+  sastProjectIdKey: "ast-results-sast-project-id",
+  sastBranchIdKey: "ast-results-sast-branch-id",
+  sastScanIdKey: "ast-results-sast-scan-id",
+
+  // DAST-specific state keys
+  dastEnvironmentIdKey: "ast-results-dast-environment-id",
+  dastScanIdKey: "ast-results-dast-scan-id",
+
+  // DAST labels and UI
+  environmentIdKey: "ast-results-environment-id",
+  environmentLabel: "Environment: ",
+  environmentPlaceholder: "Select environment",
+  environmentItem: "environment-item",
+  dastScanPickerTitle: "Checkmarx One DAST Scan selection",
 
   errorRegex:
     /Error: [0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} /i,
