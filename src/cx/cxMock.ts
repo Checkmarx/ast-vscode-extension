@@ -1306,7 +1306,7 @@ export class CxMock implements CxPlatform {
   }
 
   async getAstConfiguration() {
-    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+    const token = await this.context.secrets.get("authCredential");
 
     if (!token) {
       return undefined;
@@ -1326,18 +1326,6 @@ export class CxMock implements CxPlatform {
   }
 
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
-    return true;
-  }
-
-  async isStandaloneEnabled(): Promise<boolean> {
-    return false;
-  }
-
-  async isCxOneAssistEnabled(): Promise<boolean> {
-    return false;
-  }
-
-  async isAuthenticated(): Promise<boolean> {
     return true;
   }
 

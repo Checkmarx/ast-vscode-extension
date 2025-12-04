@@ -11,6 +11,6 @@ export async function validateConfigurationAndLicense(logs: Logs): Promise<boole
 	if (!isValid) {
 		return false;
 	}
-	const isStandalone = await cx.isStandaloneEnabled(logs);
+	const isStandalone = false;
 	return !isStandalone;
 }
