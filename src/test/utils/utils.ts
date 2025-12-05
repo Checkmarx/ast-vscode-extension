@@ -20,35 +20,52 @@ export async function createView(
   return await control.openView();
 }
 
+
 export async function createTree(
-  view: SideBarView | undefined
+  view: SideBarView | undefined,
+  retries = 5,
+  delayMs = 500
 ): Promise<CustomTreeSection | undefined> {
-  if (!view) return undefined;
-
-  const sections = await view.getContent().getSections();
-
-  const treeSections: CustomTreeSection[] = [];
-
-  // Filter out webviews
-  for (const s of sections) {
-    try {
-      await s.getVisibleItems(); // only tree sections work
-      treeSections.push(s as CustomTreeSection);
-    } catch {
-      // ignore webviews
-    }
+  if (!view) {
+    console.log("[createTree] No SideBarView provided.");
+    return undefined;
   }
 
-  // Find the tree section with exact title
-  for (const tree of treeSections) {
-    const title = await tree.getTitle();
-    if (title === "Checkmarx One Results") {
-      return tree;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    console.log(`[createTree] Attempt ${attempt} of ${retries}...`);
+    const sections = await view.getContent().getSections();
+    console.log(`[createTree] Found ${sections.length} sections in sidebar.`);
+
+    for (const section of sections) {
+      try {
+        const title = await section.getTitle();
+        console.log(`[createTree] Checking section: "${title}"`);
+
+        // Only tree sections respond to getVisibleItems()
+        await section.getVisibleItems();
+        console.log(`[createTree] Section "${title}" is a tree.`);
+
+        if (title === "Checkmarx One Results") {
+          console.log(`[createTree] ✅ Found target tree section: "${title}"`);
+          return section as CustomTreeSection;
+        }
+      } catch (error) {
+        console.log(
+          `[createTree] Ignored section (probably webview) - Error: ${error}`
+        );
+      }
     }
+
+    console.log(
+      `[createTree] Target tree not found yet, waiting ${delayMs}ms before retry...`
+    );
+    await new Promise((res) => setTimeout(res, delayMs));
   }
 
-  return undefined; // not found
+  console.log("[createTree] ❌ Target tree section not found after retries.");
+  return undefined; // tree not found
 }
+
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
   const control = await createControl();
