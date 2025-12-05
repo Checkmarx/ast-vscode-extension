@@ -875,8 +875,8 @@
         {
           "id": "astCxOneAssist",
           "type": "webview",
-          "name": "Test Assist",
-          "when": "ast-results.isStandaloneEnabled || ast-results.isCxOneAssistEnabled"
+          "name": "Checkmarx One Assist",
+          "when": "ast-results.isValidCredentials"
         },
         {
           "id": "scaAutoScan",
