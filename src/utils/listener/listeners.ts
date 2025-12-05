@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
-import {Logs} from "../../models/logs";
-import {RepositoryState} from "../types/git";
-import {commands} from "../common/commands";
+import { Logs } from "../../models/logs";
+import { RepositoryState } from "../types/git";
+import { commands } from "../common/commands";
 import {
     constants
 } from "../common/constants";
-import {getFromState, updateState} from "../common/globalState";
-import {cx} from "../../cx";
-import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
-import {messages} from "../common/messages";
-import {AuthService} from "../../services/authService";
+import { getFromState, updateState } from "../common/globalState";
+import { cx } from "../../cx";
+import { getGitAPIRepository, isKicsFile, isSystemFile } from "../utils";
+import { messages } from "../common/messages";
+import { AuthService } from "../../services/authService";
 
 export async function getBranchListener(
     context: vscode.ExtensionContext,
@@ -87,6 +87,10 @@ export function addRealTimeSaveListener(
 ) {
     // Listen to save action in a KICS file
     vscode.workspace.onDidSaveTextDocument(async (e) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
@@ -111,6 +115,10 @@ export function addRealTimeSaveListener(
 
     // Listen to open action in a KICS file
     vscode.workspace.onDidOpenTextDocument(async (e: vscode.TextDocument) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
@@ -162,7 +170,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
             `${constants.extensionName}.createScanButton`,
             true
         );
-        updateState(context, constants.scanCreatePrepKey, {id: false, name: "", displayScanId: "", scanDatetime: ""});
+        updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: "", scanDatetime: "" });
     }
     const scanID = getFromState(context, constants.scanIdKey);
     if (scanID === undefined) {
@@ -176,7 +184,7 @@ export async function setScanButtonDefaultIfScanIsNotRunning(
             `${constants.extensionName}.createScanButton`,
             false
         );
-        updateState(context, constants.scanCreatePrepKey, {id: false, name: "", displayScanId: "", scanDatetime: ""});
+        updateState(context, constants.scanCreatePrepKey, { id: false, name: "", displayScanId: "", scanDatetime: "" });
     }
 }
 
