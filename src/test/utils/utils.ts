@@ -21,36 +21,12 @@ export async function createView(
 }
 
 export async function createTree(
-  view: SideBarView | undefined,
-  retries = 5,
-  delayMs = 500
+  view: SideBarView | undefined
 ): Promise<CustomTreeSection | undefined> {
-  if (!view) return undefined;
-
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    console.log(`[createTree] Attempt ${attempt}...`);
-    const sections = await view.getContent().getSections();
-
-    for (const section of sections) {
-      try {
-        const title = await section.getTitle();
-        await section.getVisibleItems(); // only tree sections respond
-        if (title === "Checkmarx One Results") {
-          console.log(`[createTree] ✅ Found tree: "${title}"`);
-          return section as CustomTreeSection;
-        }
-      } catch {
-        console.log(`[createTree] Ignored section (webview or not ready)`);
-      }
-    }
-
-    await new Promise((res) => setTimeout(res, delayMs));
-  }
-
-  console.log("[createTree] ❌ Tree not found after retries");
-  return undefined;
+  return (await view
+    ?.getContent()
+    .getSection("Checkmarx One Results")) as CustomTreeSection;
 }
-
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
   const control = await createControl();

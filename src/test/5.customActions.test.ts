@@ -58,49 +58,89 @@ describe("filter and groups actions tests", () => {
       CX_GROUP_FILE,
     ];
     // Get scan node
+    // Ensure the Checkmarx Results tree view is focused
+    console.log("[GroupBy Test 1] Focusing Checkmarx Results view via command:", CX_LOOK_SCAN);
+    await bench.executeCommand(CX_LOOK_SCAN);
     const treeScans = await initialize();
+    console.log("[GroupBy Test 1] initialize() returned treeScans:", !!treeScans);
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-    while (scan === undefined) {
-      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+    {
+      const start = Date.now();
+      console.log("[GroupBy Test 1] Searching for scan node:", SCAN_KEY_TREE_LABEL);
+      while (scan === undefined && Date.now() - start < 15000) {
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      }
+      console.log("[GroupBy Test 1] scan node found:", !!scan, "elapsed(ms):", Date.now() - start);
+      expect(scan).to.not.be.undefined;
     }
     // Expand and validate scan node to obtain engine nodes
+    console.log("[GroupBy Test 1] Validating root node and expanding engines...");
     let tuple = await validateRootNode(scan);
+    console.log("[GroupBy Test 1] Root validation tuple:", tuple);
     //let level = 0;
     // Get the sast results node, because it is the only one affected by all the group by commands
     let sastNode = await scan?.findChildItem(SAST_TYPE);
-    while (sastNode === undefined) {
-      sastNode = await scan?.findChildItem(SAST_TYPE);
+    {
+      const start = Date.now();
+      console.log("[GroupBy Test 1] Searching for SAST node:", SAST_TYPE);
+      while (sastNode === undefined && Date.now() - start < 15000) {
+        sastNode = await scan?.findChildItem(SAST_TYPE);
+      }
+      console.log("[GroupBy Test 1] SAST node found:", !!sastNode, "elapsed(ms):", Date.now() - start);
+      expect(sastNode).to.not.be.undefined;
     }
     // Validate for all commands the nested tree elements
     for (var index in commands) {
       // Execute the group by command for each command
+      console.log("[GroupBy Test 1] Executing group by:", commands[index]);
       await bench.executeCommand(commands[index]);
     }
     // Size must not be bigger than 3 because there are at most 3 engines in the first node
+    console.log("[GroupBy Test 1] Engine count (tuple[0]):", tuple[0]);
     expect(tuple[0]).to.be.at.most(4);
   });
 
   it("should click on all group by", async function () {
     const commands = [CX_GROUP_LANGUAGE, CX_GROUP_STATUS, CX_GROUP_STATE, CX_GROUP_QUERY_NAME, CX_GROUP_FILE];
     // Get scan node
+    console.log("[GroupBy Test 2] Focusing Checkmarx Results view via command:", CX_LOOK_SCAN);
+    await bench.executeCommand(CX_LOOK_SCAN);
     const treeScans = await initialize();
-    let scan = await treeScans?.findItem(
-      SCAN_KEY_TREE_LABEL
-    );
+    console.log("[GroupBy Test 2] initialize() returned treeScans:", !!treeScans);
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+    {
+      const start = Date.now();
+      console.log("[GroupBy Test 2] Searching for scan node:", SCAN_KEY_TREE_LABEL);
+      while (scan === undefined && Date.now() - start < 15000) {
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      }
+      console.log("[GroupBy Test 2] scan node found:", !!scan, "elapsed(ms):", Date.now() - start);
+      expect(scan).to.not.be.undefined;
+    }
     // Expand and validate scan node to obtain engine nodes
+    console.log("[GroupBy Test 2] Validating root node and expanding engines...");
     let tuple = await validateRootNode(scan);
+    console.log("[GroupBy Test 2] Root validation tuple:", tuple);
     //let level = 0;
     // Get the sast results node, because it is the only one affected by all the group by commands
     let sastNode = await scan?.findChildItem(SAST_TYPE);
-    while (sastNode === undefined) {
-      sastNode = await scan?.findChildItem(SAST_TYPE);
+    {
+      const start = Date.now();
+      console.log("[GroupBy Test 2] Searching for SAST node:", SAST_TYPE);
+      while (sastNode === undefined && Date.now() - start < 15000) {
+        sastNode = await scan?.findChildItem(SAST_TYPE);
+      }
+      console.log("[GroupBy Test 2] SAST node found:", !!sastNode, "elapsed(ms):", Date.now() - start);
+      expect(sastNode).to.not.be.undefined;
     }
     // Validate for all commands the nested tree elements
     for (var index in commands) {
       // Execute the group by command for each command
+      console.log("[GroupBy Test 2] Executing group by:", commands[index]);
       await bench.executeCommand(commands[index]);
     };
     // Size must not be bigger than 3 because there are at most 3 engines in the first node
+    console.log("[GroupBy Test 2] Engine count (tuple[0]):", tuple[0]);
     expect(tuple[0]).to.be.at.most(4);
   });
 
