@@ -8,6 +8,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from "./constants";
+import { By } from "selenium-webdriver";
 
 export async function createControl(): Promise<ViewControl | undefined> {
   const r = await new ActivityBar().getViewControl("Checkmarx");
@@ -20,13 +21,17 @@ export async function createView(
   return await control.openView();
 }
 
-export async function createTree(
-  view: SideBarView | undefined
-): Promise<CustomTreeSection | undefined> {
-  return (await view
-    ?.getContent()
-    .getSection("Checkmarx One Results")) as CustomTreeSection;
+export async function createTree(view: SideBarView) {
+  const driver = view.getDriver();
+  const content = view.getContent();
+
+  const element = await driver.findElement(
+    By.css('[id="workbench.view.extension.astResults"]')
+  );
+
+  return new CustomTreeSection(element, content); // now correct type
 }
+
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
   const control = await createControl();
