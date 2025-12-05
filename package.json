@@ -875,7 +875,8 @@
         {
           "id": "astCxOneAssist",
           "type": "webview",
-          "name": "Test Assist"
+          "name": "Test Assist",
+          "when": "ast-results.isStandaloneEnabled || ast-results.isCxOneAssistEnabled"
         },
         {
           "id": "scaAutoScan",
