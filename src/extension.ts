@@ -278,9 +278,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const authService = AuthService.getInstance(context, logs);
   await authService.validateAndUpdateState();
   // Register docs & promo webview now that logs exist
-  registerAssistDocumentation(context);
-  registerPromoResultsWebview(context, logs);
-  registerScaPromoWebview(context, logs);
+  // registerAssistDocumentation(context);
+  // registerPromoResultsWebview(context, logs);
+  // registerScaPromoWebview(context, logs);
 
   // --- Setup grouped UI elements ---
   const {

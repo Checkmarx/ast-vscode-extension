@@ -149,7 +149,7 @@ export class AstResultsProvider extends ResultsProvider {
         treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
       }
 
-      const treeItem = this.groupBy(
+      const treeItem = await this.groupBy(
         this.loadedResults,
         this.groupByCommand.activeGroupBy,
         this.scan?.id,
