@@ -27,23 +27,27 @@ export async function createTree(
 
   const sections = await view.getContent().getSections();
 
-  // Keep only tree sections (ignore webviews)
   const treeSections: CustomTreeSection[] = [];
 
+  // Filter out webviews
   for (const s of sections) {
     try {
-      // Only tree sections respond to getVisibleItems()
-      await s.getVisibleItems();
+      await s.getVisibleItems(); // only tree sections work
       treeSections.push(s as CustomTreeSection);
     } catch {
-      // Webviews throw an error → ignore
+      // ignore webviews
     }
   }
 
-  // Select the tree by exact title
-  return treeSections.find(
-    async s => (await s.getTitle()) === "Checkmarx One Results"
-  );
+  // Find the tree section with exact title
+  for (const tree of treeSections) {
+    const title = await tree.getTitle();
+    if (title === "Checkmarx One Results") {
+      return tree;
+    }
+  }
+
+  return undefined; // not found
 }
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
