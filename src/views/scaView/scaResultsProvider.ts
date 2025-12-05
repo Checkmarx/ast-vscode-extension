@@ -10,6 +10,7 @@ import { messages } from "../../utils/common/messages";
 import { orderResults } from "../../utils/utils";
 import { ResultsProvider } from "../resultsProviders";
 import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
+import { cx } from "../../cx";
 
 export class SCAResultsProvider extends ResultsProvider {
   public process;
@@ -40,11 +41,17 @@ export class SCAResultsProvider extends ResultsProvider {
   }
 
   async refreshData(message?: string): Promise<void> {
-    this.showStatusBarItem(constants.scaScanRunningLog);
-    this.message = message ? message : messages.scaStartScan;
-    this.data = this.generateTree().children;
-    this._onDidChangeTreeData.fire(undefined);
-    this.hideStatusBarItem();
+    if (!await cx.isStandaloneEnabled(this.logs)) {
+      this.showStatusBarItem(constants.scaScanRunningLog);
+      this.message = message ? message : messages.scaStartScan;
+      this.data = this.generateTree().children;
+      this._onDidChangeTreeData.fire(undefined);
+      this.hideStatusBarItem();
+    }
+    else {
+      this.data = [];
+      this._onDidChangeTreeData.fire(undefined);
+    }
   }
 
 
