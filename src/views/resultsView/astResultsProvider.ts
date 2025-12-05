@@ -17,6 +17,7 @@ import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
+import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -67,25 +68,33 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    this.showStatusBarItem(messages.commandRunning);
-    const treeItem = await this.generateTree();
-    this.data = await cx.isValidConfiguration() ? treeItem.children : [];
-    this._onDidChangeTreeData.fire(undefined);
-    this.hideStatusBarItem();
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      const treeItem = await this.generateTree();
+      this.data = treeItem.children;
+      this._onDidChangeTreeData.fire(undefined);
+      this.hideStatusBarItem();
+    }
+    else {
+      this.data = [];
+      this._onDidChangeTreeData.fire(undefined);
+    }
   }
 
   async openRefreshData(): Promise<void> {
-    this.showStatusBarItem(messages.commandRunning);
-    this.loadedResults = undefined;
-    const scanIDItem = getFromState(this.context, constants.scanIdKey);
-    let scanId = undefined;
-    if (scanIDItem && scanIDItem.name) {
-      scanId = getFromState(this.context, constants.scanIdKey).name;
-    }
-    if (scanId) {
-      await getResultsWithProgress(this.logs, scanId);
-      await vscode.commands.executeCommand(commands.refreshTree);
-      this.hideStatusBarItem();
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      this.loadedResults = undefined;
+      const scanIDItem = getFromState(this.context, constants.scanIdKey);
+      let scanId = undefined;
+      if (scanIDItem && scanIDItem.name) {
+        scanId = getFromState(this.context, constants.scanIdKey).name;
+      }
+      if (scanId) {
+        await getResultsWithProgress(this.logs, scanId);
+        await vscode.commands.executeCommand(commands.refreshTree);
+        this.hideStatusBarItem();
+      }
     }
   }
 
