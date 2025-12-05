@@ -19,8 +19,9 @@ jobs:
     - name: Authenticate with GitHub package registry
       run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
     - name: Install dependencies
-      run : npm cache clean --force
-      run: npm install
+      run: |
+        npm cache clean --force
+        npm install
     - name: Run e2e tests
       if: runner.os == 'Linux'
       env:
@@ -60,8 +61,9 @@ jobs:
     - name: Authenticate with GitHub package registry
       run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
     - name: Install dependencies
-      run : npm cache clean --force
-      run: npm install
+      run: |
+        npm cache clean --force
+        npm install
     - name: Run unit tests with coverage
       run: npm run unit-coverage
 
@@ -81,8 +83,9 @@ jobs:
     - name: Authenticate with GitHub package registry
       run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
     - name: Install dependencies
-      run : npm cache clean --force
-      run: npm install
+      run: |
+        npm cache clean --force
+        npm install
     - name: Run tests
       if: runner.os != 'Linux'
       env:
