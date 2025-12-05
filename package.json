@@ -869,7 +869,7 @@
         {
           "id": "astResultsPromo",
           "type": "webview",
-          "name": "Checkmarx One Results",
+          "name": "Checkmarx One Results13r4",
           "when": "ast-results.isStandaloneEnabled"
         },
         {
