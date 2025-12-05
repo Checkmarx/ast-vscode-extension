@@ -876,7 +876,7 @@
           "id": "astCxOneAssist",
           "type": "webview",
           "name": "Checkmarx One Assist",
-          "when": "ast-results.isValidCredentials"
+          "when": "ast-results.isStandaloneEnabled || ast-results.cxOneAssistEnabled"
         },
         {
           "id": "scaAutoScan",
@@ -1068,7 +1068,9 @@
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
     "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "test1": "export TEST=true && npm run compile && extest setup-and-run './out/test/1.settings.test.js' './out/test/5.customActions.test.js' -c 1.87.2 -i -r .",
     "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "win-test1": "set TEST=true&& npm run compile && extest setup-and-run './out/test/1.settings.test.js' './out/test/5.customActions.test.js' -c 1.87.2 -i -r .",
     "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
     "unit-coverage": "npx nyc npm run unit-test",
     "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r .",
