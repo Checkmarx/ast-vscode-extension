@@ -23,7 +23,6 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter severity", async function () {
-    treeScans = await initialize();
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await InputBox.create();
     await input.setText(
@@ -33,7 +32,6 @@ describe("filter and groups actions tests", () => {
     const commands = [{ command: CX_FILTER_INFO, text: "INFO" }, { command: CX_FILTER_LOW, text: "LOW" }, { command: CX_FILTER_MEDIUM, text: "MEDIUM" }, { command: CX_FILTER_HIGH, text: "HIGH" }, { command: CX_FILTER_HIGH, text: "CRITICAL" }];
     for (var index in commands) {
       await bench.executeCommand(commands[index].command);
-      treeScans = await initialize();
       console.log("treeScans:", treeScans);
       console.log("treeScans(Json):", JSON.stringify(treeScans));
       let scan = await treeScans?.findItem(
@@ -66,7 +64,7 @@ describe("filter and groups actions tests", () => {
     // Ensure the Checkmarx Results tree view is focused
     console.log("[GroupBy Test 1] Focusing Checkmarx Results view via command:", CX_LOOK_SCAN);
     await bench.executeCommand(CX_LOOK_SCAN);
-    const treeScans = await initialize();
+
 
     console.log("treeScans:", treeScans);
     console.log("treeScans(Json):", JSON.stringify(treeScans));
@@ -120,7 +118,6 @@ describe("filter and groups actions tests", () => {
     // Get scan node
     console.log("[GroupBy Test 2] Focusing Checkmarx Results view via command:", CX_LOOK_SCAN);
     await bench.executeCommand(CX_LOOK_SCAN);
-    const treeScans = await initialize();
     console.log("[GroupBy Test 2] initialize() returned treeScans:", !!treeScans);
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
     {
@@ -161,7 +158,6 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter state", async function () {
-    await initialize();
     const commands = [CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_CONFIRMED, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_FILTER_NOT_IGNORED];
     for (var index in commands) {
       await bench.executeCommand(commands[index]);
