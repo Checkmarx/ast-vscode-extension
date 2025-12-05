@@ -30,9 +30,13 @@ export async function createTree(
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
   const control = await createControl();
+  console.log("Control:", control);
+  console.log("Control(Json):", JSON.stringify(control));
   let view;
   if (control) {
     view = await createView(control);
+    console.log("View:", view);
+    console.log("View(Json):", JSON.stringify(view));
   }
   return await createTree(view);
 }

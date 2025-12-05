@@ -69,13 +69,17 @@ export class AstResultsProvider extends ResultsProvider {
 
   async refreshData(): Promise<void> {
     if (await validateConfigurationAndLicense(this.logs)) {
+      console.log("[AST] refreshData: starting generateTree");
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
+      console.log("[AST] refreshData: generateTree returned", !!treeItem, "children count:", treeItem?.children?.length ?? 0);
       this.data = treeItem.children;
       this._onDidChangeTreeData.fire(undefined);
+      console.log("[AST] refreshData: treeData fired, data length:", this.data?.length ?? 0);
       this.hideStatusBarItem();
     }
     else {
+      console.log("[AST] refreshData: invalid configuration or license, clearing data");
       this.data = [];
       this._onDidChangeTreeData.fire(undefined);
     }
@@ -83,6 +87,7 @@ export class AstResultsProvider extends ResultsProvider {
 
   async openRefreshData(): Promise<void> {
     if (await validateConfigurationAndLicense(this.logs)) {
+      console.log("[AST] openRefreshData: starting with valid config");
       this.showStatusBarItem(messages.commandRunning);
       this.loadedResults = undefined;
       const scanIDItem = getFromState(this.context, constants.scanIdKey);
@@ -90,9 +95,13 @@ export class AstResultsProvider extends ResultsProvider {
       if (scanIDItem && scanIDItem.name) {
         scanId = getFromState(this.context, constants.scanIdKey).name;
       }
+      console.log("[AST] openRefreshData: scanId from state:", scanId);
       if (scanId) {
+        console.log("[AST] openRefreshData: invoking getResultsWithProgress for scanId");
         await getResultsWithProgress(this.logs, scanId);
+        console.log("[AST] openRefreshData: results loaded, refreshing tree");
         await vscode.commands.executeCommand(commands.refreshTree);
+        console.log("[AST] openRefreshData: refreshTree executed");
         this.hideStatusBarItem();
       }
     }
@@ -105,22 +114,27 @@ export class AstResultsProvider extends ResultsProvider {
     let treeItems = this.createRootItems();
     // get scan from state
     this.scan = getFromState(this.context, constants.scanIdKey);
+    console.log("[AST] generateTree: scan from state:", this.scan?.id, this.scan?.name);
     const fromTriage = getFromState(this.context, constants.triageUpdate)?.id;
+    console.log("[AST] generateTree: fromTriage flag:", fromTriage);
     // Case we come from triage we want to use the loaded results which were modified in triage
     if (fromTriage === undefined || !fromTriage) {
       // in case we scanId, it is needed to load them from the json file
       if (this.scan?.id) {
+        console.log("[AST] generateTree: reading results from file:", resultJsonPath);
         this.loadedResults = await readResultsFromFile(resultJsonPath, this.scan?.id)
           .catch((error) => {
             this.logs.error(`Error reading results: ${error.message}`);
             return undefined;
           });
+        console.log("[AST] generateTree: loadedResults length:", this.loadedResults?.length ?? -1);
 
 
 
       }
       // otherwise the results must be cleared
       else {
+        console.log("[AST] generateTree: no scan id, clearing loadedResults and updating risk view");
         this.loadedResults = undefined;
         this.riskManagementView.updateContent();
 
@@ -128,6 +142,7 @@ export class AstResultsProvider extends ResultsProvider {
     }
     // Case we come from triage we must update the state to load results from the correct place
     else {
+      console.log("[AST] generateTree: clearing triageUpdate state");
       updateState(this.context, constants.triageUpdate, {
         id: false, name: constants.triageUpdate,
         scanDatetime: "",
@@ -137,9 +152,11 @@ export class AstResultsProvider extends ResultsProvider {
 
     // if there are results loaded, the tree needs to be recreated
     if (this.loadedResults !== undefined) {
+      console.log("[AST] generateTree: recreating tree with results, count:", this.loadedResults.length);
 
       // Update the risks management webview with project info
       const project = getFromState(this.context, constants.projectIdKey);
+      console.log("[AST] generateTree: updating risk view with project:", project?.id, "scan:", this.scan?.id);
       this.riskManagementView.updateContent({ project, scan: this.scan, cxResults: this.loadedResults });
 
       const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
@@ -149,6 +166,7 @@ export class AstResultsProvider extends ResultsProvider {
         treeItems = treeItems.concat(this.createSummaryItem(this.loadedResults));
       }
 
+      console.log("[AST] generateTree: grouping by:", this.groupByCommand.activeGroupBy, "active severities:", this.filterCommand.getAtiveSeverities(), "active states:", this.filterCommand.getActiveStates());
       const treeItem = this.groupBy(
         this.loadedResults,
         this.groupByCommand.activeGroupBy,
@@ -165,7 +183,9 @@ export class AstResultsProvider extends ResultsProvider {
 
       treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
       treeItems = treeItems.concat(treeItem);
+      console.log("[AST] generateTree: treeItem children count:", treeItem.children.length);
     }
+    console.log("[AST] generateTree: returning root with children count:", treeItems.length);
     return new TreeItem("", undefined, undefined, treeItems);
   }
 
