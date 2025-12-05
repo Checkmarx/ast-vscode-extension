@@ -68,11 +68,17 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    this.showStatusBarItem(messages.commandRunning);
-    const treeItem = await this.generateTree();
-    this.data = treeItem.children;
-    this._onDidChangeTreeData.fire(undefined);
-    this.hideStatusBarItem();
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      const treeItem = await this.generateTree();
+      this.data = treeItem.children;
+      this._onDidChangeTreeData.fire(undefined);
+      this.hideStatusBarItem();
+    }
+    else {
+      this.data = [];
+      this._onDidChangeTreeData.fire(undefined);
+    }
   }
 
   async openRefreshData(): Promise<void> {
