@@ -8,7 +8,6 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from "./constants";
-import { By } from "selenium-webdriver";
 
 export async function createControl(): Promise<ViewControl | undefined> {
   const r = await new ActivityBar().getViewControl("Checkmarx");
@@ -21,17 +20,31 @@ export async function createView(
   return await control.openView();
 }
 
-export async function createTree(view: SideBarView) {
-  const driver = view.getDriver();
-  const content = view.getContent();
+export async function createTree(
+  view: SideBarView | undefined
+): Promise<CustomTreeSection | undefined> {
+  if (!view) return undefined;
 
-  const element = await driver.findElement(
-    By.css('[id="workbench.view.extension.astResults"]')
+  const sections = await view.getContent().getSections();
+
+  // Keep only tree sections (ignore webviews)
+  const treeSections: CustomTreeSection[] = [];
+
+  for (const s of sections) {
+    try {
+      // Only tree sections respond to getVisibleItems()
+      await s.getVisibleItems();
+      treeSections.push(s as CustomTreeSection);
+    } catch {
+      // Webviews throw an error → ignore
+    }
+  }
+
+  // Select the tree by exact title
+  return treeSections.find(
+    async s => (await s.getTitle()) === "Checkmarx One Results"
   );
-
-  return new CustomTreeSection(element, content); // now correct type
 }
-
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
   const control = await createControl();
