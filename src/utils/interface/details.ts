@@ -38,6 +38,22 @@ export class Details {
 			`;
 	}
 
+	scaHeader(severityPath: vscode.Uri) {
+		return `
+			<div class="header">
+				<img alt="icon" class="header-severity" src="${severityPath}" />
+				${this.result.riskScore ? `<p class="header-risk-score ${this.result.severity.toLowerCase()}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""}
+				<p class="header-title">
+					${this.result.label}
+				</p>
+				<p class="header-name">
+					${this.result.scaNode?.packageIdentifier ? this.result.scaNode.packageIdentifier : ""}
+				</p>
+			</div>
+			<hr class="division"/>
+		`;
+	}
+
 	changes(selectClassname): string {
 		return (
 			this.triage(selectClassname) +
@@ -178,7 +194,6 @@ export class Details {
 	}
 
 	scaView(
-		severityPath,
 		scaAtackVector,
 		scaComplexity,
 		scaAuthentication,
@@ -190,36 +205,20 @@ export class Details {
 		type?: string
 	) {
 		return `
-			<body class="body-sca">
-			<div class="header">
-				<img alt="icon" class="header-severity" src="${severityPath}" />
-				${this.result.riskScore ? `<p class="header-risk-score ${this.result.severity.toLowerCase()}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""
-			}
-				<p class="header-title">
-					${this.result.label}
-				</p>
-				<p class="header-name">
-					${this.result.scaNode.packageIdentifier
-				? this.result.scaNode.packageIdentifier
-				: ""
-			}
-				</p>
-			</div>
 			<div class="content">
 				${this.result.scaContent(
-				this.result,
-				scaUpgrade,
-				scaUrl,
-				scaAtackVector,
-				scaComplexity,
-				scaAuthentication,
-				scaConfidentiality,
-				scaIntegrity,
-				scaAvailability,
-				type
-			)}
-			</div>
-		</body>			
+			this.result,
+			scaUpgrade,
+			scaUrl,
+			scaAtackVector,
+			scaComplexity,
+			scaAuthentication,
+			scaConfidentiality,
+			scaIntegrity,
+			scaAvailability,
+			type
+		)}
+			</div>	
 		`;
 	}
 

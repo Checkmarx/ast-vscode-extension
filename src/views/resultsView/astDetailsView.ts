@@ -373,17 +373,27 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             : ""
         )
         : this.result.type === "sca"
-          ? html.scaView(
-            severityPath,
-            scaAtackVector,
-            scaComplexity,
-            scaAuthentication,
-            scaConfidentiality,
-            scaIntegrity,
-            scaAvailability,
-            scaUpgrade,
-            scaUrl,
-            this.type
+          ? '<body class="body-sca">' + html.scaHeader(severityPath) + html.tab(
+            html.scaView(
+              scaAtackVector,
+              scaComplexity,
+              scaAuthentication,
+              scaConfidentiality,
+              scaIntegrity,
+              scaAvailability,
+              scaUpgrade,
+              scaUrl,
+              this.type
+            ) + "</body>",
+            "",
+            "",
+            messages.generalTab,
+            "",
+            messages.triageTab,
+            "",
+            "",
+            "",
+            ""
           )
           : this.result.type === constants.scsSecretDetection
             ? html.tab(
