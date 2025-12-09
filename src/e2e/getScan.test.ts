@@ -5,7 +5,12 @@ import {
   VSBrowser,
   WebDriver,
   By,
-  WebView
+  WebView,
+  InputBox,
+  TextEditor,
+  BottomBarPanel,
+  MarkerType,
+  SettingsEditor
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import { initialize } from "../test/utils/utils";
@@ -28,6 +33,10 @@ import {
   selectItem,
 } from "./utils/utils";
 
+import { constants } from "../utils/common/constants";
+import * as path from "path";
+import * as fsp from "fs/promises";
+
 // Load environment variables
 dotenv.config();
 const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
@@ -40,7 +49,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let bench: Workbench;
   let driver: WebDriver;
 
-  it("Authentication: should authenticate using API key and verify button state", async function() {
+  it("Authentication: should authenticate using API key and verify button state", async function () {
     this.timeout(120000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
@@ -64,7 +73,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
       // Find and select the API key radio button option
       const radioButtons = await webview.findWebElements(By.css("input[type='radio']"));
       console.log(`Found ${radioButtons.length} radio buttons`);
-      
+
       if (radioButtons.length >= 2) {
         const apiKeyRadio = radioButtons[1];
         await apiKeyRadio.click();
@@ -87,11 +96,11 @@ describe("Checkmarx VS Code Extension Tests", () => {
           const state = await authButton.getAttribute("disabled");
           return state !== "true";
         }, 5000, "Auth button did not become enabled");
-        
+
         // Verify that the auth button is now enabled
         disabledAttr = await authButton.getAttribute("disabled");
         expect(disabledAttr).to.not.equal("true", "Auth button should be enabled after API key entry");
-        
+
         // Click the auth button
         await authButton.click();
         console.log("Clicked 'Sign in' button");
@@ -162,5 +171,63 @@ describe("Checkmarx VS Code Extension Tests", () => {
       expect(branch).is.not.undefined;
     });
   });
-  
+
+  // describe("OSS Scanner E2E Integration", () => {
+  //   before(async function () {
+  //     this.timeout(60000);
+  //     // Enable OSS realtime scanner in settings
+  //     console.log("Enabling OSS scanner for E2E tests...");
+  //     const settingsEditor = await bench.openSettings();
+  //     const ossCheckbox = await settingsEditor.findSetting(
+  //       constants.activateOssRealtimeScanner,
+  //       constants.ossRealtimeScanner
+  //     );
+  //     await ossCheckbox.setValue(true);
+  //     console.log("OSS scanner enabled");
+
+  //     // Close settings
+  //     await new EditorView().closeAllEditors();
+  //   });
+
+  //   it("should scan package.json and detect security issues", async function () {
+  //     this.timeout(220000);
+
+  //     const packageJsonPath = path.join(__dirname, "menifastFiles", "package.json");
+
+  //     await bench.executeCommand("workbench.view.explorer");
+  //     await sleep(2000);
+
+  //     const folderPath = path.join(__dirname, "menifastFiles");
+
+  //     await bench.executeCommand("workbench.action.files.openFolder");
+  //     const folderInput = await InputBox.create();
+  //     await folderInput.setText(folderPath);
+  //     await folderInput.confirm();
+  //     await sleep(3000);
+
+  //     await bench.executeCommand("workbench.action.files.openFile");
+  //     const input = await InputBox.create();
+  //     await input.setText(packageJsonPath);
+  //     await input.confirm();
+
+  //     await sleep(5000);
+
+  //     const editorView = new EditorView();
+  //     const editor = await editorView.openEditor("package.json") as TextEditor;
+  //     expect(editor).to.not.be.undefined;
+
+  //     await sleep(15000);
+  //     const bottomBar = new BottomBarPanel();
+  //     await bottomBar.toggle(true);
+
+  //     const problemsView = await bottomBar.openProblemsView();
+
+  //     await sleep(25000);
+
+  //     const markers = await problemsView.getAllMarkers(MarkerType.Error);
+  //     expect(markers.length).to.be.greaterThan(0, "Expected OSS scanner to find security issues");
+
+  //   });
+  // });
+
 });
