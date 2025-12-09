@@ -656,7 +656,7 @@ export class AstResult extends CxResult {
   ) {
     return `
     <div class="left-content">
-      <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
+      <div class="card" style="border-top: none;border-top-style: none;">
         <div class="description">
           ${result.descriptionHTML ? result.descriptionHTML : result.description
       }
