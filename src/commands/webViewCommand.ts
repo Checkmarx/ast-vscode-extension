@@ -213,7 +213,7 @@ export class WebViewCommand {
     if (result.type === "sast") {
       await getLearnMore(this.logs, this.context, result, this.detailsPanel);
     }
-    if (result.type === "sast" || result.type === "kics") {
+    if (result.type === "sast" || result.type === "kics" || result.type === "sca") {
       await getChanges(this.logs, this.context, result, this.detailsPanel, detailsDetachedView, this.resultsProvider);
     }
   }
