@@ -39,7 +39,7 @@ export class AuthenticationWebview {
   }
 
   private async initialize() {
-    this._panel.webview.postMessage({ type: "showLoader" });
+    await this._panel.webview.postMessage({ type: "showLoader" });
     const authService = AuthService.getInstance(this.context, this.logs);
     let hasToken = false;
 
@@ -48,17 +48,17 @@ export class AuthenticationWebview {
     } catch (error) {
       console.error("Error validating authentication state:", error);
     }
-    this._panel.webview.postMessage({
-      type: "setAuthState",
-      isAuthenticated: hasToken,
-    });
+    const setAuthStateMessage = { type: "setAuthState", isAuthenticated: hasToken };
+    await this._panel.webview.postMessage(setAuthStateMessage);
 
     const urls = this.getURIs(this.context);
-    this._panel.webview.postMessage({ type: "setUrls", items: urls });
+    const setUrlsMessage = { type: "setUrls", items: urls };
+    await this._panel.webview.postMessage(setUrlsMessage);
 
     const tenants = this.getTenants(this.context);
-    this._panel.webview.postMessage({ type: "setTenants", items: tenants });
-    this._panel.webview.postMessage({ type: "hideLoader" });
+    const setTenantsMessage = { type: "setTenants", items: tenants };
+    await this._panel.webview.postMessage(setTenantsMessage);
+    await this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
   public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
