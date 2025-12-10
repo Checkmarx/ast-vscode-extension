@@ -51,6 +51,40 @@ export async function updateResults(
   });
 }
 
+export async function updateSCAResults(
+  result: AstResult,
+  context: vscode.ExtensionContext,
+  comment: string,
+  resultsProvider: AstResultsProvider
+) {
+  const resultJsonPath = getResultsFilePath();
+  if (!(fs.existsSync(resultJsonPath) && result)) {
+    throw new Error(messages.fileNotFound);
+  }
+
+  // const projectId = getFromState(context, constants.projectIdKey).id;
+  // const vulnerabilities = "";
+
+  // await cx.triageSCAUpdate(
+  //   projectId,
+  //   vulnerabilities,
+  //   result.type,
+  //   result.state,
+  //   comment
+  // );
+  // Update local results
+  const resultHash = result.getResultHash();
+  resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
+    // Update the result in the array
+    if (element.data.resultHash === resultHash || element.id === resultHash) {
+      resultsProvider.loadedResults[index].severity = result.severity;
+      resultsProvider.loadedResults[index].state = result.state;
+      resultsProvider.loadedResults[index].status = result.status;
+      return;
+    }
+  });
+}
+
 export async function triageSubmit(
   result: AstResult,
   context: vscode.ExtensionContext,
