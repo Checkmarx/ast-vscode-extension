@@ -1325,6 +1325,14 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
+  async isStandaloneEnabled(): Promise<boolean> {
+    return false;
+  }
+
+  async isCxOneAssistEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
     return true;
   }
