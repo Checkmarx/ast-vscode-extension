@@ -14,6 +14,20 @@ import { messages } from "./common/messages";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { getStateIdForTriage } from "./utils";
 
+// Build SCA vulnerability string in the format:
+// packagename=<name>,packageversion=<version>,vulnerabilityId=<similarityId>,packagemanager=<manager>
+export function buildScaVulnerabilityString(result: AstResult): string {
+  const sca = result.scaNode;
+  const pkgId = sca?.packageIdentifier || result.data?.packageIdentifier || "";
+  const parts = typeof pkgId === "string" ? pkgId.split("-") : [];
+  const manager = (parts[0] || "");
+  const name = sca?.scaPackageData?.dependencyPaths?.[0]?.[0]?.name || parts[1] || "";
+  const version = parts.length > 2 ? parts[parts.length - 1] : "";
+
+  const vulnerabilityId = result.similarityId || result.id || "";
+  return `packagename=${name},packageversion=${version},vulnerabilityId=${vulnerabilityId},packagemanager=${manager}`;
+}
+
 export async function updateResults(
   result: AstResult,
   context: vscode.ExtensionContext,
@@ -62,22 +76,21 @@ export async function updateSCAResults(
     throw new Error(messages.fileNotFound);
   }
 
-  // const projectId = getFromState(context, constants.projectIdKey).id;
-  // const vulnerabilities = "";
+  const projectId = getFromState(context, constants.projectIdKey).id;
+  const vulnerabilities = [buildScaVulnerabilityString(this.result)];
 
-  // await cx.triageSCAUpdate(
-  //   projectId,
-  //   vulnerabilities,
-  //   result.type,
-  //   result.state,
-  //   comment
-  // );
+  await cx.triageSCAUpdate(
+    projectId,
+    vulnerabilities,
+    result.type,
+    result.state,
+    comment
+  );
   // Update local results
   const resultHash = result.getResultHash();
   resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
     // Update the result in the array
     if (element.data.resultHash === resultHash || element.id === resultHash) {
-      resultsProvider.loadedResults[index].severity = result.severity;
       resultsProvider.loadedResults[index].state = result.state;
       resultsProvider.loadedResults[index].status = result.status;
       return;
@@ -94,11 +107,6 @@ export async function triageSubmit(
   detailsDetachedView: AstDetailsDetached,
   resultsProvider: AstResultsProvider
 ) {
-  // Needed because dependency triage is still not working
-  if (result.type === constants.sca) {
-    vscode.window.showErrorMessage(messages.triageNotAvailableSca);
-    return;
-  }
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
     logs.info(messages.triageUpdateSeverity(data.severitySelection));
@@ -129,7 +137,11 @@ export async function triageSubmit(
   }
   // Change the results locally
   try {
-    await updateResults(result, context, data.comment, resultsProvider);
+    if (result.type === constants.sca) {
+      await updateSCAResults(result, context, data.comment, resultsProvider);
+    } else {
+      await updateResults(result, context, data.comment, resultsProvider);
+    }
     updateState(context, constants.triageUpdate, {
       id: true,
       name: constants.triageUpdate,
@@ -137,7 +149,7 @@ export async function triageSubmit(
       displayScanId: "",
     });
     await vscode.commands.executeCommand(commands.refreshTree);
-    if (result.type === "sast" || result.type === "kics") {
+    if (result.type === "sast" || result.type === "kics" || result.type === constants.sca) {
       await getChanges(logs, context, result, detailsPanel, detailsDetachedView, resultsProvider);
     }
     if (result.type === "sast") {
@@ -165,7 +177,10 @@ export async function getChanges(
 ) {
   const projectId = getFromState(context, constants.projectIdKey)?.id;
   if (projectId) {
-    await cx.triageShow(projectId, result.similarityId, result.type)
+    const changesPromise = result.type === constants.sca
+      ? triageSCAShow(projectId, result)
+      : triageShow(projectId, result);
+    await changesPromise
       .then(async (changes) => {
         const latest = Array.isArray(changes) && changes.length > 0 ? changes[0] : undefined;
         const changedSeverity = latest && latest.Severity && latest.Severity !== result.severity ? latest.Severity : undefined;
@@ -221,4 +236,15 @@ export async function getChanges(
   } else {
     logs.error(messages.projectIdUndefined);
   }
+}
+
+// Separate wrappers for triage show calls
+export async function triageShow(projectId: string, result: AstResult) {
+  return cx.triageShow(projectId, result.similarityId, result.type);
+}
+
+export async function triageSCAShow(projectId: string, result: AstResult) {
+  // Placeholder for future SCA-specific API; currently uses the same triageShow
+  const vulnerabilities = [buildScaVulnerabilityString(result)];
+  return cx.triageSCAShow(projectId, vulnerabilities, constants.sca);
 }
