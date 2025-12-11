@@ -154,7 +154,6 @@ export class Cx implements CxPlatform {
         params.set(CxParamType.S, sourcePath);
         params.set(CxParamType.BRANCH, branchName);
         params.set(CxParamType.PROJECT_NAME, projectName);
-        params.set(CxParamType.AGENT, constants.vsCodeAgent);
         params.set(
             CxParamType.ADDITIONAL_PARAMETERS,
             constants.scanCreateAdditionalParameters
@@ -193,8 +192,7 @@ export class Cx implements CxPlatform {
             scanId,
             constants.resultsFileExtension,
             constants.resultsFileName,
-            getFilePath(),
-            constants.vsCodeAgent
+            getFilePath()
         );
     }
 
@@ -303,11 +301,12 @@ export class Cx implements CxPlatform {
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
 
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
 
     async getAstConfiguration() {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return undefined;
@@ -319,7 +318,7 @@ export class Cx implements CxPlatform {
     }
 
     async isValidConfiguration(): Promise<boolean> {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return false;
@@ -337,7 +336,7 @@ export class Cx implements CxPlatform {
 
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -359,7 +358,7 @@ export class Cx implements CxPlatform {
 
     async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
         let enabled = true;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -378,9 +377,91 @@ export class Cx implements CxPlatform {
         return enabled;
     }
 
+    async isStandaloneEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.standaloneEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => cx.standaloneEnabled(),
+            "tenant configuration"
+        );
+    }
+
+
+    async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.cxOneAssistEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => {
+                const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
+                return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
+            },
+            "tenant configuration (CxOne Assist)"
+        );
+    }
+
+    async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        return this.isStandaloneEnabled(logs);
+    }
+
+    clearStandaloneEnabledCache(): void {
+        this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    private async setStandaloneFlag(value: boolean): Promise<void> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
+    }
+
+    private async clearStandaloneFlag(): Promise<void> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    private async getCachedFeatureEnabled(
+        globalStateKey: string,
+        logs: Logs,
+        remoteCheck: (cx: CxWrapper) => Promise<boolean>,
+        errorContext: string
+    ): Promise<boolean> {
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        if (!token) {
+            await this.context.globalState.update(globalStateKey, undefined);
+            return false;
+        }
+
+        const cached = this.context.globalState.get<boolean>(globalStateKey);
+        if (cached !== undefined) {
+            return cached;
+        }
+
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            await this.context.globalState.update(globalStateKey, false);
+            return false;
+        }
+
+        const cx = new CxWrapper(config);
+        try {
+            const enabled = await remoteCheck(cx);
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(enabled);
+            } else {
+                await this.context.globalState.update(globalStateKey, enabled);
+            }
+            return enabled;
+        } catch (error) {
+            logs.error(`Error checking ${errorContext}: ${error}`);
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(false);
+            } else {
+                await this.context.globalState.update(globalStateKey, false);
+            }
+            return false;
+        }
+    }
+
     async isAiMcpServerEnabled(): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return enabled;
@@ -629,7 +710,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
+        const scans = await cx.scanAsca(null, true, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -650,7 +731,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
+        const scans = await cx.scanAsca(sourcePath, false, ignorePath);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -763,16 +844,14 @@ export class Cx implements CxPlatform {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
-        const agent = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
-
-        cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity, "", "", 0);
+        cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
     async setUserEventDataForDetectionLogs(scanType: string, status: string, totalCount: number) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "", "",
+            cx.telemetryAIEvent("", "", "", "", "",
                 scanType, status, totalCount);
         }
     }

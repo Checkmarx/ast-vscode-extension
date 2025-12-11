@@ -125,6 +125,13 @@ export async function validateRootNode(scan: any): Promise<[number, any]> {
   return [size, engines];
 }
 
+// Simple variant: expands root and returns true
+export async function validateRootNodeBool(scan: any): Promise<boolean> {
+  await scan?.expand();
+  await scan?.getChildren();
+  return true;
+}
+
 export async function waitForNotificationWithTimeout(timeout) {
   let firstNotification;
   let isTimeout = false;
