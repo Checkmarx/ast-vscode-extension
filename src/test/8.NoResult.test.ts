@@ -8,7 +8,7 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout } from "./utils/utils";
+import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout, validateRootNodeBool } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
@@ -48,9 +48,8 @@ describe("Scan ID load results test", () => {
         );
         await scan?.expand();
         let scanChildren = await scan?.getChildren();
-        let scanResults = await scanChildren[0].getChildren();
-        expect(scanResults).not.to.be.undefined;
-        expect(scanResults.length).to.be.equal(0);
+        const isValidated = await validateRootNodeBool(scan);
+        expect(isValidated).to.equal(true);
     });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
 
