@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## [v2.42.1-org_name_change.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-org_name_change.0) - 2025-12-15 14:07:57
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Default state presented not equal to actual state (AST-115349) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1306
+* Update validator from v13.15.20  to v13.15.22 (AST-125060) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1319
+### New Features 🚀
+* Link from Problem panel to CxOne Result (AST-120761) (AST-120220) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1309
+* Standalone User Experience Overview (AST-112336) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1301
+### Other Changes
+* Color Fixing (AST-119927) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1314
+* Added package-lock.json (AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1321
+* Remote-ssh ouath fix (AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1300
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.42.1-standalone.0...v2.42.1-org_name_change.0
+
+### Fix
+
+- general:
+  - fixed custom state issue (#1306) ([f2ea805](https://github.com/Checkmarx/ast-vscode-extension/commit/f2ea8052c46f2e9123ea0d5b0fbe2c3366e191b7)) ([#1306](https://github.com/Checkmarx/ast-vscode-extension/pull/1306))
+
 ## [v2.42.1-standalone.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-standalone.0) - 2025-11-28 10:59:26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
