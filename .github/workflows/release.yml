@@ -166,7 +166,7 @@ jobs:
       if: inputs.dev == false
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e #v6.0.5
       with:
-        token: ${{ env.GH_TOKEN }}
+        token: ${{ env.GITHUB_TOKEN }}
         branch: ${{ env.BRANCH_NAME }}
         title: "Update Version - Automated Changes"
         body: "This is an automated PR created by GitHub Actions"
