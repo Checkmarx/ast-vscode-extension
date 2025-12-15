@@ -7,7 +7,7 @@ import {
   StateLevel,
   constants,
 } from "../utils/common/constants";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { Counter } from "../models/counter";
 import { AstResult } from "../models/results";
 import { SastNode } from "../models/sastNode";

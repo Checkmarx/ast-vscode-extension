@@ -6,11 +6,11 @@
   "version": "2.42.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
+    "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
-  "homepage": "https://github.com/CheckmarxDev/ast-vscode-extension#readme",
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
   "bugs": {
-    "url": "https://github.com/CheckmarxDev/ast-vscode-extension/issues"
+    "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
   },
   "icon": "media/icon.png",
   "engines": {
@@ -1099,7 +1099,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "v0.0.147-rc-standalone-1.0",
+    "@checkmarx/ast-cli-javascript-wrapper": "0.0.148",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.12.2",

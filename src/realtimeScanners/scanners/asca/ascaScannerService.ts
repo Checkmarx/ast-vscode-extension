@@ -5,7 +5,7 @@ import { BaseScannerService } from "../../common/baseScannerService";
 import { IScannerConfig, CxDiagnosticData, AscaHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 import path from "path";
-import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { cx } from "../../../cx";
 import fs from "fs";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";

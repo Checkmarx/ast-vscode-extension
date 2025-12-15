@@ -4,7 +4,7 @@ import './mocks/vscode-mock';
 import './mocks/cxWrapper-mock';
 import { mockDiagnosticCollection } from './mocks/vscode-mock';
 import { AscaScannerService } from '../realtimeScanners/scanners/asca/ascaScannerService';
-import type CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import type CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import type { Uri } from 'vscode';
 import { constants } from '../utils/common/constants';
 
@@ -97,20 +97,20 @@ describe('AscaScannerService', () => {
             const diagnostics = mockDiagnosticCollection.set.getCall(0).args[1];
 
             // Check first diagnostic
-            expect(diagnostics[0].range.start.line).to.equal(0); 
-            expect(diagnostics[0].range.start.character).to.equal(2); 
+            expect(diagnostics[0].range.start.line).to.equal(0);
+            expect(diagnostics[0].range.start.character).to.equal(2);
             expect(diagnostics[0].range.end.line).to.equal(0);
             expect(diagnostics[0].range.end.character).to.equal(33);
-            expect(diagnostics[0].message).to.equal('Avoid Eval Usage'); 
+            expect(diagnostics[0].message).to.equal('Avoid Eval Usage');
             expect(diagnostics[0].source).to.equal(constants.cxAi);
             expect(diagnostics[0].severity).to.equal(0);
 
             // Check second diagnostic
-            expect(diagnostics[1].range.start.line).to.equal(1); 
-            expect(diagnostics[1].range.start.character).to.equal(4); 
+            expect(diagnostics[1].range.start.line).to.equal(1);
+            expect(diagnostics[1].range.start.character).to.equal(4);
             expect(diagnostics[1].range.end.line).to.equal(1);
             expect(diagnostics[1].range.end.character).to.equal(24);
-            expect(diagnostics[1].message).to.equal('Hardcoded Secret'); 
+            expect(diagnostics[1].message).to.equal('Hardcoded Secret');
             expect(diagnostics[1].source).to.equal(constants.cxAi);
             expect(diagnostics[1].severity).to.equal(0);
         });
