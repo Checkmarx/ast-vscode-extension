@@ -75,7 +75,7 @@ jobs:
 
     # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
     - name: Authenticate with GitHub package registry
-      run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+      run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
 
     # SETUP NODE
     - name: Setup Node.js
@@ -166,7 +166,7 @@ jobs:
       if: inputs.dev == false
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e #v6.0.5
       with:
-        token: ${{ env.GITHUB_TOKEN }}
+        token: ${{ env.GH_TOKEN }}
         branch: ${{ env.BRANCH_NAME }}
         title: "Update Version - Automated Changes"
         body: "This is an automated PR created by GitHub Actions"
