@@ -6,6 +6,7 @@ import { constants } from "../../utils/common/constants";
 import * as sinon from "sinon";
 
 let commandsExecuted: string[] = [];
+const registeredCallbacks: Record<string, (...args: any[]) => any> = {};
 
 const mockDiagnosticCollection = {
     set: sinon.stub(),
@@ -33,6 +34,16 @@ const mock = {
                         }
                         return undefined;
                     },
+                };
+            }
+            if (section === constants.cxKics) {
+                return {
+                    get: (key: string) => {
+                        if (key === constants.cxKicsAutoScan) {
+                            return false; // autoscan disabled by default in tests
+                        }
+                        return undefined;
+                    }
                 };
             }
             return undefined;
@@ -78,13 +89,14 @@ const mock = {
     },
 
     commands: {
-        executeCommand: (command: string) => {
+        executeCommand: (command: string, ..._args: any[]) => {
             commandsExecuted.push(command);
             return Promise.resolve();
         },
         getCommands: () => Promise.resolve([]),
         registerCommand: (command: string, callback: (...args: any[]) => any) => {
-            return { dispose: () => { } };
+            registeredCallbacks[command] = callback;
+            return { dispose: () => { delete registeredCallbacks[command]; } };
         }
     },
 
@@ -183,3 +195,4 @@ mockRequire("vscode", mock);
 export { mock, mockDiagnosticCollection, resetMocks };
 export const getCommandsExecuted = () => commandsExecuted;
 export const clearCommandsExecuted = () => { commandsExecuted = []; };
+export const getRegisteredCommandCallback = (command: string) => registeredCallbacks[command];
