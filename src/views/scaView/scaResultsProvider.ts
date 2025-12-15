@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import {
   GroupBy,
   constants
@@ -9,7 +9,7 @@ import { TreeItem } from "../../utils/tree/treeItem";
 import { messages } from "../../utils/common/messages";
 import { orderResults } from "../../utils/utils";
 import { ResultsProvider } from "../resultsProviders";
-import CxScaRealTimeErrors from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
+import CxScaRealTimeErrors from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTimeErrors";
 import { cx } from "../../cx";
 
 export class SCAResultsProvider extends ResultsProvider {
@@ -48,8 +48,8 @@ export class SCAResultsProvider extends ResultsProvider {
       this._onDidChangeTreeData.fire(undefined);
       this.hideStatusBarItem();
     }
-    else{
-      this.data =  [];
+    else {
+      this.data = [];
       this._onDidChangeTreeData.fire(undefined);
     }
   }

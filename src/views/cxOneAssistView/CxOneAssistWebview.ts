@@ -3,6 +3,7 @@ import * as path from "path";
 import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 
+// Webview content generator for CxOne Assist
 export class CxOneAssistWebview {
   public static generateHtml(
     context: vscode.ExtensionContext,

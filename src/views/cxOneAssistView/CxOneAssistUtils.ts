@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { Cx } from "../../cx/cx";
 import { Logs } from "../../models/logs";
 
+// Utility class for CxOne Assist webview
 export class CxOneAssistUtils {
 	public static async getWebviewState(
 		ignoreFileManager: IgnoreFileManager,
