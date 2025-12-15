@@ -1,5 +1,5 @@
-import CxPackageData from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxPackageData";
-import CxScaPackageData from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxScaPackageData";
+import CxPackageData from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxPackageData";
+import CxScaPackageData from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxScaPackageData";
 
 export class ScaNode {
   packageIdentifier: string;
@@ -10,5 +10,5 @@ export class ScaNode {
     public id: string,
     public packageData: CxPackageData[],
     public packageId: CxPackageData[]
-  ) { }
+  ) {}
 }

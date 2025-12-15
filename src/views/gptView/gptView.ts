@@ -3,7 +3,7 @@ import * as path from "path";
 import { getNonce } from "../../utils/utils";
 import * as os from 'os';
 import { GptResult } from "../../models/gptResult";
-import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { constants } from "../../utils/common/constants";
 
 export class GptView implements vscode.WebviewViewProvider {

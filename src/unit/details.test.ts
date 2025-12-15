@@ -7,7 +7,7 @@ import { Details } from "../utils/interface/details";
 import { AstResult } from "../models/results";
 import { constants } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
-import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import * as extension from "../extension"; // ייבוא כל המודול
 
 describe("Details", () => {

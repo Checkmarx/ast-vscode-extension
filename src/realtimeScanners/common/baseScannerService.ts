@@ -5,7 +5,7 @@ import * as os from "os";
 import { Logs } from "../../models/logs";
 import { IScannerService, IScannerConfig, AscaHoverData, SecretsHoverData } from "./types";
 import { createHash } from "crypto";
-import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { ThemeUtils } from "../../utils/themeUtils";
 
 export abstract class BaseScannerService implements IScannerService {

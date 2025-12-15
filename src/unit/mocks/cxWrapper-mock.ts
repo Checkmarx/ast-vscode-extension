@@ -1,8 +1,8 @@
 import mockRequire from "mock-require";
-import { CxParamType } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
-import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 
-mockRequire("@checkmarx/ast-cli-javascript-wrapper", {
+mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
   CxWrapper: class {
     config: CxConfig;
 
@@ -64,8 +64,8 @@ mockRequire("@checkmarx/ast-cli-javascript-wrapper", {
     }
 
     async scanCreate(params: Map<CxParamType, string>) {
-      if (params.get(CxParamType.PROJECT_NAME) === "test-project" &&
-        params.get(CxParamType.BRANCH) === "main") {
+      if (params.get(CxParamType.PROJECT_NAME) === "test-project" && 
+          params.get(CxParamType.BRANCH) === "main") {
         return {
           payload: [
             {

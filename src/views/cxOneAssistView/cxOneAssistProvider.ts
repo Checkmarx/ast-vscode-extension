@@ -5,7 +5,6 @@ import { CxOneAssistUtils } from "./CxOneAssistUtils";
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
 import { Logs } from "../../models/logs";
 
-// Provider for the CxOne Assist webview
 export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private webviewView?: vscode.WebviewView;
 	private currentState: CxOneAssistWebviewState;

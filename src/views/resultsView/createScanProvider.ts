@@ -1,4 +1,4 @@
-import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { AstResult } from "../../models/results";
@@ -53,7 +53,7 @@ async function createScanForProject(
   logs: Logs
 ) {
   const scanBranch: Item = context.workspaceState.get(constants.branchIdKey);
-  if (scanBranch.id === constants.localBranch) {
+  if(scanBranch.id === constants.localBranch){
     const gitBranchName = await getGitBranchName();
     if (!gitBranchName) {
       throw new Error("Branch name from git not found");
@@ -173,7 +173,7 @@ export async function createScan(
       return;
     }
   }
-
+  
 
   updateStatusBarItem(constants.scanCreateVerifyFiles, true, statusBarItem);
   if (!(await doesFilesMatch(logs))) {
@@ -186,7 +186,7 @@ export async function createScan(
   try {
     await createScanForProject(context, logs);
   } catch (error) {
-    setScanButtonDefaultIfScanIsNotRunning(context);
+      setScanButtonDefaultIfScanIsNotRunning(context);
     throw error;
   }
   updateStatusBarItem(constants.scanWaiting, true, statusBarItem);

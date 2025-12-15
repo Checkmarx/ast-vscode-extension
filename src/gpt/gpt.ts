@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { GptView } from "../views/gptView/gptView";
 import { cx } from "../cx";
-import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { constants } from "../utils/common/constants";
 
 export class Gpt {

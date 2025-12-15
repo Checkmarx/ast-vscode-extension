@@ -41,11 +41,11 @@ jobs:
         else
           echo "No input version provided. Fetching the latest release version from GitHub API..."
           # Fetch the latest release tag from the GitHub API
-          API_RESPONSE=$(curl -s "https://api.github.com/repos/Checkmarx/ast-cli-javascript-wrapper/releases")
+          API_RESPONSE=$(curl -s "https://api.github.com/repos/CheckmarxDev/ast-cli-javascript-wrapper/releases")
           echo "API response received: $API_RESPONSE"
 
           # Extract the latest semantic version tag
-          VERSION=$(gh api repos/Checkmarx/ast-cli-javascript-wrapper/releases --jq '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")] | sort_by(split(".") | map(tonumber)) | .[-1]')
+          VERSION=$(gh api repos/CheckmarxDev/ast-cli-javascript-wrapper/releases --jq '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")] | sort_by(split(".") | map(tonumber)) | .[-1]')
           echo "Extracted version: $VERSION"
         fi
 
@@ -64,7 +64,7 @@ jobs:
 
     - name: Update package.json
       run: |
-        sed -i "s|\"@checkmarx/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarx/ast-cli-javascript-wrapper\": \"${VERSION}\"|" package.json
+        sed -i "s|\"@checkmarxdev/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarxdev/ast-cli-javascript-wrapper\": \"${VERSION}\"|" package.json
 
     - name: Install Dependencies and Update package-lock.json
       run: |

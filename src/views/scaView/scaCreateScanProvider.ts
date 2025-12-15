@@ -7,7 +7,7 @@ import {
 import { SCAResultsProvider } from "./scaResultsProvider";
 import { messages } from "../../utils/common/messages";
 import { updateStatusBarItem } from "../../utils/utils";
-import CxScaRealTime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
+import CxScaRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 
 async function createScanForProject(logs: Logs): Promise<CxScaRealTime> {
   const workspaceFolder = vscode.workspace.workspaceFolders[0];

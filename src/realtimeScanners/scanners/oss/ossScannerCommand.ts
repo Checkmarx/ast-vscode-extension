@@ -5,7 +5,7 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { OssScannerService } from "./ossScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
-import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
 import { HoverData } from "../../common/types";
 import { ThemeUtils } from "../../../utils/themeUtils";
