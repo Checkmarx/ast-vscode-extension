@@ -1,27 +1,16 @@
 # CHANGELOG
 
+## [v2.43.1-FixUndoAction.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-FixUndoAction.0) - 2025-12-15 16:35:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.0...v2.43.1-FixUndoAction.0
+
 ## [v2.43.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.0) - 2025-12-15 16:35:07
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.43.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* VS Code | Dev Assist | MCP is not getting installed when user logins using OAuth login (AST-121722) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1305
-* Default state presented not equal to actual state (AST-115349) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1306
-* Update validator from v13.15.20  to v13.15.22 (AST-125060) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1319
-### New Features 🚀
-* Link from Problem panel to CxOne Result (AST-120761) (AST-120220) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1309
-* Standalone User Experience Overview (AST-112336) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1301
-### Other Changes
-* Fix (AST-122003) and (AST-85900) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1308
-* Color Fixing (AST-119927) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1314
-* Added package-lock.json (AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1321
-* Remote-ssh ouath fix (AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1300
-* Updated Organization Name (AST-0000) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1322
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1323
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.42.0...v2.43.0
 
 ## [v2.42.1-org_name_change.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-org_name_change.0) - 2025-12-15 14:07:57
 
