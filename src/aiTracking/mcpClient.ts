@@ -2,11 +2,12 @@ import * as vscode from "vscode";
 import { jwtDecode } from "jwt-decode";
 import { isIDE } from "../utils/utils";
 import { constants } from "../utils/common/constants";
-import { 
-  McpRecommendationParams, 
-  McpRecommendation, 
+import { AuthService } from "../services/authService";
+import {
+  McpRecommendationParams,
+  McpRecommendation,
   ScannerType,
-  McpSuggestedAction 
+  McpSuggestedAction
 } from "./types";
 
 interface DecodedJwt {
@@ -53,6 +54,9 @@ export class McpClient {
   private static instance: McpClient;
   private context: vscode.ExtensionContext;
   private requestId: number = 0;
+  public lastCurlCommand: string = ''; // Store last curl command for logging
+  private sessionId: string | null = null; // MCP session ID
+  private sessionExpiry: number = 0; // Session expiration timestamp
 
   private constructor(context: vscode.ExtensionContext) {
     this.context = context;
@@ -125,33 +129,26 @@ export class McpClient {
   }
 
   /**
-   * Make a direct HTTP call to the MCP server
+   * Initialize MCP session (required before calling tools)
    */
-  private async callMcpTool(
-    toolName: string,
-    toolArguments: Record<string, unknown>
-  ): Promise<McpToolResponse | null> {
-    const baseUrl = await this.getMcpBaseUrl();
-    if (!baseUrl) {
-      console.error("MCP base URL not available");
-      return null;
-    }
+  private async initializeSession(baseUrl: string, apiKey: string): Promise<string | null> {
+    console.log("[MCP] Initializing MCP session...");
 
-    const apiKey = await this.context.secrets.get("authCredential");
-    if (!apiKey) {
-      console.error("API key not available for MCP call");
-      return null;
-    }
-
-    const request: McpToolRequest = {
+    const request = {
       jsonrpc: "2.0",
-      method: "tools/call",
+      method: "initialize",
       params: {
-        name: toolName,
-        arguments: toolArguments
+        protocolVersion: "2024-11-05",
+        capabilities: {},
+        clientInfo: {
+          name: "checkmarx-vscode-extension",
+          version: "1.0.0"
+        }
       },
       id: ++this.requestId
     };
+
+    console.log("[MCP] Initialize request:", JSON.stringify(request, null, 2));
 
     try {
       const response = await fetch(baseUrl, {
@@ -164,15 +161,176 @@ export class McpClient {
         body: JSON.stringify(request)
       });
 
+      console.log("[MCP] Initialize response status:", response.status);
+
       if (!response.ok) {
-        console.error(`MCP call failed with status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("[MCP] Initialize failed:", errorText);
         return null;
       }
 
-      const jsonResponse = await response.json() as McpToolResponse;
+      // Try to get session ID from headers (try all common header names)
+      const sessionIdFromHeader = response.headers.get('Mcp-Session-Id') ||  // Checkmarx uses this!
+        response.headers.get('mcp-session-id') ||
+        response.headers.get('X-Session-ID') ||
+        response.headers.get('x-session-id');
+
+      if (sessionIdFromHeader) {
+        console.log("[MCP] ✓ Session ID from header:", sessionIdFromHeader);
+        this.sessionId = sessionIdFromHeader;
+        this.sessionExpiry = Date.now() + (30 * 60 * 1000); // 30 minutes
+        return sessionIdFromHeader;
+      }
+
+      // Try to get session ID from cookies
+      const cookies = response.headers.get('set-cookie');
+      if (cookies) {
+        const sessionMatch = cookies.match(/mcp-session=([^;]+)/);
+        if (sessionMatch) {
+          console.log("[MCP] Session ID from cookie:", sessionMatch[1]);
+          this.sessionId = sessionMatch[1];
+          this.sessionExpiry = Date.now() + (30 * 60 * 1000);
+          return sessionMatch[1];
+        }
+      }
+
+      console.warn("[MCP] No session ID found in response headers or cookies");
+      return null;
+    } catch (error) {
+      console.error("[MCP] Error initializing session:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if current session is valid
+   */
+  private isSessionValid(): boolean {
+    return this.sessionId !== null && Date.now() < this.sessionExpiry;
+  }
+
+  /**
+   * Make a direct HTTP call to the MCP server
+   */
+  private async callMcpTool(
+    toolName: string,
+    toolArguments: Record<string, unknown>
+  ): Promise<McpToolResponse | null> {
+    const baseUrl = await this.getMcpBaseUrl();
+    if (!baseUrl) {
+      console.error("[MCP] ERROR: MCP base URL not available");
+      return null;
+    }
+
+    // Use AuthService to get and validate token
+    const authService = AuthService.getInstance(this.context);
+    const apiKey = await authService.getToken();
+
+    if (!apiKey) {
+      console.error("[MCP] ERROR: API key not available for MCP call");
+      return null;
+    }
+
+    // Check if we have a valid session, if not, initialize one
+    if (!this.isSessionValid()) {
+      console.log("[MCP] No valid session found, initializing...");
+      const sessionId = await this.initializeSession(baseUrl, apiKey);
+
+      if (!sessionId) {
+        console.error("[MCP] ERROR: Failed to initialize MCP session");
+        return null;
+      }
+
+      console.log("[MCP] ✓ Session initialized successfully:", sessionId);
+    } else {
+      console.log("[MCP] ✓ Using existing session:", this.sessionId);
+    }
+
+    const request: McpToolRequest = {
+      jsonrpc: "2.0",
+      method: "tools/call",
+      params: {
+        name: toolName,
+        arguments: toolArguments
+      },
+      id: ++this.requestId
+    };
+
+    // DEBUG: Print the COMPLETE request being sent to MCP
+    console.log("[MCP] ========== FULL API REQUEST ==========");
+    console.log("[MCP] URL:", baseUrl);
+    console.log("[MCP] Method: POST");
+    console.log("[MCP] Tool Name:", toolName);
+    console.log("[MCP] Tool Arguments:", JSON.stringify(toolArguments, null, 2));
+    console.log("[MCP] Complete Request Body:", JSON.stringify(request, null, 2));
+    console.log("[MCP] Headers:");
+    console.log("  Content-Type:", "application/json");
+    console.log("  Authorization:", apiKey); // Print full token for debugging
+    console.log("  cx-origin:", this.getIdeOrigin());
+    console.log("  Mcp-Session-Id:", this.sessionId); // Include session ID
+    console.log("[MCP] ==========================================");
+
+    // DEBUG: Print equivalent curl command for manual testing
+    const curlCommand = `curl -X POST "${baseUrl}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: ${apiKey}" \\
+  -H "cx-origin: ${this.getIdeOrigin()}" \\
+  -H "Mcp-Session-Id: ${this.sessionId || 'SESSION_ID_HERE'}" \\
+  -d '${JSON.stringify(request)}'`;
+
+    // Store for external access (e.g., logging)
+    this.lastCurlCommand = curlCommand;
+
+    console.log("[MCP] Equivalent curl command:");
+    console.log(curlCommand);
+    console.log("[MCP] ==========================================");
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Authorization": apiKey,
+        "cx-origin": this.getIdeOrigin()
+      };
+
+      // Add session ID if available (use Mcp-Session-Id header)
+      if (this.sessionId) {
+        headers["Mcp-Session-Id"] = this.sessionId;
+      }
+
+      const response = await fetch(baseUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(request)
+      });
+
+      console.log("[MCP] ========== RESPONSE FROM MCP ==========");
+      console.log("[MCP] Status:", response.status, response.statusText);
+      console.log("[MCP] Response Headers:");
+      response.headers.forEach((value, key) => {
+        console.log(`  ${key}:`, value);
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[MCP] ERROR: HTTP call failed");
+        console.error("[MCP] Status Code:", response.status);
+        console.error("[MCP] Status Text:", response.statusText);
+        console.error("[MCP] Response Body:", errorText);
+        console.log("[MCP] ==========================================");
+        return null;
+      }
+
+      const responseText = await response.text();
+      console.log("[MCP] Response Body (raw):", responseText);
+
+      const jsonResponse = JSON.parse(responseText) as McpToolResponse;
+      console.log("[MCP] Response Body (parsed):", JSON.stringify(jsonResponse, null, 2));
+      console.log("[MCP] ==========================================");
+
       return jsonResponse;
     } catch (error) {
-      console.error("MCP call error:", error);
+      console.error("[MCP] ERROR: Exception during MCP call:", error);
+      console.error("[MCP] Error details:", (error as Error).message);
       return null;
     }
   }
@@ -232,12 +390,17 @@ export class McpClient {
     packageManager: string;
     issueType: 'CVE' | 'malicious';
   }): Promise<McpRecommendation> {
-    const response = await this.callMcpTool("PackageRemediation", {
+    console.log('[MCP] Calling packageRemediation with params:', JSON.stringify(params, null, 2));
+
+    const response = await this.callMcpTool("packageRemediation", {
       packageName: params.packageName,
       packageVersion: params.packageVersion,
       packageManager: params.packageManager,
       issueType: params.issueType
     });
+
+    // DEBUG: Print the raw JSON response
+    console.log('[MCP] PackageRemediation Response:', JSON.stringify(response, null, 2));
 
     if (!response || response.error) {
       return {
@@ -255,7 +418,49 @@ export class McpClient {
       };
     }
 
-    return this.parseRecommendation(textContent.text, 'Oss');
+    console.log('[MCP] Text content:', textContent.text.substring(0, 200) + '...');
+
+    // Parse the JSON string inside the text field
+    try {
+      const mcpData = JSON.parse(textContent.text);
+      console.log('[MCP] Parsed MCP data:', JSON.stringify(mcpData, null, 2));
+
+      const recommendedVersion = mcpData.recommendation?.recommended_version;
+      const action = mcpData.recommendation?.action || 'upgrade';
+      const fixInstructions = mcpData.fix_instructions || textContent.text;
+
+      console.log('[MCP] ✓ Extracted recommended_version:', recommendedVersion);
+      console.log('[MCP] ✓ Extracted action:', action);
+
+      return {
+        suggestedVersion: recommendedVersion,
+        suggestedAction: this.mapMcpActionToSuggestedAction(action),
+        fixInstructions: fixInstructions
+      };
+    } catch (parseError) {
+      console.error('[MCP] Failed to parse MCP response JSON:', parseError);
+      // Fallback to regex parsing
+      return this.parseRecommendation(textContent.text, 'Oss');
+    }
+  }
+
+  /**
+   * Map MCP action to our SuggestedAction type
+   */
+  private mapMcpActionToSuggestedAction(mcpAction: string): McpSuggestedAction {
+    switch (mcpAction) {
+      case 'use_alternative_version':
+      case 'update':
+        return 'upgrade';
+      case 'remove':
+      case 'remove_dependency':
+        return 'remove';
+      case 'replace':
+      case 'use_alternative':
+        return 'replace';
+      default:
+        return 'upgrade';
+    }
   }
 
   /**
@@ -288,8 +493,8 @@ export class McpClient {
       };
     }
 
-    const scannerType: ScannerType = params.type === 'secret' ? 'Secrets' : 
-                                      params.type === 'asca' ? 'Asca' : 'IaC';
+    const scannerType: ScannerType = params.type === 'secret' ? 'Secrets' :
+      params.type === 'asca' ? 'Asca' : 'IaC';
     return this.parseRecommendation(textContent.text, scannerType);
   }
 

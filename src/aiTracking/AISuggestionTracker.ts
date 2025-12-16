@@ -336,16 +336,20 @@ export class AISuggestionTracker {
 
     // Fetch MCP recommendation
     let mcpRecommendation: McpRecommendation | undefined;
-    this.logs.info(`[AITracker] Fetching MCP recommendation...`);
+    this.logs.info(`[AITracker] Fetching MCP recommendation (check Developer Console for full request details)...`);
     try {
       mcpRecommendation = await this.fetchMcpRecommendation(item, scannerType);
-      this.logs.info(`[AITracker] MCP Response:`);
-      this.logs.info(`[AITracker]   - Suggested Version: ${mcpRecommendation?.suggestedVersion || 'N/A'}`);
-      this.logs.info(`[AITracker]   - Suggested Action: ${mcpRecommendation?.suggestedAction || 'N/A'}`);
-      this.logs.info(`[AITracker]   - Fix Instructions: ${mcpRecommendation?.fixInstructions?.substring(0, 100) || 'N/A'}...`);
-      if (mcpRecommendation?.error) {
-        this.logs.warn(`[AITracker]   - MCP Error: ${mcpRecommendation.error}`);
+
+      // DEBUG: Print the curl command for manual testing
+      if (this.mcpClient.lastCurlCommand) {
+        this.logs.info(`[AITracker] ========== CURL COMMAND FOR TESTING ==========`);
+        this.logs.info(`[AITracker] You can test this MCP request manually by copying this curl command:`);
+        this.logs.info(`[AITracker] ${this.mcpClient.lastCurlCommand}`);
+        this.logs.info(`[AITracker] ================================================`);
       }
+
+      // DEBUG: Print the MCP response as JSON
+      this.logs.info(`[AITracker] MCP Response JSON: ${JSON.stringify(mcpRecommendation, null, 2)}`);
     } catch (error) {
       this.logs.warn(`[AITracker] Failed to fetch MCP recommendation: ${error}`);
     }
