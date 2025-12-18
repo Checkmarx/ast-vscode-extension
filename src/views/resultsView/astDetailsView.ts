@@ -175,7 +175,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     });
   }
 
-  async getDetailsWebviewContent(webview: vscode.Webview) {
+  async getDetailsWebviewContent(webview: vscode.Webview, type?: string) {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "view.js")
     );
@@ -386,10 +386,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
               this.type
             ) + "</body>",
             "",
-            html.changes(selectClassname),
+            type !== constants.realtime ? html.changes(selectClassname) : "",
             messages.generalTab,
             "",
-            messages.triageTab,
+            type !== constants.realtime ? messages.triageTab : "",
             "",
             "",
             "",

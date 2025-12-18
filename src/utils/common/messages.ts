@@ -18,7 +18,7 @@ export const messages = {
   scanBranchNotMatch:
     "Git branch doesn't match the selected Checkmarx branch. Do you want to scan anyway?",
   scanProjectNotMatch:
-      "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
+    "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanCheckStart:
     "Scan initiation started. Checking if scan is eligible to be initiated...",
   scanCompletedLoadResults: (status, scanID) =>
@@ -75,6 +75,7 @@ export const messages = {
   triageSubmitedSuccess: "Feedback submitted successfully! Results refreshed.",
   triageError: (error) => `Triage ${error}`,
   triageNoChange: "Make a change before submiting",
+  scaNoteMandatory: "Note is mandatory for SCA triage.",
   triageUpdateState: (state) => `Updating state to ${state}`,
   triageUpdateSeverity: (severity) => `Updating severity to ${severity}`,
   fileNotFound: "File not found",

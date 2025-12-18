@@ -140,7 +140,6 @@ describe("Details", () => {
       };
 
       const html = details.scaView(
-        paths.severityPath,
         paths.scaAtackVector,
         paths.scaComplexity,
         paths.scaAuthentication,

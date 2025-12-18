@@ -100,7 +100,8 @@ export class WebViewCommand {
         // detailsPanel set html content
         this.detailsPanel.webview.html =
           await detailsDetachedView.getDetailsWebviewContent(
-            this.detailsPanel.webview
+            this.detailsPanel.webview,
+            type
           );
 
         // Setup theme change listener for the webview

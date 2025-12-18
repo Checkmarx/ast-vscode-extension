@@ -82,8 +82,11 @@ export class Details {
 				: this.getDefaultStateOptions(state);
 
 		const updateButton = `<button class="submit">Update</button>`;
+		const commentPlaceholder = this.result.type === constants.sca
+			? "Note (Mandatory)"
+			: "Note (Optional or required based on tenant configuration)";
 		const comment = `<div class="comment-container">
-				<textarea placeholder="Note (Optional or required based on tenant configuration)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
+				<textarea placeholder="${commentPlaceholder}" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
 			</div>`;
 
 		const severitySelect = this.result.type === constants.sca
@@ -123,7 +126,7 @@ export class Details {
 	getDefaultStateOptions(state) {
 		return `<select id="select_state" class="state">
       ${state.map((element) => {
-			return `<option id=${element.value} ${this.result.state.trim() === element.tag.trim() ? 'selected="selected"' : ""
+			return `<option id=${element.value.replaceAll(" ", "")} ${this.result.state.trim() === element.tag.trim() ? 'selected="selected"' : ""
 				} value="${element.tag.trim()}">${element.value.trim()}</option>`;
 		})}
     </select>`;

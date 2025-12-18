@@ -21,7 +21,7 @@ export function buildScaVulnerabilityString(result: AstResult): string {
   const pkgId = sca?.packageIdentifier || result.data?.packageIdentifier || "";
   const parts = typeof pkgId === "string" ? pkgId.split("-") : [];
   const manager = (parts[0] || "");
-  const name = sca?.scaPackageData?.dependencyPaths?.[0]?.[0]?.name || parts[1] || "";
+  const name = parts[1] || "";
   const version = parts.length > 2 ? parts[parts.length - 1] : "";
 
   const vulnerabilityId = result.similarityId || result.id || "";
@@ -77,7 +77,7 @@ export async function updateSCAResults(
   }
 
   const projectId = getFromState(context, constants.projectIdKey).id;
-  const vulnerabilities = [buildScaVulnerabilityString(this.result)];
+  const vulnerabilities = buildScaVulnerabilityString(result);
 
   await cx.triageSCAUpdate(
     projectId,
@@ -107,6 +107,11 @@ export async function triageSubmit(
   detailsDetachedView: AstDetailsDetached,
   resultsProvider: AstResultsProvider
 ) {
+  // Require comment for SCA triage submissions
+  if (result.type === constants.sca && (!data.comment || data.comment.trim().length === 0)) {
+    vscode.window.showErrorMessage(messages.scaNoteMandatory);
+    return;
+  }
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
     logs.info(messages.triageUpdateSeverity(data.severitySelection));
@@ -194,7 +199,11 @@ export async function getChanges(
             }
           }
           if (changedState) {
-            result.setState(changedState);
+            const match = constants.state.find(element =>
+              element.value.replaceAll(" ", "") === changedState
+            )?.tag;
+            if (match) { result.setState(match); }
+            else { result.setState(changedState); }
           }
 
           // Update local results array for this result
@@ -244,7 +253,6 @@ export async function triageShow(projectId: string, result: AstResult) {
 }
 
 export async function triageSCAShow(projectId: string, result: AstResult) {
-  // Placeholder for future SCA-specific API; currently uses the same triageShow
-  const vulnerabilities = [buildScaVulnerabilityString(result)];
+  const vulnerabilities = buildScaVulnerabilityString(result);
   return cx.triageSCAShow(projectId, vulnerabilities, constants.sca);
 }

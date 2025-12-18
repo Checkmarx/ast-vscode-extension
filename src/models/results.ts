@@ -299,7 +299,7 @@ export class AstResult extends CxResult {
       return this.kicsNode.id;
     }
     if (this.scaNode) {
-      return this.scaNode.id;
+      return this.id;
     }
 
     return "";
