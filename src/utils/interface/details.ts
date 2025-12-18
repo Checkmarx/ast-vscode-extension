@@ -83,7 +83,7 @@ export class Details {
 
 		const updateButton = `<button class="submit">Update</button>`;
 		const commentPlaceholder = this.result.type === constants.sca
-			? "Note (Mandatory)"
+			? "Note (required)"
 			: "Note (Optional or required based on tenant configuration)";
 		const comment = `<div class="comment-container">
 				<textarea placeholder="${commentPlaceholder}" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
