@@ -8,7 +8,8 @@ import {
   TrackerConfig,
   DEFAULT_TRACKER_CONFIG,
   ScannerType,
-  McpRecommendation
+  McpRecommendation,
+  AI_FIX_EVENTS
 } from "./types";
 import { McpClient } from "./mcpClient";
 import {
@@ -90,6 +91,23 @@ export class AISuggestionTracker {
       AISuggestionTracker.instance = new AISuggestionTracker(context, logs);
     }
     return AISuggestionTracker.instance;
+  }
+
+  /**
+   * Convert fix outcome status to telemetry event name
+   */
+  private getEventNameFromStatus(status: FixOutcome['status']): string {
+    switch (status) {
+      case 'mcp_adopted':
+        return AI_FIX_EVENTS.mcpAdopted;
+      case 'alt_fix_used':
+        return AI_FIX_EVENTS.altUsed;
+      case 'fix_rejected':
+        return AI_FIX_EVENTS.rejected;
+      default:
+        this.logs.warn(`[AITracker] Unknown status: ${status}, defaulting to rejected`);
+        return AI_FIX_EVENTS.rejected;
+    }
   }
 
   /**
@@ -314,13 +332,14 @@ export class AISuggestionTracker {
     const vulnKey = this.getVulnerabilityKey(item, scannerType);
     const filePath = this.getFilePath(item);
     const originalValue = this.getOriginalValue(item, scannerType);
+    const severity = this.getSeverity(item);
 
     this.logs.info(`[AITracker] ========== NEW FIX REQUEST ==========`);
     this.logs.info(`[AITracker] Scanner Type: ${scannerType}`);
     this.logs.info(`[AITracker] Vulnerability Key: ${vulnKey}`);
     this.logs.info(`[AITracker] File Path: ${filePath}`);
     this.logs.info(`[AITracker] Original Value: ${originalValue}`);
-    this.logs.info(`[AITracker] Severity: ${this.getSeverity(item)}`);
+    this.logs.info(`[AITracker] Severity: ${severity}`);
 
     // Check for duplicate request
     const existing = this.pendingFixes.get(vulnKey);
@@ -331,11 +350,12 @@ export class AISuggestionTracker {
       this.logs.info(`[AITracker] Total request count: ${existing.requestCount}`);
 
       // Send duplicate telemetry
-      this.sendTelemetry('ai_fix_duplicate', {
+      const eventName = AI_FIX_EVENTS.duplicate;
+      this.sendTelemetry(eventName, {
         scannerType,
-        severity: this.getSeverity(item),
+        severity,
         vulnerabilityKey: vulnKey,
-        requestCount: existing.requestCount
+        requestCount: existing.requestCount,
       });
 
       return existing.id;
@@ -368,7 +388,7 @@ export class AISuggestionTracker {
       filePath: filePath,
       line: this.getLine(item),
       scannerType,
-      severity: this.getSeverity(item),
+      severity,
       originalValue: originalValue,
       mcpSuggestedVersion: mcpRecommendation?.suggestedVersion,
       mcpSuggestedAction: mcpRecommendation?.suggestedAction,
@@ -390,7 +410,8 @@ export class AISuggestionTracker {
     this.logs.info(`[AITracker] Started check timer (${this.config.retryIntervalMs}ms interval, max ${this.config.maxRetries} retries)`);
 
     // Send request telemetry
-    this.sendTelemetry('ai_fix_requested', {
+    const eventName = AI_FIX_EVENTS.requested;
+    this.sendTelemetry(eventName, {
       scannerType,
       severity: fix.severity,
       vulnerabilityKey: vulnKey,
@@ -518,7 +539,46 @@ export class AISuggestionTracker {
       this.logs.info(`[AITracker] Pending confirmation exists from: ${new Date(pendingConf.detectedAt).toISOString()}`);
     }
 
+
     if (isFixed) {
+      // CRITICAL: Check for active ghost text BEFORE reading file
+      // Ghost text means the suggestion is visible but not yet committed to file
+      const uri = vscode.Uri.file(fix.filePath);
+      let hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
+      let ghostTextCheckCount = 0;
+      const maxGhostTextChecks = 5; // Maximum number of times to check for ghost text
+
+      // Wait until ghost text disappears or max checks reached
+      while (hasActiveSuggestion) {
+        ghostTextCheckCount++;
+        this.logs.info(`[AITracker] DECISION: Ghost text still active (check ${ghostTextCheckCount}/${maxGhostTextChecks})`);
+        this.logs.info(`[AITracker] Waiting for user to accept/reject inline suggestion before checking file`);
+        this.logs.info(`[AITracker] Cannot safely read file content while ghost text is visible`);
+
+        // Wait 1 second before checking again
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Re-check if ghost text is still active
+        hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
+        this.logs.info(`[AITracker] Re-checking ghost text status... hasActiveSuggestion: ${hasActiveSuggestion}`);
+      }
+
+      // Check if we exited because of max checks or ghost text disappeared
+      if (hasActiveSuggestion) {
+        // Still has ghost text after max checks - schedule retry
+        this.logs.info(`[AITracker] Ghost text still active after ${maxGhostTextChecks} checks`);
+        if (fix.checkCount <= fix.maxRetries) {
+          this.logs.info(`[AITracker] Scheduling retry to check later`);
+          this.startCheckTimer(fix);
+        } else {
+          this.logs.info(`[AITracker] Max retries reached with active ghost text, cannot finalize`);
+        }
+        return; // Exit - don't read file yet
+      }
+
+      // No ghost text detected - safe to proceed with reading file and determining outcome
+      this.logs.info(`[AITracker] Ghost text disappeared - safe to read file and determine outcome`);
+
       // Get the actual version that was applied (read from file if possible)
       const actualVersion = await this.getActualVersionFromFile(fix);
 
@@ -526,27 +586,16 @@ export class AISuggestionTracker {
       const outcome = this.determineOutcomeWithVersion(fix, actualVersion);
       this.logs.info(`[AITracker] DECISION: Vulnerability appears FIXED`);
       this.logs.info(`[AITracker] Actual version in file: ${actualVersion || '(not found/removed)'}`);
-      this.logs.info(`[AITracker] Potential outcome: ${outcome}`);
+      this.logs.info(`[AITracker] Final outcome: ${outcome}`);
+      this.logs.info(`[AITracker] Original version: ${fix.originalValue}`);
+      this.logs.info(`[AITracker] MCP suggested version: ${fix.mcpSuggestedVersion || 'N/A'}`);
+      this.logs.info(`[AITracker] Actual version applied: ${actualVersion || '(removed/fixed)'}`);
 
-      if (isFromSave) {
-        // User saved the file - they confirmed they want to keep the fix
-        this.logs.info(`[AITracker] User SAVED file - finalizing as: ${outcome}`);
-        this.pendingConfirmation.delete(fix.vulnerabilityKey);
-        await this.finalizeFix(fix, outcome, actualVersion);
-      } else {
-        // File was edited but not saved - track potential fix but don't finalize
-        // User might still Undo
-        this.logs.info(`[AITracker] File edited but NOT saved - tracking potential fix (waiting for save to confirm)`);
-        this.logs.info(`[AITracker] User can still UNDO. Will only finalize when file is SAVED.`);
-
-        // Store pending confirmation
-        this.pendingConfirmation.set(fix.vulnerabilityKey, {
-          detectedAt: Date.now(),
-          detectedValue: currentValue
-        });
-
-        // Don't finalize, don't schedule retry - wait for save or timeout
-      }
+      // We have all the information needed - finalize immediately
+      // No need to wait for save since the fix is already applied and diagnostic is gone
+      this.logs.info(`[AITracker] Ghost text gone, vulnerability fixed, all versions known - FINALIZING NOW`);
+      this.pendingConfirmation.delete(fix.vulnerabilityKey);
+      await this.finalizeFix(fix, outcome, actualVersion);
     } else {
       // Vulnerability still present
 
@@ -780,6 +829,37 @@ export class AISuggestionTracker {
   }
 
   /**
+   * Determine the file type from file path
+   */
+  private getFileType(filePath: string): string {
+    const lowerPath = filePath.toLowerCase();
+
+    if (lowerPath.endsWith('package.json')) {
+      return 'package.json';
+    }
+    if (lowerPath.endsWith('requirements.txt')) {
+      return 'requirements.txt';
+    }
+    if (lowerPath.endsWith('go.mod')) {
+      return 'go.mod';
+    }
+    if (lowerPath.endsWith('pom.xml')) {
+      return 'pom.xml';
+    }
+    if (lowerPath.endsWith('.csproj')) {
+      return 'csproj';
+    }
+    if (lowerPath.includes('packages.config')) {
+      return 'packages.config';
+    }
+    if (lowerPath.includes('directory.packages.props')) {
+      return 'directory.packages.props';
+    }
+
+    return 'unknown';
+  }
+
+  /**
    * Get the actual version from the file for OSS packages
    */
   private async getActualVersionFromFile(fix: PendingAIFix): Promise<string | undefined> {
@@ -793,18 +873,92 @@ export class AISuggestionTracker {
       const originalItem = fix.originalItem as HoverData;
       const packageName = originalItem.packageName;
 
-      // Try to find the package version in the file
-      // Common patterns: "package": "version" or "package": "^version" or "package": "~version"
-      const patterns = [
-        new RegExp(`"${this.escapeRegex(packageName)}"\\s*:\\s*"([^"]+)"`, 'i'),
-        new RegExp(`'${this.escapeRegex(packageName)}'\\s*:\\s*'([^']+)'`, 'i'),
-      ];
+      this.logs.info(`[AITracker] Searching for ${packageName} version in: ${fix.filePath}`);
 
+      const fileType = this.getFileType(fix.filePath);
+      let patterns: RegExp[] = [];
+
+      switch (fileType) {
+        case 'package.json':
+          // package.json (Node.js/JavaScript)
+          // Handles: "package": "1.2.3" or "package": "^1.2.3"
+          patterns = [
+            new RegExp(`"${this.escapeRegex(packageName)}"\\s*:\\s*"([^"]+)"`, 'i'),
+            new RegExp(`'${this.escapeRegex(packageName)}'\\s*:\\s*'([^']+)'`, 'i'),
+          ];
+          break;
+
+        case 'requirements.txt':
+          // requirements.txt (Python)
+          // Handles: package==1.2.3, package>=1.2.3, package~=1.2.3
+          patterns = [
+            new RegExp(`^${this.escapeRegex(packageName)}\\s*[=~><!]+\\s*([^\\s#]+)`, 'im'),
+            new RegExp(`^${this.escapeRegex(packageName)}\\s*==\\s*([^\\s#]+)`, 'im'),
+          ];
+          break;
+
+        case 'go.mod':
+          // go.mod (Go)
+          // Handles: require packageName v1.2.3 or inside require (...) block
+          patterns = [
+            new RegExp(`${this.escapeRegex(packageName)}\\s+v?([^\\s]+)`, 'im'),
+          ];
+          break;
+
+        case 'pom.xml':
+          // pom.xml (Maven/Java)
+          // Matches <artifactId>package</artifactId> followed by <version>1.2.3</version>
+          patterns = [
+            new RegExp(`<artifactId>${this.escapeRegex(packageName)}</artifactId>[\\s\\S]*?<version>([^<]+)</version>`, 'i'),
+            new RegExp(`<artifactId>${this.escapeRegex(packageName)}</artifactId>[\\s\\S]{0,200}<version>([^<]+)</version>`, 'i'),
+          ];
+          break;
+
+        case 'csproj':
+          // *.csproj (C# Project)
+          // Handles: <PackageReference Include="package" Version="1.2.3" />
+          patterns = [
+            new RegExp(`<PackageReference\\s+Include=["']${this.escapeRegex(packageName)}["']\\s+Version=["']([^"']+)["']`, 'i'),
+            new RegExp(`<PackageReference\\s+Include=["']${this.escapeRegex(packageName)}["'][\\s\\S]*?Version=["']([^"']+)["']`, 'i'),
+          ];
+          break;
+
+        case 'packages.config':
+          // packages.config (NuGet)
+          // Handles: <package id="package" version="1.2.3" />
+          patterns = [
+            new RegExp(`<package\\s+id=["']${this.escapeRegex(packageName)}["']\\s+version=["']([^"']+)["']`, 'i'),
+            new RegExp(`<package\\s+id=["']${this.escapeRegex(packageName)}["'][\\s\\S]*?version=["']([^"']+)["']`, 'i'),
+          ];
+          break;
+
+        case 'directory.packages.props':
+          // Directory.Packages.props (NuGet Central Package Management)
+          // Handles: <PackageVersion Include="package" Version="1.2.3" />
+          patterns = [
+            new RegExp(`<PackageVersion\\s+Include=["']${this.escapeRegex(packageName)}["']\\s+Version=["']([^"']+)["']`, 'i'),
+            new RegExp(`<PackageVersion\\s+Include=["']${this.escapeRegex(packageName)}["'][\\s\\S]*?Version=["']([^"']+)["']`, 'i'),
+          ];
+          break;
+
+        default:
+          // Unknown file type - try generic patterns (JSON as fallback)
+          this.logs.info(`[AITracker] Unknown file type, trying generic patterns`);
+          patterns = [
+            new RegExp(`"${this.escapeRegex(packageName)}"\\s*:\\s*"([^"]+)"`, 'i'),
+            new RegExp(`'${this.escapeRegex(packageName)}'\\s*:\\s*'([^']+)'`, 'i'),
+          ];
+          break;
+      }
+
+      // Try each pattern
       for (const pattern of patterns) {
         const match = text.match(pattern);
         if (match && match[1]) {
-          // Clean version string (remove ^ ~ >= etc.)
-          const version = match[1].replace(/^[\^~>=<]+/, '');
+          // Clean version string (remove ^ ~ >= < > etc.)
+          let version = match[1].trim().replace(/^[\^~>=<]+/, '');
+          // Remove 'v' prefix if present (common in Go)
+          version = version.replace(/^v/, '');
           this.logs.info(`[AITracker] Found actual version in file: ${packageName}@${version}`);
           return version;
         }
@@ -966,9 +1120,8 @@ export class AISuggestionTracker {
     // Calculate time for logging only (not sent in telemetry)
     const timeToFixMs = Date.now() - fix.requestedAt;
 
-    // Send telemetry with clean data
-    // Build event name: ai_fix_mcp_adopted, ai_fix_alt_used, ai_fix_rejected (not ai_fix_fix_rejected)
-    const eventName = status.startsWith('fix_') ? `ai_${status}` : `ai_fix_${status}`;
+    // Get event name from status using centralized mapping
+    const eventName = this.getEventNameFromStatus(status);
 
     // Get package/vulnerability name
     const itemName = this.getItemName(fix);
@@ -1101,20 +1254,34 @@ export class AISuggestionTracker {
    */
   private async sendTelemetry(eventName: string, data: FixOutcomeTelemetry | Record<string, unknown>): Promise<void> {
     try {
-      const telemetryData = data as FixOutcomeTelemetry;
+      // Extract common fields that exist in all event types
+      // Using type assertion with unknown to safely access properties
+      const dataObj = data as Record<string, unknown>;
+      const scannerType = (dataObj.scannerType as string) || '';
+      const severity = (dataObj.severity as string) || '';
+      const mcpSuggestedVersion = dataObj.mcpSuggestedVersion as string | undefined;
+      const actualVersion = dataObj.actualVersion as string | null | undefined;
+
+      this.logs.info(`[AITracker] Sending telemetry: ${eventName}`);
+      this.logs.info(`[AITracker]   - scannerType: ${scannerType}`);
+      this.logs.info(`[AITracker]   - severity: ${severity}`);
+      this.logs.info(`[AITracker]   - mcpSuggestedVersion: ${mcpSuggestedVersion || 'N/A'}`);
+      this.logs.info(`[AITracker]   - actualVersion: ${actualVersion || 'N/A'}`);
 
       // Use the dedicated AI fix outcome telemetry method
       await cx.sendAIFixOutcomeTelemetry(
         eventName,
-        telemetryData.scannerType || '',
-        telemetryData.severity || '',
-        telemetryData.mcpSuggestedVersion,
-        telemetryData.actualVersion || undefined,
+        scannerType,
+        severity,
+        mcpSuggestedVersion,
+        actualVersion || undefined,
         undefined, // retryCount removed from telemetry
         JSON.stringify(data)
       );
+
+      this.logs.info(`[AITracker] Telemetry sent successfully: ${eventName}`);
     } catch (error) {
-      this.logs.warn(`Failed to send telemetry: ${error}`);
+      this.logs.warn(`[AITracker] Failed to send telemetry: ${error}`);
     }
   }
 

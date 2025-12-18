@@ -1,6 +1,18 @@
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 
 /**
+ * AI Fix telemetry event names
+ * Centralized constants to ensure consistency across the codebase
+ */
+export const AI_FIX_EVENTS = {
+  requested: 'ai_fix_requested',       // Initial fix request
+  duplicate: 'ai_fix_duplicate',       // Duplicate fix request for same vulnerability
+  mcpAdopted: 'ai_fix_mcp_adopted',   // User adopted MCP-suggested fix
+  altUsed: 'ai_fix_alt_used',         // User used alternative fix
+  rejected: 'ai_fix_rejected'          // User did not apply any fix
+} as const;
+
+/**
  * Scanner types supported by AI fix tracking
  */
 export type ScannerType = 'Oss' | 'Secrets' | 'Asca' | 'Containers' | 'IaC';
