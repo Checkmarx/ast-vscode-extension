@@ -56,7 +56,7 @@ export class AstResult extends CxResult {
 
   constructor(result?: any) {
     super(
-      result.scaType ? "sca" : result.type,
+      result.scaType ? constants.sca : result.type,
       result.data.queryName
         ? result.data.queryName
         : result.id
@@ -81,7 +81,7 @@ export class AstResult extends CxResult {
       result.traits
     );
     this.id = result.id;
-    this.type = result.scaType ? "sca" : result.type;
+    this.type = result.scaType ? constants.sca : result.type;
     this.typeLabel = this.determineTypeLabel(result);
     this.scaType = result.scaType;
     this.label = result.data.queryName

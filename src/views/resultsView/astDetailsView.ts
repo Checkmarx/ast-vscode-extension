@@ -316,7 +316,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     const isAIEnabled = await cx.isAIGuidedRemediationEnabled(this.logs);
     const html = new Details(this.result, this.context, isAIEnabled);
     let masked: CxMask;
-    if (this.result.type !== "sca" && this.result.type !== "sast") {
+    if (this.result.type !== constants.sca && this.result.type !== constants.sast) {
       try {
         const gptResult = new GptResult(this.result, undefined);
         masked = await cx.mask(gptResult.filename);
@@ -338,11 +338,11 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           <link href="${styleMainUri}" rel="stylesheet">
           <link href="${styleDetails}" rel="stylesheet">
           <link href="${scaDetails}" rel="stylesheet">
-          ${this.result.type !== "sca"
+          ${this.result.type !== constants.sca
         ? `<link href="${styleBootStrap}" rel="stylesheet">`
         : ""
       }
-          ${this.result.type !== "sca"
+          ${this.result.type !== constants.sca
         ? `<link href="${styleGptUri}" rel="stylesheet">`
         : ""
       }
@@ -356,8 +356,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
           </title>
         </head>
         <div id="main_div">
-          ${this.result.type !== "sca" ? html.header(severityPath) : ""}
-          ${this.result.type === "sast"
+          ${this.result.type !== constants.sca ? html.header(severityPath) : ""}
+          ${this.result.type === constants.sast
         ? html.tab(
           html.generalTab(cxPath),
           html.detailsTab(),
@@ -372,7 +372,7 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
             ? html.guidedRemediationSastTab(cxIcon, masked)
             : ""
         )
-        : this.result.type === "sca"
+        : this.result.type === constants.sca
           ? '<body class="body-sca">' + html.scaHeader(severityPath) + html.tab(
             html.scaView(
               scaAtackVector,

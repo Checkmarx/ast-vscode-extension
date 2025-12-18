@@ -154,10 +154,10 @@ export async function triageSubmit(
       displayScanId: "",
     });
     await vscode.commands.executeCommand(commands.refreshTree);
-    if (result.type === "sast" || result.type === "kics" || result.type === constants.sca) {
+    if (result.type === constants.sast || result.type === constants.kics || result.type === constants.sca) {
       await getChanges(logs, context, result, detailsPanel, detailsDetachedView, resultsProvider);
     }
-    if (result.type === "sast") {
+    if (result.type === constants.sast) {
       await getLearnMore(logs, context, result, detailsPanel);
     }
     vscode.window.showInformationMessage(messages.triageSubmitedSuccess);
@@ -224,7 +224,7 @@ export async function getChanges(
           });
           await vscode.commands.executeCommand(commands.refreshTree);
 
-          if (result.type === "sast") {
+          if (result.type === constants.sast) {
             await getLearnMore(logs, context, result, detailsPanel);
           }
           detailsDetachedView?.setResult(result);

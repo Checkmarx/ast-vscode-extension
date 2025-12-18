@@ -211,10 +211,10 @@ export class WebViewCommand {
   }
 
   private async loadAsyncTabsContent(result: AstResult, detailsDetachedView?: AstDetailsDetached) {
-    if (result.type === "sast") {
+    if (result.type === constants.sast) {
       await getLearnMore(this.logs, this.context, result, this.detailsPanel);
     }
-    if (result.type === "sast" || result.type === "kics" || result.type === "sca") {
+    if (result.type === constants.sast || result.type === constants.kics || result.type === constants.sca) {
       await getChanges(this.logs, this.context, result, this.detailsPanel, detailsDetachedView, this.resultsProvider);
     }
   }
