@@ -124,6 +124,11 @@ export class AISuggestionTracker {
    * Handle file change event - debounced check for pending fixes
    * NOTE: On file edit (not save), we only detect potential fixes but do NOT finalize.
    * This allows users to Undo before we report the outcome.
+   * 
+   * IMPORTANT: When AI shows inline suggestion (ghost text), we need to wait for:
+   * 1. User to accept/reject the suggestion
+   * 2. The suggestion to disappear completely
+   * 3. Document to stabilize before checking diagnostics
    */
   private onFileChanged(event: vscode.TextDocumentChangeEvent): void {
     const filePath = event.document.uri.fsPath;
@@ -144,7 +149,8 @@ export class AISuggestionTracker {
     this.logs.info(`[AITracker] File EDITED (not saved) with ${fixesForFile.length} pending AI fix(es): ${filePath}`);
     this.logs.info(`[AITracker] Content changes count: ${event.contentChanges.length}`);
 
-    // Debounce the check - wait 2 seconds after last change before checking
+    // Debounce the check - wait 3 seconds after last change before checking
+    // INCREASED from 2s to 3s to ensure inline suggestions fully disappear
     const existingTimer = this.changeDebounceTimers.get(filePath);
     if (existingTimer) {
       clearTimeout(existingTimer);
@@ -152,13 +158,14 @@ export class AISuggestionTracker {
 
     const debounceTimer = setTimeout(async () => {
       this.changeDebounceTimers.delete(filePath);
-      this.logs.info(`[AITracker] Debounce complete, checking fix status (NOT finalizing - waiting for save): ${filePath}`);
+      this.logs.info(`[AITracker] Debounce complete (3s), checking fix status (NOT finalizing - waiting for save): ${filePath}`);
+      this.logs.info(`[AITracker] This ensures any inline suggestions have disappeared`);
 
       for (const fix of fixesForFile) {
         // Pass isFromSave=false to indicate we should NOT finalize positive outcomes
         await this.checkFixOutcome(fix, false);
       }
-    }, 2000); // 2 second debounce
+    }, 3000); // INCREASED to 3 seconds to ensure inline suggestions disappear
 
     this.changeDebounceTimers.set(filePath, debounceTimer);
   }
@@ -566,16 +573,90 @@ export class AISuggestionTracker {
   }
 
   /**
+   * Check if there's an active inline suggestion (ghost text) for the vulnerability line
+   * This helps us avoid false positives when AI shows a suggestion but user hasn't accepted it yet
+   * 
+   * Strategy: After user sees AI suggestion, we need to wait until:
+   * 1. The suggestion disappears (user accepts/rejects)
+   * 2. Document stabilizes (no more changes for a brief moment)
+   * 3. Then we can accurately check diagnostics
+   */
+  private async hasActiveInlineSuggestion(uri: vscode.Uri, fix: PendingAIFix): Promise<boolean> {
+    try {
+      // Check if the document is currently being edited in an active editor
+      const activeEditor = vscode.window.activeTextEditor;
+      if (!activeEditor || activeEditor.document.uri.fsPath !== uri.fsPath) {
+        // Document not actively being edited, no active suggestions
+        this.logs.info(`[AITracker] Document not in active editor - no active suggestions`);
+        return false;
+      }
+
+      // CRITICAL: Check if there's a pending confirmation for this fix
+      // If we detected a fix very recently, the suggestion might still be visible
+      const pendingConf = this.pendingConfirmation.get(fix.vulnerabilityKey);
+      if (pendingConf) {
+        const timeSinceDetection = Date.now() - pendingConf.detectedAt;
+        // If we detected a potential fix less than 2 seconds ago, 
+        // the inline suggestion might still be displayed or just accepted
+        // We need to wait for it to fully disappear before checking diagnostics
+        if (timeSinceDetection < 2000) {
+          this.logs.info(`[AITracker] Recent fix detection (${timeSinceDetection}ms ago) - suggestion may still be active`);
+          this.logs.info(`[AITracker] Waiting for inline suggestion to disappear completely`);
+          return true;
+        }
+      }
+
+      // Check if document was modified very recently (suggests active editing)
+      const document = await vscode.workspace.openTextDocument(uri);
+
+      // Get the line where the vulnerability is located
+      const line = fix.line;
+      if (line < 0 || line >= document.lineCount) {
+        this.logs.info(`[AITracker] Line ${line} out of range (${document.lineCount} lines) - no active suggestion`);
+        return false;
+      }
+
+      const lineText = document.lineAt(line).text.trim();
+      this.logs.info(`[AITracker] Current line ${line} text: "${lineText}"`);
+
+      // No active suggestion detected
+      this.logs.info(`[AITracker] No active inline suggestion detected`);
+      return false;
+    } catch (error) {
+      this.logs.warn(`[AITracker] Error checking for active suggestions: ${error}`);
+      return false;
+    }
+  }
+
+  /**
    * Get current value from diagnostics to check if vulnerability still exists
    * Returns null if vulnerability is no longer present (fixed)
    * Returns the current value if still present
+   * 
+   * IMPORTANT: When AI suggests a fix via inline suggestion (ghost text), the diagnostic
+   * still exists because the code hasn't actually changed yet. We need to verify that:
+   * 1. The inline suggestion has been resolved (accepted/rejected)
+   * 2. Only then check if the diagnostic truly reflects the current state
    */
   private async getCurrentValue(fix: PendingAIFix): Promise<string | null> {
     const uri = vscode.Uri.file(fix.filePath);
+
+    // Check if there are active inline suggestions/completions in the document
+    // This prevents false positives when suggestions are still shown but not accepted
+    const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
+
+    if (hasActiveSuggestion) {
+      this.logs.info(`[AITracker] Active inline suggestion detected - waiting for user to accept/reject`);
+      this.logs.info(`[AITracker] Current check is premature, diagnostic still shows original value`);
+      // Return the original value to indicate vulnerability is still present (suggestion not accepted yet)
+      return fix.originalValue;
+    }
+
     const diagnostics = vscode.languages.getDiagnostics(uri);
 
     this.logs.info(`[AITracker] Scanning diagnostics for: ${fix.filePath}`);
     this.logs.info(`[AITracker] Total diagnostics found: ${diagnostics.length}`);
+    this.logs.info(`[AITracker] No active inline suggestions - safe to check diagnostics`);
 
     let matchingDiagnosticCount = 0;
 
@@ -856,6 +937,23 @@ export class AISuggestionTracker {
     this.logs.info(`[AITracker] Vulnerability Key: ${fix.vulnerabilityKey}`);
     this.logs.info(`[AITracker] Final Status: ${status}`);
 
+    // CRITICAL SAFETY CHECK: Before finalizing, verify there are no active inline suggestions
+    // This prevents premature finalization if the suggestion is still visible
+    const uri = vscode.Uri.file(fix.filePath);
+    const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
+
+    if (hasActiveSuggestion) {
+      this.logs.warn(`[AITracker] SAFETY CHECK FAILED: Active inline suggestion detected during finalization!`);
+      this.logs.warn(`[AITracker] Cannot finalize yet - suggestion still visible. Aborting finalization.`);
+      this.logs.warn(`[AITracker] Will retry on next check cycle.`);
+      // Don't finalize yet - the check was premature
+      // Restart the check timer to try again later
+      this.startCheckTimer(fix);
+      return;
+    }
+
+    this.logs.info(`[AITracker] Safety check passed - no active suggestions, safe to finalize`);
+
     // Clear timer
     if (fix.timerId) {
       clearTimeout(fix.timerId);
@@ -878,10 +976,24 @@ export class AISuggestionTracker {
     // Get MCP suggested version - always has a value
     const mcpSuggestedVersion = this.getMcpSuggestedVersionValue(fix);
 
+    // SAFETY CHECK: Before determining versionAdopted, verify actualVersion is reliable
+    // If actualVersion equals originalValue, something might be wrong (false positive)
+    if (actualVersion && actualVersion === fix.originalValue && status !== 'fix_rejected') {
+      this.logs.warn(`[AITracker] WARNING: actualVersion (${actualVersion}) equals originalValue - possible false positive`);
+      this.logs.warn(`[AITracker] This suggests the value didn't actually change. Reconsidering status...`);
+      // Re-check the current state before finalizing
+      const recheckValue = await this.getCurrentValue(fix);
+      if (recheckValue !== null) {
+        this.logs.warn(`[AITracker] Recheck confirms vulnerability still present. Changing status to fix_rejected.`);
+        status = 'fix_rejected';
+      }
+    }
+
     // Calculate versionAdopted based on status
     // For mcp_adopted: use mcpSuggestedVersion if it's a real version, otherwise actualVersion
     // For alt_fix_used: use actualVersion
     // For fix_rejected: null (no version was adopted)
+
     let versionAdopted: string | null = null;
     if (status === 'mcp_adopted') {
       // Only use mcpSuggestedVersion if it looks like a version (not an action like 'remove')
