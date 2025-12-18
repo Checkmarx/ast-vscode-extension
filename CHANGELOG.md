@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [v2.43.1-revive-ignored-passwords.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-revive-ignored-passwords.0) - 2025-12-18 08:26:52
+## [v2.43.1-2.43.1-ReviveIgnoredPasswords.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-2.43.1-ReviveIgnoredPasswords.0) - 2025-12-18 17:58:15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
@@ -9,7 +9,7 @@
 * Fix bug number bug/AST-120797 by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1327
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.1-FixUndoAction.0...v2.43.1-revive-ignored-passwords.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.1-FixUndoAction.0...v2.43.1-2.43.1-ReviveIgnoredPasswords.0
 
 ## [v2.43.1-FixUndoAction.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-FixUndoAction.0) - 2025-12-15 16:35:54
 
