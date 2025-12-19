@@ -23,7 +23,26 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished",
+    "onView:astResults",
+    "onView:astResultsPromo",
+    "onView:astCxOneAssist",
+    "onView:scaAutoScan",
+    "onView:scaAutoScanPromo",
+    "onView:riskManagement",
+    "onView:docAndFeedback",
+    "onCommand:ast-results.viewSettings",
+    "onCommand:ast-results.createScan",
+    "onCommand:ast-results.cancelScan",
+    "onCommand:ast-results.newDetails",
+    "onCommand:ast-results.openIgnoredView",
+    "onCommand:ast-results.assistDocumentation",
+    "onCommand:ast-results.clear",
+    "onCommand:ast-results.generalPick",
+    "onCommand:ast-results.mockTokenTest",
+    "onCommand:ast-results.kicsRealtime",
+    "onCommand:ast-results.createSCAScan",
+    "onCommand:ast-results.showAuth"
   ],
   "main": "./out/extension.js",
   "contributes": {

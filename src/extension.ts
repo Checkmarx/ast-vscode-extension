@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
-import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
 import { Logs } from "./models/logs";
 import {
@@ -9,11 +8,9 @@ import {
   gitExtensionListener,
   setScanButtonDefaultIfScanIsNotRunning,
 } from "./utils/listener/listeners";
-import { KicsProvider } from "./kics/kicsRealtimeProvider";
 import { SCAResultsProvider } from "./views/scaView/scaResultsProvider";
 import { ScanCommand } from "./commands/scanCommand";
 import { ScanSCACommand } from "./commands/scanSCACommand";
-import { KICSRealtimeCommand } from "./commands/kicsRealtimeCommand";
 import { TreeCommand } from "./commands/treeCommand";
 import { PickerCommand } from "./commands/pickerCommand";
 import { CommonCommand } from "./commands/commonCommand";
@@ -22,247 +19,40 @@ import { FilterCommand } from "./commands/filterCommand";
 import { WebViewCommand } from "./commands/webViewCommand";
 import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
-import { CxOneAssistProvider } from "./views/cxOneAssistView/cxOneAssistProvider";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
 import { IgnoredView } from "./views/ignoredView/ignoredView";
-import { AuthenticationWebview } from "./webview/authenticationWebview";
 import { AuthService } from "./services/authService";
 import { initialize } from "./cx";
-import { ScannerRegistry } from "./realtimeScanners/scanners/scannerRegistry";
-import { ConfigurationManager } from "./realtimeScanners/configuration/configurationManager";
 import { CopilotChatCommand } from "./commands/openAIChatCommand";
 import { CxCodeActionProvider } from "./realtimeScanners/scanners/CxCodeActionProvider";
-import { OssScannerCommand } from "./realtimeScanners/scanners/oss/ossScannerCommand";
-import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secretsScannerCommand";
-import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
-import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
-import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
-import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 import { DiagnosticCommand } from "./commands/diagnosticCommand";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
-import { DOC_LINKS } from "./constants/documentation";
 import { cx } from "./cx";
 let globalContext: vscode.ExtensionContext;
+import { registerStatusBars } from "./activation/registerStatusBars";
+import { registerRealtimeScanners } from "./activation/registerRealtimeScanners";
+import { registerKicsRealtime } from "./activation/registerKicsRealtime";
+import { registerIgnoredStatusBar } from "./activation/registerIgnoredStatusBar";
+import {
+  registerAssistDocumentation,
+  registerPromoResultsWebview,
+  registerScaPromoWebview,
+  registerAssistView,
+  registerAssistRelatedCommands,
+  registerAuthenticationLauncher
+} from "./activation/registerAssist";
 
-async function setupStatusBars(context: vscode.ExtensionContext, logs: Logs) {
-  const runScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const runSCAScanStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  runSCAScanStatusBar.text = messages.scaStatusBarConnect;
 
-  async function updateScaStatusBar() {
-    const isStandalone = await cx.isStandaloneEnabled(logs);
-    if (!isStandalone) {
-      runSCAScanStatusBar.show();
-    } else {
-      runSCAScanStatusBar.hide();
-    }
-  }
-  await updateScaStatusBar();
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.refreshScaStatusBar, async () => {
-      await updateScaStatusBar();
-    })
-  );
 
-  const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const ignoredStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
 
-  // Central refresh command for KICS status bar
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.refreshKicsStatusBar, async () => {
-      const standalone = await cx.isStandaloneEnabled(logs);
-      if (!standalone) {
-        kicsStatusBarItem.show();
-      } else {
-        kicsStatusBarItem.hide();
-      }
-    })
-  );
-  // Initial KICS status bar visibility
-  await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
 
-  return {
-    runScanStatusBar,
-    runSCAScanStatusBar,
-    kicsStatusBarItem,
-    statusBarItem,
-    ignoredStatusBarItem,
-    updateScaStatusBar
-  };
-}
 
-async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Logs) {
-  const configManager = new ConfigurationManager();
-  const scannerRegistry = new ScannerRegistry(context, logs, configManager);
-  await scannerRegistry.activateAllScanners();
-  const configListener = configManager.registerConfigChangeListener((section) => {
-    const ossEffected = section(`${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`);
-    if (ossEffected) {
-      scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
-      return;
-    }
-    const secretsEffected = section(`${constants.secretsScanner}.${constants.activateSecretsScanner}`);
-    if (secretsEffected) {
-      scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
-      return;
-    }
-    const ascaEffected = section(`${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`);
-    if (ascaEffected) {
-      scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
-      return;
-    }
-    const containersEffected = section(`${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`);
-    if (containersEffected) {
-      scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
-      return;
-    }
-    const iacEffected = section(`${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`);
-    if (iacEffected) {
-      scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName)?.register();
-      return;
-    }
-  });
-  context.subscriptions.push(configListener);
 
-  const ignoreFileManager = IgnoreFileManager.getInstance();
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (workspaceFolder) {
-    ignoreFileManager.initialize(workspaceFolder);
-  }
 
-  const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
-  const ossScanner = ossCommand.getScannerService();
-  const secretCommand = scannerRegistry.getScanner(constants.secretsScannerEngineName) as SecretsScannerCommand;
-  const secretScanner = secretCommand.getScannerService();
-  const iacCommand = scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName) as IacScannerCommand;
-  const iacScanner = iacCommand.getScannerService();
-  const ascaCommand = scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName) as AscaScannerCommand;
-  const ascaScanner = ascaCommand.getScannerService();
-  const containersCommand = scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName) as ContainersScannerCommand;
-  const containersScanner = containersCommand.getScannerService();
 
-  ignoreFileManager.setOssScannerService(ossScanner);
-  ignoreFileManager.setSecretsScannerService(secretScanner);
-  ignoreFileManager.setIacScannerService(iacScanner);
-  ignoreFileManager.setAscaScannerService(ascaScanner);
-  ignoreFileManager.setContainersScannerService(containersScanner);
-  context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 
-  return { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
-}
-
-function setupKicsRealtime(
-  context: vscode.ExtensionContext,
-  logs: Logs,
-  kicsStatusBarItem: vscode.StatusBarItem,
-  kicsDiagnosticCollection: vscode.DiagnosticCollection
-) {
-  const kicsProvider = new KicsProvider(
-    context,
-    logs,
-    kicsStatusBarItem,
-    kicsDiagnosticCollection,
-    [],
-    []
-  );
-  const kicsScanCommand = new KICSRealtimeCommand(context, kicsProvider, logs);
-  kicsScanCommand.registerKicsScans();
-  return { kicsProvider, kicsScanCommand };
-}
-
-function setupIgnoredStatusBar(
-  context: vscode.ExtensionContext,
-  logs: Logs,
-  ignoreFileManager: IgnoreFileManager,
-  ignoredStatusBarItem: vscode.StatusBarItem,
-  cxOneAssistProvider: CxOneAssistProvider
-) {
-  async function updateIgnoredStatusBar() {
-    if (await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs))) {
-      const count = ignoreFileManager.getIgnoredPackagesCount();
-      const hasIgnoreFile = ignoreFileManager.hasIgnoreFile();
-      if (hasIgnoreFile) {
-        ignoredStatusBarItem.text = `$(circle-slash) ${count}`;
-        ignoredStatusBarItem.tooltip = count > 0
-          ? `${count} ignored vulnerabilities - Click to view`
-          : `No ignored vulnerabilities - Click to view`;
-        ignoredStatusBarItem.command = commands.openIgnoredView;
-        ignoredStatusBarItem.show();
-      } else {
-        ignoredStatusBarItem.hide();
-      }
-      cxOneAssistProvider.updateWebviewContent();
-    } else {
-      ignoredStatusBarItem.hide();
-    }
-  }
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.refreshIgnoredStatusBar, async () => {
-      await updateIgnoredStatusBar();
-    })
-  );
-  ignoreFileManager.setStatusBarUpdateCallback(updateIgnoredStatusBar);
-  updateIgnoredStatusBar();
-  return { updateIgnoredStatusBar };
-}
-
-// --- Helper wrappers for refactored snippet ---
-function registerAssistDocumentation(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.assistDocumentation, () => {
-      vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
-    })
-  );
-}
-
-function registerPromoResultsWebview(context: vscode.ExtensionContext, logs: Logs) {
-  const promoProvider = new AstResultsPromoProvider(context, logs);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.astResultsPromo, promoProvider)
-  );
-  return promoProvider;
-}
-
-function registerScaPromoWebview(context: vscode.ExtensionContext, logs: Logs) {
-  // Reuse AstResultsPromoProvider for SCA promo; adjust later if SCA-specific content needed
-  const promoProvider = new AstResultsPromoProvider(context, logs, true);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.scaAutoScanPromo, promoProvider)
-  );
-  return promoProvider;
-}
-
-function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
-  const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider)
-  );
-  return cxOneAssistProvider;
-}
-
-function registerAssistRelatedCommands(context: vscode.ExtensionContext, cxOneAssistProvider: CxOneAssistProvider) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.updateCxOneAssist, async () => {
-      await cxOneAssistProvider.onAuthenticationChanged();
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.authentication, () => {
-      vscode.commands.executeCommand(commands.showAuth);
-    })
-  );
-}
-
-function registerAuthenticationLauncher(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs: Logs) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(commands.showAuth, () => {
-      AuthenticationWebview.show(context, webViewCommand, logs);
-    })
-  );
-}
 
 export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
@@ -289,9 +79,9 @@ export async function activate(context: vscode.ExtensionContext) {
     kicsStatusBarItem,
     statusBarItem,
     ignoredStatusBarItem
-  } = await setupStatusBars(context, logs);
+  } = await registerStatusBars(context, logs);
 
-  const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } = await setupRealtimeScanners(context, logs);
+  const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } = await registerRealtimeScanners(context, logs);
 
   await setScanButtonDefaultIfScanIsNotRunning(context);
 
@@ -313,7 +103,7 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  const { kicsScanCommand } = setupKicsRealtime(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
+  const { kicsScanCommand } = registerKicsRealtime(context, logs, kicsStatusBarItem, kicsDiagnosticCollection);
 
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(
     constants.extensionName
@@ -338,12 +128,6 @@ export async function activate(context: vscode.ExtensionContext) {
   groupByCommand
     .initializeFilters()
     .then(() => logs.info(messages.groupByInitialized));
-  // Workspace listener
-  const workspaceListener: WorkspaceListener = new WorkspaceListener();
-  setInterval(
-    () => workspaceListener.listener(context, astResultsProvider),
-    500
-  );
   // Results side tree creation
   vscode.window.registerTreeDataProvider(
     constants.treeName,
@@ -352,6 +136,15 @@ export async function activate(context: vscode.ExtensionContext) {
   const tree = vscode.window.createTreeView(constants.treeName, {
     treeDataProvider: astResultsProvider,
   });
+  // Throttled, visibility-aware workspace listener to reduce idle load
+  const workspaceListener: WorkspaceListener = new WorkspaceListener();
+  const wsInterval = setInterval(() => {
+    if (!tree.visible) {
+      return;
+    }
+    workspaceListener.listener(context, astResultsProvider);
+  }, 2000);
+  context.subscriptions.push({ dispose: () => clearInterval(wsInterval) });
   // tree listener to open a webview in a new panel with results details
   tree.onDidChangeSelection((item) => {
     if (item.selection.length > 0) {
@@ -514,7 +307,7 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
+  registerIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);
