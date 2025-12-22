@@ -9,14 +9,14 @@ describe("Cx - getScan", () => {
     resetMocks();
   });
 
-  it("should return scan object when scanId is provided", async () => {
-    const scanId = "1";
+  it("should return scan object when valid scanId is provided", async () => {
+    const scanId = "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9";
     const result = await cx.getScan(scanId);
 
     expect(result).to.deep.equal({
       tags: {},
       groups: undefined,
-      id: "1",
+      id: "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9",
       projectID: "2588deba-1751-4afc-b7e3-db71727a1edd",
       status: "Completed",
       createdAt: "2023-04-19T10:07:37.628413+01:00",
@@ -29,6 +29,13 @@ describe("Cx - getScan", () => {
 
   it("should return undefined when scanId is not provided", async () => {
     const result = await cx.getScan(undefined);
+    expect(result).to.be.undefined;
+  });
+
+  it("should return scan undefined when invalid scanId is provided", async () => {
+    const scanId = "e3b2505a-0634-4b41-8fa1-dfeb2edc26f7";
+    const result = await cx.getScan(scanId);
+
     expect(result).to.be.undefined;
   });
 });

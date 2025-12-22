@@ -1,8 +1,8 @@
 import mockRequire from "mock-require";
-import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { CxParamType } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 
-mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
+mockRequire("@checkmarx/ast-cli-javascript-wrapper", {
   CxWrapper: class {
     config: CxConfig;
 
@@ -11,13 +11,14 @@ mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
     }
 
     async scanShow(scanId: string) {
-      if (scanId === "1") {
+      if (scanId === "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9") {
         return {
+          exitCode: 0,
           payload: [
             {
               tags: {},
               groups: undefined,
-              id: "1",
+              id: "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9",
               projectID: "2588deba-1751-4afc-b7e3-db71727a1edd",
               status: "Completed",
               createdAt: "2023-04-19T10:07:37.628413+01:00",
@@ -30,8 +31,9 @@ mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
         };
       } else {
         return {
-          status: "Scan not found",
+          status: "Failed showing a scan: scan not found.",
           payload: [],
+          exitCode: 1,
         };
       }
     }
@@ -62,8 +64,8 @@ mockRequire("@checkmarxdev/ast-cli-javascript-wrapper", {
     }
 
     async scanCreate(params: Map<CxParamType, string>) {
-      if (params.get(CxParamType.PROJECT_NAME) === "test-project" && 
-          params.get(CxParamType.BRANCH) === "main") {
+      if (params.get(CxParamType.PROJECT_NAME) === "test-project" &&
+        params.get(CxParamType.BRANCH) === "main") {
         return {
           payload: [
             {

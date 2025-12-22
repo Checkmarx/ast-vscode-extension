@@ -1,6 +1,9 @@
 export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
+  standaloneEnabledGlobalState: "standaloneEnabled",
+  cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
+  authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
@@ -16,6 +19,8 @@ export const constants = {
   urgentFilter: "ast-results-Urgent",
   notIgnoredFilter: "ast-results-NotIgnored",
   ignoredFilter: "ast-results-Ignored",
+  scaHideDevTestFilter: "ast-results-SCAHideDevTest",
+  allCustomStatesFilter: "ast-results-AllCustomStates",
   queryNameGroup: "ast-results-groupByQueryName",
   languageGroup: "ast-results-groupByLanguage",
   severityGroup: "ast-results-groupBySeverity",
@@ -130,6 +135,10 @@ export const constants = {
 
   projectLimit: "limit=10000",
   vsCodeAgent: "VS Code",
+  vsCodeAgentOrginalName: "Visual Studio Code",
+  cursorAgent: "Cursor",
+  windsurfAgent: "Windsurf",
+  kiroAgent: "Kiro",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -141,6 +150,7 @@ export const constants = {
   gptCommandName: "CheckmarxSecurityChampion",
   gptSettingsKey: "key",
   gptEngineKey: "model",
+  gptCustomModelKey: "customModel",
   systemNotFindPathError: "The system cannot find the path specified.",
   gptFileNotInWorkspaceError: "AI Security Champion can't advise you about this vulnerability because the file where the vulnerability was identified isn't open in your VS Code workspace.",
   // Documentation & Feedback
@@ -151,21 +161,135 @@ export const constants = {
   triageUpdate: "ast-result-triage",
   customStates: "cxStates",
 
-  // ASCA engine
-  errorInstallation: "Failed to run ASCA engine",
-  errorScanAsca: "failed to handle ASCA scan",
-  ascaStart: "AI Secure Coding Assistant Engine started",
-  ascaDisabled: "AI Secure Coding Assistant Engine disabled",
-  ascaEngineName: "ASCA",
-  ActivateAscaAutoScanning: "Activate ASCA",
-  CheckmarxAsca: "Checkmarx AI Secure Coding Assistant (ASCA)",
+  // ASCA Realtime Scanner
+  activateAscaRealtimeScanner: "Activate ASCA Realtime",
+  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+  ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
+  ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
+  ascaRealtimeScannerEngineName: "Asca",
+  ascaRealtimeScannerDirectory: "Cx-asca-realtime-scanner",
+  errorAscaInstallation: "Failed to run ASCA engine",
+  errorAscaScanRealtime: "Failed to handle ASCA Realtime scan",
+
+  // Secrets Scanner
+  activateSecretsScanner: "Activate Secret Detection Realtime",
+  secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
+  secretsScannerStart: "Secret Detection Scanner Engine started",
+  secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
+  secretsScannerEngineName: "Secrets",
+  secretsScannerDirectory: "Cx-secret-realtime-scanner",
+  errorSecretsScanRealtime: "Failed to handle Secret Detection scan",
+
+  // OSS Scanner
+  activateOssRealtimeScanner: "Activate OSS-Realtime",
+  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
+  ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
+  ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
+  ossRealtimeScannerEngineName: "Oss",
+  ossRealtimeScannerDirectory: "Cx-oss-realtime-scanner",
+  errorOssScanRealtime: "Failed to handle OSS Realtime scan",
+
+  // Containers Scanner
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
+  containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
+  containersRealtimeScannerEngineName: "Containers",
+  containersRealtimeScannerDirectory: "Cx-containers-realtime-scanner",
+  errorContainersScanRealtime: "Failed to handle Containers Realtime scan",
+
+  // IaC Scanner
+  activateIacRealtimeScanner: "Activate IAC Realtime",
+  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
+  iacRealtimeScannerStart: "IaC Realtime Scanner Engine started",
+  iacRealtimeScannerDisabled: "IaC Realtime Scanner Engine disabled",
+  iacRealtimeScannerEngineName: "IaC",
+  iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
+  errorIacScanRealtime: "Failed to handle IaC Realtime scan",
+
+  supportedManifestFilePatterns: [
+    "**/Directory.Packages.props",
+    "**/packages.config",
+    "**/pom.xml",
+    "**/package.json",
+    "**/requirements.txt",
+    "**/go.mod",
+    "**/*.csproj"
+  ],
+  ossIcons: {
+    critical: "critical_severity.png",
+    high: "high_severity.png",
+    medium: "medium_severity.png",
+    low: "low_severity.png",
+  },
+
+  ascaSupportedExtensions: [
+    ".java",
+    ".cs",
+    ".go",
+    ".py",
+    ".js",
+    ".jsx"
+  ],
+
+  containersSupportedPatterns: [
+    "**/dockerfile",
+    "**/dockerfile-*",
+    "**/dockerfile.*",
+    "**/docker-compose.yml",
+    "**/docker-compose.yaml",
+    "**/docker-compose-*.yml",
+    "**/docker-compose-*.yaml"
+  ],
+
+  containersHelmExtensions: [
+    ".yml",
+    ".yaml"
+  ],
+
+  containersHelmExcludedFiles: [
+    "chart.yaml",
+    "chart.yml"
+  ],
+
+  iacSupportedExtensions: [
+    ".tf",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".proto",
+    ".dockerfile"
+  ],
+
+  iacSupportedPatterns: [
+    "**/Dockerfile",
+    "**/*.auto.tfvars",
+    "**/*.terraform.tfvars",
+  ],
+
+  cxAi: 'CxOne Assist',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",
   mediumSeverity: "MEDIUM",
   lowSeverity: "LOW",
   infoSeverity: "INFO",
+
+  copilotChatExtensionId: "GitHub.copilot-chat",
+  copilotNewChatOpen: "workbench.action.chat.newChat",
+  copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
+  newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
+
+  openAIChat: "fixWithAIChat",
+  viewDetails: "viewDetails",
+  ignoreAll: "ignoreAll",
+  ignorePackage: "ignorePackage"
 };
+
+export enum Platform {
+  WINDOWS = 'win32',
+  MAC = 'darwin',
+}
 
 export enum GroupBy {
   fileName = "fileName",
@@ -197,6 +321,7 @@ export enum StateLevel {
   notExploitable = "NotExploitable",
   notIgnored = "NotIgnored",
   ignored = "Ignored",
+  customStates = "CustomStates",
 }
 export enum QuickPickPaginationButtons {
   nextPage = "Next Page",

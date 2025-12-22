@@ -40,6 +40,13 @@ export class WebViewCommand {
     this.conversationId = "";
   }
 
+  public removedetailsPanel() {
+    if (this.detailsPanel) {
+      this.detailsPanel?.dispose();
+      this.detailsPanel = undefined;
+    }
+  }
+
   public registerNewDetails() {
     const newDetails = vscode.commands.registerCommand(
       commands.newDetails,
@@ -52,7 +59,7 @@ export class WebViewCommand {
           this.logs,
           type
         );
-        // Need to check if the detailsPanel is positioned in the rigth place
+        // Need to check if the detailsPanel is positioned in the right place
         if (
           this.detailsPanel?.viewColumn === 1 ||
           !this.detailsPanel?.viewColumn
@@ -96,19 +103,26 @@ export class WebViewCommand {
             this.detailsPanel.webview
           );
 
+        // Setup theme change listener for the webview
+        detailsDetachedView.setupThemeChangeListener(this.detailsPanel.webview);
+        // Dispose theme listener when panel is disposed
+        this.detailsPanel.onDidDispose(() => {
+          detailsDetachedView.disposeThemeListener();
+        });
+
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
-        await this.loadAsyncTabsContent(result);
+        await this.loadAsyncTabsContent(result, detailsDetachedView);
 
         // The event is intended for loading data to the results of SAST, when returning to the plugin tab from another tab
         this.detailsPanel.onDidChangeViewState(async (e) => {
           if (e.webviewPanel.visible) {
-            await this.loadAsyncTabsContent(result);
+            await this.loadAsyncTabsContent(result, detailsDetachedView);
           }
         });
 
         // Start to load the bfl, gets called everytime a new details webview is opened in a SAST result
         //result.sastNodes.length>0 && getResultsBfl(logs,context,result,detailsPanel);
-        // Comunication between webview and extension
+        // Communication between webview and extension
         await this.handleMessages(result, detailsDetachedView);
       }
     );
@@ -124,9 +138,9 @@ export class WebViewCommand {
           masked = await cx.mask(result.filename);
           this.logs.info(
             `Masked Secrets by ${constants.aiSecurityChampion}: ` +
-              (masked && masked.maskedSecrets
-                ? masked.maskedSecrets.length
-                : "0")
+            (masked && masked.maskedSecrets
+              ? masked.maskedSecrets.length
+              : "0")
           );
         } catch (error) {
           this.logs.info(error);
@@ -140,7 +154,7 @@ export class WebViewCommand {
           type,
           masked
         );
-        // Need to check if the detailsPanel is positioned in the rigth place
+        // Need to check if the detailsPanel is positioned in the right place
         if (
           this.gptPanel?.viewColumn === 1 ||
           this.gptPanel?.viewColumn === 2 ||
@@ -195,12 +209,12 @@ export class WebViewCommand {
     this.context.subscriptions.push(gpt);
   }
 
-  private async loadAsyncTabsContent(result: AstResult) {
+  private async loadAsyncTabsContent(result: AstResult, detailsDetachedView?: AstDetailsDetached) {
     if (result.type === "sast") {
       await getLearnMore(this.logs, this.context, result, this.detailsPanel);
     }
     if (result.type === "sast" || result.type === "kics") {
-      await getChanges(this.logs, this.context, result, this.detailsPanel);
+      await getChanges(this.logs, this.context, result, this.detailsPanel, detailsDetachedView, this.resultsProvider);
     }
   }
 
@@ -240,7 +254,9 @@ export class WebViewCommand {
               this.logs,
               this.context,
               result,
-              this.detailsPanel
+              this.detailsPanel,
+              detailsDetachedView,
+              this.resultsProvider
             );
           }
           break;
@@ -430,7 +446,7 @@ export class WebViewCommand {
       .then((messages) => {
 
         this.handleSystemNotFindPathError(messages[0].responses[0], "Please ensure that you have opened the correct workspace or the relevant file.");
-        
+
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({

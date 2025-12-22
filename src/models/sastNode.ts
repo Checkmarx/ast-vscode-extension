@@ -1,4 +1,6 @@
 export class SastNode {
+  public uniqueId?: string;
+
   constructor(
     public id: number,
     public column: number,

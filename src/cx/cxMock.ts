@@ -1,22 +1,29 @@
 import * as vscode from "vscode";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
+import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
-import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
 
   constructor(context?: vscode.ExtensionContext) {
     this.context = context;
+  }
+
+  async iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined> {
+    return [new CxIacResult()];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -971,6 +978,7 @@ export class CxMock implements CxPlatform {
       updatedAt: "2023-04-19T09:07:36.846145Z",
     };
   }
+
   async getProjectListWithParams(
     params: string
   ): Promise<CxProject[] | undefined> {
@@ -1197,6 +1205,7 @@ export class CxMock implements CxPlatform {
       },
     ];
   }
+
   getOffsetValue(params: string) {
     const items = params.split(",");
     const offsetParam = items.find((param) => param.startsWith("offset="));
@@ -1297,7 +1306,7 @@ export class CxMock implements CxPlatform {
   }
 
   async getAstConfiguration() {
-    const token = await this.context.secrets.get("authCredential");
+    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
     if (!token) {
       return undefined;
@@ -1315,7 +1324,21 @@ export class CxMock implements CxPlatform {
   async isScanEnabled(): Promise<boolean> {
     return true;
   }
+
+  async isStandaloneEnabled(): Promise<boolean> {
+    return false;
+  }
+
+  async isCxOneAssistEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
+    return true;
+  }
+
+
+  async isAiMcpServerEnabled(): Promise<boolean> {
     return true;
   }
 
@@ -1454,6 +1477,45 @@ export class CxMock implements CxPlatform {
 
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
+  }
+
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
+    return [];
+  }
+
+
+  async scanContainers(sourcePath: string, ignoredFilePath): Promise<any> {
+    return {
+      Images: [
+        {
+          imageName: "nginx",
+          imageTag: "latest",
+          filePath: sourcePath,
+          locations: [
+            {
+              line: 1,
+              startIndex: 0,
+              endIndex: 20
+            }
+          ],
+          status: "Malicious",
+          vulnerabilities: [
+            {
+              CVE: "CVE-2023-12345",
+              Severity: "High"
+            },
+            {
+              CVE: "CVE-2023-67890",
+              Severity: "Medium"
+            }
+          ]
+        }
+      ]
+    };
+  }
+
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
+    return [];
   }
 
   async authValidate(): Promise<boolean> {
@@ -1604,5 +1666,11 @@ export class CxMock implements CxPlatform {
         },
       ],
     });
+  }
+
+  setUserEventDataForLogs(): void {
+  }
+
+  setUserEventDataForDetectionLogs(): void {
   }
 }

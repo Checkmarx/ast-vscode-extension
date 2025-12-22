@@ -17,7 +17,7 @@ export class GroupByCommand {
     GroupBy.typeLabel,
     GroupBy.scaType,
     GroupBy.severity,
-    GroupBy.packageIdentifier,
+    GroupBy.queryName,
   ];
   public stateFilter: GroupBy = GroupBy.state;
   constructor(context: vscode.ExtensionContext, logs: Logs) {
@@ -346,16 +346,38 @@ export class GroupByCommand {
   }
 
   private updateResultsProviderGroup(activeGroupBy: GroupBy, include: boolean) {
-    const currentIncluded = this.activeGroupBy.includes(activeGroupBy);
-    this.activeGroupBy.pop();
-    if (include && !currentIncluded) {
-      this.activeGroupBy = this.activeGroupBy.concat([activeGroupBy]);
+    const fixedOrder: GroupBy[] = this.getFixedGroupOrder();
+
+    const updatedSet = new Set(this.activeGroupBy);
+
+    this.toggleGroupInSet(updatedSet, activeGroupBy, include);
+
+    this.activeGroupBy = this.rebuildGroupByList(updatedSet, fixedOrder);
+  }
+
+  private getFixedGroupOrder(): GroupBy[] {
+    return [
+      GroupBy.typeLabel,
+      GroupBy.severity,
+      GroupBy.queryName,
+      GroupBy.state,
+      GroupBy.status,
+      GroupBy.language,
+      GroupBy.fileName,
+      GroupBy.directDependency
+    ];
+  }
+
+  private toggleGroupInSet(set: Set<GroupBy>, group: GroupBy, include: boolean) {
+    if (include) {
+      set.add(group);
+    } else {
+      set.delete(group);
     }
-    if (!include && currentIncluded) {
-      this.activeGroupBy = this.activeGroupBy.filter((x) => {
-        return x !== activeGroupBy;
-      });
-    }
-    this.activeGroupBy = this.activeGroupBy.concat([GroupBy.packageIdentifier]);
+  }
+
+  private rebuildGroupByList(set: Set<GroupBy>, order: GroupBy[]): GroupBy[] {
+    const result = order.filter(group => set.has(group));
+    return result;
   }
 }

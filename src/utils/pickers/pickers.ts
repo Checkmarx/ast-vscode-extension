@@ -22,6 +22,8 @@ import { messages } from "../common/messages";
 import { cx } from "../../cx";
 import { getGlobalContext } from "../../extension";
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function createPicker(
   placeholder: string,
   title: string,
@@ -148,7 +150,7 @@ async function createPicker(
   quickPick.show();
 }
 
-// label, funcao p ir buscar os projects/branchse, etc override, onDidChange , funcao de "pre pick" p retornar um bool
+// label, funcao p ir buscar os projects/branches, etc override, onDidChange , funcao de "pre pick" p retornar um bool
 export async function projectPicker(
   context: vscode.ExtensionContext,
   logs: Logs
@@ -271,7 +273,7 @@ async function setDefaultBranch(
     }
   } catch (error) {
     logs.error(`Failed to used in a local branch: ${error}`);
-    vscode.window.showErrorMessage("Failed to used in a local branch");
+    vscode.window.showErrorMessage(`Failed to used in a local branch: ${error}`);
   }
 }
 
@@ -495,9 +497,13 @@ export async function loadScanId(
   scanId: string,
   logs: Logs
 ) {
+
+  if (scanId && !uuidPattern.test(scanId.trim())) {
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    return;
+  }
   const scan = await getScanWithProgress(logs, scanId);
-  if (!scan?.id || !scan?.projectID) {
-    vscode.window.showErrorMessage(messages.scanIdNotFound);
+  if (!scan) {
     return;
   }
 

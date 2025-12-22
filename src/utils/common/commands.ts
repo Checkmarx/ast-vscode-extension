@@ -9,11 +9,13 @@ export const commands = {
   setings: `${constants.extensionName}.viewSettings`,
   isValidCredentials: `${constants.extensionName}.isValidCredentials`,
 
+  authentication: `${constants.extensionName}.authentication`,
   showAuth: `${constants.extensionName}.showAuth`,
 
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
-
+  isStandaloneEnabled: `${constants.extensionName}.isStandaloneEnabled`,
+  isCxOneAssistEnabled: `${constants.extensionName}.isCxOneAssistEnabled`,
   filterCriticalToggle: `${constants.extensionName}.filterCritical_toggle`,
   filterCriticalUntoggle: `${constants.extensionName}.filterCritical_untoggle`,
   filterCritical: `${constants.extensionName}.filterCritical`,
@@ -61,6 +63,14 @@ export const commands = {
   filterIgnored: `${constants.extensionName}.filterIgnored`,
   filterIgnoredActive: `${constants.extensionName}.filterIgnoredActive`,
   filterIgnoredCommand: `${constants.extensionName}.filterIgnoreds`,
+
+  filterSCAHideDevTest: `${constants.extensionName}.filterSCAHideDevTest`,
+  filterSCAHideDevTestActive: `${constants.extensionName}.filterSCAHideDevTestActive`,
+  filterSCAHideDevTestCommand: `${constants.extensionName}.filterSCAHideDevTests`,
+
+  filterAllCustomStates: `${constants.extensionName}.filterAllCustomStates`,
+  filterAllCustomStatesActive: `${constants.extensionName}.filterAllCustomStatesActive`,
+  filterAllCustomStatesCommand: `${constants.extensionName}.filterAllCustomStatess`,
 
   groupByFile: `${constants.extensionName}.groupByFile`,
   groupByFileActive: `${constants.extensionName}.groupByFileActive`,
@@ -110,9 +120,26 @@ export const commands = {
 
   newDetails: `${constants.extensionName}.newDetails`,
   gpt: `${constants.extensionName}.gpt`,
+  openDetailsFromDiagnostic: `${constants.extensionName}.openDetailsFromDiagnostic`,
 
   setContext: "setContext",
 
   openSettings: "workbench.action.openSettings",
-  openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`
+  openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`,
+  openAIChat: `${constants.extensionName}.${constants.openAIChat}`,
+  viewDetails: `${constants.extensionName}.${constants.viewDetails}`,
+  ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
+  ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,
+  openIgnoredView: `${constants.extensionName}.openIgnoredView`,
+  refreshIgnoredStatusBar: `${constants.extensionName}.refreshIgnoredStatusBar`,
+  refreshScaStatusBar: `${constants.extensionName}.refreshScaStatusBar`,
+  refreshKicsStatusBar: `${constants.extensionName}.refreshKicsStatusBar`,
+  assistDocumentation: `${constants.extensionName}.assistDocumentation`,
+  updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
+  astCxOneAssist: "astCxOneAssist",
+  astResultsPromo: "astResultsPromo",
+  scaAutoScanPromo: "scaAutoScanPromo",
+  docAndFeedback: "docAndFeedback",
+  refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
+  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`
 };

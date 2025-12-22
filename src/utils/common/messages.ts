@@ -10,7 +10,7 @@ export const messages = {
   scanNoFilesFound:
     "No files found in workspace. Please open a workspace or folder.",
   scanFilesMatch: "Files match workspace",
-  scanFilesNotMatch: "Files in workspace dont match files in results",
+  scanFilesNotMatch: "Files in workspace don't match files in results",
   scanProjectsNotMatch:
     "Project in workspace doesn't match the selected Checkmarx project. Do you want to scan anyway?",
   scanBranchMatch: "Branch match the view branch. Initiating scan...",
@@ -62,6 +62,7 @@ export const messages = {
   projectNotFound: "Project not found",
   projectIdUndefined: "Project ID is undefined.",
   scanIdNotFound: "ScanId not found",
+  scanIdIncorrectFormat: "Invalid scan id format.",
   scanIdUndefined: "Scan ID is undefined.",
   cancelLoading: "Canceled loading",
   loadingBranches: "Loading branches",
@@ -71,7 +72,7 @@ export const messages = {
   loadingScan: "Loading scan",
   loadingResults: "Loading results",
   triageNotAvailableSca: "Triage not available for SCA.",
-  triageSubmitedSuccess: "Feedback submited successfully! Results refreshed.",
+  triageSubmitedSuccess: "Feedback submitted successfully! Results refreshed.",
   triageError: (error) => `Triage ${error}`,
   triageNoChange: "Make a change before submiting",
   triageUpdateState: (state) => `Updating state to ${state}`,

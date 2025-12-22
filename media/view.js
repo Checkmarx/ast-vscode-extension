@@ -235,8 +235,31 @@
 	window.addEventListener('message', event => {
 		const message = event.data;
 		switch (message.command) {
-			case 'loadChanges':
+			case 'updateThemeIcon': {
+				// Update the CodeBashing icon for theme change
+				const codeBashingIcon = document.getElementById('cx_codebashing');
+				if (codeBashingIcon && message.iconUri) {
+					codeBashingIcon.setAttribute('src', message.iconUri);
+					// Also update the global variable for future use
+					window.codeBashingIconUri = message.iconUri;
+				}
+				break;
+			}
+			case 'loadChanges': {
 				let changes = message.changes;
+				for (const change of changes) {
+					if (!change) {continue;}
+
+					const setVal = (selId, id) => {
+						const opt = document.querySelector(`#${selId} option[value="${id}"]`);
+						if (opt) {document.getElementById(selId).value = opt.value || opt.textContent;}
+					};
+
+					setVal('select_state', change.State);
+					setVal('select_severity', change.Severity);
+					break;
+				}
+
 				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
 					loaderContainer.style.display = 'none';
@@ -245,15 +268,17 @@
 					loaderContainer.style.padding = '0.4em';
 				}
 				break;
-			case 'loader':
+			}
+			case 'loader': {
 				// html do loader
-				loaderContainer = document.getElementById('history-container-loader');
+				let loaderContainer = document.getElementById('history-container-loader');
 				if (loaderContainer) {
 					loaderContainer.innerHTML = loader();
 					loaderContainer.style.display = 'block';
 				}
 				break;
-			case 'loadLearnMore':
+			}
+			case 'loadLearnMore': {
 				let learn = message.learn;
 				let learnLoaderContainer = document.getElementById('learn-container-loader');
 				learnLoaderContainer.style.display = 'none';
@@ -265,6 +290,7 @@
 				codeLoaderContainer.style.display = 'block';
 				registerCodebashingEventListener();
 				break;
+			}
 			// case 'loadBfl':
 			// 	console.log("loadedBFl");
 			// 	let index =  message.index.index;
@@ -364,9 +390,21 @@
 				html += riskSection(description.risk);
 				html += causeSection(description.cause);
 				html += recommendationSection(description.generalRecommendations);
+				// Dynamically add CWE link if available
+            if (result.cweId) {
+                html += `
+                    <div class="learn-section">
+                        <p>
+                            <strong>Learn more about this vulnerability:</strong>
+                            <a href="https://cwe.mitre.org/data/definitions/${result.cweId}.html" target="_blank" rel="noopener noreferrer">
+                                CWE-${result.cweId}
+                            </a>
+                        </p>
+                    </div>
+                `;
 			}
 		}
-		else {
+	} else {
 			html +=
 				`
 				<div class="history-container">
@@ -385,20 +423,18 @@
 			let headerItemCodebashingDiv = document.createElement('div');
 			headerItemCodebashingDiv.setAttribute('id', 'cx_header_codebashing');
 			headerItemCodebashingDiv.style.marginBottom = '20px';
-			let codebashingLinkSpan = document.createElement('span');
-			codebashingLinkSpan.setAttribute('class', 'codebashing-link');
-			codebashingLinkSpan.textContent = 'Learn more at ';
-			let orangeColorSpan = document.createElement('span');
-			orangeColorSpan.setAttribute('class', 'orange-color');
-			orangeColorSpan.textContent = '>_';
-			let codeBashingSpan = document.createElement('span');
-			codeBashingSpan.setAttribute('class', 'codebashing-link-value');
-			codeBashingSpan.setAttribute('id', 'cx_codebashing');
-			codeBashingSpan.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
-			codeBashingSpan.textContent = 'codebashing';
-			codebashingLinkSpan.appendChild(orangeColorSpan);
-			codebashingLinkSpan.appendChild(codeBashingSpan);
-			headerItemCodebashingDiv.appendChild(codebashingLinkSpan);
+			let codebashingLinkIcon = document.createElement('span');
+            codebashingLinkIcon.setAttribute('class', 'codebashing-link');
+            codebashingLinkIcon.textContent = 'Learn more at ';
+            let codeBashingIcon = document.createElement('img');
+            let iconSrc = window.codeBashingIconUri;
+            codeBashingIcon.setAttribute('src', iconSrc);
+            codeBashingIcon.setAttribute('id', 'cx_codebashing');
+            codeBashingIcon.setAttribute('title', "Learn more about " + result.queryName + " using Checkmarx's eLearning platform");
+            codeBashingIcon.setAttribute('alt', 'CodeBashing');
+            codeBashingIcon.style.cssText = 'height:40px;width:auto;cursor:pointer;vertical-align:middle;margin-left:6px;';
+            codebashingLinkIcon.appendChild(codeBashingIcon);
+			headerItemCodebashingDiv.appendChild(codebashingLinkIcon);
 			return headerItemCodebashingDiv.outerHTML;
 		}
 		return codeBashingSection;
