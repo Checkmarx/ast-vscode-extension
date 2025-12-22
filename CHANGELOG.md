@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v2.43.1-sca-triage.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-sca-triage.0) - 2025-12-18 18:31:06
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.1-2.43.1-ReviveIgnoredPasswords.0...v2.43.1-sca-triage.0
+
+## [v2.43.1-2.43.1-ReviveIgnoredPasswords.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-2.43.1-ReviveIgnoredPasswords.0) - 2025-12-18 17:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.43.1-FixUndoAction.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-FixUndoAction.0) - 2025-12-15 16:35:54
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
