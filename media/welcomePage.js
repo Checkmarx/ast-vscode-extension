@@ -5,8 +5,7 @@
   let serverEnabled = false;
 
   window.addEventListener("DOMContentLoaded", () => {
-    const checkIcon = document.getElementById("aiFeatureCheckIcon");
-    const uncheckIcon = document.getElementById("aiFeatureUncheckIcon");
+    const checkbox = document.getElementById("aiFeatureToggle");
     const loader = document.getElementById("aiFeatureLoader");
     const aiBoxInfo = document.getElementById("aiFeatureStatusBox");
     const aiFeatureBoxWrapper = document.getElementById("aiFeatureBoxWrapper");
@@ -25,36 +24,22 @@
 
       currentState = newState;
 
-      if (newState) {
-        checkIcon.classList.remove("hidden");
-        uncheckIcon.classList.add("hidden");
-      } else {
-        checkIcon.classList.add("hidden");
-        uncheckIcon.classList.remove("hidden");
+      if (checkbox) {
+        checkbox.checked = newState;
       }
-
-      checkIcon.setAttribute("aria-pressed", newState.toString());
-      uncheckIcon.setAttribute("aria-pressed", (!newState).toString());
 
       vscode.postMessage({ type: "changeAllScannersStatus", value: newState });
     }
 
-    checkIcon.addEventListener("click", () => toggleScannerState(false));
-    uncheckIcon.addEventListener("click", () => toggleScannerState(true));
-
-    function handleKeydown(event, targetState) {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        toggleScannerState(targetState);
-      }
+    if (checkbox) {
+      checkbox.addEventListener("change", () => {
+        if (!serverEnabled) {
+          checkbox.checked = false;
+          return;
+        }
+        toggleScannerState(checkbox.checked);
+      });
     }
-
-    checkIcon.addEventListener("keydown", (event) =>
-      handleKeydown(event, false)
-    );
-    uncheckIcon.addEventListener("keydown", (event) =>
-      handleKeydown(event, true)
-    );
 
     if (previousState.aiFeatureLoaded) {
       loader.classList.add("hidden");
@@ -75,14 +60,21 @@
     function handleSetAiFeatureState(message) {
       loader.classList.add("hidden");
       serverEnabled = message.enabled;
+      if (checkbox) {
+        checkbox.classList.remove("hidden");
+      }
 
       if (message.enabled) {
         toggleScannerState(message.scannersSettings);
-
-        checkIcon.style.cursor = "pointer";
-        uncheckIcon.style.cursor = "pointer";
+        if (checkbox) {
+          checkbox.disabled = false;
+          checkbox.style.cursor = "pointer";
+        }
       } else {
         toggleScannerState(false);
+        if (checkbox) {
+          checkbox.disabled = true;
+        }
         aiBoxInfo.classList.remove("hidden");
         aiFeatureBoxWrapper.classList.remove("hidden");
       }

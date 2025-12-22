@@ -10,8 +10,6 @@ export class WelcomeWebview {
     bootstrapCssUri: vscode.Uri,
     scannerImgUri: vscode.Uri,
     aiBoxinfo: vscode.Uri,
-    checkSvgUri: vscode.Uri,
-    uncheckSvgUri: vscode.Uri,
     doubleCheckUri: vscode.Uri,
     cssUri: vscode.Uri,
     jsUri: vscode.Uri,
@@ -50,25 +48,12 @@ export class WelcomeWebview {
                   >
                     <span class="visually-hidden">Loading...</span>
                   </div>
-                  <img
-                    id="aiFeatureCheckIcon"
-                    class="status-icon-img hidden"
-                    src="${checkSvgUri}"
-                    alt="Real-time scanners enabled"
-                    role="button"
-                    tabindex="0"
-                    aria-pressed="true"
-                    aria-label="Real-time scanners are currently enabled. Click to disable all scanners."
-                  />
-                  <img
-                    id="aiFeatureUncheckIcon"
-                    class="status-icon-img hidden"
-                    src="${uncheckSvgUri}"
-                    alt="Real-time scanners disabled"
-                    role="button"
-                    tabindex="0"
-                    aria-pressed="false"
-                    aria-label="Real-time scanners are currently disabled. Click to enable all scanners."
+                  <input
+                    id="aiFeatureToggle"
+                    type="checkbox"
+                    class="status-icon-checkbox hidden"
+                    aria-label="Toggle real-time scanners"
+                    title="Toggle real-time scanners"
                   />
                 </div>
                 <span class="card-title">Code Smarter with CxOne Assist</span>
@@ -175,23 +160,6 @@ export class WelcomeWebview {
       )
     );
 
-    const checkSvgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "tabler-icon-check.svg"
-      )
-    );
-
-    const uncheckSvgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        "tabler-icon-uncheck.svg"
-      )
-    );
 
     const doubleCheckUri = panel.webview.asWebviewUri(
       vscode.Uri.joinPath(
@@ -227,8 +195,6 @@ export class WelcomeWebview {
       bootstrapCssUri,
       scannerImgUri,
       aiBoxinfo,
-      checkSvgUri,
-      uncheckSvgUri,
       doubleCheckUri,
       cssUri,
       jsUri,
@@ -272,8 +238,6 @@ export class WelcomeWebview {
         bootstrapCssUri,
         newScannerImgUri,
         newAiBoxinfo,
-        checkSvgUri,
-        uncheckSvgUri,
         newDoubleCheckUri,
         cssUri,
         jsUri,
