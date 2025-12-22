@@ -38,12 +38,21 @@ export class CommonCommand {
     );
   }
 
-  public executeCheckSettings() {
+  public async executeCheckSettings() {
+
+  const isConfiguration = await cx.isValidConfiguration();
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      cx.getAstConfiguration() ? true : false
+      isConfiguration 
     );
+
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isScaScanEnabled,
+      true);
+
+     this.executeCheckScanEnabled();
   }
 
   public async executeCheckScanEnabled() {
@@ -51,6 +60,22 @@ export class CommonCommand {
       commands.setContext,
       commands.isScanEnabled,
       await cx.isScanEnabled(this.logs)
+    );
+  }
+
+  public async executeCheckStandaloneEnabled() {
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isStandaloneEnabled,
+      await cx.isStandaloneEnabled(this.logs)
+    );
+  }
+
+  public async executeCheckCxOneAssistEnabled() {
+    vscode.commands.executeCommand(
+      commands.setContext,
+      commands.isCxOneAssistEnabled,
+      await cx.isCxOneAssistEnabled(this.logs)
     );
   }
 

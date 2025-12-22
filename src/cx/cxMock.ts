@@ -1,17 +1,31 @@
 import * as vscode from "vscode";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
+import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
-import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
+import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 export class CxMock implements CxPlatform {
+  private context: vscode.ExtensionContext;
+
+  constructor(context?: vscode.ExtensionContext) {
+    this.context = context;
+  }
+
+  async iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined> {
+    return [new CxIacResult()];
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async scaScanCreate(): Promise<CxScaRealtime[] | any> {
     return [
@@ -965,7 +979,211 @@ export class CxMock implements CxPlatform {
     };
   }
 
-  async getProjectList(): Promise<CxProject[] | undefined> {
+  async getProjectListWithParams(
+    params: string
+  ): Promise<CxProject[] | undefined> {
+    if (params) {
+      if (this.getOffsetValue(params) === "0") {
+        return [
+          {
+            tags: {
+              integration: "",
+            },
+            groups: ["1"],
+            id: "1",
+            name: "test-proj-21",
+            createdAt: "2023-04-19T14:06:42.186311Z",
+            updatedAt: "2023-04-19T14:26:26.142592Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "3",
+            name: "test-proj-3",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "4",
+            name: "test-proj-4",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "5",
+            name: "test-proj-5",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "6",
+            name: "test-proj-6",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "7",
+            name: "test-proj-7",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "8",
+            name: "test-proj-8",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "9",
+            name: "test-proj-9",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "10",
+            name: "test-proj-10",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "11",
+            name: "test-proj-11",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "12",
+            name: "test-proj-12",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "13",
+            name: "test-proj-13",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "14",
+            name: "test-proj-14",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "15",
+            name: "test-proj-15",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "16",
+            name: "test-proj-16",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "17",
+            name: "test-proj-17",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "18",
+            name: "test-proj-18",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "19",
+            name: "test-proj-19",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "20",
+            name: "test-proj-20",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "21",
+            name: "test-proj-21",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+          {
+            tags: {},
+            groups: [],
+            id: "22",
+            name: "test-proj-22",
+            createdAt: "2023-04-19T14:15:15.250732Z",
+            updatedAt: "2023-04-19T14:15:15.250732Z",
+          },
+        ];
+      }
+      return [
+        {
+          tags: {},
+          groups: [],
+          id: "22",
+          name: "test-proj-22",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+        {
+          tags: {},
+          groups: [],
+          id: "23",
+          name: "test-proj-23",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+        {
+          tags: {},
+          groups: [],
+          id: "24",
+          name: "test-proj-24",
+          createdAt: "2023-04-19T14:15:15.250732Z",
+          updatedAt: "2023-04-19T14:15:15.250732Z",
+        },
+      ];
+    }
     return [
       {
         tags: {
@@ -988,11 +1206,65 @@ export class CxMock implements CxPlatform {
     ];
   }
 
-  async getBranches(): Promise<string[] | undefined> {
+  getOffsetValue(params: string) {
+    const items = params.split(",");
+    const offsetParam = items.find((param) => param.startsWith("offset="));
+    return offsetParam ? offsetParam.split("=")[1] : null;
+  }
+
+  getBranchName(params: string) {
+    return params.split(",")[0];
+  }
+
+  async getBranchesWithParams(
+    projectId: string | undefined,
+    params?: string | undefined
+  ): Promise<string[] | undefined> {
+    if (params) {
+      if (this.getBranchName(params) === "main") {
+        return ["main"];
+      }
+      if (this.getOffsetValue(params) === "0") {
+        return [
+          "main",
+          "branch1",
+          "branch2",
+          "branch3",
+          "branch4",
+          "branch5",
+          "branch6",
+          "branch7",
+          "branch8",
+          "branch9",
+          "branch10",
+          "branch11",
+          "branch12",
+          "branch13",
+          "branch14",
+          "branch15",
+          "branch16",
+          "branch17",
+          "branch18",
+          "branch19",
+          "branch20",
+        ];
+      }
+      return [
+        "branch21",
+        "branch22",
+        "branch23",
+        "branch24",
+        "branch25",
+        "branch26",
+      ];
+    }
     return ["main"];
   }
 
-  async getScans(projectId: string | undefined, branch: string | undefined): Promise<CxScan[] | undefined> {
+  async getScans(
+    projectId: string | undefined,
+    branch: string | undefined
+  ): Promise<CxScan[] | undefined> {
     if (branch === constants.localBranch) {
       return [];
     }
@@ -1033,10 +1305,9 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
-  getAstConfiguration() {
-    const token = vscode.workspace
-      .getConfiguration("checkmarxOne")
-      .get("apiKey") as string;
+  async getAstConfiguration() {
+    const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+
     if (!token) {
       return undefined;
     }
@@ -1046,10 +1317,28 @@ export class CxMock implements CxPlatform {
     return config;
   }
 
+  async isValidConfiguration(): Promise<boolean> {
+    return (await this.getAstConfiguration()) !== undefined;
+  }
+
   async isScanEnabled(): Promise<boolean> {
     return true;
   }
+
+  async isStandaloneEnabled(): Promise<boolean> {
+    return false;
+  }
+
+  async isCxOneAssistEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
+    return true;
+  }
+
+
+  async isAiMcpServerEnabled(): Promise<boolean> {
     return true;
   }
 
@@ -1063,6 +1352,15 @@ export class CxMock implements CxPlatform {
 
   async triageUpdate(): Promise<number> {
     return 0;
+  }
+
+  async triageGetStates(): Promise<CxCommandOutput> {
+    return {
+      exitCode: 0,
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      payload: [] as any[],
+      status: "",
+    };
   }
 
   async getCodeBashing(): Promise<CxCodeBashing | undefined> {
@@ -1098,9 +1396,9 @@ export class CxMock implements CxPlatform {
         queryDescriptionId: "Reflected_XSS_All_Clients",
         resultDescription:
           "The method @DestinationMethod embeds untrusted data in generated output with @DestinationElement, at line @DestinationLine of @DestinationFile. This untrusted data is embedded into the output without proper sanitization or encoding, enabling an attacker to inject malicious code into the generated web-page.\n\nThe attacker would be able to alter the returned web page by simply providing modified data in the user input @SourceElement, which is read by the @SourceMethod method at line @SourceLine of @SourceFile. This input then flows through the code straight to the output web page, without sanitization. \r\n\r\nThis can enable a Reflected Cross-Site Scripting (XSS) attack.\n\n",
-        risk: "A successful XSS exploit would allow an attacker to rewrite web pages and insert malicious scripts which would alter the intended output. This could include HTML fragments, CSS styling rules, arbitrary JavaScript, or references to third party code. An attacker could use this to steal users' passwords, collect personal data such as credit card details, provide false information, or run malware. From the victim’s point of view, this is performed by the genuine website, and the victim would blame the site for incurred damage.\n\nThe attacker could use social engineering to cause the user to send the website modified input, which will be returned in the requested web page.\n\n",
+        risk: "A successful XSS exploit would allow an attacker to rewrite web pages and insert malicious scripts which would alter the intended output. This could include HTML fragments, CSS styling rules, arbitrary JavaScript, or references to third party code. An attacker could use this to steal users' passwords, collect personal data such as credit card details, provide false information, or run malware. From the victim's point of view, this is performed by the genuine website, and the victim would blame the site for incurred damage.\n\nThe attacker could use social engineering to cause the user to send the website modified input, which will be returned in the requested web page.\n\n",
         cause:
-          "The application creates web pages that include untrusted data, whether from user input, the application’s database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
+          "The application creates web pages that include untrusted data, whether from user input, the application's database, or from other external sources. The untrusted data is embedded directly in the page's HTML, causing the browser to display it as part of the web page. If the input includes HTML fragments or JavaScript, these are displayed too, and the user cannot tell that this is not the intended page. The vulnerability is the result of directly embedding arbitrary data without first encoding it in a format that would prevent the browser from treating it like HTML or code instead of plain text.\n\nNote that an attacker can exploit this vulnerability either by modifying the URL, or by submitting malicious data in the user input or other request fields.\n\n",
         generalRecommendations:
           '*   Fully encode all dynamic data, regardless of source, before embedding it in output.\r\n*   Encoding should be context-sensitive. For example:\r\n    *   HTML encoding for HTML content\r\n    *   HTML Attribute encoding for data output to attribute values\r\n    *   JavaScript encoding for server-generated JavaScript\r\n*   It is recommended to use the platform-provided encoding functionality, or known security libraries for encoding output.\r\n*   Implement a Content Security Policy (CSP) with explicit whitelists for the application\'s resources only. \r\n*   As an extra layer of protection, validate all untrusted data, regardless of source (note this is not a replacement for encoding). Validation should be based on a whitelist: accept only data fitting a specified structure, rather than reject bad patterns. Check for:\r\n    *   Data type\r\n    *   Size\r\n    *   Range\r\n    *   Format\r\n    *   Expected values\r\n*   In the `Content-Type` HTTP response header, explicitly define character encoding (charset) for the entire page. \r\n*   Set the `HTTPOnly` flag on the session cookie for "Defense in Depth", to prevent any successful XSS exploits from stealing the cookie.\n*   Consider that many native PHP methods for sanitizing values, such as htmlspecialchars and htmlentities, do not inherently encode values for Javascript contexts and ignore certain enclosure characters such as apostrophe (\'), quotes (") and backticks (\\`). Always consider the output context of inputs before choosing either of these functions as sanitizers.',
         samples: [
@@ -1180,8 +1478,199 @@ export class CxMock implements CxPlatform {
   async scanAsca(sourcePath: string): Promise<CxAsca> {
     return new CxAsca();
   }
-  
+
+  async ossScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxOssResult[]> {
+    return [];
+  }
+
+
+  async scanContainers(sourcePath: string, ignoredFilePath): Promise<any> {
+    return {
+      Images: [
+        {
+          imageName: "nginx",
+          imageTag: "latest",
+          filePath: sourcePath,
+          locations: [
+            {
+              line: 1,
+              startIndex: 0,
+              endIndex: 20
+            }
+          ],
+          status: "Malicious",
+          vulnerabilities: [
+            {
+              CVE: "CVE-2023-12345",
+              Severity: "High"
+            },
+            {
+              CVE: "CVE-2023-67890",
+              Severity: "Medium"
+            }
+          ]
+        }
+      ]
+    };
+  }
+
+  async secretsScanResults(sourcePath: string, ignoredFilePath?: string): Promise<CxSecretsResult[]> {
+    return [];
+  }
+
   async authValidate(): Promise<boolean> {
     return true;
+  }
+
+  public getRiskManagementResults(
+    projectId: string,
+    scanId: string
+  ): Promise<{
+    projectID: string;
+    scanID: string;
+    applicationNameIDMap: any[];
+    results: any[];
+  }> {
+    return Promise.resolve({
+      projectID: "1",
+      scanID: "1",
+      applicationNameIDMap: [
+        {
+          applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+          applicationName: "test1",
+          score: 7,
+        },
+        {
+          applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+          applicationName: "abcTest2",
+          score: 7.3,
+        },
+        {
+          applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+          applicationName: "Test3",
+          score: 7.3,
+        },
+        {
+          applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+          applicationName: "zTest4",
+          score: 7.4,
+        },
+        {
+          applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+          applicationName: "zTest5",
+          score: 7.4,
+        },
+      ],
+      results: [
+        {
+          id: "00e592de-0bc4-46da-8ce8-739b8fa91e34",
+          name: "Cxadcc9e15-660b",
+          hash: "V9nPpvBHoh1aF66qIFS/AZ/62YI5qZjLnNUSoapIlbk=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 4.4,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 3,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 4.2,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8.5,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 4.2,
+            },
+          ],
+        },
+        {
+          id: "01e03512-d58b-4f9a-838f-18507d1acd3a",
+          name: "Cx28bd7545-eb30",
+          hash: "Llgxx8kRAGBRADIjVKlepWrlfVq4DWzFH/iy8+hfeRw=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 5.2,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 7.5,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 8.6,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 7.6,
+            },
+          ],
+        },
+        {
+          id: "0a293a7e-af26-4126-8e70-9a79d41043b4",
+          name: "Cx9c42b5fe-7ada",
+          hash: "IdkIDsf/5XU9p8pZI87bjSIfrhhXOVGIHh7jWWcl2/w=",
+          type: "directPackage",
+          state: "new",
+          engine: "sca",
+          severity: "high",
+          riskScore: 8.7,
+          enrichmentSources: {},
+          createdAt: "2025-04-01T09:38:29Z",
+          applicationsScores: [
+            {
+              applicationID: "5dff8d1c-d27f-4910-afc1-0b9df02324b4",
+              score: 5.2,
+            },
+            {
+              applicationID: "7b0a17ce-f460-44d2-97d1-ada582119480",
+              score: 7,
+            },
+            {
+              applicationID: "990c4252-b065-4d10-806a-3b86393c7ff3",
+              score: 6.7,
+            },
+            {
+              applicationID: "9b73c468-56c7-4ac2-a6a4-890b8eb97f93",
+              score: 8.5,
+            },
+            {
+              applicationID: "f559d5b9-9920-4256-8b9a-92224751b3a3",
+              score: 4,
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  setUserEventDataForLogs(): void {
+  }
+
+  setUserEventDataForDetectionLogs(): void {
   }
 }

@@ -9,7 +9,7 @@ import {getFromState, updateState} from "../common/globalState";
 import {cx} from "../../cx";
 import {getGitAPIRepository, isKicsFile, isSystemFile} from "../utils";
 import {messages} from "../common/messages";
-import {AscaCommand} from "../../commands/ascaCommand";
+import {AuthService} from "../../services/authService";
 
 export async function getBranchListener(
     context: vscode.ExtensionContext,
@@ -57,7 +57,7 @@ async function addRepositoryListener(
         const currentBranch = getFromState(context, constants.branchIdKey);
 
         if (projectItem?.id && branchName && branchName !== currentBranch?.id) {
-            cx.getBranches(projectItem.id).then((branches) => {
+            cx.getBranchesWithParams(projectItem.id).then((branches) => {
                 updateState(context, constants.branchTempIdKey, undefined);
                 if (branches?.includes(branchName)) {
                     updateState(context, constants.branchIdKey, {
@@ -87,6 +87,10 @@ export function addRealTimeSaveListener(
 ) {
     // Listen to save action in a KICS file
     vscode.workspace.onDidSaveTextDocument(async (e) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
@@ -111,19 +115,42 @@ export function addRealTimeSaveListener(
 
     // Listen to open action in a KICS file
     vscode.workspace.onDidOpenTextDocument(async (e: vscode.TextDocument) => {
+        // Skip scan trigger in standalone mode
+        if (await cx.isStandaloneEnabled(logs)) {
+            return;
+        }
         // Check if on save setting is enabled
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
         if (isValidKicsFile && isSystemFiles) {
-            // Mandatory in order to have the document appearing as displayed for VSCode
-            await vscode.window.showTextDocument(e, 1, false);
-            updateState(context, constants.kicsRealtimeFile, {
-                id: e.uri.fsPath,
-                name: e.uri.fsPath,
-                displayScanId: undefined,
-                scanDatetime: undefined
-            });
-            await vscode.commands.executeCommand(constants.kicsRealtime);
+            // Only show document in VSCode to prevent infinite loop in Cursor IDE
+            // Cursor IDE handles document display differently and doesn't require this call
+            const isVSCode = vscode.env.appName === 'Visual Studio Code';
+            if (isVSCode) {
+                await vscode.window.showTextDocument(e, 1, false);
+                updateState(context, constants.kicsRealtimeFile, {
+                    id: e.uri.fsPath,
+                    name: e.uri.fsPath,
+                    displayScanId: undefined,
+                    scanDatetime: undefined
+                });
+                await vscode.commands.executeCommand(constants.kicsRealtime);
+            } else {
+                // In Cursor IDE, wait a bit to let the active editor get set and only process first file
+                setTimeout(async () => {
+                    const activeEditor = vscode.window.activeTextEditor;
+                    // Only process if this is the active editor (the file user actually opened)
+                    if (activeEditor && activeEditor.document.uri.fsPath === e.uri.fsPath) {
+                        updateState(context, constants.kicsRealtimeFile, {
+                            id: e.uri.fsPath,
+                            name: e.uri.fsPath,
+                            displayScanId: undefined,
+                            scanDatetime: undefined
+                        });
+                        await vscode.commands.executeCommand(constants.kicsRealtime);
+                    }
+                }, 50); // Small delay to let Cursor set the active editor
+            }
         }
     });
 }
@@ -182,15 +209,17 @@ export async function gitExtensionListener(
 }
 
 export async function executeCheckSettingsChange(
+    context: vscode.ExtensionContext,
     kicsStatusBarItem: vscode.StatusBarItem,
-    logs: Logs,
-    ascaCommand: AscaCommand
+    logs: Logs
 ) {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
+        const authService = AuthService.getInstance(context, logs);
+        const isValid = await authService.validateAndUpdateState();
         vscode.commands.executeCommand(
             commands.setContext,
             commands.isValidCredentials,
-            cx.getAstConfiguration() ? true : false
+            isValid
         );
         vscode.commands.executeCommand(
             commands.setContext,
@@ -205,19 +234,5 @@ export async function executeCheckSettingsChange(
                 ? messages.kicsStatusBarConnect
                 : messages.kicsStatusBarDisconnect;
         await vscode.commands.executeCommand(commands.refreshTree);
-        const ascaEffected = event.affectsConfiguration(
-            `${constants.CheckmarxAsca}.${constants.ActivateAscaAutoScanning}`
-        );
-        const apikeyEffected = event.affectsConfiguration(
-            "checkmarxOne.apiKey"
-        );
-        
-        if (apikeyEffected) {
-            await cx.authValidate(logs);
-        }
-              
-        if (ascaEffected || apikeyEffected) {
-            await ascaCommand.registerAsca();
-        }
     });
 }

@@ -37,7 +37,7 @@
 }
 
 .division {
-  border-top: 1px solid var(--vscode-input-background);
+  border-top: 1px solid var(--vscode-input-foreground);
   border-radius: 1px;
   margin: 0.5em 0em 0.5em 0em;
   opacity: 40%;
@@ -61,9 +61,6 @@
   padding-bottom: 0.5em;
 }
 
-.details-table tr {
-  background-color: var(--vscode-input-background);
-}
 
 .details-table tr > td:nth-child(2) {
   border-left: 2px solid transparent;
@@ -81,10 +78,9 @@
 
 .select-critical {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/critical_untoggle.svg");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -95,10 +91,9 @@
 
 .select-high {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/high_untoggle.svg");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -109,10 +104,9 @@
 
 .select-medium {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/medium_untoggle.svg");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -123,10 +117,9 @@
 
 .select-info {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/info_untoggle.svg");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -137,10 +130,9 @@
 
 .select-low {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/low_untoggle.svg");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -151,10 +143,9 @@
 
 .state {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/state.png");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -165,7 +156,7 @@
 
 .comment {
   margin: 0.4em;
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
   background-color: var(--vscode-input-background);
@@ -192,7 +183,6 @@
   border-color: transparent;
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-color: var(--vscode-input-background);
   background-image: url("./icons/status.png");
   background-repeat: no-repeat;
   background-size: 0.8em auto;
@@ -206,11 +196,11 @@
   border-color: transparent;
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 1.5em;
-  background-image: url("./icons/status.png");
-  background-repeat: no-repeat;
-  background-size: 0.8em auto;
-  background-position: 0.4em center;
-  color: var(--vscode-foreground);
+  background-image: url("./icons/status.png") !important;
+  background-repeat: no-repeat !important;
+  background-size: 0.8em auto !important;
+  background-position: 0.4em center !important;
+  color: #cccccc;
 }
 
 input { display: none; }
@@ -235,13 +225,13 @@ input + label {
 }
 
 input + label:hover{
-  color: var(--vscode-inputOption-activeForeground);
+  color: var(--vscode-editor-foreground);
 }
 
 input:checked + label {
   border-bottom: none;
   border-bottom: 1px solid ;
-  color: var(--vscode-inputOption-activeForeground)
+  color: var(--vscode-editor-foreground)
 }
 
 input ~ .tab {
@@ -253,7 +243,7 @@ input ~ .tab {
 }
 
 .comments{
-  border-color: transparent;
+  border-color: var(--vscode-input-foreground);
   border-radius: 4px;
   padding: 0.2em 0.5em 0.2em 0.2em;
   background-color:var(--vscode-input-background) ;
@@ -267,12 +257,96 @@ input ~ .tab {
   cursor: pointer;
 }
 
-.history-container{
+.history-container {
   margin-top: 1em;
-  background-color:var(--vscode-input-background) ;
   padding: 0.5em;
 }
 
+#askGroup textarea{
+    background-color: var(--vscode-input-background) !important;
+    color: var(--vscode-foreground) !important;
+}
+
+#askGroup button{
+    background-color: var(--vscode-input-background) !important;
+    color: var(--vscode-foreground) !important;
+    border-style :solid !important;
+}
+
+#askGroup textarea:focus {
+  border-style: solid !important;
+  border-color: var(--vscode-focusBorder) !important; /* matches VS Code focus outline */
+  outline: none !important; /* prevents double focus outlines */
+  box-shadow: 0 0 0 2px var(--vscode-focusBorder)40; /* optional soft glow */
+}
+
+
+#askGroup textarea::placeholder {
+  color: var(--vscode-input-placeholderForeground) !important;
+  opacity: 1 !important;
+}
+
+body[data-vscode-theme-kind*="dark"] {
+  .history-container,
+  .select-critical,
+  .select-high,
+  .select-medium,
+  .select-info,
+  .select-low,
+  .state,
+  .comment,
+  .submit, 
+  .details-table tr{
+    background-color: var(--vscode-input-background);
+  }
+
+  button:hover {
+    background: var(--vscode-button-hoverBackground);
+  }
+}
+
+body[data-vscode-theme-kind="vscode-high-contrast"] {
+  .history-container,
+  .select-critical,
+  .select-high,
+  .select-medium,
+  .select-info,
+  .select-low,
+  .state,
+  .comment,
+  .submit, 
+  .details-table tr{
+    background-color: rgb(54 53 53);
+  }
+
+  button:hover {
+    background-color: #1177bb !important;
+  }
+}
+
+body[data-vscode-theme-kind*="light"],
+body[data-vscode-theme-kind*="vscode-light-high-contrast"] {
+  .history-container,
+  .select-critical,
+  .select-high,
+  .select-medium,
+  .select-info,
+  .select-low,
+  .state,
+  .comment,
+  .submit, 
+  .details-table tr{
+    background-color: rgb(245, 245, 245);
+  }
+
+  button:hover {
+    background: var(--vscode-button-hoverBackground);
+  }
+}
+
+#headingOne button:hover{
+  color: #fff !important;
+}
 .history-container:hover{
   border-left: 2px solid var(--vscode-input-foreground);
 }
@@ -362,7 +436,7 @@ input ~ .tab {
 }
 
 .codebashing-link-value:hover{
-  color: var(--vscode-inputOption-activeForeground);
+  color: var(--vscode-editor-foreground);
   cursor: pointer;
 }
 
@@ -414,4 +488,13 @@ input ~ .tab {
 
 .code-sample{
   white-space: pre-wrap;
+}
+
+body.vscode-high-contrast code {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* For VS Code Light High Contrast theme */
+body.vscode-high-contrast-light.vscode-high-contrast code{
+  background: rgba(0, 0, 0, 0.1) !important;
 }

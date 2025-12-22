@@ -4,7 +4,8 @@ import {
   CustomTreeSection,
   SideBarView,
   InputBox,
-  WebView, Workbench,
+  WebView,
+  Workbench,
 } from "vscode-extension-tester";
 import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from "./constants";
 
@@ -50,7 +51,7 @@ export async function createTreeSCA(
 ): Promise<CustomTreeSection | undefined> {
   return (await view
     ?.getContent()
-    .getSection("Software Composition Analysis (SCA)")) as CustomTreeSection;
+    .getSection("Checkmarx SCA Realtime Scanner")) as CustomTreeSection;
 }
 
 export async function quickPickSelector(input: InputBox) {
@@ -124,6 +125,13 @@ export async function validateRootNode(scan: any): Promise<[number, any]> {
   return [size, engines];
 }
 
+// Simple variant: expands root and returns true
+export async function validateRootNodeBool(scan: any): Promise<boolean> {
+  await scan?.expand();
+  await scan?.getChildren();
+  return true;
+}
+
 export async function waitForNotificationWithTimeout(timeout) {
   let firstNotification;
   let isTimeout = false;
@@ -147,7 +155,7 @@ export async function waitForNotificationWithTimeout(timeout) {
 }
 
 export async function sleep(ms: number) {
-  return await new Promise(resolve => setTimeout(resolve, ms));
+  return await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function retryTest(testFn, retries = 3) {
@@ -170,3 +178,12 @@ export function retryTest(testFn, retries = 3) {
 
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
+
+export async function selectItem(text) {
+  const input = await InputBox.create();
+  await input.setText(text);
+  let item = await getQuickPickSelector(input);
+  await input.setText(item);
+  await input.confirm();
+  return item;
+}

@@ -3,7 +3,7 @@ import * as path from "path";
 import { getNonce } from "../../utils/utils";
 import * as os from 'os';
 import { GptResult } from "../../models/gptResult";
-import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { constants } from "../../utils/common/constants";
 
 export class GptView implements vscode.WebviewViewProvider {
@@ -68,7 +68,7 @@ export class GptView implements vscode.WebviewViewProvider {
 			vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
 		);
 		const scriptJquery = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.0.min.js")
+			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.1.min.js")
 		);
 		const styleResetUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
@@ -144,7 +144,7 @@ export class GptView implements vscode.WebviewViewProvider {
         <div id="main_div">
         <div class="container-fluid">
 		<div class="container" style="padding:0;width:100 !important;">
-		<div class="card" style="border:none;margin-bottom:1em;background:transparent;">
+		<div class="card" style="border:none;margin-bottom:1em;background:transparent;color:var(--vscode-editor-foreground);">
                <div class="card-body" style="padding:0">
                   <div class="row">
                      <div class="col">
