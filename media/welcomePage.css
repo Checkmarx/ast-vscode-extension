@@ -154,3 +154,9 @@ body[data-vscode-theme-kind*="light"] .feature-card {
   justify-content: flex-start;
   padding-left: 7px;
 }
+
+/* AI feature toggle checkbox styling */
+#aiFeatureToggle,
+.status-icon-checkbox {
+  transform: scale(1.25);
+}
