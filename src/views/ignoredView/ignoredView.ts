@@ -155,15 +155,22 @@ export class IgnoredView {
 			const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
 
 			const displayName = packageData ? ignoredViewUtils.formatPackageDisplayName(packageKey, packageData.type) : packageKey;
+			const closeUndo = await vscode.window.showInformationMessage(
+				`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
+				'Close',
+				'Undo'
+			);
+			if (closeUndo === 'Undo') {
+				ignoreManager.getIgnoredPackagesData()[packageKey].files.forEach(file => {
+					file.active = true;
+				});
+				return;
+			}
 
 			const success = ignoreManager.revivePackage(packageKey);
 
 			if (success) {
-				vscode.window.showInformationMessage(
-					`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
-					'Close',
-					'Undo'
-				);
+
 
 				setTimeout(async () => {
 					await ignoreManager.triggerActiveChangesDetection();

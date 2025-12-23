@@ -2,7 +2,7 @@ import { AstResult } from "../../models/results";
 import * as vscode from "vscode";
 import * as os from "os";
 import { constants } from "../common/constants";
-import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { messages } from "../common/messages";
 import { getGlobalContext } from "../../extension";
 
@@ -103,7 +103,7 @@ export class Details {
 						this.result.state === matchedState?.tag
 						? 'selected="selected"'
 						: ""
-						}>${matchedState ? matchedState.value : customState.name}</option>`;
+						} value="${customState.name}">${matchedState ? matchedState.value : customState.name}</option>`;
 				})
 				.join("")}
     </select>`;
@@ -112,8 +112,8 @@ export class Details {
 	getDefaultStateOptions(state) {
 		return `<select id="select_state" class="state">
       ${state.map((element) => {
-			return `<option id=${element.value} ${this.result.state === element.tag ? 'selected="selected"' : ""
-				}>${element.value}</option>`;
+			return `<option id=${element.value} ${this.result.state.trim() === element.tag.trim() ? 'selected="selected"' : ""
+				} value="${element.tag.trim()}">${element.value.trim()}</option>`;
 		})}
     </select>`;
 	}

@@ -7,8 +7,8 @@ import {
   constants
 } from "../utils/common/constants";
 import { getFromState, updateState } from "../utils/common/globalState";
-import CxKicsRealTime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import CxKicsRealTime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/kicsRealtime/CxKicsRealTime";
+import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { KicsCodeActionProvider } from "./kicsCodeActions";
 import { cx } from "../cx";
 import { writeFileSync } from "fs";
@@ -38,7 +38,7 @@ export class KicsProvider {
         : messages.kicsStatusBarDisconnect;
     this.kicsStatusBarItem.tooltip = messages.kicsAutoScan;
     this.kicsStatusBarItem.command = commands.kicsSetings;
-    this.kicsStatusBarItem.show();
+    vscode.commands.executeCommand(commands.refreshKicsStatusBar);
     this.fixableResults = [];
     this.fixableResultsByLine = [];
   }
@@ -62,7 +62,7 @@ export class KicsProvider {
     this.kicsStatusBarItem.text =
       messages.kicsAutoScanRunning;
     this.kicsStatusBarItem.tooltip = messages.kicsRunning;
-    this.kicsStatusBarItem.show();
+    await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
     // Get current file, either from global state or from the current open file
     const file = await this.getCurrentFile(this.context, this.logs);
     if (!file) {

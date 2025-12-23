@@ -4,8 +4,8 @@ import * as vscode from "vscode";
 import { AstResult } from "../models/results";
 import { constants } from "./common/constants";
 import { GitExtension, Repository } from "./types/git";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
@@ -267,13 +267,16 @@ export function getStateIdForTriage(selectedStateName: string): number {
   }[];
 
   const matchedCustom = customStates.find(
-    (state) => state.name.toLowerCase() === selectedStateName.toLowerCase()
+    (state) => (state.name.trim() === selectedStateName.trim())
   );
   return matchedCustom.id;
 }
 
 export function getIDEName(): string {
-  return (vscode.env.appName || '').toLowerCase();
+  const appName = (vscode && vscode.env && typeof vscode.env.appName === 'string')
+    ? vscode.env.appName
+    : '';
+  return appName.toLowerCase();
 }
 
 export function isIDE(ideName: string): boolean {

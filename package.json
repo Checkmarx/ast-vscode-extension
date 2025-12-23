@@ -3,14 +3,14 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx One",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.42.0",
+  "version": "2.43.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CheckmarxDev/ast-vscode-extension.git"
+    "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
-  "homepage": "https://github.com/CheckmarxDev/ast-vscode-extension#readme",
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
   "bugs": {
-    "url": "https://github.com/CheckmarxDev/ast-vscode-extension/issues"
+    "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
   },
   "icon": "media/icon.png",
   "engines": {
@@ -71,6 +71,17 @@
         "category": "ast-results",
         "title": "Clear Results Selection",
         "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.openIgnoredView",
+        "category": "ast-results",
+        "title": "View Ignored vulnerabilities",
+        "enablement": "ast-results.isValidCredentials && (ast-results.isCxOneAssistEnabled || ast-results.isStandaloneEnabled)"
+      },
+      {
+        "command": "ast-results.assistDocumentation",
+        "category": "ast-results",
+        "title": "Documentation"
       },
       {
         "command": "ast-results.groupBySeverityActive",
@@ -811,9 +822,19 @@
           "when": "view == astResults && ast-results-groupByDirectDependency"
         },
         {
+          "command": "ast-results.openIgnoredView",
+          "group": "@settings@1",
+          "when": "view == astCxOneAssist"
+        },
+        {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan"
+          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
+        },
+        {
+          "command": "ast-results.assistDocumentation",
+          "group": "@settings@3",
+          "when": "view == astCxOneAssist"
         },
         {
           "command": "ast-results.clear",
@@ -842,12 +863,31 @@
         {
           "id": "astResults",
           "type": "tree",
-          "name": "Checkmarx One Results"
+          "name": "Checkmarx One Results",
+          "when": "!ast-results.isStandaloneEnabled"
+        },
+        {
+          "id": "astResultsPromo",
+          "type": "webview",
+          "name": "Checkmarx One Results",
+          "when": "ast-results.isStandaloneEnabled"
+        },
+        {
+          "id": "astCxOneAssist",
+          "type": "webview",
+          "name": "Checkmarx One Assist"
         },
         {
           "id": "scaAutoScan",
           "type": "tree",
-          "name": "Checkmarx SCA Realtime Scanner"
+          "name": "Checkmarx SCA Realtime Scanner",
+          "when": "!ast-results.isStandaloneEnabled"
+        },
+        {
+          "id": "scaAutoScanPromo",
+          "type": "webview",
+          "name": "Checkmarx SCA Realtime Scanner",
+          "when": "ast-results.isStandaloneEnabled"
         },
         {
           "id": "riskManagement",
@@ -1026,12 +1066,12 @@
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "copymedia": "copyfiles \"media/icons/*\" out/ -E",
     "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.87.2  -i -r .",
+    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.88.1  -i -r .",
+    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.88.1  -i -r .",
     "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
     "unit-coverage": "npx nyc npm run unit-test",
-    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r .",
-    "win-test:ui-end-to-end": "set TEST=uiEndToEnd&& npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.87.2 -i -r ."
+    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
+    "win-test:ui-end-to-end": "set TEST=uiEndToEnd&& npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
@@ -1059,7 +1099,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarxdev/ast-cli-javascript-wrapper": "0.0.146",
+    "@checkmarx/ast-cli-javascript-wrapper": "0.0.148",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.12.2",
@@ -1075,7 +1115,7 @@
     "minimatch": "^10.0.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
-    "validator": "13.15.20"
+    "validator": "13.15.22"
   },
   "overrides": {
     "prebuild-install": "^7.1.1",
@@ -1083,6 +1123,7 @@
     "xml2js": "^0.6.2",
     "tar-fs": "^2.1.4",
     "tmp": "^0.2.5",
+    "jws": "3.2.3",
     "c8": {
       "glob": "10.5.0"
     },
