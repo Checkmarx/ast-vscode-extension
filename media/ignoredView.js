@@ -1,5 +1,9 @@
 const vscode = acquireVsCodeApi();
 
+function decodePackageKey(encoded) {
+  return atob(encoded);
+}
+
 function refresh() {
   const refreshBtn = document.querySelector(".refresh-btn");
   if (
@@ -32,7 +36,7 @@ function revivePackage(packageKey) {
     return;
   }
 
-  vscode.postMessage({ command: "revive", packageKey: packageKey });
+  vscode.postMessage({ command: "revive", packageKey: decodePackageKey(packageKey) });
 }
 
 function openFile(filePath, line) {
@@ -135,7 +139,7 @@ function clearAllSelections() {
 function reviveAllSelected() {
   const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
   const packageKeys = Array.from(checkedBoxes).map((checkbox) =>
-    checkbox.getAttribute("data-package-key")
+    decodePackageKey(checkbox.getAttribute("data-package-key"))
   );
 
   if (packageKeys.length > 0) {
@@ -149,7 +153,7 @@ function reviveAllSelected() {
 function getSelectedPackageKeys() {
   const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
   return Array.from(checkedBoxes).map((checkbox) =>
-    checkbox.getAttribute("data-package-key")
+    decodePackageKey(checkbox.getAttribute("data-package-key"))
   );
 }
 
