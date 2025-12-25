@@ -396,6 +396,7 @@ export class ContainersScannerService extends BaseScannerService {
 							if (!this.containersHoverData.has(hoverKey)) {
 								this.containersHoverData.set(hoverKey, {
 									imageName: entry.imageName!,
+									filePath: filePath,
 									imageTag: entry.imageTag!,
 									status: (entry.severity as CxRealtimeEngineStatus) || CxRealtimeEngineStatus.medium,
 									vulnerabilities: [],
@@ -546,7 +547,8 @@ export class ContainersScannerService extends BaseScannerService {
 				item: {
 					imageName: result.imageName,
 					imageTag: result.imageTag,
-					status: result.status,
+					status: result.status,					
+					filePath: uri.fsPath,
 					vulnerabilities: result.vulnerabilities || [],
 					location: {
 						line: range.start.line,
@@ -565,6 +567,7 @@ export class ContainersScannerService extends BaseScannerService {
 		hoverMessages.set(key, {
 			imageName: result.imageName,
 			imageTag: result.imageTag,
+			filePath: uri.fsPath,
 			status: result.status,
 			vulnerabilities: result.vulnerabilities || [],
 			location: {
