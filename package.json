@@ -1086,7 +1086,7 @@
     "codecov": "^3.8.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "mocha": "^10.8.2",
+    "mocha": "^11.7.5",
     "mock-require": "^3.0.3",
     "nock": "^14.0.1",
     "nyc": "^17.1.0",
