@@ -138,7 +138,7 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 				vscode.commands.executeCommand('ast-results.viewSettings');
 				break;
 			default:
-				console.warn(`Unknown command received from CxOne Assist webview: ${message.command}`);
+				console.warn(`Unknown command received from Checkmarx One Assist webview: ${message.command}`);
 		}
 	}
 }

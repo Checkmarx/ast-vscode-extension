@@ -28,7 +28,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
 
 
-			const fixWithCxButton = `Fix with CxOne Assist`;
+			const fixWithCxButton = `Fix with Checkmarx One Assist`;
 
 			const fixAction = new vscode.CodeAction(
 				fixWithCxButton,
