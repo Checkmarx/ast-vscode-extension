@@ -71,7 +71,7 @@ export class WelcomeWebview {
                     aria-label="Real-time scanners are currently disabled. Click to enable all scanners."
                   />
                 </div>
-                <span class="card-title">Code Smarter with CxOne Assist</span>
+                <span class="card-title">Code Smarter with Checkmarx One Assist</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code.</li>

@@ -267,7 +267,7 @@ export const constants = {
     "**/*.terraform.tfvars",
   ],
 
-  cxAi: 'CxOne Assist',
+  cxAi: 'Checkmarx One Assist',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

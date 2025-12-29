@@ -22,7 +22,7 @@ export class CxOneAssistWebview {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CxOne Assist</title>
+        <title>Checkmarx One Assist</title>
         <style>
           ${this.getStyles()}
         </style>
@@ -31,11 +31,11 @@ export class CxOneAssistWebview {
         <div class="assist-container">
             <div class="cube-container">
                 <div class="particles" id="particles"></div>
-                <img src="${cubeImageUri}" alt="CxOne Assist 3D Cube" class="cube-image" />
+                <img src="${cubeImageUri}" alt="Checkmarx One Assist 3D Cube" class="cube-image" />
             </div>
             
             <div class="description">
-                CxOne Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.
+                Checkmarx One Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.
             </div>
             
             ${showIgnoredButton ? `
@@ -246,7 +246,7 @@ export class CxOneAssistWebview {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CxOne Assist</title>
+        <title>Checkmarx One Assist</title>
         <style>
           ${this.getUnauthenticatedStyles()}
         </style>
@@ -255,7 +255,7 @@ export class CxOneAssistWebview {
         <div class="login-container">
             <div class="cube-container">
                 <div class="particles" id="particles"></div>
-                <img src="${cubeImageUri}" alt="CxOne Assist 3D Cube" class="cube-image" />
+                <img src="${cubeImageUri}" alt="Checkmarx One Assist 3D Cube" class="cube-image" />
             </div>
 
             <div class="login-title">Catch Vulnerabilities as You Code</div>
