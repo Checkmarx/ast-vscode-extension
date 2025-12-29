@@ -312,7 +312,7 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
  * Configuration for CxAI badge rendering
  */
 const CX_AI_BADGE_CONFIG = {
-  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/',
+  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/other/AST-127285/media/icons/',
   style: 'vertical-align: -12px;',
   icons: {
     light: 'CxOne_Assist_light.png',
