@@ -497,7 +497,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerAuthenticationLauncher(context, webViewCommand, logs);
   // ignoreFileManager already initialized & wired in setupRealtimeScanners
 
-  // CxOne Assist view & its commands
+  // Checkmarx One Assist view & its commands
   const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
   registerAssistRelatedCommands(context, cxOneAssistProvider);
 

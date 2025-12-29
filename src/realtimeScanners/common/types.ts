@@ -77,6 +77,7 @@ export interface ContainersHoverData {
     endIndex: number;
   };
   fileType: string;
+  filePath: string;
 }
 
 export interface IacHoverData {
