@@ -395,7 +395,7 @@ export class Cx implements CxPlatform {
                 const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
                 return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
             },
-            "tenant configuration (CxOne Assist)"
+            "tenant configuration (Checkmarx One Assist)"
         );
     }
 

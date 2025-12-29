@@ -919,7 +919,7 @@
     ],
     "configuration": [
       {
-        "title": "CxOne Assist",
+        "title": "Checkmarx One Assist",
         "id": "cxone-assist",
         "order": 1,
         "properties": {
