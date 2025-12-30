@@ -251,12 +251,17 @@
 					if (!change) {continue;}
 
 					const setVal = (selId, id) => {
-						const opt = document.querySelector(`#${selId} option[value="${id}"]`);
+						let opt = document.querySelector(`#${selId} option[value="${id}"]`);
+						if (!opt) {
+							opt = document.querySelector(`#${selId} option[id="${id}"]`);
+						}
 						if (opt) {document.getElementById(selId).value = opt.value || opt.textContent;}
 					};
 
 					setVal('select_state', change.State);
-					setVal('select_severity', change.Severity);
+					if(change.Severity){
+						setVal('select_severity', change.Severity);
+					}
 					break;
 				}
 
@@ -487,14 +492,15 @@
 	function infoChanges(change) {
 		let infoDiv = document.createElement("div");
 		let severityPara = document.createElement("p");
-		let severityClass = change.Severity.length > 0 ? ("select-" + change.Severity.toLowerCase()) : "";
+		let severityClass = change.Severity?.length > 0 ? ("select-" + change.Severity.toLowerCase()) : "";
 		severityPara.setAttribute('class', severityClass);
-		var severity = change.Severity.length > 0 ? change.Severity : "No changes in severity.";
+		var severity = change.Severity === undefined ? "" : (change.Severity?.length > 0 ? change.Severity : "No changes in severity.");
 		severityPara.textContent = severity;
 		let statePara = document.createElement("p");
 		statePara.setAttribute('class', 'state');
 		var state = change.State.length > 0 ? change.State.replaceAll("_", " ") : "No changes in state.";
-		statePara.textContent = state;
+		const formattedState = state.replace(/([a-z])([A-Z])/g, "$1 $2");
+		statePara.textContent = formattedState;
 		infoDiv.appendChild(severityPara);
 		infoDiv.appendChild(statePara);
 		if (change.Comment.length > 0) {

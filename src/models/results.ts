@@ -56,7 +56,7 @@ export class AstResult extends CxResult {
 
   constructor(result?: any) {
     super(
-      result.scaType ? "sca" : result.type,
+      result.scaType ? constants.sca : result.type,
       result.data.queryName
         ? result.data.queryName
         : result.id
@@ -81,7 +81,7 @@ export class AstResult extends CxResult {
       result.traits
     );
     this.id = result.id;
-    this.type = result.scaType ? "sca" : result.type;
+    this.type = result.scaType ? constants.sca : result.type;
     this.typeLabel = this.determineTypeLabel(result);
     this.scaType = result.scaType;
     this.label = result.data.queryName
@@ -299,7 +299,7 @@ export class AstResult extends CxResult {
       return this.kicsNode.id;
     }
     if (this.scaNode) {
-      return this.scaNode.id;
+      return this.id;
     }
 
     return "";
@@ -656,7 +656,7 @@ export class AstResult extends CxResult {
   ) {
     return `
     <div class="left-content">
-      <div class="card" style="border-top: 1px;border-top-style: solid;border-color: rgb(128, 128, 128,0.5) ;">
+      <div class="card" style="border-top: none;border-top-style: none;">
         <div class="description">
           ${result.descriptionHTML ? result.descriptionHTML : result.description
       }
