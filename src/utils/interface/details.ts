@@ -38,6 +38,22 @@ export class Details {
 			`;
 	}
 
+	scaHeader(severityPath: vscode.Uri) {
+		return `
+			<div class="header">
+				<img alt="icon" class="header-severity" src="${severityPath}" />
+				${this.result.riskScore ? `<p class="header-risk-score ${this.result.severity.toLowerCase()}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""}
+				<p class="header-title">
+					${this.result.label}
+				</p>
+				<p class="header-name">
+					${this.result.scaNode?.packageIdentifier ? this.result.scaNode.packageIdentifier : ""}
+				</p>
+			</div>
+			<hr class="division"/>
+		`;
+	}
+
 	changes(selectClassname): string {
 		return (
 			this.triage(selectClassname) +
@@ -58,38 +74,36 @@ export class Details {
 	triage(selectClassname: string) {
 		const context = getGlobalContext();
 		const customStates = context.globalState.get(constants.customStates);
-		const state = constants.state.filter((element) => {
-			return !!element.dependency === (this.result.type === constants.sca);
-		});
+		const state = constants.state;
 
 		const stateOptions =
 			this.result.type === constants.sast
 				? this.getSastStateOptions(customStates, state)
 				: this.getDefaultStateOptions(state);
 
-		const updateButton =
-			this.result.type !== constants.sca
-				? `<button class="submit">Update</button>`
-				: ``;
-		const comment =
-			this.result.type !== constants.sca
-				? `<div class="comment-container">
-        <textarea placeholder="Note (Optional or required based on tenant configuration)" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
-      </div>`
-				: ``;
+		const updateButton = `<button class="submit">Update</button>`;
+		const commentPlaceholder = this.result.type === constants.sca
+			? "Note (required)"
+			: "Note (Optional or required based on tenant configuration)";
+		const comment = `<div class="comment-container">
+				<textarea placeholder="${commentPlaceholder}" cols="41" rows="3" class="comments" type="text" id="comment_box"></textarea>
+			</div>`;
+
+		const severitySelect = this.result.type === constants.sca
+			? ""
+			: `<select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
+				${constants.status.map((element) => {
+				return `<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? "selected" : ""}>${element.value}</option>`;
+			})}
+			</select>`;
 
 		return `<div class="ast-triage">
-        <select id="select_severity" onchange="this.className=this.options[this.selectedIndex].className" class=${selectClassname}>
-          ${constants.status.map((element) => {
-			return `<option id=${element.value} class="${element.class}" ${this.result.severity === element.value ? "selected" : ""
-				}>${element.value}</option>`;
-		})}
-        </select>
-        ${stateOptions}
-      </div>
-      ${comment}
-      ${updateButton}
-      </br>`;
+		${severitySelect}
+		${stateOptions}
+		</div>
+		${comment}
+		${updateButton}
+		</br>`;
 	}
 
 	getSastStateOptions(customStates, state) {
@@ -112,7 +126,7 @@ export class Details {
 	getDefaultStateOptions(state) {
 		return `<select id="select_state" class="state">
       ${state.map((element) => {
-			return `<option id=${element.value} ${this.result.state.trim() === element.tag.trim() ? 'selected="selected"' : ""
+			return `<option id=${element.value.replaceAll(" ", "")} ${this.result.state.trim() === element.tag.trim() ? 'selected="selected"' : ""
 				} value="${element.tag.trim()}">${element.value.trim()}</option>`;
 		})}
     </select>`;
@@ -178,7 +192,6 @@ export class Details {
 	}
 
 	scaView(
-		severityPath,
 		scaAtackVector,
 		scaComplexity,
 		scaAuthentication,
@@ -190,36 +203,20 @@ export class Details {
 		type?: string
 	) {
 		return `
-			<body class="body-sca">
-			<div class="header">
-				<img alt="icon" class="header-severity" src="${severityPath}" />
-				${this.result.riskScore ? `<p class="header-risk-score ${this.result.severity.toLowerCase()}-risk">${this.result.riskScore.toFixed(1)}</p>` : ""
-			}
-				<p class="header-title">
-					${this.result.label}
-				</p>
-				<p class="header-name">
-					${this.result.scaNode.packageIdentifier
-				? this.result.scaNode.packageIdentifier
-				: ""
-			}
-				</p>
-			</div>
 			<div class="content">
 				${this.result.scaContent(
-				this.result,
-				scaUpgrade,
-				scaUrl,
-				scaAtackVector,
-				scaComplexity,
-				scaAuthentication,
-				scaConfidentiality,
-				scaIntegrity,
-				scaAvailability,
-				type
-			)}
-			</div>
-		</body>			
+			this.result,
+			scaUpgrade,
+			scaUrl,
+			scaAtackVector,
+			scaComplexity,
+			scaAuthentication,
+			scaConfidentiality,
+			scaIntegrity,
+			scaAvailability,
+			type
+		)}
+			</div>	
 		`;
 	}
 

@@ -14,6 +14,20 @@ import { messages } from "./common/messages";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { getStateIdForTriage } from "./utils";
 
+// Build SCA vulnerability string in the format:
+// packagename=<name>,packageversion=<version>,vulnerabilityId=<similarityId>,packagemanager=<manager>
+export function buildScaVulnerabilityString(result: AstResult): string {
+  const sca = result.scaNode;
+  const pkgId = sca?.packageIdentifier || result.data?.packageIdentifier || "";
+  const parts = typeof pkgId === "string" ? pkgId.split("-") : [];
+  const manager = (parts[0] || "");
+  const name = parts[1] || "";
+  const version = parts.length > 2 ? parts[parts.length - 1] : "";
+
+  const vulnerabilityId = result.similarityId || result.id || "";
+  return `packagename=${name},packageversion=${version},vulnerabilityId=${vulnerabilityId},packagemanager=${manager}`;
+}
+
 export async function updateResults(
   result: AstResult,
   context: vscode.ExtensionContext,
@@ -51,6 +65,39 @@ export async function updateResults(
   });
 }
 
+export async function updateSCAResults(
+  result: AstResult,
+  context: vscode.ExtensionContext,
+  comment: string,
+  resultsProvider: AstResultsProvider
+) {
+  const resultJsonPath = getResultsFilePath();
+  if (!(fs.existsSync(resultJsonPath) && result)) {
+    throw new Error(messages.fileNotFound);
+  }
+
+  const projectId = getFromState(context, constants.projectIdKey).id;
+  const vulnerabilities = buildScaVulnerabilityString(result);
+
+  await cx.triageSCAUpdate(
+    projectId,
+    vulnerabilities,
+    result.type,
+    result.state,
+    comment
+  );
+  // Update local results
+  const resultHash = result.getResultHash();
+  resultsProvider.loadedResults.forEach((element: AstResult, index: number) => {
+    // Update the result in the array
+    if (element.data.resultHash === resultHash || element.id === resultHash) {
+      resultsProvider.loadedResults[index].state = result.state;
+      resultsProvider.loadedResults[index].status = result.status;
+      return;
+    }
+  });
+}
+
 export async function triageSubmit(
   result: AstResult,
   context: vscode.ExtensionContext,
@@ -60,9 +107,9 @@ export async function triageSubmit(
   detailsDetachedView: AstDetailsDetached,
   resultsProvider: AstResultsProvider
 ) {
-  // Needed because dependency triage is still not working
-  if (result.type === constants.sca) {
-    vscode.window.showErrorMessage(messages.triageNotAvailableSca);
+  // Require comment for SCA triage submissions
+  if (result.type === constants.sca && (!data.comment || data.comment.trim().length === 0)) {
+    vscode.window.showErrorMessage(messages.scaNoteMandatory);
     return;
   }
   // Case there is feedback on the severity
@@ -95,7 +142,11 @@ export async function triageSubmit(
   }
   // Change the results locally
   try {
-    await updateResults(result, context, data.comment, resultsProvider);
+    if (result.type === constants.sca) {
+      await updateSCAResults(result, context, data.comment, resultsProvider);
+    } else {
+      await updateResults(result, context, data.comment, resultsProvider);
+    }
     updateState(context, constants.triageUpdate, {
       id: true,
       name: constants.triageUpdate,
@@ -103,10 +154,10 @@ export async function triageSubmit(
       displayScanId: "",
     });
     await vscode.commands.executeCommand(commands.refreshTree);
-    if (result.type === "sast" || result.type === "kics") {
+    if (result.type === constants.sast || result.type === constants.kics || result.type === constants.sca) {
       await getChanges(logs, context, result, detailsPanel, detailsDetachedView, resultsProvider);
     }
-    if (result.type === "sast") {
+    if (result.type === constants.sast) {
       await getLearnMore(logs, context, result, detailsPanel);
     }
     vscode.window.showInformationMessage(messages.triageSubmitedSuccess);
@@ -131,7 +182,10 @@ export async function getChanges(
 ) {
   const projectId = getFromState(context, constants.projectIdKey)?.id;
   if (projectId) {
-    await cx.triageShow(projectId, result.similarityId, result.type)
+    const changesPromise = result.type === constants.sca
+      ? triageSCAShow(projectId, result)
+      : triageShow(projectId, result);
+    await changesPromise
       .then(async (changes) => {
         const latest = Array.isArray(changes) && changes.length > 0 ? changes[0] : undefined;
         const changedSeverity = latest && latest.Severity && latest.Severity !== result.severity ? latest.Severity : undefined;
@@ -145,7 +199,11 @@ export async function getChanges(
             }
           }
           if (changedState) {
-            result.setState(changedState);
+            const match = constants.state.find(element =>
+              element.value.replaceAll(" ", "") === changedState
+            )?.tag;
+            if (match) { result.setState(match); }
+            else { result.setState(changedState); }
           }
 
           // Update local results array for this result
@@ -166,7 +224,7 @@ export async function getChanges(
           });
           await vscode.commands.executeCommand(commands.refreshTree);
 
-          if (result.type === "sast") {
+          if (result.type === constants.sast) {
             await getLearnMore(logs, context, result, detailsPanel);
           }
           detailsDetachedView?.setResult(result);
@@ -187,4 +245,14 @@ export async function getChanges(
   } else {
     logs.error(messages.projectIdUndefined);
   }
+}
+
+// Separate wrappers for triage show calls
+export async function triageShow(projectId: string, result: AstResult) {
+  return cx.triageShow(projectId, result.similarityId, result.type);
+}
+
+export async function triageSCAShow(projectId: string, result: AstResult) {
+  const vulnerabilities = buildScaVulnerabilityString(result);
+  return cx.triageSCAShow(projectId, vulnerabilities, constants.sca);
 }

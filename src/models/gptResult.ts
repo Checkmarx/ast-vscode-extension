@@ -20,7 +20,7 @@ export class GptResult {
     }
 
     if (astResult !== undefined) {
-      if (astResult.type === "sast") {
+      if (astResult.type === constants.sast) {
         this.filename = this.getWorkspaceFsPath() ?? astResult.fileName;
         this.resultID = astResult.id;
       }
@@ -35,9 +35,9 @@ export class GptResult {
         try {
           this.filename = this.getWorkspaceFsPath()
             ? path.join(
-                this.getWorkspaceFsPath(),
-                astResult.kicsNode?.data.filename ?? ""
-              )
+              this.getWorkspaceFsPath(),
+              astResult.kicsNode?.data.filename ?? ""
+            )
             : astResult.kicsNode?.data.filename;
         } catch (e) {
           console.log("Could not produce filename. error: ", e);

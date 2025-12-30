@@ -1350,7 +1350,15 @@ export class CxMock implements CxPlatform {
     return [];
   }
 
+  async triageSCAShow() {
+    return [];
+  }
+
   async triageUpdate(): Promise<number> {
+    return 0;
+  }
+
+  async triageSCAUpdate(): Promise<number> {
     return 0;
   }
 

@@ -512,6 +512,56 @@ export class Cx implements CxPlatform {
         return r;
     }
 
+    async triageSCAShow(
+        projectId: string,
+        vulnerabilities: string,
+        scanType: string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): Promise<any[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const scans = await cx.triageSCAShow(projectId, vulnerabilities, scanType);
+        if (scans.payload && scans.exitCode === 0) {
+            r = scans.payload;
+        } else {
+            throw new Error(scans.status);
+        }
+        return r;
+    }
+
+    async triageSCAUpdate(
+        projectId: string,
+        similarityId: string,
+        scanType: string,
+        state: string,
+        comment: string
+    ): Promise<number> {
+        let r = -1;
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return r;
+        }
+        const cx = new CxWrapper(config);
+        const triage = await cx.triageSCAUpdate(
+            projectId,
+            similarityId,
+            scanType,
+            state,
+            comment
+        );
+        if (triage.exitCode === 0) {
+            r = triage.exitCode;
+        } else {
+            throw new Error(triage.status);
+        }
+        return r;
+    }
+
+
     async triageUpdate(
         projectId: string,
         similarityId: string,
