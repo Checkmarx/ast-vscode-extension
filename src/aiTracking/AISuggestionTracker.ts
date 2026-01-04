@@ -20,7 +20,7 @@ import {
   IacHoverData,
   CxDiagnosticData
 } from "../realtimeScanners/common/types";
-import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import {
   isSecretsHoverData,
   isAscaHoverData,

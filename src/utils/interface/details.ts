@@ -2,7 +2,7 @@ import { AstResult } from "../../models/results";
 import * as vscode from "vscode";
 import * as os from "os";
 import { constants } from "../common/constants";
-import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { messages } from "../common/messages";
 import { getGlobalContext } from "../../extension";
 

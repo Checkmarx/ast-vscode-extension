@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import CxVulnerabilityDetails from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
+import CxVulnerabilityDetails from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxVulnerabilityDetails";
 import path = require("path");
 import * as vscode from "vscode";
 import {
@@ -12,7 +12,7 @@ import { KicsNode } from "./kicsNode";
 import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
 import { SCSSecretDetectionNode } from "./SCSSecretDetectionNode";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 
 export class AstResult extends CxResult {
   label = "";

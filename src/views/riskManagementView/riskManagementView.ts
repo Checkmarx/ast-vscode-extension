@@ -9,7 +9,7 @@ import { getFromState, Item } from "../../utils/common/globalState";
 import { commands } from "../../utils/common/commands";
 import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { ICONS } from "./constants";
 export class riskManagementView implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -253,21 +253,21 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 		<div id="riskManagementContainer">
 			${
         !projectName || !scan || !isLatestScan
-          ? `<div class="no-results-message">
+        ? `<div class="no-results-message">
 				ASPM data is only shown when the most recent scan of a project is selected
 				in the Checkmarx One Results tab
 			</div>`
-          : ASPMResults.applicationNameIDMap.length === 0
+        : ASPMResults.applicationNameIDMap.length === 0
           ? `<div
 				class="no-results-message">
 				This project is not associated with any application in the ASPM
 			</div>`
           : ASPMResults.applicationNameIDMap.length > 0 &&
             ASPMResults.results.length === 0
-          ? `<div class="no-results-message">
+            ? `<div class="no-results-message">
 				ASPM does not hold result data for this project
 			</div>`
-          : `<div class="details"
+            : `<div class="details"
 				data-bs-toggle="tooltip" data-bs-placement="auto"
 				title="You can show ASPM data for a different project by changing the selection in the Checkmarx One Results section above.">
 
@@ -275,7 +275,7 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 					${projectName ?? ""}</div>
 				<div class="ellipsis"><i class="codicon codicon-shield"></i>Scan ID: ${
           scan ?? ""
-        }</div>
+            }</div>
 			</div>
 
 			<hr class="separator" />
