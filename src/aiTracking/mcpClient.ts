@@ -5,9 +5,7 @@ import { constants } from "../utils/common/constants";
 import { AuthService } from "../services/authService";
 import {
   McpRecommendationParams,
-  McpRecommendation,
-  ScannerType,
-  McpSuggestedAction
+  McpRecommendation
 } from "./types";
 
 interface DecodedJwt {
@@ -265,9 +263,9 @@ export class McpClient {
     console.log("[MCP] Complete Request Body:", JSON.stringify(request, null, 2));
     console.log("[MCP] Headers:");
     console.log("  Content-Type:", "application/json");
-    console.log("  Authorization:", apiKey); // Print full token for debugging
+    console.log("  Authorization:", apiKey);
     console.log("  cx-origin:", this.getIdeOrigin());
-    console.log("  Mcp-Session-Id:", this.sessionId); // Include session ID
+    console.log("  Mcp-Session-Id:", this.sessionId);
     console.log("[MCP] ==========================================");
 
     // DEBUG: Print equivalent curl command for manual testing
@@ -338,9 +336,8 @@ export class McpClient {
   /**
    * Parse the MCP response text to extract version and action
    */
-  private parseRecommendation(responseText: string, scannerType: ScannerType): McpRecommendation {
+  private parseRecommendation(responseText: string): McpRecommendation {
     const recommendation: McpRecommendation = {
-      suggestedAction: 'upgrade',
       fixInstructions: responseText
     };
 
@@ -365,9 +362,8 @@ export class McpClient {
     // Determine action based on content
     const lowerText = responseText.toLowerCase();
     if (lowerText.includes('remove') || lowerText.includes('uninstall')) {
-      recommendation.suggestedAction = 'remove';
+      // Action is 'remove' but we don't store it anymore
     } else if (lowerText.includes('replace') || lowerText.includes('alternative')) {
-      recommendation.suggestedAction = 'replace';
       // Try to extract alternative package name
       const altPattern = /(?:replace|alternative)[:\s]+["']?([a-z0-9@/_-]+)["']?/i;
       const altMatch = responseText.match(altPattern);
@@ -375,7 +371,7 @@ export class McpClient {
         recommendation.alternativePackage = altMatch[1];
       }
     } else if (lowerText.includes('externalize') || lowerText.includes('environment variable')) {
-      recommendation.suggestedAction = 'externalize';
+      // Action is 'externalize' but we don't store it anymore
     }
 
     return recommendation;
@@ -404,7 +400,6 @@ export class McpClient {
 
     if (!response || response.error) {
       return {
-        suggestedAction: 'upgrade',
         error: response?.error?.message || "MCP call failed"
       };
     }
@@ -413,7 +408,6 @@ export class McpClient {
     const textContent = response.result?.content?.find(c => c.type === 'text');
     if (!textContent?.text) {
       return {
-        suggestedAction: 'upgrade',
         error: "No content in MCP response"
       };
     }
@@ -434,99 +428,13 @@ export class McpClient {
 
       return {
         suggestedVersion: recommendedVersion,
-        suggestedAction: this.mapMcpActionToSuggestedAction(action),
         fixInstructions: fixInstructions
       };
     } catch (parseError) {
       console.error('[MCP] Failed to parse MCP response JSON:', parseError);
       // Fallback to regex parsing
-      return this.parseRecommendation(textContent.text, 'Oss');
+      return this.parseRecommendation(textContent.text);
     }
-  }
-
-  /**
-   * Map MCP action to our SuggestedAction type
-   */
-  private mapMcpActionToSuggestedAction(mcpAction: string): McpSuggestedAction {
-    switch (mcpAction) {
-      case 'use_alternative_version':
-      case 'update':
-        return 'upgrade';
-      case 'remove':
-      case 'remove_dependency':
-        return 'remove';
-      case 'replace':
-      case 'use_alternative':
-        return 'replace';
-      default:
-        return 'upgrade';
-    }
-  }
-
-  /**
-   * Get MCP recommendation for code issues (Secrets, ASCA, IaC)
-   */
-  async getCodeRemediation(params: {
-    type: string;
-    subType: string;
-    language?: string;
-  }): Promise<McpRecommendation> {
-    const response = await this.callMcpTool("codeRemediation", {
-      type: params.type,
-      sub_type: params.subType,
-      language: params.language || ""
-    });
-
-    if (!response || response.error) {
-      return {
-        suggestedAction: 'externalize',
-        error: response?.error?.message || "MCP call failed"
-      };
-    }
-
-    // Extract text from response
-    const textContent = response.result?.content?.find(c => c.type === 'text');
-    if (!textContent?.text) {
-      return {
-        suggestedAction: 'externalize',
-        error: "No content in MCP response"
-      };
-    }
-
-    const scannerType: ScannerType = params.type === 'secret' ? 'Secrets' :
-      params.type === 'asca' ? 'Asca' : 'IaC';
-    return this.parseRecommendation(textContent.text, scannerType);
-  }
-
-  /**
-   * Get MCP recommendation for container image vulnerabilities
-   */
-  async getImageRemediation(params: {
-    imageName: string;
-    imageTag: string;
-  }): Promise<McpRecommendation> {
-    const response = await this.callMcpTool("imageRemediation", {
-      imageName: params.imageName,
-      imageTag: params.imageTag
-    });
-
-    if (!response || response.error) {
-      return {
-        suggestedAction: 'upgrade',
-        error: response?.error?.message || "MCP call failed"
-      };
-    }
-
-    // Extract text from response
-    const textContent = response.result?.content?.find(c => c.type === 'text');
-    if (!textContent?.text) {
-      return {
-        suggestedAction: 'upgrade',
-        error: "No content in MCP response"
-      };
-    }
-
-    return this.parseRecommendation(textContent.text, 'Containers');
   }
 
   /**
@@ -537,7 +445,7 @@ export class McpClient {
     switch (params.scannerType) {
       case 'Oss':
         if (!params.packageName || !params.packageVersion || !params.packageManager) {
-          return { suggestedAction: 'upgrade', error: "Missing package information" };
+          return { error: "Missing package information" };
         }
         return this.getPackageRemediation({
           packageName: params.packageName,
@@ -546,35 +454,8 @@ export class McpClient {
           issueType: params.issueType || 'CVE'
         });
 
-      case 'Secrets':
-        return this.getCodeRemediation({
-          type: 'secret',
-          subType: params.secretType || 'generic'
-        });
-
-      case 'Asca':
-        return this.getCodeRemediation({
-          type: 'asca',
-          subType: params.ruleName || 'generic'
-        });
-
-      case 'IaC':
-        return this.getCodeRemediation({
-          type: 'iac',
-          subType: params.ruleName || 'generic'
-        });
-
-      case 'Containers':
-        if (!params.imageName || !params.imageTag) {
-          return { suggestedAction: 'upgrade', error: "Missing container image information" };
-        }
-        return this.getImageRemediation({
-          imageName: params.imageName,
-          imageTag: params.imageTag
-        });
-
       default:
-        return { suggestedAction: 'upgrade', error: `Unknown scanner type: ${params.scannerType}` };
+        return { error: `Unknown scanner type: ${params.scannerType}` };
     }
   }
 }

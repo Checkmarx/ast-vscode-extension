@@ -1,4 +1,4 @@
-import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
+import { HoverData } from "../realtimeScanners/common/types";
 
 /**
  * AI Fix telemetry event names
@@ -24,15 +24,6 @@ export type FixOutcomeStatus =
   | 'mcp_adopted'    // User applied the MCP-suggested fix
   | 'alt_fix_used'   // User applied a different fix
   | 'fix_rejected';  // User did not apply any fix after all retries
-
-/**
- * Actions that MCP can suggest for remediation
- */
-export type McpSuggestedAction =
-  | 'upgrade'        // Upgrade to a newer version
-  | 'remove'         // Remove the package/secret
-  | 'externalize'    // Move secret to environment variable
-  | 'replace';       // Replace with alternative package
 
 /**
  * Issue types for MCP remediation requests
@@ -61,7 +52,6 @@ export interface McpRecommendationParams {
  */
 export interface McpRecommendation {
   suggestedVersion?: string;
-  suggestedAction: McpSuggestedAction;
   fixInstructions?: string;
   alternativePackage?: string;
   error?: string;
@@ -95,9 +85,6 @@ export interface PendingAIFix {
   /** MCP's suggested version for the fix */
   mcpSuggestedVersion?: string;
 
-  /** MCP's suggested action type */
-  mcpSuggestedAction?: McpSuggestedAction;
-
   /** Full MCP response for debugging */
   mcpFullResponse?: McpRecommendation;
 
@@ -120,7 +107,7 @@ export interface PendingAIFix {
   requestCount: number;
 
   /** Original hover data item for reference */
-  originalItem: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData;
+  originalItem: HoverData;
 }
 
 /**
