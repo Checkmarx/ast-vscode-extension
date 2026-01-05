@@ -283,7 +283,12 @@ export const constants = {
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
-  ignorePackage: "ignorePackage"
+  ignorePackage: "ignorePackage",
+
+  // Recent Projects Picker
+  recentProjectsKey: "ast-results-recent-projects",
+  recentProjectsTitle: "Recent Projects",
+  browseMoreProjects: "Browse more projects from CxOne"
 };
 
 export enum Platform {

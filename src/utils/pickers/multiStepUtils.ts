@@ -46,6 +46,10 @@ export class CxQuickPickItem implements vscode.QuickPickItem {
   formattedId?: string;
 
   datetime?: string;
+
+  iconPath?: vscode.ThemeIcon;
+
+  buttons?: vscode.QuickInputButton[];
 }
 
 interface InputBoxParameters {

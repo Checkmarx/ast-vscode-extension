@@ -21,6 +21,7 @@ import { CxQuickPickItem } from "./multiStepUtils";
 import { messages } from "../common/messages";
 import { cx } from "../../cx";
 import { getGlobalContext } from "../../extension";
+import { Item } from "../common/globalState";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -97,19 +98,19 @@ async function createPicker(
     quickPick.buttons = [
       ...(currentPage > 0
         ? [
-            {
-              iconPath: new vscode.ThemeIcon("arrow-left"),
-              tooltip: QuickPickPaginationButtons.previousPage,
-            },
-          ]
+          {
+            iconPath: new vscode.ThemeIcon("arrow-left"),
+            tooltip: QuickPickPaginationButtons.previousPage,
+          },
+        ]
         : []),
       ...(hasNextPage
         ? [
-            {
-              iconPath: new vscode.ThemeIcon("arrow-right"),
-              tooltip: QuickPickPaginationButtons.nextPage,
-            },
-          ]
+          {
+            iconPath: new vscode.ThemeIcon("arrow-right"),
+            tooltip: QuickPickPaginationButtons.nextPage,
+          },
+        ]
         : []),
     ];
   };
@@ -155,6 +156,22 @@ export async function projectPicker(
   context: vscode.ExtensionContext,
   logs: Logs
 ) {
+  const getRecentProjects = (): Item[] => {
+    return (
+      context.workspaceState.get<Item[]>(constants.recentProjectsKey) || []
+    );
+  };
+
+  const addRecentProject = async (id: string, name: string) => {
+    const current = getRecentProjects();
+    const filtered = current.filter((p) => p.id !== id);
+    const updated: Item[] = [
+      { id, name, scanDatetime: undefined, displayScanId: undefined },
+      ...filtered,
+    ].slice(0, 5);
+    await context.workspaceState.update(constants.recentProjectsKey, updated);
+  };
+
   const fetchProjects = async (
     filter: string,
     offset: number,
@@ -189,15 +206,98 @@ export async function projectPicker(
       scanDatetime: undefined,
     });
     await setDefaultBranch(item.id, context, logs);
+    await addRecentProject(item.id as string, item.label);
     await vscode.commands.executeCommand(commands.refreshTree);
   };
 
-  await createPicker(
-    constants.projectPlaceholder,
-    constants.projectPickerTitle,
-    fetchProjects,
-    handleProjectSelection
-  );
+  const recent = getRecentProjects();
+  const quickPick = vscode.window.createQuickPick<CxQuickPickItem>();
+  quickPick.title = constants.recentProjectsTitle;
+  quickPick.placeholder = constants.projectPlaceholder;
+
+  const browseMoreItem: CxQuickPickItem = {
+    label: constants.browseMoreProjects,
+    id: "__BROWSE_MORE__",
+    alwaysShow: true,
+    buttons: [
+      {
+        iconPath: new vscode.ThemeIcon(
+          "link-external",
+          new vscode.ThemeColor("textLink.foreground")
+        ),
+        tooltip: "Browse more projects",
+      },
+    ],
+  };
+
+
+
+  const staticRecentItems: CxQuickPickItem[] = [
+    {
+      label: "Project 1", id: "__STATIC_RECENT__1__", alwaysShow: true, buttons: [
+        {
+          iconPath: new vscode.ThemeIcon(
+            "star-full",
+            new vscode.ThemeColor("charts.yellow")
+          ),
+          tooltip: "Pinned project",
+        },
+      ],
+    },
+    {
+      label: "Project 2", id: "__STATIC_RECENT__2__", alwaysShow: true, buttons: [
+        {
+          iconPath: new vscode.ThemeIcon(
+            "star-full",
+            new vscode.ThemeColor("charts.yellow")
+          ),
+          tooltip: "Pinned project",
+        },
+      ],
+    },
+    {
+      label: "Project 3", id: "__STATIC_RECENT__3__", alwaysShow: true, buttons: [
+        {
+          iconPath: new vscode.ThemeIcon(
+            "star-full",
+            new vscode.ThemeColor("charts.yellow")
+          ),
+          tooltip: "Pinned project",
+        },
+      ],
+    },
+  ];
+
+  const recentItems: CxQuickPickItem[] = recent.map((p) => ({
+    label: p.name || "",
+    id: p.id as string,
+    alwaysShow: true,
+  }));
+
+  quickPick.items = [...staticRecentItems, ...recentItems, browseMoreItem];
+
+  quickPick.onDidChangeSelection(async ([item]) => {
+    if (!item) {
+      return;
+    }
+    if (
+      item.id === "__BROWSE_MORE__" ||
+      (typeof item.id === "string" && item.id.startsWith("__STATIC_RECENT__"))
+    ) {
+      quickPick.hide();
+      await createPicker(
+        constants.projectPlaceholder,
+        constants.projectPickerTitle,
+        fetchProjects,
+        handleProjectSelection
+      );
+      return;
+    }
+    await handleProjectSelection(item);
+    quickPick.hide();
+  });
+
+  quickPick.show();
 }
 
 export async function branchPicker(
@@ -214,10 +314,10 @@ export async function branchPicker(
   const gitBranchName = await getGitBranchName();
   const localBranch = gitBranchName
     ? {
-        label: constants.localBranch,
-        id: constants.localBranch,
-        alwaysShow: true,
-      }
+      label: constants.localBranch,
+      id: constants.localBranch,
+      alwaysShow: true,
+    }
     : undefined;
 
   const fetchBranches = async (
@@ -396,9 +496,9 @@ export async function getBranchsPickItemsWithParams(
       try {
         const branches = branchList
           ? branchList.map((label) => ({
-              label: label,
-              id: label,
-            }))
+            label: label,
+            id: label,
+          }))
           : [];
 
         return branches;
@@ -463,11 +563,11 @@ export async function getScansPickItems(
       try {
         return scanList
           ? scanList.map((label) => ({
-              label: formatLabel(label, scanList),
-              id: label.id,
-              datetime: getFormattedDateTime(label.createdAt),
-              formattedId: getFormattedId(label, scanList),
-            }))
+            label: formatLabel(label, scanList),
+            id: label.id,
+            datetime: getFormattedDateTime(label.createdAt),
+            formattedId: getFormattedId(label, scanList),
+          }))
           : [];
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
