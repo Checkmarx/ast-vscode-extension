@@ -127,6 +127,7 @@ export const constants = {
   scanCreateAdditionalParameters: "--async --sast-incremental --resubmit",
 
   treeName: "astResults",
+  dastTreeName: "dastResults",
   scaTreeName: "scaAutoScan",
   realtime: "realtime",
 

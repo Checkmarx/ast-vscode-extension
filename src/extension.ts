@@ -22,6 +22,8 @@ import { FilterCommand } from "./commands/filterCommand";
 import { WebViewCommand } from "./commands/webViewCommand";
 import { WorkspaceListener } from "./utils/listener/workspaceListener";
 import { DocAndFeedbackView } from "./views/docsAndFeedbackView/docAndFeedbackView";
+import { DastResultsProvider } from "./views/dastView/dastResultsProvider";
+import { isFeatureEnabled, DAST_ENABLED } from "./utils/common/featureFlags";
 import { CxOneAssistProvider } from "./views/cxOneAssistView/cxOneAssistProvider";
 import { messages } from "./utils/common/messages";
 import { commands } from "./utils/common/commands";
@@ -404,7 +406,27 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.env.openExternal(vscode.Uri.parse(url));
       }
     }
-  });  // SCA auto scanning commands register
+  });
+
+  // DAST Results view (feature flag controlled)
+  const isDastEnabled = isFeatureEnabled(DAST_ENABLED);
+  vscode.commands.executeCommand(
+    commands.setContext,
+    "ast-results.isDastEnabled",
+    isDastEnabled
+  );
+  if (isDastEnabled) {
+    const dastResultsProvider = new DastResultsProvider();
+    vscode.window.registerTreeDataProvider(
+      constants.dastTreeName,
+      dastResultsProvider
+    );
+    vscode.window.createTreeView(constants.dastTreeName, {
+      treeDataProvider: dastResultsProvider,
+    });
+  }
+
+  // SCA auto scanning commands register
   const scaScanCommand = new ScanSCACommand(
     context,
     runSCAScanStatusBar,
