@@ -7,7 +7,7 @@
  * Usage:
  *   import { isFeatureEnabled } from './utils/common/featureFlags';
  *   
- *   if (isFeatureEnabled('my-feature')) {
+ *   if (isFeatureEnabled('CX_MY_FEATURE')) {
  *     // Show the feature
  *   }
  */
