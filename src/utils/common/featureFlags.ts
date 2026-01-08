@@ -14,6 +14,8 @@
 
 const FEATURE_FLAGS_ENV_VAR = 'CX_FEATURE_FLAGS';
 
+export const DAST_ENABLED = 'DAST_ENABLED';
+
 let cachedFlags: Set<string> | null = null;
 
 function getFeatureFlags(): Set<string> {
