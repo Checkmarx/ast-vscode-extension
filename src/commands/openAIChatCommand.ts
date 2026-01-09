@@ -207,6 +207,23 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private async handleAugmentIDE(question: string) {
+        const executeFunction = async () => {
+            vscode.commands.executeCommand('vscode-augment.focusAugmentPanel', {
+                focus: true,
+            });
+            await new Promise(resolve => setTimeout(resolve, 100));
+            //await vscode.commands.executeCommand("kiroAgent.newSession");
+            //await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pasteCmd();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pressEnter();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
     private async openChatWithPrompt(question: string): Promise<void> {
 
         if (isIDE(constants.cursorAgent)) {
@@ -236,15 +253,19 @@ export class CopilotChatCommand {
             }
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
-        try {
-            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
-        } catch (error) {
-            if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
-                await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
-            }
+        //auments  copilot chat extension is installed\open
+        await this.handleAugmentIDE(question);
 
-        }
+
+        //await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+        // try {
+        //     await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+        // } catch (error) {
+        //     if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
+        //         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+        //     }
+
+        // }
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
@@ -292,8 +313,8 @@ export class CopilotChatCommand {
                 }
                 try {
                     if (isIDE(constants.kiroAgent)) {
-                        let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
-                            question = `In ${item.filePath} line ${line} \n${question}`
+                        const line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
+                        question = `In ${item.filePath} line ${line} \n${question}`;
                     }
                     await this.openChatWithPrompt(question);
                 } catch (error) {
