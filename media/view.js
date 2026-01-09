@@ -366,7 +366,7 @@
 					let preCode = document.createElement('pre');
 					preCode.setAttribute('class', 'pre-code');
 					let codeElement = document.createElement('code');
-					codeElement.textContent = code.code.replaceAll("<", "&lt;").replaceAll(">", "&gt");
+					codeElement.textContent = code.code;
 					preCode.appendChild(codeElement);
 					learnSectionDiv.appendChild(codeTitlePara);
 					learnSectionDiv.appendChild(preCode);
