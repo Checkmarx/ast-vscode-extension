@@ -213,8 +213,8 @@ export class CopilotChatCommand {
                 focus: true,
             });
             await new Promise(resolve => setTimeout(resolve, 100));
-            //await vscode.commands.executeCommand("kiroAgent.newSession");
-            //await new Promise(resolve => setTimeout(resolve, 100));
+            await vscode.commands.executeCommand("vscode-augment.startNewChat");
+            await new Promise(resolve => setTimeout(resolve, 100));
             await this.pasteCmd();
             await new Promise(resolve => setTimeout(resolve, 100));
             await this.pressEnter();
