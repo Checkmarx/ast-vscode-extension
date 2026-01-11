@@ -139,6 +139,7 @@ export const constants = {
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
   kiroAgent: "Kiro",
+  geminiAgent: "Gemini",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -206,6 +207,11 @@ export const constants = {
   iacRealtimeScannerEngineName: "IaC",
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
+
+  //Agent Assistants
+  geminiAssistantName: "gemini",
+  copilotAssistantName: "copilot",
+  noneAssistantName: "none",
 
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
@@ -278,7 +284,13 @@ export const constants = {
   copilotChatExtensionId: "GitHub.copilot-chat",
   copilotNewChatOpen: "workbench.action.chat.newChat",
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
-  newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
+  newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
+
+  geminiChatExtensionId: "Google.geminicodeassist",
+  geminiNewChatOpen: "geminicodeassist.chat.new",
+  geminiChatOpenWithQueryCommand: "workbench.view.extension.gemini-code-assist",
+  newGeminiChatOpenWithQueryCommand: "cloudcode.gemini.chatView.focus",
+  geminiChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
