@@ -382,7 +382,7 @@ export class CopilotChatCommand {
                 }
                 try {
                     if (isIDE(constants.kiroAgent)) {
-                        const line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
+                        let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
                         question = `In ${item.filePath} line ${line} \n${question}`;
                     }
                     await this.openChatWithPrompt(question);
