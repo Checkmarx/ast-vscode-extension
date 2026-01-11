@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import { isIDE } from "../utils/utils";
+import { isIDE, getVSCodeAIAgent } from "../utils/utils";
 import { constants } from "../utils/common/constants";
 import { cx } from "../cx";
 interface DecodedJwt {
@@ -74,6 +74,13 @@ function getMcpConfigPath(): string {
 	if (isIDE(constants.kiroAgent)) {
 		return path.join(os.homedir(), ".kiro", "settings", "mcp.json");
 	}
+	if (getVSCodeAIAgent() === constants.augmentAgent) {
+		const augmentDir = path.join(os.homedir(), ".augment");
+		if (!fs.existsSync(augmentDir)) {
+			fs.mkdirSync(augmentDir, { recursive: true });
+		}
+		return path.join(augmentDir, "settings.json");
+	}
 }
 
 async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<void> {
@@ -111,7 +118,7 @@ async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<
 export async function uninstallMcp() {
 	try {
 
-		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+		if (!isIDE(constants.vsCodeAgentOrginalName) || getVSCodeAIAgent() === constants.augmentAgent) {
 			// Handle Cursor, Windsurf and Kiro: Remove from mcp json file 
 			const mcpConfigPath = getMcpConfigPath();
 
@@ -203,7 +210,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			},
 		};
 
-		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+		if (!isIDE(constants.vsCodeAgentOrginalName) || getVSCodeAIAgent() === constants.augmentAgent) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
 			const config = vscode.workspace.getConfiguration();

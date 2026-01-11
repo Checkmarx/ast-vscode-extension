@@ -139,6 +139,8 @@ export const constants = {
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
   kiroAgent: "Kiro",
+  augmentAgent: "Augment Code",
+  copilotAgent: "Copilot",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -151,6 +153,8 @@ export const constants = {
   gptSettingsKey: "key",
   gptEngineKey: "model",
   gptCustomModelKey: "customModel",
+  vsCodeAIAgentKey: "AI Assistant In VSCode",
+  cxassistcommand: "Checkmarx",
   systemNotFindPathError: "The system cannot find the path specified.",
   gptFileNotInWorkspaceError: "AI Security Champion can't advise you about this vulnerability because the file where the vulnerability was identified isn't open in your VS Code workspace.",
   // Documentation & Feedback

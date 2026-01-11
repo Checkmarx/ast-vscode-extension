@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commands";
+import { getVSCodeAIAgent } from "../utils/utils";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import {
@@ -241,31 +242,36 @@ export class CopilotChatCommand {
             await this.handleKiroIDE(question);
             return;
         }
-        const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
-        if (!copilotChatExtension) {
-            const installOption = "Install Copilot Chat";
-            const choice = await vscode.window.showErrorMessage(
-                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                installOption
-            );
-            if (choice === installOption) {
-                await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
+
+        if (isIDE(constants.vsCodeAgentOrginalName)) {
+            if (getVSCodeAIAgent() === constants.copilotAgent) {
+                const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
+                if (!copilotChatExtension) {
+                    const installOption = "Install Copilot Chat";
+                    const choice = await vscode.window.showErrorMessage(
+                        "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
+                        installOption
+                    );
+                    if (choice === installOption) {
+                        await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
+                    }
+                    return;
+                }
+                await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+                try {
+                    await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+                } catch (error) {
+                    if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
+                        await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+                    }
+
+                }
+                return;
+            } else if (getVSCodeAIAgent() === constants.augmentAgent) {
+                await this.handleAugmentIDE(question);
+                return;
             }
-            return;
         }
-        //auments  copilot chat extension is installed\open
-        await this.handleAugmentIDE(question);
-
-
-        //await vscode.commands.executeCommand(constants.copilotNewChatOpen);
-        // try {
-        //     await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
-        // } catch (error) {
-        //     if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
-        //         await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
-        //     }
-
-        // }
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {

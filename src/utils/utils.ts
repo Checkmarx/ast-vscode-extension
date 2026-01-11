@@ -337,6 +337,11 @@ export function getWorkspaceFolder(filePath: string): vscode.WorkspaceFolder {
   return folder;
 }
 
+export function getVSCodeAIAgent(): string {
+  const config = vscode.workspace.getConfiguration(constants.cxassistcommand)
+  const vscodeAIAgentName = config.get<string>(constants.vsCodeAIAgentKey) || ''; return vscodeAIAgentName;
+}
+
 export function getInitializedIgnoreManager(folder: vscode.WorkspaceFolder): IgnoreFileManager {
   const manager = IgnoreFileManager.getInstance();
   manager.initialize(folder);
