@@ -1,7 +1,7 @@
 {
   "name": "ast-results",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx One",
+  "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
   "version": "2.44.0",
   "repository": {
