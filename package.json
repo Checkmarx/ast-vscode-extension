@@ -867,6 +867,12 @@
           "when": "!ast-results.isStandaloneEnabled"
         },
         {
+          "id": "dastResults",
+          "type": "tree",
+          "name": "DAST Results",
+          "when": "ast-results.isDastEnabled"
+        },
+        {
           "id": "astResultsPromo",
           "type": "webview",
           "name": "Checkmarx One Results",
