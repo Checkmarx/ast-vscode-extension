@@ -3,6 +3,7 @@ export const constants = {
   extensionFullName: "Checkmarx",
   standaloneEnabledGlobalState: "standaloneEnabled",
   cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
+  dastLicenseEnabledGlobalState: "dastLicenseEnabled",
   authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",

@@ -399,6 +399,22 @@ export class Cx implements CxPlatform {
         );
     }
 
+    async isDastLicenseEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.dastLicenseEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => {
+                const anyCx = cx as unknown as { getLicenseDetails?: () => Promise<{ dastEnabled: boolean } | null> };
+                if (anyCx.getLicenseDetails) {
+                    const licenseDetails = await anyCx.getLicenseDetails();
+                    return licenseDetails?.dastEnabled ?? false;
+                }
+                return false;
+            },
+            "license details (DAST)"
+        );
+    }
+
     async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
         await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
         return this.isStandaloneEnabled(logs);

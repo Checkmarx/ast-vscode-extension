@@ -1333,6 +1333,10 @@ export class CxMock implements CxPlatform {
     return false;
   }
 
+  async isDastLicenseEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isAIGuidedRemediationEnabled(): Promise<boolean> {
     return true;
   }
