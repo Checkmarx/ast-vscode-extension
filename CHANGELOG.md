@@ -1,16 +1,23 @@
 # CHANGELOG
 
+## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.46.0 -->
+
+## What's Changed
+### New Features 🚀
+* Ordering of settings neeeded after plugin name change by @cx-umesh-waghode in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
+### Other Changes
+* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1351
+
+## New Contributors
+* @cx-umesh-waghode made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.45.0...v2.46.0
+
 ## [v2.45.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.45.0) - 2026-01-12 10:58:15
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.45.0 -->
-
-## What's Changed
-### Other Changes
-* Update display name by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1348
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1349
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.0...v2.45.0
 
 ## [v2.44.1-2.44.2-GeminiAgent.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-2.44.2-GeminiAgent.0) - 2026-01-07 08:39:14
 
