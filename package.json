@@ -921,7 +921,7 @@
       {
         "title": "Checkmarx One Assist",
         "id": "cxone-assist",
-        "order": 1,
+        "order": 2,
         "properties": {
           "checkmarx.MCP": {
             "type": "",
@@ -974,7 +974,7 @@
       {
         "title": "Checkmarx One",
         "id": "ast-results",
-        "order": 4,
+        "order": 1,
         "properties": {
           "checkmarxOne.authentication": {
             "type": "",
@@ -996,7 +996,7 @@
       {
         "title": "Checkmarx KICS Real-time Scanning",
         "id": "kics-ast",
-        "order": 2,
+        "order": 3,
         "properties": {
           "CheckmarxKICS.Activate KICS Real-time Scanning": {
             "type": "boolean",
@@ -1015,7 +1015,7 @@
       {
         "title": "Checkmarx AI Security Champion",
         "id": "ask-kics",
-        "order": 3,
+        "order": 4,
         "properties": {
           "CheckmarxSecurityChampion.key": {
             "type": "string",
