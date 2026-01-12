@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.44.1-2.44.2-GeminiAgent.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-2.44.2-GeminiAgent.0) - 2026-01-07 08:39:14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.1-secret-ignore-fix.0...v2.44.1-2.44.2-GeminiAgent.0
+
 ## [v2.44.1-secret-ignore-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-secret-ignore-fix.0) - 2025-12-30 15:26:53
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
