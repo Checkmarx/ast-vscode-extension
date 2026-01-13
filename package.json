@@ -869,7 +869,7 @@
         {
           "id": "dastResults",
           "type": "tree",
-          "name": "DAST Results",
+          "name": "Checkmarx One DAST Results",
           "when": "ast-results.isDastEnabled"
         },
         {
