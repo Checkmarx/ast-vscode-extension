@@ -1,30 +1,70 @@
-import * as vscode from "vscode";
-import { TreeItem } from "../../utils/tree/treeItem";
-import { getFromState } from '../../utils/common/globalState';
+import * as vscode from 'vscode';
+import { TreeItem } from '../../utils/tree/treeItem';
+import { getFromState, updateState } from '../../utils/common/globalState';
 import { constants } from '../../utils/common/constants';
+import { GroupByCommand } from '../../commands/groupByCommand';
+import { FilterCommand } from '../../commands/filterCommand';
+import { Logs } from "../../models/logs";
+import { ResultsProvider } from '../resultsProviders';
+import { messages } from '../../utils/common/messages';
+import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
-export class DastResultsProvider implements vscode.TreeDataProvider<TreeItem> {
-    private _onDidChangeTreeData: vscode.EventEmitter<TreeItem | undefined> = new vscode.EventEmitter<TreeItem | undefined>();
-    readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
+export class DastResultsProvider extends ResultsProvider {
+  constructor(
+    protected readonly context: vscode.ExtensionContext,
+    private readonly logs: Logs,
+    protected readonly statusBarItem: vscode.StatusBarItem,
+    private readonly diagnosticCollection: vscode.DiagnosticCollection,
+    private readonly filterCommand: FilterCommand,
+    private readonly groupByCommand: GroupByCommand
+  ) {
+    super(context, statusBarItem);
 
-    getTreeItem(element: TreeItem): vscode.TreeItem {
-        return element;
+    // Syncing with AST everytime the extension gets opened
+    this.openRefreshData().then(() => logs.info(messages.dataRefreshed));
+  }
+
+  async clean(): Promise<void> {
+    this.logs.info(messages.clearLoadedInfo);
+    updateState(this.context, constants.scanIdKey, undefined);
+    updateState(this.context, constants.environmentIdKey, undefined);
+    await this.refreshData();
+  }
+
+  async refreshData(): Promise<void> {
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      const treeItem = await this.generateTree();
+      this.data = treeItem.children;
+      this._onDidChangeTreeData.fire(undefined);
+      this.hideStatusBarItem();
+    } else {
+      this.data = [];
+      this._onDidChangeTreeData.fire(undefined);
     }
+  }
 
-    getChildren(element?: TreeItem): Thenable<TreeItem[]> {
-        if (element) {
-            return Promise.resolve([]);
-        }
-        const env = getFromState(vscode.extensions.getExtension('checkmarx.ast-vscode-extension').exports.context, constants.environmentIdKey);
-        const envLabel = env?.name || constants.environmentLabel || 'Environment';
-        const envItem = new TreeItem(envLabel, 'environment-item');
-        envItem.tooltip = 'Select and search for environments';
+  async openRefreshData(): Promise<void> {
+    // TODO: implement
+  }
 
-        return Promise.resolve([envItem]);
-    }
+  async generateTree(): Promise<TreeItem> {
+    this.diagnosticCollection.clear();
+    // createBaseItems
+    const treeItems = this.createRootItems();
+    return new TreeItem('', undefined, undefined, treeItems);
+  }
 
-    refresh(): void {
-        this._onDidChangeTreeData.fire(undefined);
-    }
+  createRootItems(): TreeItem[] {
+    return [
+      new TreeItem(
+        getFromState(this.context, constants.environmentIdKey)?.name ?? constants.projectLabel,
+        constants.projectItem
+      ),
+      new TreeItem(
+        `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
+        constants.scanItem
+      ),
+    ];
+  }
 }
-
