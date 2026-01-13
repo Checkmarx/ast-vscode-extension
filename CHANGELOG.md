@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.46.0 -->
+
+## What's Changed
+### New Features 🚀
+* Ordering of settings neeeded after plugin name change by @cx-umesh-waghode in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
+### Other Changes
+* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1351
+
+## New Contributors
+* @cx-umesh-waghode made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.45.0...v2.46.0
+
+## [v2.45.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.45.0) - 2026-01-12 10:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.45.0 -->
+
+## [v2.44.1-2.44.2-GeminiAgent.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-2.44.2-GeminiAgent.0) - 2026-01-07 08:39:14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.1-secret-ignore-fix.0...v2.44.1-2.44.2-GeminiAgent.0
+
 ## [v2.44.1-secret-ignore-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-secret-ignore-fix.0) - 2025-12-30 15:26:53
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
