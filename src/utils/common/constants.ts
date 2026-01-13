@@ -52,6 +52,7 @@ export const constants = {
   environmentPickerTitle: "Checkmarx One Environment selection",
   branchPickerTitle: "Checkmarx One Branch selection",
   projectItem: "project-item",
+  environmentItem: "environment-item",
   branchItem: "branch-item",
   scanItem: "scan-item",
   graphItem: "graph-item",

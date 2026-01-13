@@ -58,8 +58,8 @@ export class DastResultsProvider extends ResultsProvider {
   createRootItems(): TreeItem[] {
     return [
       new TreeItem(
-        getFromState(this.context, constants.environmentIdKey)?.name ?? constants.projectLabel,
-        constants.projectItem
+        getFromState(this.context, constants.environmentIdKey)?.name ?? constants.environmentLabel,
+        constants.environmentItem
       ),
       new TreeItem(
         `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
