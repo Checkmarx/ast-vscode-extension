@@ -404,12 +404,8 @@ export class Cx implements CxPlatform {
             constants.dastLicenseEnabledGlobalState,
             logs,
             async (cx: CxWrapper) => {
-                const anyCx = cx as unknown as { getLicenseDetails?: () => Promise<{ dastEnabled: boolean } | null> };
-                if (anyCx.getLicenseDetails) {
-                    const licenseDetails = await anyCx.getLicenseDetails();
-                    return licenseDetails?.dastEnabled ?? false;
-                }
-                return false;
+                const anyCx = cx as unknown as { dastEnabled?: () => Promise<boolean> };
+                return anyCx.dastEnabled ? await anyCx.dastEnabled() : false;
             },
             "license details (DAST)"
         );
