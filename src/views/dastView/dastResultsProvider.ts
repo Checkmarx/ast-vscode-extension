@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import { TreeItem } from "../../utils/tree/treeItem";
+import { getFromState } from '../../utils/common/globalState';
+import { constants } from '../../utils/common/constants';
 
 export class DastResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<TreeItem | undefined> = new vscode.EventEmitter<TreeItem | undefined>();
@@ -13,14 +15,12 @@ export class DastResultsProvider implements vscode.TreeDataProvider<TreeItem> {
         if (element) {
             return Promise.resolve([]);
         }
-        // Placeholder: Show a message that DAST is coming soon
-        const placeholderItem = new TreeItem(
-            "DAST scanning coming soon...",
-            "info-item",
-            undefined
-        );
-        placeholderItem.tooltip = "DAST scanning functionality is under development";
-        return Promise.resolve([placeholderItem]);
+        const env = getFromState(vscode.extensions.getExtension('checkmarx.ast-vscode-extension').exports.context, constants.environmentIdKey);
+        const envLabel = env?.name || constants.environmentLabel || 'Environment';
+        const envItem = new TreeItem(envLabel, 'environment-item');
+        envItem.tooltip = 'Select and search for environments';
+
+        return Promise.resolve([envItem]);
     }
 
     refresh(): void {

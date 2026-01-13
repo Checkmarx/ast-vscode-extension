@@ -3,6 +3,7 @@ import { CxWrapper } from "@checkmarx/ast-cli-javascript-wrapper";
 import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/environment/CxEnvironment";
 import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
@@ -244,6 +245,22 @@ export class Cx implements CxPlatform {
             r = projects.payload ?? [];
         } else {
             throw new Error(projects.status);
+        }
+        return r;
+    }
+
+    async getEnvironmentsListWithParams(params: string): Promise<CxEnvironment[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const envs = await cx.environmentsList(params ?? "");
+        if (envs.exitCode === 0) {
+            r = envs.payload ?? [];
+        } else {
+            throw new Error(envs.status);
         }
         return r;
     }

@@ -110,6 +110,7 @@ export const commands = {
 
   generalPick: `${constants.extensionName}.generalPick`,
   projectPick: `${constants.extensionName}.projectPick`,
+  environmentPick: `${constants.extensionName}.environmentPick`,
   branchPick: `${constants.extensionName}.branchPick`,
   scanPick: `${constants.extensionName}.scanPick`,
   scanInput: `${constants.extensionName}.scanInput`,
@@ -141,5 +142,5 @@ export const commands = {
   scaAutoScanPromo: "scaAutoScanPromo",
   docAndFeedback: "docAndFeedback",
   refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
-  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`
+  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
 };

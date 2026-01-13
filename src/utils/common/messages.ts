@@ -68,6 +68,7 @@ export const messages = {
   loadingBranches: "Loading branches",
   loadingProjects: "Loading projects",
   loadingProject: "Loading project",
+  loadingEnvironments: "Loading environments",
   loadingScans: "Loading scans",
   loadingScan: "Loading scan",
   loadingResults: "Loading results",

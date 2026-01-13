@@ -14,6 +14,7 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import CxEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/environment/CxEnvironment";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1204,6 +1205,10 @@ export class CxMock implements CxPlatform {
         updatedAt: "2023-04-19T14:15:15.250732Z",
       },
     ];
+  }
+
+  async getEnvironmentsListWithParams(): Promise<CxEnvironment[] | undefined> {
+    return [];
   }
 
   getOffsetValue(params: string) {

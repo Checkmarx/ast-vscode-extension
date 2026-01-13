@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
+import { environmentPicker } from "./utils/pickers/pickers";
 import { Logs } from "./models/logs";
 import {
   addRealTimeSaveListener,
@@ -428,6 +429,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.createTreeView(constants.dastTreeName, {
       treeDataProvider: dastResultsProvider,
     });
+
+    // Register command for environment picker
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.environmentPick, () => environmentPicker(context, logs))
+    );
   }
 
   // SCA auto scanning commands register
