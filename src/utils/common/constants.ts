@@ -153,7 +153,9 @@ export const constants = {
   gptEngineKey: "model",
   gptCustomModelKey: "customModel",
   systemNotFindPathError: "The system cannot find the path specified.",
+  systemNotFindLineError: "out of range",
   gptFileNotInWorkspaceError: "AI Security Champion can't advise you about this vulnerability because the file where the vulnerability was identified isn't open in your VS Code workspace.",
+  gptFileChangedError: "The local file has changed since the previous scan. You need to run a new scan before using AI Security Champion.",
   // Documentation & Feedback
   feedback: "Send us enhancement request or report a bug",
   documentation: "Documentation",
