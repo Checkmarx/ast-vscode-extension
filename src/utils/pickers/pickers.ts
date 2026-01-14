@@ -225,7 +225,7 @@ export async function environmentPicker(
       displayScanId: undefined,
       scanDatetime: undefined,
     });
-    await vscode.commands.executeCommand(commands.refreshTree);
+    await vscode.commands.executeCommand(commands.refreshDastTree);
   };
 
   await createPicker(
