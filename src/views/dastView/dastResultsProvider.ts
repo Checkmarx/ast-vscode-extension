@@ -8,6 +8,7 @@ import { Logs } from "../../models/logs";
 import { ResultsProvider } from '../resultsProviders';
 import { messages } from '../../utils/common/messages';
 import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
+import { getCx } from '../../cx';
 
 export class DastResultsProvider extends ResultsProvider {
   constructor(
@@ -33,6 +34,15 @@ export class DastResultsProvider extends ResultsProvider {
 
   async refreshData(): Promise<void> {
     if (await validateConfigurationAndLicense(this.logs)) {
+      const cx = getCx();
+      const isDastLicenseEnabled = await cx.isDastLicenseEnabled(this.logs);
+
+      if (!isDastLicenseEnabled) {
+        this.data = [new TreeItem(messages.dastLicenseNotEnabled, undefined)];
+        this._onDidChangeTreeData.fire(undefined);
+        return;
+      }
+
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
       this.data = treeItem.children;

@@ -132,4 +132,5 @@ export const messages = {
     settings
   </a>
   `,
+  dastLicenseNotEnabled: "DAST license is not enabled",
 };
