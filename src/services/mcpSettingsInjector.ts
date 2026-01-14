@@ -31,6 +31,21 @@ interface McpConfig {
 	mcpServers?: Record<string, McpServer | KiroMcpServer>;
 }
 
+// Extended interface for VS Code's inspect() return to include policyValue
+// policyValue exists at runtime for enterprise policies but isn't in official VS Code types
+interface ConfigInspection {
+	key: string;
+	policyValue?: unknown;
+	defaultValue?: unknown;
+	globalValue?: unknown;
+	workspaceValue?: unknown;
+	workspaceFolderValue?: unknown;
+	defaultLanguageValue?: unknown;
+	globalLanguageValue?: unknown;
+	workspaceLanguageValue?: unknown;
+	workspaceFolderLanguageValue?: unknown;
+}
+
 const checkmarxMcpServerName = "Checkmarx";
 
 
@@ -207,18 +222,133 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
 			const config = vscode.workspace.getConfiguration();
+
+			// Check the 'mcp' setting
+			const mcpInspection = config.inspect('mcp') as ConfigInspection;
+
+			// Or check the specific 'chat.mcp.access' policy setting
+			const mcpAccessInspection = config.inspect('chat.mcp.access') as ConfigInspection;
+
+			// Detailed logging for debugging
+			console.log('[MCP] ========== VS Code Settings Inspection ==========');
+
+			// Log RAW inspection result
+			console.log('[MCP] RAW inspect result for "mcp":', JSON.stringify(mcpInspection, null, 2));
+			console.log('[MCP] RAW inspect result for "chat.mcp.access":', JSON.stringify(mcpAccessInspection, null, 2));
+
+			console.log('[MCP] Inspecting "mcp" setting:');
+			if (mcpInspection) {
+				console.log('[MCP]   key:', mcpInspection.key || 'N/A');
+				console.log('[MCP]   policyValue:', mcpInspection.policyValue !== undefined ? mcpInspection.policyValue : '❌ NOT SET');
+				console.log('[MCP]   defaultValue:', mcpInspection.defaultValue !== undefined ? mcpInspection.defaultValue : '❌ NOT SET');
+				console.log('[MCP]   globalValue:', mcpInspection.globalValue !== undefined ? mcpInspection.globalValue : '❌ NOT SET');
+				console.log('[MCP]   workspaceValue:', mcpInspection.workspaceValue !== undefined ? mcpInspection.workspaceValue : '❌ NOT SET');
+				console.log('[MCP]   workspaceFolderValue:', mcpInspection.workspaceFolderValue !== undefined ? mcpInspection.workspaceFolderValue : '❌ NOT SET');
+				console.log('[MCP]   defaultLanguageValue:', mcpInspection.defaultLanguageValue !== undefined ? mcpInspection.defaultLanguageValue : '❌ NOT SET');
+			} else {
+				console.log('[MCP]   ❌ mcpInspection is null/undefined');
+			}
+
+			console.log('[MCP] Inspecting "chat.mcp.access":');
+			if (mcpAccessInspection) {
+				console.log('[MCP]   key:', mcpAccessInspection.key || 'N/A');
+				console.log('[MCP]   policyValue:', mcpAccessInspection.policyValue !== undefined ? mcpAccessInspection.policyValue : '❌ NOT SET');
+				console.log('[MCP]   defaultValue:', mcpAccessInspection.defaultValue !== undefined ? mcpAccessInspection.defaultValue : '❌ NOT SET');
+				console.log('[MCP]   globalValue:', mcpAccessInspection.globalValue !== undefined ? mcpAccessInspection.globalValue : '❌ NOT SET');
+				console.log('[MCP]   workspaceValue:', mcpAccessInspection.workspaceValue !== undefined ? mcpAccessInspection.workspaceValue : '❌ NOT SET');
+				console.log('[MCP]   workspaceFolderValue:', mcpAccessInspection.workspaceFolderValue !== undefined ? mcpAccessInspection.workspaceFolderValue : '❌ NOT SET');
+			} else {
+				console.log('[MCP]   ❌ mcpAccessInspection is null/undefined');
+			}
+
+			console.log('[MCP] ===================================================');
+
+			// Check for policy restrictions
+			if (mcpInspection?.policyValue !== undefined ||
+				mcpAccessInspection?.policyValue !== undefined) {
+
+				// Log for debugging
+				console.error('[MCP] ⚠️  POLICY RESTRICTION DETECTED!');
+				console.error('[MCP] MCP Policy Value:', mcpInspection?.policyValue);
+				console.error('[MCP] MCP Access Policy Value:', mcpAccessInspection?.policyValue);
+				console.error('[MCP] Organization policy is preventing MCP configuration changes.');
+
+				vscode.window.showWarningMessage(
+					"MCP configuration is managed by your organization's policy."
+				);
+				return;
+			} else {
+				console.log('[MCP] ✅ No policyValue restrictions detected - proceeding with installation');
+			}
+
 			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
 			const existingServers = fullMcp.servers || {};
+
+			console.log('[MCP] Current MCP config:', JSON.stringify(fullMcp, null, 2));
+			console.log('[MCP] Existing servers:', Object.keys(existingServers));
 
 			// Create a new object to avoid proxy issues
 			const updatedServers = { ...existingServers };
 			updatedServers[checkmarxMcpServerName] = mcpServer;
 
-			await config.update(
-				"mcp",
-				{ servers: updatedServers },
-				vscode.ConfigurationTarget.Global
-			);
+			console.log('[MCP] Updated servers will include:', Object.keys(updatedServers));
+			console.log('[MCP] New Checkmarx server config:', JSON.stringify(mcpServer, null, 2));
+
+			console.log('[MCP] ========== Attempting to Write Settings ==========');
+			console.log('[MCP] Target: Global settings (ConfigurationTarget.Global)');
+			console.log('[MCP] Setting key: "mcp"');
+			console.log('[MCP] Platform:', process.platform);
+			console.log('[MCP] VS Code version:', vscode.version);
+
+			try {
+				console.log('[MCP] Calling config.update()...');
+				await config.update(
+					"mcp",
+					{ servers: updatedServers },
+					vscode.ConfigurationTarget.Global
+				);
+				console.log('[MCP] ✅ config.update() completed successfully!');
+				console.log('[MCP] ========== Settings Write SUCCESS ==========');
+			} catch (updateError) {
+				console.error('[MCP] ========== Settings Write FAILED ==========');
+				console.error('[MCP] ❌ Exception caught during config.update()');
+				console.error('[MCP] Error object:', updateError);
+				console.error('[MCP] Error type:', updateError instanceof Error ? updateError.name : typeof updateError);
+				console.error('[MCP] Error message:', updateError instanceof Error ? updateError.message : String(updateError));
+				console.error('[MCP] Error stack:', updateError instanceof Error ? updateError.stack : 'N/A');
+
+				// Try to get more error details
+				if (updateError && typeof updateError === 'object') {
+					console.error('[MCP] Error properties:', Object.keys(updateError));
+					console.error('[MCP] Full error JSON:', JSON.stringify(updateError, Object.getOwnPropertyNames(updateError), 2));
+				}
+
+				// Check if error is policy-related
+				const errorMsg = updateError instanceof Error ? updateError.message : String(updateError);
+				const errorStr = JSON.stringify(updateError);
+
+				console.error('[MCP] Checking for policy keywords in error...');
+				const isPolicyError =
+					errorMsg.toLowerCase().includes('policy') ||
+					errorMsg.toLowerCase().includes('read-only') ||
+					errorMsg.toLowerCase().includes('configured in system') ||
+					errorMsg.toLowerCase().includes('permission') ||
+					errorStr.toLowerCase().includes('policy');
+
+				if (isPolicyError) {
+					console.error('[MCP] ⚠️  POLICY RESTRICTION DETECTED via write error!');
+					console.error('[MCP] This confirms that organization policy is blocking MCP installation.');
+					vscode.window.showErrorMessage(
+						"Unable to install MCP: Settings are managed by your organization's policy. Contact your IT administrator."
+					);
+				} else {
+					console.error('[MCP] Error does not appear to be policy-related.');
+					vscode.window.showErrorMessage(`Failed to install MCP: ${errorMsg}`);
+				}
+
+				console.error('[MCP] ========================================');
+				throw updateError;
+			}
 		}
 
 		vscode.window.showInformationMessage("MCP configuration saved successfully.");
