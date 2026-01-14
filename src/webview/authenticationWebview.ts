@@ -9,7 +9,6 @@ import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 import { CommonCommand } from "../commands/commonCommand";
 import { commands } from "../utils/common/commands";
-import { DAST_ENABLED, isFeatureEnabled } from "../utils/common/featureFlags";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -114,19 +113,6 @@ export class AuthenticationWebview {
 
   private async markFirstWelcomeAsShown() {
     await this.context.globalState.update("cxFirstWelcome", true);
-  }
-
-  private async executePostAuthCommands(): Promise<boolean> {
-    const isAiEnabled = await cx.isAiMcpServerEnabled();
-    const commonCommand = new CommonCommand(this.context, this.logs);
-    await commonCommand.executeCheckStandaloneEnabled();
-    await commonCommand.executeCheckCxOneAssistEnabled();
-
-    const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
-    if (isDastFeatureEnabled) {
-      await commonCommand.executeDastLicenseEnabled();
-    }
-    return isAiEnabled;
   }
 
   private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
@@ -297,7 +283,10 @@ export class AuthenticationWebview {
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
                   const token = await authService.authenticate(baseUri, tenant);
-                  const isAiEnabled = await this.executePostAuthCommands();
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   if (token !== "") {
                     this.schedulePostAuth(isAiEnabled);
                   }
@@ -324,7 +313,10 @@ export class AuthenticationWebview {
                   }
 
                   authService.saveToken(this.context, message.apiKey);
-                  const isAiEnabled = await this.executePostAuthCommands();
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",

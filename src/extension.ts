@@ -418,8 +418,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   let dastResultsProvider: DastResultsProvider | undefined;
   if (isDastFeatureEnabled) {
-    const commonCommand = new CommonCommand(context, logs);
-    await commonCommand.executeDastLicenseEnabled();
     dastResultsProvider = new DastResultsProvider(
       context,
       logs,

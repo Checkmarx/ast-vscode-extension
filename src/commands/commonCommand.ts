@@ -86,12 +86,4 @@ export class CommonCommand {
       await cx.isSCAScanEnabled()
     );
   }
-
-    public async executeDastLicenseEnabled() {
-    vscode.commands.executeCommand(
-      commands.setContext,
-      commands.isDastLicenseEnabled,
-      await cx.isDastLicenseEnabled(this.logs)
-    );
-  }
 }
