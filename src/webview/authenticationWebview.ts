@@ -9,6 +9,7 @@ import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 import { CommonCommand } from "../commands/commonCommand";
 import { commands } from "../utils/common/commands";
+import { DAST_ENABLED, isFeatureEnabled } from "../utils/common/featureFlags";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -322,6 +323,12 @@ export class AuthenticationWebview {
                     message: "API Key validated successfully!",
                   });
                   this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
+                }
+
+                const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
+                if (isDastFeatureEnabled) {
+                  const isDastEnabled = await cx.isDastLicenseEnabled(this.logs);
+                  this.logs.info(`DAST license enabled: ${isDastEnabled}`); // TODO: display panel content accordingly
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });

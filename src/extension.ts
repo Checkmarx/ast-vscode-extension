@@ -409,13 +409,15 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   // DAST Results view (feature flag controlled)
-  const isDastEnabled = isFeatureEnabled(DAST_ENABLED);
+  const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
   vscode.commands.executeCommand(
     commands.setContext,
     commands.isDastEnabled,
-    isDastEnabled
+    isDastFeatureEnabled
   );
-  if (isDastEnabled) {
+  if (isDastFeatureEnabled) {
+    const isDastEnabled = await cx.isDastLicenseEnabled(logs);
+    logs.info(`DAST license enabled: ${isDastEnabled}`); // TODO: display panel content accordingly
     const dastResultsProvider = new DastResultsProvider();
     vscode.window.registerTreeDataProvider(
       constants.dastTreeName,
