@@ -442,6 +442,9 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
       vscode.commands.registerCommand(commands.environmentPick, () => environmentPicker(context, logs))
     );
+
+    // Refresh DAST tree to show root items on startup
+    dastResultsProvider.refreshData();
   }
 
   // SCA auto scanning commands register
