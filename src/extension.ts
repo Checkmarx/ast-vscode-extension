@@ -420,8 +420,9 @@ export async function activate(context: vscode.ExtensionContext) {
     "ast-results.isDastEnabled",
     isDastEnabled
   );
+  let dastResultsProvider: DastResultsProvider | undefined;
   if (isDastEnabled) {
-    const dastResultsProvider = new DastResultsProvider(
+    dastResultsProvider = new DastResultsProvider(
       context,
       logs,
       statusBarItem,
@@ -510,7 +511,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     astResultsProvider,
     scaResultsProvider,
-    logs
+    logs,
+    dastResultsProvider
   );
   // Promo webview already registered above
 

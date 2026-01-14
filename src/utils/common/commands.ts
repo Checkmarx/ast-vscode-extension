@@ -110,7 +110,6 @@ export const commands = {
 
   generalPick: `${constants.extensionName}.generalPick`,
   projectPick: `${constants.extensionName}.projectPick`,
-  environmentPick: `${constants.extensionName}.environmentPick`,
   branchPick: `${constants.extensionName}.branchPick`,
   scanPick: `${constants.extensionName}.scanPick`,
   scanInput: `${constants.extensionName}.scanInput`,
@@ -143,4 +142,8 @@ export const commands = {
   docAndFeedback: "docAndFeedback",
   refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
   clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
+
+  environmentPick: `${constants.extensionName}.environmentPick`,
+  refreshDastTree: `${constants.extensionName}.refreshDastTree`,
+  clearDast: `${constants.extensionName}.clearDast`,
 };
