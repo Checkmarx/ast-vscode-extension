@@ -933,6 +933,11 @@
         "view": "astResults",
         "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
         "when": "!ast-results.isValidCredentials"
+      },
+      {
+        "view": "dastResults",
+        "contents": "In order to use Checkmarx One DAST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One DAST [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
+        "when": "ast-results.isDastFeatureEnabled && !ast-results.isValidCredentials"
       }
     ],
     "configuration": [
