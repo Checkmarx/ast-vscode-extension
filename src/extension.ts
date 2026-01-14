@@ -410,14 +410,14 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   // DAST Results view (feature flag controlled)
-  const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
+  const isDastEnabled = isFeatureEnabled(DAST_ENABLED);
   vscode.commands.executeCommand(
     commands.setContext,
-    commands.isDastFeatureEnabled,
-    isDastFeatureEnabled
+    commands.isDastEnabled,
+    isDastEnabled
   );
   let dastResultsProvider: DastResultsProvider | undefined;
-  if (isDastFeatureEnabled) {
+  if (isDastEnabled) {
     dastResultsProvider = new DastResultsProvider(
       context,
       logs,
