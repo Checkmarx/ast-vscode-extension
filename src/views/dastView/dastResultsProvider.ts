@@ -4,10 +4,10 @@ import { getFromState, updateState } from '../../utils/common/globalState';
 import { constants } from '../../utils/common/constants';
 import { GroupByCommand } from '../../commands/groupByCommand';
 import { FilterCommand } from '../../commands/filterCommand';
-import { Logs } from "../../models/logs";
+import { Logs } from '../../models/logs';
 import { ResultsProvider } from '../resultsProviders';
 import { messages } from '../../utils/common/messages';
-import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
+import { validateConfigurationAndLicense } from '../../utils/common/configValidators';
 import { getCx } from '../../cx';
 
 export class DastResultsProvider extends ResultsProvider {
@@ -33,16 +33,14 @@ export class DastResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    if (await validateConfigurationAndLicense(this.logs)) {
+    const validAndLicense = await validateConfigurationAndLicense(this.logs);
+    let hasDastLicense = false;
+    if (validAndLicense) {
       const cx = getCx();
-      const isDastLicenseEnabled = await cx.isDastLicenseEnabled(this.logs);
+      hasDastLicense = await cx.isDastLicenseEnabled(this.logs);
+    }
 
-      if (!isDastLicenseEnabled) {
-        this.data = [new TreeItem(messages.dastLicenseNotEnabled, undefined)];
-        this._onDidChangeTreeData.fire(undefined);
-        return;
-      }
-
+    if (validAndLicense && hasDastLicense) {
       this.showStatusBarItem(messages.commandRunning);
       const treeItem = await this.generateTree();
       this.data = treeItem.children;
@@ -50,6 +48,9 @@ export class DastResultsProvider extends ResultsProvider {
       this.hideStatusBarItem();
     } else {
       this.data = [];
+      if (validAndLicense && !hasDastLicense) {
+        this.data = [new TreeItem(messages.dastLicenseNotEnabled, undefined)];
+      }
       this._onDidChangeTreeData.fire(undefined);
     }
   }
