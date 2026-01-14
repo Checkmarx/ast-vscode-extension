@@ -413,13 +413,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
   vscode.commands.executeCommand(
     commands.setContext,
-    commands.isDastEnabled,
+    commands.isDastFeatureEnabled,
     isDastFeatureEnabled
   );
   let dastResultsProvider: DastResultsProvider | undefined;
   if (isDastFeatureEnabled) {
-    const isDastEnabled = await cx.isDastLicenseEnabled(logs);
-    logs.info(`DAST license enabled: ${isDastEnabled}`); // TODO: display panel content accordingly
+    const isDastLicenseEnabled = await cx.isDastLicenseEnabled(logs);
+    logs.info(`DAST license enabled: ${isDastLicenseEnabled}`); // TODO: display panel content accordingly
     dastResultsProvider = new DastResultsProvider(
       context,
       logs,

@@ -143,7 +143,8 @@ export const commands = {
   refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
   clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
 
-  isDastEnabled: `${constants.extensionName}.isDastEnabled`,
+  isDastFeatureEnabled: `${constants.extensionName}.isDastFeatureEnabled`,
+  isDastLicenseEnabled: `${constants.extensionName}.isDastLicenseEnabled`,
   environmentPick: `${constants.extensionName}.environmentPick`,
   refreshDastTree: `${constants.extensionName}.refreshDastTree`,
   clearDast: `${constants.extensionName}.clearDast`,

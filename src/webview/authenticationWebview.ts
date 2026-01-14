@@ -116,6 +116,19 @@ export class AuthenticationWebview {
     await this.context.globalState.update("cxFirstWelcome", true);
   }
 
+  private async executePostAuthCommands(): Promise<boolean> {
+    const isAiEnabled = await cx.isAiMcpServerEnabled();
+    const commonCommand = new CommonCommand(this.context, this.logs);
+    await commonCommand.executeCheckStandaloneEnabled();
+    await commonCommand.executeCheckCxOneAssistEnabled();
+
+    const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
+    if (isDastFeatureEnabled) {
+      await commonCommand.executeDastLicenseEnabled();
+    }
+    return isAiEnabled;
+  }
+
   private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
     setTimeout(async () => {
       try {
@@ -284,10 +297,7 @@ export class AuthenticationWebview {
                   const tenant = message.tenant.trim();
                   const authService = AuthService.getInstance(this.context);
                   const token = await authService.authenticate(baseUri, tenant);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
+                  const isAiEnabled = await this.executePostAuthCommands();
                   if (token !== "") {
                     this.schedulePostAuth(isAiEnabled);
                   }
@@ -314,21 +324,12 @@ export class AuthenticationWebview {
                   }
 
                   authService.saveToken(this.context, message.apiKey);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
+                  const isAiEnabled = await this.executePostAuthCommands();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
                   this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
-                }
-
-                const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
-                if (isDastFeatureEnabled) {
-                  const isDastEnabled = await cx.isDastLicenseEnabled(this.logs);
-                  this.logs.info(`DAST license enabled: ${isDastEnabled}`); // TODO: display panel content accordingly
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
