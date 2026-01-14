@@ -421,7 +421,14 @@ export async function activate(context: vscode.ExtensionContext) {
     isDastEnabled
   );
   if (isDastEnabled) {
-    const dastResultsProvider = new DastResultsProvider();
+    const dastResultsProvider = new DastResultsProvider(
+      context,
+      logs,
+      statusBarItem,
+      diagnosticCollection,
+      filterCommand,
+      groupByCommand
+    );
     vscode.window.registerTreeDataProvider(
       constants.dastTreeName,
       dastResultsProvider
