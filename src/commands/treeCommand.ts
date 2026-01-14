@@ -30,17 +30,13 @@ export class TreeCommand {
   public registerRefreshCommands() {
     this.createRefreshTreeCommand();
     this.createRefreshScaTreeCommand();
-    if (this.dastResultsProvider) {
-      this.createRefreshDastTreeCommand();
-    }
+    this.createRefreshDastTreeCommand();
   }
 
   public registerClearCommands() {
     this.clearCommand();
     this.clearScaCommand();
-    if (this.dastResultsProvider) {
-      this.clearDastCommand();
-    }
+    this.clearDastCommand();
   }
 
   private createRefreshTreeCommand() {
@@ -83,7 +79,11 @@ export class TreeCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.refreshDastTree,
-        async () => await this.dastResultsProvider!.refreshData()
+        async () => {
+          if (this.dastResultsProvider) {
+            await this.dastResultsProvider.refreshData();
+          }
+        }
       )
     );
   }
@@ -92,7 +92,11 @@ export class TreeCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
         commands.clearDast,
-        async () => await this.dastResultsProvider!.clean()
+        async () => {
+          if (this.dastResultsProvider) {
+            await this.dastResultsProvider.clean();
+          }
+        }
       )
     );
   }
