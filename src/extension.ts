@@ -412,7 +412,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const isDastFeatureEnabled = isFeatureEnabled(DAST_ENABLED);
   vscode.commands.executeCommand(
     commands.setContext,
-    "ast-results.isDastEnabled",
+    commands.isDastEnabled,
     isDastFeatureEnabled
   );
   if (isDastFeatureEnabled) {

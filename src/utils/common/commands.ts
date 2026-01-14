@@ -141,5 +141,7 @@ export const commands = {
   scaAutoScanPromo: "scaAutoScanPromo",
   docAndFeedback: "docAndFeedback",
   refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
-  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`
+  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
+
+  isDastEnabled: `${constants.extensionName}.isDastEnabled`,
 };
