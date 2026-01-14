@@ -1,19 +1,21 @@
 # CHANGELOG
 
+## [v2.46.1-2.46.0-MCPInstallLogs.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.0-MCPInstallLogs.0) - 2026-01-14 10:25:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes
+* Add a DAST feature flag (AST-129171) by @cx-ronit-steinberg in https://github.com/Checkmarx/ast-vscode-extension/pull/1346
+
+## New Contributors
+* @cx-ronit-steinberg made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1346
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...v2.46.1-2.46.0-MCPInstallLogs.0
+
 ## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.46.0 -->
-
-## What's Changed
-### New Features 🚀
-* Ordering of settings neeeded after plugin name change by @cx-umesh-waghode in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
-### Other Changes
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1351
-
-## New Contributors
-* @cx-umesh-waghode made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1350
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.45.0...v2.46.0
 
 ## [v2.45.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.45.0) - 2026-01-12 10:58:15
 
