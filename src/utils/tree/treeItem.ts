@@ -5,6 +5,7 @@ import { constants } from "../common/constants";
 const typeToIconMap: Map<string, string> = new Map([
   [constants.graphItem, "graph"],
   [constants.projectItem, "project"],
+  [constants.environmentItem, "project"],
   [constants.branchItem, "repo"],
   [constants.bookItem, "book"],
   [constants.requestChangesItem, "request-changes"],

@@ -363,6 +363,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.environmentPick",
+        "category": "ast-results",
+        "title": "Select Environment",
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",
@@ -683,6 +690,11 @@
           "command": "ast-results.scanInput",
           "group": "inline",
           "when": "viewItem == scan-item"
+        },
+        {
+          "command": "ast-results.environmentPick",
+          "group": "inline",
+          "when": "viewItem == environment-item"
         }
       ],
       "view/title": [
