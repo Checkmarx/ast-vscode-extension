@@ -192,7 +192,8 @@ export class Cx implements CxPlatform {
             scanId,
             constants.resultsFileExtension,
             constants.resultsFileName,
-            getFilePath()
+            getFilePath(),
+            constants.vsCodeAgent
         );
     }
 
@@ -760,7 +761,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, true, null);
+        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -781,7 +782,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(sourcePath, false, ignorePath);
+        const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -901,8 +902,64 @@ export class Cx implements CxPlatform {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "",
+            cx.telemetryAIEvent("", "", "", "", "", "",
                 scanType, status, totalCount);
+        }
+    }
+
+    async sendAIFixOutcomeTelemetry(
+        eventType: string,
+        scannerType: string,
+        severity: string,
+        mcpSuggestedVersion?: string,
+        actualVersion?: string,
+        retryCount?: number,
+        additionalData?: string
+    ): Promise<void> {
+        try {
+            const config = await this.getAstConfiguration();
+            if (!config) {
+                console.warn("Cannot send AI fix telemetry: no configuration");
+                return;
+            }
+
+            const cxWrapper = new CxWrapper(config);
+            const aiProvider = isIDE(constants.kiroAgent)
+                ? constants.kiroAgent
+                : isIDE(constants.cursorAgent)
+                    ? constants.cursorAgent
+                    : isIDE(constants.windsurfAgent)
+                        ? "Cascade"
+                        : "Copilot";
+            const agent = isIDE(constants.kiroAgent)
+                ? constants.kiroAgent
+                : isIDE(constants.cursorAgent)
+                    ? constants.cursorAgent
+                    : isIDE(constants.windsurfAgent)
+                        ? constants.windsurfAgent
+                        : constants.vsCodeAgent;
+
+            // Build subType with fix outcome details
+            const subTypeData = {
+                mcpSuggestedVersion,
+                actualVersion,
+                retryCount,
+                ...(additionalData ? JSON.parse(additionalData) : {})
+            };
+
+            cxWrapper.telemetryAIEvent(
+                aiProvider,
+                agent,
+                eventType,
+                JSON.stringify(subTypeData),
+                scannerType,
+                severity,
+                "",
+                "",
+                0
+            );
+        } catch (error) {
+            console.error(`Failed to send AI fix outcome telemetry: ${error}`);
         }
     }
 }

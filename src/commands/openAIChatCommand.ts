@@ -36,6 +36,7 @@ import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerSe
 import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
 import { cx } from "../cx";
+import { AISuggestionTracker } from "../aiTracking/AISuggestionTracker";
 
 
 export class CopilotChatCommand {
@@ -276,6 +277,15 @@ export class CopilotChatCommand {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.openAIChat, item);
+
+                // Track the AI fix request for outcome monitoring
+                try {
+                    const tracker = AISuggestionTracker.getInstance();
+                    await tracker.trackFixRequest(item);
+                    this.logs.info("AI fix request tracked for outcome monitoring");
+                } catch (trackError) {
+                    this.logs.warn(`Failed to track AI fix request: ${trackError}`);
+                }
 
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
