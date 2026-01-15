@@ -326,7 +326,7 @@ export async function getDastScansPickItemsWithParams(
 
 function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
   const dateTime = getFormattedDateTime(created);
-  return isLatest ? `${dateTime} ${scanId} (latest)` : `${dateTime} ${scanId}`;
+  return `${dateTime} ${scanId}${isLatest ? " (latest)" : ""}`;
 }
 
 export async function dastScanInput(context: vscode.ExtensionContext, logs: Logs) {
