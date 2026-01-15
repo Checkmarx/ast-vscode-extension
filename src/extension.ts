@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
+import { environmentPicker } from "./utils/pickers/pickers";
 import { Logs } from "./models/logs";
 import {
   addRealTimeSaveListener,
@@ -415,8 +416,16 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.isDastEnabled,
     isDastEnabled
   );
+  let dastResultsProvider: DastResultsProvider | undefined;
   if (isDastEnabled) {
-    const dastResultsProvider = new DastResultsProvider();
+    dastResultsProvider = new DastResultsProvider(
+      context,
+      logs,
+      statusBarItem,
+      diagnosticCollection,
+      filterCommand,
+      groupByCommand
+    );
     vscode.window.registerTreeDataProvider(
       constants.dastTreeName,
       dastResultsProvider
@@ -424,6 +433,14 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.createTreeView(constants.dastTreeName, {
       treeDataProvider: dastResultsProvider,
     });
+
+    // Register command for environment picker
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.environmentPick, () => environmentPicker(context, logs))
+    );
+
+    // Refresh DAST tree to show root items on startup
+    dastResultsProvider.refreshData();
   }
 
   // SCA auto scanning commands register
@@ -493,7 +510,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     astResultsProvider,
     scaResultsProvider,
-    logs
+    logs,
+    dastResultsProvider
   );
   // Promo webview already registered above
 
