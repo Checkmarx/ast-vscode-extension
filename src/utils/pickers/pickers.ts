@@ -367,7 +367,7 @@ async function loadDastScanById(
       });
       progress.report({ message: messages.loadingScan });
       try {
-        const params = `scan-id=${scanId}`;
+        const params = `scanId=${scanId}`;
         const scanList = await cx.getDastScansListWithParams(environmentId, params);
         if (scanList && scanList.length > 0) {
           const scan = scanList[0];
