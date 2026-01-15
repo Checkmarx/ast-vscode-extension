@@ -288,7 +288,7 @@ export class AuthenticationWebview {
                   await commonCommand.executeCheckStandaloneEnabled();
                   await commonCommand.executeCheckCxOneAssistEnabled();
                   if (token !== "") {
-                    this.schedulePostAuth(isAiEnabled);
+                    this.schedulePostAuth(isAiEnabled, { apiKey: token });
                   }
                   else {
                     this._panel.webview.postMessage({ command: "enableAuthButton" });
