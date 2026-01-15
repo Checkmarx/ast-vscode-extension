@@ -27,7 +27,7 @@ export class DastResultsProvider extends ResultsProvider {
 
   async clean(): Promise<void> {
     this.logs.info(messages.clearLoadedInfo);
-    updateState(this.context, constants.scanIdKey, undefined);
+    updateState(this.context, constants.dastScanIdKey, undefined);
     updateState(this.context, constants.environmentIdKey, undefined);
     await this.refreshData();
   }
@@ -73,7 +73,7 @@ export class DastResultsProvider extends ResultsProvider {
         constants.environmentItem
       ),
       new TreeItem(
-        `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
+        `${getFromState(this.context, constants.dastScanIdKey)?.displayScanId ?? constants.scanLabel}`,
         constants.dastScanItem
       ),
     ];

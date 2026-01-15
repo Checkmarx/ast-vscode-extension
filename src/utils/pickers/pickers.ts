@@ -226,7 +226,7 @@ export async function environmentPicker(
       scanDatetime: undefined,
     });
     // Clear scan selection when environment changes
-    updateState(context, constants.scanIdKey, {
+    updateState(context, constants.dastScanIdKey, {
       id: undefined,
       name: constants.scanLabel,
       displayScanId: undefined,
@@ -269,7 +269,7 @@ export async function dastScanPicker(
   };
 
   const handleDastScanSelection = async (item: CxQuickPickItem) => {
-    updateState(context, constants.scanIdKey, {
+    updateState(context, constants.dastScanIdKey, {
       id: item.id,
       name: `${constants.scanLabel} ${item.label}`,
       displayScanId: `${constants.scanLabel} ${item.formattedId}`,
@@ -365,7 +365,7 @@ async function loadDastScanById(
         const scanList = await cx.getDastScansListWithParams(environmentId, params);
         if (scanList && scanList.length > 0) {
           const scan = scanList[0];
-          updateState(context, constants.scanIdKey, {
+          updateState(context, constants.dastScanIdKey, {
             id: scan.scanId,
             name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
             displayScanId: `${constants.scanLabel} ${scan.scanId.substring(0, 8)}`,

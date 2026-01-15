@@ -6,6 +6,7 @@ export const constants = {
   dastLicenseEnabledGlobalState: "dastLicenseEnabled",
   authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
+  dastScanIdKey: "ast-results-dast-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
   criticalFilter: "ast-results-critical",
