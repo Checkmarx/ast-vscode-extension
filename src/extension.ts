@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { AstResultsProvider } from "./views/resultsView/astResultsProvider";
 import { AstResultsPromoProvider } from "./views/resultsView/astResultsPromoProvider";
 import { constants } from "./utils/common/constants";
-import { environmentPicker, dastScanPicker } from "./utils/pickers/pickers";
+import { environmentPicker, dastScanPicker, dastScanInput } from "./utils/pickers/pickers";
 import { Logs } from "./models/logs";
 import {
   addRealTimeSaveListener,
@@ -442,6 +442,11 @@ export async function activate(context: vscode.ExtensionContext) {
     // Register command for DAST scan picker
     context.subscriptions.push(
       vscode.commands.registerCommand(commands.dastScanPick, () => dastScanPicker(context, logs))
+    );
+
+    // Register command for DAST scan input (search by ID)
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.dastScanInput, () => dastScanInput(context, logs))
     );
 
     // Refresh DAST tree to show root items on startup

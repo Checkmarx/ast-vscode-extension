@@ -377,6 +377,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.dastScanInput",
+        "category": "ast-results",
+        "title": "Look for DAST Scan",
+        "icon": "$(search)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",
@@ -705,6 +712,11 @@
         },
         {
           "command": "ast-results.dastScanPick",
+          "group": "inline",
+          "when": "viewItem == dast-scan-item"
+        },
+        {
+          "command": "ast-results.dastScanInput",
           "group": "inline",
           "when": "viewItem == dast-scan-item"
         }
