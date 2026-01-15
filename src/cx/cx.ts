@@ -3,7 +3,7 @@ import { CxWrapper } from "@checkmarx/ast-cli-javascript-wrapper";
 import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/environment/CxEnvironment";
+import CxDastEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/dast/CxDastEnvironment";
 import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
@@ -249,7 +249,7 @@ export class Cx implements CxPlatform {
         return r;
     }
 
-    async getEnvironmentsListWithParams(params: string): Promise<CxEnvironment[] | undefined> {
+    async getDastEnvironmentsListWithParams(params: string): Promise<CxDastEnvironment[] | undefined> {
         let r = [];
         const config = await this.getAstConfiguration();
         if (!config) {

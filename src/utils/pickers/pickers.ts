@@ -258,7 +258,7 @@ export async function getEnvironmentsPickItemsWithParams(
           params += `,search=${filter}`;
         }
         params += ',sort=domain:asc';
-        const envList = await cx.getEnvironmentsListWithParams(params);
+        const envList = await cx.getDastEnvironmentsListWithParams(params);
         return envList.map((env) => ({
           label: env.name,
           id: env.id,
