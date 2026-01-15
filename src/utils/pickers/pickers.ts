@@ -371,7 +371,7 @@ async function loadDastScanById(
         const scanList = await cx.getDastScansListWithParams(environmentId, params);
         if (scanList && scanList.length > 0) {
           const scan = scanList[0];
-          updateState(context, constants.dastScanIdKey, {
+          await updateState(context, constants.dastScanIdKey, {
             id: scan.scanId,
             name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
             displayScanId: `${constants.scanLabel} ${scan.scanId}`,

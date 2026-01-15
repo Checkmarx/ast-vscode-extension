@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import { constants } from "./constants";
 
-export function updateState(
+export async function updateState(
   context: vscode.ExtensionContext,
   key: string,
   item: Item | undefined
 ) {
-  context.workspaceState.update(key, item);
+  await context.workspaceState.update(key, item);
 }
 
 export function getFromState(
