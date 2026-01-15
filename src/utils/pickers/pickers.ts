@@ -313,7 +313,7 @@ export async function getDastScansPickItemsWithParams(
           label: formatDastScanLabel(scan.created, scan.scanId, index === 0 && offset === 0),
           id: scan.scanId,
           datetime: getFormattedDateTime(scan.created),
-          formattedId: scan.scanId.substring(0, 8),
+          formattedId: scan.scanId,
         }));
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
@@ -374,7 +374,7 @@ async function loadDastScanById(
           updateState(context, constants.dastScanIdKey, {
             id: scan.scanId,
             name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
-            displayScanId: `${constants.scanLabel} ${scan.scanId.substring(0, 8)}`,
+            displayScanId: `${constants.scanLabel} ${scan.scanId}`,
             scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.created)}`,
           });
           await vscode.commands.executeCommand(commands.refreshDastTree);
