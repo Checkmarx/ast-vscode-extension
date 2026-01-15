@@ -256,7 +256,7 @@ export class Cx implements CxPlatform {
             return [];
         }
         const cx = new CxWrapper(config);
-        const envs = await cx.environmentsList(params ?? "");
+        const envs = await cx.dastEnvironmentsList(params ?? "");
         if (envs.exitCode === 0) {
             r = envs.payload ?? [];
         } else {
