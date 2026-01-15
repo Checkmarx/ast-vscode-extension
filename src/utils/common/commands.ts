@@ -145,6 +145,7 @@ export const commands = {
 
   isDastEnabled: `${constants.extensionName}.isDastEnabled`,
   environmentPick: `${constants.extensionName}.environmentPick`,
+  dastScanPick: `${constants.extensionName}.dastScanPick`,
   refreshDastTree: `${constants.extensionName}.refreshDastTree`,
   clearDast: `${constants.extensionName}.clearDast`,
 };

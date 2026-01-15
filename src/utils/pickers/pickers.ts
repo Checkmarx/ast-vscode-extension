@@ -225,6 +225,13 @@ export async function environmentPicker(
       displayScanId: undefined,
       scanDatetime: undefined,
     });
+    // Clear scan selection when environment changes
+    updateState(context, constants.scanIdKey, {
+      id: undefined,
+      name: constants.scanLabel,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
     await vscode.commands.executeCommand(commands.refreshDastTree);
   };
 
@@ -233,6 +240,87 @@ export async function environmentPicker(
     constants.environmentPickerTitle,
     fetchEnvironments,
     handleEnvironmentSelection
+  );
+}
+
+export async function dastScanPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  const environmentItem = getFromState(context, constants.environmentIdKey);
+  if (!environmentItem?.id) {
+    vscode.window.showErrorMessage(messages.pickerEnvironmentMissing);
+    return;
+  }
+
+  const fetchDastScans = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ) => {
+    return await getDastScansPickItemsWithParams(
+      logs,
+      context,
+      environmentItem.id,
+      filter,
+      pageSize,
+      offset
+    );
+  };
+
+  const handleDastScanSelection = async (item: CxQuickPickItem) => {
+    updateState(context, constants.scanIdKey, {
+      id: item.id,
+      name: `${constants.scanLabel} ${item.label}`,
+      displayScanId: `${constants.scanLabel} ${item.formattedId}`,
+      scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
+    });
+    await vscode.commands.executeCommand(commands.refreshDastTree);
+  };
+
+  await createPicker(
+    constants.scanPlaceholder,
+    constants.dastScanPickerTitle,
+    fetchDastScans,
+    handleDastScanSelection
+  );
+}
+
+export async function getDastScansPickItemsWithParams(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  environmentId: string,
+  filter: string,
+  limit: number,
+  offset: number
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingScans });
+      try {
+        const from = offset + 1;
+        const to = offset + limit;
+        let params = `from=${from},to=${to}`;
+        if (filter) {
+          params += `,search=${filter}`;
+        }
+        const scanList = await cx.getDastScansListWithParams(environmentId, params);
+        return scanList.map((scan) => ({
+          label: getFormattedDateTime(scan.created),
+          id: scan.scanId,
+          datetime: getFormattedDateTime(scan.created),
+          formattedId: scan.scanId.substring(0, 8),
+        }));
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
   );
 }
 

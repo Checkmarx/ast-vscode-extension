@@ -4,6 +4,7 @@ import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRe
 import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
 import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
 import CxDastEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/dast/CxDastEnvironment";
+import CxDastScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/dast/CxDastScan";
 import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
 import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
@@ -261,6 +262,22 @@ export class Cx implements CxPlatform {
             r = envs.payload ?? [];
         } else {
             throw new Error(envs.status);
+        }
+        return r;
+    }
+
+    async getDastScansListWithParams(environmentId: string, params: string): Promise<CxDastScan[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const scans = await cx.dastScansList(environmentId, params ?? "");
+        if (scans.exitCode === 0) {
+            r = scans.payload ?? [];
+        } else {
+            throw new Error(scans.status);
         }
         return r;
     }

@@ -41,6 +41,7 @@ export const messages = {
   scaVulnerabilities: "Vulnerabilities",
   pickerProjectMissing: "Please select a project first",
   pickerBranchProjectMissing: "Please select a branch and project first",
+  pickerEnvironmentMissing: "Please select an environment first",
   filterResults: (activeFilter) => `Filtering ${activeFilter} results`,
   kicsStatusBarConnect: "$(check) Checkmarx kics",
   kicsStatusBarDisconnect: "$(debug-disconnect) Checkmarx kics",

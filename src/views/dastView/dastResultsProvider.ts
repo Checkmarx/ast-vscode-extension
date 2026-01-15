@@ -74,7 +74,7 @@ export class DastResultsProvider extends ResultsProvider {
       ),
       new TreeItem(
         `${getFromState(this.context, constants.scanIdKey)?.displayScanId ?? constants.scanLabel}`,
-        constants.scanItem
+        constants.dastScanItem
       ),
     ];
   }

@@ -370,6 +370,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.dastScanPick",
+        "category": "ast-results",
+        "title": "Select DAST Scan",
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.scanInput",
         "category": "ast-results",
         "title": "Look for Scan",
@@ -695,6 +702,11 @@
           "command": "ast-results.environmentPick",
           "group": "inline",
           "when": "viewItem == environment-item"
+        },
+        {
+          "command": "ast-results.dastScanPick",
+          "group": "inline",
+          "when": "viewItem == dast-scan-item"
         }
       ],
       "view/title": [
