@@ -344,7 +344,13 @@ export async function dastScanInput(context: vscode.ExtensionContext, logs: Logs
     return;
   }
 
-  await loadDastScanById(context, environmentItem.id, input.trim(), logs);
+  const trimmedInput = input.trim();
+  if (!uuidPattern.test(trimmedInput)) {
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    return;
+  }
+
+  await loadDastScanById(context, environmentItem.id, trimmedInput, logs);
 }
 
 async function loadDastScanById(
