@@ -73,7 +73,7 @@ export class IacScannerCommand extends BaseScannerCommand {
 			}
 
 			const args = encodeURIComponent(JSON.stringify([problem]));
-			const buttons = buildCommandButtons(args, false, false);
+			const buttons = buildCommandButtons(args, false, false, true); // true = show preview button
 
 			md.appendMarkdown(this.renderSeverityIcon(problem.severity));
 			md.appendMarkdown(this.renderID(problem));

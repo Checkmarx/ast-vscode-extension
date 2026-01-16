@@ -67,6 +67,12 @@
         "title": "Run kics realtime scan"
       },
       {
+        "command": "ast-results.ascaRemediationPreview",
+        "category": "ast-results",
+        "title": "Preview ASCA Remediation",
+        "icon": "$(eye)"
+      },
+      {
         "command": "ast-results.clear",
         "category": "ast-results",
         "title": "Clear Results Selection",

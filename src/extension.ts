@@ -40,6 +40,7 @@ import { SecretsScannerCommand } from "./realtimeScanners/scanners/secrets/secre
 import { IgnoreFileManager } from "./realtimeScanners/common/ignoreFileManager";
 import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCommand";
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
+import { UnifiedRemediationDiffProvider } from "./services/unifiedRemediationDiffProvider";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 import { DiagnosticCommand } from "./commands/diagnosticCommand";
 
@@ -551,6 +552,17 @@ export async function activate(context: vscode.ExtensionContext) {
       new CxCodeActionProvider(),
       {
         providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+      }
+    )
+  );
+
+  // Register unified remediation preview command (works for ASCA, Secrets, IaC)
+  const unifiedDiffProvider = new UnifiedRemediationDiffProvider(context);
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      commands.ascaRemediationPreview,
+      async (hoverData) => {
+        await unifiedDiffProvider.showDiff(hoverData);
       }
     )
   );

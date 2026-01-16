@@ -283,8 +283,14 @@ export function isIDE(ideName: string): boolean {
   return getIDEName().includes(ideName.toLowerCase());
 }
 
-export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecret: boolean): string {
-  return `<a href="command:${commands.openAIChat}?${args}">Fix with Checkmarx One Assist</a> &emsp;
+export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecret: boolean, showPreview: boolean = false): string {
+  // Show preview button for all scanner types that support code remediation
+  // (ASCA/SAST, Secrets, IaC, and potentially Containers)
+  const previewButton = showPreview
+    ? `<a href="command:${commands.ascaRemediationPreview}?${args}">Preview remediation</a> &emsp;`
+    : '';
+
+  return `${previewButton}<a href="command:${commands.openAIChat}?${args}">Fix with Checkmarx One Assist</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
           <a href="command:${commands.ignorePackage}?${args}"> ${isSecret ? "Ignore this secret in file" : "Ignore this vulnerability"}</a> &emsp;
           <a href="command:${commands.ignoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;

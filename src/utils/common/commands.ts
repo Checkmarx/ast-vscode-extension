@@ -127,6 +127,7 @@ export const commands = {
   openSettings: "workbench.action.openSettings",
   openSettingsArgs: `@ext:checkmarx.${constants.extensionName}`,
   openAIChat: `${constants.extensionName}.${constants.openAIChat}`,
+  ascaRemediationPreview: `${constants.extensionName}.ascaRemediationPreview`,
   viewDetails: `${constants.extensionName}.${constants.viewDetails}`,
   ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
   ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,

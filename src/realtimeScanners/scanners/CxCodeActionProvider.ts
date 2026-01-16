@@ -27,6 +27,22 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 
 			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
 
+			const actionList: vscode.CodeAction[] = [];
+
+			// Add preview action for ASCA
+			if (this.isAscaItem(item)) {
+				const previewAction = new vscode.CodeAction(
+					"👁️ Preview remediation",
+					vscode.CodeActionKind.QuickFix
+				);
+				previewAction.command = {
+					command: commands.ascaRemediationPreview,
+					title: "Preview ASCA remediation",
+					arguments: [item]
+				};
+				previewAction.isPreferred = false;
+				actionList.push(previewAction);
+			}
 
 			const fixWithCxButton = `Fix with Checkmarx One Assist`;
 
@@ -39,6 +55,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				title: fixWithCxButton,
 				arguments: [item]
 			};
+			fixAction.isPreferred = true;
 
 			const viewDetails = "View details";
 			const explainAction = new vscode.CodeAction(
@@ -60,7 +77,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				arguments: [item]
 			};
 
-			const actionList = [fixAction, explainAction, ignoreAction];
+			actionList.push(fixAction, explainAction, ignoreAction);
 
 			if (this.isEligibleForIgnoreAll(item)) {
 				const ignoreAllVulnerability = "Ignore all of this type";
@@ -90,5 +107,11 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
 	): boolean {
 		return "title" in item && "secretValue" in item;
+	}
+
+	private isAscaItem(
+		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+	): item is AscaHoverData {
+		return "ruleName" in item && "remediationAdvise" in item;
 	}
 }

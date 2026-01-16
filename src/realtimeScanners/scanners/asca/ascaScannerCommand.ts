@@ -74,7 +74,7 @@ export class AscaScannerCommand extends BaseScannerCommand {
 			}
 
 			const args = encodeURIComponent(JSON.stringify([problem]));
-			const buttons = buildCommandButtons(args, false, false);
+			const buttons = buildCommandButtons(args, false, false, true); // true = isAsca
 
 			md.appendMarkdown(this.renderSeverityIcon(problem.severity) + " ");
 			md.appendMarkdown(this.renderID(problem) + "<br>");
