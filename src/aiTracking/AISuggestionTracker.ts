@@ -33,7 +33,7 @@ export class AISuggestionTracker {
   private static instance: AISuggestionTracker;
 
   private pendingFixes: Map<string, PendingAIFix> = new Map();
-
+//Add new
   private config: TrackerConfig;
 
   private context: vscode.ExtensionContext;

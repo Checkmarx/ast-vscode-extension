@@ -905,7 +905,7 @@ export class Cx implements CxPlatform {
                 scanType, status, totalCount);
         }
     }
-
+//Add new
     async sendAIFixOutcomeTelemetry(
         eventType: string,
         scannerType: string,
