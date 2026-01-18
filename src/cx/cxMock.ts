@@ -14,6 +14,7 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import { FixOutcomeTelemetry } from "../aiTracking/AISuggestionTracker";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
