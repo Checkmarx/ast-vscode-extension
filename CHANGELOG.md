@@ -1,17 +1,16 @@
 # CHANGELOG
 
-## [v2.46.1-2.46.0-MCPInstallLogs.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.0-MCPInstallLogs.0) - 2026-01-14 10:25:00
+## [v2.46.1-mcp-fallback-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-mcp-fallback-changes.0) - 2026-01-14 18:31:31
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
-## What's Changed
-### Other Changes
-* Add a DAST feature flag (AST-129171) by @cx-ronit-steinberg in https://github.com/Checkmarx/ast-vscode-extension/pull/1346
 
-## New Contributors
-* @cx-ronit-steinberg made their first contribution in https://github.com/Checkmarx/ast-vscode-extension/pull/1346
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...v2.46.1-2.46.0-MCPInstallLogs.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-2.46.0-MCPInstallLogs.0...v2.46.1-mcp-fallback-changes.0
+
+## [v2.46.1-2.46.0-MCPInstallLogs.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.0-MCPInstallLogs.0) - 2026-01-14 10:25:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
 
