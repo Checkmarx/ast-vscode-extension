@@ -192,8 +192,7 @@ export class Cx implements CxPlatform {
             scanId,
             constants.resultsFileExtension,
             constants.resultsFileName,
-            getFilePath(),
-            constants.vsCodeAgent
+            getFilePath()
         );
     }
 
@@ -761,7 +760,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
+        const scans = await cx.scanAsca(null, true, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -782,7 +781,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
+        const scans = await cx.scanAsca(sourcePath, false, ignorePath);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -902,7 +901,7 @@ export class Cx implements CxPlatform {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "", "",
+            cx.telemetryAIEvent("", "", "", "", "",
                 scanType, status, totalCount);
         }
     }
@@ -949,7 +948,6 @@ export class Cx implements CxPlatform {
 
             cxWrapper.telemetryAIEvent(
                 aiProvider,
-                agent,
                 eventType,
                 JSON.stringify(subTypeData),
                 scannerType,
