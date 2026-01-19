@@ -222,17 +222,22 @@ export async function environmentPicker(
     updateState(context, constants.environmentIdKey, {
       id: item.id,
       name: `${constants.environmentLabel} ${item.label}`,
-      displayScanId: undefined,
+      displayScanId: item.lastScanId,
       scanDatetime: undefined,
     });
-    // Clear scan selection when environment changes
-    updateState(context, constants.dastScanIdKey, {
-      id: undefined,
-      name: constants.scanLabel,
-      displayScanId: undefined,
-      scanDatetime: undefined,
-    });
-    await vscode.commands.executeCommand(commands.refreshDastTree);
+
+    // Auto-load the latest scan if environment has one
+    if (item.id && item.lastScanId) {
+      await loadDastScanById(context, item.id, item.lastScanId, logs, true);
+    } else {
+      updateState(context, constants.dastScanIdKey, {
+        id: undefined,
+        name: constants.scanLabel,
+        displayScanId: undefined,
+        scanDatetime: undefined,
+      });
+      await vscode.commands.executeCommand(commands.refreshDastTree);
+    }
   };
 
   await createPicker(
@@ -309,12 +314,19 @@ export async function getDastScansPickItemsWithParams(
           params += `,search=${filter}`;
         }
         const scanList = await cx.getDastScansListWithParams(environmentId, params);
-        return scanList.map((scan, index) => ({
-          label: formatDastScanLabel(scan.created, scan.scanId, index === 0 && offset === 0),
-          id: scan.scanId,
-          datetime: getFormattedDateTime(scan.created),
-          formattedId: scan.scanId,
-        }));
+        // Get the environment's lastScanId to determine which scan is the latest
+        const environmentItem = getFromState(context, constants.environmentIdKey);
+        const lastScanId = environmentItem?.displayScanId;
+        return scanList.map((scan) => {
+          const isLatest = scan.scanId === lastScanId;
+          return {
+            label: formatDastScanLabel(scan.created, scan.scanId, isLatest),
+            id: scan.scanId,
+            datetime: getFormattedDateTime(scan.created),
+            formattedId: formatDastScanId(scan.scanId, isLatest),
+            isLatest,
+          };
+        });
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
         vscode.commands.executeCommand(commands.showError);
@@ -322,6 +334,10 @@ export async function getDastScansPickItemsWithParams(
       }
     }
   );
+}
+
+function formatDastScanId(scanId: string, isLatest: boolean): string {
+  return `${scanId}${isLatest ? " (latest)" : ""}`;
 }
 
 function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
@@ -357,7 +373,8 @@ async function loadDastScanById(
   context: vscode.ExtensionContext,
   environmentId: string,
   scanId: string,
-  logs: Logs
+  logs: Logs,
+  isLatest?: boolean
 ) {
   return await vscode.window.withProgress(
     PROGRESS_HEADER,
@@ -371,10 +388,14 @@ async function loadDastScanById(
         const scanList = await cx.getDastScansListWithParams(environmentId, params);
         if (scanList && scanList.length > 0) {
           const scan = scanList[0];
+          // Determine if this scan is the latest by comparing with environment's lastScanId
+          const environmentItem = getFromState(context, constants.environmentIdKey);
+          const scanIsLatest = isLatest ?? (environmentItem?.displayScanId === scan.scanId);
+          const formattedId = formatDastScanId(scan.scanId, scanIsLatest);
           await updateState(context, constants.dastScanIdKey, {
             id: scan.scanId,
             name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
-            displayScanId: `${constants.scanLabel} ${scan.scanId}`,
+            displayScanId: `${constants.scanLabel} ${formattedId}`,
             scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.created)}`,
           });
           await vscode.commands.executeCommand(commands.refreshDastTree);
@@ -415,6 +436,8 @@ export async function getEnvironmentsPickItemsWithParams(
         return envList.map((env) => ({
           label: env.name,
           id: env.id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          lastScanId: (env as any).lastScanId,
         }));
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
