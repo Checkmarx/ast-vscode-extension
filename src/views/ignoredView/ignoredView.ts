@@ -213,36 +213,38 @@ export class IgnoredView {
 					const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
 					const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
 
-				const success = ignoreManager.revivePackage(packageKey);
+					const success = ignoreManager.revivePackage(packageKey);
 
-				if (success) {
-					totalSuccesses++;
-					totalFileCount += fileCount;
-				} else {
-					failedPackages.push(packageKey);
+					if (success) {
+						totalSuccesses++;
+						totalFileCount += fileCount;
+					} else {
+						failedPackages.push(packageKey);
+					}
+				}
+
+				if (totalSuccesses > 0) {
+					const message = totalSuccesses === 1
+						? `1 vulnerability has been revived in ${totalFileCount} files.`
+						: `${totalSuccesses} vulnerabilities have been revived in ${totalFileCount} files.`;
+
+					vscode.window.showInformationMessage(message, 'Close');
+
+					setTimeout(async () => {
+						await ignoreManager.triggerActiveChangesDetection();
+						this.refresh();
+					}, 100);
+				}
+
+				if (failedPackages.length > 0) {
+					vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
 				}
 			}
-
-			if (totalSuccesses > 0) {
-				const message = totalSuccesses === 1
-					? `1 vulnerability has been revived in ${totalFileCount} files.`
-					: `${totalSuccesses} vulnerabilities have been revived in ${totalFileCount} files.`;
-
-				vscode.window.showInformationMessage(message, 'Close');
-
-				setTimeout(async () => {
-					await ignoreManager.triggerActiveChangesDetection();
-					this.refresh();
-				}, 100);
-			}
-
-			if (failedPackages.length > 0) {
-				vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
-			}
-		} }catch (error) {
-			console.error('Error reviving packages:', error);
-			vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
 		}
+			catch (error) {
+				console.error('Error reviving packages:', error);
+				vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
+			}
 	}
 
 	private async openFile(filePath: string, line: number): Promise<void> {
