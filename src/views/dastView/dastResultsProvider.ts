@@ -72,6 +72,17 @@ export class DastResultsProvider extends ResultsProvider {
       if (scanItem.scanDatetime) {
         treeItems = treeItems.concat(new TreeItem(scanItem.scanDatetime, constants.calendarItem));
       }
+
+      // Add status from data
+      if (scanItem.data?.statistics) {
+        treeItems = treeItems.concat(new TreeItem(`Status: ${scanItem.data.statistics}`, constants.statusItem));
+      }
+
+      // Add severity summary from alertRiskLevel
+      const severitySummary = this.createDastSeveritySummary(scanItem.data?.alertRiskLevel);
+      if (severitySummary) {
+        treeItems = treeItems.concat(new TreeItem(severitySummary, constants.graphItem));
+      }
     }
 
     return new TreeItem('', undefined, undefined, treeItems);
@@ -90,32 +101,28 @@ export class DastResultsProvider extends ResultsProvider {
     ];
   }
 
-  private createDastSeveritySummary(alertRiskLevelJson: string | undefined): string | undefined {
-    if (!alertRiskLevelJson) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private createDastSeveritySummary(alertRiskLevel: any): string | undefined {
+    if (!alertRiskLevel) {
       return undefined;
     }
 
-    try {
-      const alertRiskLevel = JSON.parse(alertRiskLevelJson);
-      const severityOrder = [
-        { key: 'criticalCount', label: SeverityLevel.critical.toUpperCase() },
-        { key: 'highCount', label: SeverityLevel.high.toUpperCase() },
-        { key: 'mediumCount', label: SeverityLevel.medium.toUpperCase() },
-        { key: 'lowCount', label: SeverityLevel.low.toUpperCase() },
-        { key: 'infoCount', label: SeverityLevel.info.toUpperCase() },
-      ];
+    const severityOrder = [
+      { key: 'criticalCount', label: SeverityLevel.critical.toUpperCase() },
+      { key: 'highCount', label: SeverityLevel.high.toUpperCase() },
+      { key: 'mediumCount', label: SeverityLevel.medium.toUpperCase() },
+      { key: 'lowCount', label: SeverityLevel.low.toUpperCase() },
+      { key: 'infoCount', label: SeverityLevel.info.toUpperCase() },
+    ];
 
-      const parts: string[] = [];
-      for (const severity of severityOrder) {
-        const count = alertRiskLevel[severity.key];
-        if (count && count > 0) {
-          parts.push(`${severity.label}: ${count}`);
-        }
+    const parts: string[] = [];
+    for (const severity of severityOrder) {
+      const count = alertRiskLevel[severity.key];
+      if (count && count > 0) {
+        parts.push(`${severity.label}: ${count}`);
       }
-
-      return parts.length > 0 ? parts.join(' | ') : undefined;
-    } catch {
-      return undefined;
     }
+
+    return parts.length > 0 ? parts.join(' | ') : undefined;
   }
 }

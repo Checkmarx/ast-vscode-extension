@@ -39,4 +39,7 @@ export class Item {
   name: string | undefined;
   scanDatetime: string | undefined;
   displayScanId: string | undefined;
+  // Generic data field for storing additional item-specific data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: Record<string, any>;
 }

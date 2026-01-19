@@ -274,12 +274,20 @@ export async function dastScanPicker(
   };
 
   const handleDastScanSelection = async (item: CxQuickPickItem) => {
-    updateState(context, constants.dastScanIdKey, {
-      id: item.id,
-      name: `${constants.scanLabel} ${item.label}`,
-      displayScanId: `${constants.scanLabel} ${item.formattedId}`,
-      scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const itemAny = item as any;
+    const stateItem = createDastScanStateItem({
+      scanId: item.id,
+      created: itemAny.created,
+      isLatest: itemAny.isLatest,
+      statistics: itemAny.statistics,
+      alertRiskLevel: itemAny.alertRiskLevel,
+      scanDuration: itemAny.scanDuration,
+      initiator: itemAny.initiator,
+      scannedPathsCount: itemAny.scannedPathsCount,
+      source: itemAny.source,
     });
+    updateState(context, constants.dastScanIdKey, stateItem);
     await vscode.commands.executeCommand(commands.refreshDastTree);
   };
 
@@ -322,6 +330,7 @@ export async function getDastScansPickItemsWithParams(
           return {
             label: formatDastScanLabel(scan.created, scan.scanId, isLatest),
             id: scan.scanId,
+            created: scan.created,
             datetime: getFormattedDateTime(scan.created),
             formattedId: formatDastScanId(scan.scanId, isLatest),
             isLatest,
@@ -349,6 +358,37 @@ function formatDastScanId(scanId: string, isLatest: boolean): string {
 function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
   const dateTime = getFormattedDateTime(created);
   return `${dateTime} ${scanId}${isLatest ? " (latest)" : ""}`;
+}
+
+interface DastScanData {
+  scanId: string;
+  created: string;
+  isLatest: boolean;
+  statistics: unknown;
+  alertRiskLevel: unknown;
+  scanDuration: unknown;
+  initiator: unknown;
+  scannedPathsCount: unknown;
+  source: unknown;
+}
+
+function createDastScanStateItem(scan: DastScanData) {
+  const formattedId = formatDastScanId(scan.scanId, scan.isLatest);
+  const datetime = getFormattedDateTime(scan.created);
+  return {
+    id: scan.scanId,
+    name: `${constants.scanLabel} ${datetime} ${scan.scanId}`,
+    displayScanId: `${constants.scanLabel} ${formattedId}`,
+    scanDatetime: `${constants.scanDateLabel} ${datetime}`,
+    data: {
+      statistics: scan.statistics,
+      alertRiskLevel: scan.alertRiskLevel,
+      scanDuration: scan.scanDuration,
+      initiator: scan.initiator,
+      scannedPathsCount: scan.scannedPathsCount,
+      source: scan.source,
+    },
+  };
 }
 
 export async function dastScanInput(context: vscode.ExtensionContext, logs: Logs) {
@@ -397,13 +437,18 @@ async function loadDastScanById(
           // Determine if this scan is the latest by comparing with environment's lastScanId
           const environmentItem = getFromState(context, constants.environmentIdKey);
           const scanIsLatest = isLatest ?? (environmentItem?.displayScanId === scan.scanId);
-          const formattedId = formatDastScanId(scan.scanId, scanIsLatest);
-          await updateState(context, constants.dastScanIdKey, {
-            id: scan.scanId,
-            name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
-            displayScanId: `${constants.scanLabel} ${formattedId}`,
-            scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.created)}`,
+          const stateItem = createDastScanStateItem({
+            scanId: scan.scanId,
+            created: scan.created,
+            isLatest: scanIsLatest,
+            statistics: scan.statistics,
+            alertRiskLevel: scan.alertRiskLevel,
+            scanDuration: scan.scanDuration,
+            initiator: scan.initiator,
+            scannedPathsCount: scan.scannedPathsCount,
+            source: scan.source,
           });
+          await updateState(context, constants.dastScanIdKey, stateItem);
           await vscode.commands.executeCommand(commands.refreshDastTree);
         } else {
           vscode.window.showErrorMessage(messages.scanIdNotFound);
