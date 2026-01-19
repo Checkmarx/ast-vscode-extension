@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { TreeItem } from '../../utils/tree/treeItem';
 import { getFromState, updateState } from '../../utils/common/globalState';
-import { constants } from '../../utils/common/constants';
+import { constants, SeverityLevel } from '../../utils/common/constants';
 import { GroupByCommand } from '../../commands/groupByCommand';
 import { FilterCommand } from '../../commands/filterCommand';
 import { Logs } from '../../models/logs';
@@ -62,7 +62,18 @@ export class DastResultsProvider extends ResultsProvider {
   async generateTree(): Promise<TreeItem> {
     this.diagnosticCollection.clear();
     // createBaseItems
-    const treeItems = this.createRootItems();
+    let treeItems = this.createRootItems();
+
+    // Get scan details from state
+    const scanItem = getFromState(this.context, constants.dastScanIdKey);
+
+    if (scanItem?.id) {
+      // Add scan date
+      if (scanItem.scanDatetime) {
+        treeItems = treeItems.concat(new TreeItem(scanItem.scanDatetime, constants.calendarItem));
+      }
+    }
+
     return new TreeItem('', undefined, undefined, treeItems);
   }
 
@@ -77,5 +88,34 @@ export class DastResultsProvider extends ResultsProvider {
         constants.dastScanItem
       ),
     ];
+  }
+
+  private createDastSeveritySummary(alertRiskLevelJson: string | undefined): string | undefined {
+    if (!alertRiskLevelJson) {
+      return undefined;
+    }
+
+    try {
+      const alertRiskLevel = JSON.parse(alertRiskLevelJson);
+      const severityOrder = [
+        { key: 'criticalCount', label: SeverityLevel.critical.toUpperCase() },
+        { key: 'highCount', label: SeverityLevel.high.toUpperCase() },
+        { key: 'mediumCount', label: SeverityLevel.medium.toUpperCase() },
+        { key: 'lowCount', label: SeverityLevel.low.toUpperCase() },
+        { key: 'infoCount', label: SeverityLevel.info.toUpperCase() },
+      ];
+
+      const parts: string[] = [];
+      for (const severity of severityOrder) {
+        const count = alertRiskLevel[severity.key];
+        if (count && count > 0) {
+          parts.push(`${severity.label}: ${count}`);
+        }
+      }
+
+      return parts.length > 0 ? parts.join(' | ') : undefined;
+    } catch {
+      return undefined;
+    }
   }
 }

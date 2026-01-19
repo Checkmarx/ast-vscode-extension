@@ -325,6 +325,12 @@ export async function getDastScansPickItemsWithParams(
             datetime: getFormattedDateTime(scan.created),
             formattedId: formatDastScanId(scan.scanId, isLatest),
             isLatest,
+            statistics: scan.statistics,
+            alertRiskLevel: scan.alertRiskLevel,
+            scanDuration: scan.scanDuration,
+            initiator: scan.initiator,
+            scannedPathsCount: scan.scannedPathsCount,
+            source: scan.source,
           };
         });
       } catch (error) {
