@@ -194,9 +194,24 @@ export class IgnoredView {
 			let totalFileCount = 0;
 			const failedPackages: string[] = [];
 
-			for (const packageKey of packageKeys) {
-				const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
-				const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
+			const closeUndoReviveAll = await vscode.window.showInformationMessage(
+				`Revive all selected vulnerabilities?`,
+				'Close',
+				'Undo'
+			);
+			if (closeUndoReviveAll === 'Undo') {
+				packageKeys.forEach(packageKey => {
+					ignoreManager.getIgnoredPackagesData()[packageKey].files.forEach(file => {
+						file.active = true;
+					});
+				});
+				return;
+			}
+
+			if (closeUndoReviveAll === 'Close') {
+				for (const packageKey of packageKeys) {
+					const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
+					const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
 
 				const success = ignoreManager.revivePackage(packageKey);
 
@@ -224,8 +239,7 @@ export class IgnoredView {
 			if (failedPackages.length > 0) {
 				vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
 			}
-
-		} catch (error) {
+		} }catch (error) {
 			console.error('Error reviving packages:', error);
 			vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
 		}

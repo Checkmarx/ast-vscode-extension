@@ -497,7 +497,7 @@ export class IgnoreFileManager {
 
 		this.saveIgnoreFile();
 		this.updateTempList();
-
+		this.uiRefreshCallback?.();
 		const countAfter = this.getIgnoredPackagesCount();
 		if (countBefore === 0 && countAfter > 0 && this.uiRefreshCallback) {
 			this.uiRefreshCallback();
