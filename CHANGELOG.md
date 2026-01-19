@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.46.1-security-fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-security-fixes.0) - 2026-01-19 06:26:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Bug Fixes 🐛
+* Show gutter icon only on first line of multi-line ignored secrets (AST-128760) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1345
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-mcp-fallback-changes.0...v2.46.1-security-fixes.0
+
 ## [v2.46.1-mcp-fallback-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-mcp-fallback-changes.0) - 2026-01-14 18:31:31
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
