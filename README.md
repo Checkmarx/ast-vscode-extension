@@ -16,7 +16,8 @@
   <a href="https://github.com/Checkmarx/ast-vscode-extension">
     <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/cx_x_icon.png" alt="Logo" width="80" height="80" />
   </a>
-  <h3 align="center">VS Code Extension</h3>
+  <h3 align="center">Checkmarx VS Code Extension</h3>
+  <h3 align="center">Also supported for: Cursor, Windsurf and Kiro</h3>  
   <p align="center">
     <a href="https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-vs-code-extension--plugin-.html"><strong>Explore the docs »</strong></a>
     <br />
@@ -28,10 +29,10 @@
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#overview">Overview</a></li>
-    <li><a href="#checkmarx-one-results">Checkmarx One Results</a></li>
+    <li><a href="#checkmarx-one-platform">Checkmarx One Platform</a></li>
+    <li><a href="#checkmarx-developer-assist">Checkmarx Developer Assist</a></li>
     <li><a href="#kics-realtime-scanner">KICS Realtime Scanner</a></li>
     <li><a href="#checkmarx-sca-realtime-scanner">Checkmarx SCA Realtime Scanner</a></li>
-    <li><a href="#initial-setup">Initial Setup</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#feedback">Feedback</a></li>
@@ -40,12 +41,15 @@
 </details>
 
 ## Overview
+> ⭐ Although this plugin was developed for VS Code, the plugin has been tested and found to be effective for use in Cursor, Windsurf and Kiro. This document was written for the VS Code plugin, and applies equally to the other supported IDEs. Any information that applies **only** to VS Code, and not to the other supported IDEs, is noted explicitly.
 
 Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The plugin offers actionable remediation insights in real-time.
 
-The Checkmarx Visual Studio Code extension contains three separate tools:
+The Checkmarx Visual Studio Code extension contains four separate capabilities:
 
--   Checkmarx One Results
+-   Checkmarx One Platform
+
+-   Checkmarx Developer Assist
 
 -   KICS Realtime Scanner
 
@@ -53,11 +57,18 @@ The Checkmarx Visual Studio Code extension contains three separate tools:
 
 > The plugin is available on [marketplace](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results). In addition, the code can be accessed [here](https://github.com/Checkmarx/ast-vscode-extension).
 
-## Checkmarx One Results
+### Support for VS Code-compatible IDEs
+Although this plugin was developed for VS Code, the plugin has been tested and found to be effective for use in the following VS Code-compatible IDEs:
+- **Cursor**
+- **Windsurf**
+- **Kiro** (compatible with version 2.44.0 and above of this extension)
 
-This tool enables Checkmarx One users to access the full functionality of your Checkmarx One account  directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation.
 
-The extension enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. This tool requires authentication, using credentials from your Checkmarx One account.
+## Checkmarx One Platform
+
+This tool enables Checkmarx One users to access the full functionality of your Checkmarx One account (SAST, SCA, IaC, and Secret Detection) directly from your IDE. You can run new scans or import results from scans run in your Checkmarx One account. Checkmarx provides detailed info about each vulnerability, including remediation recommendations and examples of effective remediation. The plugin enables you to navigate from a vulnerability to the relevant source code, so that you can easily zero-in on the problematic code and start working on remediation. <br>
+
+These features require authentication, using an API Key or login credentials for your Checkmarx One account.
 
 
 **GIF - Running a Scan from the IDE**
@@ -68,37 +79,74 @@ The extension enables you to navigate from a vulnerability to the relevant sourc
 
 ### Key Features
 
--   Access the full power of Checkmarx One (SAST, SCA, IaC Security and Secret Detection) directly from your IDE.
-
--   Run a new scan from your IDE even before committing the code, or import scan results from your Checkmarx One account.
-
+- Access the Checkmarx One platform directly from your IDE.
+- Run a new scan from your IDE even before committing the code, or import scan results from your Checkmarx One account.
 - Rescan an existing branch from your IDE or create a new branch in Checkmarx One for the local branch in your workspace.
+- Provides actionable results including remediation recommendations. Navigate from the results panel directly to the highlighted vulnerable code in the editor and get right down to work on the remediation.
+- Connect to Checkmarx via **API Key** or **OAuth user login** flow.
+- View information about how to remediate **SAST vulnerabilities**, including code samples.
+- Group and filter results.
+- Triage results — edit the result predicate (severity, state, and comments) directly from the Visual Studio Code console (currently supported for **SAST**, **SCA** and **IaC Security**).
+- Links to Codebashing lessons.
+- Apply Auto Remediation to automatically remediate open source vulnerabilities by updating to a non-vulnerable package version.
+- **“AI Security Champion”** harnesses the power of AI to help you understand the vulnerabilities in your code and resolve them quickly and easily (currently supported for **SAST** and **IaC Security** vulnerabilities).
+- Shows [Application Security Posture Management (ASPM)](https://docs.checkmarx.com/en/34965-281716-application-security-posture-management.html) results in the IDE.
 
--   Provides actionable results including remediation recommendations. Navigate from results panel directly to the highlighted vulnerable code in the editor and get right down to work on the remediation.
-
--   View info about how to remediate SAST vulnerabilities, including code samples
-
--   Group and filter results
-
--   Triage results - edit the result predicate (severity, state and comments) directly from the Visual Studio Code console
-
--   Links to Codebashing lessons
-
--   Apply Auto Remediation to automatically remediate open source vulnerabilities, by updating to a non-vulnerable package version.
-
--   "AI Guided Remediation" harnesses the power of AI to help you to understand the vulnerabilities in your code, and resolve them quickly and easily.
-
-- AI Secure Coding Assistant (ASCA) - A lightweight scan engine that runs in the background while you work, enabling developers to identify and remediate secure coding best practice violations as they code.
+---
 
 ### Prerequisites
--   An installation of VS Code version 1.63.0 or above
 
--   You have an **API Key** for your Checkmarx One account. To create an API key, see [Generating an API Key](https://checkmarx.com/resource/documents/en/34965-68618-generating-an-api-key.html).
-  > In order to use this integration for running an end-to-end flow of scanning a project and viewing results, the API Key must have at a minimum the out-of-the-box composite role `ast-scanner` as well as the IAM role `default-roles`.
+- An installation of a supported IDE. (**For VS Code**: VS Code version 1.63.0 or above)
 
-- "git" is installed on your local machine. For installation instructions, see [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+- You have access to Checkmarx One via:
+  - an **API Key** (see [*Generating an API Key*](https://docs.checkmarx.com/en/34965-68618-generating-an-api-key.html#UUID-f3b6481c-47f4-6cd8-9f0d-990896e36cd6_UUID-39ccc262-c7cb-5884-52ed-e1692a635e08)), OR
+  - login credentials (**Base URL**, **Tenant name**, **Username**, and **Password**)
 
--   In order to use **AI Generated Remediation**, you need to have an API Key for your GPT account.
+> In order to use this integration for running an end-to-end flow of scanning a project and viewing results, the API Key or user account must have at a minimum the out-of-the-box composite role `ast-scanner` as well as the IAM role `default-roles`.
+
+- **git** is installed on your local machine. For installation instructions, see [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+
+- To use **AI Generated Remediation**, you must have an **API Key for your GPT account**  
+  (unless your account is configured to use Azure AI; see [*Configuring Plugin Settings*](https://docs.checkmarx.com/en/34965-324314-plugins-settings.html#UUID-ea5638d0-3673-520c-79e0-085f92d4a2dc_id_ConfiguringScannerDefaultSettings-OpenScannerDefaultSettings)).
+
+### Installation
+
+1. Install the **Checkmarx** extension from the Marketplace.
+2. In the IDE, open Checkmarx One Settings, click on **Authentication**, and enter your  API Key or login credentials to enable all Checkmarx One features.
+3. Configure additional Checkmarx One settings as described in Checkmarx [documentation](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).
+
+**GIF – Installing and Setting Up the Extension**  
+![Installing and Setting up the Extension](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif)
+
+### Usage
+* Learn about using Checkmarx One features [here](https://docs.checkmarx.com/en/34965-68743-using-the-checkmarx-vs-code-extension---checkmarx-one-results.html)
+
+---
+
+## Checkmarx Developer Assist
+Developer Assist is an agentic AI tool that delivers real-time context-aware prevention, remediation, and guidance to developers inside the IDE. 
+<br>
+### Key Features
+- An advanced security agent that delivers real-time context-aware prevention, remediation, and guidance to developers from the IDE.
+- Realtime scanners identify risks as you code.
+  - AI Secure Coding Assistant (ASCA), a lightweight source code scanner, enables developers to identify secure coding best practice violations in the file that they are working on as they code.
+  - Specialized realtime scanners identify vulnerable open source packages and container images, as well as exposed secrets and IaC risks.
+- MCP-based agentic AI remediation.
+- AI powered explanation of risk details.
+### Prerequisites
+  - Either a **Developer Assist Access Key** OR 
+  - Credentials for a Checkmarx One account with a **Checkmarx One Assist** license, and with the **Checkmarx MCP** activated for your tenant account in the Checkmarx One UI under **Settings → Plugins**. This must be done by an account admin.
+  - **For VS Code**: Supported for VS Code version **1.100.0** or above  
+    (supports both `settings.json` (v1.100–1.101) and `mcp.json` (v1.102+))
+  - **For VS Code**: You must have **GitHub Copilot** installed
+### Installation
+1. Install the **Checkmarx** extension from the Marketplace.
+2. In the IDE, open Checkmarx Settings, click on **Authentication**, and enter your  Access Key or login credentials.
+
+### Usage
+* Learn about using Checkmarx Developer Assist [here](https://docs.checkmarx.com/en/34965-474001-using-the-checkmarx-vs-code-extension---dev-assist.html)
+
+**GIF - AI Remediation with Developer Assist**
 
 ## KICS Realtime Scanner
 
@@ -117,13 +165,19 @@ This tool initiates KICS scans directly from their VS Code console. The scan run
 
 -   Apply Auto Remediation to automatically fix IaC vulnerabilities
 
--   AI Guided Remediation”harnesses the power of AI to help you to understand the vulnerabilities in your code, and resolve them quickly and easily.
+-   "AI Guided Remediation” harnesses the power of AI to help you to understand the vulnerabilities in your code, and resolve them quickly and easily.
 
 ### Prerequisites
 
 -   You must have a supported container engine (e.g., Docker, Podman etc.) installed and running in your environment.
 
 -   In order to use **AI Generated Remediation**, you need to have an API Key for your GPT account.
+
+### Installation
+
+1. Install the **Checkmarx** extension from the Marketplace.
+> No additional setup is required — KICS Realtime Scanner works automatically once the extension is installed.
+2. If you would like to customize the scan parameters, enter the desired flags in the Additional Parameters field. For a list of available options, see [Scan Command Options](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).
 
 ## Checkmarx SCA Realtime Scanner
 
@@ -143,35 +197,22 @@ This tool enables VS Code users to initiate SCA scans directly from their VS Cod
 
 -   In order to get comprehensive results, you need to install all relevant package managers on your local environment, see [Installing Supported Package Managers](https://checkmarx.com/resource/documents/en/34965-19198-installing-supported-package-managers-for-resolver.html).
 
-## Initial Setup
-1.   Verify that all prerequisites are in place.
+### Installation
 
-2.   Install the extension from Marketplace.
-
-3.   Configure the extension settings as follows:
-  -   For **KICS Realtime Scanner** and **SCA Realtime Scanner** - no
-        configuration needed.
-  - For SCA Realtime Scanning, if your environment doesn't have access to the internet, then you will need to configure a proxy server in the Settings, under **Checkmarx One: Additional Params**.
-
- -   For **Checkmarx One Results** - use your Checkmarx One API Key to integrate with your Checkmarx One account, as described [here](https://checkmarx.com/resource/documents/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html#UUID-b74024dd-5f0e-cac7-668c-94049b9d8566_id_VisualStudioCode-ASTResults-SettinguptheExtension).
-
- -   If you would like to use **AI Guided Remediation**, use your GPT API Key to integrate with your GPT account, as described [here](https://checkmarx.com/resource/documents/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html#UUID-b74024dd-5f0e-cac7-668c-94049b9d8566_section-idm4543400890995233753488463936).
-
-
-**GIF - Installing and Setting up the Extension**
-![Installing and Setting up the Extension](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/vscode_installation_and_initial_setup.gif "Installing and Setting up the Extension")
+1. Install the **Checkmarx** extension from the Marketplace.
+> No configuration is required for SCA Realtime Scanning in most environments.
 
 ## Contributing
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
 
-- [Checkmarx contribution guidelines](docs/contributing.md)
-- [Checkmarx Code of Conduct](docs/code_of_conduct.md)
+- [Checkmarx contribution guidelines](https://github.com/Checkmarx/ast-vscode-extension/blob/HEAD/docs/contributing.md)
+- [Checkmarx Code of Conduct](https://github.com/Checkmarx/ast-vscode-extension/blob/HEAD/docs/code_of_conduct.md)
 
 <!-- LICENSE -->
 ## License
 
-Distributed under the [Apache 2.0](LICENSE). See `LICENSE` for more information.
+Distributed under the [Apache 2.0](https://github.com/Checkmarx/ast-vscode-extension/blob/HEAD/LICENSE). See `LICENSE` for more information.
 
 <!-- FEEDBACK -->
 ## Feedback
@@ -186,7 +227,7 @@ Project Link: [https://github.com/Checkmarx/ast-vscode-extension](https://github
 
 Find more integrations from our team [here](https://github.com/Checkmarx/ci-cd-integrations#checkmarx-ast-integrations)
 
-© 2024 Checkmarx Ltd. All Rights Reserved.
+© 2025 Checkmarx Ltd. All Rights Reserved.
 
 [contributors-shield]: https://img.shields.io/github/contributors/Checkmarx/ast-vscode-extension.svg
 [contributors-url]: https://github.com/Checkmarx/ast-vscode-extension/graphs/contributors
