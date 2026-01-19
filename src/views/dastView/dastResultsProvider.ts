@@ -10,6 +10,33 @@ import { messages } from '../../utils/common/messages';
 import { validateConfigurationAndLicense } from '../../utils/common/configValidators';
 import { getCx } from '../../cx';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EnvironmentStateItem {
+  id?: string;
+  name?: string;
+  displayScanId?: string;
+  data?: {
+    scanType?: string;
+    url?: string;
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface ScanStateItem {
+  id?: string;
+  name?: string;
+  displayScanId?: string;
+  scanDatetime?: string;
+  data?: {
+    statistics?: string;
+    alertRiskLevel?: unknown;
+    scanDuration?: string;
+    initiator?: string;
+    scannedPathsCount?: number;
+    source?: string;
+  };
+}
+
 export class DastResultsProvider extends ResultsProvider {
   constructor(
     protected readonly context: vscode.ExtensionContext,
@@ -89,16 +116,44 @@ export class DastResultsProvider extends ResultsProvider {
   }
 
   createRootItems(): TreeItem[] {
-    return [
-      new TreeItem(
-        getFromState(this.context, constants.environmentIdKey)?.name ?? constants.environmentLabel,
-        constants.environmentItem
-      ),
-      new TreeItem(
-        `${getFromState(this.context, constants.dastScanIdKey)?.displayScanId ?? constants.scanLabel}`,
-        constants.dastScanItem
-      ),
-    ];
+    const environmentItem = getFromState(this.context, constants.environmentIdKey) as EnvironmentStateItem | undefined;
+    const scanItem = getFromState(this.context, constants.dastScanIdKey) as ScanStateItem | undefined;
+
+    const envTreeItem = new TreeItem(
+      environmentItem?.name ?? constants.environmentLabel,
+      constants.environmentItem
+    );
+    if (environmentItem?.id) {
+      envTreeItem.setTooltip(this.createEnvironmentTooltip(environmentItem));
+    }
+
+    const scanTreeItem = new TreeItem(
+      `${scanItem?.displayScanId ?? constants.scanLabel}`,
+      constants.dastScanItem
+    );
+    if (scanItem?.id) {
+      scanTreeItem.setTooltip(this.createScanTooltip(scanItem));
+    }
+
+    return [envTreeItem, scanTreeItem];
+  }
+
+  private createEnvironmentTooltip(env: EnvironmentStateItem): vscode.MarkdownString {
+    const md = new vscode.MarkdownString();
+    const data = env.data;
+    md.appendMarkdown(`**Scan Type:** ${data?.scanType ?? 'N/A'}\n\n`);
+    md.appendMarkdown(`**URL:** ${data?.url ?? 'N/A'}`);
+    return md;
+  }
+
+  private createScanTooltip(scan: ScanStateItem): vscode.MarkdownString {
+    const md = new vscode.MarkdownString();
+    const data = scan.data;
+    md.appendMarkdown(`**Duration:** ${data?.scanDuration ?? 'N/A'}\n\n`);
+    md.appendMarkdown(`**Initiated By:** ${data?.initiator ?? 'N/A'}\n\n`);
+    md.appendMarkdown(`**Paths Count:** ${data?.scannedPathsCount ?? 'N/A'}\n\n`);
+    md.appendMarkdown(`**Origin:** ${data?.source ?? 'N/A'}`);
+    return md;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

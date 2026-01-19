@@ -56,4 +56,8 @@ export class TreeItem extends vscode.TreeItem {
   setDescriptionValue(description: string) {
     this.description = description;
   }
+
+  setTooltip(tooltip: string | vscode.MarkdownString) {
+    this.tooltip = tooltip;
+  }
 }

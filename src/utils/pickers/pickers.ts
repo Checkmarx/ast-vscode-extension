@@ -225,6 +225,10 @@ export async function environmentPicker(
       name: `${constants.environmentLabel} ${item.label}`,
       displayScanId: item.lastScanId,
       scanDatetime: undefined,
+      data: {
+        scanType: item.scanType,
+        url: item.url,
+      },
     });
 
     // Auto-load the latest scan if environment has one
@@ -489,7 +493,9 @@ export async function getEnvironmentsPickItemsWithParams(
           label: env.name,
           id: env.id,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          lastScanId: (env as any).lastScanId,
+          lastScanId: env.lastScanId,
+          scanType: env.scanType,
+          url: env.url,
         }));
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
