@@ -133,15 +133,19 @@ export class SecretsScannerService extends BaseScannerService {
 				const key = `${entry.PackageName}:${entry.secretValue}:${relativePath}`;
 				const lines = secretLocations.get(key) || [];
 
-				lines.forEach(line => {
-					const adjustedLine = line;
+				// Only show gutter icon on the first line of multi-line secrets
+				if (lines.length > 0) {
+					const firstLine = lines[0];
 					const range = new vscode.Range(
-						new vscode.Position(adjustedLine, 0),
-						new vscode.Position(adjustedLine, 1000)
+						new vscode.Position(firstLine, 0),
+						new vscode.Position(firstLine, 1000)
 					);
 					ignoredDecorations.push({ range });
+				}
 
-					const hoverKey = `${filePath}:${adjustedLine}`;
+				// But keep hover data for all lines so users can hover anywhere
+				lines.forEach(line => {
+					const hoverKey = `${filePath}:${line}`;
 					if (!this.secretsHoverData.has(hoverKey)) {
 						this.secretsHoverData.set(hoverKey, {
 							title: entry.PackageName,
@@ -149,7 +153,7 @@ export class SecretsScannerService extends BaseScannerService {
 							severity: entry.severity,
 							secretValue: entry.secretValue,
 							filePath,
-							location: { line: adjustedLine, startIndex: 0, endIndex: 1000 }
+							location: { line: line, startIndex: 0, endIndex: 1000 }
 						});
 					}
 				});
