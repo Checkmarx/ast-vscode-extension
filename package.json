@@ -1105,7 +1105,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",
+    "@checkmarx/ast-cli-javascript-wrapper": "0.0.150",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.12.2",
