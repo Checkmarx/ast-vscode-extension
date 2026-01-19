@@ -1,25 +1,44 @@
 # CHANGELOG
 
+## [v2.46.1-mcp-fallback-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-mcp-fallback-changes.0) - 2026-01-14 18:31:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-2.46.0-MCPInstallLogs.0...v2.46.1-mcp-fallback-changes.0
+
+## [v2.46.1-2.46.0-MCPInstallLogs.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.0-MCPInstallLogs.0) - 2026-01-14 10:25:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.46.0 -->
+
+## [v2.45.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.45.0) - 2026-01-12 10:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.45.0 -->
+
+## [v2.44.1-2.44.2-GeminiAgent.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-2.44.2-GeminiAgent.0) - 2026-01-07 08:39:14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.1-secret-ignore-fix.0...v2.44.1-2.44.2-GeminiAgent.0
+
+## [v2.44.1-secret-ignore-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-secret-ignore-fix.0) - 2025-12-30 15:26:53
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.0...v2.44.1-secret-ignore-fix.0
+
 ## [v2.44.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.0) - 2025-12-30 15:26:04
 
 <!-- Release notes generated using configuration in .github/release.yml at v2.44.0 -->
-
-## What's Changed
-### Bug Fixes 🐛
-* Fix bug number bug/AST-120797 by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1327
-* Fix bug number (AST-122073) by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1329
-### New Features 🚀
-* SCA Triage Support (AST-14824) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1328
-* Welcome Page AI Option Checkbox Should Always Be Visible and Reflect Tenant-Level State in VS Code IDEl AST-119974) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1330
-### Checkmarx One SDK Updates 🛠
-* Update AST CLI JavaScript Wrapper to version 0.0.149 by @cx-anurag-dalke in https://github.com/Checkmarx/ast-vscode-extension/pull/1338
-### Other Changes
-* Add file-path to prompt for kiro (AST-127646) by @cx-sarah-chen in https://github.com/Checkmarx/ast-vscode-extension/pull/1336
-* Updated text CxOne to Checkmarx One (AST-127285) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1337
-* Update Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1339
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.0...v2.44.0
 
 ## [v2.43.1-sca-triage.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-sca-triage.0) - 2025-12-18 18:31:06
 
