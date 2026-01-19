@@ -21,6 +21,7 @@ import { CxQuickPickItem } from "./multiStepUtils";
 import { messages } from "../common/messages";
 import { cx } from "../../cx";
 import { getGlobalContext } from "../../extension";
+import CxDastScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/dast/CxDastScan";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -328,7 +329,7 @@ export async function getDastScansPickItemsWithParams(
         return scanList.map((scan) => {
           const isLatest = scan.scanId === lastScanId;
           return {
-            label: formatDastScanLabel(scan.created, scan.scanId, isLatest),
+            label: formatDastScanLabel(scan, isLatest),
             id: scan.scanId,
             created: scan.created,
             datetime: getFormattedDateTime(scan.created),
@@ -355,9 +356,9 @@ function formatDastScanId(scanId: string, isLatest: boolean): string {
   return `${scanId}${isLatest ? " (latest)" : ""}`;
 }
 
-function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
-  const dateTime = getFormattedDateTime(created);
-  return `${dateTime} ${scanId}${isLatest ? " (latest)" : ""}`;
+function formatDastScanLabel(scan: CxDastScan, isLatest: boolean): string {
+  const dateTime = getFormattedDateTime(scan.created);
+  return `${dateTime} ${scan.scanId}${scan.statistics !== "Completed" ? ` (${scan.statistics})` : ""}${isLatest ? " (latest)" : ""}`;
 }
 
 interface DastScanData {
