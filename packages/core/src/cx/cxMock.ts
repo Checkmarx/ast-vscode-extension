@@ -8,7 +8,6 @@ import { getFilePath } from "../utils/utils";
 import { writeFileSync } from "fs";
 import { CxPlatform } from "./cxPlatform";
 import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
-import { EMPTY_RESULTS_SCAN_ID } from "../test/utils/envs";
 import { constants } from "../utils/common/constants";
 import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
@@ -109,7 +108,7 @@ export class CxMock implements CxPlatform {
   async getResults(scanId: string) {
     let results;
 
-    if (scanId === "2" || scanId === EMPTY_RESULTS_SCAN_ID) {
+    if (scanId === "2" || scanId === constants.emptyResultsScanId) {
       results = {
         results: [],
       };
@@ -930,11 +929,11 @@ export class CxMock implements CxPlatform {
   }
 
   async getScan(scanId: string): Promise<CxScan | undefined> {
-    if (scanId === EMPTY_RESULTS_SCAN_ID) {
+    if (scanId === constants.emptyResultsScanId) {
       return {
         tags: {},
         groups: undefined,
-        id: EMPTY_RESULTS_SCAN_ID,
+        id: constants.emptyResultsScanId,
         projectID: "EmptyResultsProjectId",
         status: "Completed",
         createdAt: "2023-03-19T15:10:38.749899+01:00",

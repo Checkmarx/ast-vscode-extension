@@ -5,7 +5,7 @@
   "main": "./out/index.js",
   "types": "./out/index.d.ts",
   "scripts": {
-    "compile": "tsc -p ./ && npm run copymedia && npm run copytestproject",
+    "compile": "tsc -b ./ && npm run copymedia && npm run copytestproject",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",

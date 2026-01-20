@@ -284,7 +284,8 @@ export const constants = {
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
-  ignorePackage: "ignorePackage"
+  ignorePackage: "ignorePackage",
+  emptyResultsScanId: "3"
 };
 
 export enum Platform {

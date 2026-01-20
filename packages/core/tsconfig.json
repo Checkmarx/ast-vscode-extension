@@ -12,7 +12,9 @@
   ],
   "exclude": [
     "node_modules",
-    "out"
+    "out",
+    "src/test",
+    "src/e2e"
   ]
 }
 

@@ -35,18 +35,20 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && npm run copymedia && npm run copycore",
+    "compile": "tsc -b ./ && npm run copymedia && npm run copycore",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
-    "copycore": "copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 1 -E",
+    "copycore": "copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 1 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
     "package": "vsce package --allow-star-activation --no-dependencies",
     "clean": "rimraf out"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@checkmarx/vscode-core": "file:../core"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.63.0",
-    "@vscode/vsce": "^2.22.0",
+    "@vscode/vsce": "2.24.0",
     "copyfiles": "2.4.1",
     "typescript": "^5.3.3"
   }

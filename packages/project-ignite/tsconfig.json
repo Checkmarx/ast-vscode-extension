@@ -5,7 +5,8 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@checkmarx/vscode-core": ["../core/src"]
+      "@checkmarx/vscode-core": ["../core/out/index"],
+      "@checkmarx/vscode-core/*": ["../core/out/*"]
     }
   },
   "include": [
