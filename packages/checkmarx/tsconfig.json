@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@checkmarx/vscode-core": ["../core/src"]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "out"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
+}
+

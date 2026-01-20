@@ -1,0 +1,53 @@
+{
+  "name": "project-ignite",
+  "publisher": "checkmarx",
+  "displayName": "Checkmarx Project Ignite",
+  "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
+  "version": "2.46.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
+  },
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [],
+    "configuration": {
+      "title": "Checkmarx Project Ignite",
+      "properties": {}
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && npm run copymedia && npm run copycore",
+    "watch": "tsc -w -p ./",
+    "copymedia": "copyfiles \"media/**/*\" out/ -E",
+    "copycore": "copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 1 -E",
+    "package": "vsce package --allow-star-activation --no-dependencies",
+    "clean": "rimraf out"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.63.0",
+    "@vscode/vsce": "^2.22.0",
+    "copyfiles": "2.4.1",
+    "typescript": "^5.3.3"
+  }
+}
