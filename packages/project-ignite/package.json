@@ -28,10 +28,123 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [],
-    "configuration": {
-      "title": "Checkmarx Project Ignite",
-      "properties": {}
-    }
+    "configuration": [
+      {
+        "title": "Checkmarx One Assist",
+        "id": "cxone-assist",
+        "order": 2,
+        "properties": {
+          "checkmarx.MCP": {
+            "type": "",
+            "default": {},
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
+          },
+          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
+            "type": "boolean",
+            "order": 1,
+            "default": false,
+            "markdownDescription": "Scans your code files for security best practices as you code"
+          },
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 2,
+            "default": false,
+            "markdownDescription": "Scans your manifest files as you code"
+          },
+          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
+          }
+        }
+      },
+      {
+        "title": "Checkmarx KICS Real-time Scanning",
+        "id": "kics-ast",
+        "order": 3,
+        "properties": {
+          "CheckmarxKICS.Activate KICS Real-time Scanning": {
+            "type": "boolean",
+            "order": 3,
+            "default": true,
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html)."
+          },
+          "CheckmarxKICS.Additional Parameters": {
+            "type": "string",
+            "order": 4,
+            "default": "",
+            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
+          }
+        }
+      },
+      {
+        "title": "Checkmarx AI Security Champion",
+        "id": "ask-kics",
+        "order": 4,
+        "properties": {
+          "CheckmarxSecurityChampion.key": {
+            "type": "string",
+            "order": 3,
+            "default": "",
+            "markdownDescription": "API key used to connect to OpenAI."
+          },
+          "CheckmarxSecurityChampion.model": {
+            "order": 1,
+            "type": "string",
+            "default": "gpt-5",
+            "markdownDescription": "The OpenAI model used by AI Security Champion. This will be overridden if a user-defined model is specified below.",
+            "enum": [
+              "gpt-5",
+              "gpt-4.1-mini",
+              "gpt-4.1",
+              "o4-mini-high",
+              "o3",
+              "gpt-4o",
+              "gpt-4"
+            ],
+            "enumDescriptions": [
+              "gpt-5 : (Recommended)",
+              "gpt-4.1-mini",
+              "gpt-4.1",
+              "o4-mini-high",
+              "o3",
+              "gpt-4o",
+              "gpt-4"
+            ]
+          },
+          "CheckmarxSecurityChampion.customModel": {
+            "type": "string",
+            "order": 2,
+            "default": "",
+            "markdownDescription": "If your organization's preferred OpenAI model is not available in the selection menu above, you can enter a custom model here. Optional"
+          }
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

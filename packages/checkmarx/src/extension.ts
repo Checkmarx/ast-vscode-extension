@@ -17,31 +17,18 @@ import * as vscode from 'vscode';
 import { activateCore, activateCxOne } from '@checkmarx/vscode-core';
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log('[CHECKMARX-ONE] Checkmarx One extension is now active');
-
     try {
-        // [SHARED] Initialize core shared functionality
-        // This includes: logs, auth, common status bars, proxy config
+        // Initialize shared core functionality (logs, auth, MCP, etc.)
         const { logs } = await activateCore(context);
 
-        // [CHECKMARX-ONE] Initialize Checkmarx One specific features
-        // This includes:
-        // - AST Results Provider
-        // - SCA Results Provider
-        // - Project/Branch/Scan pickers
-        // - Triage commands
-        // - Group by / Filter commands
-        // - Risk Management
+        // Initialize Checkmarx One specific features
         await activateCxOne(context, logs);
-
-        console.log('[CHECKMARX-ONE] Checkmarx One extension activation complete');
     } catch (error) {
-        console.error('[CHECKMARX-ONE] Failed to activate extension:', error);
-        vscode.window.showErrorMessage(`Failed to activate Checkmarx One: ${error}`);
+        vscode.window.showErrorMessage('Failed to activate Checkmarx One extension. See Checkmarx output for details.');
     }
 }
 
 export function deactivate() {
-    console.log('[CHECKMARX-ONE] Checkmarx One extension is now deactivated');
+    // No explicit cleanup required at the moment
 }
 

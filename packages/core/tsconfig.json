@@ -13,8 +13,9 @@
   "exclude": [
     "node_modules",
     "out",
-    "src/test",
-    "src/e2e"
+	    "src/test",
+	    "src/e2e",
+	    "src/unit"
   ]
 }
 
