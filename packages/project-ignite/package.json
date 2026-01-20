@@ -27,10 +27,77 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "ast-results.viewSettings",
+        "category": "ast-results",
+        "title": "Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "ast-results.openIgnoredView",
+        "category": "ast-results",
+        "title": "View Ignored vulnerabilities",
+        "enablement": "ast-results.isValidCredentials && (ast-results.isCxOneAssistEnabled || ast-results.isStandaloneEnabled)"
+      },
+      {
+        "command": "ast-results.assistDocumentation",
+        "category": "ast-results",
+        "title": "Documentation"
+      },
+      {
+        "command": "ast-results.showAuth",
+        "title": "Checkmarx: Show Authentication",
+        "category": "Checkmarx"
+      }
+    ],
+    "submenus": [],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ast-results.viewSettings",
+          "group": "@settings@2",
+          "when": " view==astCxOneAssist || view==docAndFeedback"
+        },
+        {
+          "command": "ast-results.openIgnoredView",
+          "group": "@settings@1",
+          "when": "view == astCxOneAssist"
+        },
+        {
+          "command": "ast-results.assistDocumentation",
+          "group": "@settings@3",
+          "when": "view == astCxOneAssist"
+        }
+      ]
+    },
+    "views": {
+      "astView": [
+        {
+          "id": "astCxOneAssist",
+          "type": "webview",
+          "name": "Checkmarx One Assist"
+        },
+        {
+          "id": "docAndFeedback",
+          "type": "tree",
+          "name": "Documentation & Feedback"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "astView",
+          "title": "Checkmarx",
+          "icon": "media/cx-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Checkmarx One Assist",
+        "title": "Checkmarx Project Ignite",
         "id": "cxone-assist",
         "order": 2,
         "properties": {
@@ -83,64 +150,24 @@
         }
       },
       {
-        "title": "Checkmarx KICS Real-time Scanning",
-        "id": "kics-ast",
-        "order": 3,
+        "title": "Checkmarx One",
+        "id": "ast-results",
+        "order": 1,
         "properties": {
-          "CheckmarxKICS.Activate KICS Real-time Scanning": {
-            "type": "boolean",
-            "order": 3,
-            "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html)."
+          "checkmarxOne.authentication": {
+            "type": "",
+            "order": 5,
+            "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
-          "CheckmarxKICS.Additional Parameters": {
+          "checkmarxOne.additionalParams": {
             "type": "string",
-            "order": 4,
-            "default": "",
-            "markdownDescription": "Customize the scan configuration using KICS scan command flags, [see KICS help page](https://docs.kics.io/latest/commands/)."
-          }
-        }
-      },
-      {
-        "title": "Checkmarx AI Security Champion",
-        "id": "ask-kics",
-        "order": 4,
-        "properties": {
-          "CheckmarxSecurityChampion.key": {
-            "type": "string",
-            "order": 3,
-            "default": "",
-            "markdownDescription": "API key used to connect to OpenAI."
-          },
-          "CheckmarxSecurityChampion.model": {
-            "order": 1,
-            "type": "string",
-            "default": "gpt-5",
-            "markdownDescription": "The OpenAI model used by AI Security Champion. This will be overridden if a user-defined model is specified below.",
-            "enum": [
-              "gpt-5",
-              "gpt-4.1-mini",
-              "gpt-4.1",
-              "o4-mini-high",
-              "o3",
-              "gpt-4o",
-              "gpt-4"
-            ],
-            "enumDescriptions": [
-              "gpt-5 : (Recommended)",
-              "gpt-4.1-mini",
-              "gpt-4.1",
-              "o4-mini-high",
-              "o3",
-              "gpt-4o",
-              "gpt-4"
-            ]
-          },
-          "CheckmarxSecurityChampion.customModel": {
-            "type": "string",
-            "order": 2,
-            "default": "",
-            "markdownDescription": "If your organization's preferred OpenAI model is not available in the selection menu above, you can enter a custom model here. Optional"
+            "order": 6,
+            "description": "Additional Parameters",
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
           }
         }
       }
