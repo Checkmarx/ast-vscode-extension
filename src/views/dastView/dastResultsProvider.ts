@@ -141,6 +141,7 @@ export class DastResultsProvider extends ResultsProvider {
   private createEnvironmentTooltip(env: EnvironmentStateItem): vscode.MarkdownString {
     const md = new vscode.MarkdownString();
     const data = env.data;
+    md.appendMarkdown(`${env.name ?? ''}\n\n`);
     md.appendMarkdown(`**Scan Type:** ${data?.scanType ?? 'N/A'}\n\n`);
     md.appendMarkdown(`**URL:** ${data?.url ?? 'N/A'}`);
     return md;
@@ -149,6 +150,7 @@ export class DastResultsProvider extends ResultsProvider {
   private createScanTooltip(scan: ScanStateItem): vscode.MarkdownString {
     const md = new vscode.MarkdownString();
     const data = scan.data;
+    md.appendMarkdown(`${scan.displayScanId ?? ''}\n\n`);
     md.appendMarkdown(`**Duration:** ${data?.scanDuration ?? 'N/A'}\n\n`);
     md.appendMarkdown(`**Initiated By:** ${data?.initiator ?? 'N/A'}\n\n`);
     md.appendMarkdown(`**Paths Count:** ${data?.scannedPathsCount ?? 'N/A'}\n\n`);

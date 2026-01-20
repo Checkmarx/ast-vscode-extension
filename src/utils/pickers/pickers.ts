@@ -223,17 +223,17 @@ export async function environmentPicker(
     updateState(context, constants.environmentIdKey, {
       id: item.id,
       name: `${constants.environmentLabel} ${item.label}`,
-      displayScanId: item.lastScanId,
+      displayScanId: item.data?.lastScanId,
       scanDatetime: undefined,
       data: {
-        scanType: item.scanType,
-        url: item.url,
+        scanType: item.data?.scanType,
+        url: item.data?.url,
       },
     });
 
     // Auto-load the latest scan if environment has one
-    if (item.id && item.lastScanId) {
-      await loadDastScanById(context, item.id, item.lastScanId, logs, true);
+    if (item.id && item.data?.lastScanId) {
+      await loadDastScanById(context, item.id, item.data.lastScanId, logs, true);
     } else {
       updateState(context, constants.dastScanIdKey, {
         id: undefined,
@@ -492,10 +492,11 @@ export async function getEnvironmentsPickItemsWithParams(
         return envList.map((env) => ({
           label: env.name,
           id: env.id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          lastScanId: env.lastScanId,
-          scanType: env.scanType,
-          url: env.url,
+          data: {
+            lastScanId: env.lastScanId,
+            scanType: env.scanType,
+            url: env.url,
+          },
         }));
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);

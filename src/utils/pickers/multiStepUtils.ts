@@ -47,11 +47,8 @@ export class CxQuickPickItem implements vscode.QuickPickItem {
 
   datetime?: string;
 
-  lastScanId?: string;
-
-  scanType?: string;
-
-  url?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: Record<string, any>;
 }
 
 interface InputBoxParameters {
