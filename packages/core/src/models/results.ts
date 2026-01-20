@@ -13,6 +13,7 @@ import { SastNode } from "./sastNode";
 import { ScaNode } from "./scaNode";
 import { SCSSecretDetectionNode } from "./SCSSecretDetectionNode";
 import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import { MediaPathResolver } from "../utils/mediaPathResolver";
 
 export class AstResult extends CxResult {
   label = "";
@@ -180,63 +181,65 @@ export class AstResult extends CxResult {
   getIcon() {
     switch (this.severity) {
       case constants.criticalSeverity:
-        return path.join("media", "icons", "critical_untoggle.svg");
+        return MediaPathResolver.getMediaFilePath("icons", "critical_untoggle.svg");
       case constants.highSeverity:
-        return path.join("media", "icons", "high_untoggle.svg");
+        return MediaPathResolver.getMediaFilePath("icons", "high_untoggle.svg");
       case constants.mediumSeverity:
-        return path.join("media", "icons", "medium_untoggle.svg");
+        return MediaPathResolver.getMediaFilePath("icons", "medium_untoggle.svg");
       case constants.infoSeverity:
-        return path.join("media", "icons", "info_untoggle.svg");
+        return MediaPathResolver.getMediaFilePath("icons", "info_untoggle.svg");
       case constants.lowSeverity:
-        return path.join("media", "icons", "low_untoggle.svg");
+        return MediaPathResolver.getMediaFilePath("icons", "low_untoggle.svg");
     }
     return "";
   }
 
   getGptIcon() {
-    return path.join("media", "icons", "gpt.png");
+    return MediaPathResolver.getMediaFilePath("icons", "gpt.png");
   }
 
   getCxIcon() {
-    return path.join("media", "icon.png");
+    return MediaPathResolver.getMediaFilePath("icon.png");
   }
 
   getCxScaAtackVector() {
-    return path.join("media", "icons", "attackVector.png");
+    return MediaPathResolver.getMediaFilePath("icons", "attackVector.png");
   }
 
   getCxScaComplexity() {
-    return path.join("media", "icons", "complexity.png");
+    return MediaPathResolver.getMediaFilePath("icons", "complexity.png");
   }
 
   getCxAuthentication() {
-    return path.join("media", "icons", "authentication.png");
+    return MediaPathResolver.getMediaFilePath("icons", "authentication.png");
   }
 
   getCxConfidentiality() {
-    return path.join("media", "icons", "confidentiality.png");
+    return MediaPathResolver.getMediaFilePath("icons", "confidentiality.png");
   }
 
   getCxIntegrity() {
-    return path.join("media", "icons", "integrity.png");
+    return MediaPathResolver.getMediaFilePath("icons", "integrity.png");
   }
 
   getCxAvailability() {
-    return path.join("media", "icons", "availability.png");
+    return MediaPathResolver.getMediaFilePath("icons", "availability.png");
   }
 
   getCxUpgrade() {
-    return path.join("media", "icons", "upgrade.png");
+    return MediaPathResolver.getMediaFilePath("icons", "upgrade.png");
   }
 
   getCxUrl() {
-    return path.join("media", "icons", "url.png");
+    return MediaPathResolver.getMediaFilePath("icons", "url.png");
   }
 
   getTreeIcon() {
+    const iconPath = this.getIcon();
+    const iconUri = vscode.Uri.file(iconPath);
     return {
-      light: path.join(__filename, "..", "..", this.getIcon()),
-      dark: path.join(__filename, "..", "..", this.getIcon()),
+      light: iconUri,
+      dark: iconUri,
     };
   }
 

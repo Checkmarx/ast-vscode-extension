@@ -9,6 +9,7 @@ import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
 import { CommonCommand } from "../commands/commonCommand";
 import { commands } from "../utils/common/commands";
+import { MediaPathResolver } from "../utils/mediaPathResolver";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -73,7 +74,10 @@ export class AuthenticationWebview {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [context.extensionUri],
+        localResourceRoots: [
+          vscode.Uri.joinPath(context.extensionUri, 'media'),
+          vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
+        ],
       }
     );
     AuthenticationWebview.currentPanel = new AuthenticationWebview(
@@ -106,6 +110,14 @@ export class AuthenticationWebview {
   }
 
   private setWebUri(...paths: string[]): vscode.Uri {
+    // If the path starts with "media", use MediaPathResolver
+    if (paths[0] === "media") {
+      const mediaPath = paths.slice(1);
+      return this._panel.webview.asWebviewUri(
+        vscode.Uri.file(MediaPathResolver.getMediaFilePath(...mediaPath))
+      );
+    }
+    // For node_modules and other paths, use the extension URI
     return this._panel.webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, ...paths)
     );

@@ -11,6 +11,7 @@ import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask"
 import { GptResult } from "../../models/gptResult";
 import { constants } from "../../utils/common/constants";
 import { ThemeUtils } from "../../utils/themeUtils";
+import { MediaPathResolver } from "../../utils/mediaPathResolver";
 
 export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -19,7 +20,6 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
   private themeChangeDisposable?: vscode.Disposable;
 
   constructor(
-    private readonly _extensionUri: vscode.Uri,
     private result: AstResult,
     private context: vscode.ExtensionContext,
     private loadChanges: boolean,
@@ -62,9 +62,8 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
       try {
         // Generate new CodeBashing icon URI for the current theme
         const codeBashingIcon = webview.asWebviewUri(
-          vscode.Uri.joinPath(
-            this._extensionUri,
-            path.join("media", "icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
+          vscode.Uri.file(
+            MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
           )
         );
 
@@ -98,7 +97,10 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
     this._view = webviewView;
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+        vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
+      ],
     };
     webviewView.webview.html = await this.getDetailsWebviewContent(
       webviewView.webview
@@ -177,133 +179,93 @@ export class AstDetailsDetached implements vscode.WebviewViewProvider {
 
   async getDetailsWebviewContent(webview: vscode.Webview, type?: string) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "view.js")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("view.js"))
     );
     const scriptGptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("gpt.js"))
     );
     const scriptJquery = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "jquery",
-        "jquery-3.7.1.min.js"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("jquery", "jquery-3.7.1.min.js"))
     );
     const scriptBootStrap = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "bootstrap",
-        "bootstrap.min.js"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("bootstrap", "bootstrap.min.js"))
     );
     const scriptHighlight = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "codeRenderers",
-        "highlight.min.js"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "highlight.min.js"))
     );
     const scriptMarked = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "codeRenderers",
-        "marked.min.js"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "marked.min.js"))
     );
     const scriptShowdown = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "codeRenderers",
-        "showdown.min.js"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "showdown.min.js"))
     );
 
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("reset.css"))
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("vscode.css"))
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("main.css"))
     );
     const styleDetails = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "details.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("details.css"))
     );
     const scaDetails = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "sca.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("sca.css"))
     );
     const styleGptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "gpt.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("gpt.css"))
     );
     const styleBootStrap = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        "media",
-        "bootstrap",
-        "bootstrap.min.css"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("bootstrap", "bootstrap.min.css"))
     );
 
     const severityPath = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getIcon())
+      vscode.Uri.file(this.result.getIcon())
     );
     const cxPath = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxIcon())
+      vscode.Uri.file(this.result.getCxIcon())
     );
     const scaAtackVector = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxScaAtackVector())
+      vscode.Uri.file(this.result.getCxScaAtackVector())
     );
     const scaComplexity = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxScaComplexity())
+      vscode.Uri.file(this.result.getCxScaComplexity())
     );
     const scaAuthentication = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxAuthentication())
+      vscode.Uri.file(this.result.getCxAuthentication())
     );
     const scaConfidentiality = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        this.result.getCxConfidentiality()
-      )
+      vscode.Uri.file(this.result.getCxConfidentiality())
     );
     const scaIntegrity = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxIntegrity())
+      vscode.Uri.file(this.result.getCxIntegrity())
     );
     const scaAvailability = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxAvailability())
+      vscode.Uri.file(this.result.getCxAvailability())
     );
     const scaUpgrade = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxUpgrade())
+      vscode.Uri.file(this.result.getCxUpgrade())
     );
     const scaUrl = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, this.result.getCxUrl())
+      vscode.Uri.file(this.result.getCxUrl())
     );
     const kicsIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        path.join("media", "icons", "kics.png")
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "kics.png"))
     );
     const kicsUserIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        path.join("media", "icons", "userKics.png")
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "userKics.png"))
     );
 
     const cxIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, path.join("media", "icon.png"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("icon.png"))
     );
 
     const codeBashingIcon = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        path.join("media", "icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
+      vscode.Uri.file(
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("codeBashing_logoLightTheme.png", "codeBashing_logoDarkTheme.png"))
       )
     );
 

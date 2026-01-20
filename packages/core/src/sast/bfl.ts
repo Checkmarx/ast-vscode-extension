@@ -6,6 +6,7 @@ import path = require("path");
 import { AstResult } from "../models/results";
 import { constants } from "../utils/common/constants";
 import { getFromState } from "../utils/common/globalState";
+import { MediaPathResolver } from "../utils/mediaPathResolver";
 
 export async function getBfl(
   scanId: string,
@@ -38,9 +39,8 @@ export async function getResultsBfl(
   detailsPanel: vscode.WebviewPanel
 ) {
   const scanId = getFromState(context, constants.scanIdKey)?.id;
-  const cxPath = vscode.Uri.joinPath(
-    context.extensionUri,
-    path.join("media", "icon.png")
+  const cxPath = detailsPanel.webview.asWebviewUri(
+    vscode.Uri.file(MediaPathResolver.getMediaFilePath("icon.png"))
   );
   if (scanId) {
     getBfl(scanId, result.queryId, result.sastNodes, logs)

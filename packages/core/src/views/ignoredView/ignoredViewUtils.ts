@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { constants } from '../../utils/common/constants';
 import { ThemeUtils } from '../../utils/themeUtils';
+import { MediaPathResolver } from '../../utils/mediaPathResolver';
 
 // =============================================================================
 // TYPES AND INTERFACES
@@ -92,7 +93,7 @@ export function getCurrentTheme(): ThemeType {
  */
 function createIconUri(webview: vscode.Webview, extensionPath: string, iconPath: string): string {
 	const uri = webview.asWebviewUri(
-		vscode.Uri.file(path.join(extensionPath, 'media', 'icons', 'ignorePage', iconPath))
+		vscode.Uri.file(MediaPathResolver.getMediaFilePath('icons', 'ignorePage', iconPath))
 	);
 	return uri?.toString() || '';
 }

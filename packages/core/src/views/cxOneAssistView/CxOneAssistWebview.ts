@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import * as path from "path";
 import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
+import { MediaPathResolver } from "../../utils/mediaPathResolver";
 
 export class CxOneAssistWebview {
   public static generateHtml(
@@ -10,7 +10,7 @@ export class CxOneAssistWebview {
     state: CxOneAssistWebviewState
   ): string {
     const cubeImageUri = webview.asWebviewUri(
-      vscode.Uri.file(path.join(context.extensionPath, "media", "icons", "cxone-assist-cube.svg"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "cxone-assist-cube.svg"))
     );
 
     const showIgnoredButton = CxOneAssistUtils.shouldShowIgnoredButton(state);
@@ -238,7 +238,7 @@ export class CxOneAssistWebview {
     webview: vscode.Webview
   ): string {
     const cubeImageUri = webview.asWebviewUri(
-      vscode.Uri.file(path.join(context.extensionPath, "media", "icons", "cxone-assist-cube.svg"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "cxone-assist-cube.svg"))
     );
 
     return `<!DOCTYPE html>

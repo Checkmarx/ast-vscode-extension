@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { getNonce } from "../utils/utils";
 import { constants } from "../utils/common/constants";
 import { ThemeUtils } from "../utils/themeUtils";
+import { MediaPathResolver } from "../utils/mediaPathResolver";
 
 
 
@@ -130,52 +131,45 @@ export class WelcomeWebview {
       "checkmarxWelcome",
       "Welcome to Checkmarx",
       vscode.ViewColumn.One,
-      { enableScripts: true, retainContextWhenHidden: true }
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [
+          vscode.Uri.joinPath(context.extensionUri, 'media'),
+          vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
+        ]
+      }
     );
 
     const bootstrapCssUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "bootstrap",
-        "bootstrap.min.css"
-      )
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("bootstrap", "bootstrap.min.css"))
     );
 
     const scannerImgUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg")
+      vscode.Uri.file(
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg"))
       )
     );
 
     const aiBoxinfo = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg")
+      vscode.Uri.file(
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
       )
     );
 
 
     const doubleCheckUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        context.extensionUri,
-        "media",
-        "icons",
-        ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg")
+      vscode.Uri.file(
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg"))
       )
     );
 
     const cssUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.css")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("welcomePage.css"))
     );
 
     const jsUri = panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, "media", "welcomePage.js")
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("welcomePage.js"))
     );
 
     const nonce = getNonce();
@@ -207,29 +201,20 @@ export class WelcomeWebview {
     const themeChangeDisposable = vscode.window.onDidChangeActiveColorTheme(() => {
       // Regenerate all URIs with new theme-appropriate icons
       const newScannerImgUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(
-          context.extensionUri,
-          "media",
-          "icons",
-          ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg")
+        vscode.Uri.file(
+          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg"))
         )
       );
 
       const newAiBoxinfo = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(
-          context.extensionUri,
-          "media",
-          "icons",
-          ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg")
+        vscode.Uri.file(
+          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
         )
       );
 
       const newDoubleCheckUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(
-          context.extensionUri,
-          "media",
-          "icons",
-          ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg")
+        vscode.Uri.file(
+          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg"))
         )
       );
 

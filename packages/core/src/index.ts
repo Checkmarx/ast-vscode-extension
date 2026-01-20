@@ -22,6 +22,7 @@ export * from './utils/common/commands';
 export * from './utils/common/featureFlags';
 export * from './utils/listener/listeners';
 export * from './utils/listener/workspaceListener';
+export * from './utils/mediaPathResolver';
 export { initialize, cx } from './cx';
 
 // Export views

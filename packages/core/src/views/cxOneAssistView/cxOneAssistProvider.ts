@@ -4,6 +4,7 @@ import { CxOneAssistWebview } from "./CxOneAssistWebview";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
 import { Logs } from "../../models/logs";
+import { MediaPathResolver } from "../../utils/mediaPathResolver";
 
 export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private webviewView?: vscode.WebviewView;
@@ -28,7 +29,10 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [vscode.Uri.file(this.dependencies.context.extensionPath + "/media")]
+			localResourceRoots: [
+				vscode.Uri.joinPath(this.dependencies.context.extensionUri, 'media'),
+				vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
+			]
 		};
 
 		this.updateWebviewContent();

@@ -5,13 +5,13 @@ import * as os from 'os';
 import { GptResult } from "../../models/gptResult";
 import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import { constants } from "../../utils/common/constants";
+import { MediaPathResolver } from "../../utils/mediaPathResolver";
 
 export class GptView implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
 	private askKicsIcon: vscode.Uri;
 	private kicsUserIcon: vscode.Uri;
 	constructor(
-		private readonly _extensionUri: vscode.Uri,
 		private result: GptResult,
 		private context: vscode.ExtensionContext,
 		private loadChanges: boolean,
@@ -56,7 +56,10 @@ export class GptView implements vscode.WebviewViewProvider {
 		this._view = webviewView;
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [this._extensionUri],
+			localResourceRoots: [
+				vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+				vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
+			],
 		};
 		webviewView.webview.html = await this.getDetailsWebviewContent(
 			webviewView.webview
@@ -65,52 +68,52 @@ export class GptView implements vscode.WebviewViewProvider {
 
 	async getDetailsWebviewContent(webview: vscode.Webview) {
 		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "gpt.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("gpt.js"))
 		);
 		const scriptJquery = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "jquery", "jquery-3.7.1.min.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("jquery", "jquery-3.7.1.min.js"))
 		);
 		const styleResetUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("reset.css"))
 		);
 		const styleVSCodeUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("vscode.css"))
 		);
 		const styleGptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "gpt.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("gpt.css"))
 		);
 		const styleMainUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("main.css"))
 		);
 		const styleDetails = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "details.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("details.css"))
 		);
 		const scaDetails = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "sca.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("sca.css"))
 		);
 		const styleMainGptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "gpt-main.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("gpt-main.css"))
 		);
 		const styleBootStrap = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.css")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("bootstrap", "bootstrap.min.css"))
 		);
 		const scriptBootStrap = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "bootstrap", "bootstrap.min.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("bootstrap", "bootstrap.min.js"))
 		);
 		const scriptHighlight = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "highlight.min.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "highlight.min.js"))
 		);
 		const scriptMarked = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "marked.min.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "marked.min.js"))
 		);
 		const scriptShowdown = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "codeRenderers", "showdown.min.js")
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("codeRenderers", "showdown.min.js"))
 		);
 		const kicsIcon = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "kics.png"))
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "kics.png"))
 		);
 		const kicsUserIcon = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, path.join("media", "icons", "userKics.png"))
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "userKics.png"))
 		);
 		this.askKicsIcon = kicsIcon;
 		this.kicsUserIcon = kicsUserIcon;

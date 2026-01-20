@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import {
   getNonce,
   getResultsFilePath,
@@ -14,6 +15,7 @@ import { ICONS } from "./constants";
 import { PromotionalCardView } from "../shared/PromotionalCardView";
 import { cx } from "../../cx";
 import { Logs } from "../../models/logs";
+import { MediaPathResolver } from "../../utils/mediaPathResolver";
 export class riskManagementView implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private riskManagementService: riskManagementService;
@@ -21,7 +23,6 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   private logs: Logs;
 
   constructor(
-    private readonly _extensionUri: vscode.Uri,
     private readonly context: vscode.ExtensionContext,
     logs: Logs
   ) {
@@ -36,7 +37,12 @@ export class riskManagementView implements vscode.WebviewViewProvider {
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+        vscode.Uri.file(MediaPathResolver.getCoreMediaPath()),
+        vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'node_modules')), // Core's node_modules
+        this.context.extensionUri // Keep for extension's node_modules access
+      ],
     };
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
@@ -215,6 +221,19 @@ export class riskManagementView implements vscode.WebviewViewProvider {
   }
 
   private setWebUri(...paths: string[]): vscode.Uri {
+    // If the path starts with "media", use MediaPathResolver
+    if (paths[0] === "media") {
+      const mediaPath = paths.slice(1); // Remove "media" from the path
+      return this.view.webview.asWebviewUri(
+        vscode.Uri.file(MediaPathResolver.getMediaFilePath(...mediaPath))
+      );
+    }
+    // For node_modules, resolve from core package's node_modules
+    if (paths[0] === "node_modules") {
+      const nodePath = path.join(__dirname, '..', '..', '..', ...paths);
+      return this.view.webview.asWebviewUri(vscode.Uri.file(nodePath));
+    }
+    // For other paths, use the extension URI
     return this.view.webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, ...paths)
     );

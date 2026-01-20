@@ -3,6 +3,7 @@ import * as path from 'path';
 import { IgnoreFileManager, IgnoreEntry } from '../../realtimeScanners/common/ignoreFileManager';
 import * as ignoredViewUtils from './ignoredViewUtils';
 import { constants } from '../../utils/common/constants';
+import { MediaPathResolver } from '../../utils/mediaPathResolver';
 
 export class IgnoredView {
 	private panel: vscode.WebviewPanel | undefined;
@@ -44,7 +45,8 @@ export class IgnoredView {
 				enableScripts: true,
 				retainContextWhenHidden: true,
 				localResourceRoots: [
-					vscode.Uri.file(path.join(this.context.extensionPath, 'media'))
+					vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+					vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
 				]
 			}
 		);
@@ -275,15 +277,15 @@ export class IgnoredView {
 		const hasPackages = packageCount > 0;
 
 		const cssUri = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'ignoredView.css'))
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath('ignoredView.css'))
 		);
 
 		const jsUri = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'ignoredView.js'))
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath('ignoredView.js'))
 		);
 
 		const refreshIconUri = this.panel?.webview.asWebviewUri(
-			vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'icons', 'ignorePage', 'refresh_ignore.svg'))
+			vscode.Uri.file(MediaPathResolver.getMediaFilePath('icons', 'ignorePage', 'refresh_ignore.svg'))
 		);
 
 		return `

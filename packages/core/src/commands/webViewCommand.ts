@@ -16,6 +16,7 @@ import { Gpt } from "../gpt/gpt";
 import * as os from "os";
 import { GptResult } from "../models/gptResult";
 import { cx } from "../cx";
+import { MediaPathResolver } from "../utils/mediaPathResolver";
 
 export class WebViewCommand {
   private thinkID: number;
@@ -52,7 +53,6 @@ export class WebViewCommand {
       commands.newDetails,
       async (result: AstResult, type?: string) => {
         const detailsDetachedView = new AstDetailsDetached(
-          this.context.extensionUri,
           result,
           this.context,
           false,
@@ -78,7 +78,8 @@ export class WebViewCommand {
           {
             enableScripts: true,
             localResourceRoots: [
-              vscode.Uri.file(path.join(this.context.extensionPath, "media")),
+              vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+              vscode.Uri.file(MediaPathResolver.getCoreMediaPath()),
             ],
           }
         );
@@ -94,7 +95,8 @@ export class WebViewCommand {
         this.detailsPanel.webview.options = {
           enableScripts: true,
           localResourceRoots: [
-            vscode.Uri.file(path.join(this.context.extensionPath, "media/")),
+            vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+            vscode.Uri.file(MediaPathResolver.getCoreMediaPath()),
           ],
         };
         // detailsPanel set html content
@@ -148,7 +150,6 @@ export class WebViewCommand {
         }
 
         const gptDetachedView = new GptView(
-          this.context.extensionUri,
           result,
           this.context,
           false,
@@ -175,7 +176,8 @@ export class WebViewCommand {
           {
             enableScripts: true,
             localResourceRoots: [
-              vscode.Uri.file(path.join(this.context.extensionPath, "media")),
+              vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+              vscode.Uri.file(MediaPathResolver.getCoreMediaPath()),
             ],
           }
         );
@@ -191,7 +193,8 @@ export class WebViewCommand {
         this.gptPanel.webview.options = {
           enableScripts: true,
           localResourceRoots: [
-            vscode.Uri.file(path.join(this.context.extensionPath, "media/")),
+            vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+            vscode.Uri.file(MediaPathResolver.getCoreMediaPath()),
           ],
         };
         // gptPanel set html content
