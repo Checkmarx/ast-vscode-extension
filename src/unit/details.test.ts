@@ -7,7 +7,7 @@ import { Details } from "../utils/interface/details";
 import { AstResult } from "../models/results";
 import { constants } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
-import CxMask from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
+import CxMask from "@checkmarx/ast-cli-javascript-wrapper/dist/main/mask/CxMask";
 import * as extension from "../extension"; // ייבוא כל המודול
 
 describe("Details", () => {
@@ -97,10 +97,10 @@ describe("Details", () => {
       mockResult.type = constants.sca;
       const html = details.triage("test-class");
 
-      expect(html).to.include("select_severity");
+      expect(html).to.not.include("select_severity");
       expect(html).to.include("select_state");
-      expect(html).to.not.include("Update");
-      expect(html).to.not.include("comment_box");
+      expect(html).to.include("Update");
+      expect(html).to.include("comment_box");
     });
   });
 
@@ -140,7 +140,6 @@ describe("Details", () => {
       };
 
       const html = details.scaView(
-        paths.severityPath,
         paths.scaAtackVector,
         paths.scaComplexity,
         paths.scaAuthentication,
@@ -151,7 +150,6 @@ describe("Details", () => {
         paths.scaUrl
       );
 
-      expect(html).to.include("test-package");
       expect(html).to.include("test sca content");
     });
   });

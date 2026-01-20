@@ -4,8 +4,8 @@ import * as vscode from "vscode";
 import { AstResult } from "../models/results";
 import { constants } from "./common/constants";
 import { GitExtension, Repository } from "./types/git";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../extension";
@@ -267,13 +267,16 @@ export function getStateIdForTriage(selectedStateName: string): number {
   }[];
 
   const matchedCustom = customStates.find(
-    (state) => state.name.toLowerCase() === selectedStateName.toLowerCase()
+    (state) => (state.name.trim() === selectedStateName.trim())
   );
   return matchedCustom.id;
 }
 
 export function getIDEName(): string {
-  return (vscode.env.appName || '').toLowerCase();
+  const appName = (vscode && vscode.env && typeof vscode.env.appName === 'string')
+    ? vscode.env.appName
+    : '';
+  return appName.toLowerCase();
 }
 
 export function isIDE(ideName: string): boolean {
@@ -281,9 +284,9 @@ export function isIDE(ideName: string): boolean {
 }
 
 export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecret: boolean): string {
-  return `<a href="command:${commands.openAIChat}?${args}">Fix with CxOne Assist</a> &emsp;
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with Checkmarx One Assist</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
-          <a href="command:${commands.ignorePackage}?${args}"> ${isSecret ? "ignore this secret in file" : "Ignore this vulnerability"}</a> &emsp;
+          <a href="command:${commands.ignorePackage}?${args}"> ${isSecret ? "Ignore this secret in file" : "Ignore this vulnerability"}</a> &emsp;
           <a href="command:${commands.ignoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;
     `;
 

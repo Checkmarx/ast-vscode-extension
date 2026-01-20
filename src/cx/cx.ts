@@ -1,25 +1,25 @@
 import * as vscode from "vscode";
-import { CxWrapper } from "@checkmarxdev/ast-cli-javascript-wrapper";
-import CxScaRealtime from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
-import CxScan from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
-import CxProject from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/project/CxProject";
-import CxCodeBashing from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
-import { CxConfig } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+import { CxWrapper } from "@checkmarx/ast-cli-javascript-wrapper";
+import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
+import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
+import CxProject from "@checkmarx/ast-cli-javascript-wrapper/dist/main/project/CxProject";
+import CxCodeBashing from "@checkmarx/ast-cli-javascript-wrapper/dist/main/codebashing/CxCodeBashing";
+import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import { constants } from "../utils/common/constants";
 import { getFilePath, getResultsFilePath, isIDE } from "../utils/utils";
 import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
-import { CxParamType } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
+import { CxParamType } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 import { Logs } from "../models/logs";
 import { CxPlatform } from "./cxPlatform";
-import { CxCommandOutput } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
+import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import CxLearnMoreDescriptions
-    from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
-import CxAsca from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
+    from "@checkmarx/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
+import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { AuthService } from "../services/authService";
-import CxOssResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
-import CxSecretsResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
+import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 
 export class Cx implements CxPlatform {
     private context: vscode.ExtensionContext;
@@ -154,7 +154,6 @@ export class Cx implements CxPlatform {
         params.set(CxParamType.S, sourcePath);
         params.set(CxParamType.BRANCH, branchName);
         params.set(CxParamType.PROJECT_NAME, projectName);
-        params.set(CxParamType.AGENT, constants.vsCodeAgent);
         params.set(
             CxParamType.ADDITIONAL_PARAMETERS,
             constants.scanCreateAdditionalParameters
@@ -193,8 +192,7 @@ export class Cx implements CxPlatform {
             scanId,
             constants.resultsFileExtension,
             constants.resultsFileName,
-            getFilePath(),
-            constants.vsCodeAgent
+            getFilePath()
         );
     }
 
@@ -303,11 +301,12 @@ export class Cx implements CxPlatform {
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
 
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
 
     async getAstConfiguration() {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return undefined;
@@ -319,7 +318,7 @@ export class Cx implements CxPlatform {
     }
 
     async isValidConfiguration(): Promise<boolean> {
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return false;
@@ -337,7 +336,7 @@ export class Cx implements CxPlatform {
 
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -359,7 +358,7 @@ export class Cx implements CxPlatform {
 
     async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
         let enabled = true;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
         if (!token) {
             return enabled;
         }
@@ -378,9 +377,91 @@ export class Cx implements CxPlatform {
         return enabled;
     }
 
+    async isStandaloneEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.standaloneEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => cx.standaloneEnabled(),
+            "tenant configuration"
+        );
+    }
+
+
+    async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.cxOneAssistEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => {
+                const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
+                return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
+            },
+            "tenant configuration (Checkmarx One Assist)"
+        );
+    }
+
+    async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        return this.isStandaloneEnabled(logs);
+    }
+
+    clearStandaloneEnabledCache(): void {
+        this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    private async setStandaloneFlag(value: boolean): Promise<void> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
+    }
+
+    private async clearStandaloneFlag(): Promise<void> {
+        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+    }
+
+    private async getCachedFeatureEnabled(
+        globalStateKey: string,
+        logs: Logs,
+        remoteCheck: (cx: CxWrapper) => Promise<boolean>,
+        errorContext: string
+    ): Promise<boolean> {
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        if (!token) {
+            await this.context.globalState.update(globalStateKey, undefined);
+            return false;
+        }
+
+        const cached = this.context.globalState.get<boolean>(globalStateKey);
+        if (cached !== undefined) {
+            return cached;
+        }
+
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            await this.context.globalState.update(globalStateKey, false);
+            return false;
+        }
+
+        const cx = new CxWrapper(config);
+        try {
+            const enabled = await remoteCheck(cx);
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(enabled);
+            } else {
+                await this.context.globalState.update(globalStateKey, enabled);
+            }
+            return enabled;
+        } catch (error) {
+            logs.error(`Error checking ${errorContext}: ${error}`);
+            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+                await this.setStandaloneFlag(false);
+            } else {
+                await this.context.globalState.update(globalStateKey, false);
+            }
+            return false;
+        }
+    }
+
     async isAiMcpServerEnabled(): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get("authCredential");
+        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
 
         if (!token) {
             return enabled;
@@ -430,6 +511,56 @@ export class Cx implements CxPlatform {
         }
         return r;
     }
+
+    async triageSCAShow(
+        projectId: string,
+        vulnerabilities: string,
+        scanType: string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): Promise<any[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const scans = await cx.triageSCAShow(projectId, vulnerabilities, scanType);
+        if (scans.payload && scans.exitCode === 0) {
+            r = scans.payload;
+        } else {
+            throw new Error(scans.status);
+        }
+        return r;
+    }
+
+    async triageSCAUpdate(
+        projectId: string,
+        similarityId: string,
+        scanType: string,
+        state: string,
+        comment: string
+    ): Promise<number> {
+        let r = -1;
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return r;
+        }
+        const cx = new CxWrapper(config);
+        const triage = await cx.triageSCAUpdate(
+            projectId,
+            similarityId,
+            scanType,
+            state,
+            comment
+        );
+        if (triage.exitCode === 0) {
+            r = triage.exitCode;
+        } else {
+            throw new Error(triage.status);
+        }
+        return r;
+    }
+
 
     async triageUpdate(
         projectId: string,
@@ -629,7 +760,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(null, true, constants.vsCodeAgent, null);
+        const scans = await cx.scanAsca(null, true, null);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -650,7 +781,7 @@ export class Cx implements CxPlatform {
             config = new CxConfig();
         }
         const cx = new CxWrapper(config);
-        const scans = await cx.scanAsca(sourcePath, false, constants.vsCodeAgent, ignorePath);
+        const scans = await cx.scanAsca(sourcePath, false, ignorePath);
         if (scans.payload && scans.exitCode === 0) {
             return scans.payload[0];
         } else {
@@ -763,16 +894,14 @@ export class Cx implements CxPlatform {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
-        const agent = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
-
-        cx.telemetryAIEvent(aiProvider, agent, eventType, subType, engine, problemSeverity, "", "", 0);
+        cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
     async setUserEventDataForDetectionLogs(scanType: string, status: string, totalCount: number) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "", "",
+            cx.telemetryAIEvent("", "", "", "", "",
                 scanType, status, totalCount);
         }
     }

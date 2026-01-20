@@ -9,11 +9,13 @@ export const commands = {
   setings: `${constants.extensionName}.viewSettings`,
   isValidCredentials: `${constants.extensionName}.isValidCredentials`,
 
+  authentication: `${constants.extensionName}.authentication`,
   showAuth: `${constants.extensionName}.showAuth`,
 
   isScanEnabled: `${constants.extensionName}.isScanEnabled`,
   isScaScanEnabled: `${constants.extensionName}.isSCAScanEnabled`,
-
+  isStandaloneEnabled: `${constants.extensionName}.isStandaloneEnabled`,
+  isCxOneAssistEnabled: `${constants.extensionName}.isCxOneAssistEnabled`,
   filterCriticalToggle: `${constants.extensionName}.filterCritical_toggle`,
   filterCriticalUntoggle: `${constants.extensionName}.filterCritical_untoggle`,
   filterCritical: `${constants.extensionName}.filterCritical`,
@@ -139,5 +141,17 @@ export const commands = {
   ignorePackage: `${constants.extensionName}.${constants.ignorePackage}`,
   ignoreAll: `${constants.extensionName}.${constants.ignoreAll}`,
   openIgnoredView: `${constants.extensionName}.openIgnoredView`,
+  refreshIgnoredStatusBar: `${constants.extensionName}.refreshIgnoredStatusBar`,
+  refreshScaStatusBar: `${constants.extensionName}.refreshScaStatusBar`,
+  refreshKicsStatusBar: `${constants.extensionName}.refreshKicsStatusBar`,
+  assistDocumentation: `${constants.extensionName}.assistDocumentation`,
+  updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
+  astCxOneAssist: "astCxOneAssist",
+  astResultsPromo: "astResultsPromo",
+  scaAutoScanPromo: "scaAutoScanPromo",
+  docAndFeedback: "docAndFeedback",
+  refreshRiskManagementView: `${constants.extensionName}.refreshRiskManagementView`,
+  clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
 
+  isDastEnabled: `${constants.extensionName}.isDastEnabled`,
 };

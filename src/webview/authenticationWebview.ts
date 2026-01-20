@@ -7,6 +7,8 @@ import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "../commands/webViewCommand";
 import { cx } from "../cx";
 import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
+import { CommonCommand } from "../commands/commonCommand";
+import { commands } from "../utils/common/commands";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -37,7 +39,7 @@ export class AuthenticationWebview {
   }
 
   private async initialize() {
-    this._panel.webview.postMessage({ type: "showLoader" });
+    await this._panel.webview.postMessage({ type: "showLoader" });
     const authService = AuthService.getInstance(this.context, this.logs);
     let hasToken = false;
 
@@ -46,17 +48,17 @@ export class AuthenticationWebview {
     } catch (error) {
       console.error("Error validating authentication state:", error);
     }
-    this._panel.webview.postMessage({
-      type: "setAuthState",
-      isAuthenticated: hasToken,
-    });
+    const setAuthStateMessage = { type: "setAuthState", isAuthenticated: hasToken };
+    await this._panel.webview.postMessage(setAuthStateMessage);
 
     const urls = this.getURIs(this.context);
-    this._panel.webview.postMessage({ type: "setUrls", items: urls });
+    const setUrlsMessage = { type: "setUrls", items: urls };
+    await this._panel.webview.postMessage(setUrlsMessage);
 
     const tenants = this.getTenants(this.context);
-    this._panel.webview.postMessage({ type: "setTenants", items: tenants });
-    this._panel.webview.postMessage({ type: "hideLoader" });
+    const setTenantsMessage = { type: "setTenants", items: tenants };
+    await this._panel.webview.postMessage(setTenantsMessage);
+    await this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
   public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
@@ -65,7 +67,7 @@ export class AuthenticationWebview {
       return;
     }
     const panel = vscode.window.createWebviewPanel(
-      AuthenticationWebview.viewType,
+      commands.astResultsPromo,
       "Checkmarx One Authentication",
       vscode.ViewColumn.One,
       {
@@ -111,6 +113,32 @@ export class AuthenticationWebview {
 
   private async markFirstWelcomeAsShown() {
     await this.context.globalState.update("cxFirstWelcome", true);
+  }
+
+  private schedulePostAuth(isAiEnabled: boolean, options?: { apiKey?: string }) {
+    setTimeout(async () => {
+      try {
+        this._panel.dispose();
+        await this.markFirstWelcomeAsShown();
+        WelcomeWebview.show(this.context, isAiEnabled);
+        await vscode.commands.executeCommand(commands.updateCxOneAssist);
+        await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+        await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+        await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+        await vscode.commands.executeCommand(commands.refreshRiskManagementView);
+        await vscode.commands.executeCommand(commands.clearKicsDiagnostics);
+        if (isAiEnabled) {
+          await initializeMcpConfiguration(options.apiKey);
+        } else {
+          await uninstallMcp();
+        }
+        setTimeout(() => {
+          this._panel.webview.postMessage({ type: "clear-message-api-validation" });
+        }, 500);
+      } catch (e) {
+        this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
+      }
+    }, 1000);
   }
 
   private _getWebviewContent(): string {
@@ -219,7 +247,7 @@ export class AuthenticationWebview {
               "Yes",
               "Cancel"
             )
-            .then((selection) => {
+            .then(async (selection) => {
               if (selection === "Yes") {
                 const authService = AuthService.getInstance(this.context);
                 authService.logout();
@@ -233,6 +261,10 @@ export class AuthenticationWebview {
                   "Logged out successfully."
                 );
                 uninstallMcp();
+                await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
               }
             });
         } else if (message.command === "authenticate") {
@@ -252,17 +284,11 @@ export class AuthenticationWebview {
                   const authService = AuthService.getInstance(this.context);
                   const token = await authService.authenticate(baseUri, tenant);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   if (token !== "") {
-                    setTimeout(async () => {
-                      this._panel.dispose();
-                      await this.markFirstWelcomeAsShown();
-                      WelcomeWebview.show(this.context, isAiEnabled);
-                      if (isAiEnabled) {
-                        await initializeMcpConfiguration(token);
-                      } else {
-                        await uninstallMcp();
-                      }
-                    }, 1000);
+                    this.schedulePostAuth(isAiEnabled, { apiKey: token });
                   }
                   else {
                     this._panel.webview.postMessage({ command: "enableAuthButton" });
@@ -286,30 +312,16 @@ export class AuthenticationWebview {
                     return;
                   }
 
-                  // If the API Key is valid, save it in the VSCode configuration (or wherever you prefer)
                   authService.saveToken(this.context, message.apiKey);
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  // Sending a success message to the window
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
                   this._panel.webview.postMessage({
                     type: "validation-success",
                     message: "API Key validated successfully!",
                   });
-                  setTimeout(async () => {
-
-                    this._panel.dispose();
-                    await this.markFirstWelcomeAsShown();
-                    WelcomeWebview.show(this.context, isAiEnabled);
-                    if (isAiEnabled) {
-                      await initializeMcpConfiguration(message.apiKey);
-                    } else {
-                      await uninstallMcp();
-                    }
-                    setTimeout(() => {
-                      this._panel.webview.postMessage({
-                        type: "clear-message-api-validation",
-                      });
-                    }, 500);
-                  }, 1000);
+                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                 }
               } catch (error) {
                 this._panel.webview.postMessage({ command: "enableAuthButton" });

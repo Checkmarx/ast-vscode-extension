@@ -1,6 +1,9 @@
 export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
+  standaloneEnabledGlobalState: "standaloneEnabled",
+  cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
+  authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
@@ -67,8 +70,8 @@ export const constants = {
     { tag: "CONFIRMED", value: "Confirmed" },
     { tag: "TO_VERIFY", value: "To Verify" },
     { tag: "URGENT", value: "Urgent" },
-    { tag: "NOT_IGNORED", value: "Not Ignored", dependency: true },
-    { tag: "IGNORED", value: "Ignored", dependency: true },
+    // { tag: "NOT_IGNORED", value: "Not Ignored", dependency: true },
+    // { tag: "IGNORED", value: "Ignored", dependency: true },
   ],
   sast: "sast",
   kics: "kics",
@@ -148,6 +151,7 @@ export const constants = {
   scanCreateAdditionalParameters: "--async --sast-incremental --resubmit",
 
   treeName: "astResults",
+  dastTreeName: "dastResults",
   scaTreeName: "scaAutoScan",
   realtime: "realtime",
 
@@ -288,7 +292,7 @@ export const constants = {
     "**/*.terraform.tfvars",
   ],
 
-  cxAi: 'CxOne Assist',
+  cxAi: 'Checkmarx One Assist',
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

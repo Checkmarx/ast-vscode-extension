@@ -5,13 +5,13 @@ import { Logs } from "../../../models/logs";
 import { BaseScannerService } from "../../common/baseScannerService";
 import { IScannerConfig, CxDiagnosticData, IacHoverData, ContainersHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
-import CxIacResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
 import path from "path";
 import { cx } from "../../../cx";
 import fs from "fs";
 import { minimatch } from "minimatch";
-import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 import { logScanResults } from "../common";
 import { ThemeUtils } from "../../../utils/themeUtils";

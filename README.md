@@ -51,7 +51,7 @@ The Checkmarx Visual Studio Code extension contains three separate tools:
 
 -   Checkmarx SCA Realtime Scanner
 
-> The plugin is available on [marketplace](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results). In addition, the code can be accessed [here](https://github.com/CheckmarxDev/ast-vscode-extension).
+> The plugin is available on [marketplace](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results). In addition, the code can be accessed [here](https://github.com/Checkmarx/ast-vscode-extension).
 
 ## Checkmarx One Results
 

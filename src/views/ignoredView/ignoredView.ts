@@ -155,15 +155,22 @@ export class IgnoredView {
 			const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
 
 			const displayName = packageData ? ignoredViewUtils.formatPackageDisplayName(packageKey, packageData.type) : packageKey;
+			const closeUndo = await vscode.window.showInformationMessage(
+				`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
+				'Close',
+				'Undo'
+			);
+			if (closeUndo === 'Undo') {
+				ignoreManager.getIgnoredPackagesData()[packageKey].files.forEach(file => {
+					file.active = true;
+				});
+				return;
+			}
 
 			const success = ignoreManager.revivePackage(packageKey);
 
 			if (success) {
-				vscode.window.showInformationMessage(
-					`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
-					'Close',
-					'Undo'
-				);
+
 
 				setTimeout(async () => {
 					await ignoreManager.triggerActiveChangesDetection();
@@ -400,10 +407,12 @@ export class IgnoredView {
 
 		const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, pkg.type);
 
+		const encodedPackageKey = Buffer.from(packageKey, 'utf-8').toString('base64');
+
 		return `
 			<div class="table-row">
 				<div class="col-checkbox">
-					<input type="checkbox" class="row-checkbox" data-package-key="${packageKey}" onchange="updateMasterCheckbox()" />
+					<input type="checkbox" class="row-checkbox" data-package-key="${encodedPackageKey}" onchange="updateMasterCheckbox()" />
 				</div>
 				${packageIcon ? `<div class="col-package-icon">
 					<img src="${packageIcon}" alt="Package ${pkg.severity}" class="package-severity-icon-large" data-hover-src="${packageIconHover}" />
@@ -427,7 +436,7 @@ export class IgnoredView {
 				<div class="col-updated">${lastUpdated}</div>
 				<div class="col-actions">
 					<div class="tooltip revive-btn-tooltip">
-						<button class="revive-btn" data-package-key="${packageKey}" onclick="revivePackage(this.getAttribute('data-package-key'))">
+						<button class="revive-btn" data-package-key="${encodedPackageKey}" onclick="revivePackage(this.getAttribute('data-package-key'))">
 							<img src="${ignoredViewUtils.getReviveIconPath(webview, extensionPath)}" alt="Revive" class="revive-icon" />
 							Revive
 						</button>

@@ -7,7 +7,7 @@ import {
   StateLevel,
   constants,
 } from "../utils/common/constants";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { Counter } from "../models/counter";
 import { AstResult } from "../models/results";
 import { SastNode } from "../models/sastNode";
@@ -246,7 +246,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     // Link name for both SAST and SCA results
     const shouldAddCodeLink = resultForLink.type === constants.sast || resultForLink.type === constants.sca;
-    const linkText = resultForLink.type === constants.sca ? "Cx SCA Realtime Result" : "CxOne Result";
+    const linkText = resultForLink.type === constants.sca ? "Checkmarx One SCA Realtime Result" : "Checkmarx One Result";
     this.addDiagnosticToMap(label, severity, node.fileName, range, metadata, folder, map, shouldAddCodeLink, linkText);
   }
 
@@ -259,7 +259,7 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
     folder: vscode.WorkspaceFolder,
     map: Map<string, vscode.Diagnostic[]>,
     shouldAddCodeLink: boolean = true,
-    linkText: string = "CxOne Result"
+    linkText: string = "Checkmarx One Result"
   ) {
     const filePath = vscode.Uri.joinPath(folder.uri, fileName).toString();
     const diagnostic = new vscode.Diagnostic(range, label, severity);

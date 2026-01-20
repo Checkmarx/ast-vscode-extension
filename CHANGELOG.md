@@ -1,5 +1,85 @@
 # CHANGELOG
 
+## [v2.46.1-security-fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-security-fixes.0) - 2026-01-19 06:26:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.46.1-2.46.1-ReviveAllUndo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.1-ReviveAllUndo.0) - 2026-01-19 08:31:30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-security-fixes.0...v2.46.1-2.46.1-ReviveAllUndo.0
+
+## [v2.46.1-mcp-fallback-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-mcp-fallback-changes.0) - 2026-01-14 18:31:31
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-2.46.0-MCPInstallLogs.0...v2.46.1-mcp-fallback-changes.0
+
+## [v2.46.1-2.46.0-MCPInstallLogs.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.0-MCPInstallLogs.0) - 2026-01-14 10:25:00
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.46.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.0) - 2026-01-12 12:37:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.46.0 -->
+
+## [v2.45.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.45.0) - 2026-01-12 10:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.45.0 -->
+
+## [v2.44.1-2.44.2-GeminiAgent.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-2.44.2-GeminiAgent.0) - 2026-01-07 08:39:14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.1-secret-ignore-fix.0...v2.44.1-2.44.2-GeminiAgent.0
+
+## [v2.44.1-secret-ignore-fix.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.1-secret-ignore-fix.0) - 2025-12-30 15:26:53
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.44.0...v2.44.1-secret-ignore-fix.0
+
+## [v2.44.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.44.0) - 2025-12-30 15:26:04
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.44.0 -->
+
+## [v2.43.1-sca-triage.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-sca-triage.0) - 2025-12-18 18:31:06
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.1-2.43.1-ReviveIgnoredPasswords.0...v2.43.1-sca-triage.0
+
+## [v2.43.1-2.43.1-ReviveIgnoredPasswords.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-2.43.1-ReviveIgnoredPasswords.0) - 2025-12-18 17:58:15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.43.1-FixUndoAction.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.1-FixUndoAction.0) - 2025-12-15 16:35:54
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.43.0...v2.43.1-FixUndoAction.0
+
+## [v2.43.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.43.0) - 2025-12-15 16:35:07
+
+<!-- Release notes generated using configuration in .github/release.yml at v2.43.0 -->
+
+## [v2.42.1-org_name_change.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-org_name_change.0) - 2025-12-15 14:07:57
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
 ## [v2.42.1-standalone.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.42.1-standalone.0) - 2025-11-28 10:59:26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

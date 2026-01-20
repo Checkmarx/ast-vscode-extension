@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
-import { CxRealtimeEngineStatus } from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
+import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { constants } from "../../utils/common/constants";
 
 export interface IScannerConfig {
@@ -77,6 +77,7 @@ export interface ContainersHoverData {
     endIndex: number;
   };
   fileType: string;
+  filePath: string;
 }
 
 export interface IacHoverData {

@@ -1,15 +1,14 @@
 .header {
 	display: flex;
 	/* background-color: var(--vscode-minimapSlider-hoverBackground); */
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	min-height: 40px;
 	align-items: center;
 	justify-content: center;
-	margin-bottom: 0.5em;
+	margin-bottom: 0.8em;
 }
 
 .header-content {
-	margin-left: 10px;
 	margin-top: 0;
 	padding-top: 15px;
 	font-size: 1.3em;
@@ -17,14 +16,15 @@
 
 .header-severity {
 	flex: 2;
-	margin-left: 25px;
-	height: 65px;
+	margin-left: 10px;
+	height: 54px;
 }
 
 .header-title {
 	margin-left: 0.5em;
 	flex: 25;
 	font-size: 1.5em;
+	font-weight: bold;
 }
 
 .header-name {
@@ -43,10 +43,6 @@
 	font-size: 0.9em;
 }
 
-.tab.general .card-content div {
-	margin: 0px !important;
-    margin-left: 10px !important;
-}
 
 .tab.general .card-content p {
 	margin-bottom: 0rem !important;
@@ -79,7 +75,6 @@
 	flex-direction: column;
 	background-color: transparent;
 	justify-content: space-between;
-	padding: 0;
 }
 
 .content {
@@ -104,14 +99,12 @@
 }
 
 .left-content .header-content {
-	color: var(--vscode-inputOption-activeForeground);
-	margin-left: 25px;
+	color: var(--vscode-editor-foreground);
 }
 
 .left-content .description {
-	color: var(--vscode-inputOption-activeForeground);
-	margin: 25px;
-	margin-bottom: 20px;
+	color: var(--vscode-editor-foreground);
+	margin: 5px 0 15px 0;
 }
 
 .left-content .description h3{
@@ -119,7 +112,7 @@
 }
 
 .right-content {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	border-left: 1px solid;
 	border-color: rgb(128, 128, 128,0.5);
 	border-bottom: 1px solid;
@@ -127,18 +120,18 @@
 }
 
 .right-content .header-content-selected {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	flex: 50rem;
 	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .right-content .header-content-not-selected {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	flex: 50rem;
 }
 
 .right-content .header-content-right {
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 	margin-left: 25px;
 	flex: 50rem;
 	display: flex;
@@ -155,7 +148,7 @@
 .card-content {
 	display: flex;
 	flex-wrap: wrap;
-	color: var(--vscode-inputOption-activeForeground);
+	color: var(--vscode-editor-foreground);
 }
 
 .cvss-selected {
@@ -433,7 +426,7 @@ body[data-vscode-theme-kind*="light"] {
 .remediation-container {
 	width: 28rem;
 	display: flex;
-	margin: 25px;
+	margin: 25px 0 25px 0;
 	justify-content: center;
 	align-items: center;
 	height: 5rem;

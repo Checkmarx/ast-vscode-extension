@@ -295,6 +295,10 @@ export class CopilotChatCommand {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
                 try {
+                    if (isIDE(constants.kiroAgent)) {
+                        let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
+                            question = `In ${item.filePath} line ${line} \n${question}`
+                    }
                     await this.openChatWithPrompt(question);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);

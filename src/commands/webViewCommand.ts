@@ -100,7 +100,8 @@ export class WebViewCommand {
         // detailsPanel set html content
         this.detailsPanel.webview.html =
           await detailsDetachedView.getDetailsWebviewContent(
-            this.detailsPanel.webview
+            this.detailsPanel.webview,
+            type
           );
 
         // Setup theme change listener for the webview
@@ -111,12 +112,12 @@ export class WebViewCommand {
         });
 
         // Start to load the changes tab, gets called everytime a new sast details webview is opened
-        await this.loadAsyncTabsContent(result);
+        await this.loadAsyncTabsContent(result, detailsDetachedView);
 
         // The event is intended for loading data to the results of SAST, when returning to the plugin tab from another tab
         this.detailsPanel.onDidChangeViewState(async (e) => {
           if (e.webviewPanel.visible) {
-            await this.loadAsyncTabsContent(result);
+            await this.loadAsyncTabsContent(result, detailsDetachedView);
           }
         });
 
@@ -209,12 +210,12 @@ export class WebViewCommand {
     this.context.subscriptions.push(gpt);
   }
 
-  private async loadAsyncTabsContent(result: AstResult) {
-    if (result.type === "sast") {
+  private async loadAsyncTabsContent(result: AstResult, detailsDetachedView?: AstDetailsDetached) {
+    if (result.type === constants.sast) {
       await getLearnMore(this.logs, this.context, result, this.detailsPanel);
     }
-    if (result.type === "sast" || result.type === "kics") {
-      await getChanges(this.logs, this.context, result, this.detailsPanel);
+    if (result.type === constants.sast || result.type === constants.kics || result.type === constants.sca) {
+      await getChanges(this.logs, this.context, result, this.detailsPanel, detailsDetachedView, this.resultsProvider);
     }
   }
 
@@ -254,7 +255,9 @@ export class WebViewCommand {
               this.logs,
               this.context,
               result,
-              this.detailsPanel
+              this.detailsPanel,
+              detailsDetachedView,
+              this.resultsProvider
             );
           }
           break;

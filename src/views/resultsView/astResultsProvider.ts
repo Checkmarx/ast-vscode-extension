@@ -13,11 +13,12 @@ import { TreeItem } from "../../utils/tree/treeItem";
 import { FilterCommand } from "../../commands/filterCommand";
 import { GroupByCommand } from "../../commands/groupByCommand";
 import { messages } from "../../utils/common/messages";
-import CxResult from "@checkmarxdev/ast-cli-javascript-wrapper/dist/main/results/CxResult";
+import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
 import { DastApiService, AlertLevelResult, AlertInstance } from "../../services/dastApiService";
+import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
@@ -36,13 +37,18 @@ export class AstResultsProvider extends ResultsProvider {
     super(context, statusBarItem);
     this.loadedResults = undefined;
 
-    this.riskManagementView = new riskManagementView(context.extensionUri, context);
+    this.riskManagementView = new riskManagementView(context.extensionUri, context, logs);
 
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         'riskManagement',
         this.riskManagementView
       )
+    );
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.refreshRiskManagementView, async () => {
+        this.riskManagementView.updateContent();
+      })
     );
 
     // Syncing with AST everytime the extension gets opened
@@ -63,25 +69,33 @@ export class AstResultsProvider extends ResultsProvider {
   }
 
   async refreshData(): Promise<void> {
-    this.showStatusBarItem(messages.commandRunning);
-    const treeItem = await this.generateTree();
-    this.data = await cx.isValidConfiguration() ? treeItem.children : [];
-    this._onDidChangeTreeData.fire(undefined);
-    this.hideStatusBarItem();
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      const treeItem = await this.generateTree();
+      this.data = treeItem.children;
+      this._onDidChangeTreeData.fire(undefined);
+      this.hideStatusBarItem();
+    }
+    else {
+      this.data = [];
+      this._onDidChangeTreeData.fire(undefined);
+    }
   }
 
   async openRefreshData(): Promise<void> {
-    this.showStatusBarItem(messages.commandRunning);
-    this.loadedResults = undefined;
-    const scanIDItem = getFromState(this.context, constants.scanIdKey);
-    let scanId = undefined;
-    if (scanIDItem && scanIDItem.name) {
-      scanId = getFromState(this.context, constants.scanIdKey).name;
-    }
-    if (scanId) {
-      await getResultsWithProgress(this.logs, scanId);
-      await vscode.commands.executeCommand(commands.refreshTree);
-      this.hideStatusBarItem();
+    if (await validateConfigurationAndLicense(this.logs)) {
+      this.showStatusBarItem(messages.commandRunning);
+      this.loadedResults = undefined;
+      const scanIDItem = getFromState(this.context, constants.scanIdKey);
+      let scanId = undefined;
+      if (scanIDItem && scanIDItem.name) {
+        scanId = getFromState(this.context, constants.scanIdKey).name;
+      }
+      if (scanId) {
+        await getResultsWithProgress(this.logs, scanId);
+        await vscode.commands.executeCommand(commands.refreshTree);
+        this.hideStatusBarItem();
+      }
     }
   }
 

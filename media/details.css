@@ -225,13 +225,13 @@ input + label {
 }
 
 input + label:hover{
-  color: var(--vscode-inputOption-activeForeground);
+  color: var(--vscode-editor-foreground);
 }
 
 input:checked + label {
   border-bottom: none;
   border-bottom: 1px solid ;
-  color: var(--vscode-inputOption-activeForeground)
+  color: var(--vscode-editor-foreground)
 }
 
 input ~ .tab {
@@ -436,7 +436,7 @@ body[data-vscode-theme-kind*="vscode-light-high-contrast"] {
 }
 
 .codebashing-link-value:hover{
-  color: var(--vscode-inputOption-activeForeground);
+  color: var(--vscode-editor-foreground);
   cursor: pointer;
 }
 
