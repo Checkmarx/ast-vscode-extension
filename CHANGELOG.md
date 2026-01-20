@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v2.46.1-2.46.1-AiTracker.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.1-AiTracker.0) - 2026-01-20 13:18:42
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### New Features 🚀
+* Feature/ast 127310 by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1358
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-2.46.1-ReviveAllUndo.0...v2.46.1-2.46.1-AiTracker.0
+
 ## [v2.46.1-security-fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-security-fixes.0) - 2026-01-19 06:26:29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
