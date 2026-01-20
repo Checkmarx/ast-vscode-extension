@@ -33,7 +33,7 @@ export class AISuggestionTracker {
   private static instance: AISuggestionTracker;
 
   private pendingFixes: Map<string, PendingAIFix> = new Map();
-//Add new
+  //Add new
   private config: TrackerConfig;
 
   private context: vscode.ExtensionContext;
@@ -273,7 +273,7 @@ export class AISuggestionTracker {
       this.logs.info(`[AITracker] Total request count: ${existing.requestCount}`);
 
       const eventName = AI_FIX_EVENTS.duplicate;
-      this.sendTelemetry(eventName, {
+      await this.sendTelemetry(eventName, {
         scannerType,
         severity,
         vulnerabilityKey: vulnKey,
@@ -302,7 +302,8 @@ export class AISuggestionTracker {
       severity,
       validatorState: validatorState,
       requestedAt: Date.now(),
-      requestCount: 1
+      requestCount: 1,
+      originalItem: item
     };
 
     this.pendingFixes.set(vulnKey, fix);
@@ -646,6 +647,22 @@ export class AISuggestionTracker {
         const ossItem = fix.originalItem as HoverData;
         return ossItem.packageName || 'unknown';
       }
+      case 'Secrets': {
+        const secretsItem = fix.originalItem as SecretsHoverData;
+        return secretsItem.title || 'unknown';
+      }
+      case 'Asca': {
+        const ascaItem = fix.originalItem as AscaHoverData;
+        return ascaItem.ruleName || 'unknown';
+      }
+      case 'Containers': {
+        const containersItem = fix.originalItem as ContainersHoverData;
+        return `${containersItem.imageName}:${containersItem.imageTag}`;
+      }
+      case 'IaC': {
+        const iacItem = fix.originalItem as IacHoverData;
+        return iacItem.title || 'unknown';
+      }
       default:
         return 'unknown';
     }
@@ -667,7 +684,7 @@ export class AISuggestionTracker {
       };
 
       await cx.sendAIFixOutcomeTelemetry(
-        'developer_assist_remediation',
+        eventName,
         scannerType,
         severity,
         undefined,

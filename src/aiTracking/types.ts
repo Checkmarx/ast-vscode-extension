@@ -1,4 +1,4 @@
-import { HoverData } from "../realtimeScanners/common/types";
+import { HoverData, AscaHoverData, ContainersHoverData, IacHoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 
 export const AI_FIX_EVENTS = {
   requested: 'ai_checkmarx_fix_requested',
@@ -33,7 +33,7 @@ export interface PendingAIFix {
 
   requestCount: number;
 
-  originalItem?: HoverData;
+  originalItem?: HoverData | AscaHoverData | ContainersHoverData | IacHoverData | SecretsHoverData;
 }
 
 export interface FixOutcome {
