@@ -1,0 +1,12 @@
+src/**
+tsconfig.json
+.gitignore
+.vscode/**
+*.vsix
+**/*.ts
+**/*.map
+!out/**
+vsix-contents/**
+vsix-verify/**
+scripts/**
+
