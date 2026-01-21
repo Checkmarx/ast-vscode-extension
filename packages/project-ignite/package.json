@@ -1,0 +1,195 @@
+{
+  "name": "project-ignite",
+  "publisher": "checkmarx",
+  "displayName": "Checkmarx Project Ignite",
+  "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
+  "version": "2.46.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
+  },
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "project-ignite.viewSettings",
+        "category": "project-ignite",
+        "title": "Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "project-ignite.openIgnoredView",
+        "category": "project-ignite",
+        "title": "View Ignored vulnerabilities",
+        "enablement": "project-ignite.isValidCredentials && (project-ignite.isCxOneAssistEnabled || project-ignite.isStandaloneEnabled)"
+      },
+      {
+        "command": "project-ignite.assistDocumentation",
+        "category": "project-ignite",
+        "title": "Documentation"
+      },
+      {
+        "command": "project-ignite.showAuth",
+        "title": "Checkmarx: Show Authentication",
+        "category": "Checkmarx"
+      }
+    ],
+    "submenus": [],
+    "menus": {
+      "view/title": [
+        {
+          "command": "project-ignite.viewSettings",
+          "group": "@settings@2",
+          "when": " view==astCxOneAssist || view==docAndFeedback"
+        },
+        {
+          "command": "project-ignite.openIgnoredView",
+          "group": "@settings@1",
+          "when": "view == astCxOneAssist"
+        },
+        {
+          "command": "project-ignite.assistDocumentation",
+          "group": "@settings@3",
+          "when": "view == astCxOneAssist"
+        }
+      ]
+    },
+    "views": {
+      "astView": [
+        {
+          "id": "astCxOneAssist",
+          "type": "webview",
+          "name": "Checkmarx One Assist"
+        },
+        {
+          "id": "docAndFeedback",
+          "type": "tree",
+          "name": "Documentation & Feedback"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "astView",
+          "title": "Checkmarx",
+          "icon": "media/cx-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [],
+    "configuration": [
+      {
+        "title": "Checkmarx Project Ignite",
+        "id": "cxone-assist",
+        "order": 2,
+        "properties": {
+          "checkmarx.MCP": {
+            "type": "",
+            "default": {},
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:project-ignite.installMCP)"
+          },
+          "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
+            "type": "boolean",
+            "order": 1,
+            "default": false,
+            "markdownDescription": "Scans your code files for security best practices as you code"
+          },
+          "Checkmarx Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 2,
+            "default": false,
+            "markdownDescription": "Scans your manifest files as you code"
+          },
+          "Checkmarx Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
+          }
+        }
+      },
+      {
+        "title": "Checkmarx One",
+        "id": "ast-results",
+        "order": 1,
+        "properties": {
+          "checkmarxOne.authentication": {
+            "type": "",
+            "order": 5,
+            "markdownDescription": "## [**Authentication**](command:project-ignite.showAuth)"
+          },
+          "checkmarxOne.additionalParams": {
+            "type": "string",
+            "order": 6,
+            "description": "Additional Parameters",
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b ./ && npm run copymedia && npm run copycore",
+    "watch": "tsc -w -p ./",
+    "copymedia": "copyfiles \"media/**/*\" out/ -E",
+    "copycore": "copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 1 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "package": "vsce package --allow-star-activation --no-dependencies",
+    "clean": "rimraf out"
+  },
+  "dependencies": {
+    "@checkmarx/vscode-core": "file:../core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.63.0",
+    "@vscode/vsce": "2.24.0",
+    "copyfiles": "2.4.1",
+    "typescript": "^5.3.3"
+  }
+}
