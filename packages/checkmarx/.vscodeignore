@@ -3,10 +3,11 @@ tsconfig.json
 .gitignore
 .vscode/**
 *.vsix
-**/*.ts
-**/*.map
-!out/**
 vsix-contents/**
 vsix-verify/**
 scripts/**
-
+**/*.ts
+**/*.map
+!out/**/*.js
+!out/**/*.json
+!out/**/media/**
