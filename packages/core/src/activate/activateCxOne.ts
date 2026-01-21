@@ -31,7 +31,7 @@ import { DastResultsProvider } from '../views/dastView/dastResultsProvider';
 import { isFeatureEnabled, DAST_ENABLED } from '../utils/common/featureFlags';
 import { CxOneAssistProvider } from '../views/cxOneAssistView/cxOneAssistProvider';
 import { messages } from '../utils/common/messages';
-import { commands } from '../utils/common/commands';
+import { commands } from '../utils/common/commandBuilder';
 import { IgnoredView } from '../views/ignoredView/ignoredView';
 import { AuthenticationWebview } from '../webview/authenticationWebview';
 import { AuthService } from '../services/authService';
@@ -307,7 +307,8 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
 
     setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
-    vscode.commands.registerCommand('ast-results.mockTokenTest', async () => {
+    // Development/testing command - not exposed in package.json
+    vscode.commands.registerCommand(commands.mockTokenTest, async () => {
         const authService = AuthService.getInstance(context);
         await authService.saveToken(context, 'FAKE_TOKEN_FROM_TEST');
         console.log('>> Mock token has been saved to secrets');

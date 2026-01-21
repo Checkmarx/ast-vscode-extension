@@ -29,24 +29,24 @@
   "contributes": {
     "commands": [
       {
-        "command": "ast-results.viewSettings",
-        "category": "ast-results",
+        "command": "project-ignite.viewSettings",
+        "category": "project-ignite",
         "title": "Settings",
         "icon": "$(gear)"
       },
       {
-        "command": "ast-results.openIgnoredView",
-        "category": "ast-results",
+        "command": "project-ignite.openIgnoredView",
+        "category": "project-ignite",
         "title": "View Ignored vulnerabilities",
-        "enablement": "ast-results.isValidCredentials && (ast-results.isCxOneAssistEnabled || ast-results.isStandaloneEnabled)"
+        "enablement": "project-ignite.isValidCredentials && (project-ignite.isCxOneAssistEnabled || project-ignite.isStandaloneEnabled)"
       },
       {
-        "command": "ast-results.assistDocumentation",
-        "category": "ast-results",
+        "command": "project-ignite.assistDocumentation",
+        "category": "project-ignite",
         "title": "Documentation"
       },
       {
-        "command": "ast-results.showAuth",
+        "command": "project-ignite.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
       }
@@ -55,17 +55,17 @@
     "menus": {
       "view/title": [
         {
-          "command": "ast-results.viewSettings",
+          "command": "project-ignite.viewSettings",
           "group": "@settings@2",
           "when": " view==astCxOneAssist || view==docAndFeedback"
         },
         {
-          "command": "ast-results.openIgnoredView",
+          "command": "project-ignite.openIgnoredView",
           "group": "@settings@1",
           "when": "view == astCxOneAssist"
         },
         {
-          "command": "ast-results.assistDocumentation",
+          "command": "project-ignite.assistDocumentation",
           "group": "@settings@3",
           "when": "view == astCxOneAssist"
         }
@@ -104,7 +104,7 @@
           "checkmarx.MCP": {
             "type": "",
             "default": {},
-            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:project-ignite.installMCP)"
           },
           "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
             "type": "boolean",
@@ -157,7 +157,7 @@
           "checkmarxOne.authentication": {
             "type": "",
             "order": 5,
-            "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
+            "markdownDescription": "## [**Authentication**](command:project-ignite.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

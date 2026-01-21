@@ -8,7 +8,7 @@ import { getResultsFilePath, readResultsFromFile } from "../../utils/utils";
 import { Logs } from "../../models/logs";
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
 import { cx } from "../../cx";
-import { commands } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commandBuilder";
 import { TreeItem } from "../../utils/tree/treeItem";
 import { FilterCommand } from "../../commands/filterCommand";
 import { GroupByCommand } from "../../commands/groupByCommand";

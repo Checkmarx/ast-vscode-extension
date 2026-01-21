@@ -14,10 +14,19 @@
  */
 
 import * as vscode from 'vscode';
-import { activateCore, activateCxOne } from '@checkmarx/vscode-core';
+import { activateCore, activateCxOne, setExtensionConfig } from '@checkmarx/vscode-core';
 
 export async function activate(context: vscode.ExtensionContext) {
     try {
+        // Set extension configuration FIRST before any registrations
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
+
         // Initialize shared core functionality (logs, auth, MCP, etc.)
         const { logs } = await activateCore(context);
 

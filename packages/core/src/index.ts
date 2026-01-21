@@ -11,6 +11,9 @@ export { activateCore, setupCommonStatusBars, registerCommonCommands, getGlobalC
 export { activateCxOne } from './activate/activateCxOne';
 export { activateProjectIgnite } from './activate/activateProjectIgnite';
 
+// Export configuration
+export * from './config/extensionConfig';
+
 // Export all shared modules
 export * from './models/logs';
 export * from './services/authService';
@@ -19,6 +22,7 @@ export * from './constants/documentation';
 export * from './utils/common/constants';
 export * from './utils/common/messages';
 export * from './utils/common/commands';
+export { commands } from './utils/common/commandBuilder';
 export * from './utils/common/featureFlags';
 export * from './utils/listener/listeners';
 export * from './utils/listener/workspaceListener';

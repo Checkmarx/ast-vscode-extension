@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { KicsDiagnostic } from "./kicsDiagnostic";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { constants } from "../utils/common/constants";
 import { GptResult } from "../models/gptResult";
 export class KicsCodeActionProvider implements vscode.CodeActionProvider {
@@ -50,23 +50,23 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       .concat(
         this.fixableResultsByLine.length > 0 && fixAllResults.length > 1
           ? this.createFixGroupCodeAction(
-              this.fixableResultsByLine,
-              fixAllResults
-            )
+            this.fixableResultsByLine,
+            fixAllResults
+          )
           : []
       )
       .concat(
         fixAllResults.length > 0
           ? this.createFixFileCodeAction(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  new vscode.Position(0, 0),
-                  new vscode.Position(0, 0)
-                ),
-                "Quick Fix"
+            new vscode.Diagnostic(
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 0)
               ),
-              this.fixableResults
-            )
+              "Quick Fix"
+            ),
+            this.fixableResults
+          )
           : []
       )
       .concat(this.createAskKICSCodeAction(context)); // Add the fix all action if there is more than one fix in the file
@@ -85,7 +85,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       vscode.CodeActionKind.QuickFix
     );
     action.command = {
-      command: "ast-results.kicsRemediation",
+      command: commands.kicsRemediation,
       title: "KICS fix",
       tooltip: "This will apply KICS fix for the vulnerability",
       arguments: [
@@ -113,7 +113,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
       vscode.CodeActionKind.QuickFix
     );
     action.command = {
-      command: "ast-results.kicsRemediation",
+      command: commands.kicsRemediation,
       title: "KICS fix",
       tooltip: "This will apply KICS fix for the vulnerability",
       arguments: [
@@ -158,7 +158,7 @@ export class KicsCodeActionProvider implements vscode.CodeActionProvider {
               vscode.CodeActionKind.QuickFix
             );
             action.command = {
-              command: "ast-results.kicsRemediation",
+              command: commands.kicsRemediation,
               title: "KICS fix",
               tooltip: "This will apply KICS fix for the vulnerability",
               arguments: [

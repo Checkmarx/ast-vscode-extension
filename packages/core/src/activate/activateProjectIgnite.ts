@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { Logs } from '../models/logs';
 import { constants } from '../utils/common/constants';
-import { commands } from '../utils/common/commands';
+import { commands } from '../utils/common/commandBuilder';
 import { cx } from '../cx';
 import { CxOneAssistProvider } from '../views/cxOneAssistView/cxOneAssistProvider';
 import { IgnoredView } from '../views/ignoredView/ignoredView';

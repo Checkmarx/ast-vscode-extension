@@ -15,12 +15,21 @@
  */
 
 import * as vscode from 'vscode';
-import { activateCore, activateProjectIgnite } from '@checkmarx/vscode-core';
+import { activateCore, activateProjectIgnite, setExtensionConfig } from '@checkmarx/vscode-core';
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('[PROJECT-IGNITE] Checkmarx Project Ignite extension is now active');
 
     try {
+        // Set extension configuration FIRST before any registrations
+        setExtensionConfig({
+            extensionId: 'project-ignite',
+            commandPrefix: 'project-ignite',
+            viewContainerPrefix: 'ignite',
+            displayName: 'Checkmarx Project Ignite',
+            extensionType: 'project-ignite',
+        });
+
         // [SHARED] Initialize core shared functionality
         // This includes: logs, auth, common status bars, proxy config
         const { logs } = await activateCore(context);

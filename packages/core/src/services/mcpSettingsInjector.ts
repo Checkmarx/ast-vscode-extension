@@ -5,6 +5,7 @@ import * as path from "path";
 import * as os from "os";
 import { isIDE } from "../utils/utils";
 import { constants } from "../utils/common/constants";
+import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
 interface DecodedJwt {
 	iss: string;
@@ -35,7 +36,7 @@ const checkmarxMcpServerName = "Checkmarx";
 
 
 export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
-	vscode.commands.registerCommand("ast-results.installMCP", async () => {
+	vscode.commands.registerCommand(commands.installMCP, async () => {
 		const apikey = await context.secrets.get(constants.authCredentialSecretKey);
 		if (!apikey) {
 			vscode.window.showErrorMessage("Failed in install Checkmarx MCP: Authentication required");
