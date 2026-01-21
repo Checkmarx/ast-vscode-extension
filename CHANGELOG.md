@@ -1,15 +1,27 @@
 # CHANGELOG
 
-## [v2.46.1-security-fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-security-fixes.0) - 2026-01-19 06:26:29
+## [v2.46.1-2.46.1-AiTracker.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.1-AiTracker.0) - 2026-01-20 13:18:42
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
 
 ## What's Changed
-### Bug Fixes 🐛
-* Show gutter icon only on first line of multi-line ignored secrets (AST-128760) by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1345
+### New Features 🚀
+* Feature/ast 127310 by @cx-margarita-levitm in https://github.com/Checkmarx/ast-vscode-extension/pull/1358
 
 
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-mcp-fallback-changes.0...v2.46.1-security-fixes.0
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-2.46.1-ReviveAllUndo.0...v2.46.1-2.46.1-AiTracker.0
+
+## [v2.46.1-security-fixes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-security-fixes.0) - 2026-01-19 06:26:29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## [v2.46.1-2.46.1-ReviveAllUndo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-2.46.1-ReviveAllUndo.0) - 2026-01-19 08:31:30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.1-security-fixes.0...v2.46.1-2.46.1-ReviveAllUndo.0
 
 ## [v2.46.1-mcp-fallback-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-mcp-fallback-changes.0) - 2026-01-14 18:31:31
 
