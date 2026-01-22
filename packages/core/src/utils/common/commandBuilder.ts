@@ -156,6 +156,7 @@ class CommandBuilder {
     get viewSettings(): string {
         return this.buildCommand(COMMAND_NAMES.viewSettings);
     }
+
     // KICS
     get clearKicsDiagnostics(): string {
         return this.buildCommand(COMMAND_NAMES.clearKicsDiagnostics);
