@@ -5,7 +5,7 @@ import {
 import { Logs } from "../models/logs";
 import {
   commands
-} from "../utils/common/commands";
+} from "../utils/common/commandBuilder";
 import { getErrorFromState } from "../utils/common/globalState";
 
 export class CommonCommand {
@@ -40,11 +40,11 @@ export class CommonCommand {
 
   public async executeCheckSettings() {
 
-  const isConfiguration = await cx.isValidConfiguration();
+    const isConfiguration = await cx.isValidConfiguration();
     vscode.commands.executeCommand(
       commands.setContext,
       commands.isValidCredentials,
-      isConfiguration 
+      isConfiguration
     );
 
     vscode.commands.executeCommand(
@@ -52,7 +52,7 @@ export class CommonCommand {
       commands.isScaScanEnabled,
       true);
 
-     this.executeCheckScanEnabled();
+    this.executeCheckScanEnabled();
   }
 
   public async executeCheckScanEnabled() {
