@@ -1,8 +1,3 @@
-/**
- * DevConnect Activation Logic
- * [PROJECT-IGNITE] Standalone/Realtime scanning features
- */
-
 import * as vscode from 'vscode';
 import { Logs } from '../models/logs';
 import { constants } from '../utils/common/constants';
@@ -24,7 +19,7 @@ import { ContainersScannerCommand } from '../realtimeScanners/scanners/container
 import { WebViewCommand } from '../commands/webViewCommand';
 
 /**
- * Activate DevConnect specific features
+ * Activate Checkmarx Developer Assist specific features
  *
  * Features:
  * - ASCA (AI Secure Coding Assistant) - AI-powered code analysis
@@ -35,36 +30,28 @@ import { WebViewCommand } from '../commands/webViewCommand';
  * - Checkmarx One Assist - AI-powered security assistance
  */
 export async function activateProjectIgnite(context: vscode.ExtensionContext, logs: Logs) {
-    console.log('[PROJECT-IGNITE] Activating DevConnect features...');
+    console.log('[CHECKMARX-DEVELOPER-ASSIST] Activating Checkmarx Developer Assist features...');
 
-    // [PROJECT-IGNITE] Setup status bars
     const ignoredStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
     context.subscriptions.push(ignoredStatusBarItem);
 
-    // [PROJECT-IGNITE] Setup realtime scanners
     const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
 
-    // [PROJECT-IGNITE] Authentication launcher webview
     const webViewCommand = new WebViewCommand(context, logs, null as any);
     registerAuthenticationLauncher(context, webViewCommand, logs);
 
-    // [PROJECT-IGNITE] Register Settings
     const commonCommand = new CommonCommand(context, logs);
     commonCommand.registerSettings();
 
-    // [PROJECT-IGNITE] Listening to settings changes
     commonCommand.executeCheckSettings();
 
-    // [PROJECT-IGNITE] Standalone and Assist enablement
     await commonCommand.executeCheckStandaloneEnabled();
     await commonCommand.executeCheckCxOneAssistEnabled();
 
-    // [PROJECT-IGNITE] Checkmarx One Assist view & its commands
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
     registerAssistRelatedCommands(context, cxOneAssistProvider);
 
-    // [PROJECT-IGNITE] Copilot Chat Command for AI-powered fixes
     const copilotChatCommand = new CopilotChatCommand(
         context,
         logs,
@@ -76,7 +63,6 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
     );
     copilotChatCommand.registerCopilotChatCommand();
 
-    // [PROJECT-IGNITE] Ignored View for managing ignored vulnerabilities
     const ignoredView = new IgnoredView(context);
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.openIgnoredView, () => {
@@ -84,10 +70,8 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
         }),
     );
 
-    // [PROJECT-IGNITE] Setup ignored status bar
     setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
-    // [PROJECT-IGNITE] Register Code Actions Provider for quick fixes
     context.subscriptions.push(
         vscode.languages.registerCodeActionsProvider(
             { scheme: 'file' },
@@ -97,15 +81,13 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
             },
         ),
     );
-
-    console.log('[PROJECT-IGNITE] DevConnect activation complete');
 }
 
 // --- Helper functions ---
 
 /**
  * Setup realtime scanners
- * [PROJECT-IGNITE]
+ * [CHECKMARX-DEVELOPER-ASSIST]
  */
 async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Logs) {
     const configManager = new ConfigurationManager();
@@ -168,7 +150,7 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
 
 /**
  * Register Checkmarx One Assist view
- * [PROJECT-IGNITE]
+ * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
     const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
@@ -180,7 +162,7 @@ function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager:
 
 /**
  * Register assist related commands
- * [PROJECT-IGNITE]
+ * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function registerAssistRelatedCommands(
     context: vscode.ExtensionContext,
@@ -201,7 +183,7 @@ function registerAssistRelatedCommands(
 
 /**
  * Setup ignored status bar
- * [PROJECT-IGNITE]
+ * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function setupIgnoredStatusBar(
     context: vscode.ExtensionContext,
@@ -248,7 +230,7 @@ function setupIgnoredStatusBar(
 
 /**
  * Register authentication launcher webview
- * [PROJECT-IGNITE]
+ * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function registerAuthenticationLauncher(
     context: vscode.ExtensionContext,
@@ -257,11 +239,7 @@ function registerAuthenticationLauncher(
 ) {
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.showAuth, async () => {
-            // Dynamically import the DevConnect-specific authentication webview (API Key only)
-            // This avoids circular dependency issues since the project-ignite package depends on core
             try {
-                // The authentication webview is now in the project-ignite extension package
-                // We need to load it from the compiled output
                 const projectIgniteExtPath = context.extensionPath;
                 const authWebviewPath = `${projectIgniteExtPath}/out/webview/authenticationWebview`;
                 const { AuthenticationWebview } = await import(authWebviewPath);

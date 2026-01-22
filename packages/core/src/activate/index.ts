@@ -4,7 +4,7 @@
  * This module exports activation functions for:
  * - Core shared functionality (both extensions)
  * - Checkmarx One specific features (cloud-based)
- * - DevConnect specific features (realtime/standalone)
+ * - Checkmarx Developer Assist specific features (realtime/standalone)
  */
 
 // Export activation functions

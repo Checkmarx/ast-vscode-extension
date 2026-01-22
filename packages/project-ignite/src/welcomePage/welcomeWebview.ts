@@ -57,7 +57,7 @@ export class WelcomeWebview {
                     title="Toggle real-time scanners"
                   />
                 </div>
-                <span class="card-title">Code Smarter with Checkmarx DevConnect</span>
+                <span class="card-title">Code Smarter with Checkmarx Developer Assist</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code with real-time scanners.</li>
@@ -128,8 +128,8 @@ export class WelcomeWebview {
 
   public static async show(context: vscode.ExtensionContext, isAiMcpEnabled: boolean) {
     const panel = vscode.window.createWebviewPanel(
-      "devConnectWelcome",
-      "Welcome to Checkmarx DevConnect",
+      "devAssistWelcome",
+      "Welcome to Checkmarx Developer Assist",
       vscode.ViewColumn.One,
       {
         enableScripts: true,

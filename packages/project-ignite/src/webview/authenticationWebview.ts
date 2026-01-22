@@ -11,7 +11,7 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commands";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 
 export class AuthenticationWebview {
-  public static readonly viewType = "devConnectAuth";
+  public static readonly viewType = "devAssistAuth";
   private static currentPanel: AuthenticationWebview | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
@@ -60,7 +60,7 @@ export class AuthenticationWebview {
     }
     const panel = vscode.window.createWebviewPanel(
       commands.astResultsPromo,
-      "Checkmarx DevConnect Authentication",
+      "Checkmarx Developer Assist Authentication",
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -150,7 +150,7 @@ export class AuthenticationWebview {
 	<link href="${styleBootStrap}" rel="stylesheet">
 	<link href="${styleAuth}" rel="stylesheet">
 	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>Checkmarx DevConnect Authentication</title>
+	<title>Checkmarx Developer Assist Authentication</title>
 
 
 </head>
@@ -163,18 +163,18 @@ export class AuthenticationWebview {
 		</div>
 	  </div>
 <div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">Checkmarx DevConnect Authentication</div>
+        <div class="auth-form-title">Checkmarx Developer Assist Authentication</div>
         <div id="loginForm">
 
         <!-- API Key Form Only - No OAuth -->
         <div id="apiKeyForm">
-          <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
+          <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key:</label>
+			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist API Key" class="auth-input">
         </div>
-        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx DevConnect</button>
+        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx Developer Assist</button>
         </div>
 
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx DevConnect</div>
+        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx Developer Assist</div>
         <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
         <div id="messageBox" class="message">
         <div id="messageSuccessIcon" class="hidden">
@@ -225,13 +225,13 @@ export class AuthenticationWebview {
           await vscode.window.withProgress(
             {
               location: vscode.ProgressLocation.Notification,
-              title: "Connecting to Checkmarx DevConnect...",
+              title: "Connecting to Checkmarx Developer Assist...",
               cancellable: false,
             },
             async () => {
               await this._panel.webview.postMessage({ command: "disableAuthButton" });
               try {
-                // API Key only authentication for DevConnect
+                // API Key only authentication for Developer Assist
                 const authService = AuthService.getInstance(this.context);
 
                 // Validate the API Key using AuthService

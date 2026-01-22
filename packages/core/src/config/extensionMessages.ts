@@ -34,12 +34,12 @@ export const CHECKMARX_MESSAGES: ExtensionMessages = {
 };
 
 /**
- * Messages for DevConnect extension
+ * Messages for Checkmarx Developer Assist extension
  */
-export const DEVCONNECT_MESSAGES: ExtensionMessages = {
+export const DEVASSIST_MESSAGES: ExtensionMessages = {
     productName: 'Checkmarx Developer Assist',
     authenticationRequiredMessage: 'In order to use Checkmarx Developer Assist, you need to setup your credentials.',
-    learnMoreLink: 'https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html', // TODO: Update with DevConnect-specific link when available
+    learnMoreLink: 'https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html',
     welcomePageTitle: 'Welcome to Checkmarx Developer Assist',
     displayName: 'Checkmarx Developer Assist'
 };
@@ -50,6 +50,6 @@ export const DEVCONNECT_MESSAGES: ExtensionMessages = {
  */
 export function getMessages(): ExtensionMessages {
     const extensionType = getExtensionType();
-    return extensionType === 'checkmarx' ? CHECKMARX_MESSAGES : DEVCONNECT_MESSAGES;
+    return extensionType === 'checkmarx' ? CHECKMARX_MESSAGES : DEVASSIST_MESSAGES;
 }
 
