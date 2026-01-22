@@ -1,5 +1,5 @@
 /**
- * Checkmarx Project Ignite Extension
+ * Checkmarx DevConnect Extension
  *
  * Standalone realtime security scanners that work without cloud authentication
  *
@@ -18,7 +18,7 @@ import * as vscode from 'vscode';
 import { activateCore, activateProjectIgnite, setExtensionConfig } from '@checkmarx/vscode-core';
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log('[PROJECT-IGNITE] Checkmarx Project Ignite extension is now active');
+    console.log('[PROJECT-IGNITE] Checkmarx DevConnect extension is now active');
 
     try {
         // Set extension configuration FIRST before any registrations
@@ -26,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
             extensionId: 'project-ignite',
             commandPrefix: 'project-ignite',
             viewContainerPrefix: 'ignite',
-            displayName: 'Checkmarx Project Ignite',
+            displayName: 'Checkmarx DevConnect',
             extensionType: 'project-ignite',
         });
 
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // This includes: logs, auth, common status bars, proxy config
         const { logs } = await activateCore(context);
 
-        // [PROJECT-IGNITE] Initialize Project Ignite specific features
+        // [PROJECT-IGNITE] Initialize DevConnect specific features
         // This includes:
         // - ASCA Scanner (AI Secure Coding)
         // - OSS Realtime Scanner
@@ -46,14 +46,14 @@ export async function activate(context: vscode.ExtensionContext) {
         // - Assist view
         await activateProjectIgnite(context, logs);
 
-        console.log('[PROJECT-IGNITE] Project Ignite extension activation complete');
+        console.log('[PROJECT-IGNITE] DevConnect extension activation complete');
     } catch (error) {
         console.error('[PROJECT-IGNITE] Failed to activate extension:', error);
-        vscode.window.showErrorMessage(`Failed to activate Project Ignite: ${error}`);
+        vscode.window.showErrorMessage(`Failed to activate DevConnect: ${error}`);
     }
 }
 
 export function deactivate() {
-    console.log('[PROJECT-IGNITE] Checkmarx Project Ignite extension is now deactivated');
+    console.log('[PROJECT-IGNITE] Checkmarx DevConnect extension is now deactivated');
 }
 

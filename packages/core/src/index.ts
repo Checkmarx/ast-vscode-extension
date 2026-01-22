@@ -1,9 +1,9 @@
 /**
  * Core shared library for Checkmarx VS Code extensions
- * 
+ *
  * This package contains all shared functionality between:
  * - Checkmarx One (cloud-based scanning with authentication)
- * - Project Ignite (standalone realtime scanners)
+ * - DevConnect (standalone realtime scanners)
  */
 
 // Export activation functions

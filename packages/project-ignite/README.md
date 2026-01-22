@@ -15,8 +15,8 @@
   <a href="https://github.com/Checkmarx/ast-vscode-extension">
     <img src="https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/cx_x_icon.png" alt="Logo" width="80" height="80" />
   </a>
-  <h3 align="center">Checkmarx Project Ignite</h3>
-  <h3 align="center">Also supported for: Cursor, Windsurf and Kiro</h3>  
+  <h3 align="center">Checkmarx DevConnect</h3>
+  <h3 align="center">Also supported for: Cursor, Windsurf and Kiro</h3>
   <p align="center">
     <a href="https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-vs-code-extension--plugin-.html"><strong>Explore the docs »</strong></a>
   </p>
@@ -40,7 +40,7 @@
 ## Overview
 > ⭐ Although this extension was developed for VS Code, it has been tested and found to be effective for use in Cursor, Windsurf and Kiro. This document was written for the VS Code extension, and applies equally to the other supported IDEs. Any information that applies **only** to VS Code, and not to the other supported IDEs, is noted explicitly.
 
-Checkmarx Project Ignite brings powerful AI-driven security capabilities directly into your IDE, empowering developers to identify and remediate vulnerabilities **as they code**. This extension integrates seamlessly into your development workflow, providing real-time context-aware prevention, remediation, and guidance.
+Checkmarx DevConnect brings powerful AI-driven security capabilities directly into your IDE, empowering developers to identify and remediate vulnerabilities **as they code**. This extension integrates seamlessly into your development workflow, providing real-time context-aware prevention, remediation, and guidance.
 
 **Checkmarx Developer Assist** is an agentic AI tool that delivers intelligent security insights and automated remediation directly in your IDE, helping you write more secure code from the start.
 
@@ -71,8 +71,8 @@ Developer Assist is an agentic AI tool that delivers real-time context-aware pre
   - **For VS Code**: You must have **GitHub Copilot** installed
 
 ### Installation
-1. Install the **Checkmarx Project Ignite** extension from the Marketplace.
-2. In the IDE, open Project Ignite Settings, click on **Authentication**, and enter your Access Key or login credentials.
+1. Install the **Checkmarx DevConnect** extension from the Marketplace.
+2. In the IDE, open DevConnect Settings, click on **Authentication**, and enter your Access Key or login credentials.
 
 ### Usage
 * Learn about using Checkmarx Developer Assist [here](https://docs.checkmarx.com/en/34965-474001-using-the-checkmarx-vs-code-extension---dev-assist.html)

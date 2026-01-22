@@ -1,5 +1,5 @@
 /**
- * Project Ignite Activation Logic
+ * DevConnect Activation Logic
  * [PROJECT-IGNITE] Standalone/Realtime scanning features
  */
 
@@ -25,7 +25,7 @@ import { AuthenticationWebview } from '../webview/authenticationWebview';
 import { WebViewCommand } from '../commands/webViewCommand';
 
 /**
- * Activate Project Ignite specific features
+ * Activate DevConnect specific features
  *
  * Features:
  * - ASCA (AI Secure Coding Assistant) - AI-powered code analysis
@@ -36,7 +36,7 @@ import { WebViewCommand } from '../commands/webViewCommand';
  * - Checkmarx One Assist - AI-powered security assistance
  */
 export async function activateProjectIgnite(context: vscode.ExtensionContext, logs: Logs) {
-    console.log('[PROJECT-IGNITE] Activating Project Ignite features...');
+    console.log('[PROJECT-IGNITE] Activating DevConnect features...');
 
     // [PROJECT-IGNITE] Setup status bars
     const ignoredStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
@@ -99,7 +99,7 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
         ),
     );
 
-    console.log('[PROJECT-IGNITE] Project Ignite activation complete');
+    console.log('[PROJECT-IGNITE] DevConnect activation complete');
 }
 
 // --- Helper functions ---
