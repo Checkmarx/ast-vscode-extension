@@ -102,7 +102,7 @@ These features require authentication, using an API Key or login credentials for
   - an **API Key** (see [*Generating an API Key*](https://docs.checkmarx.com/en/34965-68618-generating-an-api-key.html#UUID-f3b6481c-47f4-6cd8-9f0d-990896e36cd6_UUID-39ccc262-c7cb-5884-52ed-e1692a635e08)), OR
   - login credentials (**Base URL**, **Tenant name**, **Username**, and **Password**)
 
-> In order to use this integration for running an end-to-end flow of scanning a project and viewing results, the API Key or user account must have at a minimum the out-of-the-box composite role `ast-scanner` as well as the IAM role `default-roles`.
+> 🔑 In order to use this integration for running an end-to-end flow of scanning a project and viewing results with the minimum required permissions, the API Key or user account should have the role `plugin-scanner`. Alternatively, they can have at a minimum the out-of-the-box composite role `ast-scanner` as well as the IAM role `default-roles`.
 
 - **git** is installed on your local machine. For installation instructions, see [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
@@ -142,6 +142,9 @@ Developer Assist is an agentic AI tool that delivers real-time context-aware pre
 ### Installation
 1. Install the **Checkmarx** extension from the Marketplace.
 2. In the IDE, open Checkmarx Settings, click on **Authentication**, and enter your  Access Key or login credentials.
+3. Start the Checkmarx MCP server running.
+
+**GIF - Getting Started With Developer Assist**
 
 ### Usage
 * Learn about using Checkmarx Developer Assist [here](https://docs.checkmarx.com/en/34965-474001-using-the-checkmarx-vs-code-extension---dev-assist.html)
