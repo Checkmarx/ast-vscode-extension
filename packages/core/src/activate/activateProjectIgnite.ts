@@ -13,6 +13,7 @@ import { IgnoredView } from '../views/ignoredView/ignoredView';
 import { ScannerRegistry } from '../realtimeScanners/scanners/scannerRegistry';
 import { ConfigurationManager } from '../realtimeScanners/configuration/configurationManager';
 import { CopilotChatCommand } from '../commands/openAIChatCommand';
+import { CommonCommand } from '../commands/commonCommand';
 import { CxCodeActionProvider } from '../realtimeScanners/scanners/CxCodeActionProvider';
 import { IgnoreFileManager } from '../realtimeScanners/common/ignoreFileManager';
 import { OssScannerCommand } from '../realtimeScanners/scanners/oss/ossScannerCommand';
@@ -48,6 +49,17 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
     // [PROJECT-IGNITE] Authentication launcher webview
     const webViewCommand = new WebViewCommand(context, logs, null as any);
     registerAuthenticationLauncher(context, webViewCommand, logs);
+
+    // [PROJECT-IGNITE] Register Settings
+    const commonCommand = new CommonCommand(context, logs);
+    commonCommand.registerSettings();
+
+    // [PROJECT-IGNITE] Listening to settings changes
+    commonCommand.executeCheckSettings();
+
+    // [PROJECT-IGNITE] Standalone and Assist enablement
+    await commonCommand.executeCheckStandaloneEnabled();
+    await commonCommand.executeCheckCxOneAssistEnabled();
 
     // [PROJECT-IGNITE] Checkmarx One Assist view & its commands
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
