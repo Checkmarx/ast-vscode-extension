@@ -10,7 +10,7 @@ import {
   formatLabel,
   getGitBranchName,
 } from "../utils";
-import { commands } from "../common/commands";
+import { commands } from "../common/commandBuilder";
 import { constants, QuickPickPaginationButtons } from "../common/constants";
 import {
   getFromState,

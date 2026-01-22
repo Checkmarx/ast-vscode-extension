@@ -33,6 +33,9 @@ const COMMAND_NAMES = {
     // Settings
     viewSettings: 'viewSettings',
 
+    // Errors
+    showError: 'showError',
+
     // KICS
     clearKicsDiagnostics: 'clearKicsDiagnostics',
     kicsRealtime: 'kicsRealtime',
@@ -167,6 +170,11 @@ class CommandBuilder {
 
     get openSettingsArgs(): string {
         return `@ext:checkmarx.${getCommandPrefix()}`;
+    }
+
+    // Errors
+    get showError(): string {
+        return this.buildCommand(COMMAND_NAMES.showError);
     }
 
     // KICS
