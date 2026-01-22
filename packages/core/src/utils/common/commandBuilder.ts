@@ -32,6 +32,7 @@ const COMMAND_NAMES = {
 
     // Settings
     viewSettings: 'viewSettings',
+    showError: 'showError',
 
     // KICS
     clearKicsDiagnostics: 'clearKicsDiagnostics',
@@ -155,6 +156,25 @@ class CommandBuilder {
     // Settings
     get viewSettings(): string {
         return this.buildCommand(COMMAND_NAMES.viewSettings);
+    }
+
+    // Alias for viewSettings (legacy typo compatibility)
+    get setings(): string {
+        return this.viewSettings;
+    }
+
+    get showError(): string {
+        return this.buildCommand(COMMAND_NAMES.showError);
+    }
+
+    // VS Code built-in commands (no prefix)
+    get openSettings(): string {
+        return 'workbench.action.openSettings';
+    }
+
+    get openSettingsArgs(): string {
+        const prefix = getCommandPrefix();
+        return `@ext:checkmarx.${prefix}`;
     }
 
     // KICS
