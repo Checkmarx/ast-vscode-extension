@@ -5,6 +5,7 @@ import { CxOneAssistUtils } from "./CxOneAssistUtils";
 import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManager";
 import { Logs } from "../../models/logs";
 import { MediaPathResolver } from "../../utils/mediaPathResolver";
+import { commands } from "../../utils/common/commandBuilder";
 
 export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private webviewView?: vscode.WebviewView;
@@ -136,10 +137,10 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private handleWebviewMessage(message: CxOneAssistMessage): void {
 		switch (message.command) {
 			case 'openIgnoredView':
-				vscode.commands.executeCommand('ast-results.openIgnoredView');
+				vscode.commands.executeCommand(commands.openIgnoredView);
 				break;
 			case 'openSettings':
-				vscode.commands.executeCommand('ast-results.viewSettings');
+				vscode.commands.executeCommand(commands.viewSettings);
 				break;
 			default:
 				console.warn(`Unknown command received from Checkmarx One Assist webview: ${message.command}`);
