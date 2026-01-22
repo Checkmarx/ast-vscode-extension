@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { getNonce } from "../utils/utils";
-import { constants } from "../utils/common/constants";
-import { ThemeUtils } from "../utils/themeUtils";
-import { MediaPathResolver } from "../utils/mediaPathResolver";
+import { getNonce } from "@checkmarx/vscode-core/out/utils/utils";
+import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
+import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
+import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 
 
 
@@ -300,3 +300,4 @@ export class WelcomeWebview {
     });
   }
 }
+

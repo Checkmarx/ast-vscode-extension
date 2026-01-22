@@ -121,7 +121,9 @@ class CommandBuilder {
     }
 
     get astCxOneAssist(): string {
-        return this.buildCommand(COMMAND_NAMES.astCxOneAssist);
+        // View ID (not a command) - must match package.json view ID
+        const prefix = getCommandPrefix();
+        return `${prefix}.cxOneAssist`;
     }
 
     get assistDocumentation(): string {

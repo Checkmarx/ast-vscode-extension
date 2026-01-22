@@ -21,7 +21,6 @@ import { SecretsScannerCommand } from '../realtimeScanners/scanners/secrets/secr
 import { IacScannerCommand } from '../realtimeScanners/scanners/iac/iacScannerCommand';
 import { AscaScannerCommand } from '../realtimeScanners/scanners/asca/ascaScannerCommand';
 import { ContainersScannerCommand } from '../realtimeScanners/scanners/containers/containersScannerCommand';
-import { AuthenticationWebview } from '../webview/authenticationWebview';
 import { WebViewCommand } from '../commands/webViewCommand';
 
 /**
@@ -257,8 +256,20 @@ function registerAuthenticationLauncher(
     logs: Logs,
 ) {
     context.subscriptions.push(
-        vscode.commands.registerCommand(commands.showAuth, () => {
-            AuthenticationWebview.show(context, webViewCommand, logs);
+        vscode.commands.registerCommand(commands.showAuth, async () => {
+            // Dynamically import the DevConnect-specific authentication webview (API Key only)
+            // This avoids circular dependency issues since the project-ignite package depends on core
+            try {
+                // The authentication webview is now in the project-ignite extension package
+                // We need to load it from the compiled output
+                const projectIgniteExtPath = context.extensionPath;
+                const authWebviewPath = `${projectIgniteExtPath}/out/webview/authenticationWebview`;
+                const { AuthenticationWebview } = await import(authWebviewPath);
+                AuthenticationWebview.show(context, webViewCommand, logs);
+            } catch (error) {
+                logs?.error?.(`Failed to load authentication webview: ${error}`);
+                vscode.window.showErrorMessage('Failed to load authentication page. Please try again.');
+            }
         }),
     );
 }

@@ -824,17 +824,17 @@
         {
           "command": "ast-results.openIgnoredView",
           "group": "@settings@1",
-          "when": "view == astCxOneAssist"
+          "when": "view == ast-results.cxOneAssist"
         },
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==astCxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
+          "when": "view == astResults || view==scaAutoScan || view==ast-results.cxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
         },
         {
           "command": "ast-results.assistDocumentation",
           "group": "@settings@3",
-          "when": "view == astCxOneAssist"
+          "when": "view == ast-results.cxOneAssist"
         },
         {
           "command": "ast-results.clear",
@@ -879,7 +879,7 @@
           "when": "ast-results.isStandaloneEnabled"
         },
         {
-          "id": "astCxOneAssist",
+          "id": "ast-results.cxOneAssist",
           "type": "webview",
           "name": "Checkmarx One Assist"
         },
@@ -1073,7 +1073,8 @@
     "clean": "rimraf out"
   },
   "dependencies": {
-    "@checkmarx/vscode-core": "file:../core"
+    "@checkmarx/vscode-core": "file:../core",
+    "validator": "^13.15.26"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

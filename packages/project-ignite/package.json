@@ -1,7 +1,7 @@
 {
   "name": "project-ignite",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx DevConnect",
+  "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
   "version": "2.46.0",
   "repository": {
@@ -57,24 +57,24 @@
         {
           "command": "project-ignite.viewSettings",
           "group": "@settings@2",
-          "when": " view==astCxOneAssist || view==docAndFeedback"
+          "when": " view==project-ignite.cxOneAssist || view==docAndFeedback"
         },
         {
           "command": "project-ignite.openIgnoredView",
           "group": "@settings@1",
-          "when": "view == astCxOneAssist"
+          "when": "view == project-ignite.cxOneAssist"
         },
         {
           "command": "project-ignite.assistDocumentation",
           "group": "@settings@3",
-          "when": "view == astCxOneAssist"
+          "when": "view == project-ignite.cxOneAssist"
         }
       ]
     },
     "views": {
       "astView": [
         {
-          "id": "astCxOneAssist",
+          "id": "project-ignite.cxOneAssist",
           "type": "webview",
           "name": "Checkmarx DevConnect"
         },
