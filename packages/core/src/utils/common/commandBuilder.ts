@@ -157,6 +157,18 @@ class CommandBuilder {
         return this.buildCommand(COMMAND_NAMES.viewSettings);
     }
 
+    get setings(): string {
+        return this.buildCommand(COMMAND_NAMES.viewSettings);
+    }
+
+    get openSettings(): string {
+        return 'workbench.action.openSettings'; // VSCode built-in command
+    }
+
+    get openSettingsArgs(): string {
+        return `@ext:checkmarx.${getCommandPrefix()}`;
+    }
+
     // KICS
     get clearKicsDiagnostics(): string {
         return this.buildCommand(COMMAND_NAMES.clearKicsDiagnostics);
