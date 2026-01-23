@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import {
   cancelScan,
   createScan,

@@ -13,7 +13,7 @@ import { KicsCodeActionProvider } from "./kicsCodeActions";
 import { cx } from "../cx";
 import { writeFileSync } from "fs";
 import { KicsDiagnostic } from "./kicsDiagnostic";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { KicsSummary } from "../models/kicsNode";
 import { messages } from "../utils/common/messages";
 

@@ -3,7 +3,7 @@ import { KicsProvider } from "../kics/kicsRealtimeProvider";
 import { Logs } from "../models/logs";
 import {
   commands
-} from "../utils/common/commands";
+} from "../utils/common/commandBuilder";
 import { constants } from "../utils/common/constants";
 import { messages } from "../utils/common/messages";
 import { cx } from "../cx";

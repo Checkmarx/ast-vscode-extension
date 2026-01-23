@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { FilterCommand } from "../commands/filterCommand";
 import { Logs } from "../models/logs";
 // import { SeverityLevel, StateLevel, constants } from "../utils/common/constants";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 
 describe("FilterCommand", () => {
     let filterCommand: FilterCommand;

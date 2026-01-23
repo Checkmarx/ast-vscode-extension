@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
 import { KICSRealtimeCommand } from "../commands/kicsRealtimeCommand";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
 import { getRegisteredCommandCallback, clearCommandsExecuted } from "./mocks/vscode-mock";
 import * as vscode from "vscode";

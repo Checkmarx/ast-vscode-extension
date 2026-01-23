@@ -8,7 +8,7 @@ import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewComma
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
-import { commands } from "@checkmarx/vscode-core/out/utils/common/commands";
+import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 
 export class AuthenticationWebview {

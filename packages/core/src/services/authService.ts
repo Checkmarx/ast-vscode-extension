@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
 import { Logs } from '../models/logs';
 import { getCx, initialize } from '../cx';
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { constants } from "../utils/common/constants";
 import { ProxyHelper } from '../utils/proxy/proxy';
 import axios from "axios";
@@ -432,8 +432,8 @@ export class AuthService {
     // Only refresh tree for Checkmarx extension (not Developer Assist)
     if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
       await vscode.commands.executeCommand(commands.refreshTree);
+      await vscode.commands.executeCommand(commands.clear);
     }
-    await vscode.commands.executeCommand(commands.clear);
 
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
     await vscode.commands.executeCommand(
