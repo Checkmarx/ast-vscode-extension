@@ -7,7 +7,7 @@ import {
 } from "../../utils/utils";
 import { riskManagementService } from "./riskManagementService";
 import { getFromState, Item } from "../../utils/common/globalState";
-import { commands } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commandBuilder";
 import { AstResult } from "../../models/results";
 import { constants } from "../../utils/common/constants";
 import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/CxResult";

@@ -11,7 +11,7 @@ import {
 import { getFromState, Item, updateState } from "../../utils/common/globalState";
 import { getRepositoryFullName, getGitBranchName, getResultsJson, updateStatusBarItem } from "../../utils/utils";
 import { messages } from "../../utils/common/messages";
-import { commands } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commandBuilder";
 import { loadScanId } from "../../utils/pickers/pickers";
 import { setScanButtonDefaultIfScanIsNotRunning } from "../../utils/listener/listeners";
 

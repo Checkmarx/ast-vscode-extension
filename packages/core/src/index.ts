@@ -22,7 +22,6 @@ export * from './services/mcpSettingsInjector';
 export * from './constants/documentation';
 export * from './utils/common/constants';
 export * from './utils/common/messages';
-export * from './utils/common/commands';
 export { commands } from './utils/common/commandBuilder';
 export * from './utils/common/featureFlags';
 export * from './utils/listener/listeners';

@@ -5,7 +5,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { GroupByCommand } from "../commands/groupByCommand";
 import { Logs } from "../models/logs";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { GroupBy, constants } from "../utils/common/constants";
 
 describe("GroupByCommand", () => {
@@ -27,14 +27,14 @@ describe("GroupByCommand", () => {
         } as any;
 
         const mockOutputChannel = {
-            append: () => {},
-            appendLine: () => {},
-            clear: () => {},
-            show: () => {},
-            hide: () => {},
-            dispose: () => {},
+            append: () => { },
+            appendLine: () => { },
+            clear: () => { },
+            show: () => { },
+            hide: () => { },
+            dispose: () => { },
             name: "Mock Output",
-            replace: () => {}
+            replace: () => { }
         } as vscode.OutputChannel;
 
         logs = new Logs(mockOutputChannel);
@@ -66,7 +66,7 @@ describe("GroupByCommand", () => {
         });
     });
 
-    
+
 
     describe("group", () => {
         it("should update group by value and refresh tree", async () => {

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
   commands
-} from "../utils/common/commands";
+} from "../utils/common/commandBuilder";
 import { multiStepInput } from "../views/resultsView/astMultiStepInput";
 import {
   branchPicker,
@@ -15,8 +15,8 @@ import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 export class PickerCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
-  resultsProvider : AstResultsProvider;
-  constructor(context: vscode.ExtensionContext, logs: Logs,resultsProvider : AstResultsProvider) {
+  resultsProvider: AstResultsProvider;
+  constructor(context: vscode.ExtensionContext, logs: Logs, resultsProvider: AstResultsProvider) {
     this.context = context;
     this.logs = logs;
     this.resultsProvider = resultsProvider;

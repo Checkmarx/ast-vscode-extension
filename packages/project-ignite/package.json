@@ -57,7 +57,7 @@
         {
           "command": "cx-dev-assist.viewSettings",
           "group": "@settings@2",
-          "when": " view==cx-dev-assist.cxOneAssist || view==docAndFeedback"
+          "when": " view==cx-dev-assist.cxOneAssist"
         },
         {
           "command": "cx-dev-assist.openIgnoredView",
@@ -77,11 +77,6 @@
           "id": "cx-dev-assist.cxOneAssist",
           "type": "webview",
           "name": "Checkmarx Developer Assist"
-        },
-        {
-          "id": "docAndFeedback",
-          "type": "tree",
-          "name": "Documentation & Feedback"
         }
       ]
     },

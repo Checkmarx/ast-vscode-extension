@@ -3,7 +3,7 @@ import { Logs } from "../models/logs";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
 import { TreeItem } from "../utils/tree/treeItem";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { constants } from "../utils/common/constants";
 
 /**
@@ -18,7 +18,7 @@ export class DiagnosticCommand {
     private readonly scaResultsProvider: SCAResultsProvider,
     private readonly astTree: vscode.TreeView<TreeItem>,
     private readonly scaTree: vscode.TreeView<TreeItem>
-  ) {}
+  ) { }
 
   /**
    * Registers the openDetailsFromDiagnostic command.

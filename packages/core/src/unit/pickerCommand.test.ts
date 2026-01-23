@@ -5,7 +5,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { PickerCommand } from "../commands/pickerCommand";
 import { Logs } from "../models/logs";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 // import { projectPicker, branchPicker, scanPicker, scanInput } from "../utils/pickers/pickers";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 
@@ -29,14 +29,14 @@ describe("PickerCommand", () => {
         } as any;
 
         const mockOutputChannel = {
-            append: () => {},
-            appendLine: () => {},
-            clear: () => {},
-            show: () => {},
-            hide: () => {},
-            dispose: () => {},
+            append: () => { },
+            appendLine: () => { },
+            clear: () => { },
+            show: () => { },
+            hide: () => { },
+            dispose: () => { },
             name: "Mock Output",
-            replace: () => {}
+            replace: () => { }
         } as vscode.OutputChannel;
 
         logs = new Logs(mockOutputChannel);

@@ -10,7 +10,7 @@ import {
   getResultsWithProgress,
   getScansPickItems,
 } from "../../utils/pickers/pickers";
-import { commands } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commandBuilder";
 import {
   constants
 } from "../../utils/common/constants";

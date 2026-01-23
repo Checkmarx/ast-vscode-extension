@@ -6,7 +6,7 @@ import { AstResult } from "../models/results";
 import { getLearnMore } from "../sast/learnMore";
 import { getChanges, triageSubmit } from "../utils/triage";
 import { applyScaFix } from "../sca/scaFix";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { messages } from "../utils/common/messages";

@@ -6,7 +6,7 @@ import { Logs } from "../models/logs";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 
 describe("WebViewCommand", () => {
     let webViewCommand: WebViewCommand;
@@ -60,7 +60,7 @@ describe("WebViewCommand", () => {
     //     createWebviewPanelStub.returns(mockPanel as any);
 
     //     webViewCommand.registerNewDetails();
-        
+
     //     await vscode.commands.executeCommand(commands.newDetails, {
     //         severity: "High",
     //         label: "Mock Issue",

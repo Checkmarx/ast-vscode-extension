@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import {
   commands
-} from "../utils/common/commands";
+} from "../utils/common/commandBuilder";
 import {
   SeverityLevel,
   StateLevel,
