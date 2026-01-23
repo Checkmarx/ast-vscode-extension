@@ -3,6 +3,14 @@
  * Allows dynamic configuration of extension-specific settings
  */
 
+/** Extension type constants */
+export const EXTENSION_TYPE = {
+    CHECKMARX: 'checkmarx' as const,
+    DEVELOPER_ASSIST: 'cx-dev-assist' as const,
+} as const;
+
+export type ExtensionType = typeof EXTENSION_TYPE[keyof typeof EXTENSION_TYPE];
+
 export interface ExtensionConfig {
     extensionId: string;
 
@@ -16,7 +24,7 @@ export interface ExtensionConfig {
     displayName: string;
 
     /** Extension type */
-    extensionType: 'checkmarx' | 'cx-dev-assist';
+    extensionType: ExtensionType;
 }
 
 let currentConfig: ExtensionConfig | null = null;
@@ -63,7 +71,7 @@ export function getExtensionId(): string {
 /**
  * Get the extension type
  */
-export function getExtensionType(): 'checkmarx' | 'cx-dev-assist' {
+export function getExtensionType(): ExtensionType {
     return getExtensionConfig().extensionType;
 }
 

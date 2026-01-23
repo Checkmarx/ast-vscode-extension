@@ -3,7 +3,7 @@
  * Centralized configuration for all user-facing messages that differ between extensions
  */
 
-import { getExtensionType } from './extensionConfig';
+import { getExtensionType, EXTENSION_TYPE } from './extensionConfig';
 
 export interface ExtensionMessages {
     /** Product name (e.g., "Checkmarx One Assist", "Checkmarx Developer Assist") */
@@ -50,6 +50,6 @@ export const DEVASSIST_MESSAGES: ExtensionMessages = {
  */
 export function getMessages(): ExtensionMessages {
     const extensionType = getExtensionType();
-    return extensionType === 'checkmarx' ? CHECKMARX_MESSAGES : DEVASSIST_MESSAGES;
+    return extensionType === EXTENSION_TYPE.CHECKMARX ? CHECKMARX_MESSAGES : DEVASSIST_MESSAGES;
 }
 
