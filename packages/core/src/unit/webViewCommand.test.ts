@@ -7,6 +7,7 @@ import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { commands } from "../utils/common/commandBuilder";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("WebViewCommand", () => {
     let webViewCommand: WebViewCommand;
@@ -15,6 +16,14 @@ describe("WebViewCommand", () => {
     let resultsProvider: AstResultsProvider;
 
     beforeEach(() => {
+        // Set up extension configuration before tests run
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
         context = {
             subscriptions: [],
             extensionUri: vscode.Uri.parse("file:///mock"),
@@ -28,6 +37,7 @@ describe("WebViewCommand", () => {
 
     afterEach(() => {
         sinon.restore();
+        resetExtensionConfig();
     });
 
     it("should register new details command", async () => {
