@@ -5,6 +5,7 @@ tsconfig.json
 *.vsix
 **/*.ts
 **/*.map
+**/.eslintrc.json
 !out/**/*.js
 !out/**/*.json
 vsix-contents/**

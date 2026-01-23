@@ -41,17 +41,77 @@
 
 ## Overview
 
-Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The plugin offers actionable remediation insights in real-time.
+Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. The Checkmarx Visual Studio Code extensions integrate seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The extensions offer actionable remediation insights in real-time.
 
-The Checkmarx Visual Studio Code extension contains three separate tools:
+This repository is a **monorepo** containing two VS Code extensions:
 
--   Checkmarx One Results
+### 🔷 [Checkmarx](packages/checkmarx/README.md)
+Full-featured extension for Checkmarx One users with SAST, SCA, IaC Security, and Secret Detection.
+- **Marketplace**: [Checkmarx](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results)
+- **Documentation**: [Checkmarx Extension README](packages/checkmarx/README.md)
 
--   KICS Realtime Scanner
+### 🔶 [Checkmarx Developer Assist](packages/project-ignite/README.md)
+Lightweight extension focused on real-time scanning and AI-powered secure coding assistance.
+- **Marketplace**: Coming soon
+- **Documentation**: [Developer Assist README](packages/project-ignite/README.md)
 
--   Checkmarx SCA Realtime Scanner
+---
 
-> The plugin is available on [marketplace](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results). In addition, the code can be accessed [here](https://github.com/Checkmarx/ast-vscode-extension).
+## Repository Structure
+
+```
+ast-vscode-extension/
+├── packages/
+│   ├── core/              # Shared core library
+│   ├── checkmarx/         # Checkmarx extension
+│   └── project-ignite/    # Checkmarx Developer Assist extension
+├── package.json           # Monorepo scripts
+└── tsconfig.base.json     # Shared TypeScript configuration
+```
+
+---
+
+## Quick Start for Developers
+
+### Prerequisites
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Checkmarx/ast-vscode-extension.git
+cd ast-vscode-extension
+
+# Install all dependencies
+npm run install:all
+
+# Build all packages
+npm run build:all
+```
+
+### Development Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run install:all` | Install dependencies in all packages |
+| `npm run build:all` | Build all packages |
+| `npm run build:core` | Build core package only |
+| `npm run build:checkmarx` | Build Checkmarx extension only |
+| `npm run build:project-ignite` | Build Developer Assist extension only |
+| `npm run package:checkmarx` | Create Checkmarx VSIX package |
+| `npm run package:project-ignite` | Create Developer Assist VSIX package |
+| `npm run package:all` | Create both VSIX packages |
+| `npm run clean` | Remove all build outputs |
+| `npm run lint` | Check code style |
+| `npm run lint:fix` | Fix code style issues |
+
+---
+
+> For detailed information about each extension, please refer to their respective README files:
+> - [Checkmarx Extension Documentation](packages/checkmarx/README.md)
+> - [Developer Assist Extension Documentation](packages/project-ignite/README.md)
 
 ## Checkmarx One Results
 
