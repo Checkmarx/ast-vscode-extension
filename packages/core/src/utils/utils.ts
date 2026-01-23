@@ -9,7 +9,7 @@ import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/Cx
 import JSONStream from "jsonstream-ts";
 import { Transform } from "stream";
 import { getGlobalContext } from "../activate/activateCore";
-import { commands } from "./common/commands";
+import { commands } from "./common/commandBuilder";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";

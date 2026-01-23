@@ -6,6 +6,7 @@ import { IgnoreFileManager } from "../../realtimeScanners/common/ignoreFileManag
 import { Logs } from "../../models/logs";
 import { MediaPathResolver } from "../../utils/mediaPathResolver";
 import { commands } from "../../utils/common/commandBuilder";
+import { getMessages } from "../../config/extensionMessages";
 
 export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 	private webviewView?: vscode.WebviewView;
@@ -71,6 +72,8 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 
 	private renderUnauthenticatedHtml(): string {
 		const nonce = this.getNonce();
+		const messages = getMessages();
+
 		return `<!DOCTYPE html>
 		<html lang="en">
 		<head>
@@ -92,11 +95,11 @@ export class CxOneAssistProvider implements vscode.WebviewViewProvider {
 		<body>
 		<div class="container">
 			<div>
-				<p>In order to use Checkmarx One Assist, you need to setup your credentials.</p>
+				<p>${messages.authenticationRequiredMessage}</p>
 				<center><div class="actions">
 					<button class="button-link" type="button" id="openSettingsBtn" title="Open settings">Open settings</button>
 				</div></center>
-				<p style="margin-top:16px;">To learn more about how to use Checkmarx One Assist <a href="https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html">read our docs</a>.</p>
+				<p style="margin-top:16px;">To learn more about how to use ${messages.productName} <a href="${messages.learnMoreLink}">read our docs</a>.</p>
 			</div>
 		</div>
 		<script nonce="${nonce}">

@@ -1,7 +1,7 @@
 {
-  "name": "project-ignite",
+  "name": "cx-dev-assist",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx Project Ignite",
+  "displayName": "Checkmarx",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
   "version": "2.46.0",
   "repository": {
@@ -29,54 +29,54 @@
   "contributes": {
     "commands": [
       {
-        "command": "project-ignite.viewSettings",
-        "category": "project-ignite",
+        "command": "cx-dev-assist.viewSettings",
+        "category": "cx-dev-assist",
         "title": "Settings",
         "icon": "$(gear)"
       },
       {
-        "command": "project-ignite.openIgnoredView",
-        "category": "project-ignite",
+        "command": "cx-dev-assist.openIgnoredView",
+        "category": "cx-dev-assist",
         "title": "View Ignored vulnerabilities",
-        "enablement": "project-ignite.isValidCredentials && (project-ignite.isCxOneAssistEnabled || project-ignite.isStandaloneEnabled)"
+        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxOneAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
       },
       {
-        "command": "project-ignite.assistDocumentation",
-        "category": "project-ignite",
+        "command": "cx-dev-assist.assistDocumentation",
+        "category": "cx-dev-assist",
         "title": "Documentation"
       },
       {
-        "command": "project-ignite.showAuth",
-        "title": "Checkmarx: Show Authentication",
-        "category": "Checkmarx"
+        "command": "cx-dev-assist.showAuth",
+        "title": "Checkmarx Developer Assist: Show Authentication",
+        "category": "Checkmarx Developer Assist"
       }
     ],
     "submenus": [],
     "menus": {
       "view/title": [
         {
-          "command": "project-ignite.viewSettings",
+          "command": "cx-dev-assist.viewSettings",
           "group": "@settings@2",
-          "when": " view==astCxOneAssist || view==docAndFeedback"
+          "when": " view==cx-dev-assist.cxOneAssist || view==docAndFeedback"
         },
         {
-          "command": "project-ignite.openIgnoredView",
+          "command": "cx-dev-assist.openIgnoredView",
           "group": "@settings@1",
-          "when": "view == astCxOneAssist"
+          "when": "view == cx-dev-assist.cxOneAssist"
         },
         {
-          "command": "project-ignite.assistDocumentation",
+          "command": "cx-dev-assist.assistDocumentation",
           "group": "@settings@3",
-          "when": "view == astCxOneAssist"
+          "when": "view == cx-dev-assist.cxOneAssist"
         }
       ]
     },
     "views": {
       "astView": [
         {
-          "id": "astCxOneAssist",
+          "id": "cx-dev-assist.cxOneAssist",
           "type": "webview",
-          "name": "Checkmarx One Assist"
+          "name": "Checkmarx Developer Assist"
         },
         {
           "id": "docAndFeedback",
@@ -97,8 +97,30 @@
     "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Checkmarx One Assist",
-        "id": "cxone-assist",
+        "title": "Checkmarx Developer Assist",
+        "id": "cx-dev-assist",
+        "order": 1,
+        "properties": {
+          "checkmarxDeveloperAssist.authentication": {
+            "type": "",
+            "order": 1,
+            "markdownDescription": "## [**Authentication**](command:cx-dev-assist.showAuth)"
+          },
+          "checkmarxDeveloperAssist.additionalParams": {
+            "type": "string",
+            "order": 2,
+            "description": "Additional Parameters",
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        }
+      },
+      {
+        "title": "Checkmarx Realtime Scanners",
+        "id": "cx-dev-assist-Scanners",
         "order": 2,
         "properties": {
           "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
@@ -141,34 +163,12 @@
               "podman"
             ],
             "default": "docker"
-          }
-        }
-      },
-      {
-        "title": "Checkmarx One",
-        "id": "ast-results",
-        "order": 1,
-        "properties": {
-          "checkmarxOne.authentication": {
-            "type": "",
-            "order": 1,
-            "markdownDescription": "## [**Authentication**](command:project-ignite.showAuth)"
-          },
-          "checkmarxOne.additionalParams": {
-            "type": "string",
-            "order": 2,
-            "description": "Additional Parameters",
-            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
           },
           "checkmarx.MCP": {
             "type": "",
-            "order": 3,
+            "order": 7,
             "default": {},
-            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:project-ignite.installMCP)"
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
           }
         }
       }

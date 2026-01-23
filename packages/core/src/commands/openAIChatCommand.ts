@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
-import { commands } from "../utils/common/commands";
+import { commands } from "../utils/common/commandBuilder";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
 import {
@@ -293,7 +293,7 @@ export class CopilotChatCommand {
                 try {
                     if (isIDE(constants.kiroAgent)) {
                         let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
-                            question = `In ${item.filePath} line ${line} \n${question}`
+                        question = `In ${item.filePath} line ${line} \n${question}`
                     }
                     await this.openChatWithPrompt(question);
                 } catch (error) {

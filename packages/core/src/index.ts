@@ -1,9 +1,9 @@
 /**
  * Core shared library for Checkmarx VS Code extensions
- * 
+ *
  * This package contains all shared functionality between:
  * - Checkmarx One (cloud-based scanning with authentication)
- * - Project Ignite (standalone realtime scanners)
+ * - Developer Assist (standalone realtime scanners)
  */
 
 // Export activation functions
@@ -13,6 +13,7 @@ export { activateProjectIgnite } from './activate/activateProjectIgnite';
 
 // Export configuration
 export * from './config/extensionConfig';
+export * from './config/extensionMessages';
 
 // Export all shared modules
 export * from './models/logs';
@@ -64,7 +65,4 @@ export * from './realtimeScanners/common/ignoreFileManager';
 
 // Export KICS
 export * from './kics/kicsRealtimeProvider';
-
-// Export webview
-export * from './webview/authenticationWebview';
 

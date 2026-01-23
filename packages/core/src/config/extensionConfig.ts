@@ -4,20 +4,19 @@
  */
 
 export interface ExtensionConfig {
-    /** Extension identifier (e.g., 'ast-results', 'project-ignite') */
     extensionId: string;
-    
-    /** Command prefix for all commands (e.g., 'ast-results', 'project-ignite') */
+
+    /** Command prefix for all commands (e.g., 'ast-results', 'cx-dev-assist') */
     commandPrefix: string;
-    
+
     /** View container ID prefix */
     viewContainerPrefix: string;
-    
+
     /** Display name of the extension */
     displayName: string;
-    
+
     /** Extension type */
-    extensionType: 'checkmarx' | 'project-ignite';
+    extensionType: 'checkmarx' | 'cx-dev-assist';
 }
 
 let currentConfig: ExtensionConfig | null = null;
@@ -64,7 +63,7 @@ export function getExtensionId(): string {
 /**
  * Get the extension type
  */
-export function getExtensionType(): 'checkmarx' | 'project-ignite' {
+export function getExtensionType(): 'checkmarx' | 'cx-dev-assist' {
     return getExtensionConfig().extensionType;
 }
 
