@@ -26,6 +26,8 @@ const COMMAND_NAMES = {
     fixWithAIChat: 'fixWithAIChat',
     viewDetails: 'viewDetails',
     openAIChat: 'openAIChat',
+    ignorePackage: 'ignorePackage',
+    ignoreAll: 'ignoreAll',
 
     // MCP
     installMCP: 'installMCP',
@@ -121,7 +123,9 @@ class CommandBuilder {
     }
 
     get astCxOneAssist(): string {
-        return this.buildCommand(COMMAND_NAMES.astCxOneAssist);
+        // View ID (not a command) - must match package.json view ID
+        const prefix = getCommandPrefix();
+        return `${prefix}.cxOneAssist`;
     }
 
     get assistDocumentation(): string {
@@ -148,6 +152,14 @@ class CommandBuilder {
 
     get openAIChat(): string {
         return this.buildCommand(COMMAND_NAMES.openAIChat);
+    }
+
+    get ignorePackage(): string {
+        return this.buildCommand(COMMAND_NAMES.ignorePackage);
+    }
+
+    get ignoreAll(): string {
+        return this.buildCommand(COMMAND_NAMES.ignoreAll);
     }
 
     // MCP

@@ -33,7 +33,6 @@ import { CxOneAssistProvider } from '../views/cxOneAssistView/cxOneAssistProvide
 import { messages } from '../utils/common/messages';
 import { commands } from '../utils/common/commandBuilder';
 import { IgnoredView } from '../views/ignoredView/ignoredView';
-import { AuthenticationWebview } from '../webview/authenticationWebview';
 import { AuthService } from '../services/authService';
 import { ScannerRegistry } from '../realtimeScanners/scanners/scannerRegistry';
 import { ConfigurationManager } from '../realtimeScanners/configuration/configurationManager';
@@ -568,8 +567,20 @@ function registerAuthenticationLauncher(
     logs: Logs,
 ) {
     context.subscriptions.push(
-        vscode.commands.registerCommand(commands.showAuth, () => {
-            AuthenticationWebview.show(context, webViewCommand, logs);
+        vscode.commands.registerCommand(commands.showAuth, async () => {
+            // Dynamically import the Checkmarx-specific authentication webview
+            // This avoids circular dependency issues since the checkmarx package depends on core
+            try {
+                // The authentication webview is now in the checkmarx extension package
+                // We need to load it from the compiled output
+                const checkmarxExtPath = context.extensionPath;
+                const authWebviewPath = `${checkmarxExtPath}/out/webview/authenticationWebview`;
+                const { AuthenticationWebview } = await import(authWebviewPath);
+                AuthenticationWebview.show(context, webViewCommand, logs);
+            } catch (error) {
+                logs?.error?.(`Failed to load authentication webview: ${error}`);
+                vscode.window.showErrorMessage('Failed to load authentication page. Please try again.');
+            }
         }),
     );
 }

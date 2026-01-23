@@ -7,7 +7,7 @@ import { getFromState, updateState } from "./common/globalState";
 import { constants } from "./common/constants";
 import { Logs } from "../models/logs";
 import { AstDetailsDetached } from "../views/resultsView/astDetailsView";
-import { commands } from "./common/commands";
+import { commands } from "./common/commandBuilder";
 import { getLearnMore } from "../sast/learnMore";
 import { TriageCommand } from "../models/triageCommand";
 import { messages } from "./common/messages";

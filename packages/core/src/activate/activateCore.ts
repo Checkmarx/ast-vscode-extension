@@ -1,6 +1,6 @@
 /**
  * Core Activation Logic
- * [SHARED] Used by both Checkmarx One and Project Ignite extensions
+ * [SHARED] Used by both Checkmarx One and Checkmarx Developer Assist extensions
  */
 
 import * as vscode from 'vscode';

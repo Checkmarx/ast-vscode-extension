@@ -21,7 +21,7 @@
 			}
 		},
 		{
-			"name": "Run Extension (Project Ignite)",
+			"name": "Run Extension (Checkmarx Developer Assist)",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",

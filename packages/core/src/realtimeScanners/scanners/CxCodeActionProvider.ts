@@ -1,7 +1,7 @@
 
 import * as vscode from "vscode";
 import { HoverData, SecretsHoverData, CxDiagnosticData, ContainersHoverData, AscaHoverData } from "../common/types";
-import { commands } from "../../utils/common/commands";
+import { commands } from "../../utils/common/commandBuilder";
 
 
 

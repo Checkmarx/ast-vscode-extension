@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
-import { AuthService } from "../services/authService";
+import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { isURL } from "validator";
-import { getNonce } from "../utils/utils";
-import { Logs } from "../models/logs";
+import { getNonce } from "@checkmarx/vscode-core/out/utils/utils";
+import { Logs } from "@checkmarx/vscode-core/out/models/logs";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
-import { WebViewCommand } from "../commands/webViewCommand";
-import { cx } from "../cx";
-import { initializeMcpConfiguration, uninstallMcp } from "../services/mcpSettingsInjector";
-import { CommonCommand } from "../commands/commonCommand";
-import { commands } from "../utils/common/commands";
-import { MediaPathResolver } from "../utils/mediaPathResolver";
+import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
+import { cx } from "@checkmarx/vscode-core/out/cx";
+import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
+import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
+import { commands } from "@checkmarx/vscode-core/out/utils/common/commands";
+import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -361,3 +361,4 @@ export class AuthenticationWebview {
     }
   }
 }
+

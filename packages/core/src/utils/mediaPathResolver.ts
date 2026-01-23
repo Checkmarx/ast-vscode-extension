@@ -5,7 +5,7 @@ import * as fs from 'fs';
  * Resolves the path to the extension's media folder.
  *
  * This utility handles the case where the core package is used as a dependency
- * in extension packages (checkmarx, project-ignite). It finds the extension's
+ * in extension packages (checkmarx, cx-dev-assist). It finds the extension's
  * media folder where all media files are located.
  *
  * Search order:
@@ -77,8 +77,6 @@ export class MediaPathResolver {
      * When running in monorepo development: packages/checkmarx/out -> packages/checkmarx/media
      */
     private static resolveFromMonorepo(): string {
-        // From packages/checkmarx/out/node_modules/@checkmarx/vscode-core/out/utils
-        // Go up to find packages/checkmarx/media or packages/project-ignite/media
         let current = __dirname;
 
         // Try going up the directory tree
@@ -89,7 +87,6 @@ export class MediaPathResolver {
                 return path.resolve(checkmarxMedia);
             }
 
-            // Check for project-ignite media
             const igniteMedia = path.join(current, '..', 'project-ignite', 'media');
             if (fs.existsSync(igniteMedia)) {
                 return path.resolve(igniteMedia);
