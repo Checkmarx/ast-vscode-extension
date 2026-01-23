@@ -15,7 +15,7 @@
  */
 
 import * as vscode from 'vscode';
-import { activateCore, activateProjectIgnite, setExtensionConfig } from '@checkmarx/vscode-core';
+import { activateCore, activateProjectIgnite, setExtensionConfig, EXTENSION_TYPE } from '@checkmarx/vscode-core';
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('[CHECKMARX-DEVELOPER-ASSIST] Checkmarx Developer Assist extension is now active');
@@ -27,7 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
             commandPrefix: 'cx-dev-assist',
             viewContainerPrefix: 'ignite',
             displayName: 'Checkmarx Developer Assist',
-            extensionType: 'cx-dev-assist',
+            extensionType: EXTENSION_TYPE.DEVELOPER_ASSIST,
         });
 
         // [SHARED] Initialize core shared functionality

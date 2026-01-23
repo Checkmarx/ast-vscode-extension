@@ -8,6 +8,7 @@ import { commands } from "../utils/common/commands";
 import { constants } from "../utils/common/constants";
 import { ProxyHelper } from '../utils/proxy/proxy';
 import axios from "axios";
+import { getExtensionType, EXTENSION_TYPE } from '../config/extensionConfig';
 
 interface OAuthConfig {
   clientId: string;
@@ -367,7 +368,10 @@ export class AuthService {
 
     if (isValid) {
       vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
-      await vscode.commands.executeCommand(commands.refreshTree);
+      // Only refresh tree for Checkmarx extension (not Developer Assist)
+      if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
+        await vscode.commands.executeCommand(commands.refreshTree);
+      }
       await vscode.commands.executeCommand(commands.updateCxOneAssist);
     }
 
@@ -425,7 +429,10 @@ export class AuthService {
     await this.context.secrets.delete(constants.standaloneEnabledGlobalState);
 
     await this.validateAndUpdateState();
-    await vscode.commands.executeCommand(commands.refreshTree);
+    // Only refresh tree for Checkmarx extension (not Developer Assist)
+    if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
+      await vscode.commands.executeCommand(commands.refreshTree);
+    }
     await vscode.commands.executeCommand(commands.clear);
 
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
