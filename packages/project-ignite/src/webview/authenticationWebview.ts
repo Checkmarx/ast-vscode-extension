@@ -165,8 +165,25 @@ export class AuthenticationWebview {
 <div id="authContainer" class="auth-container hidden">
         <div class="auth-form-title">Checkmarx Developer Assist Authentication</div>
         <div id="loginForm">
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="authMethod" value="apiKey" checked>API Key
+            </label>
+        </div>
 
-        <!-- API Key Form Only - No OAuth -->
+        <!-- OAuth Form (hidden, required for core auth.js) -->
+        <div id="oauthForm" class="hidden">
+            <label for="baseUri" class="form-label">Base URI:</label>
+            <input type="text" id="baseUri" class="auth-input" placeholder="Enter base URI">
+            <div id="urls-list" class="autocomplete-items"></div>
+            <div id="urlError" class="error-message" style="display: none;">Invalid URL format</div>
+
+            <label for="tenant" class="form-label">Tenant Name:</label>
+            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
+            <div id="tenants-list" class="autocomplete-items"></div>
+        </div>
+
+        <!-- API Key Form -->
         <div id="apiKeyForm">
           <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist API Key" class="auth-input">

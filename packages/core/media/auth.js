@@ -79,7 +79,7 @@
     function isBtnDisabled() {
       const authMethod = document.querySelector(
         "input[name='authMethod']:checked"
-      ).value;
+      )?.value;
       const hasValidUrl =
         errorMessage.style.display !== "block" &&
         urlsList.style.display === "none" &&
