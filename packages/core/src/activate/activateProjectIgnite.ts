@@ -149,13 +149,13 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
 }
 
 /**
- * Register Checkmarx One Assist view
+ * Register Checkmarx Developer Assist view
  * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager: IgnoreFileManager, logs: Logs) {
     const cxOneAssistProvider = new CxOneAssistProvider(context, ignoreFileManager, logs);
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(commands.astCxOneAssist, cxOneAssistProvider),
+        vscode.window.registerWebviewViewProvider(commands.astCxDevAssist, cxOneAssistProvider),
     );
     return cxOneAssistProvider;
 }

@@ -16,6 +16,7 @@ const COMMAND_NAMES = {
     // Checkmarx One Assist
     updateCxOneAssist: 'updateCxOneAssist',
     astCxOneAssist: 'astCxOneAssist',
+    astCxDevAssist: 'astCxDevAssist',
     assistDocumentation: 'assistDocumentation',
 
     // Ignored View
@@ -159,6 +160,7 @@ const COMMAND_NAMES = {
     isDastEnabled: 'isDastEnabled',
     isValidCredentials: 'isValidCredentials',
     isCxOneAssistEnabled: 'isCxOneAssistEnabled',
+    isCxDevAssistEnabled: 'isCxDevAssistEnabled',
     isStandaloneEnabled: 'isStandaloneEnabled',
     isScanEnabled: 'isScanEnabled',
     isScaScanEnabled: 'isScaScanEnabled',
@@ -198,6 +200,12 @@ class CommandBuilder {
         // View ID (not a command) - must match package.json view ID
         const prefix = getCommandPrefix();
         return `${prefix}.cxOneAssist`;
+    }
+
+    get astCxDevAssist(): string {
+        // View ID (not a command) - must match package.json view ID
+        const prefix = getCommandPrefix();
+        return `${prefix}.cxDevAssist`;
     }
 
     get assistDocumentation(): string {
@@ -677,6 +685,10 @@ class CommandBuilder {
 
     get isCxOneAssistEnabled(): string {
         return this.buildCommand(COMMAND_NAMES.isCxOneAssistEnabled);
+    }
+
+    get isCxDevAssistEnabled(): string {
+        return this.buildCommand(COMMAND_NAMES.isCxDevAssistEnabled);
     }
 
     get isStandaloneEnabled(): string {

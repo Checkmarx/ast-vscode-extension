@@ -1,7 +1,7 @@
 {
   "name": "cx-dev-assist",
   "publisher": "checkmarx",
-  "displayName": "Checkmarx",
+  "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
   "version": "2.46.0",
   "repository": {
@@ -38,7 +38,7 @@
         "command": "cx-dev-assist.openIgnoredView",
         "category": "cx-dev-assist",
         "title": "View Ignored vulnerabilities",
-        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxOneAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
+        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxDevAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
       },
       {
         "command": "cx-dev-assist.assistDocumentation",
@@ -57,24 +57,24 @@
         {
           "command": "cx-dev-assist.viewSettings",
           "group": "@settings@2",
-          "when": " view==cx-dev-assist.cxOneAssist"
+          "when": " view==cx-dev-assist.cxDevAssist"
         },
         {
           "command": "cx-dev-assist.openIgnoredView",
           "group": "@settings@1",
-          "when": "view == cx-dev-assist.cxOneAssist"
+          "when": "view == cx-dev-assist.cxDevAssist"
         },
         {
           "command": "cx-dev-assist.assistDocumentation",
           "group": "@settings@3",
-          "when": "view == cx-dev-assist.cxOneAssist"
+          "when": "view == cx-dev-assist.cxDevAssist"
         }
       ]
     },
     "views": {
       "astView": [
         {
-          "id": "cx-dev-assist.cxOneAssist",
+          "id": "cx-dev-assist.cxDevAssist",
           "type": "webview",
           "name": "Checkmarx Developer Assist"
         }
@@ -92,7 +92,7 @@
     "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Checkmarx Developer Assist",
+        "title": "Checkmarx Authentication",
         "id": "cx-dev-assist",
         "order": 1,
         "properties": {
