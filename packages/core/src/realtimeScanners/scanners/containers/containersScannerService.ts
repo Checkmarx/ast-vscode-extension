@@ -54,7 +54,7 @@ export class ContainersScannerService extends BaseScannerService {
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
 		return vscode.window.createTextEditorDecorationType({
 			gutterIconPath: vscode.Uri.file(
-				path.join(__dirname, "..", "..", "..", "..", "media", "icons", iconName)
+				path.join(__dirname, "..", "..", "..", "media", "icons", iconName)
 			),
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 			gutterIconSize: size,
@@ -547,7 +547,7 @@ export class ContainersScannerService extends BaseScannerService {
 				item: {
 					imageName: result.imageName,
 					imageTag: result.imageTag,
-					status: result.status,					
+					status: result.status,
 					filePath: uri.fsPath,
 					vulnerabilities: result.vulnerabilities || [],
 					location: {

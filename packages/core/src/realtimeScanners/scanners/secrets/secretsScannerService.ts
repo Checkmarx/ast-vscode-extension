@@ -28,7 +28,7 @@ export class SecretsScannerService extends BaseScannerService {
 	private createDecoration(iconName: string, size: string = "auto"): vscode.TextEditorDecorationType {
 		return vscode.window.createTextEditorDecorationType({
 			gutterIconPath: vscode.Uri.file(
-				path.join(__dirname, "..", "..", "..", "..", "media", "icons", iconName)
+				path.join(__dirname, "..", "..", "..", "media", "icons", iconName)
 			),
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 			gutterIconSize: size
