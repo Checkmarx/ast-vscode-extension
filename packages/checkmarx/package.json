@@ -216,70 +216,70 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "ast-results.filterCritical_untoggle",
+        "command": "ast-results.filterCriticalUntoggle",
         "category": "ast-results",
         "title": "CRITICAL",
         "icon": "media/icons/critical_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterCritical_toggle",
+        "command": "ast-results.filterCriticalToggle",
         "category": "ast-results",
         "title": "CRITICAL",
         "icon": "media/icons/critical_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterHigh_toggle",
+        "command": "ast-results.filterHighToggle",
         "category": "ast-results",
         "title": "HIGH",
         "icon": "media/icons/high_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterHigh_untoggle",
+        "command": "ast-results.filterHighUntoggle",
         "category": "ast-results",
         "title": "HIGH",
         "icon": "media/icons/high_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterMedium_toggle",
+        "command": "ast-results.filterMediumToggle",
         "category": "ast-results",
         "title": "MEDIUM",
         "icon": "media/icons/medium_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterMedium_untoggle",
+        "command": "ast-results.filterMediumUntoggle",
         "category": "ast-results",
         "title": "MEDIUM",
         "icon": "media/icons/medium_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterLow_toggle",
+        "command": "ast-results.filterLowToggle",
         "category": "ast-results",
         "title": "LOW",
         "icon": "media/icons/low_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterLow_untoggle",
+        "command": "ast-results.filterLowUntoggle",
         "category": "ast-results",
         "title": "LOW",
         "icon": "media/icons/low_untoggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterInfo_toggle",
+        "command": "ast-results.filterInfoToggle",
         "category": "ast-results",
         "title": "INFO",
         "icon": "media/icons/info_toggle.svg",
         "enablement": "ast-results.isValidCredentials && view == astResults"
       },
       {
-        "command": "ast-results.filterInfo_untoggle",
+        "command": "ast-results.filterInfoUntoggle",
         "category": "ast-results",
         "title": "INFO",
         "icon": "media/icons/info_untoggle.svg",
@@ -554,7 +554,7 @@
         "category": "ast-results",
         "title": "Run SCA Realtime Scan",
         "icon": "$(notebook-execute)",
-        "enablement": "ast-results.isSCAScanEnabled"
+        "enablement": "ast-results.isScaScanEnabled"
       },
       {
         "command": "ast-results.showAuth",
@@ -702,52 +702,52 @@
           "when": "view == astResults && ast-results.cancelScanButton || view == astResults && !ast-results.createScanButton && ast-results.cancelScanButton"
         },
         {
-          "command": "ast-results.filterCritical_untoggle",
+          "command": "ast-results.filterCriticalUntoggle",
           "group": "navigation@1",
           "when": "view == astResults && ast-results-critical"
         },
         {
-          "command": "ast-results.filterCritical_toggle",
+          "command": "ast-results.filterCriticalToggle",
           "group": "navigation@1",
           "when": "view == astResults && !ast-results-critical"
         },
         {
-          "command": "ast-results.filterHigh_untoggle",
+          "command": "ast-results.filterHighUntoggle",
           "group": "navigation@2",
           "when": "view == astResults && ast-results-high"
         },
         {
-          "command": "ast-results.filterHigh_toggle",
+          "command": "ast-results.filterHighToggle",
           "group": "navigation@2",
           "when": "view == astResults && !ast-results-high"
         },
         {
-          "command": "ast-results.filterMedium_untoggle",
+          "command": "ast-results.filterMediumUntoggle",
           "group": "navigation@3",
           "when": "view == astResults && ast-results-medium"
         },
         {
-          "command": "ast-results.filterMedium_toggle",
+          "command": "ast-results.filterMediumToggle",
           "group": "navigation@3",
           "when": "view == astResults && !ast-results-medium"
         },
         {
-          "command": "ast-results.filterLow_untoggle",
+          "command": "ast-results.filterLowUntoggle",
           "group": "navigation@4",
           "when": "view == astResults && ast-results-low"
         },
         {
-          "command": "ast-results.filterLow_toggle",
+          "command": "ast-results.filterLowToggle",
           "group": "navigation@4",
           "when": "view == astResults && !ast-results-low"
         },
         {
-          "command": "ast-results.filterInfo_untoggle",
+          "command": "ast-results.filterInfoUntoggle",
           "group": "navigation@5",
           "when": "view == astResults && ast-results-info"
         },
         {
-          "command": "ast-results.filterInfo_toggle",
+          "command": "ast-results.filterInfoToggle",
           "group": "navigation@5",
           "when": "view == astResults && !ast-results-info"
         },
