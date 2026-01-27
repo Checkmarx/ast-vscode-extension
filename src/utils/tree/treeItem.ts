@@ -10,6 +10,7 @@ const typeToIconMap: Map<string, string> = new Map([
   [constants.requestChangesItem, "request-changes"],
   [constants.mailItem, "mail"],
   [constants.calendarItem, "calendar"],
+  [constants.environmentItem, "project"],
 ]);
 
 export class TreeItem extends vscode.TreeItem {

@@ -286,7 +286,15 @@ export const constants = {
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
-  ignorePackage: "ignorePackage"
+  ignorePackage: "ignorePackage",
+
+  // DAST Scanner
+  dastLicenseEnabledGlobalState: "dastLicenseEnabled",
+  environmentIdKey: "ast-results-environment-id",
+  environmentLabel: "Environment: ",
+  environmentPlaceholder: "Select environment",
+  environmentPickerTitle: "Checkmarx One Environment selection",
+  environmentItem: "environment-item",
 };
 
 export enum Platform {

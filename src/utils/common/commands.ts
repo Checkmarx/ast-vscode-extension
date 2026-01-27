@@ -144,4 +144,7 @@ export const commands = {
   clearKicsDiagnostics: `${constants.extensionName}.clearKicsDiagnostics`,
 
   isDastEnabled: `${constants.extensionName}.isDastEnabled`,
+  environmentPick: `${constants.extensionName}.environmentPick`,
+  refreshDastTree: `${constants.extensionName}.refreshDastTree`,
+  clearDast: `${constants.extensionName}.clearDast`,
 };
