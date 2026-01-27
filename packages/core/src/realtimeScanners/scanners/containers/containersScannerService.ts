@@ -172,7 +172,9 @@ export class ContainersScannerService extends BaseScannerService {
 			const unfiltered = await cx.scanContainers(tempFilePath, "");
 			this.lastFullScanResults = unfiltered as CxContainerRealtimeResult[];
 
-			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
+			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesCount() > 0
+				? ignoreManager.getIgnoredPackagesTempFile()
+				: undefined;
 			const scanResults = await cx.scanContainers(tempFilePath, ignoredPackagesFile || "");
 
 			this.updateProblems(scanResults, document.uri, this.lastFullScanResults);

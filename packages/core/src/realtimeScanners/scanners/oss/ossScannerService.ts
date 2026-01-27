@@ -170,7 +170,9 @@ export class OssScannerService extends BaseScannerService {
       const IgnoreFileManagerInstance = IgnoreFileManager.getInstance();
       IgnoreFileManagerInstance.setScannedFilePath(originalFilePath, mainTempPath);
 
-      const ignoredPackagesFile = IgnoreFileManagerInstance.getIgnoredPackagesTempFile();
+      const ignoredPackagesFile = IgnoreFileManagerInstance.getIgnoredPackagesCount() > 0
+        ? IgnoreFileManagerInstance.getIgnoredPackagesTempFile()
+        : undefined;
 
       const scanResults = await cx.ossScanResults(mainTempPath, ignoredPackagesFile || "");
 

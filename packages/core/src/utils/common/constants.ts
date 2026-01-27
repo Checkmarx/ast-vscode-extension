@@ -1,9 +1,20 @@
+import { getExtensionType } from '../../config/extensionConfig';
+
 export const constants = {
   extensionName: "ast-results",
   extensionFullName: "Checkmarx",
-  standaloneEnabledGlobalState: "standaloneEnabled",
-  cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
-  authCredentialSecretKey: "authCredential",
+  getStandaloneEnabledGlobalState: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'standaloneEnabled' : 'standaloneEnabledDevAssist';
+  },
+  getCxOneAssistEnabledGlobalState: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'cxOneAssistEnabled' : 'cxOneAssistEnabledDevAssist';
+  },
+  getAuthCredentialSecretKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'authCredential' : 'authCredentialDevAssist';
+  },
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
