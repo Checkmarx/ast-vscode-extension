@@ -5,7 +5,6 @@ export const constants = {
   cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
   authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
-  dastScanIdKey: "ast-results-dast-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
   criticalFilter: "ast-results-critical",
@@ -50,7 +49,6 @@ export const constants = {
   projectItem: "project-item",
   branchItem: "branch-item",
   scanItem: "scan-item",
-  dastScanItem: "dast-scan-item",
   graphItem: "graph-item",
   statusItem: "status-item",
   bookItem: "book-item",
@@ -297,6 +295,8 @@ export const constants = {
   environmentPlaceholder: "Select environment",
   environmentPickerTitle: "Checkmarx One Environment selection",
   environmentItem: "environment-item",
+  dastScanIdKey: "ast-results-dast-scan-id",
+  dastScanItem: "dast-scan-item",
   dastScanPickerTitle: "Checkmarx One DAST Scan selection",
 };
 
