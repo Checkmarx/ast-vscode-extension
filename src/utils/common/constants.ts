@@ -3,7 +3,6 @@ export const constants = {
   extensionFullName: "Checkmarx",
   standaloneEnabledGlobalState: "standaloneEnabled",
   cxOneAssistEnabledGlobalState: "cxOneAssistEnabled",
-  dastLicenseEnabledGlobalState: "dastLicenseEnabled",
   authCredentialSecretKey: "authCredential",
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
@@ -30,7 +29,6 @@ export const constants = {
   fileGroup: "ast-results-groupByFile",
   dependencyGroup: "ast-results-groupByDirectDependency",
   projectIdKey: "ast-results-project-id",
-  environmentIdKey: "ast-results-environment-id",
   error: "ast-results-error",
   errorMessage: "[CxERROR] ",
   branchIdKey: "ast-results-branch-id",
@@ -40,8 +38,6 @@ export const constants = {
   kicsRealtime: "ast-results.kicsRealtime",
   projectLabel: "Project: ",
   projectPlaceholder: "Select project",
-  environmentLabel: "Environment: ",
-  environmentPlaceholder: "Select environment",
   branchLabel: "Branch: ",
   branchPlaceholder: "Select branch",
   scanLabel: "Scan: ",
@@ -49,10 +45,8 @@ export const constants = {
   scanPlaceholder: "Select scan",
   scanPickerTitle: "Checkmarx One Scan selection",
   projectPickerTitle: "Checkmarx One Project selection",
-  environmentPickerTitle: "Checkmarx One Environment selection",
   branchPickerTitle: "Checkmarx One Branch selection",
   projectItem: "project-item",
-  environmentItem: "environment-item",
   branchItem: "branch-item",
   scanItem: "scan-item",
   graphItem: "graph-item",
@@ -292,7 +286,15 @@ export const constants = {
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
-  ignorePackage: "ignorePackage"
+  ignorePackage: "ignorePackage",
+
+  // DAST Scanner
+  dastLicenseEnabledGlobalState: "dastLicenseEnabled",
+  environmentIdKey: "ast-results-environment-id",
+  environmentLabel: "Environment: ",
+  environmentPlaceholder: "Select environment",
+  environmentPickerTitle: "Checkmarx One Environment selection",
+  environmentItem: "environment-item",
 };
 
 export enum Platform {
