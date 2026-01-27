@@ -4,13 +4,13 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: "Tag to delete"
+        description: "Tag to delete (e.g., 'nightly', 'test')"
         required: true
         type: string
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to delete"
+        description: "Tag to delete (e.g., 'nightly', 'test')"
         required: true
 
 permissions:
@@ -22,6 +22,22 @@ jobs:
   delete:
     runs-on: ubuntu-latest
     steps:
+      # This workflow deletes dev releases for all extensions in the monorepo
+      # Pattern matches tags containing "-{tag}.0" suffix (e.g., "-nightly.0")
+      #
+      # Examples of tags that WILL be deleted when tag="nightly":
+      #   - checkmarx-v2.46.1-nightly.0 (Checkmarx dev release)
+      #   - ignite-v1.0.1-nightly.0 (Project Ignite dev release)
+      #   - v2.46.1-nightly.0 (Original extension dev release)
+      #
+      # Examples of tags that WON'T be deleted (production releases):
+      #   - checkmarx-v2.46.0 (no "-nightly.0" suffix)
+      #   - ignite-v1.0.0 (no "-nightly.0" suffix)
+      #   - v2.46.0 (no "-nightly.0" suffix)
+      #
+      # The pattern uses regex substring matching, so it works across all
+      # extension tag prefixes (checkmarx-v, ignite-v, v) as long as they
+      # follow the format: {prefix}{version}-{tag}.0
       - name: Delete releases and tags
         continue-on-error: true
         uses: dev-drprasad/delete-older-releases@653dc03d96473ac9e585c68c8bf5aaccb0dadb61 #v0.2.1
