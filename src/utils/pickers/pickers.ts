@@ -622,6 +622,42 @@ export async function environmentPicker(
   );
 }
 
+export async function getEnvironmentsPickItemsWithParams(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  filter: string,
+  limit: number,
+  offset: number
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingEnvironments });
+      try {
+        const from = offset + 1;
+        const to = offset + limit;
+        let params = `from=${from},to=${to}`;
+        if (filter) {
+          params += `,search=${filter}`;
+        }
+        params += ',sort=domain:asc';
+        const envList = await cx.getDastEnvironmentsListWithParams(params);
+        return envList.map((env) => ({
+          label: env.name,
+          id: env.id,
+        }));
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
+  );
+}
+
 export async function dastScanPicker(
   context: vscode.ExtensionContext,
   logs: Logs
@@ -763,42 +799,6 @@ async function loadDastScanById(
       } catch (error) {
         updateStateError(context, constants.errorMessage + error);
         vscode.commands.executeCommand(commands.showError);
-      }
-    }
-  );
-}
-
-export async function getEnvironmentsPickItemsWithParams(
-  logs: Logs,
-  context: vscode.ExtensionContext,
-  filter: string,
-  limit: number,
-  offset: number
-) {
-  return await vscode.window.withProgress(
-    PROGRESS_HEADER,
-    async (progress, token) => {
-      token.onCancellationRequested(() => {
-        logs.info(messages.cancelLoading);
-      });
-      progress.report({ message: messages.loadingEnvironments });
-      try {
-        const from = offset + 1;
-        const to = offset + limit;
-        let params = `from=${from},to=${to}`;
-        if (filter) {
-          params += `,search=${filter}`;
-        }
-        params += ',sort=domain:asc';
-        const envList = await cx.getDastEnvironmentsListWithParams(params);
-        return envList.map((env) => ({
-          label: env.name,
-          id: env.id,
-        }));
-      } catch (error) {
-        updateStateError(context, constants.errorMessage + error);
-        vscode.commands.executeCommand(commands.showError);
-        return [];
       }
     }
   );
