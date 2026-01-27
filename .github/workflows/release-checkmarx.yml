@@ -152,7 +152,6 @@ jobs:
         run: cd packages/checkmarx && npm run compile
 
       # PACKAGE PROJECT
-
       - name: Package .vsix file
         run: |
           cd packages/checkmarx
