@@ -250,38 +250,6 @@ export class Cx implements CxPlatform {
         return r;
     }
 
-    async getDastEnvironmentsListWithParams(params: string): Promise<CxDastEnvironment[] | undefined> {
-        let r = [];
-        const config = await this.getAstConfiguration();
-        if (!config) {
-            return [];
-        }
-        const cx = new CxWrapper(config);
-        const envs = await cx.dastEnvironmentsList(params ?? "");
-        if (envs.exitCode === 0) {
-            r = envs.payload ?? [];
-        } else {
-            throw new Error(envs.status);
-        }
-        return r;
-    }
-
-    async getDastScansListWithParams(environmentId: string, params: string): Promise<CxDastScan[] | undefined> {
-        let r = [];
-        const config = await this.getAstConfiguration();
-        if (!config) {
-            return [];
-        }
-        const cx = new CxWrapper(config);
-        const scans = await cx.dastScansList(environmentId, params ?? "");
-        if (scans.exitCode === 0) {
-            r = scans.payload ?? [];
-        } else {
-            throw new Error(scans.status);
-        }
-        return r;
-    }
-
     async getBranchesWithParams(
         projectId: string | undefined,
         params?: string | undefined
@@ -430,18 +398,6 @@ export class Cx implements CxPlatform {
                 return anyCx.cxOneAssistEnabled ? await anyCx.cxOneAssistEnabled() : false;
             },
             "tenant configuration (Checkmarx One Assist)"
-        );
-    }
-
-    async isDastLicenseEnabled(logs: Logs): Promise<boolean> {
-        return this.getCachedFeatureEnabled(
-            constants.dastLicenseEnabledGlobalState,
-            logs,
-            async (cx: CxWrapper) => {
-                const anyCx = cx as unknown as { dastEnabled?: () => Promise<boolean> };
-                return anyCx.dastEnabled ? await anyCx.dastEnabled() : false;
-            },
-            "license details (DAST)"
         );
     }
 
@@ -950,5 +906,49 @@ export class Cx implements CxPlatform {
             cx.telemetryAIEvent("", "", "", "", "",
                 scanType, status, totalCount);
         }
+    }
+
+    async getDastEnvironmentsListWithParams(params: string): Promise<CxDastEnvironment[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const envs = await cx.dastEnvironmentsList(params ?? "");
+        if (envs.exitCode === 0) {
+            r = envs.payload ?? [];
+        } else {
+            throw new Error(envs.status);
+        }
+        return r;
+    }
+
+    async getDastScansListWithParams(environmentId: string, params: string): Promise<CxDastScan[] | undefined> {
+        let r = [];
+        const config = await this.getAstConfiguration();
+        if (!config) {
+            return [];
+        }
+        const cx = new CxWrapper(config);
+        const scans = await cx.dastScansList(environmentId, params ?? "");
+        if (scans.exitCode === 0) {
+            r = scans.payload ?? [];
+        } else {
+            throw new Error(scans.status);
+        }
+        return r;
+    }
+
+    async isDastLicenseEnabled(logs: Logs): Promise<boolean> {
+        return this.getCachedFeatureEnabled(
+            constants.dastLicenseEnabledGlobalState,
+            logs,
+            async (cx: CxWrapper) => {
+                const anyCx = cx as unknown as { dastEnabled?: () => Promise<boolean> };
+                return anyCx.dastEnabled ? await anyCx.dastEnabled() : false;
+            },
+            "license details (DAST)"
+        );
     }
 }

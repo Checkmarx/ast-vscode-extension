@@ -6,6 +6,48 @@
 	var currentMessage;
 	var currentID;
 
+	/**
+	 * Sanitize HTML content to prevent XSS attacks while preserving safe formatting
+	 * @param {string} html - The HTML content to sanitize
+	 * @returns {string} - Sanitized HTML content
+	 */
+	function sanitizeHtml(html) {
+		// Parse with DOMParser to work with actual DOM elements
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(html, 'text/html');
+
+		// Remove any script tags
+		const scripts = doc.querySelectorAll('script');
+		scripts.forEach(script => script.remove());
+
+		// Remove all event handler attributes and dangerous protocols
+		const allElements = doc.querySelectorAll('*');
+		allElements.forEach(element => {
+			// Remove all on* event attributes
+			Array.from(element.attributes).forEach(attr => {
+				if (attr.name.startsWith('on')) {
+					element.removeAttribute(attr.name);
+				}
+			});
+
+			// Remove javascript: protocol from href and src
+			if (element.hasAttribute('href')) {
+				const href = element.getAttribute('href');
+				if (href && href.toLowerCase().startsWith('javascript:')) {
+					element.removeAttribute('href');
+				}
+			}
+			if (element.hasAttribute('src')) {
+				const src = element.getAttribute('src');
+				if (src && src.toLowerCase().startsWith('javascript:')) {
+					element.removeAttribute('src');
+				}
+			}
+		});
+
+		return doc.body.innerHTML;
+	}
+
 	marked.setOptions({
 		renderer: new marked.Renderer(),
 		highlight: function (code, _lang) {
@@ -69,7 +111,7 @@
 	async function typeWriter() {
 		const inCodeBlock = currentMessage.includes('```') && currentMessage.split('```').length % 2 === 0;
 		const markedContent = new DOMParser().parseFromString(marked.parse(currentMessage + (inCodeBlock ? '\n```' : '')), 'text/html');
-		const textMarkdown = markedContent.documentElement.innerHTML;
+		const textMarkdown = sanitizeHtml(markedContent.body.innerHTML);
 		document.getElementById("gpt-" + currentID).innerHTML += textMarkdown;
 		const chatContainer = document.getElementById('chat-container');
 		const pres = chatContainer.querySelectorAll('pre');

@@ -5,12 +5,12 @@ import { constants } from "../common/constants";
 const typeToIconMap: Map<string, string> = new Map([
   [constants.graphItem, "graph"],
   [constants.projectItem, "project"],
-  [constants.environmentItem, "project"],
   [constants.branchItem, "repo"],
   [constants.bookItem, "book"],
   [constants.requestChangesItem, "request-changes"],
   [constants.mailItem, "mail"],
   [constants.calendarItem, "calendar"],
+  [constants.environmentItem, "project"],
 ]);
 
 export class TreeItem extends vscode.TreeItem {

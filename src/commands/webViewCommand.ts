@@ -446,8 +446,7 @@ export class WebViewCommand {
     )
       .then((messages) => {
 
-        this.handleSystemNotFindPathError(messages[0].responses[0], "Please ensure that you have opened the correct workspace or the relevant file.");
-
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
@@ -511,7 +510,7 @@ export class WebViewCommand {
       this.conversationId
     )
       .then((messages) => {
-        this.handleSystemNotFindPathError(messages[0].responses[0], constants.systemNotFindPathError);
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
 
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
@@ -574,8 +573,7 @@ export class WebViewCommand {
 
     cx.runSastGpt(userMessage, result.filename, result.resultID, "")
       .then((messages) => {
-        this.handleSystemNotFindPathError(messages[0].responses[0], constants.systemNotFindPathError);
-
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
@@ -607,9 +605,12 @@ export class WebViewCommand {
       });
   }
 
-  handleSystemNotFindPathError(response: string, errorMessage: string): void {
-    if (response.includes(errorMessage)) {
+  handleSystemNotFindPathError(response: string): void {
+    if (response.includes(constants.systemNotFindPathError)) {
       throw new Error(constants.gptFileNotInWorkspaceError);
+    }
+    else if (response.includes(constants.systemNotFindLineError)) {
+      throw new Error(constants.gptFileChangedError);
     }
   }
 
