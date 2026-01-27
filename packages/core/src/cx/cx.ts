@@ -307,7 +307,7 @@ export class Cx implements CxPlatform {
     }
 
     async getAstConfiguration() {
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
 
         if (!token) {
             return undefined;
@@ -319,7 +319,7 @@ export class Cx implements CxPlatform {
     }
 
     async isValidConfiguration(): Promise<boolean> {
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
 
         if (!token) {
             return false;
@@ -337,7 +337,7 @@ export class Cx implements CxPlatform {
 
     async isScanEnabled(logs: Logs): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
         if (!token) {
             return enabled;
         }
@@ -359,7 +359,7 @@ export class Cx implements CxPlatform {
 
     async isAIGuidedRemediationEnabled(logs: Logs): Promise<boolean> {
         let enabled = true;
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
         if (!token) {
             return enabled;
         }
@@ -380,7 +380,7 @@ export class Cx implements CxPlatform {
 
     async isStandaloneEnabled(logs: Logs): Promise<boolean> {
         return this.getCachedFeatureEnabled(
-            constants.standaloneEnabledGlobalState,
+            constants.getStandaloneEnabledGlobalState(),
             logs,
             async (cx: CxWrapper) => cx.standaloneEnabled(),
             "tenant configuration"
@@ -390,7 +390,7 @@ export class Cx implements CxPlatform {
 
     async isCxOneAssistEnabled(logs: Logs): Promise<boolean> {
         return this.getCachedFeatureEnabled(
-            constants.cxOneAssistEnabledGlobalState,
+            constants.getCxOneAssistEnabledGlobalState(),
             logs,
             async (cx: CxWrapper) => {
                 const anyCx = cx as unknown as { cxOneAssistEnabled?: () => Promise<boolean> };
@@ -401,20 +401,20 @@ export class Cx implements CxPlatform {
     }
 
     async refreshStandaloneEnabled(logs: Logs): Promise<boolean> {
-        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
         return this.isStandaloneEnabled(logs);
     }
 
     clearStandaloneEnabledCache(): void {
-        this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
     }
 
     private async setStandaloneFlag(value: boolean): Promise<void> {
-        await this.context.globalState.update(constants.standaloneEnabledGlobalState, value);
+        await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), value);
     }
 
     private async clearStandaloneFlag(): Promise<void> {
-        await this.context.globalState.update(constants.standaloneEnabledGlobalState, undefined);
+        await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
     }
 
     private async getCachedFeatureEnabled(
@@ -423,7 +423,7 @@ export class Cx implements CxPlatform {
         remoteCheck: (cx: CxWrapper) => Promise<boolean>,
         errorContext: string
     ): Promise<boolean> {
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
         if (!token) {
             await this.context.globalState.update(globalStateKey, undefined);
             return false;
@@ -443,7 +443,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         try {
             const enabled = await remoteCheck(cx);
-            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+            if (globalStateKey === constants.getStandaloneEnabledGlobalState()) {
                 await this.setStandaloneFlag(enabled);
             } else {
                 await this.context.globalState.update(globalStateKey, enabled);
@@ -451,7 +451,7 @@ export class Cx implements CxPlatform {
             return enabled;
         } catch (error) {
             logs.error(`Error checking ${errorContext}: ${error}`);
-            if (globalStateKey === constants.standaloneEnabledGlobalState) {
+            if (globalStateKey === constants.getStandaloneEnabledGlobalState()) {
                 await this.setStandaloneFlag(false);
             } else {
                 await this.context.globalState.update(globalStateKey, false);
@@ -462,7 +462,7 @@ export class Cx implements CxPlatform {
 
     async isAiMcpServerEnabled(): Promise<boolean> {
         let enabled = false;
-        const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+        const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
 
         if (!token) {
             return enabled;

@@ -127,7 +127,9 @@ export class IacScannerService extends BaseScannerService {
 
 			const ignoreManager = IgnoreFileManager.getInstance();
 			ignoreManager.setScannedFilePath(filePath, tempFilePath);
-			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesTempFile();
+			const ignoredPackagesFile = ignoreManager.getIgnoredPackagesCount() > 0
+				? ignoreManager.getIgnoredPackagesTempFile()
+				: undefined;
 
 			const scanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), ignoredPackagesFile || "");
 

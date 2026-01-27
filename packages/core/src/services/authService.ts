@@ -298,7 +298,7 @@ export class AuthService {
 
   public async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      await this.context.secrets.store(constants.authCredentialSecretKey, apiKey);
+      await this.context.secrets.store(constants.getAuthCredentialSecretKey(), apiKey);
       const cx = getCx();
       return await cx.authValidate(this.logs);
 
@@ -362,7 +362,7 @@ export class AuthService {
   }
 
   public async saveToken(context: vscode.ExtensionContext, token: string) {
-    await this.context.secrets.store(constants.authCredentialSecretKey, token);
+    await this.context.secrets.store(constants.getAuthCredentialSecretKey(), token);
     console.log("Token stored in secrets");
     const isValid = await this.validateAndUpdateState();
     console.log("Token validation result:", isValid);
@@ -380,7 +380,7 @@ export class AuthService {
 
   public async validateAndUpdateState(): Promise<boolean> {
     try {
-      const token = await this.context.secrets.get(constants.authCredentialSecretKey);
+      const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
 
       if (!token) {
         vscode.commands.executeCommand(
@@ -421,13 +421,13 @@ export class AuthService {
   }
 
   public async getToken(): Promise<string | undefined> {
-    return await this.context.secrets.get(constants.authCredentialSecretKey);
+    return await this.context.secrets.get(constants.getAuthCredentialSecretKey());
   }
 
   public async logout(): Promise<void> {
     // Delete only the token
-    await this.context.secrets.delete(constants.authCredentialSecretKey);
-    await this.context.secrets.delete(constants.standaloneEnabledGlobalState);
+    await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
+    await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
 
     await this.validateAndUpdateState();
     // Only refresh tree for Checkmarx extension (not Developer Assist)
