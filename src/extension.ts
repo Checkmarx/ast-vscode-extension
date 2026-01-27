@@ -42,6 +42,9 @@ import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCom
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 import { DiagnosticCommand } from "./commands/diagnosticCommand";
+import { RemediationFileManager } from "./realtimeScanners/common/remediationFileManager";
+import { RemediationView } from "./views/remediationView/remediationView";
+import { FlowDiagramService } from "./realtimeScanners/common/flowDiagramService";
 
 import { registerMcpSettingsInjector } from "./services/mcpSettingsInjector";
 import { DOC_LINKS } from "./constants/documentation";
@@ -71,6 +74,7 @@ async function setupStatusBars(context: vscode.ExtensionContext, logs: Logs) {
   const kicsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const ignoredStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
+  const remediationStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 19);
 
   // Central refresh command for KICS status bar
   context.subscriptions.push(
@@ -92,6 +96,7 @@ async function setupStatusBars(context: vscode.ExtensionContext, logs: Logs) {
     kicsStatusBarItem,
     statusBarItem,
     ignoredStatusBarItem,
+    remediationStatusBarItem,
     updateScaStatusBar
   };
 }
@@ -211,6 +216,40 @@ function setupIgnoredStatusBar(
   return { updateIgnoredStatusBar };
 }
 
+function setupRemediationStatusBar(
+  context: vscode.ExtensionContext,
+  logs: Logs,
+  remediationFileManager: RemediationFileManager,
+  remediationStatusBarItem: vscode.StatusBarItem
+) {
+  async function updateRemediationStatusBar() {
+    if (await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs))) {
+      const count = remediationFileManager.getRemediationsCount();
+      const hasRemediationFile = remediationFileManager.hasRemediationFile();
+      if (hasRemediationFile && count > 0) {
+        remediationStatusBarItem.text = `$(check) ${count}`;
+        remediationStatusBarItem.tooltip = count > 0
+          ? `${count} fixed vulnerabilities - Click to view`
+          : `No fixed vulnerabilities - Click to view`;
+        remediationStatusBarItem.command = commands.openRemediationView;
+        remediationStatusBarItem.show();
+      } else {
+        remediationStatusBarItem.hide();
+      }
+    } else {
+      remediationStatusBarItem.hide();
+    }
+  }
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.refreshRemediationStatusBar, async () => {
+      await updateRemediationStatusBar();
+    })
+  );
+  remediationFileManager.setStatusBarUpdateCallback(updateRemediationStatusBar);
+  updateRemediationStatusBar();
+  return { updateRemediationStatusBar };
+}
+
 // --- Helper wrappers for refactored snippet ---
 function registerAssistDocumentation(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -266,6 +305,47 @@ function registerAuthenticationLauncher(context: vscode.ExtensionContext, webVie
   );
 }
 
+/**
+ * Handle flow diagram generation for a remediation entry
+ */
+async function handleRemediationFlowDiagram(
+  remediationId: string,
+  remediationFileManager: RemediationFileManager,
+  logs: Logs
+): Promise<void> {
+  const remediation = remediationFileManager.getRemediation(remediationId);
+
+  if (!remediation) {
+    vscode.window.showErrorMessage('Remediation not found');
+    return;
+  }
+
+  // Use the FlowDiagramService to generate and display the flow diagram
+  const flowDiagramService = FlowDiagramService.getInstance();
+  await flowDiagramService.generateFlowDiagram(remediation, logs);
+}
+
+/**
+ * Handle remediation report generation command
+ */
+async function handleRemediationReportGeneration(
+  remediationId: string,
+  remediationFileManager: RemediationFileManager,
+  logs: Logs
+): Promise<void> {
+  const remediation = remediationFileManager.getRemediation(remediationId);
+
+  if (!remediation) {
+    vscode.window.showErrorMessage('Remediation not found');
+    return;
+  }
+
+  // Use the ReportGenerationService to generate PDF report
+  const { ReportGenerationService } = await import('./realtimeScanners/common/reportGenerationService');
+  const reportService = ReportGenerationService.getInstance();
+  await reportService.generateReport(remediation, logs);
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
   initialize(context);
@@ -290,7 +370,8 @@ export async function activate(context: vscode.ExtensionContext) {
     runSCAScanStatusBar,
     kicsStatusBarItem,
     statusBarItem,
-    ignoredStatusBarItem
+    ignoredStatusBarItem,
+    remediationStatusBarItem
   } = await setupStatusBars(context, logs);
 
   const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } = await setupRealtimeScanners(context, logs);
@@ -537,6 +618,36 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
+
+  // Remediation view and commands
+  const remediationFileManager = RemediationFileManager.getInstance();
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (workspaceFolder) {
+    remediationFileManager.initialize(workspaceFolder);
+  }
+  context.subscriptions.push({ dispose: () => remediationFileManager.dispose() });
+
+  const remediationView = new RemediationView(context);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.openRemediationView, () => {
+      remediationView.show();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.viewRemediationFlowDiagram, async (remediationId: string) => {
+      await handleRemediationFlowDiagram(remediationId, remediationFileManager, logs);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.generateRemediationReport, async (remediationId: string) => {
+      await handleRemediationReportGeneration(remediationId, remediationFileManager, logs);
+    })
+  );
+
+  setupRemediationStatusBar(context, logs, remediationFileManager, remediationStatusBarItem);
 
   vscode.commands.registerCommand("ast-results.mockTokenTest", async () => {
     const authService = AuthService.getInstance(context);

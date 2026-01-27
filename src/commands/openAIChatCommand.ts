@@ -30,12 +30,22 @@ import {
     IAC_EXPLANATION_PROMPT
 } from "../realtimeScanners/scanners/prompts";
 import { IgnoreFileManager } from "../realtimeScanners/common/ignoreFileManager";
+import { RemediationFileManager, RemediationEntry } from "../realtimeScanners/common/remediationFileManager";
 import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
 import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
 import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
 import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
 import { cx } from "../cx";
+
+interface PendingRemediation {
+    item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData;
+    originalCode: string;
+    filePath: string;
+    startLine: number;
+    endLine: number;
+    timestamp: number;
+}
 
 
 export class CopilotChatCommand {
@@ -46,6 +56,7 @@ export class CopilotChatCommand {
     private iacScanner: IacScannerService;
     private ascaScanner: AscaScannerService;
     private containersScanner: ContainersScannerService;
+    private pendingRemediations: Map<string, PendingRemediation> = new Map();
 
     constructor(
         context: vscode.ExtensionContext,
@@ -63,6 +74,9 @@ export class CopilotChatCommand {
         this.iacScanner = iacScanner;
         this.ascaScanner = ascaScanner;
         this.containersScanner = containersScanner;
+
+        // Set up document save listener for remediation tracking
+        this.setupDocumentSaveListener();
     }
 
     private pressEnterWindows() {
@@ -277,6 +291,25 @@ export class CopilotChatCommand {
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.openAIChat, item);
 
+                // Capture original code BEFORE opening AI chat for remediation tracking
+                const captureResult = this.captureVulnerableCode(item);
+                const key = `${item.filePath}:${captureResult.startLine}`;
+
+                this.logs.info(`[Remediation] Capturing original code for: ${item.filePath}`);
+                this.logs.info(`[Remediation] Lines: ${captureResult.startLine}-${captureResult.endLine}`);
+                this.logs.info(`[Remediation] Code length: ${captureResult.code.length}`);
+
+                this.pendingRemediations.set(key, {
+                    item,
+                    originalCode: captureResult.code,
+                    filePath: item.filePath,
+                    startLine: captureResult.startLine,
+                    endLine: captureResult.endLine,
+                    timestamp: Date.now()
+                });
+
+                this.logs.info(`[Remediation] Pending remediations now: ${this.pendingRemediations.size}`);
+
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
                 if (isSecrets) {
@@ -292,8 +325,8 @@ export class CopilotChatCommand {
                 }
                 try {
                     if (isIDE(constants.kiroAgent)) {
-                        let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
-                            question = `In ${item.filePath} line ${line} \n${question}`
+                        const line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
+                        question = `In ${item.filePath} line ${line} \n${question}`;
                     }
                     await this.openChatWithPrompt(question);
                 } catch (error) {
@@ -508,5 +541,214 @@ export class CopilotChatCommand {
             })
         );
 
+    }
+
+    /**
+     * Set up listener for document saves to detect when fixes are applied
+     */
+    private setupDocumentSaveListener(): void {
+        this.context.subscriptions.push(
+            vscode.workspace.onDidSaveTextDocument(async (document) => {
+                const filePath = document.uri.fsPath;
+
+                this.logs.info(`[Remediation] Document saved: ${filePath}`);
+                this.logs.info(`[Remediation] Pending remediations count: ${this.pendingRemediations.size}`);
+
+                // Check if we have pending remediations for this file
+                for (const [key, pending] of this.pendingRemediations.entries()) {
+                    this.logs.info(`[Remediation] Checking pending: ${pending.filePath} vs ${filePath}`);
+
+                    // Normalize paths for comparison (handle Windows/Unix differences)
+                    const normalizedPendingPath = pending.filePath.replace(/\\/g, '/').toLowerCase();
+                    const normalizedFilePath = filePath.replace(/\\/g, '/').toLowerCase();
+
+                    if (normalizedPendingPath === normalizedFilePath) {
+                        this.logs.info(`[Remediation] Match found! Capturing fixed code...`);
+
+                        // Capture fixed code
+                        const fixedRange = new vscode.Range(pending.startLine, 0, pending.endLine, document.lineAt(pending.endLine).text.length);
+                        const fixedCode = document.getText(fixedRange);
+
+                        this.logs.info(`[Remediation] Original code length: ${pending.originalCode.length}, Fixed code length: ${fixedCode.length}`);
+
+                        // Check if code actually changed
+                        if (fixedCode !== pending.originalCode) {
+                            this.logs.info(`[Remediation] Code changed! Tracking remediation...`);
+
+                            // Track the remediation
+                            await this.trackRemediation(pending.item, pending.originalCode, fixedCode);
+
+                            // Remove from pending
+                            this.pendingRemediations.delete(key);
+
+                            this.logs.info(`[Remediation] Remediation tracked successfully!`);
+                        } else {
+                            this.logs.info(`[Remediation] Code unchanged, skipping...`);
+                        }
+                    }
+                }
+            })
+        );
+    }
+
+    /**
+     * Capture vulnerable code before fix
+     */
+    private captureVulnerableCode(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): { code: string, startLine: number, endLine: number } {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return { code: '', startLine: 0, endLine: 0 };
+        }
+
+        let startLine: number;
+        let endLine: number;
+
+        if (isSecretsHoverData(item) || isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item)) {
+            startLine = item.location.line;
+            endLine = item.location.line;
+        } else {
+            startLine = item.line;
+            endLine = item.line;
+        }
+
+        // Capture a few lines of context
+        const contextStart = Math.max(0, startLine - 2);
+        const contextEnd = Math.min(editor.document.lineCount - 1, endLine + 2);
+
+        const range = new vscode.Range(contextStart, 0, contextEnd, editor.document.lineAt(contextEnd).text.length);
+        const code = editor.document.getText(range);
+
+        return { code, startLine: contextStart, endLine: contextEnd };
+    }
+
+    /**
+     * Track remediation in JSON file
+     */
+    private async trackRemediation(
+        item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData,
+        originalCode: string,
+        fixedCode: string
+    ): Promise<void> {
+        try {
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+            if (!workspaceFolder) {
+                return;
+            }
+
+            const remediationManager = RemediationFileManager.getInstance();
+            remediationManager.initialize(workspaceFolder);
+
+            // Determine vulnerability type
+            let vulnerabilityType: 'oss' | 'secrets' | 'containers' | 'iac' | 'asca';
+            let title: string;
+            let severity: string;
+            let description: string;
+            let filePath: string;
+            let startLine: number;
+            let endLine: number;
+
+            if (isSecretsHoverData(item)) {
+                vulnerabilityType = 'secrets';
+                title = item.title;
+                severity = item.severity;
+                description = item.description;
+                filePath = item.filePath;
+                startLine = item.location.line;
+                endLine = item.location.line;
+            } else if (isAscaHoverData(item)) {
+                vulnerabilityType = 'asca';
+                title = item.ruleName;
+                severity = item.severity;
+                description = item.description;
+                filePath = item.filePath;
+                startLine = item.location.line;
+                endLine = item.location.line;
+            } else if (isContainersHoverData(item)) {
+                vulnerabilityType = 'containers';
+                title = `${item.imageName}:${item.imageTag}`;
+                severity = item.status;
+                description = item.fileType;
+                filePath = item.filePath;
+                startLine = item.location.line;
+                endLine = item.location.line;
+            } else if (isIacHoverData(item)) {
+                vulnerabilityType = 'iac';
+                title = item.title;
+                severity = item.severity;
+                description = item.description;
+                filePath = item.filePath;
+                startLine = item.location.line;
+                endLine = item.location.line;
+            } else {
+                vulnerabilityType = 'oss';
+                title = `${item.packageName}@${item.version}`;
+                severity = item.status;
+                description = item.vulnerabilities?.[0]?.description || '';
+                filePath = item.filePath;
+                startLine = item.line;
+                endLine = item.line;
+            }
+
+            // Detect AI method
+            const fixMethod = this.detectAIMethod();
+
+            // Create remediation entry
+            const entry: RemediationEntry = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                timestamp: new Date().toISOString(),
+                vulnerabilityType,
+                title,
+                severity,
+                description,
+                filePath,
+                startLine,
+                endLine,
+                originalCode,
+                fixedCode,
+                fixMethod,
+                fixStrategy: 'ai-assisted',
+                linesChanged: this.countChangedLines(originalCode, fixedCode),
+                dateAdded: new Date().toISOString()
+            };
+
+            // Save to file
+            this.logs.info(`[Remediation] Saving remediation entry: ${entry.id}`);
+            this.logs.info(`[Remediation] Title: ${title}`);
+            this.logs.info(`[Remediation] File: ${filePath}`);
+            this.logs.info(`[Remediation] Type: ${vulnerabilityType}`);
+
+            remediationManager.addRemediation(entry);
+
+            this.logs.info(`[Remediation] ✅ Remediation tracked successfully: ${title} in ${filePath}`);
+
+            // Trigger status bar refresh
+            vscode.commands.executeCommand(commands.refreshRemediationStatusBar);
+        } catch (error) {
+            this.logs.error(`Failed to track remediation: ${error}`);
+        }
+    }
+
+    /**
+     * Detect which AI method is being used
+     */
+    private detectAIMethod(): 'copilot' | 'cursor' | 'windsurf' | 'kiro' | 'manual' {
+        if (isIDE(constants.cursorAgent)) {
+            return 'cursor';
+        } else if (isIDE(constants.windsurfAgent)) {
+            return 'windsurf';
+        } else if (isIDE(constants.kiroAgent)) {
+            return 'kiro';
+        } else {
+            return 'copilot';
+        }
+    }
+
+    /**
+     * Count changed lines between original and fixed code
+     */
+    private countChangedLines(original: string, fixed: string): number {
+        const originalLines = original.split('\n');
+        const fixedLines = fixed.split('\n');
+        return Math.max(originalLines.length, fixedLines.length);
     }
 }

@@ -123,6 +123,7 @@ export class AuthenticationWebview {
         WelcomeWebview.show(this.context, isAiEnabled);
         await vscode.commands.executeCommand(commands.updateCxOneAssist);
         await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+        await vscode.commands.executeCommand(commands.refreshRemediationStatusBar);
         await vscode.commands.executeCommand(commands.refreshScaStatusBar);
         await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
         await vscode.commands.executeCommand(commands.refreshRiskManagementView);
@@ -262,6 +263,7 @@ export class AuthenticationWebview {
                 );
                 uninstallMcp();
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                await vscode.commands.executeCommand(commands.refreshRemediationStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                 await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
                 await vscode.commands.executeCommand(commands.refreshRiskManagementView);
