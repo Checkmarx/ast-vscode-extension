@@ -20,6 +20,7 @@ import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca"
 import { AuthService } from "../services/authService";
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
+import { getMessages } from "../config/extensionMessages";
 
 export class Cx implements CxPlatform {
     private context: vscode.ExtensionContext;
@@ -854,7 +855,7 @@ export class Cx implements CxPlatform {
     }
 
     async authValidate(logs?: Logs): Promise<boolean> {
-        const authFailedMsg = "Failed to authenticate to Checkmarx One server";
+        const authFailedMsg = getMessages().authFailedMessage;
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
         try {

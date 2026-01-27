@@ -20,6 +20,21 @@ export interface ExtensionMessages {
 
     /** Extension display name */
     displayName: string;
+
+    /** Product description for assist view */
+    assistViewDescription: string;
+
+    /** Server name for authentication messages (e.g., "Checkmarx One server", "Checkmarx Developer Assist server") */
+    serverName: string;
+
+    /** Connecting message (e.g., "Connecting to Checkmarx One...", "Connecting to Checkmarx Developer Assist...") */
+    connectingMessage: string;
+
+    /** Successfully authenticated message */
+    authSuccessMessage: string;
+
+    /** Failed to authenticate message */
+    authFailedMessage: string;
 }
 
 /**
@@ -30,7 +45,12 @@ export const CHECKMARX_MESSAGES: ExtensionMessages = {
     authenticationRequiredMessage: 'In order to use Checkmarx One Assist, you need to setup your credentials.',
     learnMoreLink: 'https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html',
     welcomePageTitle: 'Welcome to Checkmarx',
-    displayName: 'Checkmarx'
+    displayName: 'Checkmarx',
+    assistViewDescription: 'Checkmarx One Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.',
+    serverName: 'Checkmarx One server',
+    connectingMessage: 'Connecting to Checkmarx One...',
+    authSuccessMessage: 'Successfully authenticated to Checkmarx One server',
+    authFailedMessage: 'Failed to authenticate to Checkmarx One server'
 };
 
 /**
@@ -41,7 +61,12 @@ export const DEVASSIST_MESSAGES: ExtensionMessages = {
     authenticationRequiredMessage: 'In order to use Checkmarx Developer Assist, you need to setup your credentials.',
     learnMoreLink: 'https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html',
     welcomePageTitle: 'Welcome to Checkmarx Developer Assist',
-    displayName: 'Checkmarx Developer Assist'
+    displayName: 'Checkmarx Developer Assist',
+    assistViewDescription: 'Checkmarx Developer Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.',
+    serverName: 'Checkmarx Developer Assist server',
+    connectingMessage: 'Connecting to Checkmarx Developer Assist...',
+    authSuccessMessage: 'Successfully authenticated to Checkmarx Developer Assist server',
+    authFailedMessage: 'Failed to authenticate to Checkmarx Developer Assist server'
 };
 
 /**
