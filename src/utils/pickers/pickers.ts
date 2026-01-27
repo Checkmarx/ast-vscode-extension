@@ -200,231 +200,6 @@ export async function projectPicker(
   );
 }
 
-export async function environmentPicker(
-  context: vscode.ExtensionContext,
-  logs: Logs
-) {
-  const fetchEnvironments = async (
-    filter: string,
-    offset: number,
-    pageSize: number
-  ) => {
-    return await getEnvironmentsPickItemsWithParams(
-      logs,
-      context,
-      filter,
-      pageSize,
-      offset
-    );
-  };
-
-  const handleEnvironmentSelection = async (item: CxQuickPickItem) => {
-    updateState(context, constants.environmentIdKey, {
-      id: item.id,
-      name: `${constants.environmentLabel} ${item.label}`,
-      displayScanId: undefined,
-      scanDatetime: undefined,
-    });
-    // Clear scan selection when environment changes
-    updateState(context, constants.dastScanIdKey, {
-      id: undefined,
-      name: constants.scanLabel,
-      displayScanId: undefined,
-      scanDatetime: undefined,
-    });
-    await vscode.commands.executeCommand(commands.refreshDastTree);
-  };
-
-  await createPicker(
-    constants.environmentPlaceholder,
-    constants.environmentPickerTitle,
-    fetchEnvironments,
-    handleEnvironmentSelection
-  );
-}
-
-export async function dastScanPicker(
-  context: vscode.ExtensionContext,
-  logs: Logs
-) {
-  const environmentItem = getFromState(context, constants.environmentIdKey);
-  if (!environmentItem?.id) {
-    vscode.window.showErrorMessage(messages.pickerEnvironmentMissing);
-    return;
-  }
-
-  const fetchDastScans = async (
-    filter: string,
-    offset: number,
-    pageSize: number
-  ) => {
-    return await getDastScansPickItemsWithParams(
-      logs,
-      context,
-      environmentItem.id,
-      filter,
-      pageSize,
-      offset
-    );
-  };
-
-  const handleDastScanSelection = async (item: CxQuickPickItem) => {
-    updateState(context, constants.dastScanIdKey, {
-      id: item.id,
-      name: `${constants.scanLabel} ${item.label}`,
-      displayScanId: `${constants.scanLabel} ${item.formattedId}`,
-      scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
-    });
-    await vscode.commands.executeCommand(commands.refreshDastTree);
-  };
-
-  await createPicker(
-    constants.scanPlaceholder,
-    constants.dastScanPickerTitle,
-    fetchDastScans,
-    handleDastScanSelection
-  );
-}
-
-export async function getDastScansPickItemsWithParams(
-  logs: Logs,
-  context: vscode.ExtensionContext,
-  environmentId: string,
-  filter: string,
-  limit: number,
-  offset: number
-) {
-  return await vscode.window.withProgress(
-    PROGRESS_HEADER,
-    async (progress, token) => {
-      token.onCancellationRequested(() => {
-        logs.info(messages.cancelLoading);
-      });
-      progress.report({ message: messages.loadingScans });
-      try {
-        const from = offset + 1;
-        const to = offset + limit;
-        let params = `from=${from},to=${to},sort=created:desc`;
-        if (filter) {
-          params += `,search=${filter}`;
-        }
-        const scanList = await cx.getDastScansListWithParams(environmentId, params);
-        return scanList.map((scan, index) => ({
-          label: formatDastScanLabel(scan.created, scan.scanId, index === 0 && offset === 0),
-          id: scan.scanId,
-          datetime: getFormattedDateTime(scan.created),
-          formattedId: scan.scanId,
-        }));
-      } catch (error) {
-        updateStateError(context, constants.errorMessage + error);
-        vscode.commands.executeCommand(commands.showError);
-        return [];
-      }
-    }
-  );
-}
-
-function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
-  const dateTime = getFormattedDateTime(created);
-  return `${dateTime} ${scanId}${isLatest ? " (latest)" : ""}`;
-}
-
-export async function dastScanInput(context: vscode.ExtensionContext, logs: Logs) {
-  const environmentItem = getFromState(context, constants.environmentIdKey);
-  if (!environmentItem?.id) {
-    vscode.window.showErrorMessage(messages.pickerEnvironmentMissing);
-    return;
-  }
-
-  const input = await vscode.window.showInputBox({
-    prompt: "Enter DAST Scan ID",
-    placeHolder: "Scan ID"
-  });
-  if (!input) {
-    return;
-  }
-
-  const trimmedInput = input.trim();
-  if (!uuidPattern.test(trimmedInput)) {
-    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
-    return;
-  }
-
-  await loadDastScanById(context, environmentItem.id, trimmedInput, logs);
-}
-
-async function loadDastScanById(
-  context: vscode.ExtensionContext,
-  environmentId: string,
-  scanId: string,
-  logs: Logs
-) {
-  return await vscode.window.withProgress(
-    PROGRESS_HEADER,
-    async (progress, token) => {
-      token.onCancellationRequested(() => {
-        logs.info(messages.cancelLoading);
-      });
-      progress.report({ message: messages.loadingScan });
-      try {
-        const params = `scanId=${scanId}`;
-        const scanList = await cx.getDastScansListWithParams(environmentId, params);
-        if (scanList && scanList.length > 0) {
-          const scan = scanList[0];
-          await updateState(context, constants.dastScanIdKey, {
-            id: scan.scanId,
-            name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
-            displayScanId: `${constants.scanLabel} ${scan.scanId}`,
-            scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.created)}`,
-          });
-          await vscode.commands.executeCommand(commands.refreshDastTree);
-        } else {
-          vscode.window.showErrorMessage(messages.scanIdNotFound);
-        }
-      } catch (error) {
-        updateStateError(context, constants.errorMessage + error);
-        vscode.commands.executeCommand(commands.showError);
-      }
-    }
-  );
-}
-
-export async function getEnvironmentsPickItemsWithParams(
-  logs: Logs,
-  context: vscode.ExtensionContext,
-  filter: string,
-  limit: number,
-  offset: number
-) {
-  return await vscode.window.withProgress(
-    PROGRESS_HEADER,
-    async (progress, token) => {
-      token.onCancellationRequested(() => {
-        logs.info(messages.cancelLoading);
-      });
-      progress.report({ message: messages.loadingEnvironments });
-      try {
-        const from = offset + 1;
-        const to = offset + limit;
-        let params = `from=${from},to=${to}`;
-        if (filter) {
-          params += `,search=${filter}`;
-        }
-        params += ',sort=domain:asc';
-        const envList = await cx.getDastEnvironmentsListWithParams(params);
-        return envList.map((env) => ({
-          label: env.name,
-          id: env.id,
-        }));
-      } catch (error) {
-        updateStateError(context, constants.errorMessage + error);
-        vscode.commands.executeCommand(commands.showError);
-        return [];
-      }
-    }
-  );
-}
-
 export async function branchPicker(
   context: vscode.ExtensionContext,
   logs: Logs
@@ -802,4 +577,229 @@ function debounce(func: (...args: any[]) => void, delay: number) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), delay);
   };
+}
+
+export async function environmentPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  const fetchEnvironments = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ) => {
+    return await getEnvironmentsPickItemsWithParams(
+      logs,
+      context,
+      filter,
+      pageSize,
+      offset
+    );
+  };
+
+  const handleEnvironmentSelection = async (item: CxQuickPickItem) => {
+    updateState(context, constants.environmentIdKey, {
+      id: item.id,
+      name: `${constants.environmentLabel} ${item.label}`,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
+    // Clear scan selection when environment changes
+    updateState(context, constants.dastScanIdKey, {
+      id: undefined,
+      name: constants.scanLabel,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
+    await vscode.commands.executeCommand(commands.refreshDastTree);
+  };
+
+  await createPicker(
+    constants.environmentPlaceholder,
+    constants.environmentPickerTitle,
+    fetchEnvironments,
+    handleEnvironmentSelection
+  );
+}
+
+export async function dastScanPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  const environmentItem = getFromState(context, constants.environmentIdKey);
+  if (!environmentItem?.id) {
+    vscode.window.showErrorMessage(messages.pickerEnvironmentMissing);
+    return;
+  }
+
+  const fetchDastScans = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ) => {
+    return await getDastScansPickItemsWithParams(
+      logs,
+      context,
+      environmentItem.id,
+      filter,
+      pageSize,
+      offset
+    );
+  };
+
+  const handleDastScanSelection = async (item: CxQuickPickItem) => {
+    updateState(context, constants.dastScanIdKey, {
+      id: item.id,
+      name: `${constants.scanLabel} ${item.label}`,
+      displayScanId: `${constants.scanLabel} ${item.formattedId}`,
+      scanDatetime: `${constants.scanDateLabel} ${item.datetime}`,
+    });
+    await vscode.commands.executeCommand(commands.refreshDastTree);
+  };
+
+  await createPicker(
+    constants.scanPlaceholder,
+    constants.dastScanPickerTitle,
+    fetchDastScans,
+    handleDastScanSelection
+  );
+}
+
+export async function getDastScansPickItemsWithParams(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  environmentId: string,
+  filter: string,
+  limit: number,
+  offset: number
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingScans });
+      try {
+        const from = offset + 1;
+        const to = offset + limit;
+        let params = `from=${from},to=${to},sort=created:desc`;
+        if (filter) {
+          params += `,search=${filter}`;
+        }
+        const scanList = await cx.getDastScansListWithParams(environmentId, params);
+        return scanList.map((scan, index) => ({
+          label: formatDastScanLabel(scan.created, scan.scanId, index === 0 && offset === 0),
+          id: scan.scanId,
+          datetime: getFormattedDateTime(scan.created),
+          formattedId: scan.scanId,
+        }));
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
+  );
+}
+
+function formatDastScanLabel(created: string, scanId: string, isLatest: boolean): string {
+  const dateTime = getFormattedDateTime(created);
+  return `${dateTime} ${scanId}${isLatest ? " (latest)" : ""}`;
+}
+
+export async function dastScanInput(context: vscode.ExtensionContext, logs: Logs) {
+  const environmentItem = getFromState(context, constants.environmentIdKey);
+  if (!environmentItem?.id) {
+    vscode.window.showErrorMessage(messages.pickerEnvironmentMissing);
+    return;
+  }
+
+  const input = await vscode.window.showInputBox({
+    prompt: "Enter DAST Scan ID",
+    placeHolder: "Scan ID"
+  });
+  if (!input) {
+    return;
+  }
+
+  const trimmedInput = input.trim();
+  if (!uuidPattern.test(trimmedInput)) {
+    vscode.window.showErrorMessage(messages.scanIdIncorrectFormat);
+    return;
+  }
+
+  await loadDastScanById(context, environmentItem.id, trimmedInput, logs);
+}
+
+async function loadDastScanById(
+  context: vscode.ExtensionContext,
+  environmentId: string,
+  scanId: string,
+  logs: Logs
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingScan });
+      try {
+        const params = `scanId=${scanId}`;
+        const scanList = await cx.getDastScansListWithParams(environmentId, params);
+        if (scanList && scanList.length > 0) {
+          const scan = scanList[0];
+          await updateState(context, constants.dastScanIdKey, {
+            id: scan.scanId,
+            name: `${constants.scanLabel} ${getFormattedDateTime(scan.created)} ${scan.scanId}`,
+            displayScanId: `${constants.scanLabel} ${scan.scanId}`,
+            scanDatetime: `${constants.scanDateLabel} ${getFormattedDateTime(scan.created)}`,
+          });
+          await vscode.commands.executeCommand(commands.refreshDastTree);
+        } else {
+          vscode.window.showErrorMessage(messages.scanIdNotFound);
+        }
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+      }
+    }
+  );
+}
+
+export async function getEnvironmentsPickItemsWithParams(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  filter: string,
+  limit: number,
+  offset: number
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingEnvironments });
+      try {
+        const from = offset + 1;
+        const to = offset + limit;
+        let params = `from=${from},to=${to}`;
+        if (filter) {
+          params += `,search=${filter}`;
+        }
+        params += ',sort=domain:asc';
+        const envList = await cx.getDastEnvironmentsListWithParams(params);
+        return envList.map((env) => ({
+          label: env.name,
+          id: env.id,
+        }));
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
+  );
 }

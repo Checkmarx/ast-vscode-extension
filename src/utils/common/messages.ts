@@ -69,7 +69,6 @@ export const messages = {
   loadingBranches: "Loading branches",
   loadingProjects: "Loading projects",
   loadingProject: "Loading project",
-  loadingEnvironments: "Loading environments",
   loadingScans: "Loading scans",
   loadingScan: "Loading scan",
   loadingResults: "Loading results",
@@ -133,5 +132,6 @@ export const messages = {
     settings
   </a>
   `,
+  loadingEnvironments: "Loading environments",
   dastLicenseNotEnabled: "DAST license is not enabled",
 };

@@ -1208,14 +1208,6 @@ export class CxMock implements CxPlatform {
     ];
   }
 
-  async getDastEnvironmentsListWithParams(): Promise<CxDastEnvironment[] | undefined> {
-    return [];
-  }
-
-  async getDastScansListWithParams(): Promise<CxDastScan[] | undefined> {
-    return [];
-  }
-
   getOffsetValue(params: string) {
     const items = params.split(",");
     const offsetParam = items.find((param) => param.startsWith("offset="));
@@ -1340,10 +1332,6 @@ export class CxMock implements CxPlatform {
   }
 
   async isCxOneAssistEnabled(): Promise<boolean> {
-    return false;
-  }
-
-  async isDastLicenseEnabled(): Promise<boolean> {
     return false;
   }
 
@@ -1694,5 +1682,17 @@ export class CxMock implements CxPlatform {
   }
 
   setUserEventDataForDetectionLogs(): void {
+  }
+
+  async getDastEnvironmentsListWithParams(): Promise<CxDastEnvironment[] | undefined> {
+    return [];
+  }
+
+  async getDastScansListWithParams(): Promise<CxDastScan[] | undefined> {
+    return [];
+  }
+
+  async isDastLicenseEnabled(): Promise<boolean> {
+    return false;
   }
 }
