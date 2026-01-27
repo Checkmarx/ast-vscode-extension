@@ -2,6 +2,7 @@
 import * as vscode from "vscode";
 import { HoverData, SecretsHoverData, CxDiagnosticData, ContainersHoverData, AscaHoverData } from "../common/types";
 import { commands } from "../../utils/common/commandBuilder";
+import { getMessages } from "../../config/extensionMessages";
 
 
 
@@ -27,8 +28,9 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 
 			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
 
-
-			const fixWithCxButton = `Fix with Checkmarx One Assist`;
+			// Get extension-specific product name (e.g., "Checkmarx One Assist" or "Checkmarx Developer Assist")
+			const productName = getMessages().productName;
+			const fixWithCxButton = `Fix with ${productName}`;
 
 			const fixAction = new vscode.CodeAction(
 				fixWithCxButton,

@@ -125,6 +125,10 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
     context.subscriptions.push(configListener);
 
     const ignoreFileManager = IgnoreFileManager.getInstance();
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+        ignoreFileManager.initialize(workspaceFolder);
+    }
 
     const ossCommand = scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName) as OssScannerCommand;
     const ossScanner = ossCommand.getScannerService();
@@ -144,6 +148,14 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
         constants.containersRealtimeScannerEngineName,
     ) as ContainersScannerCommand;
     const containersScanner = containersCommand.getScannerService();
+
+    ignoreFileManager.setOssScannerService(ossScanner);
+    ignoreFileManager.setSecretsScannerService(secretScanner);
+    ignoreFileManager.setIacScannerService(iacScanner);
+    ignoreFileManager.setAscaScannerService(ascaScanner);
+    ignoreFileManager.setContainersScannerService(containersScanner);
+
+    context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 
     return { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
 }

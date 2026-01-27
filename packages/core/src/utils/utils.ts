@@ -16,6 +16,7 @@ import { ContainersScannerService } from "../realtimeScanners/scanners/container
 import { Logs } from "../models/logs";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import { ThemeUtils } from "./themeUtils";
+import { getMessages } from "../config/extensionMessages";
 
 
 export function getProperty(
@@ -284,7 +285,8 @@ export function isIDE(ideName: string): boolean {
 }
 
 export function buildCommandButtons(args: string, hasIgnoreAll: boolean, isSecret: boolean): string {
-  return `<a href="command:${commands.openAIChat}?${args}">Fix with Checkmarx One Assist</a> &emsp;
+  const productName = getMessages().productName;
+  return `<a href="command:${commands.openAIChat}?${args}">Fix with ${productName}</a> &emsp;
           <a href="command:${commands.viewDetails}?${args}">View details</a> &emsp;
           <a href="command:${commands.ignorePackage}?${args}"> ${isSecret ? "Ignore this secret in file" : "Ignore this vulnerability"}</a> &emsp;
           <a href="command:${commands.ignoreAll}?${args}">${hasIgnoreAll ? "Ignore all of this type" : " "}</a>&emsp;

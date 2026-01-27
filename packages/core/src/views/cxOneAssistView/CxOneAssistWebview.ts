@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CxOneAssistWebviewState } from "./CxOneAssistTypes";
 import { CxOneAssistUtils } from "./CxOneAssistUtils";
 import { MediaPathResolver } from "../../utils/mediaPathResolver";
+import { getMessages } from "../../config/extensionMessages";
 
 export class CxOneAssistWebview {
   public static generateHtml(
@@ -17,12 +18,14 @@ export class CxOneAssistWebview {
     const ignoredText = CxOneAssistUtils.formatIgnoredText(state.ignoredCount);
     const ignoredTooltip = CxOneAssistUtils.getIgnoredTooltip(state.ignoredCount);
 
+    const messages = getMessages();
+
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Checkmarx One Assist</title>
+        <title>${messages.productName}</title>
         <style>
           ${this.getStyles()}
         </style>
@@ -31,11 +34,11 @@ export class CxOneAssistWebview {
         <div class="assist-container">
             <div class="cube-container">
                 <div class="particles" id="particles"></div>
-                <img src="${cubeImageUri}" alt="Checkmarx One Assist 3D Cube" class="cube-image" />
+                <img src="${cubeImageUri}" alt="${messages.productName} 3D Cube" class="cube-image" />
             </div>
-            
+
             <div class="description">
-                Checkmarx One Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.
+                ${messages.assistViewDescription}
             </div>
             
             ${showIgnoredButton ? `
@@ -241,12 +244,15 @@ export class CxOneAssistWebview {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "cxone-assist-cube.svg"))
     );
 
+    // Get extension-specific messages
+    const messages = getMessages();
+
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Checkmarx One Assist</title>
+        <title>${messages.productName}</title>
         <style>
           ${this.getUnauthenticatedStyles()}
         </style>
@@ -255,7 +261,7 @@ export class CxOneAssistWebview {
         <div class="login-container">
             <div class="cube-container">
                 <div class="particles" id="particles"></div>
-                <img src="${cubeImageUri}" alt="Checkmarx One Assist 3D Cube" class="cube-image" />
+                <img src="${cubeImageUri}" alt="${messages.productName} 3D Cube" class="cube-image" />
             </div>
 
             <div class="login-title">Catch Vulnerabilities as You Code</div>
@@ -263,7 +269,7 @@ export class CxOneAssistWebview {
             <div class="login-description">
                 Go beyond scanning. Our AI feature spots risks instantly and guides you with smart fixes, without leaving VS Code.
             </div>
-            
+
             <div class="login-button">
                 Contact your admin for more information
             </div>

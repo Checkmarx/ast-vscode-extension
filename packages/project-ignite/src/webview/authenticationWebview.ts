@@ -9,6 +9,7 @@ import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 export class AuthenticationWebview {
   public static readonly viewType = "devAssistAuth";
@@ -17,15 +18,18 @@ export class AuthenticationWebview {
   private _disposables: vscode.Disposable[] = [];
   private readonly logs: Logs | undefined;
   private webview: WebViewCommand;
+  private readonly messages: ReturnType<typeof getMessages>;
   private constructor(
     panel: vscode.WebviewPanel,
     private context: vscode.ExtensionContext,
     logs?: Logs,
-    webview?: WebViewCommand
+    webview?: WebViewCommand,
+    messages?: ReturnType<typeof getMessages>
   ) {
     this.logs = logs;
     this._panel = panel;
     this.webview = webview;
+    this.messages = messages || getMessages(); // Use provided messages or get them
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
@@ -58,9 +62,11 @@ export class AuthenticationWebview {
       AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
       return;
     }
+    const messages = getMessages();
+
     const panel = vscode.window.createWebviewPanel(
       commands.astResultsPromo,
-      "Checkmarx Developer Assist Authentication",
+      `${messages.displayName} Authentication`,
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -75,7 +81,8 @@ export class AuthenticationWebview {
       panel,
       context,
       logs,
-      webViewCommand
+      webViewCommand,
+      messages
     );
   }
 
@@ -242,7 +249,7 @@ export class AuthenticationWebview {
           await vscode.window.withProgress(
             {
               location: vscode.ProgressLocation.Notification,
-              title: "Connecting to Checkmarx Developer Assist...",
+              title: this.messages.connectingMessage,
               cancellable: false,
             },
             async () => {

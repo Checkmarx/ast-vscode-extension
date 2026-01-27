@@ -3,6 +3,7 @@ import { getNonce } from "@checkmarx/vscode-core/out/utils/utils";
 import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 
 
@@ -16,7 +17,8 @@ export class WelcomeWebview {
     jsUri: vscode.Uri,
     nonce: string,
     isAiMcpEnabled: boolean,
-    panel: vscode.WebviewPanel
+    panel: vscode.WebviewPanel,
+    productName: string
   ): string {
     return `
       <!DOCTYPE html>
@@ -57,7 +59,7 @@ export class WelcomeWebview {
                     title="Toggle real-time scanners"
                   />
                 </div>
-                <span class="card-title">Code Smarter with Checkmarx One Assist</span>
+                <span class="card-title">Code Smarter with ${productName}</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code.</li>
@@ -174,6 +176,9 @@ export class WelcomeWebview {
 
     const nonce = getNonce();
 
+    const messages = getMessages();
+    const productName = messages.productName;
+
     const scannerConfigKeys = [
       `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`,
       `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`,
@@ -194,7 +199,8 @@ export class WelcomeWebview {
       jsUri,
       nonce,
       isAiMcpEnabled,
-      panel
+      panel,
+      productName
     );
 
     // Listen for theme changes and refresh the webview content
@@ -228,7 +234,8 @@ export class WelcomeWebview {
         jsUri,
         nonce,
         isAiMcpEnabled,
-        panel
+        panel,
+        productName
       );
     });
 

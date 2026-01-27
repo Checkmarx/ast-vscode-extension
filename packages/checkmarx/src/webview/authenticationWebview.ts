@@ -10,6 +10,7 @@ import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -18,15 +19,18 @@ export class AuthenticationWebview {
   private _disposables: vscode.Disposable[] = [];
   private readonly logs: Logs | undefined;
   private webview: WebViewCommand;
+  private readonly messages: ReturnType<typeof getMessages>;
   private constructor(
     panel: vscode.WebviewPanel,
     private context: vscode.ExtensionContext,
     logs?: Logs,
-    webview?: WebViewCommand
+    webview?: WebViewCommand,
+    messages?: ReturnType<typeof getMessages>
   ) {
     this.logs = logs;
     this._panel = panel;
     this.webview = webview;
+    this.messages = messages || getMessages(); // Use provided messages or get them
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
@@ -67,9 +71,11 @@ export class AuthenticationWebview {
       AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
       return;
     }
+    const messages = getMessages();
+
     const panel = vscode.window.createWebviewPanel(
       commands.astResultsPromo,
-      "Checkmarx One Authentication",
+      `${messages.displayName} Authentication`,
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -84,7 +90,8 @@ export class AuthenticationWebview {
       panel,
       context,
       logs,
-      webViewCommand
+      webViewCommand,
+      messages
     );
   }
 
@@ -171,6 +178,7 @@ export class AuthenticationWebview {
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
     const nonce = getNonce();
+    const messages = this.messages;
 
     return `<!DOCTYPE html>
 <html>
@@ -180,7 +188,7 @@ export class AuthenticationWebview {
 	<link href="${styleBootStrap}" rel="stylesheet">
 	<link href="${styleAuth}" rel="stylesheet">
 	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>Checkmarx One Authentication</title>
+	<title>${messages.displayName} Authentication</title>
 
 
 </head>
@@ -193,7 +201,7 @@ export class AuthenticationWebview {
 		</div>
 	  </div>
 <div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">Checkmarx One Authentication</div>
+        <div class="auth-form-title">${messages.displayName} Authentication</div>
         <div id="loginForm">
         <div class="radio-group">
 
@@ -226,7 +234,7 @@ export class AuthenticationWebview {
         <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
         </div>
 
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx One</div>
+        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
         <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
         <div id="messageBox" class="message">
         <div id="messageSuccessIcon" class="hidden">
@@ -283,7 +291,7 @@ export class AuthenticationWebview {
           await vscode.window.withProgress(
             {
               location: vscode.ProgressLocation.Notification,
-              title: "Connecting to Checkmarx One...",
+              title: this.messages.connectingMessage,
               cancellable: false,
             },
             async () => {

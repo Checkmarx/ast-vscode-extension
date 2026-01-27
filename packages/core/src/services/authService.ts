@@ -9,6 +9,7 @@ import { constants } from "../utils/common/constants";
 import { ProxyHelper } from '../utils/proxy/proxy';
 import axios from "axios";
 import { getExtensionType, EXTENSION_TYPE } from '../config/extensionConfig';
+import { getMessages } from '../config/extensionMessages';
 
 interface OAuthConfig {
   clientId: string;
@@ -367,7 +368,7 @@ export class AuthService {
     console.log("Token validation result:", isValid);
 
     if (isValid) {
-      vscode.window.showInformationMessage("Successfully authenticated to Checkmarx One server");
+      vscode.window.showInformationMessage(getMessages().authSuccessMessage);
       // Only refresh tree for Checkmarx extension (not Developer Assist)
       if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
         await vscode.commands.executeCommand(commands.refreshTree);
