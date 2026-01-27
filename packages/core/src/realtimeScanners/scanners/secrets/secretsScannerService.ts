@@ -75,7 +75,10 @@ export class SecretsScannerService extends BaseScannerService {
 	}
 
 	private isRealtimeIgnoreFile(filePath: string): boolean {
-		return filePath.includes("/.vscode/.checkmarxIgnored") || filePath.includes("/.vscode/.checkmarxIgnoredTempList");
+		return filePath.includes("/.vscode/.checkmarxIgnored") ||
+			filePath.includes("/.vscode/.checkmarxIgnoredTempList") ||
+			filePath.includes("/.vscode/.checkmarxDevAssistIgnored") ||
+			filePath.includes("/.vscode/.checkmarxDevAssistIgnoredTempList");
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {

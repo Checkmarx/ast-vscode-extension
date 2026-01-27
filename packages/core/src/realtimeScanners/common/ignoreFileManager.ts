@@ -11,6 +11,7 @@ import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacReal
 import { IacScannerService } from '../scanners/iac/iacScannerService';
 import { AscaScannerService } from '../scanners/asca/ascaScannerService';
 import { ContainersScannerService } from '../scanners/containers/containersScannerService';
+import { getExtensionType } from '../../config/extensionConfig';
 export interface IgnoreEntry {
 	files: Array<{
 		path: string;
@@ -347,11 +348,15 @@ export class IgnoreFileManager {
 	}
 
 	private getIgnoreFilePath(): string {
-		return path.join(this.workspacePath, '.checkmarxIgnored');
+		const extensionType = getExtensionType();
+		const fileName = extensionType === 'checkmarx' ? '.checkmarxIgnored' : '.checkmarxDevAssistIgnored';
+		return path.join(this.workspacePath, fileName);
 	}
 
 	private getTempListPath(): string {
-		return path.join(this.workspacePath, '.checkmarxIgnoredTempList.json');
+		const extensionType = getExtensionType();
+		const fileName = extensionType === 'checkmarx' ? '.checkmarxIgnoredTempList.json' : '.checkmarxDevAssistIgnoredTempList.json';
+		return path.join(this.workspacePath, fileName);
 	}
 
 	public getIgnoredPackagesTempFile(): string | undefined {
