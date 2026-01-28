@@ -153,7 +153,7 @@ export class WelcomeWebview {
 
     const aiBoxinfo = panel.webview.asWebviewUri(
       vscode.Uri.file(
-        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxDevAssistAIError_light.png", "cxDevAssistAIError.png"))
       )
     );
 
@@ -208,7 +208,7 @@ export class WelcomeWebview {
 
       const newAiBoxinfo = panel.webview.asWebviewUri(
         vscode.Uri.file(
-          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
+          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxDevAssistAIError_light.png", "cxDevAssistAIError.png"))
         )
       );
 

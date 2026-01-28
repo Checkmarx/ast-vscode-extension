@@ -17,6 +17,7 @@ import { Logs } from "../models/logs";
 import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHoverData } from "../realtimeScanners/common/types";
 import { ThemeUtils } from "./themeUtils";
 import { getMessages } from "../config/extensionMessages";
+import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
 
 
 export function getProperty(
@@ -314,19 +315,28 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
  * Configuration for CxAI badge rendering
  */
 const CX_AI_BADGE_CONFIG = {
-  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/',
+  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/split-plugins/media/icons/',
   style: 'vertical-align: -12px;',
-  icons: {
+  checkmarxIcons: {
     light: 'CxOne_Assist_light.png',
     dark: 'CxOne_Assist.png'
+  },
+  devAssistIcons: {
+    light: 'CxDev_Assist_light.png',
+    dark: 'CxDev_Assist.png'
   }
 } as const;
 
 /**
- * Renders the CxAI badge with appropriate theming
+ * Renders the CxAI badge with appropriate theming and extension-specific icons
  */
 export function renderCxAiBadge(): string {
-  const iconFile = ThemeUtils.selectIconByTheme(CX_AI_BADGE_CONFIG.icons.light, CX_AI_BADGE_CONFIG.icons.dark);
+  const extensionType = getExtensionType();
+  const icons = extensionType === EXTENSION_TYPE.CHECKMARX
+    ? CX_AI_BADGE_CONFIG.checkmarxIcons
+    : CX_AI_BADGE_CONFIG.devAssistIcons;
+
+  const iconFile = ThemeUtils.selectIconByTheme(icons.light, icons.dark);
   const iconUrl = `${CX_AI_BADGE_CONFIG.baseUrl}/${iconFile}`;
 
   return `<img src="${iconUrl}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
