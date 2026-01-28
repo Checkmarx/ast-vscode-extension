@@ -6,6 +6,7 @@ import { AscaScannerService } from "./ascaScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
+import { MediaPathResolver } from "../../../utils/mediaPathResolver";
 import { AscaHoverData } from "../../common/types";
 import { cx } from "../../../cx";
 
@@ -98,7 +99,9 @@ export class AscaScannerCommand extends BaseScannerCommand {
 		};
 
 		const iconFile = iconMap[severityLower] || "info_untoggle.png";
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', iconFile);
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
 	public async dispose(): Promise<void> {

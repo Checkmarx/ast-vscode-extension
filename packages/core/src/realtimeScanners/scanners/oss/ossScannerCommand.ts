@@ -7,6 +7,7 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
+import { MediaPathResolver } from "../../../utils/mediaPathResolver";
 import { HoverData } from "../../common/types";
 import { ThemeUtils } from "../../../utils/themeUtils";
 import * as util from 'util';
@@ -113,12 +114,16 @@ export class OssScannerCommand extends BaseScannerCommand {
 
   private renderMaliciousIcon(): string {
     const iconFile = ThemeUtils.selectIconByTheme('malicious_light.png', 'malicious.png');
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconPath = MediaPathResolver.getMediaFilePath('icons', iconFile);
+    const iconUri = vscode.Uri.file(iconPath).toString();
+    return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderPackageIcon(): string {
     const iconFile = ThemeUtils.selectIconByTheme('Package_light.png', 'Package.png');
-    return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
+    const iconPath = MediaPathResolver.getMediaFilePath('icons', 'realtimeEngines', iconFile);
+    const iconUri = vscode.Uri.file(iconPath).toString();
+    return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;"/>`;
   }
 
   private renderVulnCounts(
@@ -135,9 +140,12 @@ export class OssScannerCommand extends BaseScannerCommand {
     const severityDisplayItems = Object.entries(counts)
       .filter(([, count]) => count > 0)
       .map(
-        ([sev, count]) =>
-          `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${constants.ossIcons[sev as keyof typeof constants.ossIcons]
-          }" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `
+        ([sev, count]) => {
+          const iconFile = constants.ossIcons[sev as keyof typeof constants.ossIcons];
+          const iconPath = MediaPathResolver.getMediaFilePath('icons', 'realtimeEngines', iconFile);
+          const iconUri = vscode.Uri.file(iconPath).toString();
+          return `<img src="${iconUri}" width="10" height="11" style="vertical-align: -12px;"/> ${count} &nbsp; `;
+        }
       );
 
     return `${severityDisplayItems.join("")}\n\n\n`;
