@@ -5,16 +5,11 @@
   "main": "./out/index.js",
   "types": "./out/index.d.ts",
   "scripts": {
-    "compile": "tsc -b ./ && npm run copymedia && npm run copytestproject",
+    "compile": "tsc -b ./ && npm run copymedia",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
-    "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
     "clean": "rimraf out",
-    "ui-test-core": "export TEST=true && npm run compile && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
-    "win-ui-test-core": "set TEST=true&& npm run compile && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
-    "unit-test-core": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
-    "end-to-end-test-core": "export TEST=uiEndToEnd && npm run compile && npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
-    "win-end-to-end-test-core": "set TEST=uiEndToEnd&& npm run compile && npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
+    "unit-test-core": "mocha --require ts-node/register './src/unit/**/*.test.ts'"
   },
   "dependencies": {
     "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",

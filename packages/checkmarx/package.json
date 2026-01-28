@@ -1065,22 +1065,35 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b ./ && npm run copymedia && npm run copycore",
+    "compile": "tsc -b ./ && npm run copymedia && npm run copycore && npm run copytestproject",
+    "compile:tests": "tsc -b ./ && npm run copymedia && npm run copycore:dev && npm run copytestproject",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "copycore": "cd ../core && npm install --production --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore:dev": "cd ../core && npm install --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copytestproject": "copyfiles -u 3 \"../core/src/resources/**/*\" out/test/ -E",
     "package": "vsce package --allow-star-activation --no-dependencies",
-    "clean": "rimraf out"
+    "clean": "rimraf out",
+    "ui-test": "export TEST=true && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
+    "win-ui-test": "set TEST=true&& npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
+    "e2e-test": "export TEST=uiEndToEnd && npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
+    "win-e2e-test": "set TEST=uiEndToEnd&& npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
   },
   "dependencies": {
     "@checkmarx/vscode-core": "file:../core",
     "validator": "^13.15.26"
   },
   "devDependencies": {
+    "@types/chai": "4.3.11",
+    "@types/mocha": "10.0.6",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.63.0",
     "@vscode/vsce": "2.24.0",
+    "chai": "4.3.1",
     "copyfiles": "2.4.1",
-    "typescript": "^5.3.3"
+    "dotenv": "^16.4.7",
+    "mocha": "^10.8.2",
+    "typescript": "^5.3.3",
+    "vscode-extension-tester": "8.17.0"
   }
 }
