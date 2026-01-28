@@ -64,7 +64,7 @@ describe("Extension settings tests", () => {
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
       constants.activateAscaRealtimeScanner,
-      constants.ascaRealtimeScanner
+      constants.getAscaRealtimeScanner()
     );
     let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
     expect(ascaRealtimeCheckboxValue).to.not.be.undefined;
@@ -74,7 +74,7 @@ describe("Extension settings tests", () => {
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
       constants.activateAscaRealtimeScanner,
-      constants.ascaRealtimeScanner
+      constants.getAscaRealtimeScanner()
     );
     await ascaRealtimeCheckbox.setValue(true);
     let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();

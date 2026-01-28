@@ -383,33 +383,33 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
     await scannerRegistry.activateAllScanners();
 
     const configListener = configManager.registerConfigChangeListener((section) => {
-        const ossEffected = section(`${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`);
+        const ossEffected = section(`${constants.getOssRealtimeScanner()}.${constants.activateOssRealtimeScanner}`);
         if (ossEffected) {
             scannerRegistry.getScanner(constants.ossRealtimeScannerEngineName)?.register();
             return;
         }
 
-        const secretsEffected = section(`${constants.secretsScanner}.${constants.activateSecretsScanner}`);
+        const secretsEffected = section(`${constants.getSecretsScanner()}.${constants.activateSecretsScanner}`);
         if (secretsEffected) {
             scannerRegistry.getScanner(constants.secretsScannerEngineName)?.register();
             return;
         }
 
-        const ascaEffected = section(`${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`);
+        const ascaEffected = section(`${constants.getAscaRealtimeScanner()}.${constants.activateAscaRealtimeScanner}`);
         if (ascaEffected) {
             scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName)?.register();
             return;
         }
 
         const containersEffected = section(
-            `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`,
+            `${constants.getContainersRealtimeScanner()}.${constants.activateContainersRealtimeScanner}`,
         );
         if (containersEffected) {
             scannerRegistry.getScanner(constants.containersRealtimeScannerEngineName)?.register();
             return;
         }
 
-        const iacEffected = section(`${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`);
+        const iacEffected = section(`${constants.getIacRealtimeScanner()}.${constants.activateIacRealtimeScanner}`);
         if (iacEffected) {
             scannerRegistry.getScanner(constants.iacRealtimeScannerEngineName)?.register();
         }

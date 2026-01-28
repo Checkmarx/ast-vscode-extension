@@ -1,6 +1,7 @@
 import { getMessages } from "../../config/extensionMessages";
 
 const getAgentName = () => getMessages().productName;
+const getProductName = () => getMessages().displayName;
 export const SCA_REMEDIATION_PROMPT = (
   packageName: string,
   packageVersion: string,
@@ -8,9 +9,9 @@ export const SCA_REMEDIATION_PROMPT = (
   status: string
 ) => `You are the ${getAgentName()}.
 
-A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${packageManager}\`).  
-**Severity:** \`${status}\`  
-Your task is to remediate the issue **completely and autonomously** using the internal PackageRemediation tool in Checkmarx MCP. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
+A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${packageManager}\`).
+**Severity:** \`${status}\`
+Your task is to remediate the issue **completely and autonomously** using the internal PackageRemediation tool in ${getProductName()} MCP. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
 ---
 
@@ -155,10 +156,10 @@ Severity level: \`${severity}\`
 
 2. TOOL CALL – Remediation Plan
 
-Determine the programming language of the file where the secret was detected.  
+Determine the programming language of the file where the secret was detected.
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` Checkmarx MCP tool with:
+Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 \`\`\`json
 {
@@ -174,7 +175,7 @@ Call the internal \`codeRemediation\` Checkmarx MCP tool with:
   - \`description\` – contextual background
 
 - If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
+  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
 
 ---
 
@@ -275,7 +276,7 @@ Your task is to **analyze and explain** the security issue affecting the package
 
 ### ❗ Important Instructions:
 - 👉 **Do not change anything in the code. Just explain the risks and remediation steps.**
-- ❌ **Never include references from Checkmarx competitors.**
+- ❌ **Never include references from ${getProductName()} competitors.**
 
 ---
 
@@ -302,11 +303,11 @@ This package has been flagged as **malicious**.
 - Search the web for trusted community or vendor reports about malicious activity involving this package.
 - If information exists about other versions but **not** version \`${version}\`, explicitly say:
 
-> _“This specific version (\`${version}\`) was identified as malicious by Checkmarx Security researchers.”_
+> _“This specific version (\`${version}\`) was identified as malicious by ${getProductName()} Security researchers.”_
 
 - If **no credible external information is found at all**, state:
 
-> _“This package was identified as malicious by Checkmarx Security researchers based on internal threat intelligence and behavioral analysis.”_
+> _“This package was identified as malicious by ${getProductName()} Security researchers based on internal threat intelligence and behavioral analysis.”_
 
 Then explain:
 - What types of malicious behavior these packages typically include (e.g., data exfiltration, postinstall backdoors)
@@ -366,7 +367,7 @@ Conclude with:
 - Overall risk explanation
 - Immediate remediation steps
 - Whether this specific version is linked to online reports
-- If not, reference Checkmarx attribution (per above rules)
+- If not, reference ${getProductName()} attribution (per above rules)
 - Never mention competitor vendors or tools
 
 ---
@@ -473,10 +474,10 @@ A secure coding issue has been detected in your code.
 **Rule:** \`${ruleName}\`  
 **Severity:** \`${severity}\`  
 **Description:** ${description}  
-**Recommended Fix:** ${remediationAdvise}  
+**Recommended Fix:** ${remediationAdvise}
 ${problematicLineNumber !== null ? `**Problematic Line Number:** ${(problematicLineNumber + 1)}` : ''}
 
-Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool in Checkmarx MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+Your task is to remediate this security issue **completely and autonomously** using the internal codeRemediation tool in ${getProductName()} MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber + 1 : '[problematic line number]'}, without introducing unrelated modifications elsewhere in the file.
 
@@ -484,10 +485,10 @@ Your task is to remediate this security issue **completely and autonomously** us
 
 1. ANALYSIS (AUTOMATED):
 
-Determine the programming language of the file where the security issue was detected.  
+Determine the programming language of the file where the security issue was detected.
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` Checkmarx MCP tool with:
+Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 \`\`\`json
 {
@@ -506,7 +507,7 @@ Call the internal \`codeRemediation\` Checkmarx MCP tool with:
   - \`remediation_steps\` – exact steps to follow for remediation
 
 - If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
+  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
 
 ---
 
@@ -654,7 +655,7 @@ Your task is to **analyze and explain** the container security issue affecting \
 
 ###  Important Instructions:
 -  **Do not change anything in the code. Just explain the risks and remediation steps.**
--  **Never include references from Checkmarx competitors.**
+-  **Never include references from ${getProductName()} competitors.**
 
 ---
 
@@ -682,11 +683,11 @@ This container image has been flagged as **malicious**.
 - Search for trusted community or vendor reports about malicious activity involving this image
 - If information exists about other tags but **not** tag \`${imageTag}\`, explicitly state:
 
-> _"This specific tag (\`${imageTag}\`) was identified as malicious by Checkmarx Security researchers."_
+> _"This specific tag (\`${imageTag}\`) was identified as malicious by ${getProductName()} Security researchers."_
 
 - If **no credible external information is found**, state:
 
-> _"This container image was identified as malicious by Checkmarx Security researchers based on internal threat intelligence and behavioral analysis."_
+> _"This container image was identified as malicious by ${getProductName()} Security researchers based on internal threat intelligence and behavioral analysis."_
 
 **Common Malicious Container Behaviors:**
 - Data exfiltration to external servers
@@ -742,7 +743,7 @@ Conclude with:
 - Overall risk explanation for container deployments
 - Immediate remediation steps
 - Whether this specific image/tag is linked to online reports
-- If not, reference Checkmarx attribution (per above rules)
+- If not, reference ${getProductName()} attribution (per above rules)
 - Never mention competitor vendors or tools
 
 ---
@@ -901,7 +902,7 @@ An Infrastructure as Code (IaC) security issue has been detected.
 **Actual Value:** ${actualValue}
 ${problematicLineNumber !== null ? `**Problematic Line Number:** ${problematicLineNumber + 1}` : ''}
 
-Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool in Checkmarx MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
+Your task is to remediate this IaC security issue **completely and autonomously** using the internal codeRemediation tool in ${getProductName()} MCP. Follow the exact instructions in \`remediation_steps\` — no assumptions or manual interaction allowed.
 
 ⚠️ **IMPORTANT**: Apply the fix **only** to the code segment corresponding to the identified issue at line ${problematicLineNumber !== null ? problematicLineNumber + 1 : '[unknown]'}, without introducing unrelated modifications elsewhere in the file.
 
@@ -909,10 +910,10 @@ Your task is to remediate this IaC security issue **completely and autonomously*
 
 1. ANALYSIS (AUTOMATED):
 
-Determine the programming language of the file where the IaC security issue was detected.  
+Determine the programming language of the file where the IaC security issue was detected.
 If unknown, leave the \`language\` field empty.
 
-Call the internal \`codeRemediation\` Checkmarx MCP tool with:
+Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 \`\`\`json
 {
@@ -931,7 +932,7 @@ Call the internal \`codeRemediation\` Checkmarx MCP tool with:
   - \`remediation_steps\` – exact steps to follow for remediation
 
 - If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the Checkmarx MCP server.\`
+  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
 
 ---
 
@@ -1038,7 +1039,7 @@ Your task is to **analyze and explain** the Infrastructure as Code (IaC) securit
 
 ### ❗ Important Instructions:
 - 👉 **Do not change anything in the configuration. Just explain the risks and remediation steps.**
-- ❌ **Never include references from Checkmarx competitors.**
+- ❌ **Never include references from ${getProductName()} competitors.**
 
 ---
 
