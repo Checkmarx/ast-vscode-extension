@@ -18,7 +18,7 @@ jobs:
       - name: Install core dependencies
         run: cd packages/core && npm install
       - name: Run core unit tests with coverage
-        run: cd packages/core && npm run unit-coverage
+        run: npm run unit:test:core
       - name: Upload core coverage report
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
@@ -69,40 +69,6 @@ jobs:
           path: |
             packages/core/test-resources/screenshots/*.png
           retention-days: 2
-  # Run unit tests for Checkmarx extension (note: core tests run in separate job, Project Ignite tests will be added later)
-  unit-tests:
-    strategy:
-      max-parallel: 1
-      matrix:
-        extension: [checkmarx]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4.1.0
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22.11.0
-      - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-      - name: Install dependencies
-        run: |
-          cd packages/core && npm install
-          cd ../${{ matrix.extension }} && npm install
-      - name: Build core package
-        run: cd packages/core && npm run compile
-      - name: Build extension
-        run: cd packages/${{ matrix.extension }} && npm run compile
-      - name: Run extension unit tests with coverage
-        run: |
-          cd packages/core && npm run unit-coverage
-      - name: Upload extension coverage report
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        with:
-          name: coverage-${{ matrix.extension }}
-          path: packages/core/coverage/
-          retention-days: 7
 
   # Run integration tests for Checkmarx extension (Project Ignite tests will be added later)
   ui-tests:
