@@ -7,6 +7,7 @@ import { AscaScannerService } from '../realtimeScanners/scanners/asca/ascaScanne
 import type CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import type { Uri } from 'vscode';
 import { constants } from '../utils/common/constants';
+import { setExtensionConfig, resetExtensionConfig } from '../config/extensionConfig';
 
 describe('AscaScannerService', () => {
     let ascaService: AscaScannerService;
@@ -15,6 +16,16 @@ describe('AscaScannerService', () => {
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
+
+        // Set up extension configuration before tests run
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
+
         ascaService = new AscaScannerService();
         mockUri = {
             fsPath: '/test/path/TestFile.java',
@@ -26,6 +37,7 @@ describe('AscaScannerService', () => {
 
     afterEach(() => {
         sandbox.restore();
+        resetExtensionConfig();
     });
 
     describe('shouldScanFile', () => {
