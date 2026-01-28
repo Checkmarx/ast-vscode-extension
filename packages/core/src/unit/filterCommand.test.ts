@@ -7,6 +7,7 @@ import { FilterCommand } from "../commands/filterCommand";
 import { Logs } from "../models/logs";
 // import { SeverityLevel, StateLevel, constants } from "../utils/common/constants";
 import { commands } from "../utils/common/commandBuilder";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("FilterCommand", () => {
     let filterCommand: FilterCommand;
@@ -16,6 +17,15 @@ describe("FilterCommand", () => {
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
+
+        // Set up extension configuration before tests run
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
         mockContext = {
             subscriptions: [],
             globalState: {
@@ -47,6 +57,7 @@ describe("FilterCommand", () => {
 
     afterEach(() => {
         sandbox.restore();
+        resetExtensionConfig();
     });
 
 

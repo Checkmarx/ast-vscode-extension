@@ -7,6 +7,7 @@ import { GroupByCommand } from "../commands/groupByCommand";
 import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commandBuilder";
 import { GroupBy, constants } from "../utils/common/constants";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("GroupByCommand", () => {
     let groupByCommand: GroupByCommand;
@@ -16,6 +17,15 @@ describe("GroupByCommand", () => {
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
+
+        // Set up extension configuration before tests run
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
         mockContext = {
             subscriptions: [],
             globalState: {
@@ -47,6 +57,7 @@ describe("GroupByCommand", () => {
 
     afterEach(() => {
         sandbox.restore();
+        resetExtensionConfig();
     });
 
     describe("registerGroupBy", () => {

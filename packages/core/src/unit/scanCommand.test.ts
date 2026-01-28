@@ -4,6 +4,7 @@ import { ScanCommand } from "../commands/scanCommand";
 import { Logs } from "../models/logs";
 import * as vscode from "vscode";
 import { clearCommandsExecuted } from "./mocks/vscode-mock";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("ScanCommand", () => {
   let scanCommand: ScanCommand;
@@ -15,7 +16,16 @@ describe("ScanCommand", () => {
   beforeEach(() => {
     clearCommandsExecuted();
     scanStarted = false;
-    
+
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+
     const mockOutputChannel = {
       append: () => {},
       appendLine: () => {},
@@ -46,6 +56,10 @@ describe("ScanCommand", () => {
     } as vscode.StatusBarItem;
 
     scanCommand = new ScanCommand(mockContext, mockStatusBar, logs);
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
   });
 
   describe("registerIdeScans", () => {

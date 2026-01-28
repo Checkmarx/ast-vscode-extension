@@ -18,6 +18,8 @@
     "package:checkmarx": "cd packages/checkmarx && npm run package",
     "package:project-ignite": "cd packages/project-ignite && npm run package",
     "package:all": "npm run package:checkmarx && npm run package:project-ignite",
+    "unit:test:core": "cd packages/core && npm run unit-test-core",
+    "unit-coverage:test:core": "cd packages/core && npx nyc npm run unit-test-core",
     "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
     "lint:fix": "npm run lint -- --fix"
   },
