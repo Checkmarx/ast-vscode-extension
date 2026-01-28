@@ -26,12 +26,12 @@ jobs:
           path: packages/core/coverage/
           retention-days: 7
 
-  # Test both extensions with E2E tests
+  # Test Checkmarx extension with E2E tests (Project Ignite tests will be added later)
   end-to-end-tests:
     strategy:
       max-parallel: 1
       matrix:
-        extension: [checkmarx, project-ignite]
+        extension: [checkmarx]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -69,12 +69,12 @@ jobs:
           path: |
             packages/core/test-resources/screenshots/*.png
           retention-days: 2
-  # Run unit tests for both extensions (note: core tests run in separate job)
+  # Run unit tests for Checkmarx extension (note: core tests run in separate job, Project Ignite tests will be added later)
   unit-tests:
     strategy:
       max-parallel: 1
       matrix:
-        extension: [checkmarx, project-ignite]
+        extension: [checkmarx]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -104,12 +104,12 @@ jobs:
           path: packages/core/coverage/
           retention-days: 7
 
-  # Run integration tests for both extensions
+  # Run integration tests for Checkmarx extension (Project Ignite tests will be added later)
   ui-tests:
     strategy:
       max-parallel: 1
       matrix:
-        extension: [checkmarx, project-ignite]
+        extension: [checkmarx]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
