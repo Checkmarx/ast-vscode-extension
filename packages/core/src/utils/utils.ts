@@ -18,6 +18,7 @@ import { HoverData, SecretsHoverData, AscaHoverData, ContainersHoverData, IacHov
 import { ThemeUtils } from "./themeUtils";
 import { getMessages } from "../config/extensionMessages";
 import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
+import { MediaPathResolver } from "./mediaPathResolver";
 
 
 export function getProperty(
@@ -311,11 +312,12 @@ export function isIacHoverData(item: HoverData | SecretsHoverData | AscaHoverDat
   return 'similarityId' in item && 'title' in item;
 }
 
+
+
 /**
  * Configuration for CxAI badge rendering
  */
 const CX_AI_BADGE_CONFIG = {
-  baseUrl: 'https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/feature/split-plugins/media/icons/',
   style: 'vertical-align: -12px;',
   checkmarxIcons: {
     light: 'CxOne_Assist_light.png',
@@ -329,6 +331,7 @@ const CX_AI_BADGE_CONFIG = {
 
 /**
  * Renders the CxAI badge with appropriate theming and extension-specific icons
+ * Uses local file paths from the core media folder
  */
 export function renderCxAiBadge(): string {
   const extensionType = getExtensionType();
@@ -337,9 +340,10 @@ export function renderCxAiBadge(): string {
     : CX_AI_BADGE_CONFIG.devAssistIcons;
 
   const iconFile = ThemeUtils.selectIconByTheme(icons.light, icons.dark);
-  const iconUrl = `${CX_AI_BADGE_CONFIG.baseUrl}/${iconFile}`;
+  const iconPath = MediaPathResolver.getMediaFilePath('icons', iconFile);
+  const iconUri = vscode.Uri.file(iconPath).toString();
 
-  return `<img src="${iconUrl}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
+  return `<img src="${iconUri}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
 }
 
 
