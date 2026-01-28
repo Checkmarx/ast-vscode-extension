@@ -14,6 +14,7 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import { FixOutcomeTelemetry } from "../aiTracking/types";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1528,6 +1529,18 @@ export class CxMock implements CxPlatform {
 
   async authValidate(): Promise<boolean> {
     return true;
+  }
+
+  async sendAIFixOutcomeTelemetry(
+    eventType: string,
+    scannerType: string,
+    severity: string,
+    mcpSuggestedVersion?: string,
+    actualVersion?: string,
+    retryCount?: number,
+    additionalData?: string
+  ): Promise<void> {
+    return;
   }
 
   public getRiskManagementResults(

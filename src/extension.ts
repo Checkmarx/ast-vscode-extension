@@ -523,6 +523,10 @@ export async function activate(context: vscode.ExtensionContext) {
   const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
   registerAssistRelatedCommands(context, cxOneAssistProvider);
 
+  // Initialize AI Suggestion Tracker for fix outcome monitoring
+  const aiTrackingModule = await import("./aiTracking/AISuggestionTracker");
+  aiTrackingModule.AISuggestionTracker.initialize(context, logs);
+
   const copilotChatCommand = new CopilotChatCommand(context, logs, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner);
   registerMcpSettingsInjector(context);
 
