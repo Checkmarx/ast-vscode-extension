@@ -64,7 +64,7 @@ export class ContainersScannerService extends BaseScannerService {
 	constructor() {
 		const config: IScannerConfig = {
 			engineName: constants.containersRealtimeScannerEngineName,
-			configSection: constants.containersRealtimeScanner,
+			configSection: constants.getContainersRealtimeScanner(),
 			activateKey: constants.activateContainersRealtimeScanner,
 			enabledMessage: constants.containersRealtimeScannerStart,
 			disabledMessage: constants.containersRealtimeScannerDisabled,

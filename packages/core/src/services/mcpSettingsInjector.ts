@@ -7,6 +7,9 @@ import { isIDE } from "../utils/utils";
 import { constants } from "../utils/common/constants";
 import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
+import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
+import { getMessages } from "../config/extensionMessages";
+
 interface DecodedJwt {
 	iss: string;
 }
@@ -32,18 +35,29 @@ interface McpConfig {
 	mcpServers?: Record<string, McpServer | KiroMcpServer>;
 }
 
-const checkmarxMcpServerName = "Checkmarx";
+/**
+ * Get the MCP server name based on the extension type
+ * This allows both extensions to have separate MCP configurations
+ */
+function getCheckmarxMcpServerName(): string {
+	const extensionType = getExtensionType();
+	if (extensionType === EXTENSION_TYPE.DEVELOPER_ASSIST) {
+		return "Checkmarx Developer Assist";
+	}
+	return "Checkmarx";
+}
 
 
 export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand(commands.installMCP, async () => {
 		const apikey = await context.secrets.get(constants.getAuthCredentialSecretKey());
+		const productName = getMessages().productName;
 		if (!apikey) {
-			vscode.window.showErrorMessage("Failed in install Checkmarx MCP: Authentication required");
+			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: Authentication required`);
 			return;
 		}
 		else if (!await cx.isAiMcpServerEnabled()) {
-			vscode.window.showErrorMessage("Failed to install Checkmarx MCP: This feature has not been enabled for your tenant account.");
+			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: This feature has not been enabled for your tenant account.`);
 			uninstallMcp();
 			return;
 		}
@@ -95,7 +109,7 @@ async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<
 		mcpConfig.mcpServers = {};
 	}
 
-	mcpConfig.mcpServers[checkmarxMcpServerName] = mcpServer;
+	mcpConfig.mcpServers[getCheckmarxMcpServerName()] = mcpServer;
 
 	try {
 		const dir = path.dirname(mcpConfigPath);
@@ -123,8 +137,8 @@ export async function uninstallMcp() {
 			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
 			const mcpConfig: McpConfig = JSON.parse(fileContent);
 
-			if (mcpConfig.mcpServers && mcpConfig.mcpServers[checkmarxMcpServerName]) {
-				delete mcpConfig.mcpServers[checkmarxMcpServerName];
+			if (mcpConfig.mcpServers && mcpConfig.mcpServers[getCheckmarxMcpServerName()]) {
+				delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
 
 				fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 			}
@@ -133,10 +147,10 @@ export async function uninstallMcp() {
 			const config = vscode.workspace.getConfiguration();
 			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
 			const existingServers = fullMcp.servers || {};
-			if (existingServers[checkmarxMcpServerName]) {
+			if (existingServers[getCheckmarxMcpServerName()]) {
 				// Create a new object without the Checkmarx server to avoid proxy issues
 				const updatedServers = { ...existingServers };
-				delete updatedServers[checkmarxMcpServerName];
+				delete updatedServers[getCheckmarxMcpServerName()];
 				await config.update(
 					"mcp",
 					{ servers: updatedServers },
@@ -213,7 +227,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 
 			// Create a new object to avoid proxy issues
 			const updatedServers = { ...existingServers };
-			updatedServers[checkmarxMcpServerName] = mcpServer;
+			updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
 			await config.update(
 				"mcp",

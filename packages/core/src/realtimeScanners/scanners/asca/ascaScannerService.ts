@@ -52,7 +52,7 @@ export class AscaScannerService extends BaseScannerService {
 	constructor() {
 		const config: IScannerConfig = {
 			engineName: constants.ascaRealtimeScannerEngineName,
-			configSection: constants.ascaRealtimeScanner,
+			configSection: constants.getAscaRealtimeScanner(),
 			activateKey: constants.activateAscaRealtimeScanner,
 			enabledMessage: constants.ascaRealtimeScannerStart,
 			disabledMessage: constants.ascaRealtimeScannerDisabled,
