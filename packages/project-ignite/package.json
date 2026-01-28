@@ -38,7 +38,7 @@
         "command": "cx-dev-assist.openIgnoredView",
         "category": "cx-dev-assist",
         "title": "View Ignored vulnerabilities",
-        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxDevAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
+        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxOneAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
       },
       {
         "command": "cx-dev-assist.assistDocumentation",
