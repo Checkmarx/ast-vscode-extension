@@ -637,7 +637,7 @@ export class OssScannerService extends BaseScannerService {
     if (addDiagnostic) {
       decorations.push({ range });
       const diagnostic = new vscode.Diagnostic(range, message, severity);
-      diagnostic.source = constants.cxAi;
+      diagnostic.source = constants.getCxAi();
 
       (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
         cxType: constants.ossRealtimeScannerEngineName,
