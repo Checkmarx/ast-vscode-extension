@@ -289,7 +289,7 @@ export class IacScannerService extends BaseScannerService {
 			let highestSeverity = this.getHighestSeverity(lineResults.map(r => r.severity));
 
 			const diagnostic = new vscode.Diagnostic(range, titleMessage, vscode.DiagnosticSeverity.Error);
-			diagnostic.source = constants.cxAi;
+			diagnostic.source = constants.getCxAi();
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: constants.iacRealtimeScannerEngineName,
 				item: {

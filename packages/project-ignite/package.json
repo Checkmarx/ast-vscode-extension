@@ -1,6 +1,6 @@
 {
   "name": "cx-dev-assist",
-  "publisher": "checkmarx",
+  "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
   "version": "2.46.0",

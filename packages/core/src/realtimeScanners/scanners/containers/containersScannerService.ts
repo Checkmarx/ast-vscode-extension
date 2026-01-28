@@ -543,7 +543,7 @@ export class ContainersScannerService extends BaseScannerService {
 			const diagnosticMessage = `${message}: ${result.imageName}:${result.imageTag}`;
 
 			const diagnostic = new vscode.Diagnostic(range, diagnosticMessage, severity);
-			diagnostic.source = constants.cxAi;
+			diagnostic.source = constants.getCxAi();
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: constants.containersRealtimeScannerEngineName,
 				item: {

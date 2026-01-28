@@ -238,7 +238,7 @@ export class AscaScannerService extends BaseScannerService {
 				vscode.DiagnosticSeverity.Error
 			);
 
-			diagnostic.source = constants.cxAi;
+			diagnostic.source = constants.getCxAi();
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'asca',
 				item: {

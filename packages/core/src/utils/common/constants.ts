@@ -1,4 +1,5 @@
 import { getExtensionType } from '../../config/extensionConfig';
+import { getMessages } from '../../config/extensionMessages';
 
 export const constants = {
   extensionName: "ast-results",
@@ -280,7 +281,9 @@ export const constants = {
     "**/*.terraform.tfvars",
   ],
 
-  cxAi: 'Checkmarx One Assist',
+  getCxAi: (): string => {
+    return getMessages().productName;
+  },
 
   criticalSeverity: "CRITICAL",
   highSeverity: "HIGH",

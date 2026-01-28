@@ -102,7 +102,7 @@ describe('AscaScannerService', () => {
             expect(diagnostics[0].range.end.line).to.equal(0);
             expect(diagnostics[0].range.end.character).to.equal(33);
             expect(diagnostics[0].message).to.equal('Avoid Eval Usage');
-            expect(diagnostics[0].source).to.equal(constants.cxAi);
+            expect(diagnostics[0].source).to.equal(constants.getCxAi());
             expect(diagnostics[0].severity).to.equal(0);
 
             // Check second diagnostic
@@ -111,7 +111,7 @@ describe('AscaScannerService', () => {
             expect(diagnostics[1].range.end.line).to.equal(1);
             expect(diagnostics[1].range.end.character).to.equal(24);
             expect(diagnostics[1].message).to.equal('Hardcoded Secret');
-            expect(diagnostics[1].source).to.equal(constants.cxAi);
+            expect(diagnostics[1].source).to.equal(constants.getCxAi());
             expect(diagnostics[1].severity).to.equal(0);
         });
 
