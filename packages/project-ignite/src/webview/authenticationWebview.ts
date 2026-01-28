@@ -117,9 +117,8 @@ export class AuthenticationWebview {
         } else {
           await uninstallMcp();
         }
-        setTimeout(() => {
-          this._panel.webview.postMessage({ type: "clear-message-api-validation" });
-        }, 500);
+        // Removed the second setTimeout that was trying to access disposed webview
+        // The panel is already disposed above, so we can't send messages to it
       } catch (e) {
         this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
       }

@@ -23,7 +23,8 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onView:cx-dev-assist.cxDevAssist",
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {

@@ -10,6 +10,7 @@ import { ConfigurationManager } from '../realtimeScanners/configuration/configur
 import { CopilotChatCommand } from '../commands/openAIChatCommand';
 import { CommonCommand } from '../commands/commonCommand';
 import { CxCodeActionProvider } from '../realtimeScanners/scanners/CxCodeActionProvider';
+import { DOC_LINKS } from '../constants/documentation';
 import { IgnoreFileManager } from '../realtimeScanners/common/ignoreFileManager';
 import { OssScannerCommand } from '../realtimeScanners/scanners/oss/ossScannerCommand';
 import { SecretsScannerCommand } from '../realtimeScanners/scanners/secrets/secretsScannerCommand';
@@ -189,6 +190,13 @@ function registerAssistRelatedCommands(
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.authentication, () => {
             vscode.commands.executeCommand(commands.showAuth);
+        }),
+    );
+
+    // Register assistDocumentation command
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.assistDocumentation, () => {
+            vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
         }),
     );
 }
