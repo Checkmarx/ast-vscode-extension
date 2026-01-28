@@ -2,6 +2,7 @@ import { expect } from "chai";
 import "./mocks/vscode-mock";
 import { CommonCommand } from "../commands/commonCommand";
 import { Logs } from "../models/logs";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 import { getCommandsExecuted, clearCommandsExecuted } from "./mocks/vscode-mock";
 
@@ -12,7 +13,16 @@ describe("CommonCommand", () => {
 
   beforeEach(() => {
     clearCommandsExecuted();
-    
+
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+
     const mockOutputChannel = {
       append: () => {},
       appendLine: () => {},
@@ -37,6 +47,10 @@ describe("CommonCommand", () => {
     mockContext = { subscriptions: [] } as any;
 
     commonCommand = new CommonCommand(mockContext, logs);
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
   });
 
   describe("executeCheckSettings", () => {

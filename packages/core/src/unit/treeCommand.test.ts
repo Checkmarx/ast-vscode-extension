@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 import { clearCommandsExecuted } from "./mocks/vscode-mock";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
 import { SCAResultsProvider } from "../views/scaView/scaResultsProvider";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("TreeCommand", () => {
   let treeCommand: TreeCommand;
@@ -16,7 +17,16 @@ describe("TreeCommand", () => {
 
   beforeEach(() => {
     clearCommandsExecuted();
-    
+
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+
     const mockOutputChannel = {
       append: () => {},
       appendLine: () => {},
@@ -46,6 +56,10 @@ describe("TreeCommand", () => {
     mockScaProvider = { refreshData: async () => {}, clean: async () => {} } as any;
 
     treeCommand = new TreeCommand(mockContext, mockAstProvider, mockScaProvider, logs);
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
   });
 
   describe("registerRefreshCommands", () => {

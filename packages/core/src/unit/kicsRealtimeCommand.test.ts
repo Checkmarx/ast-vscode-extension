@@ -7,6 +7,7 @@ import { getRegisteredCommandCallback, clearCommandsExecuted } from "./mocks/vsc
 import * as vscode from "vscode";
 import { Logs } from "../models/logs";
 import { KicsProvider } from "../kics/kicsRealtimeProvider";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 class StubProvider extends KicsProvider {
   runKicsIfEnabledCalled = false;
@@ -36,8 +37,22 @@ const logs: Logs = {
 
 describe("KICSRealtimeCommand standalone gating", () => {
   let prevStandalone: typeof cx.isStandaloneEnabled;
-  before(() => { prevStandalone = cx.isStandaloneEnabled; });
-  after(() => { cx.isStandaloneEnabled = prevStandalone; });
+  before(() => {
+    prevStandalone = cx.isStandaloneEnabled;
+
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+  });
+  after(() => {
+    cx.isStandaloneEnabled = prevStandalone;
+    resetExtensionConfig();
+  });
   beforeEach(() => { clearCommandsExecuted(); });
 
   it("skip kics realtime scan when standalone enabled", async () => {

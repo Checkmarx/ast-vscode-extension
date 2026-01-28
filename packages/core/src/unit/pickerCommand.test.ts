@@ -8,6 +8,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commandBuilder";
 // import { projectPicker, branchPicker, scanPicker, scanInput } from "../utils/pickers/pickers";
 import { AstResultsProvider } from "../views/resultsView/astResultsProvider";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("PickerCommand", () => {
     let pickerCommand: PickerCommand;
@@ -18,6 +19,15 @@ describe("PickerCommand", () => {
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
+
+        // Set up extension configuration before tests run
+        setExtensionConfig({
+            extensionId: 'ast-results',
+            commandPrefix: 'ast-results',
+            viewContainerPrefix: 'ast',
+            displayName: 'Checkmarx',
+            extensionType: 'checkmarx',
+        });
         mockContext = {
             subscriptions: [],
             globalState: {
@@ -50,6 +60,7 @@ describe("PickerCommand", () => {
 
     afterEach(() => {
         sandbox.restore();
+        resetExtensionConfig();
     });
 
     describe("registerPickerCommands", () => {

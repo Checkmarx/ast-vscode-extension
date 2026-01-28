@@ -40,7 +40,7 @@ describe("GptView", () => {
             } as any
         );
 
-        gptView = new GptView(extensionUri, gptResult, context, false);
+        gptView = new GptView(gptResult, context, false);
 
         // Mock webview with proper asWebviewUri implementation
         mockWebview = {
@@ -98,7 +98,9 @@ describe("GptView", () => {
         await gptView.resolveWebviewView(mockWebviewView, {} as any, {} as any);
 
         expect(mockWebview.options.enableScripts).to.be.true;
-        expect(mockWebview.options.localResourceRoots).to.deep.equal([extensionUri]);
+        expect(mockWebview.options.localResourceRoots!).to.have.lengthOf(2);
+        expect(mockWebview.options.localResourceRoots![0].path).to.include('media');
+        expect(mockWebview.options.localResourceRoots![1]).to.exist;
         expect(mockWebview.html).to.be.a("string");
         expect(mockWebview.html).to.include(constants.aiSecurityChampion);
     });
@@ -109,10 +111,10 @@ describe("GptView", () => {
         } as any;
 
         await gptView.resolveWebviewView(mockWebviewView, {} as any, {} as any);
-        
+
         const kicsIcon = gptView.getAskKicsIcon();
         const userIcon = gptView.getAskKicsUserIcon();
-        
+
         expect(kicsIcon).to.not.be.undefined;
         expect(userIcon).to.not.be.undefined;
         expect(kicsIcon.toString()).to.include("kics.png");
@@ -130,7 +132,7 @@ describe("GptView", () => {
             ],
         } as any;
 
-        gptView = new GptView(extensionUri, gptResult, context, false, undefined, maskedData);
+        gptView = new GptView(gptResult, context, false, undefined, maskedData);
         const html = gptView.generateMaskedSection();
 
         expect(html).to.include("password123");

@@ -2,8 +2,24 @@ import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
 import { cx } from "../cx";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - scanCreate", () => {
+  beforeEach(() => {
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
+  });
+
   it("should create scan when all parameters are provided", async () => {
     const projectName = "test-project";
     const branchName = "main";
@@ -29,4 +45,4 @@ describe("Cx - scanCreate", () => {
     const result = await cx.scanCreate("test-project", undefined, "/test/path");
     expect(result).to.be.undefined;
   });
-}); 
+});

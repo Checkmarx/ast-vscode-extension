@@ -2,8 +2,24 @@ import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
 import { cx } from "../cx";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - getProject", () => {
+  beforeEach(() => {
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
+  });
+
   it("should return project object when projectId is provided", async () => {
     const projectId = "test-project-id";
     const result = await cx.getProject(projectId);
@@ -23,4 +39,4 @@ describe("Cx - getProject", () => {
     const result = await cx.getProject(undefined);
     expect(result).to.be.undefined;
   });
-}); 
+});
