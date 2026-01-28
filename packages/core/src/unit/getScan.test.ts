@@ -3,10 +3,24 @@ import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
 import { cx } from "../cx";
 import { resetMocks } from "./mocks/vscode-mock";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - getScan", () => {
   beforeEach(() => {
     resetMocks();
+
+    // Set up extension configuration before tests run
+    setExtensionConfig({
+      extensionId: 'ast-results',
+      commandPrefix: 'ast-results',
+      viewContainerPrefix: 'ast',
+      displayName: 'Checkmarx',
+      extensionType: 'checkmarx',
+    });
+  });
+
+  afterEach(() => {
+    resetExtensionConfig();
   });
 
   it("should return scan object when valid scanId is provided", async () => {
