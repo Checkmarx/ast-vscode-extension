@@ -13,7 +13,7 @@ import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_L
 import { waitByClassName } from "./utils/waiters";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 import { constants } from "buffer";
-import { messages } from "../utils/common/messages";
+import { messages } from "@checkmarx/vscode-core/utils/common/messages";
 
 describe("Scan ID load results test", () => {
     let bench: Workbench;

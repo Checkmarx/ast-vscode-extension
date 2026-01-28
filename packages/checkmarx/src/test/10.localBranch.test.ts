@@ -6,7 +6,7 @@ import {
 	WebDriver,
 	Workbench,
 } from "vscode-extension-tester";
-import { messages } from "../utils/common/messages";
+import { messages } from "@checkmarx/vscode-core/utils/common/messages";
 import { expect } from "chai";
 import { initialize, retryTest, sleep, waitForNotificationWithTimeout, selectItem } from "./utils/utils";
 import {
@@ -19,7 +19,7 @@ import {
 	SCAN_KEY_TREE_LABEL,
 } from "./utils/constants";
 import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
-import { constants } from "../utils/common/constants";
+import { constants } from "@checkmarx/vscode-core/utils/common/constants";
 import { execSync } from "child_process";
 import * as fs from "fs";
 
@@ -35,14 +35,14 @@ function switchToBranch(branchName: string) {
 }
 
 describe.skip("Using a local branch if Git exists", () => {
-    let bench: Workbench;
-    let treeScans: CustomTreeSection;
-    let driver: WebDriver;
-    let originalBranch: string | undefined;
-    let gitExistedBefore: boolean;
+	let bench: Workbench;
+	let treeScans: CustomTreeSection;
+	let driver: WebDriver;
+	let originalBranch: string | undefined;
+	let gitExistedBefore: boolean;
 
-    before(async function () {
-        this.timeout(300000);
+	before(async function () {
+		this.timeout(300000);
 
 		const branchName = "branch-not-exist-in-cx";
 		// check if git repository exists

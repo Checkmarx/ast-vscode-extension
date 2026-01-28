@@ -16,7 +16,7 @@ import {
 } from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
 
-import { constants } from "../utils/common/constants";
+import { constants } from "@checkmarx/vscode-core/utils/common/constants";
 
 describe("Extension settings tests", () => {
   let settingsEditor: SettingsEditor;

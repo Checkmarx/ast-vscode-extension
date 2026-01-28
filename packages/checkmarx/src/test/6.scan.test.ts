@@ -5,13 +5,13 @@ import {
     WebDriver,
     Workbench,
 } from "vscode-extension-tester";
-import {CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL} from "./utils/constants";
-import {waitByLinkText} from "./utils/waiters";
-import {SCAN_ID} from "./utils/envs";
-import {messages} from "../utils/common/messages";
+import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL } from "./utils/constants";
+import { waitByLinkText } from "./utils/waiters";
+import { SCAN_ID } from "./utils/envs";
+import { messages } from "@checkmarx/vscode-core/utils/common/messages";
 import { fail } from "assert";
-import {initialize, retryTest, waitForNotificationWithTimeout} from "./utils/utils";
-import {expect} from "chai";
+import { initialize, retryTest, waitForNotificationWithTimeout } from "./utils/utils";
+import { expect } from "chai";
 
 
 
@@ -78,7 +78,7 @@ describe("Scan from IDE", () => {
             let action = await actions[1];
             await action.click();
         } else {
-          fail("Should get wrong project notification");
+            fail("Should get wrong project notification");
         }
 
     }));
