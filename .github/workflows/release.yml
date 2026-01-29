@@ -110,9 +110,9 @@ jobs:
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "::set-output name=TAG_NAME::$TAG_NAME"
 
-    # INSTALL NPM DEPENDENCIES
-    - name: Install dependencies
-      run: npm install
+      # INSTALL NPM DEPENDENCIES
+      - name: Install dependencies
+        run: npm install
 
       # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
       - name: Get and install JS Wrapper if provided by user
@@ -142,15 +142,15 @@ jobs:
       - name: Install VSCE
         run: npm install -g vsce
 
-    # PACKAGE PROJECT
-    - name: Package .vsix file
-      run: |
-        if [ ${{ inputs.dev }} == true ]; then
-          node .github/scripts/updateDevVersion.js
-          vsce package --pre-release
-        else
-          vsce package
-        fi
+      # PACKAGE PROJECT
+      - name: Package .vsix file
+        run: |
+          if [ ${{ inputs.dev }} == true ]; then
+            node .github/scripts/updateDevVersion.js
+            vsce package --pre-release
+          else
+            vsce package
+          fi
 
       # CREATE GH RELEASE NAME
       - name: Handle GH Release name
