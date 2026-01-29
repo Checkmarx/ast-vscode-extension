@@ -150,7 +150,6 @@ jobs:
       # PACKAGE PROJECT
       - name: Package .vsix file
         run: |
-          cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
             node .github/scripts/updateDevVersionIgnite.js
             npm run package:cx-dev-assist:prerelease
