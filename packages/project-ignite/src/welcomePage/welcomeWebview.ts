@@ -153,7 +153,7 @@ export class WelcomeWebview {
 
     const aiBoxinfo = panel.webview.asWebviewUri(
       vscode.Uri.file(
-        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
+        MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxDevAssistAIError_light.png", "cxDevAssistAIError.png"))
       )
     );
 
@@ -175,11 +175,11 @@ export class WelcomeWebview {
     const nonce = getNonce();
 
     const scannerConfigKeys = [
-      `${constants.ossRealtimeScanner}.${constants.activateOssRealtimeScanner}`,
-      `${constants.ascaRealtimeScanner}.${constants.activateAscaRealtimeScanner}`,
-      `${constants.secretsScanner}.${constants.activateSecretsScanner}`,
-      `${constants.containersRealtimeScanner}.${constants.activateContainersRealtimeScanner}`,
-      `${constants.iacRealtimeScanner}.${constants.activateIacRealtimeScanner}`
+      `${constants.getOssRealtimeScanner()}.${constants.activateOssRealtimeScanner}`,
+      `${constants.getAscaRealtimeScanner()}.${constants.activateAscaRealtimeScanner}`,
+      `${constants.getSecretsScanner()}.${constants.activateSecretsScanner}`,
+      `${constants.getContainersRealtimeScanner()}.${constants.activateContainersRealtimeScanner}`,
+      `${constants.getIacRealtimeScanner()}.${constants.activateIacRealtimeScanner}`
     ];
 
     const config = vscode.workspace.getConfiguration();
@@ -208,7 +208,7 @@ export class WelcomeWebview {
 
       const newAiBoxinfo = panel.webview.asWebviewUri(
         vscode.Uri.file(
-          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxAIError_light.svg", "cxAIError.svg"))
+          MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("cxDevAssistAIError_light.png", "cxDevAssistAIError.png"))
         )
       );
 

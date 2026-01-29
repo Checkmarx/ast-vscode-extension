@@ -7,6 +7,7 @@ import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
+import { MediaPathResolver } from "../../../utils/mediaPathResolver";
 import { ContainersHoverData } from "../../common/types";
 import { ThemeUtils } from "../../../utils/themeUtils";
 
@@ -104,7 +105,9 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 
 	private renderImageIcon(): string {
 		const iconFile = ThemeUtils.selectIconByTheme('container_image_light.png', 'container_image.png');
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconFile}" width="15" height="16" style="vertical-align: -12px;"/>`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', 'realtimeEngines', iconFile);
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;"/>`;
 	}
 
 	private isVulnerableStatus(status: string): boolean {
@@ -117,12 +120,16 @@ export class ContainersScannerCommand extends BaseScannerCommand {
 	}
 
 	private renderMaliciousFinding(): string {
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/maliciousFindig.png" style="vertical-align: -12px;" />`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', 'maliciousFindig.png');
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" style="vertical-align: -12px;" />`;
 	}
 
 	private renderMaliciousIcon(): string {
 		const iconFile = ThemeUtils.selectIconByTheme('malicious_light.png', 'malicious.png');
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/${iconFile}" width="10" height="11" style="vertical-align: -12px;"/>`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', iconFile);
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" width="10" height="11" style="vertical-align: -12px;"/>`;
 	}
 
 	private renderVulnCounts(vulnerabilities: Array<{ severity: string }>): string {

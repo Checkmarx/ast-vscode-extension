@@ -52,7 +52,7 @@ export class IacScannerService extends BaseScannerService {
 	constructor() {
 		const config: IScannerConfig = {
 			engineName: constants.iacRealtimeScannerEngineName,
-			configSection: constants.iacRealtimeScanner,
+			configSection: constants.getIacRealtimeScanner(),
 			activateKey: constants.activateIacRealtimeScanner,
 			enabledMessage: constants.iacRealtimeScannerStart,
 			disabledMessage: constants.iacRealtimeScannerDisabled,

@@ -45,7 +45,7 @@ export class SecretsScannerService extends BaseScannerService {
 	constructor() {
 		const config: IScannerConfig = {
 			engineName: constants.secretsScannerEngineName,
-			configSection: constants.secretsScanner,
+			configSection: constants.getSecretsScanner(),
 			activateKey: constants.activateSecretsScanner,
 			enabledMessage: constants.secretsScannerStart,
 			disabledMessage: constants.secretsScannerDisabled,

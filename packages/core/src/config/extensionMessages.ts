@@ -49,8 +49,8 @@ export const CHECKMARX_MESSAGES: ExtensionMessages = {
     assistViewDescription: 'Checkmarx One Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.',
     serverName: 'Checkmarx One server',
     connectingMessage: 'Connecting to Checkmarx One...',
-    authSuccessMessage: 'Successfully authenticated to Checkmarx One server',
-    authFailedMessage: 'Failed to authenticate to Checkmarx One server'
+    authSuccessMessage: 'Successfully authenticated to Checkmarx One',
+    authFailedMessage: 'Failed to authenticate to Checkmarx One'
 };
 
 /**
@@ -65,8 +65,8 @@ export const DEVASSIST_MESSAGES: ExtensionMessages = {
     assistViewDescription: 'Checkmarx Developer Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.',
     serverName: 'Checkmarx Developer Assist server',
     connectingMessage: 'Connecting to Checkmarx Developer Assist...',
-    authSuccessMessage: 'Successfully authenticated to Checkmarx Developer Assist server',
-    authFailedMessage: 'Failed to authenticate to Checkmarx Developer Assist server'
+    authSuccessMessage: 'Successfully authenticated to Checkmarx Developer Assist',
+    authFailedMessage: 'Failed to authenticate to Checkmarx Developer Assist'
 };
 
 /**

@@ -6,6 +6,7 @@ import { SecretsScannerService } from "./secretsScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { constants } from "../../../utils/common/constants";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
+import { MediaPathResolver } from "../../../utils/mediaPathResolver";
 import { SecretsHoverData } from "../../common/types";
 
 
@@ -85,7 +86,9 @@ export class SecretsScannerCommand extends BaseScannerCommand {
 		if (!iconName) {
 			return "";
 		}
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', 'realtimeEngines', iconName);
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
 
 

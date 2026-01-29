@@ -71,7 +71,7 @@ export class OssScannerService extends BaseScannerService {
   constructor() {
     const config: IScannerConfig = {
       engineName: constants.ossRealtimeScannerEngineName,
-      configSection: constants.ossRealtimeScanner,
+      configSection: constants.getOssRealtimeScanner(),
       activateKey: constants.activateOssRealtimeScanner,
       enabledMessage: constants.ossRealtimeScannerStart,
       disabledMessage: constants.ossRealtimeScannerDisabled,

@@ -43,7 +43,7 @@ export class AuthenticationWebview {
   }
 
   private async initialize() {
-    await this._panel.webview.postMessage({ type: "showLoader" });
+    await this._panel.webview.postMessage({ type: "showLoading" });
     const authService = AuthService.getInstance(this.context, this.logs);
     let hasToken = false;
 
@@ -54,7 +54,7 @@ export class AuthenticationWebview {
     }
     const setAuthStateMessage = { type: "setAuthState", isAuthenticated: hasToken };
     await this._panel.webview.postMessage(setAuthStateMessage);
-    await this._panel.webview.postMessage({ type: "hideLoader" });
+    await this._panel.webview.postMessage({ type: "hideLoading" });
   }
 
   public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
@@ -117,9 +117,8 @@ export class AuthenticationWebview {
         } else {
           await uninstallMcp();
         }
-        setTimeout(() => {
-          this._panel.webview.postMessage({ type: "clear-message-api-validation" });
-        }, 500);
+        // Removed the second setTimeout that was trying to access disposed webview
+        // The panel is already disposed above, so we can't send messages to it
       } catch (e) {
         this.logs?.warn?.(`Post-auth refresh failed: ${e?.message ?? e}`);
       }
@@ -137,7 +136,10 @@ export class AuthenticationWebview {
       "bootstrap",
       "bootstrap.min.js"
     );
-    const scriptUri = this.setWebUri("media", "auth.js");
+    // Use local auth.js from project-ignite/media instead of core
+    const scriptUri = this._panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'auth.js')
+    );
     const styleAuth = this.setWebUri("media", "auth.css");
     const loginIcon = this.setWebUri("media", "icons", "login.svg");
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
@@ -154,7 +156,12 @@ export class AuthenticationWebview {
 	<link href="${styleAuth}" rel="stylesheet">
 	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
 	<title>Checkmarx Developer Assist Authentication</title>
-
+	<style nonce="${nonce}">
+		/* Override .message to only show margin when visible */
+		.message[style*="display: none"] {
+			margin-top: 0 !important;
+		}
+	</style>
 
 </head>
 
@@ -168,25 +175,6 @@ export class AuthenticationWebview {
 <div id="authContainer" class="auth-container hidden">
         <div class="auth-form-title">Checkmarx Developer Assist Authentication</div>
         <div id="loginForm">
-        <div class="radio-group">
-            <label>
-                <input type="radio" name="authMethod" value="apiKey" checked>API Key
-            </label>
-        </div>
-
-        <!-- OAuth Form (hidden, required for core auth.js) -->
-        <div id="oauthForm" class="hidden">
-            <label for="baseUri" class="form-label">Base URI:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Enter base URI">
-            <div id="urls-list" class="autocomplete-items"></div>
-            <div id="urlError" class="error-message" style="display: none;">Invalid URL format</div>
-
-            <label for="tenant" class="form-label">Tenant Name:</label>
-            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
-            <div id="tenants-list" class="autocomplete-items"></div>
-        </div>
-
-        <!-- API Key Form -->
         <div id="apiKeyForm">
           <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist API Key" class="auth-input">
@@ -196,7 +184,7 @@ export class AuthenticationWebview {
 
         <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx Developer Assist</div>
         <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
-        <div id="messageBox" class="message">
+        <div id="messageBox" class="message" style="display: none;">
         <div id="messageSuccessIcon" class="hidden">
         <img src="${successIcon}" alt="success"/>
         </div>

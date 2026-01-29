@@ -175,7 +175,12 @@ export const constants = {
 
   // ASCA Realtime Scanner
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
-  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+  getAscaRealtimeScanner: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner"
+      : "Checkmarx Developer Assist AI Secure Coding Assistant (ASCA) Realtime Scanner";
+  },
   ascaRealtimeScannerStart: "ASCA Realtime Scanner Engine started",
   ascaRealtimeScannerDisabled: "ASCA Realtime Scanner Engine disabled",
   ascaRealtimeScannerEngineName: "Asca",
@@ -185,7 +190,12 @@ export const constants = {
 
   // Secrets Scanner
   activateSecretsScanner: "Activate Secret Detection Realtime",
-  secretsScanner: "Checkmarx Secret Detection Realtime Scanner",
+  getSecretsScanner: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Secret Detection Realtime Scanner"
+      : "Checkmarx Developer Assist Secret Detection Realtime Scanner";
+  },
   secretsScannerStart: "Secret Detection Scanner Engine started",
   secretsScannerDisabled: "Secret Detection Scanner Engine disabled",
   secretsScannerEngineName: "Secrets",
@@ -194,7 +204,12 @@ export const constants = {
 
   // OSS Scanner
   activateOssRealtimeScanner: "Activate OSS-Realtime",
-  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
+  getOssRealtimeScanner: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Open Source Realtime Scanner (OSS-Realtime)"
+      : "Checkmarx Developer Assist Open Source Realtime Scanner (OSS-Realtime)";
+  },
   ossRealtimeScannerStart: "Realtime OSS Scanner Engine started",
   ossRealtimeScannerDisabled: "Realtime OSS Scanner Engine disabled",
   ossRealtimeScannerEngineName: "Oss",
@@ -203,7 +218,12 @@ export const constants = {
 
   // Containers Scanner
   activateContainersRealtimeScanner: "Activate Containers Realtime",
-  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+  getContainersRealtimeScanner: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Containers Realtime Scanner"
+      : "Checkmarx Developer Assist Containers Realtime Scanner";
+  },
   containersRealtimeScannerStart: "Containers Realtime Scanner Engine started",
   containersRealtimeScannerDisabled: "Containers Realtime Scanner Engine disabled",
   containersRealtimeScannerEngineName: "Containers",
@@ -212,7 +232,12 @@ export const constants = {
 
   // IaC Scanner
   activateIacRealtimeScanner: "Activate IAC Realtime",
-  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
+  getIacRealtimeScanner: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx IAC Realtime Scanner"
+      : "Checkmarx Developer Assist IAC Realtime Scanner";
+  },
   iacRealtimeScannerStart: "IaC Realtime Scanner Engine started",
   iacRealtimeScannerDisabled: "IaC Realtime Scanner Engine disabled",
   iacRealtimeScannerEngineName: "IaC",

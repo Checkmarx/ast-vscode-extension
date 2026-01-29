@@ -5,6 +5,7 @@ import { BaseScannerCommand } from "../../common/baseScannerCommand";
 import { IacScannerService } from "./iacScannerService";
 import { ConfigurationManager } from "../../configuration/configurationManager";
 import { buildCommandButtons, renderCxAiBadge } from "../../../utils/utils";
+import { MediaPathResolver } from "../../../utils/mediaPathResolver";
 import { IacHoverData } from "../../common/types";
 import { constants } from "../../../utils/common/constants";
 
@@ -88,7 +89,9 @@ export class IacScannerCommand extends BaseScannerCommand {
 		if (!iconName) {
 			return "";
 		}
-		return `<img src="https://raw.githubusercontent.com/Checkmarx/ast-vscode-extension/main/media/icons/realtimeEngines/${iconName}" width="15" height="16" style="vertical-align: -12px;" />`;
+		const iconPath = MediaPathResolver.getMediaFilePath('icons', 'realtimeEngines', iconName);
+		const iconUri = vscode.Uri.file(iconPath).toString();
+		return `<img src="${iconUri}" width="15" height="16" style="vertical-align: -12px;" />`;
 	}
 
 	private renderID(hoverData: IacHoverData): string {
