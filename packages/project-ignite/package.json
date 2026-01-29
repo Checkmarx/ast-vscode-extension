@@ -93,7 +93,7 @@
     "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Checkmarx Authentication",
+        "title": "Authentication",
         "id": "cx-dev-assist",
         "order": 1,
         "properties": {
@@ -115,7 +115,7 @@
         }
       },
       {
-        "title": "Checkmarx Developer Assist Realtime Scanners",
+        "title": "Realtime Scanners",
         "id": "cx-dev-assist-Scanners",
         "order": 2,
         "properties": {
