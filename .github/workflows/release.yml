@@ -112,7 +112,9 @@ jobs:
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd packages/core && npm install
+          cd ../checkmarx && npm install
 
       # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
       - name: Get and install JS Wrapper if provided by user
@@ -142,19 +144,23 @@ jobs:
       - name: Install VSCE
         run: npm install -g vsce
 
+      # BUILD AND PACKAGE PROJECT
+      - name: Build core package
+        run: cd packages/core && npm run compile
+
+      - name: Build Checkmarx extension
+        run: cd packages/checkmarx && npm run compile
+
       # PACKAGE PROJECT
+
       - name: Package .vsix file
         run: |
+          cd packages/checkmarx
           if [ ${{ inputs.dev }} == true ]; then
-<<<<<<< HEAD
-            node .github/scripts/updateDevVersion.js
-            vsce package --pre-release
-=======
-            node .github/scripts/updateDevVersionCheckmarx.js
-            npm run package:checkmarx:prerelease
->>>>>>> 85afeda3 (Update release.yml)
+            node ../../.github/scripts/updateDevVersionCheckmarx.js
+            vsce package --pre-release --allow-star-activation --no-dependencies
           else
-            vsce package
+            vsce package --allow-star-activation --no-dependencies
           fi
 
       # CREATE GH RELEASE NAME
@@ -212,7 +218,7 @@ jobs:
         with:
           name: ${{env.GH_RELEASE_NAME}}
           tag_name: ${{env.TAG_NAME}}
-          generate_release_notes: false
+          generate_release_notes: true
           files: packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix
           prerelease: ${{ inputs.dev }}
 
@@ -222,8 +228,6 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           PATH: "packages/checkmarx/CHANGELOG.md"
-          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
-          TYPE: "feat:New Features 🚀,fix:Bug Fixes 🐛,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
 
       # PUBLISH TO MARKETPLACE
       - name: Publish to VSCode Marketplace

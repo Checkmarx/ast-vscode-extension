@@ -19,50 +19,50 @@ jobs:
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
-        run: |
-<<<<<<< HEAD
-          cd packages/core && npm install
-          cd ../checkmarx && npm install
-          cd ../project-ignite && npm install
-      - name: Build core package
-        run: cd packages/core && npm run compile
-      - name: Build extension
-        run: cd packages/${{ matrix.extension }} && npm run compile
-=======
-          npm run install:all
-      - name: Build all packages
-        run: npm run build:all
-
->>>>>>> b89ae5e6 (Update ci-linux.yml)
+        run: npm install
       - name: Run e2e tests
         if: runner.os == 'Linux'
         env:
           CX_APIKEY: ${{ secrets.CX_APIKEY_E2E_DEU }}
         run: |
-<<<<<<< HEAD
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 & 
           npm run test:ui-end-to-end
-=======
-          npm run e2e:test:checkmarx
->>>>>>> b89ae5e6 (Update ci-linux.yml)
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
-<<<<<<< HEAD
           name: artifacts-${{ matrix.os }}
           path: |
             test-resources/screenshots/*.png
-=======
-          name: e2e-artifacts-${{ matrix.extension }}-${{ matrix.os }}
-          path: |
-            packages/core/test-resources/screenshots/*.png
->>>>>>> b89ae5e6 (Update ci-linux.yml)
           retention-days: 2
+      - name: Upload screenshots
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        if: failure() && runner.os == 'macOS'
+        with:
+          name: screenshots
+          path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
+  unit-tests:
+    strategy:
+      max-parallel: 1
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: npm install
+      - name: Run unit tests with coverage
+        run: npm run unit-coverage
 
-  # Run integration tests for Checkmarx extension (Project Ignite tests will be added later)
   ui-tests:
     strategy:
       max-parallel: 1
