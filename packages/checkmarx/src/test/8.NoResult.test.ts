@@ -1,5 +1,4 @@
 import {
-    By,
     CustomTreeSection,
     EditorView,
     InputBox,
@@ -8,12 +7,9 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, waitForNotificationWithTimeout, validateRootNodeBool } from "./utils/utils";
-import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
-import { waitByClassName } from "./utils/waiters";
-import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
-import { constants } from "buffer";
-import { messages } from "@checkmarx/vscode-core/utils/common/messages";
+import { initialize, waitForNotificationWithTimeout, validateRootNodeBool } from "./utils/utils";
+import { CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
+import { EMPTY_RESULTS_SCAN_ID } from "./utils/envs";
 
 describe("Scan ID load results test", () => {
     let bench: Workbench;
@@ -62,7 +58,7 @@ describe("Scan ID load results test", () => {
 
         let firstNotification = await waitForNotificationWithTimeout(5000)
         let message = await firstNotification?.getMessage();
-        if (message === messages.scanProjectNotMatch) {
+        if (message === MESSAGES.scanProjectNotMatch) {
             let actions = await firstNotification?.getActions()
             let action = await actions[0];
             await action.click();
