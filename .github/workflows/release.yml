@@ -146,8 +146,13 @@ jobs:
       - name: Package .vsix file
         run: |
           if [ ${{ inputs.dev }} == true ]; then
+<<<<<<< HEAD
             node .github/scripts/updateDevVersion.js
             vsce package --pre-release
+=======
+            node .github/scripts/updateDevVersionCheckmarx.js
+            npm run package:checkmarx:prerelease
+>>>>>>> 85afeda3 (Update release.yml)
           else
             vsce package
           fi
