@@ -113,8 +113,7 @@ jobs:
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
         run: |
-          cd packages/core && npm install
-          cd ../checkmarx && npm install
+          npm run install:all
 
       # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
       - name: Get and install JS Wrapper if provided by user
@@ -145,11 +144,8 @@ jobs:
         run: npm install -g vsce
 
       # BUILD AND PACKAGE PROJECT
-      - name: Build core package
-        run: cd packages/core && npm run compile
-
-      - name: Build Checkmarx extension
-        run: cd packages/checkmarx && npm run compile
+      - name: Build all packages
+        run: npm run build:all
 
       # PACKAGE PROJECT
       - name: Package .vsix file
@@ -157,9 +153,9 @@ jobs:
           cd packages/checkmarx
           if [ ${{ inputs.dev }} == true ]; then
             node ../../.github/scripts/updateDevVersionCheckmarx.js
-            vsce package --pre-release --allow-star-activation --no-dependencies
+            npm run package:checkmarx:prerelease
           else
-            vsce package --allow-star-activation --no-dependencies
+            npm run package:checkmarx
           fi
 
       # CREATE GH RELEASE NAME
