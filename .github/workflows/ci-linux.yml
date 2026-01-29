@@ -45,6 +45,27 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: |
+<<<<<<< HEAD
+          npm run install:all
+      - name: Build all packages
+        run: npm run build:all
+
+      - name: Run e2e tests
+        if: runner.os == 'Linux'
+        env:
+          CX_APIKEY: ${{ secrets.CX_APIKEY_E2E_DEU }}
+        run: |
+          npm run e2e:test:checkmarx
+      - name: Upload test artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: e2e-artifacts-${{ matrix.extension }}-${{ matrix.os }}
+          path: |
+            packages/core/test-resources/screenshots/*.png
+          retention-days: 2
+
+=======
           cd packages/core && npm install
           cd ../checkmarx && npm install
           cd ../project-ignite && npm install
@@ -70,6 +91,7 @@ jobs:
             packages/core/test-resources/screenshots/*.png
           retention-days: 2
 
+>>>>>>> 85afeda3f6985aa6adf898decf477f82e227a3ec
   # Run integration tests for Checkmarx extension (Project Ignite tests will be added later)
   ui-tests:
     strategy:
@@ -89,6 +111,12 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: |
+<<<<<<< HEAD
+          npm run install:all
+      - name: Build all packages
+        run: npm run build:all
+
+=======
           cd packages/core && npm install
           cd ../${{ matrix.extension }} && npm install
       - name: Build core package
@@ -102,6 +130,7 @@ jobs:
           CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: |
           cd packages/core && npm test
+>>>>>>> 85afeda3f6985aa6adf898decf477f82e227a3ec
       - name: Run integration tests (Linux)
         if: runner.os == 'Linux'
         env:
@@ -111,7 +140,11 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
+<<<<<<< HEAD
+          npm run ui:test:checkmarx
+=======
           cd packages/core && npm test
+>>>>>>> 85afeda3f6985aa6adf898decf477f82e227a3ec
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
