@@ -6,7 +6,6 @@ import {
 	WebDriver,
 	Workbench,
 } from "vscode-extension-tester";
-import { messages } from "@checkmarx/vscode-core/utils/common/messages";
 import { expect } from "chai";
 import { initialize, retryTest, sleep, waitForNotificationWithTimeout, selectItem } from "./utils/utils";
 import {
@@ -17,9 +16,10 @@ import {
 	CX_SELECT_SCAN,
 	PROJECT_KEY_TREE,
 	SCAN_KEY_TREE_LABEL,
+	LOCAL_BRANCH_CONSTANT,
+	MESSAGES,
 } from "./utils/constants";
 import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
-import { constants } from "@checkmarx/vscode-core/utils/common/constants";
 import { execSync } from "child_process";
 import * as fs from "fs";
 
@@ -83,9 +83,9 @@ describe.skip("Using a local branch if Git exists", () => {
 		const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
 
 		let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + constants.localBranch);
+		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + LOCAL_BRANCH_CONSTANT);
 		expect(project, `Should select ${projectName}`).is.not.undefined;
-		expect(branch, `Should display ${constants.localBranch}`).is.not.undefined;
+		expect(branch, `Should display ${LOCAL_BRANCH_CONSTANT}`).is.not.undefined;
 	}, 3));
 
 
@@ -94,7 +94,7 @@ describe.skip("Using a local branch if Git exists", () => {
 		let treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_BRANCH);
 
-		const branchName = await selectItem(constants.localBranch);
+		const branchName = await selectItem(LOCAL_BRANCH_CONSTANT);
 
 		let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
 		expect(branch).is.not.undefined;
@@ -112,7 +112,7 @@ describe.skip("Using a local branch if Git exists", () => {
 
 		let firstNotification = await waitForNotificationWithTimeout(5000)
 		let message = await firstNotification?.getMessage();
-		if (message === messages.scanProjectNotMatch) {
+		if (message === MESSAGES.scanProjectNotMatch) {
 			let actions = await firstNotification?.getActions()
 			let action = await actions[0];
 			await action.click();

@@ -15,6 +15,8 @@
     "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.63.0",
     "axios": "1.12.2",
     "dotenv": "^16.4.7",
     "https-proxy-agent": "^7.0.6",
@@ -24,25 +26,5 @@
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
     "validator": "13.15.22"
-  },
-  "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/chai": "4.3.11",
-    "@types/mocha": "10.0.6",
-    "@types/mock-require": "^2.0.3",
-    "@types/node": "^20.0.0",
-    "@types/sinon": "^17.0.3",
-    "@types/vscode": "^1.63.0",
-    "chai": "4.3.1",
-    "copyfiles": "^2.4.1",
-    "mocha": "^10.8.2",
-    "mock-require": "^3.0.3",
-    "nock": "^14.0.1",
-    "nyc": "^17.1.0",
-    "rimraf": "^5.0.5",
-    "sinon": "^19.0.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "vscode-extension-tester": "8.17.0"
   }
 }

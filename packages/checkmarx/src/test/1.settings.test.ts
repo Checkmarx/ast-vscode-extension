@@ -13,10 +13,9 @@ import {
   CX_CATETORY,
   CX_KICS,
   CX_KICS_NAME,
+  ASCA_REALTIME_SCANNER_CONSTANTS,
 } from "./utils/constants";
 import { waitStatusBar } from "./utils/waiters";
-
-import { constants } from "@checkmarx/vscode-core/utils/common/constants";
 
 describe("Extension settings tests", () => {
   let settingsEditor: SettingsEditor;
@@ -63,8 +62,8 @@ describe("Extension settings tests", () => {
   it("verify ASCA realtime scanning checkbox exists in the settings", async function () {
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
-      constants.activateAscaRealtimeScanner,
-      constants.getAscaRealtimeScanner()
+      ASCA_REALTIME_SCANNER_CONSTANTS.activateAscaRealtimeScanner,
+      ASCA_REALTIME_SCANNER_CONSTANTS.ascaRealtimeScanner
     );
     let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
     expect(ascaRealtimeCheckboxValue).to.not.be.undefined;
@@ -73,8 +72,8 @@ describe("Extension settings tests", () => {
   it("ASCA realtime scanning starts when the checkbox is True in settings", async function () {
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
-      constants.activateAscaRealtimeScanner,
-      constants.getAscaRealtimeScanner()
+      ASCA_REALTIME_SCANNER_CONSTANTS.activateAscaRealtimeScanner,
+      ASCA_REALTIME_SCANNER_CONSTANTS.ascaRealtimeScanner
     );
     await ascaRealtimeCheckbox.setValue(true);
     let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
