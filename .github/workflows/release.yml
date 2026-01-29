@@ -212,7 +212,11 @@ jobs:
         with:
           name: ${{env.GH_RELEASE_NAME}}
           tag_name: ${{env.TAG_NAME}}
+<<<<<<< HEAD
+          generate_release_notes: false
+=======
           generate_release_notes: true
+>>>>>>> 85afeda3f6985aa6adf898decf477f82e227a3ec
           files: packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix
           prerelease: ${{ inputs.dev }}
 
@@ -222,6 +226,11 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           PATH: "packages/checkmarx/CHANGELOG.md"
+<<<<<<< HEAD
+          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
+          TYPE: "feat:New Features 🚀,fix:Bug Fixes 🐛,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
+=======
+>>>>>>> 85afeda3f6985aa6adf898decf477f82e227a3ec
 
       # PUBLISH TO MARKETPLACE
       - name: Publish to VSCode Marketplace
