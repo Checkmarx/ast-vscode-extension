@@ -150,9 +150,8 @@ jobs:
       # PACKAGE PROJECT
       - name: Package .vsix file
         run: |
-          cd packages/checkmarx
           if [ ${{ inputs.dev }} == true ]; then
-            node ../../.github/scripts/updateDevVersionCheckmarx.js
+            node .github/scripts/updateDevVersionCheckmarx.js
             npm run package:checkmarx:prerelease
           else
             npm run package:checkmarx
