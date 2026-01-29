@@ -213,7 +213,7 @@ jobs:
           name: ${{env.GH_RELEASE_NAME}}
           tag_name: ${{env.TAG_NAME}}
           generate_release_notes: true
-          files: packages/project-ignite/project-ignite-${{env.VSIX_TAG_NAME}}.vsix
+          files: packages/project-ignite/cx-dev-assist-${{env.VSIX_TAG_NAME}}.vsix
           prerelease: ${{ inputs.dev }}
 
       # GENERATE AND WRITE CHANGELOG TO FILE
