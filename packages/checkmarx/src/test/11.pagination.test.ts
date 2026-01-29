@@ -5,11 +5,10 @@ import {
 	WebDriver,
 	Workbench,
 } from "vscode-extension-tester";
-import { CX_CLEAR, CX_SELECT_PROJECT, CX_SELECT_BRANCH } from "./utils/constants";
+import { CX_CLEAR, CX_SELECT_PROJECT, CX_SELECT_BRANCH, QuickPickPaginationButtons } from "./utils/constants";
 import { CX_TEST_SCAN_PROJECT_NAME, SCAN_ID } from "./utils/envs";
 import { retryTest, selectItem } from "./utils/utils";
 import { expect } from "chai";
-import { QuickPickPaginationButtons } from "@checkmarx/vscode-core/utils/common/constants";
 
 
 describe("Get items with pagination", () => {

@@ -73,3 +73,20 @@ export const CHANGES_LABEL = "changes-label";
 export const CHANGES_CONTAINER = "history-container";
 export const UPDATE_BUTTON = "submit";
 export const GENERAL_LABEL = "general-label";
+
+// Constants from @checkmarx/vscode-core (copied to avoid loading the entire module in tests)
+export const ASCA_REALTIME_SCANNER_CONSTANTS = {
+  activateAscaRealtimeScanner: "Activate ASCA Realtime",
+  ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+};
+
+export const LOCAL_BRANCH_CONSTANT = "scan my local branch";
+
+export const MESSAGES = {
+  scanProjectNotMatch: "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
+};
+
+export enum QuickPickPaginationButtons {
+  nextPage = "Next Page",
+  previousPage = "Previous Page",
+}

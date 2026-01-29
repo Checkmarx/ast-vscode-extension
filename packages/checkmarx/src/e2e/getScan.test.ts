@@ -52,7 +52,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
     await sleep(5000);
 
     const editorView = new EditorView();
-    await editorView.openEditor("Checkmarx One Authentication");
+    await editorView.openEditor("Checkmarx Authentication");
     console.log("Authentication editor opened");
 
     // Switch to the WebView frame
