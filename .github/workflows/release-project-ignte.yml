@@ -156,7 +156,7 @@ jobs:
         run: |
           cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
-            node ../../.github/scripts/updateDevVersionIgnite.js
+            node .github/scripts/updateDevVersionIgnite.js
             vsce package --pre-release --allow-star-activation --no-dependencies
           else
             vsce package --allow-star-activation --no-dependencies
