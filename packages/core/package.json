@@ -9,7 +9,7 @@
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "clean": "rimraf out",
-    "unit-test-core": "mocha --require ts-node/register \"./src/unit/**/*.test.ts\""
+    "unit-test-core": "npx mocha --require ts-node/register \"./src/unit/**/*.test.ts\""
   },
   "dependencies": {
     "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",
@@ -38,6 +38,7 @@
     "mocha": "^11.7.5",
     "mock-require": "^3.0.3",
     "nock": "^14.0.10",
+    "nyc": "^17.1.0",
     "rimraf": "^5.0.5",
     "sinon": "^21.0.1",
     "ts-node": "^10.9.2",
