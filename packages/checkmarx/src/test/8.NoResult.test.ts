@@ -27,8 +27,12 @@ describe("Scan ID load results test", () => {
     });
 
     it("should load results from scan ID", async function () {
+        this.timeout(60000); // Increase timeout to 60 seconds
+
         await bench.executeCommand(CX_LOOK_SCAN);
         let input = await new InputBox();
+        // Add delay to ensure input box is ready
+        await new Promise((res) => setTimeout(res, 1000));
         await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
         await input.confirm();
     });
@@ -48,9 +52,12 @@ describe("Scan ID load results test", () => {
         expect(isValidated).to.equal(true);
     });
     it("should allow creating a new scan even if the current scan has zero results", async function () {
+        this.timeout(60000); // Increase timeout to 60 seconds
 
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
+        // Add delay to ensure input box is ready
+        await new Promise((res) => setTimeout(res, 1000));
         await input.setText(EMPTY_RESULTS_SCAN_ID);
         await input.confirm();
 

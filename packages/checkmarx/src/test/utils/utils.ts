@@ -159,11 +159,11 @@ export async function sleep(ms: number) {
 }
 
 export function retryTest(testFn, retries = 3) {
-  return async function () {
+  return async function (this: any) {
     let lastError;
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        await testFn();
+        await testFn.call(this);
         return;
       } catch (error) {
         lastError = error;

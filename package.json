@@ -23,7 +23,9 @@
     "unit:test:core": "cd packages/core && npm run unit-test-core",
     "unit-coverage:test:core": "cd packages/core && npx nyc npm run unit-test-core",
     "ui:test:checkmarx": "cd packages/checkmarx && npm run ui-test",
+    "win-ui:test:checkmarx": "cd packages/checkmarx && npm run win-ui-test",
     "e2e:test:checkmarx": "cd packages/checkmarx && npm run e2e-test",
+    "win-e2e:test:checkmarx": "cd packages/checkmarx && npm run win-e2e-test",
     "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
     "lint:fix": "npm run lint -- --fix"
   },

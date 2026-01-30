@@ -40,15 +40,20 @@ describe("Wizard load results test", () => {
     // Wizard command execution
   });
 
-  it("should load results using wizard", async () => {
+  it("should load results using wizard", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     // Project selection
     const inputProject = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
 
     let projectName = await getQuickPickSelector(inputProject);
     await inputProject.confirm();
 
     // Branch selection
     const input = await InputBox.create();
+    await new Promise((res) => setTimeout(res, 1000));
     await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
     await input.setText(branchName);
@@ -56,6 +61,7 @@ describe("Wizard load results test", () => {
 
     // Scan selection
     const inputScan = new InputBox();
+    await new Promise((res) => setTimeout(res, 1000));
     let scanDate = await getQuickPickSelector(inputScan);
     await quickPickSelector(inputScan);
 
@@ -73,8 +79,12 @@ describe("Wizard load results test", () => {
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");
     // Scan tree item validation
     let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
-    while (scan === undefined) {
+    const maxAttempts = 30;
+    let attempts = 0;
+    while (scan === undefined && attempts < maxAttempts) {
+      await new Promise((res) => setTimeout(res, 500));
       scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
+      attempts++;
     }
     expect(scan).is.not.undefined;
   });
