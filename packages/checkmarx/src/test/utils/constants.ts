@@ -17,35 +17,36 @@ export const CX_NAME = "Checkmarx One";
 export const CX_KICS = "Checkmarx KICS";
 export const CX_KICS_NAME = "Activate KICS Real-time Scanning";
 
-export const CX_SELECT_ALL = "ast-results: Select Different Results";
-export const CX_SELECT_PROJECT = "ast-results: Select Project";
-export const CX_SELECT_BRANCH = "ast-results: Select Branch";
-export const CX_SELECT_SCAN = "ast-results: Select Scan";
-export const CX_LOOK_SCAN = "ast-results: Look for Scan";
+// Command IDs (not titles) - these are used with executeCommand()
+export const CX_SELECT_ALL = "ast-results.generalPick";
+export const CX_SELECT_PROJECT = "ast-results.projectPick";
+export const CX_SELECT_BRANCH = "ast-results.branchPick";
+export const CX_SELECT_SCAN = "ast-results.scanPick";
+export const CX_LOOK_SCAN = "ast-results.scanInput";
 
-export const CX_FILTER_INFO = "ast-results: Filter severity: Info";
-export const CX_FILTER_LOW = "ast-results: Filter severity: Low";
-export const CX_FILTER_MEDIUM = "ast-results: Filter severity: Medium";
-export const CX_FILTER_HIGH = "ast-results: Filter severity: High";
+export const CX_FILTER_INFO = "ast-results.filterInfo";
+export const CX_FILTER_LOW = "ast-results.filterLow";
+export const CX_FILTER_MEDIUM = "ast-results.filterMedium";
+export const CX_FILTER_HIGH = "ast-results.filterHigh";
 
-export const CX_FILTER_NOT_EXPLOITABLE = "ast-results:Filter: Not Exploitable";
+export const CX_FILTER_NOT_EXPLOITABLE = "ast-results.filterNotExploitable";
 export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE =
-  "ast-results:Filter: Proposed Not Exploitable";
-export const CX_FILTER_CONFIRMED = "ast-results:Filter: Confirmed";
-export const CX_FILTER_TO_VERIFY = "ast-results:Filter: To Verify";
-export const CX_FILTER_URGENT = "ast-results:Filter: Urgent";
-export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
+  "ast-results.filterProposedNotExploitable";
+export const CX_FILTER_CONFIRMED = "ast-results.filterConfirmed";
+export const CX_FILTER_TO_VERIFY = "ast-results.filterToVerify";
+export const CX_FILTER_URGENT = "ast-results.filterUrgent";
+export const CX_FILTER_NOT_IGNORED = "ast-results.filterNotIgnored";
 
-export const CX_CLEAR = "ast-results: Clear";
-export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
-export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
+export const CX_CLEAR = "ast-results.clear";
+export const CX_SCA_CLEAR = "ast-results.clearSCA";
+export const CX_SCA_SCAN = "ast-results.createSCAScan";
 
-export const CX_GROUP_FILE = "ast-results: Group by: File";
-export const CX_GROUP_SEVERITY = "ast-results: Group by: Severity";
-export const CX_GROUP_LANGUAGE = "ast-results: Group by: Language";
-export const CX_GROUP_STATUS = "ast-results: Group by: Status";
-export const CX_GROUP_STATE = "ast-results: Group by: State";
-export const CX_GROUP_QUERY_NAME = "ast-results: Group by: Vulnerability Type";
+export const CX_GROUP_FILE = "ast-results.groupByFile";
+export const CX_GROUP_SEVERITY = "ast-results.groupBySeverity";
+export const CX_GROUP_LANGUAGE = "ast-results.groupByLanguage";
+export const CX_GROUP_STATUS = "ast-results.groupByStatus";
+export const CX_GROUP_STATE = "ast-results.groupByState";
+export const CX_GROUP_QUERY_NAME = "ast-results.groupByQueryName";
 
 export const CX_CATETORY = "Checkmarx One";
 export const CX_API_KEY_SETTINGS = "Api Key";
