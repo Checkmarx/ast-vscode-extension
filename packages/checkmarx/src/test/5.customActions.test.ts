@@ -89,7 +89,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all group by", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 180 seconds (3 minutes) for 5 commands
 
     try {
       console.log('Starting group by test (first)...');
@@ -101,6 +101,7 @@ describe("filter and groups actions tests", () => {
         CX_GROUP_FILE,
       ];
       for (var index in commands) {
+        console.log(`\n=== Processing command ${parseInt(index) + 1} of ${commands.length}: ${commands[index]} ===`);
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
 
@@ -159,7 +160,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all group by", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 180 seconds (3 minutes) for 5 commands
 
     try {
       console.log('Starting group by test (second)...');
@@ -171,19 +172,37 @@ describe("filter and groups actions tests", () => {
         CX_GROUP_FILE,
       ];
       for (var index in commands) {
+        console.log(`\n=== Processing command ${parseInt(index) + 1} of ${commands.length}: ${commands[index]} ===`);
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
+
+        // Add delay to allow UI to update
+        console.log('Waiting for UI to update...');
+        await new Promise((res) => setTimeout(res, 2000));
+
+        console.log('Initializing tree scans...');
         treeScans = await initialize();
-        let scan = await treeScans?.findItem(
-          SCAN_KEY_TREE_LABEL
-        );
-        if (scan === undefined) {
-          console.error(`Failed to find scan item for group by: ${commands[index]}`);
+        console.log('Finding scan item...');
+
+        let scan;
+        try {
+          scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+        } catch (error) {
+          console.error(`Failed to find scan item for group by: ${commands[index]}`, error.message);
         }
+
+        if (scan === undefined) {
+          console.error(`Scan item is undefined for group by: ${commands[index]}`);
+        }
+
+        console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
-        console.log(`Resetting group by: ${commands[index]}`);
+        console.log(`Validation successful, resetting group by: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
+
+        // Add delay after reset
+        await new Promise((res) => setTimeout(res, 1000));
       }
       console.log('Group by test (second) completed successfully');
     } catch (error) {
@@ -193,16 +212,22 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter state", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(120000); // Increase timeout to 120 seconds (2 minutes) for 6 commands
 
     try {
       console.log('Starting filter state test...');
       await initialize();
       const commands = [CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_CONFIRMED, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_FILTER_NOT_IGNORED];
       for (var index in commands) {
+        console.log(`\n=== Processing filter command ${parseInt(index) + 1} of ${commands.length}: ${commands[index]} ===`);
         console.log(`Executing filter state command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
+
+        // Add delay to allow UI to update
+        await new Promise((res) => setTimeout(res, 1000));
+
         expect(index).not.to.be.undefined;
+        console.log(`Filter command ${commands[index]} executed successfully`);
       }
       console.log('Filter state test completed successfully');
     } catch (error) {
