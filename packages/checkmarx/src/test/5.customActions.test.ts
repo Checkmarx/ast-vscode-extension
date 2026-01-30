@@ -161,6 +161,11 @@ describe("filter and groups actions tests", () => {
 
         // Note: Not resetting group by - commands toggle, so executing twice would just turn it on then off
         // The test validates that each group by works, not that they can be toggled
+
+        // Press Escape to close any open UI elements and ensure clean state for next command
+        console.log('Pressing Escape to close any open UI elements...');
+        await driver.actions().sendKeys('\uE00C').perform(); // ESC key
+        await new Promise((res) => setTimeout(res, 500));
       }
       console.log('Group by test (first) completed successfully');
     } catch (error) {
