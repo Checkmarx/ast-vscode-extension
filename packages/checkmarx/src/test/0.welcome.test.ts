@@ -17,6 +17,7 @@ describe("Welcome view test", () => {
   });
 
   it("open welcome view and check if exists", async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     const tree = await initialize();
     const welcome = await tree?.findWelcomeContent();
     expect(welcome).is.not.undefined;

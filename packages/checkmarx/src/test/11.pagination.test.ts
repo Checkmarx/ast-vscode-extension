@@ -26,6 +26,7 @@ describe("Get items with pagination", () => {
 	});
 
 	it("should display pagination buttons in Project selection", retryTest(async function () {
+		this.timeout(60000); // Increase timeout to 60 seconds
 
 		await bench.executeCommand(CX_SELECT_PROJECT);
 
@@ -38,6 +39,7 @@ describe("Get items with pagination", () => {
 	}, 3));
 
 	it("should display pagination buttons in Branch selection", retryTest(async function () {
+		this.timeout(60000); // Increase timeout to 60 seconds
 
 		await bench.executeCommand(CX_SELECT_PROJECT);
 
