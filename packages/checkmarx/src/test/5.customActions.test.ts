@@ -1,6 +1,6 @@
 import { CustomTreeSection, InputBox, VSBrowser, WebDriver, Workbench } from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { initialize, validateRootNode, validateSeverities, validateRootNodeBool } from './utils/utils';
+import { initialize, validateRootNode, validateSeverities, validateRootNodeBool, waitForTreeNodeVisible } from './utils/utils';
 import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, SAST_TYPE, SCAN_KEY_TREE_LABEL } from './utils/constants';
 import { SCAN_ID } from './utils/envs';
 
@@ -109,58 +109,28 @@ describe("filter and groups actions tests", () => {
         const viewControl = await activityBar.getViewControl('Checkmarx');
         if (viewControl) {
           const view = await viewControl.openView();
-          console.log('View opened, waiting for view to be fully active...');
-          await new Promise((res) => setTimeout(res, 3000)); // Increased delay to ensure view is fully active
+          console.log('View opened, waiting for view to be fully active and command palette to refresh...');
+          await new Promise((res) => setTimeout(res, 8000));
         }
 
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
 
-        // Add delay to allow UI to update and tree to refresh after command execution
-        console.log('Waiting for UI to update and tree to refresh...');
-        await new Promise((res) => setTimeout(res, 5000)); // Increased to 5 seconds to allow tree refresh to complete
-
-        console.log('Initializing tree scans...');
+        // Wait for the scan node to be visible after group by
+        console.log('Waiting for scan node to be visible...');
         treeScans = await initialize();
-        console.log('Tree scans initialized, finding scan item...');
-
         let scan;
-        const maxAttempts = 30;
-        let attempts = 0;
-
-        // Try to find the scan item with retries
-        while (attempts < maxAttempts) {
-          try {
-            scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-            if (scan !== undefined) {
-              console.log(`Found scan item on attempt ${attempts + 1}`);
-              break;
-            }
-          } catch (error) {
-            console.log(`Attempt ${attempts + 1} failed to find scan item:`, error.message);
-          }
-
-          await new Promise((res) => setTimeout(res, 500));
-          attempts++;
-
-          // Re-initialize tree on every few attempts
-          if (attempts % 5 === 0) {
-            console.log(`Re-initializing tree scans (attempt ${attempts})...`);
-            treeScans = await initialize();
-          }
-        }
-
-        if (scan === undefined) {
-          console.error(`Failed to find scan item after ${maxAttempts} attempts for group by: ${commands[index]}`);
+        try {
+          scan = await waitForTreeNodeVisible(treeScans, SCAN_KEY_TREE_LABEL);
+          console.log('Scan node is visible.');
+        } catch (e) {
+          console.error(`Timeout waiting for scan node after group by: ${commands[index]}`);
         }
 
         console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
         console.log(`Validation successful for: ${commands[index]}`);
-
-        // Note: Not resetting group by - commands toggle, so executing twice would just turn it on then off
-        // The test validates that each group by works, not that they can be toggled
 
         // Press Escape to close any open UI elements and ensure clean state for next command
         console.log('Pressing Escape to close any open UI elements...');
@@ -191,32 +161,21 @@ describe("filter and groups actions tests", () => {
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
 
-        // Add delay to allow UI to update
-        console.log('Waiting for UI to update...');
-        await new Promise((res) => setTimeout(res, 2000));
-
-        console.log('Initializing tree scans...');
+        // Wait for the scan node to be visible after group by
+        console.log('Waiting for scan node to be visible...');
         treeScans = await initialize();
-        console.log('Finding scan item...');
-
         let scan;
         try {
-          scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-        } catch (error) {
-          console.error(`Failed to find scan item for group by: ${commands[index]}`, error.message);
-        }
-
-        if (scan === undefined) {
-          console.error(`Scan item is undefined for group by: ${commands[index]}`);
+          scan = await waitForTreeNodeVisible(treeScans, SCAN_KEY_TREE_LABEL);
+          console.log('Scan node is visible.');
+        } catch (e) {
+          console.error(`Timeout waiting for scan node after group by: ${commands[index]}`);
         }
 
         console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
         console.log(`Validation successful for: ${commands[index]}`);
-
-        // Note: Not resetting group by - commands toggle, so executing twice would just turn it on then off
-        // The test validates that each group by works, not that they can be toggled
       }
       console.log('Group by test (second) completed successfully');
     } catch (error) {
