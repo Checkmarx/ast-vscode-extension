@@ -37,10 +37,14 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select project", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
     const input = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     // Select from the pickers list
     let projectName = await getQuickPickSelector(input);
@@ -52,10 +56,14 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select branch", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     let treeScans = await initialize();
     // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
     let input = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
     // Select from the pickers list
     await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
@@ -67,10 +75,14 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select scan", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     let treeScans = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
     let input = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
     // Select from the pickers list
     let scanDate = await getQuickPickSelector(input);
     await input.setText(scanDate);

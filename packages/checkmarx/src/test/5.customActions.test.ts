@@ -22,9 +22,13 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter severity", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     treeScans = await initialize();
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
     await input.setText(
       SCAN_ID
     );

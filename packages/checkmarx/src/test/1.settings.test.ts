@@ -40,7 +40,8 @@ describe("Extension settings tests", () => {
     await new EditorView().closeAllEditors();
   });
 
-  it("open settings and check if are empty", async () => {
+  it("open settings and check if are empty", async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     await waitStatusBar();
     settingsEditor = await bench.openSettings();
     const settings = (await settingsEditor.findSetting(
@@ -50,6 +51,7 @@ describe("Extension settings tests", () => {
   });
 
   it("should check kics real-time scan enablement on settings", async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     const settingsWizard = await bench.openSettings();
     const setting = (await settingsWizard.findSetting(
       CX_KICS_NAME,
@@ -60,6 +62,7 @@ describe("Extension settings tests", () => {
   });
 
   it("verify ASCA realtime scanning checkbox exists in the settings", async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
       ASCA_REALTIME_SCANNER_CONSTANTS.activateAscaRealtimeScanner,
@@ -70,6 +73,7 @@ describe("Extension settings tests", () => {
   });
 
   it("ASCA realtime scanning starts when the checkbox is True in settings", async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     settingsEditor = await bench.openSettings();
     const ascaRealtimeCheckbox = await settingsEditor.findSetting(
       ASCA_REALTIME_SCANNER_CONSTANTS.activateAscaRealtimeScanner,

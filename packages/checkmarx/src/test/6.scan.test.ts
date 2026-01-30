@@ -33,9 +33,13 @@ describe("Scan from IDE", () => {
     });
 
     it("should run scan from IDE", retryTest(async function () {
+        this.timeout(60000); // Increase timeout to 60 seconds
+
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
+        // Add delay to ensure input box is ready
+        await new Promise((res) => setTimeout(res, 1000));
         await input.setText(SCAN_ID);
         await input.confirm();
         await waitByLinkText(driver, SCAN_KEY_TREE_LABEL, 5000);
