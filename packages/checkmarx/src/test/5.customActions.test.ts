@@ -106,7 +106,7 @@ describe("filter and groups actions tests", () => {
         // Ensure the results view is focused before executing command
         console.log('Focusing on results view...');
         const activityBar = await bench.getActivityBar();
-        const viewControl = await activityBar.getViewControl('Checkmarx One');
+        const viewControl = await activityBar.getViewControl('Checkmarx');
         if (viewControl) {
           await viewControl.openView();
           await new Promise((res) => setTimeout(res, 1000));
