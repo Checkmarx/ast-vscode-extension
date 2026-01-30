@@ -28,12 +28,13 @@ describe("Scan from IDE", () => {
         await bench.executeCommand(VS_OPEN_FOLDER);
     });
 
-    after(async () => {
+    after(async function () {
+        this.timeout(30000); // Increase timeout to 30 seconds
         await bench.executeCommand(CX_CLEAR);
     });
 
     it("should run scan from IDE", retryTest(async function () {
-        this.timeout(60000); // Increase timeout to 60 seconds
+        this.timeout(120000); // Increase timeout to 120 seconds for CI
 
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
@@ -42,10 +43,14 @@ describe("Scan from IDE", () => {
         await new Promise((res) => setTimeout(res, 1000));
         await input.setText(SCAN_ID);
         await input.confirm();
-        await waitByLinkText(driver, SCAN_KEY_TREE_LABEL, 5000);
+        await waitByLinkText(driver, SCAN_KEY_TREE_LABEL, 30000);
         let scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
-        while (scan === undefined) {
+        const maxAttempts = 60;
+        let attempts = 0;
+        while (scan === undefined && attempts < maxAttempts) {
+            await new Promise((res) => setTimeout(res, 500));
             scan = await treeScan?.findItem(SCAN_KEY_TREE_LABEL);
+            attempts++;
         }
         // click play button(or initiate scan with command)
         await bench.executeCommand("ast-results.createScan");

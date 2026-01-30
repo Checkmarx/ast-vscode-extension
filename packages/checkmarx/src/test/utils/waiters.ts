@@ -23,7 +23,7 @@ export async function waitByLinkText(
   text: string,
   timeout: number
 ) {
-  driver.wait(until.elementLocated(By.linkText(text)), timeout);
+  await driver.wait(until.elementLocated(By.linkText(text)), timeout);
 }
 
 export async function waitByClassName(
@@ -31,5 +31,5 @@ export async function waitByClassName(
   text: string,
   timeout: number
 ) {
-  driver.wait(until.elementLocated(By.className(text)), timeout);
+  await driver.wait(until.elementLocated(By.className(text)), timeout);
 }

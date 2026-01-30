@@ -17,7 +17,8 @@ describe("filter and groups actions tests", () => {
     await bench.executeCommand(CX_LOOK_SCAN);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(30000); // Increase timeout to 30 seconds
     await bench.executeCommand(CX_CLEAR);
   });
 
@@ -40,10 +41,14 @@ describe("filter and groups actions tests", () => {
       let scan = await treeScans?.findItem(
         SCAN_KEY_TREE_LABEL
       );
-      while (scan === undefined) {
+      const maxAttempts = 30;
+      let attempts = 0;
+      while (scan === undefined && attempts < maxAttempts) {
+        await new Promise((res) => setTimeout(res, 500));
         scan = await treeScans?.findItem(
           SCAN_KEY_TREE_LABEL
         );
+        attempts++;
       }
       let isValidated = await validateSeverities(scan, commands[index].text);
 
