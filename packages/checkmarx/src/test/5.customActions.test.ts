@@ -88,7 +88,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it.skip("should click on all group by", async function () {
+  it("should click on all group by", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     try {
@@ -131,7 +131,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it.skip("should click on all group by", async function () {
+  it("should click on all group by", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     try {
@@ -165,7 +165,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it.skip("should click on all filter state", async function () {
+  it("should click on all filter state", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     try {
