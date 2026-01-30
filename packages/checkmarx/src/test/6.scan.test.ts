@@ -22,15 +22,32 @@ describe("Scan from IDE", () => {
 
     before(async function () {
         this.timeout(100000);
-        bench = new Workbench();
-        driver = VSBrowser.instance.driver;
-        treeScans = await initialize();
-        await bench.executeCommand(VS_OPEN_FOLDER);
+        try {
+            console.log('=== Starting Scan from IDE - before hook ===');
+            bench = new Workbench();
+            driver = VSBrowser.instance.driver;
+            console.log('Initializing tree scans...');
+            treeScans = await initialize();
+            console.log('Executing command:', VS_OPEN_FOLDER);
+            await bench.executeCommand(VS_OPEN_FOLDER);
+            console.log('Before hook completed successfully');
+        } catch (error) {
+            console.error('Error in Scan from IDE before hook:', error);
+            throw error;
+        }
     });
 
     after(async function () {
         this.timeout(30000); // Increase timeout to 30 seconds
-        await bench.executeCommand(CX_CLEAR);
+        try {
+            console.log('=== Starting Scan from IDE - after hook ===');
+            console.log('Executing clear command:', CX_CLEAR);
+            await bench.executeCommand(CX_CLEAR);
+            console.log('After hook completed successfully');
+        } catch (error) {
+            console.error('Error in Scan from IDE after hook:', error);
+            throw error;
+        }
     });
 
     it("should run scan from IDE", retryTest(async function () {

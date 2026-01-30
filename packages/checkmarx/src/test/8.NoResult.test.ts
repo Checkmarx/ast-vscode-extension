@@ -54,23 +54,36 @@ describe("Scan ID load results test", () => {
     it("should allow creating a new scan even if the current scan has zero results", async function () {
         this.timeout(60000); // Increase timeout to 60 seconds
 
-        await bench.executeCommand(CX_LOOK_SCAN);
-        const input = await InputBox.create();
-        // Add delay to ensure input box is ready
-        await new Promise((res) => setTimeout(res, 1000));
-        await input.setText(EMPTY_RESULTS_SCAN_ID);
-        await input.confirm();
+        try {
+            console.log('Starting create new scan test...');
+            console.log('Executing command:', CX_LOOK_SCAN);
+            await bench.executeCommand(CX_LOOK_SCAN);
+            const input = await InputBox.create();
+            // Add delay to ensure input box is ready
+            await new Promise((res) => setTimeout(res, 1000));
+            console.log('Setting empty results scan ID:', EMPTY_RESULTS_SCAN_ID);
+            await input.setText(EMPTY_RESULTS_SCAN_ID);
+            await input.confirm();
 
-        await bench.executeCommand("ast-results.createScan");
+            console.log('Executing create scan command: ast-results.createScan');
+            await bench.executeCommand("ast-results.createScan");
 
-        let firstNotification = await waitForNotificationWithTimeout(5000)
-        let message = await firstNotification?.getMessage();
-        if (message === MESSAGES.scanProjectNotMatch) {
-            let actions = await firstNotification?.getActions()
-            let action = await actions[0];
-            await action.click();
-            firstNotification = await waitForNotificationWithTimeout(5000);
+            console.log('Waiting for notification...');
+            let firstNotification = await waitForNotificationWithTimeout(5000)
+            let message = await firstNotification?.getMessage();
+            console.log('Notification message:', message);
+            if (message === MESSAGES.scanProjectNotMatch) {
+                console.log('Handling project mismatch notification...');
+                let actions = await firstNotification?.getActions()
+                let action = await actions[0];
+                await action.click();
+                firstNotification = await waitForNotificationWithTimeout(5000);
+            }
+            expect(firstNotification).to.not.be.undefined;
+            console.log('Create new scan test completed successfully');
+        } catch (error) {
+            console.error('Error in create new scan test:', error);
+            throw error;
         }
-        expect(firstNotification).to.not.be.undefined;
     });
 });
