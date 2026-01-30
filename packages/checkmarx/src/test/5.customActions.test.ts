@@ -146,11 +146,10 @@ describe("filter and groups actions tests", () => {
         console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
-        console.log(`Validation successful, resetting group by: ${commands[index]}`);
-        await bench.executeCommand(commands[index]);
+        console.log(`Validation successful for: ${commands[index]}`);
 
-        // Add delay after reset
-        await new Promise((res) => setTimeout(res, 1000));
+        // Note: Not resetting group by - commands toggle, so executing twice would just turn it on then off
+        // The test validates that each group by works, not that they can be toggled
       }
       console.log('Group by test (first) completed successfully');
     } catch (error) {
@@ -198,11 +197,10 @@ describe("filter and groups actions tests", () => {
         console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
-        console.log(`Validation successful, resetting group by: ${commands[index]}`);
-        await bench.executeCommand(commands[index]);
+        console.log(`Validation successful for: ${commands[index]}`);
 
-        // Add delay after reset
-        await new Promise((res) => setTimeout(res, 1000));
+        // Note: Not resetting group by - commands toggle, so executing twice would just turn it on then off
+        // The test validates that each group by works, not that they can be toggled
       }
       console.log('Group by test (second) completed successfully');
     } catch (error) {
