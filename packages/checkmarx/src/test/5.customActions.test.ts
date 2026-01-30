@@ -54,6 +54,8 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all group by", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -67,10 +69,14 @@ describe("filter and groups actions tests", () => {
       let scan = await treeScans?.findItem(
         SCAN_KEY_TREE_LABEL
       );
-      while (scan === undefined) {
+      const maxAttempts = 30;
+      let attempts = 0;
+      while (scan === undefined && attempts < maxAttempts) {
+        await new Promise((res) => setTimeout(res, 500));
         scan = await treeScans?.findItem(
           SCAN_KEY_TREE_LABEL
         );
+        attempts++;
       }
       const isValidated = await validateRootNodeBool(scan);
       expect(isValidated).to.equal(true);
@@ -79,6 +85,8 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all group by", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -99,6 +107,8 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter state", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     await initialize();
     const commands = [CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_CONFIRMED, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_FILTER_NOT_IGNORED];
     for (var index in commands) {

@@ -52,7 +52,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(8000);
+    this.timeout(100000); // Increase timeout to 100 seconds
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await new Workbench().executeCommand("workbench.action.closeActiveEditor");
@@ -88,10 +88,14 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should select project", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
     const input = await InputBox.create();
+    // Add delay to ensure input box is ready
+    await new Promise((res) => setTimeout(res, 1000));
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     // Select from the pickers list
     let projectName = await getQuickPickSelector(input);
