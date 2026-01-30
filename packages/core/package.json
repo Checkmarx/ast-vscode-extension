@@ -9,7 +9,7 @@
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "clean": "rimraf out",
-    "unit-test-core": " npx mocha"
+    "unit-test-core": "npx mocha"
   },
   "dependencies": {
     "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",
