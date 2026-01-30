@@ -103,26 +103,53 @@ describe("filter and groups actions tests", () => {
       for (var index in commands) {
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
+
+        // Add delay to allow UI to update after command execution
+        console.log('Waiting for UI to update...');
+        await new Promise((res) => setTimeout(res, 2000));
+
+        console.log('Initializing tree scans...');
         treeScans = await initialize();
-        let scan = await treeScans?.findItem(
-          SCAN_KEY_TREE_LABEL
-        );
+        console.log('Tree scans initialized, finding scan item...');
+
+        let scan;
         const maxAttempts = 30;
         let attempts = 0;
-        while (scan === undefined && attempts < maxAttempts) {
+
+        // Try to find the scan item with retries
+        while (attempts < maxAttempts) {
+          try {
+            scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+            if (scan !== undefined) {
+              console.log(`Found scan item on attempt ${attempts + 1}`);
+              break;
+            }
+          } catch (error) {
+            console.log(`Attempt ${attempts + 1} failed to find scan item:`, error.message);
+          }
+
           await new Promise((res) => setTimeout(res, 500));
-          scan = await treeScans?.findItem(
-            SCAN_KEY_TREE_LABEL
-          );
           attempts++;
+
+          // Re-initialize tree on every few attempts
+          if (attempts % 5 === 0) {
+            console.log(`Re-initializing tree scans (attempt ${attempts})...`);
+            treeScans = await initialize();
+          }
         }
+
         if (scan === undefined) {
           console.error(`Failed to find scan item after ${maxAttempts} attempts for group by: ${commands[index]}`);
         }
+
+        console.log('Validating root node...');
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
-        console.log(`Resetting group by: ${commands[index]}`);
+        console.log(`Validation successful, resetting group by: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
+
+        // Add delay after reset
+        await new Promise((res) => setTimeout(res, 1000));
       }
       console.log('Group by test (first) completed successfully');
     } catch (error) {
