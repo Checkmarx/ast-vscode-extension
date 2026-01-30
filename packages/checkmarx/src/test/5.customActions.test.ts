@@ -94,9 +94,9 @@ describe("filter and groups actions tests", () => {
     try {
       console.log('Starting group by test (first)...');
       const commands = [
-        CX_GROUP_LANGUAGE,
         CX_GROUP_STATUS,
         CX_GROUP_STATE,
+        CX_GROUP_LANGUAGE,
         CX_GROUP_QUERY_NAME,
         CX_GROUP_FILE,
       ];
@@ -116,9 +116,9 @@ describe("filter and groups actions tests", () => {
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
 
-        // Add delay to allow UI to update after command execution
-        console.log('Waiting for UI to update...');
-        await new Promise((res) => setTimeout(res, 2000));
+        // Add delay to allow UI to update and tree to refresh after command execution
+        console.log('Waiting for UI to update and tree to refresh...');
+        await new Promise((res) => setTimeout(res, 5000)); // Increased to 5 seconds to allow tree refresh to complete
 
         console.log('Initializing tree scans...');
         treeScans = await initialize();
