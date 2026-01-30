@@ -242,7 +242,7 @@ jobs:
           OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
           npm install -g ovsx
-          ovsx publish packages/project-ignite/project-ignite-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+          ovsx publish packages/project-ignite/cx-dev-assist-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
 
   notify:
     if: inputs.dev == false
