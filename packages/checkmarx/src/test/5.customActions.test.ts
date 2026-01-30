@@ -102,6 +102,16 @@ describe("filter and groups actions tests", () => {
       ];
       for (var index in commands) {
         console.log(`\n=== Processing command ${parseInt(index) + 1} of ${commands.length}: ${commands[index]} ===`);
+
+        // Ensure the results view is focused before executing command
+        console.log('Focusing on results view...');
+        const activityBar = await bench.getActivityBar();
+        const viewControl = await activityBar.getViewControl('Checkmarx One');
+        if (viewControl) {
+          await viewControl.openView();
+          await new Promise((res) => setTimeout(res, 1000));
+        }
+
         console.log(`Executing group by command: ${commands[index]}`);
         await bench.executeCommand(commands[index]);
 
