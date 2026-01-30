@@ -176,8 +176,8 @@ export class AuthenticationWebview {
         <div class="auth-form-title">Checkmarx Developer Assist Authentication</div>
         <div id="loginForm">
         <div id="apiKeyForm">
-          <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist API Key" class="auth-input">
+          <label for="apiKey" class="form-label">Checkmarx Developer Assist Activation Key:</label>
+			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist Activation Key" class="auth-input">
         </div>
         <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx Developer Assist</button>
         </div>
@@ -248,7 +248,7 @@ export class AuthenticationWebview {
                   this._panel.webview.postMessage({
                     type: "validation-error",
                     message:
-                      "API Key validation failed. Please check your key.",
+                      "Activation Key validation failed. Please check your key.",
                   });
                   this._panel.webview.postMessage({ command: "enableAuthButton" });
                   return;
@@ -261,7 +261,7 @@ export class AuthenticationWebview {
                 await commonCommand.executeCheckCxOneAssistEnabled();
                 this._panel.webview.postMessage({
                   type: "validation-success",
-                  message: "API Key validated successfully!",
+                  message: "Activation Key validated successfully!",
                 });
                 this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
               } catch (error) {
