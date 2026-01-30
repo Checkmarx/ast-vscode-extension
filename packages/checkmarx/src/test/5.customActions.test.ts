@@ -108,8 +108,9 @@ describe("filter and groups actions tests", () => {
         const activityBar = await bench.getActivityBar();
         const viewControl = await activityBar.getViewControl('Checkmarx');
         if (viewControl) {
-          await viewControl.openView();
-          await new Promise((res) => setTimeout(res, 1000));
+          const view = await viewControl.openView();
+          console.log('View opened, waiting for view to be fully active...');
+          await new Promise((res) => setTimeout(res, 3000)); // Increased delay to ensure view is fully active
         }
 
         console.log(`Executing group by command: ${commands[index]}`);
