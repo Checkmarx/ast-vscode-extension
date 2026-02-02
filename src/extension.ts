@@ -42,7 +42,7 @@ import { IacScannerCommand } from "./realtimeScanners/scanners/iac/iacScannerCom
 import { AscaScannerCommand } from "./realtimeScanners/scanners/asca/ascaScannerCommand";
 import { ContainersScannerCommand } from "./realtimeScanners/scanners/containers/containersScannerCommand";
 import { DiagnosticCommand } from "./commands/diagnosticCommand";
-import { RemediationFileManager } from "./realtimeScanners/common/remediationFileManager";
+import { RemediationFileManager, RemediationEntry } from "./realtimeScanners/common/remediationFileManager";
 import { RemediationView } from "./views/remediationView/remediationView";
 import { FlowDiagramService } from "./realtimeScanners/common/flowDiagramService";
 
@@ -346,6 +346,35 @@ async function handleRemediationReportGeneration(
   await reportService.generateReport(remediation, logs);
 }
 
+/**
+ * Handle bulk remediation report generation command
+ */
+async function handleBulkRemediationReportGeneration(
+  remediationIds: string[],
+  remediationFileManager: RemediationFileManager,
+  logs: Logs
+): Promise<void> {
+  if (!remediationIds || remediationIds.length === 0) {
+    vscode.window.showWarningMessage('No vulnerabilities selected for report generation');
+    return;
+  }
+
+  // Get all remediations
+  const remediations = remediationIds
+    .map(id => remediationFileManager.getRemediation(id))
+    .filter(r => r !== undefined) as RemediationEntry[];
+
+  if (remediations.length === 0) {
+    vscode.window.showErrorMessage('No valid remediations found');
+    return;
+  }
+
+  // Use the ReportGenerationService to generate bulk PDF report
+  const { ReportGenerationService } = await import('./realtimeScanners/common/reportGenerationService');
+  const reportService = ReportGenerationService.getInstance();
+  await reportService.generateBulkReport(remediations, logs);
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   // Initialize cx first
   initialize(context);
@@ -644,6 +673,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(commands.generateRemediationReport, async (remediationId: string) => {
       await handleRemediationReportGeneration(remediationId, remediationFileManager, logs);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(commands.generateBulkRemediationReport, async (remediationIds: string[]) => {
+      await handleBulkRemediationReportGeneration(remediationIds, remediationFileManager, logs);
     })
   );
 

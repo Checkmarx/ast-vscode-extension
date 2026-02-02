@@ -293,16 +293,27 @@ export class CopilotChatCommand {
 
                 // Capture original code BEFORE opening AI chat for remediation tracking
                 const captureResult = this.captureVulnerableCode(item);
-                const key = `${item.filePath}:${captureResult.startLine}`;
 
-                this.logs.info(`[Remediation] Capturing original code for: ${item.filePath}`);
+                // For IAC, use originalFilePath instead of filePath (which is a temp file)
+                const actualFilePath = isIacHoverData(item) ? (item.originalFilePath || item.filePath) : item.filePath;
+                const key = `${actualFilePath}:${captureResult.startLine}`;
+
+                this.logs.info(`[Remediation] ========== CAPTURING REMEDIATION ==========`);
+                this.logs.info(`[Remediation] Vulnerability Type: ${isIacHoverData(item) ? 'IAC' : isSecretsHoverData(item) ? 'Secrets' : isAscaHoverData(item) ? 'ASCA' : isContainersHoverData(item) ? 'Containers' : 'OSS'}`);
+                this.logs.info(`[Remediation] File Path (item.filePath): ${item.filePath}`);
+                if (isIacHoverData(item)) {
+                    this.logs.info(`[Remediation] Original File Path (item.originalFilePath): ${item.originalFilePath}`);
+                }
+                this.logs.info(`[Remediation] Actual File Path (used for key): ${actualFilePath}`);
+                this.logs.info(`[Remediation] Pending Key: ${key}`);
                 this.logs.info(`[Remediation] Lines: ${captureResult.startLine}-${captureResult.endLine}`);
                 this.logs.info(`[Remediation] Code length: ${captureResult.code.length}`);
+                this.logs.info(`[Remediation] Code preview: ${captureResult.code.substring(0, 100)}...`);
 
                 this.pendingRemediations.set(key, {
                     item,
                     originalCode: captureResult.code,
-                    filePath: item.filePath,
+                    filePath: actualFilePath,
                     startLine: captureResult.startLine,
                     endLine: captureResult.endLine,
                     timestamp: Date.now()
@@ -551,19 +562,33 @@ export class CopilotChatCommand {
             vscode.workspace.onDidSaveTextDocument(async (document) => {
                 const filePath = document.uri.fsPath;
 
-                this.logs.info(`[Remediation] Document saved: ${filePath}`);
+                this.logs.info(`[Remediation] ========== DOCUMENT SAVED ==========`);
+                this.logs.info(`[Remediation] Saved file: ${filePath}`);
                 this.logs.info(`[Remediation] Pending remediations count: ${this.pendingRemediations.size}`);
+
+                if (this.pendingRemediations.size > 0) {
+                    this.logs.info(`[Remediation] Pending remediations keys:`);
+                    for (const key of this.pendingRemediations.keys()) {
+                        this.logs.info(`[Remediation]   - ${key}`);
+                    }
+                }
 
                 // Check if we have pending remediations for this file
                 for (const [key, pending] of this.pendingRemediations.entries()) {
-                    this.logs.info(`[Remediation] Checking pending: ${pending.filePath} vs ${filePath}`);
+                    this.logs.info(`[Remediation] Checking pending key: ${key}`);
+                    this.logs.info(`[Remediation]   Pending file: ${pending.filePath}`);
+                    this.logs.info(`[Remediation]   Saved file:   ${filePath}`);
 
                     // Normalize paths for comparison (handle Windows/Unix differences)
                     const normalizedPendingPath = pending.filePath.replace(/\\/g, '/').toLowerCase();
                     const normalizedFilePath = filePath.replace(/\\/g, '/').toLowerCase();
 
+                    this.logs.info(`[Remediation]   Normalized pending: ${normalizedPendingPath}`);
+                    this.logs.info(`[Remediation]   Normalized saved:   ${normalizedFilePath}`);
+                    this.logs.info(`[Remediation]   Match: ${normalizedPendingPath === normalizedFilePath}`);
+
                     if (normalizedPendingPath === normalizedFilePath) {
-                        this.logs.info(`[Remediation] Match found! Capturing fixed code...`);
+                        this.logs.info(`[Remediation] ✅ MATCH FOUND! Capturing fixed code...`);
 
                         // Capture fixed code
                         const fixedRange = new vscode.Range(pending.startLine, 0, pending.endLine, document.lineAt(pending.endLine).text.length);
@@ -676,7 +701,7 @@ export class CopilotChatCommand {
                 title = item.title;
                 severity = item.severity;
                 description = item.description;
-                filePath = item.filePath;
+                filePath = item.originalFilePath || item.filePath; // Use originalFilePath for IAC
                 startLine = item.location.line;
                 endLine = item.location.line;
             } else {

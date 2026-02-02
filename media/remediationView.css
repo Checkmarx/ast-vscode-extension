@@ -21,6 +21,11 @@ body {
     font-weight: 600;
 }
 
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .refresh-btn {
     background-color: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
@@ -35,13 +40,71 @@ body {
     background-color: var(--vscode-button-hoverBackground);
 }
 
+.bulk-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    background-color: var(--vscode-editor-inactiveSelectionBackground);
+    border-radius: 6px;
+    border: 1px solid var(--vscode-panel-border);
+}
+
+.selection-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+.select-all-checkbox {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.selection-count {
+    font-size: 13px;
+    color: var(--vscode-descriptionForeground);
+    font-weight: 500;
+}
+
+.bulk-action-btn {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.bulk-action-btn:hover:not(:disabled) {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.bulk-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .table-container {
     width: 100%;
 }
 
 .table-header {
     display: grid;
-    grid-template-columns: 50px 2fr 100px 100px 1.5fr 120px 150px;
+    grid-template-columns: 40px 2fr 100px 100px 1.5fr 120px 150px;
     gap: 10px;
     padding: 12px;
     background-color: var(--vscode-editor-background);
@@ -51,13 +114,13 @@ body {
 }
 
 .table-body {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 280px);
     overflow-y: auto;
 }
 
 .table-row {
     display: grid;
-    grid-template-columns: 50px 2fr 100px 100px 1.5fr 120px 150px;
+    grid-template-columns: 40px 2fr 100px 100px 1.5fr 120px 150px;
     gap: 10px;
     padding: 12px;
     border-bottom: 1px solid var(--vscode-panel-border);
@@ -69,9 +132,16 @@ body {
     background-color: var(--vscode-list-hoverBackground);
 }
 
-.col-icon {
-    font-size: 24px;
-    text-align: center;
+.col-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.row-checkbox {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
 }
 
 .col-title .title-text {

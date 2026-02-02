@@ -139,6 +139,7 @@ export const commands = {
   viewRemediationDiff: `${constants.extensionName}.viewRemediationDiff`,
   viewRemediationFlowDiagram: `${constants.extensionName}.viewRemediationFlowDiagram`,
   generateRemediationReport: `${constants.extensionName}.generateRemediationReport`,
+  generateBulkRemediationReport: `${constants.extensionName}.generateBulkRemediationReport`,
   deleteRemediation: `${constants.extensionName}.deleteRemediation`,
   assistDocumentation: `${constants.extensionName}.assistDocumentation`,
   updateCxOneAssist: `${constants.extensionName}.updateCxOneAssist`,
