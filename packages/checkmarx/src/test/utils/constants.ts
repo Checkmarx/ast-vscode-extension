@@ -41,12 +41,14 @@ export const CX_CLEAR = "ast-results.clear";
 export const CX_SCA_CLEAR = "ast-results.clearSCA";
 export const CX_SCA_SCAN = "ast-results.createSCAScan";
 
-export const CX_GROUP_FILE = "ast-results.groupByFile";
-export const CX_GROUP_SEVERITY = "ast-results.groupBySeverity";
-export const CX_GROUP_LANGUAGE = "ast-results.groupByLanguage";
-export const CX_GROUP_STATUS = "ast-results.groupByStatus";
-export const CX_GROUP_STATE = "ast-results.groupByState";
-export const CX_GROUP_QUERY_NAME = "ast-results.groupByQueryName";
+// Use plural command IDs which don't require "view == astResults" enablement
+// This allows them to be executed in sequence without view focus issues
+export const CX_GROUP_FILE = "ast-results.groupByFiles";
+export const CX_GROUP_SEVERITY = "ast-results.groupBySeverities";
+export const CX_GROUP_LANGUAGE = "ast-results.groupByLanguages";
+export const CX_GROUP_STATUS = "ast-results.groupByStatuses";
+export const CX_GROUP_STATE = "ast-results.groupByStates";
+export const CX_GROUP_QUERY_NAME = "ast-results.groupByQueryNames";
 
 export const CX_CATETORY = "Checkmarx One";
 export const CX_API_KEY_SETTINGS = "Api Key";
