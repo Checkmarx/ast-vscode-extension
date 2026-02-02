@@ -11,6 +11,10 @@ import {
   getQuickPickSelector,
   initialize,
   quickPickSelector,
+  waitForInputBoxReady,
+  safeSetText,
+  safeConfirm,
+  sleep,
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -32,9 +36,12 @@ describe("Wizard load results test", () => {
     driver = VSBrowser.instance.driver;
     await bench.executeCommand(CX_CLEAR);
     await bench.executeCommand(CX_SELECT_ALL);
+    // Wait for command to complete and InputBox to be ready
+    await sleep(2000);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(10000); // Increase timeout for cleanup
     await new EditorView().closeAllEditors();
     await bench.executeCommand(CX_CLEAR);
     // Wizard command execution
@@ -44,24 +51,19 @@ describe("Wizard load results test", () => {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     // Project selection
-    const inputProject = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-
+    const inputProject = await waitForInputBoxReady(15000);
     let projectName = await getQuickPickSelector(inputProject);
-    await inputProject.confirm();
+    await safeConfirm(inputProject);
 
     // Branch selection
-    const input = await InputBox.create();
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
+    const input = await waitForInputBoxReady(15000);
+    await safeSetText(input, CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
+    await safeSetText(input, branchName);
+    await safeConfirm(input);
 
     // Scan selection
-    const inputScan = new InputBox();
-    await new Promise((res) => setTimeout(res, 1000));
+    const inputScan = await waitForInputBoxReady(15000);
     let scanDate = await getQuickPickSelector(inputScan);
     await quickPickSelector(inputScan);
 

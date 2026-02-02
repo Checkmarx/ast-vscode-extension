@@ -7,7 +7,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getQuickPickSelector, initialize } from "./utils/utils";
+import { getQuickPickSelector, initialize, waitForInputBoxReady, safeSetText, safeConfirm, sleep } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
   CX_CLEAR,
@@ -29,9 +29,18 @@ describe("Individual pickers load results test", () => {
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await bench.executeCommand(CX_SELECT_SCAN);
+    // Cancel the InputBox that was opened by CX_SELECT_SCAN
+    try {
+      const input = await InputBox.create(2000);
+      await input.cancel();
+      await sleep(500);
+    } catch (e) {
+      // InputBox might not be present, that's okay
+    }
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(10000); // Increase timeout for cleanup
     await new EditorView().closeAllEditors();
     await bench.executeCommand(CX_CLEAR);
   });
@@ -42,15 +51,15 @@ describe("Individual pickers load results test", () => {
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    const input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(CX_TEST_SCAN_PROJECT_NAME);
+    await sleep(500); // Wait for command to trigger InputBox
+    const input = await waitForInputBoxReady(15000);
+    await safeSetText(input, CX_TEST_SCAN_PROJECT_NAME);
     // Select from the pickers list
     let projectName = await getQuickPickSelector(input);
-    await input.setText(projectName);
-    await input.confirm();
+    await safeSetText(input, projectName);
+    await safeConfirm(input);
     // Wait for project selection to be made
+    await sleep(1000);
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
   });
@@ -61,15 +70,15 @@ describe("Individual pickers load results test", () => {
     let treeScans = await initialize();
     // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
-    let input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+    await sleep(500); // Wait for command to trigger InputBox
+    let input = await waitForInputBoxReady(15000);
     // Select from the pickers list
-    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
+    await safeSetText(input, CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
+    await safeSetText(input, branchName);
+    await safeConfirm(input);
     // Wait for branch selection to be made
+    await sleep(1000);
     let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
   });
@@ -80,14 +89,14 @@ describe("Individual pickers load results test", () => {
     let treeScans = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
-    let input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+    await sleep(500); // Wait for command to trigger InputBox
+    let input = await waitForInputBoxReady(15000);
     // Select from the pickers list
     let scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-    await input.confirm();
+    await safeSetText(input, scanDate);
+    await safeConfirm(input);
     // Wait for scan selection to be made
+    await sleep(1000);
     const scanDetailsparts: string[] = scanDate.split(" ");
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");
     let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);

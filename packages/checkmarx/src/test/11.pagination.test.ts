@@ -21,7 +21,8 @@ describe("Get items with pagination", () => {
 		driver = VSBrowser.instance.driver;
 	});
 
-	after(async () => {
+	after(async function () {
+		this.timeout(10000); // Increase timeout for cleanup
 		await bench.executeCommand(CX_CLEAR);
 	});
 

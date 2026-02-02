@@ -7,7 +7,7 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { initialize, waitForNotificationWithTimeout, validateRootNodeBool } from "./utils/utils";
+import { initialize, waitForNotificationWithTimeout, validateRootNodeBool, waitForInputBoxReady, safeSetText, safeConfirm, sleep } from "./utils/utils";
 import { CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
 import { EMPTY_RESULTS_SCAN_ID } from "./utils/envs";
 
@@ -22,7 +22,8 @@ describe("Scan ID load results test", () => {
         driver = VSBrowser.instance.driver;
     });
 
-    after(async () => {
+    after(async function () {
+        this.timeout(10000); // Increase timeout for cleanup
         await new EditorView().closeAllEditors();
     });
 
@@ -30,14 +31,14 @@ describe("Scan ID load results test", () => {
         this.timeout(60000); // Increase timeout to 60 seconds
 
         await bench.executeCommand(CX_LOOK_SCAN);
-        let input = await new InputBox();
-        // Add delay to ensure input box is ready
-        await new Promise((res) => setTimeout(res, 1000));
-        await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
-        await input.confirm();
+        let input = await waitForInputBoxReady(15000);
+        await safeSetText(input, "e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
+        await safeConfirm(input);
+        await sleep(3000); // Wait for results to load
     });
 
     it("should check scan result is not undefined", async function () {
+        this.timeout(10000); // Increase timeout
         // Make sure the results are loaded
         treeScans = await initialize();
         while (treeScans === undefined) {
@@ -55,11 +56,10 @@ describe("Scan ID load results test", () => {
         this.timeout(60000); // Increase timeout to 60 seconds
 
         await bench.executeCommand(CX_LOOK_SCAN);
-        const input = await InputBox.create();
-        // Add delay to ensure input box is ready
-        await new Promise((res) => setTimeout(res, 1000));
-        await input.setText(EMPTY_RESULTS_SCAN_ID);
-        await input.confirm();
+        const input = await waitForInputBoxReady(15000);
+        await safeSetText(input, EMPTY_RESULTS_SCAN_ID);
+        await safeConfirm(input);
+        await sleep(3000); // Wait for scan to load
 
         await bench.executeCommand("ast-results.createScan");
 

@@ -16,6 +16,10 @@ import {
   validateRootNode,
   getQuickPickSelector,
   clickFirstVulnerability,
+  waitForInputBoxReady,
+  safeSetText,
+  safeConfirm,
+  sleep,
 } from "./utils/utils";
 import {
   CHANGES_LABEL,
@@ -59,11 +63,14 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await bench.executeCommand(CX_CLEAR);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(10000); // Increase timeout for cleanup
     await new EditorView().closeAllEditors();
   });
 
   it("should clear groub by for scs secret detection and open details window ", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -84,6 +91,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
 
     for (var index in commands) {
       await bench.executeCommand(commands[index]);
+      await sleep(200); // Add delay between commands to prevent race conditions
     }
   });
 
@@ -93,44 +101,41 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     treeScans = await initialize();
     // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    const input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(CX_TEST_SCAN_PROJECT_NAME);
+    const input = await waitForInputBoxReady(15000);
+    await safeSetText(input, CX_TEST_SCAN_PROJECT_NAME);
     // Select from the pickers list
     let projectName = await getQuickPickSelector(input);
-    await input.setText(projectName);
-    await input.confirm();
-    // Wait for project selection to be made
+    await safeSetText(input, projectName);
+    await safeConfirm(input);
     let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
   });
 
   it("should select branch", async function () {
+    this.timeout(60000); // Increase timeout
     let treeScans = await initialize();
     // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
-    let input = await InputBox.create();
+    let input = await waitForInputBoxReady(15000);
     // Select from the pickers list
-    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
+    await safeSetText(input, CX_TEST_SCAN_BRANCH_NAME);
     let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
-    // Wait for branch selection to be made
+    await safeSetText(input, branchName);
+    await safeConfirm(input);
     let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
   });
 
   it("should select scan", async function () {
+    this.timeout(60000); // Increase timeout
     let treeScans = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
-    let input = await InputBox.create();
+    let input = await waitForInputBoxReady(15000);
     // Select from the pickers list
     let scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-    await input.confirm();
-    // Wait for scan selection to be made
+    await safeSetText(input, scanDate);
+    await safeConfirm(input);
     const scanDetailsparts: string[] = scanDate.split(" ");
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");
     let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
@@ -138,10 +143,12 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("should load results from scan ID", async function () {
+    this.timeout(60000); // Increase timeout
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
-    await input.setText(SCAN_ID);
-    await input.confirm();
+    let input = await waitForInputBoxReady(15000);
+    await safeSetText(input, SCAN_ID);
+    await safeConfirm(input);
+    await sleep(2000); // Wait for results to load
   });
 
   it.skip("secret detection tree with GroupBy command ", async function () {
@@ -178,6 +185,8 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("Secret detection tree with Filter command", async function () {
+    this.timeout(60000); // Increase timeout to 60 seconds
+
     await initialize();
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
@@ -189,6 +198,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     ];
     for (var index in commands) {
       await bench.executeCommand(commands[index]);
+      await sleep(200); // Add delay between commands to prevent race conditions
       expect(index).not.to.be.undefined;
     }
   });

@@ -179,11 +179,83 @@ export function retryTest(testFn, retries = 3) {
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
 
+/**
+ * Wait for InputBox to be ready for interaction
+ * Handles ElementNotInteractableError by waiting for element to be fully ready
+ */
+export async function waitForInputBoxReady(timeout = 10000): Promise<InputBox> {
+  const startTime = Date.now();
+  let lastError: Error | undefined;
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const input = await InputBox.create(timeout);
+
+      // Wait a bit for the element to be fully rendered and interactable
+      await sleep(500);
+
+      // Try to interact with it to verify it's ready
+      try {
+        await input.getText();
+        return input;
+      } catch (e) {
+        // Element not ready yet, continue waiting
+        lastError = e as Error;
+        await sleep(200);
+      }
+    } catch (e) {
+      lastError = e as Error;
+      await sleep(200);
+    }
+  }
+
+  throw new Error(`InputBox not ready after ${timeout}ms. Last error: ${lastError?.message}`);
+}
+
+/**
+ * Safely set text in InputBox with retry logic
+ * Handles ElementNotInteractableError and StaleElementReferenceError
+ */
+export async function safeSetText(input: InputBox, text: string, retries = 3): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await sleep(300); // Wait before interaction
+      await input.setText(text);
+      return;
+    } catch (error) {
+      if (attempt === retries) {
+        throw error;
+      }
+      console.warn(`setText failed, retrying... Attempt ${attempt} of ${retries}`);
+      await sleep(500);
+    }
+  }
+}
+
+/**
+ * Safely confirm InputBox with retry logic
+ */
+export async function safeConfirm(input: InputBox, retries = 3): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await sleep(200);
+      await input.confirm();
+      return;
+    } catch (error) {
+      if (attempt === retries) {
+        throw error;
+      }
+      console.warn(`confirm failed, retrying... Attempt ${attempt} of ${retries}`);
+      await sleep(500);
+    }
+  }
+}
+
 export async function selectItem(text) {
-  const input = await InputBox.create();
-  await input.setText(text);
+  const input = await waitForInputBoxReady();
+  await safeSetText(input, text);
   let item = await getQuickPickSelector(input);
-  await input.setText(item);
-  await input.confirm();
+  await safeSetText(input, item);
+  await safeConfirm(input);
   return item;
 }

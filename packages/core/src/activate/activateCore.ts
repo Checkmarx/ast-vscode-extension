@@ -37,7 +37,8 @@ export async function activateCore(context: vscode.ExtensionContext) {
     globalContext = context;
 
     // [SHARED] Initialize cx first
-    initialize(context);
+    // Explicitly pass process.env.TEST to ensure test mode works in monorepo structure
+    initialize(context, process.env.TEST);
 
     // [SHARED] Create logs channel and make it visible
     const output = vscode.window.createOutputChannel(constants.extensionFullName);

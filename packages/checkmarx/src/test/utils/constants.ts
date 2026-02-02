@@ -28,13 +28,12 @@ export const CX_FILTER_LOW = "ast-results: Filter severity: Low";
 export const CX_FILTER_MEDIUM = "ast-results: Filter severity: Medium";
 export const CX_FILTER_HIGH = "ast-results: Filter severity: High";
 
-export const CX_FILTER_NOT_EXPLOITABLE = "ast-results:Filter: Not Exploitable";
-export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE =
-  "ast-results:Filter: Proposed Not Exploitable";
-export const CX_FILTER_CONFIRMED = "ast-results:Filter: Confirmed";
-export const CX_FILTER_TO_VERIFY = "ast-results:Filter: To Verify";
-export const CX_FILTER_URGENT = "ast-results:Filter: Urgent";
-export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
+export const CX_FILTER_NOT_EXPLOITABLE = "ast-results.filterNotExploitables";
+export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE = "ast-results.filterProposeds";
+export const CX_FILTER_CONFIRMED = "ast-results.filterConfirmeds";
+export const CX_FILTER_TO_VERIFY = "ast-results.filterToVerifies";
+export const CX_FILTER_URGENT = "ast-results.filterUrgents";
+export const CX_FILTER_NOT_IGNORED = "ast-results.filterNotIgnoreds";
 
 export const CX_CLEAR = "ast-results: Clear";
 export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";

@@ -8,7 +8,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, retryTest, sleep } from "./utils/utils";
+import { getDetailsView, getResults, initialize, retryTest, sleep, waitForInputBoxReady, safeSetText, safeConfirm } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
@@ -32,11 +32,9 @@ describe("Scan ID load results test", () => {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(SCAN_ID);
-    await input.confirm();
+    let input = await waitForInputBoxReady(15000);
+    await safeSetText(input, SCAN_ID);
+    await safeConfirm(input);
     await sleep(5000);
   });
 
