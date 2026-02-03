@@ -16,6 +16,7 @@ import {
   validateRootNode,
   getQuickPickSelector,
   clickFirstVulnerability,
+  sleep,
 } from "./utils/utils";
 import {
   CHANGES_LABEL,
@@ -63,7 +64,47 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await new EditorView().closeAllEditors();
   });
 
+  it("should load scan first before applying filters", async function () {
+    this.timeout(90000);
+
+    // Load scan by ID first
+    await bench.executeCommand(CX_LOOK_SCAN);
+    const input = await InputBox.create();
+    await sleep(1000);
+    await input.setText(SCAN_ID);
+    await input.confirm();
+
+    // Wait for scan to load
+    await sleep(5000);
+
+    // Verify scan loaded
+    treeScans = await initialize();
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    while (scan === undefined && attempts < maxAttempts) {
+      await sleep(1000);
+      treeScans = await initialize();
+      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      attempts++;
+    }
+
+    expect(scan).to.not.be.undefined;
+  });
+
   it("should clear groub by for scs secret detection and open details window ", async function () {
+    this.timeout(90000);
+
+    // Ensure scan is loaded first
+    treeScans = await initialize();
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+    if (!scan) {
+      throw new Error("Scan must be loaded before applying filters and groups");
+    }
+
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -82,9 +123,14 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
       CX_GROUP_SEVERITY,
     ];
 
-    for (var index in commands) {
-      await bench.executeCommand(commands[index]);
+    for (const command of commands) {
+      await bench.executeCommand(command);
+      await sleep(500);
     }
+
+    // Verify tree is still accessible
+    treeScans = await initialize();
+    expect(treeScans).not.to.be.undefined;
   });
 
   it("should select project", async function () {
@@ -137,9 +183,11 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it("should load results from scan ID", async function () {
+  it.skip("should load results from scan ID", async function () {
+    // This test is now covered by "should load scan first before applying filters"
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
+    const input = await InputBox.create();
+    await sleep(1000);
     await input.setText(SCAN_ID);
     await input.confirm();
   });
@@ -178,7 +226,15 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   });
 
   it("Secret detection tree with Filter command", async function () {
-    await initialize();
+    this.timeout(90000);
+
+    treeScans = await initialize();
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+    if (!scan) {
+      throw new Error("Scan must be loaded before applying filters");
+    }
+
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
       CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
@@ -187,9 +243,14 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
       CX_FILTER_URGENT,
       CX_FILTER_NOT_IGNORED,
     ];
-    for (var index in commands) {
-      await bench.executeCommand(commands[index]);
-      expect(index).not.to.be.undefined;
+
+    for (const command of commands) {
+      await bench.executeCommand(command);
+      await sleep(500);
+
+      // Verify tree is still accessible
+      treeScans = await initialize();
+      expect(treeScans).not.to.be.undefined;
     }
   });
 

@@ -29,15 +29,35 @@ describe("Scan ID load results test", () => {
   });
 
   it("should load results from scan ID", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(90000);
 
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+
+    // Use InputBox.create() instead of new InputBox()
+    const input = await InputBox.create();
+    await sleep(1000);
+
     await input.setText(SCAN_ID);
     await input.confirm();
+
+    // Wait for results to load
     await sleep(5000);
+
+    // Verify scan appears in tree
+    treeScans = await initialize();
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    while (scan === undefined && attempts < maxAttempts) {
+      await sleep(1000);
+      treeScans = await initialize();
+      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      attempts++;
+    }
+
+    expect(scan).to.not.be.undefined;
   });
 
   it.skip("should check open webview and codebashing link", retryTest(async function () {

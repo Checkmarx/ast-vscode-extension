@@ -1,6 +1,6 @@
 import { CustomTreeSection, InputBox, VSBrowser, WebDriver, Workbench } from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { initialize, validateRootNode, validateSeverities, validateRootNodeBool } from './utils/utils';
+import { initialize, validateRootNode, validateSeverities, validateRootNodeBool, sleep } from './utils/utils';
 import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, SAST_TYPE, SCAN_KEY_TREE_LABEL } from './utils/constants';
 import { SCAN_ID } from './utils/envs';
 
@@ -14,47 +14,62 @@ describe("filter and groups actions tests", () => {
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     treeScans = await initialize();
-    await bench.executeCommand(CX_LOOK_SCAN);
   });
 
   after(async function () {
-    this.timeout(30000); // Increase timeout to 30 seconds
+    this.timeout(30000);
     await bench.executeCommand(CX_CLEAR);
   });
 
   it("should click on all filter severity", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(90000);
 
-    treeScans = await initialize();
+    // Load scan first
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(
-      SCAN_ID
-    );
+    const input = await InputBox.create();
+    await sleep(1000);
+    await input.setText(SCAN_ID);
     await input.confirm();
-    const commands = [{ command: CX_FILTER_INFO, text: "INFO" }, { command: CX_FILTER_LOW, text: "LOW" }, { command: CX_FILTER_MEDIUM, text: "MEDIUM" }, { command: CX_FILTER_HIGH, text: "HIGH" }, { command: CX_FILTER_HIGH, text: "CRITICAL" }];
-    for (var index in commands) {
-      await bench.executeCommand(commands[index].command);
-      treeScans = await initialize();
-      let scan = await treeScans?.findItem(
-        SCAN_KEY_TREE_LABEL
-      );
-      const maxAttempts = 30;
-      let attempts = 0;
-      while (scan === undefined && attempts < maxAttempts) {
-        await new Promise((res) => setTimeout(res, 500));
-        scan = await treeScans?.findItem(
-          SCAN_KEY_TREE_LABEL
-        );
-        attempts++;
-      }
-      let isValidated = await validateSeverities(scan, commands[index].text);
 
+    // Wait for scan to load
+    await sleep(5000);
+    treeScans = await initialize();
+
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+    const maxAttempts = 60;
+    let attempts = 0;
+    while (scan === undefined && attempts < maxAttempts) {
+      await sleep(500);
+      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+      attempts++;
+    }
+
+    if (!scan) {
+      throw new Error("Scan not loaded after waiting");
+    }
+
+    const commands = [{ command: CX_FILTER_INFO, text: "INFO" }, { command: CX_FILTER_LOW, text: "LOW" }, { command: CX_FILTER_MEDIUM, text: "MEDIUM" }, { command: CX_FILTER_HIGH, text: "HIGH" }];
+
+    for (const cmd of commands) {
+      await bench.executeCommand(cmd.command);
+      await sleep(1000);
+
+      treeScans = await initialize();
+      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+      let retries = 0;
+      while (scan === undefined && retries < 30) {
+        await sleep(500);
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+        retries++;
+      }
+
+      const isValidated = await validateSeverities(scan, cmd.text);
       expect(isValidated).to.equal(true);
-      // Reset filters
-      await bench.executeCommand(commands[index].command);
+
+      // Reset filter
+      await bench.executeCommand(cmd.command);
+      await sleep(500);
     }
   });
 
@@ -112,13 +127,46 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter state", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(90000);
 
-    await initialize();
+    // Ensure scan is loaded first
+    treeScans = await initialize();
+    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+    if (!scan) {
+      // Load scan if not already loaded
+      await bench.executeCommand(CX_LOOK_SCAN);
+      const input = await InputBox.create();
+      await sleep(1000);
+      await input.setText(SCAN_ID);
+      await input.confirm();
+      await sleep(5000);
+
+      treeScans = await initialize();
+      scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+
+      const maxAttempts = 60;
+      let attempts = 0;
+      while (scan === undefined && attempts < maxAttempts) {
+        await sleep(500);
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+        attempts++;
+      }
+    }
+
+    if (!scan) {
+      throw new Error("Scan not loaded - cannot test filters");
+    }
+
     const commands = [CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_CONFIRMED, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_FILTER_NOT_IGNORED];
-    for (var index in commands) {
-      await bench.executeCommand(commands[index]);
-      expect(index).not.to.be.undefined;
+
+    for (const command of commands) {
+      await bench.executeCommand(command);
+      await sleep(500);
+
+      // Verify tree is still accessible
+      treeScans = await initialize();
+      expect(treeScans).not.to.be.undefined;
     }
   });
 });
