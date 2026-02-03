@@ -7,7 +7,7 @@ import {
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { initialize, waitForNotificationWithTimeout, validateRootNodeBool } from "./utils/utils";
+import { initialize, waitForNotificationWithTimeout, validateRootNodeBool, waitForInputBoxToOpen } from "./utils/utils";
 import { CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
 import { EMPTY_RESULTS_SCAN_ID } from "./utils/envs";
 
@@ -30,10 +30,9 @@ describe("Scan ID load results test", () => {
         this.timeout(90000);
 
         await bench.executeCommand(CX_LOOK_SCAN);
-        await new Promise((res) => setTimeout(res, 2000)); // Wait for InputBox to appear
 
-        // Use InputBox.create() instead of new InputBox()
-        const input = await InputBox.create();
+        // Use waitForInputBoxToOpen() instead of InputBox.create()
+        const input = await waitForInputBoxToOpen();
         await new Promise((res) => setTimeout(res, 1000));
 
         await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
@@ -77,10 +76,9 @@ describe("Scan ID load results test", () => {
         this.timeout(120000);
 
         await bench.executeCommand(CX_LOOK_SCAN);
-        await new Promise((res) => setTimeout(res, 2000)); // Wait for InputBox to appear
 
-        // Use InputBox.create() with proper waiting
-        const input = await InputBox.create();
+        // Use waitForInputBoxToOpen() with proper waiting
+        const input = await waitForInputBoxToOpen();
         await new Promise((res) => setTimeout(res, 1000));
 
         await input.setText(EMPTY_RESULTS_SCAN_ID);

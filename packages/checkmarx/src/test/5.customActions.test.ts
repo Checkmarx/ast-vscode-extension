@@ -1,6 +1,6 @@
 import { CustomTreeSection, InputBox, VSBrowser, WebDriver, Workbench } from 'vscode-extension-tester';
 import { expect } from 'chai';
-import { initialize, validateRootNode, validateSeverities, validateRootNodeBool, sleep } from './utils/utils';
+import { initialize, validateRootNode, validateSeverities, validateRootNodeBool, sleep, waitForInputBoxToOpen } from './utils/utils';
 import { CX_CLEAR, CX_FILTER_CONFIRMED, CX_FILTER_HIGH, CX_FILTER_INFO, CX_FILTER_LOW, CX_FILTER_MEDIUM, CX_FILTER_NOT_EXPLOITABLE, CX_FILTER_NOT_IGNORED, CX_FILTER_PROPOSED_NOT_EXPLOITABLE, CX_FILTER_TO_VERIFY, CX_FILTER_URGENT, CX_GROUP_FILE, CX_GROUP_LANGUAGE, CX_GROUP_QUERY_NAME, CX_GROUP_STATE, CX_GROUP_STATUS, CX_LOOK_SCAN, SAST_TYPE, SCAN_KEY_TREE_LABEL } from './utils/constants';
 import { SCAN_ID } from './utils/envs';
 
@@ -30,8 +30,7 @@ describe("filter and groups actions tests", () => {
 
     // Load scan first
     await bench.executeCommand(CX_LOOK_SCAN);
-    await sleep(2000); // Wait for InputBox to appear
-    const input = await InputBox.create();
+    const input = await waitForInputBoxToOpen();
     await sleep(1000);
     await input.setText(SCAN_ID);
     await input.confirm();
@@ -141,8 +140,7 @@ describe("filter and groups actions tests", () => {
     if (!scan) {
       // Load scan if not already loaded
       await bench.executeCommand(CX_LOOK_SCAN);
-      await sleep(2000); // Wait for InputBox to appear
-      const input = await InputBox.create();
+      const input = await waitForInputBoxToOpen();
       await sleep(1000);
       await input.setText(SCAN_ID);
       await input.confirm();

@@ -17,6 +17,7 @@ import {
   getQuickPickSelector,
   clickFirstVulnerability,
   sleep,
+  waitForInputBoxToOpen,
 } from "./utils/utils";
 import {
   CHANGES_LABEL,
@@ -75,8 +76,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
 
     // Load scan by ID first
     await bench.executeCommand(CX_LOOK_SCAN);
-    await sleep(2000); // Wait for InputBox to appear
-    const input = await InputBox.create();
+    const input = await waitForInputBoxToOpen();
     await sleep(1000);
     await input.setText(SCAN_ID);
     await input.confirm();

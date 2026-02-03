@@ -8,7 +8,7 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, retryTest, sleep } from "./utils/utils";
+import { getDetailsView, getResults, initialize, retryTest, sleep, waitForInputBoxToOpen } from "./utils/utils";
 import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
@@ -32,10 +32,9 @@ describe("Scan ID load results test", () => {
     this.timeout(90000);
 
     await bench.executeCommand(CX_LOOK_SCAN);
-    await sleep(2000); // Wait for InputBox to appear
 
-    // Use InputBox.create() instead of new InputBox()
-    const input = await InputBox.create();
+    // Use waitForInputBoxToOpen() instead of InputBox.create()
+    const input = await waitForInputBoxToOpen();
     await sleep(1000);
 
     await input.setText(SCAN_ID);

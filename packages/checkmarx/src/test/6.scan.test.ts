@@ -9,7 +9,7 @@ import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL, MESSAGES }
 import { waitByLinkText } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
 import { fail } from "assert";
-import { initialize, retryTest, waitForNotificationWithTimeout, sleep } from "./utils/utils";
+import { initialize, retryTest, waitForNotificationWithTimeout, sleep, waitForInputBoxToOpen } from "./utils/utils";
 import { expect } from "chai";
 
 
@@ -43,8 +43,7 @@ describe("Scan from IDE", () => {
 
         // Load scan by ID
         await bench.executeCommand(CX_LOOK_SCAN);
-        await sleep(2000); // Wait for InputBox to appear
-        const input = await InputBox.create();
+        const input = await waitForInputBoxToOpen();
         await sleep(1000);
         await input.setText(SCAN_ID);
         await input.confirm();

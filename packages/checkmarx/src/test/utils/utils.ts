@@ -189,6 +189,20 @@ export function retryTest(testFn, retries = 3) {
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
 
+export async function waitForInputBoxToOpen(maxRetries = 30, retryDelay = 800) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const input = await InputBox.create();
+      if (input) {
+        return input;
+      }
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+  throw new Error("InputBox did not open in time.");
+}
+
 export async function selectItem(text) {
   const input = await InputBox.create();
   await input.setText(text);
