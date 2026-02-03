@@ -13,10 +13,14 @@ interface DecodedJwt {
 interface McpServer {
 	serverUrl?: string;
 	url?: string;
-	headers: {
+	headers?: {
 		"cx-origin": string;
 		"Authorization": string;
 	};
+	command?: string;
+	args?: string[];
+	disabled?: boolean;
+	autoApprove?: string[];
 }
 
 interface KiroMcpServer {
@@ -28,7 +32,19 @@ interface KiroMcpServer {
 
 interface McpConfig {
 	servers?: Record<string, McpServer>;
-	mcpServers?: Record<string, McpServer | KiroMcpServer>;
+	mcpServers?: Record<string, McpServer | KiroMcpServer | CommandBasedMcpServer>;
+	toolChoice?: string;
+	allowMCPServers?: string[];
+}
+
+interface CommandBasedMcpServer {
+	command: string,
+	args: string[],
+	disabled: boolean,
+	autoApprove: string[],
+	alwaysAllow?: string[],
+	toolChoice?: "any" | "required"
+
 }
 
 const checkmarxMcpServerName = "Checkmarx";
@@ -74,9 +90,12 @@ function getMcpConfigPath(): string {
 	if (isIDE(constants.kiroAgent)) {
 		return path.join(os.homedir(), ".kiro", "settings", "mcp.json");
 	}
+	if (isIDE(constants.vsCodeAgentOrginalName)) {
+		return path.join(os.homedir(), ".gemini", "settings.json");
+	}
 }
 
-async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<void> {
+async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer | CommandBasedMcpServer): Promise<void> {
 	const mcpConfigPath = getMcpConfigPath();
 
 	let mcpConfig: McpConfig = {};
@@ -95,6 +114,12 @@ async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<
 	}
 
 	mcpConfig.mcpServers[checkmarxMcpServerName] = mcpServer;
+
+	const geminiExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
+	if (geminiExtension) {
+		mcpConfig.toolChoice = "any";
+		mcpConfig.allowMCPServers = [checkmarxMcpServerName];
+	}
 
 	try {
 		const dir = path.dirname(mcpConfigPath);
@@ -141,6 +166,38 @@ export async function uninstallMcp() {
 					{ servers: updatedServers },
 					vscode.ConfigurationTarget.Global
 				);
+			}
+		}
+
+		const geminiExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
+		if (geminiExtension) {
+			const geminiConfigPath = path.join(os.homedir(), ".gemini", "settings.json");
+
+			if (fs.existsSync(geminiConfigPath)) {
+				try {
+					const fileContent = fs.readFileSync(geminiConfigPath, "utf-8");
+					const geminiConfig: McpConfig = JSON.parse(fileContent);
+
+					if (geminiConfig.mcpServers && geminiConfig.mcpServers[checkmarxMcpServerName]) {
+						delete geminiConfig.mcpServers[checkmarxMcpServerName];
+					}
+
+					if (geminiConfig.mcpServers && Object.keys(geminiConfig.mcpServers).length === 0) {
+						delete geminiConfig.toolChoice;
+						delete geminiConfig.allowMCPServers;
+					} else if (geminiConfig.allowMCPServers) {
+						geminiConfig.allowMCPServers = geminiConfig.allowMCPServers.filter(
+							name => name !== checkmarxMcpServerName
+						);
+						if (geminiConfig.allowMCPServers.length === 0) {
+							delete geminiConfig.allowMCPServers;
+						}
+					}
+
+					fs.writeFileSync(geminiConfigPath, JSON.stringify(geminiConfig, null, 2), "utf-8");
+				} catch (error) {
+					console.warn("Failed to clean up Gemini config:", error);
+				}
 			}
 		}
 	} catch (error) {
@@ -206,19 +263,38 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		if (!isIDE(constants.vsCodeAgentOrginalName)) {
 			await updateMcpJsonFile(mcpServer);
 		} else {
+			const mcpServerCommandBased: CommandBasedMcpServer = {
+				command: "npx",
+				args: [
+					"mcp-remote",
+					fullUrl,
+					"--transport",
+					"sse",
+					"--interactive",
+					"--header",
+					`Authorization:${apiKey}`,
+					"--header",
+					"cx-origin:VsCode"
+				],
+				disabled: false,
+				autoApprove: [],
+				toolChoice: "any"
+			};
 			const config = vscode.workspace.getConfiguration();
 			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
 			const existingServers = fullMcp.servers || {};
 
 			// Create a new object to avoid proxy issues
 			const updatedServers = { ...existingServers };
-			updatedServers[checkmarxMcpServerName] = mcpServer;
+
+			updatedServers[checkmarxMcpServerName] = mcpServerCommandBased;
 
 			await config.update(
 				"mcp",
 				{ servers: updatedServers },
 				vscode.ConfigurationTarget.Global
 			);
+			await updateMcpJsonFile(mcpServerCommandBased);
 		}
 
 		vscode.window.showInformationMessage("MCP configuration saved successfully.");
