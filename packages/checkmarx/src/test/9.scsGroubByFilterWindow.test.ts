@@ -53,11 +53,16 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
   let driver: WebDriver;
 
   before(async function () {
-    this.timeout(100000); // Increase timeout to 100 seconds
+    this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     await new Workbench().executeCommand("workbench.action.closeActiveEditor");
-    await bench.executeCommand(CX_CLEAR);
+    try {
+      await bench.executeCommand(CX_CLEAR);
+    } catch (error) {
+      console.log("CX_CLEAR command failed in before hook:", error);
+      // Continue even if clear fails
+    }
   });
 
   after(async () => {

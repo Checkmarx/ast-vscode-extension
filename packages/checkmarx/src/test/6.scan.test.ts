@@ -24,13 +24,18 @@ describe("Scan from IDE", () => {
         this.timeout(100000);
         bench = new Workbench();
         driver = VSBrowser.instance.driver;
-        treeScans = await initialize();
+        // Don't initialize tree here - it will be done in each test when scan is loaded
         await bench.executeCommand(VS_OPEN_FOLDER);
     });
 
     after(async function () {
-        this.timeout(30000); // Increase timeout to 30 seconds
-        await bench.executeCommand(CX_CLEAR);
+        this.timeout(30000);
+        try {
+            await bench.executeCommand(CX_CLEAR);
+        } catch (error) {
+            console.log("CX_CLEAR command failed in cleanup:", error);
+            // Don't fail the test suite if cleanup fails
+        }
     });
 
     it("should run scan from IDE", retryTest(async function () {
