@@ -57,14 +57,6 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
 
-    // Ensure extension is ready
-    try {
-      await bench.executeCommand("ast-results.mockTokenTest");
-      await sleep(2000);
-    } catch (error) {
-      console.log("Failed to inject mock token:", error);
-    }
-
     await new Workbench().executeCommand("workbench.action.closeActiveEditor");
 
     try {
