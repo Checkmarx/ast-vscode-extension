@@ -70,7 +70,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
         ignoredStatusBarItem,
     } = await setupStatusBars(context, logs);
 
-    const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
+    const { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
 
     await setScanButtonDefaultIfScanIsNotRunning(context);
@@ -88,6 +88,13 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
             if (await cx.isStandaloneEnabled(logs)) {
                 kicsDiagnosticCollection.clear();
             }
+        }),
+    );
+
+    // Command to clear all realtime scanner diagnostics (gutter icons, underlines, problems)
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearAllRealtimeDiagnostics, async () => {
+            await scannerRegistry.clearAllScannerDiagnostics();
         }),
     );
 

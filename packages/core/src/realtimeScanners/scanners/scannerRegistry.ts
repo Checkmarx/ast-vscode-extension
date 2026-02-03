@@ -44,6 +44,15 @@ export class ScannerRegistry {
     }
   }
 
+  async clearAllScannerDiagnostics(): Promise<void> {
+    for (const scanner of this.scanners.values()) {
+      const scannerService = scanner.getScannerService();
+      if (scannerService) {
+        await scannerService.clearProblems();
+      }
+    }
+  }
+
   getScanner(id: string): IScannerCommand | undefined {
     return this.scanners.get(id);
   }

@@ -436,6 +436,9 @@ export class AuthService {
       await vscode.commands.executeCommand(commands.clear);
     }
 
+    // Clear all realtime scanner diagnostics (gutter icons, underlines, problems)
+    await vscode.commands.executeCommand(commands.clearAllRealtimeDiagnostics);
+
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
     await vscode.commands.executeCommand(
       commands.setContext,
