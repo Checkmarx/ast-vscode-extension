@@ -36,8 +36,15 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
     const ignoredStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
     context.subscriptions.push(ignoredStatusBarItem);
 
-    const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
+    const { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
+
+    // Command to clear all realtime scanner diagnostics (gutter icons, underlines, problems)
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearAllRealtimeDiagnostics, async () => {
+            await scannerRegistry.clearAllScannerDiagnostics();
+        }),
+    );
 
     const webViewCommand = new WebViewCommand(context, logs, null as any);
     registerAuthenticationLauncher(context, webViewCommand, logs);
@@ -158,7 +165,7 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
 
     context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 
-    return { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
+    return { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
 }
 
 /**

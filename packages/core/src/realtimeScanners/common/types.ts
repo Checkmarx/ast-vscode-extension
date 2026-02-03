@@ -24,6 +24,7 @@ export interface IScannerService {
 export interface IScannerCommand {
   register(): Promise<void>;
   dispose(): void;
+  getScannerService(): IScannerService;
 }
 
 export interface HoverData {

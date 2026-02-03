@@ -45,6 +45,9 @@ const COMMAND_NAMES = {
     kicsRemediation: 'kicsRemediation',
     kicsSetings: 'kicsSetings',
 
+    // Realtime Scanners
+    clearAllRealtimeDiagnostics: 'clearAllRealtimeDiagnostics',
+
     // Scan Commands
     createScan: 'createScan',
     createSCAScan: 'createSCAScan',
@@ -284,6 +287,11 @@ class CommandBuilder {
 
     get kicsSetings(): string {
         return this.buildCommand(COMMAND_NAMES.kicsSetings);
+    }
+
+    // Realtime Scanners
+    get clearAllRealtimeDiagnostics(): string {
+        return this.buildCommand(COMMAND_NAMES.clearAllRealtimeDiagnostics);
     }
 
     // Scan Commands

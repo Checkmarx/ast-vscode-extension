@@ -59,6 +59,10 @@ export abstract class BaseScannerCommand implements IScannerCommand {
     await this.scannerService.clearProblems();
   }
 
+  public getScannerService(): IScannerService {
+    return this.scannerService;
+  }
+
   protected registerScanOnFileOpen(): void {
     if (this.onDidOpenTextDocument) {
       this.onDidOpenTextDocument.dispose();
