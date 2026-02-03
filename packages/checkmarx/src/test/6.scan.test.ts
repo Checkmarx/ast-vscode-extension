@@ -24,8 +24,24 @@ describe("Scan from IDE", () => {
         this.timeout(100000);
         bench = new Workbench();
         driver = VSBrowser.instance.driver;
-        // Don't initialize tree here - it will be done in each test when scan is loaded
-        await bench.executeCommand(VS_OPEN_FOLDER);
+
+        // Ensure extension is ready
+        try {
+            await bench.executeCommand("ast-results.mockTokenTest");
+            await sleep(2000);
+        } catch (error) {
+            console.log("Failed to inject mock token:", error);
+        }
+
+        // Open folder
+        try {
+            await bench.executeCommand(VS_OPEN_FOLDER);
+            await sleep(2000);
+            // Press Escape to close any open dialogs
+            await driver.actions().sendKeys('\uE00C').perform();
+        } catch (error) {
+            console.log("VS_OPEN_FOLDER command failed or dialog handling failed:", error);
+        }
     });
 
     after(async function () {

@@ -22,6 +22,14 @@ describe("Scan ID load results test", () => {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
+
+    // Ensure extension is ready
+    try {
+      await bench.executeCommand("ast-results.mockTokenTest");
+      await sleep(2000);
+    } catch (error) {
+      console.log("Failed to inject mock token:", error);
+    }
   });
 
   after(async () => {

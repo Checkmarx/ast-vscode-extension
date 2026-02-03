@@ -23,18 +23,28 @@ export async function createView(
 export async function createTree(
   view: SideBarView | undefined
 ): Promise<CustomTreeSection | undefined> {
-  return (await view
-    ?.getContent()
-    .getSection("Checkmarx One Results")) as CustomTreeSection;
+  try {
+    return (await view
+      ?.getContent()
+      .getSection("Checkmarx One Results")) as CustomTreeSection;
+  } catch (error) {
+    console.log("Failed to get Checkmarx One Results section:", error);
+    return undefined;
+  }
 }
 
 export async function initialize(): Promise<CustomTreeSection | undefined> {
-  const control = await createControl();
-  let view;
-  if (control) {
-    view = await createView(control);
+  try {
+    const control = await createControl();
+    let view;
+    if (control) {
+      view = await createView(control);
+    }
+    return await createTree(view);
+  } catch (error) {
+    console.log("Failed to initialize tree:", error);
+    return undefined;
   }
-  return await createTree(view);
 }
 
 export async function initializeSCA(): Promise<CustomTreeSection | undefined> {

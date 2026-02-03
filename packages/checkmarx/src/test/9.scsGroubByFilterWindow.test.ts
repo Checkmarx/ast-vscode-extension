@@ -56,12 +56,21 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
+
+    // Ensure extension is ready
+    try {
+      await bench.executeCommand("ast-results.mockTokenTest");
+      await sleep(2000);
+    } catch (error) {
+      console.log("Failed to inject mock token:", error);
+    }
+
     await new Workbench().executeCommand("workbench.action.closeActiveEditor");
+
     try {
       await bench.executeCommand(CX_CLEAR);
     } catch (error) {
       console.log("CX_CLEAR command failed in before hook:", error);
-      // Continue even if clear fails
     }
   });
 
