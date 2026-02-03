@@ -30,6 +30,7 @@ describe("filter and groups actions tests", () => {
 
     // Load scan first
     await bench.executeCommand(CX_LOOK_SCAN);
+    await sleep(2000); // Wait for InputBox to appear
     const input = await InputBox.create();
     await sleep(1000);
     await input.setText(SCAN_ID);
@@ -140,6 +141,7 @@ describe("filter and groups actions tests", () => {
     if (!scan) {
       // Load scan if not already loaded
       await bench.executeCommand(CX_LOOK_SCAN);
+      await sleep(2000); // Wait for InputBox to appear
       const input = await InputBox.create();
       await sleep(1000);
       await input.setText(SCAN_ID);

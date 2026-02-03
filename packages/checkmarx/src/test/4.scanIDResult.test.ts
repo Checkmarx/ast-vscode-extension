@@ -32,6 +32,7 @@ describe("Scan ID load results test", () => {
     this.timeout(90000);
 
     await bench.executeCommand(CX_LOOK_SCAN);
+    await sleep(2000); // Wait for InputBox to appear
 
     // Use InputBox.create() instead of new InputBox()
     const input = await InputBox.create();

@@ -30,6 +30,7 @@ describe("Scan ID load results test", () => {
         this.timeout(90000);
 
         await bench.executeCommand(CX_LOOK_SCAN);
+        await new Promise((res) => setTimeout(res, 2000)); // Wait for InputBox to appear
 
         // Use InputBox.create() instead of new InputBox()
         const input = await InputBox.create();
@@ -76,6 +77,7 @@ describe("Scan ID load results test", () => {
         this.timeout(120000);
 
         await bench.executeCommand(CX_LOOK_SCAN);
+        await new Promise((res) => setTimeout(res, 2000)); // Wait for InputBox to appear
 
         // Use InputBox.create() with proper waiting
         const input = await InputBox.create();

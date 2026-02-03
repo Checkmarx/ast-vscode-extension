@@ -43,6 +43,7 @@ describe("Scan from IDE", () => {
 
         // Load scan by ID
         await bench.executeCommand(CX_LOOK_SCAN);
+        await sleep(2000); // Wait for InputBox to appear
         const input = await InputBox.create();
         await sleep(1000);
         await input.setText(SCAN_ID);
