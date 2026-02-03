@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { Logs } from "../../models/logs";
 import { IScannerCommand, IScannerService, IScannerConfig } from "./types";
 import { ConfigurationManager } from "../configuration/configurationManager";
+import { getCx } from "../../cx";
 
 export abstract class BaseScannerCommand implements IScannerCommand {
   protected context: vscode.ExtensionContext;
@@ -63,14 +64,39 @@ export abstract class BaseScannerCommand implements IScannerCommand {
     return this.scannerService;
   }
 
+  /**
+   * Check if scanning should be allowed based on credentials and feature flags
+   * @returns true if scanning is allowed, false otherwise
+   */
+  protected async shouldAllowScan(): Promise<boolean> {
+    const cx = getCx();
+
+    // Check if valid credentials exist
+    const hasValidConfig = await cx.isValidConfiguration();
+    if (!hasValidConfig) {
+      return false;
+    }
+
+    // Check if standalone or CxOne Assist is enabled
+    const isStandaloneEnabled = await cx.isStandaloneEnabled(this.logs);
+    const isCxOneAssistEnabled = await cx.isCxOneAssistEnabled(this.logs);
+
+    return isStandaloneEnabled || isCxOneAssistEnabled;
+  }
+
   protected registerScanOnFileOpen(): void {
     if (this.onDidOpenTextDocument) {
       this.onDidOpenTextDocument.dispose();
       this.onDidOpenTextDocument = undefined;
     }
     this.onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(
-      (document) => {
+      async (document) => {
         try {
+          // Check if scanning is allowed based on credentials and feature flags
+          const canScan = await this.shouldAllowScan();
+          if (!canScan) {
+            return;
+          }
           this.scannerService.scan(document, this.logs);
         } catch (error) {
           console.error(error);
@@ -112,8 +138,13 @@ export abstract class BaseScannerCommand implements IScannerCommand {
     this.context.subscriptions.push(this.onDidChangeTextDocument);
   }
 
-  protected onTextChange(event: vscode.TextDocumentChangeEvent): void {
+  protected async onTextChange(event: vscode.TextDocumentChangeEvent): Promise<void> {
     try {
+      // Check if scanning is allowed based on credentials and feature flags
+      const canScan = await this.shouldAllowScan();
+      if (!canScan) {
+        return;
+      }
       this.scannerService.scan(event.document, this.logs);
     } catch (error) {
       console.error(error);
