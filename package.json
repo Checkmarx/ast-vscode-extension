@@ -983,19 +983,15 @@
         "order": 1,
         "properties": {
           "checkmarxOne.authentication": {
-            "type": "",
             "order": 5,
             "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",
             "order": 6,
+            "default": "",
             "description": "Additional Parameters",
-            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
-            "properties": {
-              "type": "string",
-              "default": ""
-            }
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html)."
           }
         }
       },
