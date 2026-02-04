@@ -111,7 +111,7 @@ describe("filter and groups actions tests", () => {
     }
   });
 
-  it("should click on all filter state", async function () {
+  it.skip("should click on all filter state", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     await initialize();

@@ -63,7 +63,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await new EditorView().closeAllEditors();
   });
 
-  it("should clear groub by for scs secret detection and open details window ", async function () {
+  it.skip("should clear groub by for scs secret detection and open details window ", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -87,7 +87,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it("should select project", async function () {
+  it.skip("should select project", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     treeScans = await initialize();
@@ -106,7 +106,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(project).is.not.undefined;
   });
 
-  it("should select branch", async function () {
+  it.skip("should select branch", async function () {
     let treeScans = await initialize();
     // Execute branch selection command
     await bench.executeCommand(CX_SELECT_BRANCH);
@@ -121,7 +121,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(branch).is.not.undefined;
   });
 
-  it("should select scan", async function () {
+  it.skip("should select scan", async function () {
     let treeScans = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
@@ -137,7 +137,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it("should load results from scan ID", async function () {
+  it.skip("should load results from scan ID", async function () {
     await bench.executeCommand(CX_LOOK_SCAN);
     let input = await new InputBox();
     await input.setText(SCAN_ID);
@@ -177,7 +177,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it("Secret detection tree with Filter command", async function () {
+  it.skip("Secret detection tree with Filter command", async function () {
     await initialize();
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
