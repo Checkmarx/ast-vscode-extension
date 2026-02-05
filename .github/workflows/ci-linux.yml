@@ -49,8 +49,9 @@ jobs:
           npm run install:all
       - name: Build core and checkmarx package
         run: | 
+          cd packages/core
           npm run build:core
-          cd packages/checkmarx
+          cd ../checkmarx
           npm run compile:tests
       - name: Run e2e tests
         if: runner.os == 'Linux'
