@@ -1,4 +1,4 @@
-name: Checkmarx Extension Release
+name: Project Ignite Extension Release
 
 on:
   workflow_call:
@@ -58,7 +58,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: update-checkmarx-version
+      BRANCH_NAME: update-ignite-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     outputs:
       TAG_NAME: ${{ steps.generate_tag_name.outputs.TAG_NAME }}
@@ -88,7 +88,7 @@ jobs:
         id: generate_tag_name
         run: |
           echo "vscodeTag input: ${{ inputs.vscodeTag }}"
-          cd packages/checkmarx
+          cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
             echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
             TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
@@ -104,8 +104,8 @@ jobs:
               exit 1
             fi
           fi
-          # Add checkmarx-v prefix to tag
-          TAG_NAME="Checkmarx-${TAG_NAME}"
+          # Add ignite-v prefix to tag
+          TAG_NAME="DevAssist-${TAG_NAME}"
           echo "Generated TAG_NAME: $TAG_NAME"
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "::set-output name=TAG_NAME::$TAG_NAME"
@@ -151,16 +151,16 @@ jobs:
       - name: Package .vsix file
         run: |
           if [ ${{ inputs.dev }} == true ]; then
-            node .github/scripts/updateDevVersionCheckmarx.js
-            npm run package:checkmarx:prerelease
+            node .github/scripts/updateDevVersionIgnite.js
+            npm run package:cx-dev-assist:prerelease
           else
-            npm run package:checkmarx
+            npm run package:cx-dev-assist
           fi
 
       # CREATE GH RELEASE NAME
       - name: Handle GH Release name
         run: |
-          VSIX_TAG_NAME=$(cat packages/checkmarx/package.json | jq .version | cut -d'"' -f 2)
+          VSIX_TAG_NAME=$(cat packages/project-ignite/package.json | jq .version | cut -d'"' -f 2)
           echo "VSIX_TAG_NAME=$VSIX_TAG_NAME" >> $GITHUB_ENV
 
           if [ ${{ inputs.dev }} == true ]; then
@@ -177,8 +177,8 @@ jobs:
         with:
           token: ${{ env.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
-          title: "Update Checkmarx Extension Version - Automated Changes"
-          body: "This is an automated PR created by GitHub Actions to update the Checkmarx extension version"
+          title: "Update Project Ignite Extension Version - Automated Changes"
+          body: "This is an automated PR created by GitHub Actions to update the Project Ignite extension version"
           base: main
           draft: false
 
@@ -212,8 +212,8 @@ jobs:
         with:
           name: ${{env.GH_RELEASE_NAME}}
           tag_name: ${{env.TAG_NAME}}
-          generate_release_notes: false
-          files: packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix
+          generate_release_notes: true
+          files: packages/project-ignite/cx-dev-assist-${{env.VSIX_TAG_NAME}}.vsix
           prerelease: ${{ inputs.dev }}
 
       # GENERATE AND WRITE CHANGELOG TO FILE
@@ -221,9 +221,7 @@ jobs:
         uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
         with:
           ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          PATH: "packages/checkmarx/CHANGELOG.md"
-          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
-          TYPE: "feat:New Features 🚀,fix:Bug Fixes 🐛,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
+          PATH: "packages/project-ignite/CHANGELOG.md"
 
       # PUBLISH TO MARKETPLACE
       - name: Publish to VSCode Marketplace
@@ -231,7 +229,7 @@ jobs:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
-          cd packages/checkmarx
+          cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
             vsce publish --pre-release -p ${{ env.MARKET_TOKEN }}
           else
@@ -244,14 +242,14 @@ jobs:
           OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
           npm install -g ovsx
-          ovsx publish packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+          ovsx publish packages/project-ignite/cx-dev-assist-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
 
   notify:
     if: inputs.dev == false
     needs: release
     uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
     with:
-      product_name: VS Code - Checkmarx
+      product_name: VS Code - Project Ignite
       release_version: ${{ needs.release.outputs.TAG_NAME }}
       cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
       release_author: "Phoenix Team"
