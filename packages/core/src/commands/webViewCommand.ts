@@ -575,7 +575,7 @@ export class WebViewCommand {
 
     cx.runSastGpt(userMessage, result.filename, result.resultID, "")
       .then((messages) => {
-        this.handleSystemNotFindPathError(messages[0].responses[0], constants.systemNotFindPathError);
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
 
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
