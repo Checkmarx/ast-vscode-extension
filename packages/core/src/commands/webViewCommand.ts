@@ -449,7 +449,7 @@ export class WebViewCommand {
     )
       .then((messages) => {
 
-        this.handleSystemNotFindPathError(messages[0].responses[0], "Please ensure that you have opened the correct workspace or the relevant file.");
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
 
         this.conversationId = messages[0].conversationId;
         // enable all the buttons and inputs
@@ -514,9 +514,7 @@ export class WebViewCommand {
       this.conversationId
     )
       .then((messages) => {
-        this.handleSystemNotFindPathError(messages[0].responses[0], constants.systemNotFindPathError);
-
-        this.conversationId = messages[0].conversationId;
+        this.handleSystemNotFindPathError(messages[0].responses[0]);
         // enable all the buttons and inputs
         this.detailsPanel?.webview.postMessage({
           command: "enableSast",
@@ -610,9 +608,12 @@ export class WebViewCommand {
       });
   }
 
-  handleSystemNotFindPathError(response: string, errorMessage: string): void {
-    if (response.includes(errorMessage)) {
+  handleSystemNotFindPathError(response: string): void {
+    if (response.includes(constants.systemNotFindPathError)) {
       throw new Error(constants.gptFileNotInWorkspaceError);
+    }
+    else if (response.includes(constants.systemNotFindLineError)) {
+      throw new Error(constants.gptFileChangedError);
     }
   }
 
