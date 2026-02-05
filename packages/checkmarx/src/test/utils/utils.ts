@@ -1,3 +1,17 @@
+// Wait for a tree node to be visible, polling until timeout
+export async function waitForTreeNodeVisible(treeSection, label, timeout = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    try {
+      const node = await treeSection.findItem(label);
+      if (node) {
+        return node;
+      }
+    } catch (e) { }
+    await sleep(300);
+  }
+  throw new Error(`Timeout waiting for tree node: ${label}`);
+}
 import {
   ActivityBar,
   ViewControl,

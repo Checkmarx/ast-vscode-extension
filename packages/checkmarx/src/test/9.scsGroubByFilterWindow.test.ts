@@ -16,6 +16,7 @@ import {
   validateRootNode,
   getQuickPickSelector,
   clickFirstVulnerability,
+  waitForTreeNodeVisible,
 } from "./utils/utils";
 import {
   CHANGES_LABEL,
@@ -84,6 +85,10 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
 
     for (var index in commands) {
       await bench.executeCommand(commands[index]);
+      // Wait for the root node to be visible after each group by command
+      if (treeScans) {
+        await waitForTreeNodeVisible(treeScans, SCAN_KEY_TREE_LABEL);
+      }
     }
   });
 

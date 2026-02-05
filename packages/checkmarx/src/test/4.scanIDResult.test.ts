@@ -31,13 +31,23 @@ describe("Scan ID load results test", () => {
   it("should load results from scan ID", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
-    await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(SCAN_ID);
-    await input.confirm();
-    await sleep(5000);
+    try {
+      console.log('Starting load results from scan ID test...');
+      console.log('Executing command:', CX_LOOK_SCAN);
+      await bench.executeCommand(CX_LOOK_SCAN);
+      let input = await new InputBox();
+      // Add delay to ensure input box is ready
+      await new Promise((res) => setTimeout(res, 1000));
+      console.log('Setting scan ID:', SCAN_ID);
+      await input.setText(SCAN_ID);
+      await input.confirm();
+      console.log('Waiting for results to load...');
+      await sleep(5000);
+      console.log('Load results test completed successfully');
+    } catch (error) {
+      console.error('Error in load results from scan ID test:', error);
+      throw error;
+    }
   });
 
   it.skip("should check open webview and codebashing link", retryTest(async function () {
