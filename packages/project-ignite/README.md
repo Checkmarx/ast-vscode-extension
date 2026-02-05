@@ -72,16 +72,15 @@ This document was written for the VS Code plugin, and applies equally to the oth
 3. Start running the Checkmarx MCP server.
 
 **GIF – Installing and Setting Up the Extension**  
-![Installing and Setting up the Extension](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_Getting_Started_with_Developer_Assist_standalone.gif)
 
 **GIF - Getting Started With Developer Assist**
-![Automatic Remediation for Secret Vulnerabilities](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_AI_Remediation_with_Developer_Assist_secret_only.gif)
+![Getting Started With Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_Getting_Started_with_Developer_Assist_standalone.gif)
 
 ### Usage
 * Learn about using Checkmarx Developer Assist [here](https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html)
 
 **GIF - AI Remediation with Developer Assist**
-
+![AI Remediation with Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_AI_Remediation_with_Developer_Assist_malicious_only.gif)
 
 
 ## Contributing

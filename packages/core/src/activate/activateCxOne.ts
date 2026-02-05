@@ -511,7 +511,7 @@ function setupIgnoredStatusBar(
 function registerAssistDocumentation(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.assistDocumentation, () => {
-            vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.devAssist));
+            vscode.env.openExternal(vscode.Uri.parse(DOC_LINKS.checkmarxOne));
         }),
     );
 }

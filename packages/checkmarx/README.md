@@ -145,11 +145,13 @@ Developer Assist is an agentic AI tool that delivers real-time context-aware pre
 3. Start the Checkmarx MCP server running.
 
 **GIF - Getting Started With Developer Assist**
+![Getting Started With Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_Getting_Started_with_Developer_Assist.gif)
 
 ### Usage
 * Learn about using Checkmarx Developer Assist [here](https://docs.checkmarx.com/en/34965-474001-using-the-checkmarx-vs-code-extension---dev-assist.html)
 
 **GIF - AI Remediation with Developer Assist**
+![AI Remediation with Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_AI_Remediation_with_Developer_Assist_malicious_only.gif)
 
 ## KICS Realtime Scanner
 
