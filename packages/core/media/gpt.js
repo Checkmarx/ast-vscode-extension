@@ -108,6 +108,7 @@
 		});
 	});
 
+	
 	async function typeWriter() {
 		const inCodeBlock = currentMessage.includes('```') && currentMessage.split('```').length % 2 === 0;
 		const markedContent = new DOMParser().parseFromString(marked.parse(currentMessage + (inCodeBlock ? '\n```' : '')), 'text/html');
