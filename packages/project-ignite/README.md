@@ -19,9 +19,9 @@
   <h3 align="center">Checkmarx Developer Assist</h3>
   <h4 align="center">VS Code Extension - runs also on Cursor, Windsurf and Kiro</h3>  
   <p align="center">
-    <a href="https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-vs-code-extension--plugin-.html"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html"><strong>Explore the docs »</strong></a>
     <br />
-    <a href="https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results"><strong>Marketplace »</strong></a>
+    <a href=""><strong>Marketplace »</strong></a>
   </p>
 </p>
 
@@ -37,7 +37,7 @@
   </ol>
 </details>
 
-> This document relates to the standalone ​**Checkmarx Developer Assist**​ extension. Checkmarx One customers with a Developer Assist license should use the ​[**Checkmarx**](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results) extension, which has Developer Assist bundeled together with the Checkmarx One platform tool. <br>The two extensions are **mutually exclusive**, so that if you want to use this extension, you must **first ​uninstall**​​ the Checkmarx extension.
+> This document relates to the standalone ​**Checkmarx Developer Assist**​ extension. Checkmarx One customers with a Developer Assist license should use the ​[**Checkmarx**]() extension, which has Developer Assist bundeled together with the Checkmarx One platform tool. <br>The two extensions are **mutually exclusive**, so that if you want to use this extension, you must **first ​uninstall**​​ the Checkmarx extension.
 ## Overview
 Checkmarx Developer Assist delivers context-aware security guidance directly within your IDE, helping prevent vulnerabilities before they reach the pipeline. As developers write or refine AI-generated and existing code, it provides real-time detection, remediation, and actionable insights—ensuring security is built in from the start.
 <br>
@@ -62,7 +62,7 @@ This document was written for the VS Code plugin, and applies equally to the oth
 - AI powered explanation of risk details.
 - Reduce noise by marking false positives as ignored
 ## Prerequisites
-  - **Developer Assist Activation Key** 
+  - **Developer Assist API Key** 
   - **For VS Code**: Supported for VS Code version **1.100.0** or above  
     (supports both `settings.json` (v1.100–1.101) and `mcp.json` (v1.102+))
   - **For VS Code**: You must have **GitHub Copilot** installed
@@ -70,8 +70,6 @@ This document was written for the VS Code plugin, and applies equally to the oth
 1. Install the **Checkmarx Developer Assist** extension from the Marketplace.
 2. In the IDE, open Checkmarx **Settings**, click on **Authentication**, and enter your access key in the **Developer Assist API Key** field.
 3. Start running the Checkmarx MCP server.
-
-**GIF – Installing and Setting Up the Extension**  
 
 **GIF - Getting Started With Developer Assist**
 ![Getting Started With Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_Getting_Started_with_Developer_Assist_standalone.gif)
@@ -87,8 +85,8 @@ This document was written for the VS Code plugin, and applies equally to the oth
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
 
-- [Checkmarx contribution guidelines](https://github.com/CheckmarxDev/ast-vscode-extension/blob/HEAD/docs/contributing.md)
-- [Checkmarx Code of Conduct](https://github.com/CheckmarxDev/ast-vscode-extension/blob/HEAD/docs/code_of_conduct.md)
+- [Checkmarx contribution guidelines](https://github.com/Checkmarx/ast-vscode-extension/blob/packages/project-ignite/contributing.md)
+- [Checkmarx Code of Conduct](https://github.com/Checkmarx/ast-vscode-extension/blob/packages/project-ignite/code_of_conduct.md)
 
 <!-- LICENSE -->
 ## License
