@@ -43,7 +43,7 @@ export interface ExtensionMessages {
 export const CHECKMARX_MESSAGES: ExtensionMessages = {
     productName: 'Checkmarx One Assist',
     authenticationRequiredMessage: 'In order to use Checkmarx One Assist, you need to setup your credentials.',
-    learnMoreLink: 'https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html',
+    learnMoreLink: 'https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-vs-code-extension--plugin-.html',
     welcomePageTitle: 'Welcome to Checkmarx',
     displayName: 'Checkmarx',
     assistViewDescription: 'Checkmarx One Assist provides real-time threat detection and helps you avoid vulnerabilities before they happen.',
