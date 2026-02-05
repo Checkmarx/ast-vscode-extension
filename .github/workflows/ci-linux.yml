@@ -47,8 +47,10 @@ jobs:
       - name: Install dependencies
         run: |
           npm run install:all
-      - name: Build all packages
-        run: npm run build:all
+      - name: Build core and checkmarx package
+        run:  |
+           npm run build:core
+           build:checkmarx:test
       - name: Run e2e tests
         if: runner.os == 'Linux'
         env:

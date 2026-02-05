@@ -1064,9 +1064,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile:prod",
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -b ./ && npm run copymedia && npm run copycore && npm run copytestproject && npm run copyvalidator",
-    "compile:prod": "tsc -b ./ && npm run copymedia && npm run copycore && npm run copyvalidator",
     "compile:tests": "tsc -b ./ && npm run copymedia && npm run copycore:dev && npm run copytestproject",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
