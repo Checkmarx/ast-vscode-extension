@@ -232,7 +232,7 @@ jobs:
           if [ ${{ inputs.dev }} == true ]; then
             npm run package:cx-dev-assist:prerelease -p ${{ env.MARKET_TOKEN }}
           else
-            npm run package:cx-dev-assist -p ${{ env.MARKET_TOKEN }}
+            npm run package:cx-dev-assist:publish -p ${{ env.MARKET_TOKEN }}
           fi
 
       - name: Publish to Open VSX (ovsx)

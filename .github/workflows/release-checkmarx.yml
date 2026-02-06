@@ -234,7 +234,7 @@ jobs:
           if [ ${{ inputs.dev }} == true ]; then
             npm run package:checkmarx:prerelease -- -p ${{ env.MARKET_TOKEN }}
           else
-            npm run package:checkmarx -- -p ${{ env.MARKET_TOKEN }}
+            npm run package:checkmarx:publish -- -p ${{ env.MARKET_TOKEN }}
           fi
 
       - name: Publish to Open VSX (ovsx)
