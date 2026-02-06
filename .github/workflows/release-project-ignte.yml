@@ -230,9 +230,9 @@ jobs:
         if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
           if [ ${{ inputs.dev }} == true ]; then
-            npm run package:cx-dev-assist:prerelease -p ${{ env.MARKET_TOKEN }}
+            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
           else
-            npm run package:cx-dev-assist:publish -p ${{ env.MARKET_TOKEN }}
+            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
           fi
 
       - name: Publish to Open VSX (ovsx)
