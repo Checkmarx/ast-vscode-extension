@@ -6,16 +6,34 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run Extension",
+			"name": "Run Extension (Checkmarx)",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}/packages/checkmarx"],
+			"outFiles": [
+				"${workspaceFolder}/packages/checkmarx/out/**/*.js",
+				"${workspaceFolder}/packages/core/out/**/*.js"
+			],
 			"preLaunchTask": "npm: watch",
 			"env": {
 				"CX_FEATURE_FLAGS": ""
 			}
-		}  
+		},
+		{
+			"name": "Run Extension (Checkmarx Developer Assist)",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}/packages/project-ignite"],
+			"outFiles": [
+				"${workspaceFolder}/packages/project-ignite/out/**/*.js",
+				"${workspaceFolder}/packages/core/out/**/*.js"
+			],
+			"preLaunchTask": "npm: watch",
+			"env": {
+				"CX_FEATURE_FLAGS": ""
+			}
+		}
 	]
 }

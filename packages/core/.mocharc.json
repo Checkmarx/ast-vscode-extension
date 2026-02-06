@@ -1,0 +1,11 @@
+{
+  "require": ["ts-node/register"],
+  "spec": ["src/unit/**/*.test.ts"],
+  "node-option": ["loader=ts-node/esm"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}
+

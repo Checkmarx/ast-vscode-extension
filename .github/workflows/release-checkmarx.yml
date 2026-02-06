@@ -1,0 +1,260 @@
+name: Checkmarx Extension Release
+
+on:
+  workflow_call:
+    inputs:
+      jsTag:
+        description: "JS Wrapper tag name"
+        required: false
+        type: string
+        default: nightly
+      vscodeTag:
+        description: "Tag name"
+        required: false
+        type: string
+        default: nightly
+      dev:
+        description: "Is dev build"
+        required: false
+        default: true
+        type: boolean
+      publish:
+        description: "Publish to marketplace"
+        required: false
+        default: true
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      jsTag:
+        description: "JSW tag name (ignored if not dev build)"
+        required: false
+      vscodeTag:
+        description: "Tag name (ignored if not dev build)"
+        required: false
+      dev:
+        description: "Is dev build"
+        required: false
+        default: true
+        type: boolean
+      publish:
+        description: "Publish to marketplace"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  delete:
+    uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@main
+    with:
+      tag: ${{ inputs.vscodeTag }}
+    secrets: inherit
+    if: inputs.dev
+  release:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: update-checkmarx-version
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    outputs:
+      TAG_NAME: ${{ steps.generate_tag_name.outputs.TAG_NAME }}
+      CLI_VERSION: ${{ steps.extract_cli_version.outputs.CLI_VERSION }}
+    steps:
+      # CHECKOUT PROJECT
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+
+      # GIT CONFIGURATION
+      - run: |
+          git config user.name vscode-releases
+          git config user.email vscode-releases@github.com
+
+      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+
+      # SETUP NODE
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+
+      # GET TAG NAME
+      - name: Generate Tag name
+        id: generate_tag_name
+        run: |
+          echo "vscodeTag input: ${{ inputs.vscodeTag }}"
+          cd packages/checkmarx
+          if [ ${{ inputs.dev }} == true ]; then
+            echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
+            TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version prerelease command failed"
+              exit 1
+            fi
+          else
+            echo "Running npm version minor"
+            TAG_NAME=$(npm version minor --no-git-tag-version 2>/dev/null || echo "error")
+            if [ "$TAG_NAME" == "error" ]; then
+              echo "npm version minor command failed"
+              exit 1
+            fi
+          fi
+          # Add checkmarx-v prefix to tag
+          TAG_NAME="Checkmarx-${TAG_NAME}"
+          echo "Generated TAG_NAME: $TAG_NAME"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "::set-output name=TAG_NAME::$TAG_NAME"
+
+      # INSTALL NPM DEPENDENCIES
+      - name: Install dependencies
+        run: |
+          npm run install:all
+
+      # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
+      - name: Get and install JS Wrapper if provided by user
+        if: inputs.dev == true && inputs.jsTag != ''
+        run: |
+          echo "Getting js wrapper ${{inputs.jsTag}} version..."
+
+          JS_VERSION_NAME=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions | jq '.[]|select((.name | contains("-${{inputs.jsTag}}.0")) or .name == "${{inputs.jsTag}}")|.name' | tr -d '"')
+
+          if [ ${JS_VERSION_NAME} != '' ]; then
+            echo "Install JS Wrapper version  ${JS_VERSION_NAME}"
+            cd packages/core
+            npm install "@checkmarx/ast-cli-javascript-wrapper@"${JS_VERSION_NAME}
+          else
+            echo "JS wrapper with version ${JS_VERSION_NAME} not found"
+          fi
+
+      - name: Extract CLI version
+        id: extract_cli_version
+        run: |
+          CLI_VERSION=$(./packages/core/node_modules/@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/resources/cx-linux version | grep -Eo '^[0-9]+\.[0-9]+\.[0-9]+')
+          echo "CLI version being packed is $CLI_VERSION"
+          echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=CLI_VERSION::$CLI_VERSION"
+
+      # INSTALL VSCE
+      - name: Install VSCE
+        run: npm install -g vsce
+
+      # BUILD AND PACKAGE PROJECT
+      - name: Build all packages
+        run: npm run build:all
+
+      # PACKAGE PROJECT
+      - name: Package .vsix file
+        run: |
+          if [ ${{ inputs.dev }} == true ]; then
+            node .github/scripts/updateDevVersionCheckmarx.js
+            npm run package:checkmarx:prerelease
+          else
+            npm run package:checkmarx
+          fi
+
+      # CREATE GH RELEASE NAME
+      - name: Handle GH Release name
+        run: |
+          VSIX_TAG_NAME=$(cat packages/checkmarx/package.json | jq .version | cut -d'"' -f 2)
+          echo "VSIX_TAG_NAME=$VSIX_TAG_NAME" >> $GITHUB_ENV
+
+          if [ ${{ inputs.dev }} == true ]; then
+            echo "GH_RELEASE_NAME=${{env.TAG_NAME}} (${VSIX_TAG_NAME})" >> $GITHUB_ENV
+          else
+            echo "GH_RELEASE_NAME=${{env.TAG_NAME}}" >> $GITHUB_ENV
+          fi
+
+      # CREATE PR FOR VERSION
+      - name: Create Pull Request
+        id: create_pr
+        if: inputs.dev == false
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e #v6.0.5
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          title: "Update Checkmarx Extension Version - Automated Changes"
+          body: "This is an automated PR created by GitHub Actions to update the Checkmarx extension version"
+          base: main
+          draft: false
+
+      # WAIT FOR PR CREATION
+      - name: Wait for PR to be created
+        id: pr
+        if: inputs.dev == false
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
+        with:
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
+
+      # MERGE PR TO MAIN
+      - name: Merge Pull Request
+        if: inputs.dev == false
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
+        with:
+          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
+          merge_method: squash
+
+      # PUSH TAGS IF IT IS A RELEASE
+      - name: Push tag
+        if: inputs.dev == false
+        run: |
+          git pull
+          git tag ${{ env.TAG_NAME }}
+          git push --tags
+
+      # CREATE GH RELEASE
+      - name: Create Release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 #v1
+        with:
+          name: ${{env.GH_RELEASE_NAME}}
+          tag_name: ${{env.TAG_NAME}}
+          generate_release_notes: false
+          files: packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix
+          prerelease: ${{ inputs.dev }}
+
+      # GENERATE AND WRITE CHANGELOG TO FILE
+      - name: Generate release changelog
+        uses: BobAnkh/auto-generate-changelog@b8e208489ce4f71adc3b6467020dd276f1445e8a #v1.2.5
+        with:
+          ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          PATH: "packages/checkmarx/CHANGELOG.md"
+          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
+          TYPE: "feat:New Features 🚀,fix:Bug Fixes 🐛,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
+
+      # PUBLISH TO MARKETPLACE
+      - name: Publish to VSCode Marketplace
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        run: |
+          cd packages/checkmarx
+          if [ ${{ inputs.dev }} == true ]; then
+            vsce publish --pre-release -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish -p ${{ env.MARKET_TOKEN }}
+          fi
+
+      - name: Publish to Open VSX (ovsx)
+        if: env.OPEN_VSX_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        env:
+          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: |
+          npm install -g ovsx
+          ovsx publish packages/checkmarx/ast-results-${{env.VSIX_TAG_NAME}}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+
+  notify:
+    if: inputs.dev == false
+    needs: release
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
+    with:
+      product_name: VS Code - Checkmarx
+      release_version: ${{ needs.release.outputs.TAG_NAME }}
+      cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
+      release_author: "Phoenix Team"
+      release_url: https://github.com/Checkmarx/ast-vscode-extension/releases/tag/${{ needs.release.outputs.TAG_NAME }}
+      jira_product_name: VSCODE
+    secrets: inherit

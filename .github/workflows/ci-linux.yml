@@ -1,113 +1,116 @@
 name: Checkmarx One Vscode Extension CI Linux Test cases
 
-on: [ pull_request ]
+on: [pull_request]
 
 jobs:
+  # Test the shared core package independently
+  core-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: |
+          npm run install:all
+      - name: Run core unit tests with coverage
+        run: npm run unit-coverage:test:core
+      - name: Upload core coverage report
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: coverage-core
+          path: packages/core/coverage/
+          retention-days: 7
+
+  # Test both extensions with E2E tests
   end-to-end-tests:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ ubuntu-latest ]
+        extension: [checkmarx]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 22.11.0
-    - name: Authenticate with GitHub package registry
-      run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-    - name: Install dependencies
-      run: npm install
-    - name: Run e2e tests
-      if: runner.os == 'Linux'
-      env:
-        CX_APIKEY: ${{ secrets.CX_APIKEY_E2E_DEU }}
-      run: |
-        sudo apt-get install xvfb
-        export DISPLAY=:99.0
-        Xvfb -ac :99 -screen 0 1920x1080x16 & 
-        npm run test:ui-end-to-end
-    - name: Upload test artifacts
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-      with:
-        name: artifacts-${{ matrix.os }}
-        path: |
-          test-resources/screenshots/*.png
-        retention-days: 2
-    - name: Upload screenshots
-      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-      if: failure() && runner.os == 'macOS'
-      with:
-        name: screenshots
-        path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
-  unit-tests:
-    strategy:
-      max-parallel: 1
-      matrix:
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 22.11.0
-    - name: Authenticate with GitHub package registry
-      run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-    - name: Install dependencies
-      run: npm install
-    - name: Run unit tests with coverage
-      run: npm run unit-coverage
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: |
+          npm run install:all
+      - name: Build all packages
+        run: npm run build:all
+      - name: Run e2e tests
+        if: runner.os == 'Linux'
+        env:
+          CX_APIKEY: ${{ secrets.CX_APIKEY_E2E_DEU }}
+        run: |
+          sudo apt-get install xvfb
+          export DISPLAY=:99.0
+          Xvfb -ac :99 -screen 0 1920x1080x16 &
+          npm run e2e:test:checkmarx
+      - name: Upload test artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: e2e-artifacts-${{ matrix.extension }}-${{ matrix.os }}
+          path: |
+            packages/core/test-resources/screenshots/*.png
+          retention-days: 2
 
+  # Run integration tests for both extensions
   ui-tests:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ ubuntu-latest ]
+        extension: [checkmarx]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 22.11.0
-    - name: Authenticate with GitHub package registry
-      run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-    - name: Install dependencies
-      run: npm install
-    - name: Run tests
-      if: runner.os != 'Linux'
-      env:
-        CX_API_KEY: ${{ secrets.API_KEY }}
-        CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
-      run: |
-        npm test
-    - name: Integration
-      if: runner.os == 'Linux'
-      env:
-        CX_API_KEY: ${{ secrets.API_KEY }}
-        CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
-      run: |
-        sudo apt-get install xvfb
-        export DISPLAY=:99.0
-        Xvfb -ac :99 -screen 0 1920x1080x16 & 
-        npm test
-    - name: Upload test artifacts
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-      with:
-        name: artifacts-${{ matrix.os }}
-        path: |
-          test-resources/screenshots/*.png
-        retention-days: 2
-    - name: Upload screenshots
-      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-      if: failure() && runner.os == 'macOS'
-      with:
-        name: screenshots
-        path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/test-resources/screenshots/*.png
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: |
+          npm run install:all
+      - name: Build all packages
+        run: npm run build:all
+
+      - name: Run integration tests (Linux)
+        if: runner.os == 'Linux'
+        env:
+          CX_API_KEY: ${{ secrets.API_KEY }}
+          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
+        run: |
+          sudo apt-get install xvfb
+          export DISPLAY=:99.0
+          Xvfb -ac :99 -screen 0 1920x1080x16 &
+          npm run ui:test:checkmarx
+      - name: Upload test artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: integration-artifacts-${{ matrix.extension }}-${{ matrix.os }}
+          path: |
+            packages/core/test-resources/screenshots/*.png
+          retention-days: 2
+      - name: Upload screenshots
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        if: failure() && runner.os == 'macOS'
+        with:
+          name: screenshots-${{ matrix.extension }}
+          path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/packages/core/test-resources/screenshots/*.png

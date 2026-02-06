@@ -1,0 +1,193 @@
+{
+  "name": "cx-dev-assist",
+  "publisher": "Checkmarx",
+  "displayName": "Checkmarx Developer Assist",
+  "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
+  },
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:cx-dev-assist.cxDevAssist",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cx-dev-assist.viewSettings",
+        "category": "cx-dev-assist",
+        "title": "Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "cx-dev-assist.openIgnoredView",
+        "category": "cx-dev-assist",
+        "title": "View Ignored vulnerabilities",
+        "enablement": "cx-dev-assist.isValidCredentials && (cx-dev-assist.isCxOneAssistEnabled || cx-dev-assist.isStandaloneEnabled)"
+      },
+      {
+        "command": "cx-dev-assist.assistDocumentation",
+        "category": "cx-dev-assist",
+        "title": "Documentation"
+      },
+      {
+        "command": "cx-dev-assist.showAuth",
+        "title": "Checkmarx Developer Assist: Show Authentication",
+        "category": "Checkmarx Developer Assist"
+      }
+    ],
+    "submenus": [],
+    "menus": {
+      "view/title": [
+        {
+          "command": "cx-dev-assist.viewSettings",
+          "group": "@settings@2",
+          "when": " view==cx-dev-assist.cxDevAssist"
+        },
+        {
+          "command": "cx-dev-assist.openIgnoredView",
+          "group": "@settings@1",
+          "when": "view == cx-dev-assist.cxDevAssist"
+        },
+        {
+          "command": "cx-dev-assist.assistDocumentation",
+          "group": "@settings@3",
+          "when": "view == cx-dev-assist.cxDevAssist"
+        }
+      ]
+    },
+    "views": {
+      "cxDevAssistView": [
+        {
+          "id": "cx-dev-assist.cxDevAssist",
+          "type": "webview",
+          "name": "Checkmarx Developer Assist"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cxDevAssistView",
+          "title": "Checkmarx Developer Assist",
+          "icon": "media/cx-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [],
+    "configuration": [
+      {
+        "title": "Authentication",
+        "id": "cx-dev-assist",
+        "order": 1,
+        "properties": {
+          "checkmarxDeveloperAssist.authentication": {
+            "type": "",
+            "order": 1,
+            "markdownDescription": "## [**Authentication**](command:cx-dev-assist.showAuth)"
+          },
+          "checkmarxDeveloperAssist.additionalParams": {
+            "type": "string",
+            "order": 2,
+            "description": "Additional Parameters",
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        }
+      },
+      {
+        "title": "Realtime Scanners",
+        "id": "cx-dev-assist-Scanners",
+        "order": 2,
+        "properties": {
+          "Checkmarx Developer Assist AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
+            "type": "boolean",
+            "order": 1,
+            "default": false,
+            "markdownDescription": "Scans your code files for security best practices as you code"
+          },
+          "Checkmarx Developer Assist Open Source Realtime Scanner (OSS-Realtime).Activate OSS-Realtime": {
+            "type": "boolean",
+            "order": 2,
+            "default": false,
+            "markdownDescription": "Scans your manifest files as you code"
+          },
+          "Checkmarx Developer Assist Secret Detection Realtime Scanner.Activate Secret Detection Realtime": {
+            "type": "boolean",
+            "order": 3,
+            "default": false,
+            "markdownDescription": "Scans your files for potential secrets and credentials as you code"
+          },
+          "Checkmarx Developer Assist Containers Realtime Scanner.Activate Containers Realtime": {
+            "type": "boolean",
+            "order": 4,
+            "default": false,
+            "markdownDescription": "Scans your Docker files and container configurations as you code"
+          },
+          "Checkmarx Developer Assist IAC Realtime Scanner.Activate IAC Realtime": {
+            "type": "boolean",
+            "order": 5,
+            "default": false,
+            "markdownDescription": "Scans your Infrastructure as Code files as you code"
+          },
+          "Checkmarx Developer Assist IAC Realtime Scanner.Containers Management Tool": {
+            "type": "string",
+            "order": 6,
+            "description": "Containers Management Tool for IaC Scanner",
+            "markdownDescription": "Select the Containers Management Tool to use for IaC scanning.",
+            "enum": [
+              "docker",
+              "podman"
+            ],
+            "default": "docker"
+          },
+          "checkmarxDeveloperAssist.MCP": {
+            "type": "",
+            "order": 7,
+            "default": {},
+            "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b ./ && npm run copymedia && npm run copycore",
+    "watch": "tsc -w -p ./",
+    "copymedia": "copyfiles \"media/**/*\" out/ -E",
+    "copycore": "cd ../core && npm install --production --no-save && cd ../project-ignite && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "package": "vsce package --allow-star-activation --no-dependencies",
+    "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
+    "clean": "rimraf out"
+  },
+  "dependencies": {
+    "@checkmarx/vscode-core": "file:../core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.63.0",
+    "@vscode/vsce": "2.24.0",
+    "copyfiles": "2.4.1",
+    "typescript": "^5.3.3"
+  }
+}
