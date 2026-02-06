@@ -233,9 +233,9 @@ jobs:
         run: |
           cd packages/checkmarx
           if [ ${{ inputs.dev }} == true ]; then
-            vsce publish --pre-release -p ${{ env.MARKET_TOKEN }}
+            npm run package:checkmarx:prerelease -- -p ${{ env.MARKET_TOKEN }}
           else
-            vsce publish -p ${{ env.MARKET_TOKEN }}
+            npm run package:checkmarx -- -p ${{ env.MARKET_TOKEN }}
           fi
 
       - name: Publish to Open VSX (ovsx)
