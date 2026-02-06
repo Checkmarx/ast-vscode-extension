@@ -229,11 +229,10 @@ jobs:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
-          cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
-            vsce publish --pre-release -p ${{ env.MARKET_TOKEN }}
+            npm run package:cx-dev-assist:prerelease -p ${{ env.MARKET_TOKEN }}
           else
-            vsce publish -p ${{ env.MARKET_TOKEN }}
+            npm run package:cx-dev-assist -p ${{ env.MARKET_TOKEN }}
           fi
 
       - name: Publish to Open VSX (ovsx)

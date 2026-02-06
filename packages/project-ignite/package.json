@@ -176,7 +176,7 @@
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "copycore": "cd ../core && npm install --production --no-save && cd ../project-ignite && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
-    "package": "vsce package --allow-star-activation --no-dependencies",
+    "package": "vsce package publish --allow-star-activation --no-dependencies",
     "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
     "clean": "rimraf out"
   },
