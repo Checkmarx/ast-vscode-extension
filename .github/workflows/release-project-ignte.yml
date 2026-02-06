@@ -229,6 +229,7 @@ jobs:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
+          cd packages/project-ignite
           if [ ${{ inputs.dev }} == true ]; then
             vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
           else
