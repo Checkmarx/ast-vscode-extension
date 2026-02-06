@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [Checkmarx-v2.46.1-redme_doc_changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.46.1-redme_doc_changes.0) - 2026-02-05 17:40:48
+
+*No description*
+
 ## [Checkmarx-v2.46.1-checkmarx1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.46.1-checkmarx1.0) - 2026-02-05 12:35:45
 
 *No description*
