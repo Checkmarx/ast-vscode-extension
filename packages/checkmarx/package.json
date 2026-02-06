@@ -1073,7 +1073,7 @@
     "copycore:dev": "cd ../core && npm install --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
     "copytestproject": "copyfiles -u 3 \"../core/src/resources/**/*\" out/test/ -E",
     "copyvalidator": "copyfiles \"node_modules/validator/**/*\" out/node_modules/ -u 1 -E",
-    "package": "vsce package --allow-star-activation --no-dependencies",
+    "package": "vsce package publish --allow-star-activation --no-dependencies",
     "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
     "clean": "rimraf out",
     "ui-test": "export TEST=true && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
