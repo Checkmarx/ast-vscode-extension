@@ -87,61 +87,451 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it.skip("should select project", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+  it("should select project", async function () {
+    this.timeout(90000);
 
     treeScans = await initialize();
-    // Execute project selection command
     await bench.executeCommand(CX_SELECT_PROJECT);
-    const input = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+
+    let input: InputBox | undefined;
+    const maxRetries = 30;
+    const retryDelay = 800;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        input = await InputBox.create();
+        if (input) {
+          break;
+        }
+      } catch (error) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!input) {
+      throw new Error("InputBox did not open in time after project selection command");
+    }
+
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
-    // Select from the pickers list
-    let projectName = await getQuickPickSelector(input);
+
+    let projectName: string | undefined;
+    const quickPickRetries = 20;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      const projectList = await input.getQuickPicks();
+      if (projectList.length > 0) {
+        projectName = await projectList[0].getText();
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    if (!projectName) {
+      throw new Error("Failed to load project list in QuickPickSelector");
+    }
+
     await input.setText(projectName);
     await input.confirm();
-    // Wait for project selection to be made
-    let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-    expect(project).is.not.undefined;
+
+    let project: any;
+    const treeRetries = 20;
+    const treeRetryDelay = 500;
+
+    for (let i = 0; i < treeRetries; i++) {
+      project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+      if (project) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeRetryDelay));
+    }
+
+    expect(project, `Project "${projectName}" should appear in tree view`).is.not.undefined;
   });
 
-  it.skip("should select branch", async function () {
-    let treeScans = await initialize();
-    // Execute branch selection command
+  it("should select branch", async function () {
+    this.timeout(90000);
+
+    treeScans = await initialize();
+
+    // Select project first (prerequisite for branch selection)
+    await bench.executeCommand(CX_SELECT_PROJECT);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let projectInput: InputBox | undefined;
+    const maxRetries = 30;
+    const retryDelay = 800;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        projectInput = await InputBox.create();
+        if (projectInput) {
+          break;
+        }
+      } catch (error) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!projectInput) {
+      throw new Error("Project InputBox did not open in time");
+    }
+
+    await projectInput.setText(CX_TEST_SCAN_PROJECT_NAME);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let projectName: string | undefined;
+    const quickPickRetries = 20;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      const projectList = await projectInput.getQuickPicks();
+      if (projectList.length > 0) {
+        projectName = await projectList[0].getText();
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    if (!projectName) {
+      throw new Error("Failed to load project list");
+    }
+
+    await projectInput.setText(projectName);
+    await projectInput.confirm();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Select branch
     await bench.executeCommand(CX_SELECT_BRANCH);
-    let input = await InputBox.create();
-    // Select from the pickers list
-    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
-    let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
-    // Wait for branch selection to be made
-    let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-    expect(branch).is.not.undefined;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let branchInput: InputBox | undefined;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        branchInput = await InputBox.create();
+        if (branchInput) {
+          break;
+        }
+      } catch (error) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!branchInput) {
+      throw new Error("Branch InputBox did not open in time after branch selection command");
+    }
+
+    await branchInput.setText(CX_TEST_SCAN_BRANCH_NAME);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let branchName: string | undefined;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      const branchList = await branchInput.getQuickPicks();
+      if (branchList.length > 0) {
+        branchName = await branchList[0].getText();
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    if (!branchName) {
+      throw new Error("Failed to load branch list in QuickPickSelector");
+    }
+
+    await branchInput.setText(branchName);
+    await branchInput.confirm();
+
+    let branch: any;
+    const treeRetries = 20;
+    const treeRetryDelay = 500;
+
+    for (let i = 0; i < treeRetries; i++) {
+      branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+      if (branch) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeRetryDelay));
+    }
+
+    expect(branch, `Branch "${branchName}" should appear in tree view`).is.not.undefined;
   });
 
-  it.skip("should select scan", async function () {
-    let treeScans = await initialize();
-    // Execute scan selection command
+  it("should select scan", async function () {
+    this.timeout(120000);
+
+    treeScans = await initialize();
+
+    // Select project (prerequisite)
+    await bench.executeCommand(CX_SELECT_PROJECT);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let projectInput: InputBox | undefined;
+    const maxRetries = 30;
+    const retryDelay = 800;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        projectInput = await InputBox.create();
+        if (projectInput) {
+          break;
+        }
+      } catch (error) {
+        if (i === maxRetries - 1) {
+          throw new Error(
+            `Failed to create project InputBox after ${maxRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!projectInput) {
+      throw new Error("Project InputBox is undefined after all retries");
+    }
+
+    await projectInput.setText(CX_TEST_SCAN_PROJECT_NAME);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let projectName: string | undefined;
+    const quickPickRetries = 20;
+    const quickPickDelay = 500;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      try {
+        projectName = await getQuickPickSelector(projectInput);
+        if (projectName && projectName.trim() !== "") {
+          break;
+        }
+      } catch (error) {
+        if (i === quickPickRetries - 1) {
+          throw new Error(
+            `Failed to get project quick pick after ${quickPickRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
+      }
+    }
+
+    if (!projectName || projectName.trim() === "") {
+      throw new Error("Project name is empty after all retries");
+    }
+
+    await projectInput.setText(projectName);
+    await projectInput.confirm();
+
+    let project;
+    const treeRetries = 20;
+    const treeDelay = 500;
+
+    for (let i = 0; i < treeRetries; i++) {
+      try {
+        project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+        if (project) {
+          break;
+        }
+      } catch (error) {
+        // Continue retrying
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeDelay));
+    }
+
+    expect(project).is.not.undefined;
+
+    // Select branch (prerequisite)
+    await bench.executeCommand(CX_SELECT_BRANCH);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let branchInput: InputBox | undefined;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        branchInput = await InputBox.create();
+        if (branchInput) {
+          break;
+        }
+      } catch (error) {
+        if (i === maxRetries - 1) {
+          throw new Error(
+            `Failed to create branch InputBox after ${maxRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!branchInput) {
+      throw new Error("Branch InputBox is undefined after all retries");
+    }
+
+    await branchInput.setText(CX_TEST_SCAN_BRANCH_NAME);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let branchName: string | undefined;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      try {
+        branchName = await getQuickPickSelector(branchInput);
+        if (branchName && branchName.trim() !== "") {
+          break;
+        }
+      } catch (error) {
+        if (i === quickPickRetries - 1) {
+          throw new Error(
+            `Failed to get branch quick pick after ${quickPickRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
+      }
+    }
+
+    if (!branchName || branchName.trim() === "") {
+      throw new Error("Branch name is empty after all retries");
+    }
+
+    await branchInput.setText(branchName);
+    await branchInput.confirm();
+
+    let branch;
+
+    for (let i = 0; i < treeRetries; i++) {
+      try {
+        branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+        if (branch) {
+          break;
+        }
+      } catch (error) {
+        // Continue retrying
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeDelay));
+    }
+
+    expect(branch).is.not.undefined;
+
+    // Select scan
     await bench.executeCommand(CX_SELECT_SCAN);
-    let input = await InputBox.create();
-    // Select from the pickers list
-    let scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-    await input.confirm();
-    // Wait for scan selection to be made
-    const scanDetailsparts: string[] = scanDate.split(" ");
-    const formattedId: string = scanDetailsparts.slice(-2).join(" ");
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let scanInput: InputBox | undefined;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        scanInput = await InputBox.create();
+        if (scanInput) {
+          break;
+        }
+      } catch (error) {
+        if (i === maxRetries - 1) {
+          throw new Error(
+            `Failed to create scan InputBox after ${maxRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!scanInput) {
+      throw new Error("Scan InputBox is undefined after all retries");
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let scanLabel: string | undefined;
+
+    for (let i = 0; i < quickPickRetries; i++) {
+      try {
+        scanLabel = await getQuickPickSelector(scanInput);
+        if (scanLabel && scanLabel.trim() !== "") {
+          break;
+        }
+      } catch (error) {
+        if (i === quickPickRetries - 1) {
+          throw new Error(
+            `Failed to get scan quick pick after ${quickPickRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
+      }
+    }
+
+    if (!scanLabel || scanLabel.trim() === "") {
+      throw new Error("Scan label is empty after all retries");
+    }
+
+    await scanInput.setText(scanLabel);
+    await scanInput.confirm();
+
+    const scanParts: string[] = scanLabel.split(" ");
+    const formattedId: string = scanParts.slice(-2).join(" ");
+
+    let scan;
+
+    for (let i = 0; i < treeRetries; i++) {
+      try {
+        scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
+        if (scan) {
+          break;
+        }
+      } catch (error) {
+        // Continue retrying
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeDelay));
+    }
+
     expect(scan).is.not.undefined;
   });
 
-  it.skip("should load results from scan ID", async function () {
+  it("should load results from scan ID", async function () {
+    this.timeout(90000);
+
+    treeScans = await initialize();
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let input: InputBox | undefined;
+    const maxRetries = 30;
+    const retryDelay = 800;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        input = await InputBox.create();
+        if (input) {
+          break;
+        }
+      } catch (error) {
+        if (i === maxRetries - 1) {
+          throw new Error(
+            `Failed to create InputBox after ${maxRetries} attempts: ${error}`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!input) {
+      throw new Error("InputBox is undefined after all retries");
+    }
+
     await input.setText(SCAN_ID);
     await input.confirm();
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    let scan;
+    const treeRetries = 20;
+    const treeDelay = 500;
+
+    for (let i = 0; i < treeRetries; i++) {
+      try {
+        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+        if (scan) {
+          break;
+        }
+      } catch (error) {
+        // Continue retrying
+      }
+      await new Promise((resolve) => setTimeout(resolve, treeDelay));
+    }
+
+    expect(scan).is.not.undefined;
   });
 
   it.skip("secret detection tree with GroupBy command ", async function () {
