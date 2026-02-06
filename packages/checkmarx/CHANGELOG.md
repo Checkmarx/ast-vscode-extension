@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [Checkmarx-v2.47.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.0) - 2026-02-06 10:31:45
+
+*No description*
+
 ## [DevAssist-v1.0.1-final-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.0.1-final-test-1.0) - 2026-02-06 08:40:47
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
