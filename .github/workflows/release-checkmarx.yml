@@ -231,7 +231,6 @@ jobs:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: env.MARKET_TOKEN != null && (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
         run: |
-          cd packages/checkmarx
           if [ ${{ inputs.dev }} == true ]; then
             npm run package:checkmarx:prerelease -- -p ${{ env.MARKET_TOKEN }}
           else
