@@ -60,6 +60,7 @@ const COMMAND_NAMES = {
     clearDastTree: 'clearDastTree',
     clear: 'clear',
     clearSca: 'clearSca',
+    clearDast: 'clearDast',
 
     // Details
     newDetails: 'newDetails',
@@ -143,6 +144,7 @@ const COMMAND_NAMES = {
     branchPick: 'branchPick',
     scanPick: 'scanPick',
     scanInput: 'scanInput',
+    environmentPick: 'environmentPick',
 
     // Views
     docAndFeedback: 'docAndFeedback',
@@ -334,6 +336,10 @@ class CommandBuilder {
 
     get clearSca(): string {
         return this.buildCommand(COMMAND_NAMES.clearSca);
+    }
+
+    get clearDast(): string {
+        return this.buildCommand(COMMAND_NAMES.clearDast);
     }
 
     // Details
@@ -638,6 +644,10 @@ class CommandBuilder {
 
     get scanInput(): string {
         return this.buildCommand(COMMAND_NAMES.scanInput);
+    }
+
+    get environmentPick(): string {
+        return this.buildCommand(COMMAND_NAMES.environmentPick);
     }
 
     // Views

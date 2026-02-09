@@ -578,3 +578,76 @@ function debounce(func: (...args: any[]) => void, delay: number) {
     timeout = setTimeout(() => func(...args), delay);
   };
 }
+
+
+export async function environmentPicker(
+  context: vscode.ExtensionContext,
+  logs: Logs
+) {
+  const fetchEnvironments = async (
+    filter: string,
+    offset: number,
+    pageSize: number
+  ) => {
+    return await getEnvironmentsPickItemsWithParams(
+      logs,
+      context,
+      filter,
+      pageSize,
+      offset
+    );
+  };
+
+  const handleEnvironmentSelection = async (item: CxQuickPickItem) => {
+    updateState(context, constants.environmentIdKey, {
+      id: item.id,
+      name: `${constants.environmentLabel} ${item.label}`,
+      displayScanId: undefined,
+      scanDatetime: undefined,
+    });
+    await vscode.commands.executeCommand(commands.refreshDastTree);
+  };
+
+  await createPicker(
+    constants.environmentPlaceholder,
+    constants.environmentPickerTitle,
+    fetchEnvironments,
+    handleEnvironmentSelection
+  );
+}
+
+export async function getEnvironmentsPickItemsWithParams(
+  logs: Logs,
+  context: vscode.ExtensionContext,
+  filter: string,
+  limit: number,
+  offset: number
+) {
+  return await vscode.window.withProgress(
+    PROGRESS_HEADER,
+    async (progress, token) => {
+      token.onCancellationRequested(() => {
+        logs.info(messages.cancelLoading);
+      });
+      progress.report({ message: messages.loadingEnvironments });
+      try {
+        const from = offset + 1;
+        const to = offset + limit;
+        let params = `from=${from},to=${to}`;
+        if (filter) {
+          params += `,search=${filter}`;
+        }
+        params += ',sort=domain:asc';
+        const envList = await cx.getDastEnvironmentsListWithParams(params);
+        return envList.map((env) => ({
+          label: env.name,
+          id: env.id,
+        }));
+      } catch (error) {
+        updateStateError(context, constants.errorMessage + error);
+        vscode.commands.executeCommand(commands.showError);
+        return [];
+      }
+    }
+  );
+}

@@ -131,4 +131,6 @@ export const messages = {
     settings
   </a>
   `,
+  loadingEnvironments: "Loading environments",
+  dastLicenseNotEnabled: "DAST license is not enabled",
 };
