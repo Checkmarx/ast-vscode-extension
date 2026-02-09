@@ -1076,8 +1076,8 @@
     "package": "vsce package --allow-star-activation --no-dependencies",
     "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
     "clean": "rimraf out",
-    "ui-test": "export TEST=true && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
-    "win-ui-test": "set TEST=true&& npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
+    "ui-test": "export TEST=true && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r ../..",
+    "win-ui-test": "set TEST=true&& npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r ../..",
     "e2e-test": "export TEST=uiEndToEnd && npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
     "win-e2e-test": "set TEST=uiEndToEnd&& npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
   },
