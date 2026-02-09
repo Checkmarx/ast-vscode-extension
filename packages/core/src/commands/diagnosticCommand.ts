@@ -17,7 +17,7 @@ export class DiagnosticCommand {
     private readonly astResultsProvider: AstResultsProvider,
     private readonly scaResultsProvider: SCAResultsProvider,
     private readonly astTree: vscode.TreeView<TreeItem>,
-    private readonly scaTree: vscode.TreeView<TreeItem>,
+    private readonly scaTree: vscode.TreeView<TreeItem>
   ) { }
 
   /**
