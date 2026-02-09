@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [DevAssist-v1.1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.1.0) - 2026-02-06 10:56:18
+
+<!-- Release notes generated using configuration in .github/release.yml at DevAssist-v1.1.0 -->
+
+## What's Changed
+### Other Changes
+* Update Project Ignite Extension Version - Automated Changes by @cx-rahul-pidde in https://github.com/Checkmarx/ast-vscode-extension/pull/1399
+
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/Checkmarx-v2.47.0...DevAssist-v1.1.0
+
 ## [Checkmarx-v2.47.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.0) - 2026-02-06 10:48:17
 
 *No description*
@@ -11,6 +22,10 @@
 
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/Checkmarx-v2.46.1-final-test.0...DevAssist-v1.0.1-final-test-1.0
+
+## [Checkmarx-v2.47.1-mcp-fallback.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.1-mcp-fallback.0) - 2026-02-06 11:21:12
+
+*No description*
 
 ## [Checkmarx-v2.46.1-final-test.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.46.1-final-test.0) - 2026-02-06 07:28:33
 
