@@ -1,10 +1,10 @@
 import { HoverData, AscaHoverData, ContainersHoverData, IacHoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 
 export const AI_FIX_EVENTS = {
-    requested: 'ai_checkmarx_fix_requested',
-    duplicate: 'ai_checkmarx_fix_duplicate',
-    changesAccepted: 'ai_checkmarx_changes_accepted',
-    changesRejected: 'ai_checkmarx_changes_rejected'
+    requested: 'aiFixRequested',
+    duplicate: 'aiFixDuplicate',
+    changesAccepted: 'aiChangesAccepted',
+    changesRejected: 'aiChangesRejected'
 } as const;
 
 export type ScannerType = 'Oss' | 'Secrets' | 'Asca' | 'Containers' | 'IaC';
@@ -12,7 +12,6 @@ export type ScannerType = 'Oss' | 'Secrets' | 'Asca' | 'Containers' | 'IaC';
 export type FixOutcomeStatus =
     | 'changes_accepted'
     | 'changes_rejected';
-
 
 export interface PendingAIFix {
     id: string;

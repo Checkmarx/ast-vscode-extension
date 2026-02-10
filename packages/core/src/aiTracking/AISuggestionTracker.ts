@@ -160,7 +160,6 @@ export class AISuggestionTracker {
         if (fixesForFile.length === 0) {
             return;
         }
-        this.logs.info(`[AITracker] User confirmed changes by saving - checking outcomes`);
 
         for (const fix of fixesForFile) {
             await this.checkFixOutcome(fix);
@@ -251,16 +250,13 @@ export class AISuggestionTracker {
         const filePath = this.getFilePath(item);
         const severity = this.getSeverity(item);
 
-        this.logs.info(`[AITracker] ========== NEW FIX REQUEST ==========`);
-        this.logs.info(`[AITracker] New fix request: ${scannerType}/${severity} - ${vulnKey} (${filePath})`);
+        this.logs.info(`User requested AI fix for ${scannerType} vulnerability`);
 
         // Check for duplicate request
         const existing = this.pendingFixes.get(vulnKey);
         if (existing) {
             existing.requestCount++;
             existing.requestedAt = Date.now();
-            this.logs.info(`[AITracker] DUPLICATE request detected for ${vulnKey}`);
-            this.logs.info(`[AITracker] Total request count: ${existing.requestCount}`);
 
             const eventName = AI_FIX_EVENTS.duplicate;
             await this.sendTelemetry(eventName, {
@@ -277,7 +273,6 @@ export class AISuggestionTracker {
         try {
             validatorState = await this.validator.captureInitialState(filePath);
         } catch (error) {
-            this.logs.error(`[AITracker] Failed to capture initial state: ${error}`);
             throw error;
         }
 
@@ -295,7 +290,6 @@ export class AISuggestionTracker {
         };
 
         this.pendingFixes.set(vulnKey, fix);
-        this.logs.info(`[AITracker] Total pending fixes: ${this.pendingFixes.size}`);
 
         // Send request telemetry , no need as we alrady have fixWithAIChat request
         /*
@@ -312,18 +306,13 @@ export class AISuggestionTracker {
     }
 
     private async checkFixOutcome(fix: PendingAIFix): Promise<void> {
-        this.logs.info(`[AITracker] ========== CHECKING FIX OUTCOME ==========`);
-
         const currentValue = await this.getCurrentValue(fix);
         const isFixed = currentValue === null;
 
         if (isFixed) {
-            this.logs.info(`[AITracker] Ghost text APPEARED - starting disappearance detection`);
-
             const intervalKey = fix.vulnerabilityKey;
 
             if (this.activeIntervals.has(intervalKey)) {
-                this.logs.info(`[AITracker] Clearing existing interval for: ${intervalKey}`);
                 clearInterval(this.activeIntervals.get(intervalKey)!);
                 this.activeIntervals.delete(intervalKey);
             }
@@ -344,28 +333,30 @@ export class AISuggestionTracker {
                     clearInterval(checkInterval);
                     this.activeIntervals.delete(intervalKey);
 
-                    const reason = fileNotActive ? 'file closed' :
-                        vulnerabilityBack ? 'changes rejected' :
-                            'timeout';
-                    this.logs.info(`[AITracker] Ghost text DISAPPEARED (${reason})`);
-
                     if (timeout) {
-                        this.logs.warn(`[AITracker] Timeout - no user decision yet, keeping pending`);
                         return; // Don't finalize
                     }
-                    const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
-                    const vulnerabilityGone = await this.getCurrentValue(fix) === null;
-                    const changesAccepted = fileChanged && vulnerabilityGone;
-                    const outcome = changesAccepted ? 'changes_accepted' : 'changes_rejected';
-                    await this.finalizeFix(fix, outcome);
-                } else {
-                    this.logs.info(`[AITracker] Waiting for Ghost text to disappear... `);
+
+                    if (fix.scannerType === 'Secrets') {
+                        if (vulnerabilityBack) {
+                            await this.finalizeFix(fix, 'changes_rejected');
+                        } else {
+                            const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
+                            if (fileChanged) {
+                                await this.finalizeFix(fix, 'changes_accepted');
+                            }
+                        }
+                    } else {
+                        const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
+                        const vulnerabilityGone = await this.getCurrentValue(fix) === null;
+                        const changesAccepted = fileChanged && vulnerabilityGone;
+                        const outcome = changesAccepted ? 'changes_accepted' : 'changes_rejected';
+                        await this.finalizeFix(fix, outcome);
+                    }
                 }
             }, 2000);
 
             this.activeIntervals.set(intervalKey, checkInterval);
-        } else {
-            this.logs.info(`[AITracker] Vulnerability still present - no ghost text`);
         }
     }
 
@@ -394,7 +385,6 @@ export class AISuggestionTracker {
 
             return false;
         } catch (error) {
-            this.logs.warn(`[AITracker] Error checking for active suggestions: ${error}`);
             return false;
         }
     }
@@ -405,7 +395,6 @@ export class AISuggestionTracker {
         const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
 
         if (hasActiveSuggestion) {
-            this.logs.info(`[AITracker] Active inline suggestion detected - waiting for user to accept/reject`);
             return 'pending_user_action';
         }
         const diagnostics = vscode.languages.getDiagnostics(uri);
@@ -423,12 +412,9 @@ export class AISuggestionTracker {
                 continue;
             }
 
-            this.logs.info(`[AITracker] Found CxDiagnostic: type=${data.cxType}, line=${diagnostic.range.start.line}`);
-
             if (this.diagnosticMatchesFix(data, fix)) {
                 matchingDiagnosticCount++;
                 const currentValue = this.extractValueFromDiagnostic(data, fix.scannerType);
-                this.logs.info(`[AITracker] MATCH FOUND! Vulnerability still present`);
                 return currentValue;
             }
         }
@@ -454,14 +440,8 @@ export class AISuggestionTracker {
 
                 const matches = ossItem.packageManager === packageManager &&
                     ossItem.packageName === packageName &&
-                    ossItem.version === expectedVersion; // ADD VERSION CHECK!
+                    ossItem.version === expectedVersion;
 
-                if (matches) {
-                    this.logs.info(`[AITracker] OSS Match: ${ossItem.packageName}@${ossItem.version}`);
-                } else if (ossItem.packageManager === packageManager && ossItem.packageName === packageName) {
-                    // Same package but different version (fix was applied!)
-                    this.logs.info(`[AITracker] OSS: Same package, different version - expected ${expectedVersion}, got ${ossItem.version}`);
-                }
                 return matches;
             }
             case 'Secrets': {
@@ -484,9 +464,6 @@ export class AISuggestionTracker {
                     actualLine === expectedLine &&
                     actualSecretValueHash === expectedSecretValueHash;
 
-                if (matches) {
-                    this.logs.info(`[AITracker] Secret Match: ${actualSecretType} at line ${actualLine}`);
-                }
                 return matches;
             }
             case 'Asca': {
@@ -496,10 +473,6 @@ export class AISuggestionTracker {
                 const ascaItem = item as AscaHoverData;
                 const ruleId = keyParts[1];
                 const matches = String(ascaItem.ruleId) === ruleId || ascaItem.ruleName === ruleId;
-                if (matches) {
-                    const actualLine = ascaItem.location?.line || 0;
-                    this.logs.info(`[AITracker] ASCA Match (line-independent): ${ascaItem.ruleName} at line ${actualLine}`);
-                }
                 return matches;
             }
             case 'Containers': {
@@ -514,12 +487,6 @@ export class AISuggestionTracker {
                 const matches = containersItem.imageName === imageName &&
                     containersItem.imageTag === expectedTag;
 
-                if (matches) {
-                    this.logs.info(`[AITracker] Containers Match: ${imageName}:${expectedTag}`);
-                } else if (containersItem.imageName === imageName) {
-                    // Same image but different tag (fix was applied!)
-                    this.logs.info(`[AITracker] Containers: Same image, different tag - expected ${expectedTag}, got ${containersItem.imageTag}`);
-                }
                 return matches;
             }
             case 'IaC': {
@@ -564,20 +531,13 @@ export class AISuggestionTracker {
     }
 
     private async finalizeFix(fix: PendingAIFix, status: FixOutcome['status']): Promise<void> {
-        this.logs.info(`[AITracker] ========== FINALIZING FIX ==========`);
-        this.logs.info(`[AITracker] Vulnerability Key: ${fix.vulnerabilityKey}`);
-        this.logs.info(`[AITracker] Final Status: ${status}`);
-
         // Checking no active inline suggestions
         const uri = vscode.Uri.file(fix.filePath);
         const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
 
         if (hasActiveSuggestion) {
-            this.logs.warn(`[AITracker] SAFETY CHECK FAILED: Active inline suggestion detected during finalization!`);
-            this.logs.warn(`[AITracker] Cannot finalize yet - suggestion still visible. Aborting finalization.`);
+            return;
         }
-
-        this.logs.info(`[AITracker] Safety check passed - no active suggestions, safe to finalize`);
 
         const relativePath = this.getRelativePath(fix.filePath);
         const itemName = this.getItemName(fix);
@@ -588,11 +548,9 @@ export class AISuggestionTracker {
             finalState = await this.validator.captureFinalState(fix.filePath);
             validatorMetadata = this.validator.getMetadata(fix.validatorState, finalState);
         } catch (error) {
-            this.logs.error(`[AITracker] Error capturing final state: ${error}`);
             return;
         }
         const eventName = this.getEventNameFromStatus(status);
-        this.logs.info(`[AITracker] Sending telemetry event: ${eventName}`);
 
         const telemetryData: FixOutcomeTelemetry = {
             status,
@@ -606,15 +564,10 @@ export class AISuggestionTracker {
             hashesMatch: (validatorMetadata.hashesMatch as boolean) || false
         };
 
-        this.logs.info(`[AITracker] Sending telemetry: ${eventName}`);
-        this.logs.info(`[AITracker]   - scannerType: ${fix.scannerType}`);
-        this.logs.info(`[AITracker]   - severity: ${fix.severity}`);
-        this.logs.info(`[AITracker]   - status: ${status}`);
-        this.logs.info(`[AITracker]   - hashesMatch: ${validatorMetadata.hashesMatch}`);
-
         await this.sendTelemetry(eventName, telemetryData);
         this.pendingFixes.delete(fix.vulnerabilityKey);
-        this.logs.info(`[AITracker] ========== FIX FINALIZED ==========`);
+
+        this.logs.info(`User ${status === 'changes_accepted' ? 'accepted' : 'rejected'} AI suggestion for ${fix.scannerType} vulnerability`);
     }
 
     // Get relative path from absolute path for Iac scans
@@ -684,10 +637,8 @@ export class AISuggestionTracker {
                 undefined,
                 JSON.stringify(telemetryData)
             );
-
-            this.logs.info(`[AITracker] Telemetry sent successfully: ${eventName}`);
         } catch (error) {
-            this.logs.warn(`[AITracker] Failed to send telemetry: ${error}`);
+            // Silently fail
         }
     }
 
@@ -716,4 +667,3 @@ export class AISuggestionTracker {
         AISuggestionTracker.instance = undefined as any;
     }
 }
-
