@@ -3,6 +3,7 @@ import { Logs } from "../models/logs";
 import { commands } from "../utils/common/commandBuilder";
 import { constants, Platform } from "../utils/common/constants";
 import { spawn } from "child_process";
+import { AISuggestionTracker } from "../aiTracking/AISuggestionTracker";
 import {
     isIDE,
     isSecretsHoverData,
@@ -276,6 +277,15 @@ export class CopilotChatCommand {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
                 this.logUserEvent("click", constants.openAIChat, item);
+
+                // Track the AI fix request for outcome monitoring
+                try {
+                    const tracker = AISuggestionTracker.getInstance();
+                    await tracker.trackFixRequest(item);
+                    this.logs.info("AI fix request tracked for outcome monitoring");
+                } catch (trackError) {
+                    this.logs.warn(`Failed to track AI fix request: ${trackError}`);
+                }
 
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';

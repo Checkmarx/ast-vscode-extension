@@ -283,6 +283,10 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
     registerAssistRelatedCommands(context, cxOneAssistProvider);
 
+    // Initialize AI Suggestion Tracker for fix outcome monitoring
+    const aiTrackingModule = await import("../aiTracking/AISuggestionTracker");
+    aiTrackingModule.AISuggestionTracker.initialize(context, logs);
+
     const copilotChatCommand = new CopilotChatCommand(
         context,
         logs,

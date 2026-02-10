@@ -53,6 +53,9 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
     registerAssistRelatedCommands(context, cxOneAssistProvider);
 
+    const aiTrackingModule = await import("../aiTracking/AISuggestionTracker");
+    aiTrackingModule.AISuggestionTracker.initialize(context, logs);
+
     const copilotChatCommand = new CopilotChatCommand(
         context,
         logs,
