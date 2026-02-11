@@ -322,7 +322,7 @@ export class AISuggestionTracker {
             const checkInterval = setInterval(async () => {
                 attempts++;
 
-                const activeEditor = this.isFileOpen(vscode.window.document.uri.fsPath)
+                const activeEditor = vscode.window.activeTextEditor;
                 const vulnerabilityStatus = await this.getCurrentValue(fix);
 
                 // Check if ghost text disappeared
