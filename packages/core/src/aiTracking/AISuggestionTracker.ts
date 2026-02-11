@@ -180,12 +180,9 @@ export class AISuggestionTracker {
             }
             case 'Secrets': {
                 const secretsItem = item as SecretsHoverData;
-                const line = secretsItem.location?.line ?? 0;
                 const secretType = secretsItem.title || 'unknown';
-                const secretValueHash = secretsItem.secretValue
-                    ? secretsItem.secretValue.substring(0, 8)
-                    : 'unknown';
-                return `secrets:${secretType}:${line}:${secretValueHash}:${filePath}`;
+                const secretValue = secretsItem.secretValue || 'unknown';
+                return `secrets:${secretType}:${secretValue}:${filePath}`;
             }
             case 'Asca': {
                 const ascaItem = item as AscaHoverData;
@@ -198,7 +195,7 @@ export class AISuggestionTracker {
             }
             case 'IaC': {
                 const iacItem = item as IacHoverData;
-                return `iac:${iacItem.similarityId}:${filePath}`;
+                return `iac:${iacItem.similarityId}:${iacItem}`;
             }
             default:
                 return `unknown:${scannerType}:${line}:${filePath}`;
@@ -206,6 +203,10 @@ export class AISuggestionTracker {
     }
 
     private getFilePath(item: AnyHoverData): string {
+
+        if (isIacHoverData(item) && item.originalFilePath) {
+            return item.originalFilePath;
+        }
         if ('filePath' in item && item.filePath) {
             return item.filePath;
         }
@@ -321,7 +322,7 @@ export class AISuggestionTracker {
             const checkInterval = setInterval(async () => {
                 attempts++;
 
-                const activeEditor = vscode.window.activeTextEditor;
+                const activeEditor = this.isFileOpen(vscode.window.document.uri.fsPath)
                 const vulnerabilityStatus = await this.getCurrentValue(fix);
 
                 // Check if ghost text disappeared
@@ -334,17 +335,14 @@ export class AISuggestionTracker {
                     this.activeIntervals.delete(intervalKey);
 
                     if (timeout) {
-                        return; // Don't finalize
+                        return;
                     }
 
                     if (fix.scannerType === 'Secrets') {
-                        if (vulnerabilityBack) {
+                        if (vulnerabilityBack && fileNotActive) {
                             await this.finalizeFix(fix, 'changes_rejected');
-                        } else {
-                            const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
-                            if (fileChanged) {
-                                await this.finalizeFix(fix, 'changes_accepted');
-                            }
+                        } if (!vulnerabilityBack && fileNotActive) {
+                            await this.finalizeFix(fix, 'changes_accepted');
                         }
                     } else {
                         const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
@@ -360,16 +358,21 @@ export class AISuggestionTracker {
         }
     }
 
+
+    private isFileOpen(uri: vscode.Uri): boolean {
+        return vscode.window.visibleTextEditors.some(e => e.document.uri.fsPath === uri.fsPath)
+            || vscode.window.activeTextEditor?.document.uri.fsPath === uri.fsPath;
+    }
+
+
     private async hasActiveInlineSuggestion(uri: vscode.Uri, fix: PendingAIFix): Promise<boolean> {
         try {
-            const activeEditor = vscode.window.activeTextEditor;
-            if (!activeEditor || activeEditor.document.uri.fsPath !== uri.fsPath) {
+            if (!this.isFileOpen(uri)) {
                 return false;
             }
 
-            // CRITICAL FIX: Add grace period check
             const timeSinceRequest = Date.now() - fix.requestedAt;
-            const gracePeriodMs = 25 * 1000; // 60 seconds (adjust as needed)
+            const gracePeriodMs = 5 * 1000; // 5 seconds (adjust as needed)
 
             if (timeSinceRequest < gracePeriodMs) {
                 return true;
@@ -399,14 +402,9 @@ export class AISuggestionTracker {
         }
         const diagnostics = vscode.languages.getDiagnostics(uri);
 
-        const scannerDiagnostics = diagnostics.filter(d => {
-            const data = (d as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-            return data?.cxType === fix.scannerType;
-        });
-
         let matchingDiagnosticCount = 0;
 
-        for (const diagnostic of scannerDiagnostics) {
+        for (const diagnostic of diagnostics) {
             const data = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
             if (!data?.item) {
                 continue;
@@ -452,18 +450,15 @@ export class AISuggestionTracker {
 
                 const expectedSecretType = keyParts[1];
                 const expectedLine = parseInt(keyParts[2]);
-                const expectedSecretValueHash = keyParts[3];
+                const expectedSecretValue = keyParts[3];
 
                 const actualSecretType = secretsItem.title || 'unknown';
                 const actualLine = secretsItem.location?.line ?? 0;
-                const actualSecretValueHash = secretsItem.secretValue
-                    ? secretsItem.secretValue.substring(0, 8)
-                    : 'unknown';
+                const actualSecretValue = secretsItem.secretValue || 'unknown';
 
                 const matches = actualSecretType === expectedSecretType &&
                     actualLine === expectedLine &&
-                    actualSecretValueHash === expectedSecretValueHash;
-
+                    actualSecretValue === expectedSecretValue;
                 return matches;
             }
             case 'Asca': {
@@ -511,7 +506,7 @@ export class AISuggestionTracker {
             case 'Secrets': {
                 const secretsItem = item as SecretsHoverData;
                 const secret = secretsItem.secretValue || '';
-                return secret.length > 4 ? `${secret.substring(0, 4)}***` : '***';
+                return secret;
             }
             case 'Asca': {
                 const ascaItem = item as AscaHoverData;
