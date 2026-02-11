@@ -14,13 +14,26 @@
   },
   "icon": "media/icon.png",
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.100.0"
   },
   "extensionKind": [
     "workspace"
   ],
   "categories": [
-    "Other"
+    "Other",
+  ],
+  "keywords": [
+    "AppSec",
+    "SAST",
+    "OSS",
+    "IaC",
+    "Secrets",
+    "Containers",
+    "Secure Coding",
+    "Developer Assist",
+    "Real-time Scanning",
+    "Kics",
+    "SCA"
   ],
   "activationEvents": [
     "onView:cx-dev-assist.cxDevAssist",

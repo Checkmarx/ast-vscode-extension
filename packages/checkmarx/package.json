@@ -22,6 +22,19 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "AppSec",
+    "SAST",
+    "OSS",
+    "IaC",
+    "Secrets",
+    "Containers",
+    "Secure Coding",
+    "Developer Assist",
+    "Real-time Scanning",
+    "Kics",
+    "SCA"
+  ],
   "activationEvents": [
     "*"
   ],
