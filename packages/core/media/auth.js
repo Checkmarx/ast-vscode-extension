@@ -11,21 +11,40 @@
     const apiKeyInput = document.getElementById("apiKey");
     const loginForm = document.getElementById("loginForm");
     const authenticatedMessage = document.getElementById(
-      "authenticatedMessage"
+      "authenticatedMessage",
     );
 
-     window.addEventListener("message", (event) => {
+    // Get the auth method from hidden input (set by sidebar view) or determine from visible forms
+    function getAuthMethod() {
+      const authMethodInput = document.getElementById("authMethodInput");
+      if (authMethodInput && authMethodInput.value) {
+        return authMethodInput.value;
+      }
+      // Fallback: check which form is visible
+      const oauthForm = document.getElementById("oauthForm");
+      const apiKeyForm = document.getElementById("apiKeyForm");
+      const oauthVisible = oauthForm && !oauthForm.classList.contains("hidden");
+      const apiKeyVisible =
+        apiKeyForm && !apiKeyForm.classList.contains("hidden");
+
+      // If only one form is visible, return that method
+      if (oauthVisible && !apiKeyVisible) return "oauth";
+      if (apiKeyVisible && !oauthVisible) return "apiKey";
+
+      // If both forms are visible, determine based on which has content
+      if (apiKeyInput && apiKeyInput.value.trim()) return "apiKey";
+      return "oauth";
+    }
+
+    window.addEventListener("message", (event) => {
       const message = event.data;
       if (message.command === "disableAuthButton") {
         const authButton = document.getElementById("authButton");
         if (authButton) {
           authButton.disabled = true;
-          document.getElementsByName("authMethod").forEach(input => {
-            input.disabled = true;
-          });
-          document.getElementById("apiKey").disabled = true;
-          document.getElementById("baseUri").disabled = true;
-          document.getElementById("tenant").disabled = true;
+          if (apiKeyInput) apiKeyInput.disabled = true;
+          if (urlInput) urlInput.disabled = true;
+          if (tenantInput) tenantInput.disabled = true;
         }
       }
 
@@ -33,16 +52,14 @@
         const authButton = document.getElementById("authButton");
         if (authButton) {
           authButton.disabled = false;
-          document.getElementsByName("authMethod").forEach(input => {
-            input.disabled = false;
-          });
-          document.getElementById("apiKey").disabled = false;
-          document.getElementById("baseUri").disabled = false;
-          document.getElementById("tenant").disabled = false;
+          if (apiKeyInput) apiKeyInput.disabled = false;
+          if (urlInput) urlInput.disabled = false;
+          if (tenantInput) tenantInput.disabled = false;
         }
       }
     });
-    
+
+    // Only add radio button listeners if they exist (for backward compatibility)
     document.querySelectorAll('input[name="authMethod"]').forEach((radio) => {
       radio.addEventListener("change", (e) => {
         const isOAuth = e.target.value === "oauth";
@@ -57,37 +74,59 @@
       });
     });
 
-    authButton.addEventListener("click", () => {
-      messageBox.style.display = "none";
+    if (authButton) {
+      authButton.addEventListener("click", () => {
+        messageBox.style.display = "none";
 
-      vscode.postMessage({
-        command: "authenticate",
-        authMethod: document.querySelector('input[name="authMethod"]:checked')
-          .value,
-        baseUri: urlInput.value,
-        tenant: tenantInput.value,
-        apiKey: document.getElementById("apiKey").value,
+        vscode.postMessage({
+          command: "authenticate",
+          authMethod: getAuthMethod(),
+          baseUri: urlInput ? urlInput.value : "",
+          tenant: tenantInput ? tenantInput.value : "",
+          apiKey: apiKeyInput ? apiKeyInput.value : "",
+        });
       });
-    });
+    }
 
     function handleInputApiKey() {
       messageBox.style.display = "none";
       isBtnDisabled();
     }
-    apiKeyInput.addEventListener("input", handleInputApiKey);
+    if (apiKeyInput) {
+      apiKeyInput.addEventListener("input", handleInputApiKey);
+    }
 
     function isBtnDisabled() {
-      const authMethod = document.querySelector(
-        "input[name='authMethod']:checked"
-      )?.value;
+      if (!authButton) return;
+
+      const authMethod = getAuthMethod();
+      const oauthForm = document.getElementById("oauthForm");
+      const apiKeyForm = document.getElementById("apiKeyForm");
+      const oauthVisible = oauthForm && !oauthForm.classList.contains("hidden");
+      const apiKeyVisible =
+        apiKeyForm && !apiKeyForm.classList.contains("hidden");
+
       const hasValidUrl =
+        urlInput &&
         errorMessage.style.display !== "block" &&
         urlsList.style.display === "none" &&
         urlInput.value.trim();
-      const hasTenant = tenantInput.value.trim();
-      const hasApiKey = apiKeyInput.value.trim();
-      authButton.disabled =
-        authMethod === "oauth" ? !(hasValidUrl && hasTenant) : !hasApiKey;
+      const hasTenant = tenantInput && tenantInput.value.trim();
+      const hasApiKey = apiKeyInput && apiKeyInput.value.trim();
+
+      // If only OAuth form is visible
+      if (oauthVisible && !apiKeyVisible) {
+        authButton.disabled = !(hasValidUrl && hasTenant);
+      }
+      // If only API Key form is visible
+      else if (apiKeyVisible && !oauthVisible) {
+        authButton.disabled = !hasApiKey;
+      }
+      // If both forms are visible, enable if either condition is met
+      else {
+        authButton.disabled =
+          authMethod === "oauth" ? !(hasValidUrl && hasTenant) : !hasApiKey;
+      }
     }
 
     function showMessage(text, isError) {
@@ -149,19 +188,30 @@
       } else if (message.type === "clear-message-api-validation") {
         messageBox.style.display = "none";
       } else if (message.type === "clearFields") {
-        document.querySelector(
-          'input[name="authMethod"][value="oauth"]'
-        ).checked = true;
-        document.querySelector(
-          'input[name="authMethod"][value="apiKey"]'
-        ).checked = false;
-        apiKeyInput.value = "";
-        urlInput.value = "";
-        tenantInput.value = "";
-        authButton.disabled = true;
-        document
-          .querySelector('input[name="authMethod"][value="oauth"]')
-          .dispatchEvent(new Event("change"));
+        // Clear radio buttons if they exist (backward compatibility)
+        const oauthRadio = document.querySelector(
+          'input[name="authMethod"][value="oauth"]',
+        );
+        const apiKeyRadio = document.querySelector(
+          'input[name="authMethod"][value="apiKey"]',
+        );
+        if (oauthRadio) oauthRadio.checked = true;
+        if (apiKeyRadio) apiKeyRadio.checked = false;
+
+        // Clear form fields
+        if (apiKeyInput) apiKeyInput.value = "";
+        if (urlInput) urlInput.value = "";
+        if (tenantInput) tenantInput.value = "";
+        if (authButton) authButton.disabled = true;
+
+        // Clear hidden auth method input
+        const authMethodInput = document.getElementById("authMethodInput");
+        if (authMethodInput) authMethodInput.value = "";
+
+        // Dispatch change event if radio exists
+        if (oauthRadio) {
+          oauthRadio.dispatchEvent(new Event("change"));
+        }
       }
     });
 
@@ -169,7 +219,7 @@
       inputElement,
       listElement,
       messageType,
-      validateCallback
+      validateCallback,
     ) {
       window.addEventListener("message", (event) => {
         if (event.data.type === messageType) {
@@ -189,7 +239,7 @@
             }
 
             const filteredItems = items.filter((item) =>
-              item.toLowerCase().includes(query)
+              item.toLowerCase().includes(query),
             );
 
             if (filteredItems.length === 0) {
@@ -232,7 +282,7 @@
     }
 
     setupAutocomplete(urlInput, urlsList, "setUrls", (query) =>
-      vscode.postMessage({ command: "validateURL", baseUri: query })
+      vscode.postMessage({ command: "validateURL", baseUri: query }),
     );
     setupAutocomplete(tenantInput, tenantList, "setTenants");
   });

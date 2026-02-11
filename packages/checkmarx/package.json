@@ -829,7 +829,7 @@
         {
           "command": "ast-results.viewSettings",
           "group": "@settings@2",
-          "when": "view == astResults || view==scaAutoScan || view==ast-results.cxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
+          "when": "view == checkmarxAuth || view == astResults || view==scaAutoScan || view==ast-results.cxOneAssist || view==astResultsPromo || view==scaAutoScanPromo || view==riskManagement"
         },
         {
           "command": "ast-results.assistDocumentation",
@@ -860,6 +860,11 @@
     },
     "views": {
       "astView": [
+        {
+          "id": "checkmarxAuth",
+          "type": "webview",
+          "name": "Checkmarx Authentication"
+        },
         {
           "id": "astResults",
           "type": "tree",
@@ -919,7 +924,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -983,13 +988,25 @@
         "order": 1,
         "properties": {
           "checkmarxOne.authentication": {
-            "type": "",
+            "type": "string",
             "order": 5,
-            "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
+            "default": "Both",
+            "enum": [
+              "OAuth",
+              "API Key",
+              "Both"
+            ],
+            "enumDescriptions": [
+              "OAuth authentication only",
+              "API Key authentication only",
+              "Both authentication methods available"
+            ],
+            "description": "Select which authentication method(s) to display in the sidebar authentication view",
+            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Edit in settings.json](command:workbench.action.openSettingsJson)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",
-            "order": 6,
+            "order": 7,
             "description": "Additional Parameters",
             "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
             "properties": {

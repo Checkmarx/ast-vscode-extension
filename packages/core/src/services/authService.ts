@@ -230,6 +230,9 @@ export class AuthService {
       if (isValid) {
         // Only show success page if token is valid
         res.end(this.getSuccessPageHtml());
+        // Save OAuth credentials and method for returning user flow
+        await this.saveOAuthCredentials(baseUri, tenant);
+        await this.saveLastAuthMethod('oauth');
       } else {
         // Show error page if token validation failed
         res.end(this.getErrorPageHtml("Token validation failed. Please try again."));
@@ -424,10 +427,170 @@ export class AuthService {
     return await this.context.secrets.get(constants.getAuthCredentialSecretKey());
   }
 
+  /**
+   * Stores the authentication method type that was last used successfully
+   * @param method - 'oauth' or 'apiKey'
+   */
+  public async saveLastAuthMethod(method: 'oauth' | 'apiKey'): Promise<void> {
+    await this.context.globalState.update(constants.getLastAuthMethodKey(), method);
+  }
+
+  /**
+   * Gets the last used authentication method
+   * @returns 'oauth', 'apiKey', or undefined if no previous authentication
+   */
+  public getLastAuthMethod(): 'oauth' | 'apiKey' | undefined {
+    return this.context.globalState.get<'oauth' | 'apiKey'>(constants.getLastAuthMethodKey());
+  }
+
+  /**
+   * Saves the OAuth credentials (baseUri and tenant) for returning user flow
+   * @param baseUri - The base URI for OAuth authentication
+   * @param tenant - The tenant name
+   */
+  public async saveOAuthCredentials(baseUri: string, tenant: string): Promise<void> {
+    await this.context.globalState.update(constants.getLastOAuthBaseUriKey(), baseUri);
+    await this.context.globalState.update(constants.getLastOAuthTenantKey(), tenant);
+  }
+
+  /**
+   * Gets the stored OAuth credentials
+   * @returns Object with baseUri and tenant, or undefined if not stored
+   */
+  public getStoredOAuthCredentials(): { baseUri: string; tenant: string } | undefined {
+    const baseUri = this.context.globalState.get<string>(constants.getLastOAuthBaseUriKey());
+    const tenant = this.context.globalState.get<string>(constants.getLastOAuthTenantKey());
+
+    if (baseUri && tenant) {
+      return { baseUri, tenant };
+    }
+    return undefined;
+  }
+
+  /**
+   * Checks if valid OAuth credentials exist (token + stored baseUri/tenant)
+   * @returns true if OAuth credentials exist and token is stored
+   */
+  public async hasOAuthCredentials(): Promise<boolean> {
+    const token = await this.getToken();
+    const oauthCreds = this.getStoredOAuthCredentials();
+    const lastMethod = this.getLastAuthMethod();
+
+    return !!token && !!oauthCreds && lastMethod === 'oauth';
+  }
+
+  /**
+   * Checks if stored OAuth credentials exist (baseUri/tenant only, no token required)
+   * This is used to determine if we can re-authenticate using stored credentials
+   * Note: This only checks if OAuth credentials are stored, regardless of the last auth method used.
+   * This allows users to switch back to OAuth after using API Key authentication.
+   * @returns true if OAuth credentials (baseUri/tenant) are stored
+   */
+  public hasStoredOAuthCredentials(): boolean {
+    const oauthCreds = this.getStoredOAuthCredentials();
+    // Only check if OAuth credentials exist, not the last auth method
+    // This allows re-authentication with OAuth even after using API Key
+    return !!oauthCreds;
+  }
+
+  /**
+   * Checks if valid API Key credentials exist
+   * @returns true if API key is stored and was the last used method
+   */
+  public async hasApiKeyCredentials(): Promise<boolean> {
+    const token = await this.getToken();
+    const lastMethod = this.getLastAuthMethod();
+
+    return !!token && lastMethod === 'apiKey';
+  }
+
+  /**
+   * Re-authenticates using stored OAuth credentials (baseUri/tenant)
+   * This opens the browser directly to the OAuth authorization page without showing the form
+   * @returns The token if successful, empty string if failed
+   */
+  public async reAuthenticateWithStoredOAuth(): Promise<string> {
+    const oauthCreds = this.getStoredOAuthCredentials();
+    if (!oauthCreds) {
+      console.error("No stored OAuth credentials found for re-authentication");
+      return "";
+    }
+
+    console.log("Re-authenticating with stored OAuth credentials:", oauthCreds.baseUri, oauthCreds.tenant);
+    return this.authenticate(oauthCreds.baseUri, oauthCreds.tenant);
+  }
+
+  /**
+   * Attempts to auto-authenticate using stored OAuth credentials
+   * @returns true if auto-authentication was successful, false otherwise
+   */
+  public async tryAutoAuthenticateOAuth(): Promise<boolean> {
+    try {
+      const oauthCreds = this.getStoredOAuthCredentials();
+      const token = await this.getToken();
+
+      if (!oauthCreds || !token) {
+        return false;
+      }
+
+      // Validate the existing token
+      const isValid = await this.validateAndUpdateState();
+
+      if (isValid) {
+        console.log("Auto-authentication with OAuth successful");
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Auto-authentication with OAuth failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Attempts to auto-authenticate using stored API Key
+   * @returns true if auto-authentication was successful, false otherwise
+   */
+  public async tryAutoAuthenticateApiKey(): Promise<boolean> {
+    try {
+      const token = await this.getToken();
+
+      if (!token) {
+        return false;
+      }
+
+      // Validate the existing token
+      const isValid = await this.validateAndUpdateState();
+
+      if (isValid) {
+        console.log("Auto-authentication with API Key successful");
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Auto-authentication with API Key failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Clears OAuth-specific stored credentials (used when switching to API Key method)
+   */
+  public async clearOAuthCredentials(): Promise<void> {
+    await this.context.globalState.update(constants.getLastOAuthBaseUriKey(), undefined);
+    await this.context.globalState.update(constants.getLastOAuthTenantKey(), undefined);
+  }
+
   public async logout(): Promise<void> {
-    // Delete only the token
+    // Delete only the token (for security)
     await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
+
+    // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)
+    // so that returning users can auto-authenticate when they click "Sign in" again.
+    // Only the token is cleared for security reasons.
 
     await this.validateAndUpdateState();
     // Only refresh tree for Checkmarx extension (not Developer Assist)

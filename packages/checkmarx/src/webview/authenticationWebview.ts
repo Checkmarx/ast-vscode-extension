@@ -20,17 +20,20 @@ export class AuthenticationWebview {
   private readonly logs: Logs | undefined;
   private webview: WebViewCommand;
   private readonly messages: ReturnType<typeof getMessages>;
+  private readonly authMethod: string | undefined;
   private constructor(
     panel: vscode.WebviewPanel,
     private context: vscode.ExtensionContext,
     logs?: Logs,
     webview?: WebViewCommand,
-    messages?: ReturnType<typeof getMessages>
+    messages?: ReturnType<typeof getMessages>,
+    authMethod?: string
   ) {
     this.logs = logs;
     this._panel = panel;
     this.webview = webview;
     this.messages = messages || getMessages(); // Use provided messages or get them
+    this.authMethod = authMethod;
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
@@ -66,10 +69,17 @@ export class AuthenticationWebview {
     await this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
-  public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
+  public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs, authMethod?: string) {
     if (AuthenticationWebview.currentPanel) {
-      AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
-      return;
+      // If panel exists but auth method changed, dispose and create new panel
+      if (AuthenticationWebview.currentPanel.authMethod !== authMethod) {
+        AuthenticationWebview.currentPanel._panel.dispose();
+        AuthenticationWebview.currentPanel = undefined;
+      } else {
+        // Same auth method, just reveal the existing panel
+        AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
+        return;
+      }
     }
     const messages = getMessages();
 
@@ -91,7 +101,8 @@ export class AuthenticationWebview {
       context,
       logs,
       webViewCommand,
-      messages
+      messages,
+      authMethod
     );
   }
 
@@ -180,6 +191,12 @@ export class AuthenticationWebview {
     const nonce = getNonce();
     const messages = this.messages;
 
+    // Determine which forms to show based on authMethod
+    const showOAuthForm = !this.authMethod || this.authMethod === 'oauth';
+    const showApiKeyForm = !this.authMethod || this.authMethod === 'apiKey';
+    const oauthFormClass = showOAuthForm ? 'auth-form' : 'auth-form hidden';
+    const apiKeyFormClass = showApiKeyForm ? '' : 'hidden';
+
     return `<!DOCTYPE html>
 <html>
 
@@ -203,18 +220,10 @@ export class AuthenticationWebview {
 <div id="authContainer" class="auth-container hidden">
         <div class="auth-form-title">${messages.displayName} Authentication</div>
         <div id="loginForm">
-        <div class="radio-group">
+        <!-- Hidden input to store the auth method -->
+        <input type="hidden" id="authMethodInput" value="${this.authMethod || ''}">
 
-            <label>
-                <input type="radio" name="authMethod" value="oauth" checked> OAuth
-            </label>
-
-            <label>
-                <input type="radio" name="authMethod" value="apiKey">API Key
-            </label>
-        </div>
-
-        <div  id="oauthForm" class="auth-form">
+        <div id="oauthForm" class="${oauthFormClass}">
             <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
             <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
             <div id="urls-list" class="autocomplete-items"></div>
@@ -224,14 +233,15 @@ export class AuthenticationWebview {
             <label for="tenant" class="form-label">Tenant Name:</label>
             <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
             <div id="tenants-list" class="autocomplete-items"></div>
+            ${showOAuthForm && !showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with OAuth</button>` : ''}
         </div>
 
-             <!-- (We need to return it to the next div ) (class="hidden">)   -->
-        <div id="apiKeyForm" class="hidden">
+        <div id="apiKeyForm" class="${apiKeyFormClass}">
           <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
+            ${showApiKeyForm && !showOAuthForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with API Key</button>` : ''}
         </div>
-        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
+        ${showOAuthForm && showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>` : ''}
         </div>
 
         <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
@@ -333,6 +343,10 @@ export class AuthenticationWebview {
                   }
 
                   authService.saveToken(this.context, message.apiKey);
+                  // Save auth method for returning user flow
+                  // NOTE: We intentionally preserve OAuth credentials (baseUri/tenant) so users can
+                  // switch back to OAuth later without re-entering their credentials
+                  await authService.saveLastAuthMethod('apiKey');
                   const isAiEnabled = await cx.isAiMcpServerEnabled();
                   const commonCommand = new CommonCommand(this.context, this.logs);
                   await commonCommand.executeCheckStandaloneEnabled();
