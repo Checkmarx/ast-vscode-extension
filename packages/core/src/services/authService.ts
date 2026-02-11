@@ -299,12 +299,23 @@ export class AuthService {
     });
   }
 
+  /**
+   * Validates a new API key provided by the user.
+   * The key is only persisted if validation succeeds to avoid
+   * repeatedly triggering secret-change listeners with an invalid key.
+   */
   public async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      await this.context.secrets.store(constants.getAuthCredentialSecretKey(), apiKey);
       const cx = getCx();
-      return await cx.authValidate(this.logs);
+      await this.context.secrets.store(constants.getAuthCredentialSecretKey(), apiKey);
+      const isValid = await cx.authValidate(this.logs);
 
+      if (!isValid) {
+        // Remove the API key if validation fails
+        await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
+      }
+
+      return isValid;
     } catch (error) {
       return false;
     }
@@ -398,7 +409,10 @@ export class AuthService {
         );
         return false;
       }
-      const isValid = await this.validateApiKey(token);
+
+      // For an already stored token, avoid re-storing it during validation
+      const cx = getCx();
+      const isValid = await cx.authValidate(this.logs);
       vscode.commands.executeCommand(
         commands.setContext,
         commands.isValidCredentials,
@@ -495,6 +509,8 @@ export class AuthService {
 
   /**
    * Checks if valid API Key credentials exist
+   * NOTE: Currently unused for login flow. API Key authentication always
+   * shows the login form in the UI and does not auto-auth based on this state.
    * @returns true if API key is stored and was the last used method
    */
   public async hasApiKeyCredentials(): Promise<boolean> {
@@ -550,6 +566,8 @@ export class AuthService {
 
   /**
    * Attempts to auto-authenticate using stored API Key
+   * NOTE: Currently unused for login flow. API Key authentication always
+   * shows the login form in the UI to avoid relying on persisted keys.
    * @returns true if auto-authentication was successful, false otherwise
    */
   public async tryAutoAuthenticateApiKey(): Promise<boolean> {

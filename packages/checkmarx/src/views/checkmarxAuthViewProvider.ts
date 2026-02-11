@@ -370,20 +370,11 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
                         }
                         // If re-authentication failed, fall through to show the form
                     }
-                } else if (message.method === 'apiKey') {
-                    // Check if API Key exists
-                    const hasApiKey = await authService.hasApiKeyCredentials();
-                    if (hasApiKey) {
-                        // Try auto-authentication with stored API Key
-                        const success = await authService.tryAutoAuthenticateApiKey();
-                        if (success) {
-                            // Auto-authentication succeeded, don't show form
-                            vscode.window.showInformationMessage("Signed in with saved API Key.");
-                            return;
-                        }
-                    }
                 }
 
+                // For API Key authentication, always show the plugin login form.
+                // We do not attempt auto-auth with any previously stored API key
+                // to avoid relying on persisted API keys.
                 // Show the authentication webview if no credentials or auto-auth failed
                 await vscode.commands.executeCommand(commands.showAuth, message.method);
                 break;
