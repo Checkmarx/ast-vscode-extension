@@ -1097,5 +1097,8 @@
     "mocha": "^10.8.2",
     "typescript": "^5.3.3",
     "vscode-extension-tester": "8.17.0"
+  },
+  "overrides": {
+    "@isaacs/brace-expansion": "5.0.1"
   }
 }
