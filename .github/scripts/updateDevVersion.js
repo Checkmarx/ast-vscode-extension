@@ -1,17 +1,19 @@
 /**
- * Update dev version for extensions in monorepo structure
+ * Generate timestamp-based version for dev builds
  *
- * Currently edge releases have the following format: `3.0.0-nightly.1` which
- * is valid semver but invalid as version to be published on the marketplace
- * (see also https://github.com/microsoft/vscode-vsce/issues/148 for context).
- * This means that edge releases are currently not possible with the workflow
- * we have.
+ * Reads the version from package.json and converts it to marketplace-compatible
+ * timestamp format for dev releases.
  *
- * This script updates the version in the specified package's package.json.
+ * VSCode Marketplace version requirements:
+ * It must be one to four numbers in the range 0 to 2147483647,
+ * with each number separated by a period. It must contain at least one non-zero number.
+ *
+ * This script DOES NOT modify package.json - it only outputs the timestamp version
+ * to stdout so it can be captured by the workflow.
  *
  * Usage:
- *   node updateDevVersion.js --package checkmarx
- *   node updateDevVersion.js --package project-ignite
+ *   TIMESTAMP_VERSION=$(node updateDevVersion.js --package checkmarx)
+ *   TIMESTAMP_VERSION=$(node updateDevVersion.js --package project-ignite)
  */
 const fs = require("fs");
 const path = require("path");
@@ -46,18 +48,14 @@ const pkgPath = path.join(
 
 const pkg = JSON.parse(fs.readFileSync(pkgPath).toString());
 
-const newVersion = pkg.version.split(".").slice(0, 2);
+// Take only major.minor from current version
+const versionParts = pkg.version.split(".").slice(0, 2);
 
-/**
- * VSCode Marketplace version requirements:
- * It must be one to four numbers in the range 0 to 2147483647,
- * with each number separated by a period. It must contain at least one non-zero number.
- */
+// Generate timestamp for patch version
 const prereleaseDate = Math.floor(Date.now() / 1000);
-newVersion.push(prereleaseDate);
-pkg.version = `${newVersion.join(".")}`;
+versionParts.push(prereleaseDate);
 
-console.log(
-  `Update ${packageName} package.json with dev version:\n\n${JSON.stringify(pkg, null, 2)}`,
-);
-fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+const timestampVersion = versionParts.join(".");
+
+// Output ONLY the timestamp version to stdout (so it can be captured)
+console.log(timestampVersion);
