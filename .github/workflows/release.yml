@@ -443,7 +443,7 @@ jobs:
             'VS Code - Checkmarx & DevAssist' }}
       release_version: ${{ needs.release.outputs.TAG_NAME }}
       cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
-      release_author: "Phoenix Team"
+      release_author: "Checkmarx"
       release_url: https://github.com/Checkmarx/ast-vscode-extension/releases/tag/${{ needs.release.outputs.TAG_NAME }}
       jira_product_name: VSCODE
     secrets: inherit
