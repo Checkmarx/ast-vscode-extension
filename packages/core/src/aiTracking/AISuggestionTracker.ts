@@ -326,7 +326,7 @@ export class AISuggestionTracker {
                 const vulnerabilityStatus = await this.getCurrentValue(fix);
 
                 // Check if ghost text disappeared
-                const fileNotActive = !activeEditor || activeEditor.document.uri.fsPath !== fix.filePath;
+                const fileNotActive = !activeEditor || activeEditor?.document.uri.fsPath !== fix.filePath;
                 const vulnerabilityBack = vulnerabilityStatus !== null;
                 const timeout = attempts >= 150;
 
