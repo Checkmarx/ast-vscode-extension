@@ -290,6 +290,7 @@ export class AISuggestionTracker {
             originalItem: item
         };
 
+
         this.pendingFixes.set(vulnKey, fix);
 
         // Send request telemetry , no need as we alrady have fixWithAIChat request
