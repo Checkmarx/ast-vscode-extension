@@ -181,10 +181,21 @@ jobs:
         run: |
           BODY=""
 
-          # Always show both versions in the asset summary header
-          BODY="#### Checkmarx v${{ env.CHECKMARX_VERSION }}\n"
-          BODY="${BODY}#### DevAssist v${{ env.IGNITE_VERSION }}\n"
-          BODY="${BODY}\n---\n\n"
+          # Header: Plugins in this release
+          # Mark as (NEW) only if the package is being released in this releaseType
+          BODY="Plugins in this release\n"
+          if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            BODY="${BODY}* Checkmarx (AST): v${{ env.CHECKMARX_VERSION }} (NEW)\n"
+          else
+            BODY="${BODY}* Checkmarx (AST): v${{ env.CHECKMARX_VERSION }}\n"
+          fi
+
+          if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            BODY="${BODY}* Checkmarx Developer Assist: v${{ env.IGNITE_VERSION }} (NEW)\n"
+          else
+            BODY="${BODY}* Checkmarx Developer Assist: v${{ env.IGNITE_VERSION }}\n"
+          fi
+          BODY="${BODY}\n"
 
           # Append changelog section(s) based on releaseType
           if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
@@ -251,10 +262,16 @@ jobs:
       - name: Package Checkmarx .vsix file
         run: |
           if [ "${{ inputs.dev }}" == "true" ]; then
-            TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package checkmarx)
-            echo "Checkmarx timestamp version: $TIMESTAMP_VERSION"
-            cd packages/checkmarx
-            vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            # Only timestamp if this package is being released
+            if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+              TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package checkmarx)
+              echo "Checkmarx timestamp version: $TIMESTAMP_VERSION"
+              cd packages/checkmarx
+              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            else
+              # Not being released, package at current version without timestamp
+              npm run package:checkmarx
+            fi
           else
             npm run package:checkmarx
           fi
@@ -264,10 +281,16 @@ jobs:
       - name: Package Project Ignite .vsix file
         run: |
           if [ "${{ inputs.dev }}" == "true" ]; then
-            TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package project-ignite)
-            echo "Project Ignite timestamp version: $TIMESTAMP_VERSION"
-            cd packages/project-ignite
-            vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            # Only timestamp if this package is being released
+            if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+              TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package project-ignite)
+              echo "Project Ignite timestamp version: $TIMESTAMP_VERSION"
+              cd packages/project-ignite
+              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            else
+              # Not being released, package at current version without timestamp
+              npm run package:cx-dev-assist
+            fi
           else
             npm run package:cx-dev-assist
           fi
@@ -278,17 +301,12 @@ jobs:
       - name: Get package versions after packaging
         id: get_versions_final
         run: |
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            # Extract version from .vsix filename for dev builds
-            CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)
-            IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)
-            CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
-            IGNITE_VERSION_FINAL=$(basename "$IGNITE_VSIX" .vsix | sed 's/cx-dev-assist-//')
-          else
-            # Read from package.json for non-dev builds
-            CHECKMARX_VERSION_FINAL=$(cat packages/checkmarx/package.json | jq -r .version)
-            IGNITE_VERSION_FINAL=$(cat packages/project-ignite/package.json | jq -r .version)
-          fi
+          # Extract version from .vsix filename (works for both dev and non-dev)
+          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)
+          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)
+          CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
+          IGNITE_VERSION_FINAL=$(basename "$IGNITE_VSIX" .vsix | sed 's/cx-dev-assist-//')
+
           echo "CHECKMARX_VERSION_FINAL=$CHECKMARX_VERSION_FINAL" >> $GITHUB_ENV
           echo "IGNITE_VERSION_FINAL=$IGNITE_VERSION_FINAL" >> $GITHUB_ENV
           echo "Checkmarx final vsix version: $CHECKMARX_VERSION_FINAL"
@@ -334,9 +352,22 @@ jobs:
 
       # CREATE UNIFIED GITHUB RELEASE (always 6 assets: 2 vsix + 2x source code auto-added by GitHub)
       - name: Create Unified Release
+        run: |
+          # For dev builds, add timestamp to the release name
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            TIMESTAMP=$(date +%s)
+            RELEASE_NAME="${{ env.TAG_NAME }} ($TIMESTAMP)"
+          else
+            RELEASE_NAME="${{ env.TAG_NAME }}"
+          fi
+
+          echo "Creating release: $RELEASE_NAME"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+      - name: Upload release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 #v1
         with:
-          name: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
           tag_name: ${{ env.TAG_NAME }}
           body_path: release_body.md
           generate_release_notes: false

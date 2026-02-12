@@ -30,7 +30,7 @@ const isDev = get("--dev") === "true";
 
 if (!packageName || !version || !repo) {
   console.error(
-    "Usage: node generateChangelog.js --package <checkmarx|project-ignite> --version <x.x.x> --repo <owner/repo> [--dev true|false]"
+    "Usage: node generateChangelog.js --package <checkmarx|project-ignite> --version <x.x.x> --repo <owner/repo> [--dev true|false]",
   );
   process.exit(1);
 }
@@ -46,14 +46,14 @@ if (!["checkmarx", "project-ignite"].includes(packageName)) {
 
 /**
  * A stable tag has NO hyphen after the version digits.
- * Valid:   v2.48.0  |  Checkmarx-v2.47.0  |  DevAssist-v1.1.0
- * Invalid: v2.48.0-nightly.1  |  Checkmarx-v2.47.0-nightly.1  |  DevAssist-v1.1.0-final-test.0
+ * Valid:   v2.48.0
+ * Invalid: v2.48.0-nightly.1 | Checkmarx-v2.47.0 | DevAssist-v1.1.0
  *
- * The regex captures an optional prefix (Checkmarx- | DevAssist-) followed by
- * vMAJOR.MINOR.PATCH with nothing after — no hyphen, no dot extension.
+ * For stable releases, we only look for plain v* tags (no Checkmarx- or DevAssist- prefix).
+ * The regex captures vMAJOR.MINOR.PATCH with nothing after — no hyphen, no dot extension.
  */
 function isStableTag(tag) {
-  return /^(Checkmarx-|DevAssist-)?v\d+\.\d+\.\d+$/.test(tag.trim());
+  return /^v\d+\.\d+\.\d+$/.test(tag.trim());
 }
 
 /**
@@ -61,10 +61,7 @@ function isStableTag(tag) {
  */
 function getAllTagsSorted() {
   try {
-    const out = execSync(
-      'git tag --sort=-creatordate',
-      { encoding: "utf8" }
-    );
+    const out = execSync("git tag --sort=-creatordate", { encoding: "utf8" });
     return out.trim().split("\n").filter(Boolean);
   } catch {
     return [];
@@ -72,33 +69,26 @@ function getAllTagsSorted() {
 }
 
 /**
- * Find the last stable tag for a given package.
+ * Find the last stable tag (v* only, no prefix).
  *
- * Priority:
- *  1. Latest stable tag with the package-specific prefix
- *     (Checkmarx-v* for checkmarx, DevAssist-v* for project-ignite)
- *  2. Latest stable tag with no prefix (v*) — pre-split era
+ * For stable releases, we only use plain v* tags (e.g., v2.46.0).
+ * Package-specific prefixed tags (Checkmarx-v*, DevAssist-v*) are only for dev builds.
  */
 function findLastStableTag(pkg) {
-  const prefix = pkg === "checkmarx" ? "Checkmarx-" : "DevAssist-";
   const allTags = getAllTagsSorted();
 
-  // 1. Try prefixed stable tags first
-  const prefixedStable = allTags.find(
-    (t) => t.startsWith(prefix) && isStableTag(t)
+  // Look for plain v* stable tags only
+  const stableTag = allTags.find(
+    (t) =>
+      t.startsWith("v") &&
+      !t.startsWith("Checkmarx-") &&
+      !t.startsWith("DevAssist-") &&
+      isStableTag(t),
   );
-  if (prefixedStable) {
-    console.log(`Found last stable prefixed tag for ${pkg}: ${prefixedStable}`);
-    return prefixedStable;
-  }
 
-  // 2. Fall back to plain v* stable tags (pre-split era)
-  const plainStable = allTags.find(
-    (t) => t.startsWith("v") && !t.startsWith("Checkmarx-") && !t.startsWith("DevAssist-") && isStableTag(t)
-  );
-  if (plainStable) {
-    console.log(`Found last stable plain tag for ${pkg}: ${plainStable}`);
-    return plainStable;
+  if (stableTag) {
+    console.log(`Found last stable tag: ${stableTag}`);
+    return stableTag;
   }
 
   console.log(`No stable tag found for ${pkg}, will use full history`);
@@ -132,7 +122,7 @@ function getCommits(pkg, lastTag) {
   try {
     raw = execSync(
       `git log ${range} --pretty=format:"%H|||%s|||%an|||%ad" --date=short -- ${pkgPath}`,
-      { encoding: "utf8" }
+      { encoding: "utf8" },
     );
   } catch (e) {
     console.error("git log failed:", e.message);
@@ -146,15 +136,23 @@ function getCommits(pkg, lastTag) {
     .split("\n")
     .map((line) => {
       const [hash, message, author, date] = line.split("|||");
-      return { hash: hash?.trim(), message: message?.trim(), author: author?.trim(), date: date?.trim() };
+      return {
+        hash: hash?.trim(),
+        message: message?.trim(),
+        author: author?.trim(),
+        date: date?.trim(),
+      };
     })
     .filter((c) => c.message && !shouldExclude(c.message));
 }
 
 /**
  * Format commits into markdown grouped by conventional commit type.
+ * @param {Array} commits - Array of commit objects
+ * @param {string} repoUrl - Repository URL
+ * @param {boolean} includeContributors - Whether to include author names (for GitHub release body)
  */
-function formatCommits(commits, repoUrl) {
+function formatCommits(commits, repoUrl, includeContributors = false) {
   if (!commits.length) return "_No changes_\n";
 
   const groups = {
@@ -167,12 +165,21 @@ function formatCommits(commits, repoUrl) {
   };
 
   for (const c of commits) {
-    const line = `* ${c.message} by @${c.author} ([${c.hash.slice(0, 7)}](${repoUrl}/commit/${c.hash}))`;
-    if (/^feat(\(.+\))?[:\!]/.test(c.message)) groups["🚀 New Features"].push(line);
-    else if (/^fix(\(.+\))?[:\!]/.test(c.message)) groups["🐛 Bug Fixes"].push(line);
-    else if (/^docs(\(.+\))?[:\!]/.test(c.message)) groups["📝 Documentation"].push(line);
-    else if (/^refactor(\(.+\))?[:\!]/.test(c.message)) groups["♻️ Refactor"].push(line);
-    else if (/^perf(\(.+\))?[:\!]/.test(c.message)) groups["⚡ Performance"].push(line);
+    // Format with or without contributor name based on the flag
+    const line = includeContributors
+      ? `* ${c.message} by @${c.author} ([${c.hash.slice(0, 7)}](${repoUrl}/commit/${c.hash}))`
+      : `* ${c.message} ([${c.hash.slice(0, 7)}](${repoUrl}/commit/${c.hash}))`;
+
+    if (/^feat(\(.+\))?[:\!]/.test(c.message))
+      groups["🚀 New Features"].push(line);
+    else if (/^fix(\(.+\))?[:\!]/.test(c.message))
+      groups["🐛 Bug Fixes"].push(line);
+    else if (/^docs(\(.+\))?[:\!]/.test(c.message))
+      groups["📝 Documentation"].push(line);
+    else if (/^refactor(\(.+\))?[:\!]/.test(c.message))
+      groups["♻️ Refactor"].push(line);
+    else if (/^perf(\(.+\))?[:\!]/.test(c.message))
+      groups["⚡ Performance"].push(line);
     else groups["🔧 Other Changes"].push(line);
   }
 
@@ -203,10 +210,18 @@ const lastStableTag = findLastStableTag(packageName);
 
 // Get filtered commits
 const commits = getCommits(packageName, lastStableTag);
-console.log(`Found ${commits.length} commits for ${packageName} since ${lastStableTag || "beginning"}`);
+console.log(
+  `Found ${commits.length} commits for ${packageName} since ${lastStableTag || "beginning"}`,
+);
 
-// Format changelog body
-const changelogBody = formatCommits(commits, repoUrl);
+// Extract unique contributors from commits
+const contributors = [...new Set(commits.map((c) => c.author))].sort();
+
+// Format changelog body WITH contributors for GitHub release
+const changelogBodyWithContributors = formatCommits(commits, repoUrl, true);
+
+// Format changelog body WITHOUT contributors for CHANGELOG.md file
+const changelogBodyClean = formatCommits(commits, repoUrl, false);
 
 // Full changelog comparison link
 const compareLink = lastStableTag
@@ -215,39 +230,58 @@ const compareLink = lastStableTag
 
 // ---------------------------------------------------------------------------
 // 1. Write release body file (for GitHub release window)
-//    Caller is responsible for assembling multi-package release body.
-//    This file contains only THIS package's section.
+//    Format:
+//    ## Checkmarx (AST): v2.48.0
+//    What's Changed
+//    <grouped commits with contributors>
+//    Full Changelog: link
+//
+//    Contributors
+//    <unique list of contributor names>
 // ---------------------------------------------------------------------------
 const releaseBodySection =
-  `## ${displayName} v${version}\n\n` +
-  changelogBody +
-  `\n${compareLink}\n`;
+  `## ${displayName}${packageName === "checkmarx" ? " (AST)" : ""}: v${version}\n` +
+  `What's Changed\n` +
+  changelogBodyWithContributors +
+  `${compareLink}\n\n` +
+  (contributors.length > 0 ? `Contributors\n${contributors.join("\n")}\n` : "");
 
 const releaseBodyPath = path.join(__dirname, `release_body_${packageName}.md`);
 fs.writeFileSync(releaseBodyPath, releaseBodySection);
 console.log(`Release body section written to ${releaseBodyPath}`);
 
 // ---------------------------------------------------------------------------
-// 2. Prepend to CHANGELOG.md (stable releases only, skipped for dev builds)
+// 2. Prepend to CHANGELOG.md (now includes dev builds for testing)
+//    TODO: After testing, change this back to skip dev builds by uncommenting:
+//    if (isDev) {
+//      console.log("Dev build detected — skipping CHANGELOG.md update.");
+//    } else {
 // ---------------------------------------------------------------------------
-if (isDev) {
-  console.log("Dev build detected — skipping CHANGELOG.md update.");
-} else {
-  const changelogPath = path.join(__dirname, "..", "..", "packages", packageName, "CHANGELOG.md");
+const changelogPath = path.join(
+  __dirname,
+  "..",
+  "..",
+  "packages",
+  packageName,
+  "CHANGELOG.md",
+);
 
-  let existingChangelog = "";
-  if (fs.existsSync(changelogPath)) {
-    existingChangelog = fs.readFileSync(changelogPath, "utf8");
-    // Remove the top-level "# CHANGELOG" header if present so we can re-add it cleanly
-    existingChangelog = existingChangelog.replace(/^# CHANGELOG\s*\n+/, "");
-  }
-
-  const newEntry =
-    `## [${displayName} v${version}](${releaseUrl}) - ${today}\n\n` +
-    changelogBody +
-    `\n${compareLink}\n\n`;
-
-  const updatedChangelog = `# CHANGELOG\n\n${newEntry}${existingChangelog}`;
-  fs.writeFileSync(changelogPath, updatedChangelog);
-  console.log(`CHANGELOG.md updated at ${changelogPath}`);
+let existingChangelog = "";
+if (fs.existsSync(changelogPath)) {
+  existingChangelog = fs.readFileSync(changelogPath, "utf8");
+  // Remove the top-level "# CHANGELOG" header if present so we can re-add it cleanly
+  existingChangelog = existingChangelog.replace(/^# CHANGELOG\s*\n+/, "");
 }
+
+// Format: DevAssist-v1.1.1-mcp_fallnack_changes.0 - 2026-02-09 16:06:36
+// Use full tag name (with prefix) for the changelog entry
+const timestamp = new Date().toISOString().replace("T", " ").substring(0, 19);
+const fullTagName = `${tagPrefix}${newTag}`;
+
+const newEntry =
+  `${fullTagName} - ${timestamp}\n` +
+  `Full Changelog: ${repoUrl}/compare/${lastStableTag || "initial"}...${fullTagName}\n\n`;
+
+const updatedChangelog = `# CHANGELOG\n\n${newEntry}${existingChangelog}`;
+fs.writeFileSync(changelogPath, updatedChangelog);
+console.log(`CHANGELOG.md updated at ${changelogPath}`);
