@@ -104,6 +104,7 @@ const EXCLUDE_PATTERNS = [
   /update.*ignite.*version.*automated/i,
   /docs\(changelog\)/i,
   /bump version/i,
+  /\[create-pull-request\] automated change/i,
 ];
 
 function shouldExclude(message) {
@@ -165,22 +166,49 @@ function formatCommits(commits, repoUrl, includeContributors = false) {
   };
 
   for (const c of commits) {
-    // Format with or without contributor name based on the flag
-    const line = includeContributors
-      ? `* ${c.message} by @${c.author} ([${c.hash.slice(0, 7)}](${repoUrl}/commit/${c.hash}))`
-      : `* ${c.message} ([${c.hash.slice(0, 7)}](${repoUrl}/commit/${c.hash}))`;
+    // Map author name to GitHub username if mapping exists
+    const githubUsername = c.author;
 
-    if (/^feat(\(.+\))?[:\!]/.test(c.message))
+    // Format without SHA hash - only message and contributor
+    const line = includeContributors
+      ? `* ${c.message} by @${githubUsername}`
+      : `* ${c.message}`;
+
+    const msg = c.message.toLowerCase();
+
+    // Conventional commit format OR natural language detection
+    if (
+      /^feat(\(.+\))?[:\!]/.test(c.message) ||
+      /\b(add|added|adding|new feature|feature|implement|implemented)\b/i.test(
+        msg,
+      )
+    ) {
       groups["🚀 New Features"].push(line);
-    else if (/^fix(\(.+\))?[:\!]/.test(c.message))
+    } else if (
+      /^fix(\(.+\))?[:\!]/.test(c.message) ||
+      /\b(fix|fixed|fixing|fixes|resolve|resolved|resolving|resolves|bug)\b/i.test(
+        msg,
+      )
+    ) {
       groups["🐛 Bug Fixes"].push(line);
-    else if (/^docs(\(.+\))?[:\!]/.test(c.message))
+    } else if (
+      /^docs(\(.+\))?[:\!]/.test(c.message) ||
+      /\b(doc|docs|documentation|readme)\b/i.test(msg)
+    ) {
       groups["📝 Documentation"].push(line);
-    else if (/^refactor(\(.+\))?[:\!]/.test(c.message))
+    } else if (
+      /^refactor(\(.+\))?[:\!]/.test(c.message) ||
+      /\b(refactor|refactoring|restructure|reorganize)\b/i.test(msg)
+    ) {
       groups["♻️ Refactor"].push(line);
-    else if (/^perf(\(.+\))?[:\!]/.test(c.message))
+    } else if (
+      /^perf(\(.+\))?[:\!]/.test(c.message) ||
+      /\b(perf|performance|optimize|optimized|optimization)\b/i.test(msg)
+    ) {
       groups["⚡ Performance"].push(line);
-    else groups["🔧 Other Changes"].push(line);
+    } else {
+      groups["🔧 Other Changes"].push(line);
+    }
   }
 
   let md = "";
@@ -214,9 +242,6 @@ console.log(
   `Found ${commits.length} commits for ${packageName} since ${lastStableTag || "beginning"}`,
 );
 
-// Extract unique contributors from commits
-const contributors = [...new Set(commits.map((c) => c.author))].sort();
-
 // Format changelog body WITH contributors for GitHub release
 const changelogBodyWithContributors = formatCommits(commits, repoUrl, true);
 
@@ -232,19 +257,15 @@ const compareLink = lastStableTag
 // 1. Write release body file (for GitHub release window)
 //    Format:
 //    ## Checkmarx (AST): v2.48.0
-//    What's Changed
+//    ## What's Changed
 //    <grouped commits with contributors>
 //    Full Changelog: link
-//
-//    Contributors
-//    <unique list of contributor names>
 // ---------------------------------------------------------------------------
 const releaseBodySection =
   `## ${displayName}${packageName === "checkmarx" ? " (AST)" : ""}: v${version}\n` +
-  `What's Changed\n` +
+  `## What's Changed\n` +
   changelogBodyWithContributors +
-  `${compareLink}\n\n` +
-  (contributors.length > 0 ? `Contributors\n${contributors.join("\n")}\n` : "");
+  `${compareLink}\n`;
 
 const releaseBodyPath = path.join(__dirname, `release_body_${packageName}.md`);
 fs.writeFileSync(releaseBodyPath, releaseBodySection);
