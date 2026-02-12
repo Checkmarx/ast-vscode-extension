@@ -17,6 +17,33 @@ body {
 	);
 }
 
+/* Light theme: use provided white theme gradient */
+body[data-vscode-theme-kind="vscode-light"] {
+	background:
+		linear-gradient(0deg, #F6F5FF, #F6F5FF),
+		radial-gradient(
+			83.74% 70.01% at 74.82% 90.69%,
+			rgba(213, 194, 253, 0.43) 0%,
+			rgba(246, 245, 255, 0.43) 75.48%
+		);
+}
+
+/* Light theme input overrides: make fields light, readable */
+body[data-vscode-theme-kind="vscode-light"] .auth-input {
+	background: #FFFFFF;
+	border: 1px solid #D9DAE6;
+	color: #1F1F1F;
+}
+body[data-vscode-theme-kind="vscode-light"] .auth-input::placeholder {
+	color: #6E6E78;
+}
+
+/* Optional: lighten the card in light mode for clarity */
+body[data-vscode-theme-kind="vscode-light"] .auth-container {
+	background: rgba(255, 255, 255, 0.95);
+	border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 
 .auth-container {
     padding: 50px;   /* keep existing padding */
@@ -209,3 +236,9 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 	transform: translateX(-50%);
 	opacity: 0.95;
 }
+
+/* Theme-specific footer visibility for auth page */
+.page-footer-dark { display: block; }
+.page-footer-light { display: none; }
+body[data-vscode-theme-kind="vscode-light"] .page-footer-dark { display: none; }
+body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block; }

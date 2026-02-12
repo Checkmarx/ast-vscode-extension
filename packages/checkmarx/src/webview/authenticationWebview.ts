@@ -193,6 +193,7 @@ export class AuthenticationWebview {
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
     const footerImageUri = this.setWebUri("media", "checkmarx_page_footer.png");
+    const footerLightImageUri = this.setWebUri("media", "checkmarx_page_footer_light_theme.png");
     const nonce = getNonce();
     const messages = this.messages;
 
@@ -263,7 +264,8 @@ export class AuthenticationWebview {
         <div id="messageText"></div>
         </div>
     </div>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </html>`;
   }

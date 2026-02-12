@@ -125,7 +125,9 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         const footerImageUri = this.webviewView!.webview.asWebviewUri(
             vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
         );
-
+        const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer_light_theme.png"))
+        );
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,6 +162,18 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             background-size: cover;
         }
 
+        /* Light theme: match authentication page gradient */
+        body[data-vscode-theme-kind="vscode-light"] {
+            background:
+                linear-gradient(0deg, #F6F5FF, #F6F5FF),
+                radial-gradient(
+                    83.74% 70.01% at 74.82% 90.69%,
+                    rgba(213, 194, 253, 0.43) 0%,
+                    rgba(246, 245, 255, 0.43) 75.48%
+                );
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
         .auth-container {
             display: flex;
             flex-direction: column;
@@ -217,6 +231,28 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             width: 16px;
             height: 16px;
         }
+        /* Light theme: ensure logout icon visible on white button */
+        body[data-vscode-theme-kind="vscode-light"] .logout-button img {
+            filter: invert(1);
+        }
+
+        /* Light theme: outlined logout button to match design */
+        body[data-vscode-theme-kind="vscode-light"] .logout-button {
+            background: #FFFFFF;
+            color: #2F2F2F;
+            border: 1px solid #D9DAE6;
+            box-shadow: none;
+        }
+        body[data-vscode-theme-kind="vscode-light"] .logout-button:hover {
+            background: #FAFAFF;
+            border-color: #C8CAE0;
+        }
+        body[data-vscode-theme-kind="vscode-light"] .logout-button:active,
+        body[data-vscode-theme-kind="vscode-light"] .logout-button:focus {
+            background: #F2F2FA;
+            border-color: #BFC2D9;
+            outline: none;
+        }
 
         .separator {
             border-top: 1px solid var(--vscode-panel-border);
@@ -233,6 +269,11 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             transform: translateX(-50%);
             opacity: 0.95;
         }
+        /* Theme-specific footer image visibility */
+        .page-footer-dark { display: block; }
+        .page-footer-light { display: none; }
+        body[data-vscode-theme-kind="vscode-light"] .page-footer-dark { display: none; }
+        body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block; }
     </style>
 </head>
 <body>
@@ -247,7 +288,8 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             Logout
         </button>
     </div>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
         document.getElementById('logoutBtn')?.addEventListener('click', () => {
@@ -283,6 +325,9 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         );
         const footerImageUri = this.webviewView!.webview.asWebviewUri(
             vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
+        );
+        const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer_light_theme.png"))
         );
 
         return `<!DOCTYPE html>
@@ -320,7 +365,18 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             background-repeat: no-repeat;
             background-size: cover;
         }
-
+        /* Light theme: match authentication page gradient */
+        body[data-vscode-theme-kind="vscode-light"] {
+            background:
+                linear-gradient(0deg, #F6F5FF, #F6F5FF),
+                radial-gradient(
+                    83.74% 70.01% at 74.82% 90.69%,
+                    rgba(213, 194, 253, 0.43) 0%,
+                    rgba(246, 245, 255, 0.43) 75.48%
+                );
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
         .auth-container {
             display: flex;
             flex-direction: column;
@@ -368,6 +424,24 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         .auth-button:hover {
             background: #000;
         }
+        
+        /* Light theme: outlined auth buttons (API Key / OAuth) */
+        body[data-vscode-theme-kind="vscode-light"] .auth-button {
+            background: #FFFFFF;
+            color: #2F2F2F;
+            border: 1px solid #D9DAE6;
+            box-shadow: none;
+        }
+        body[data-vscode-theme-kind="vscode-light"] .auth-button:hover {
+            background: #FAFAFF;
+            border-color: #C8CAE0;
+        }
+        body[data-vscode-theme-kind="vscode-light"] .auth-button:active,
+        body[data-vscode-theme-kind="vscode-light"] .auth-button:focus {
+            background: #F2F2FA;
+            border-color: #BFC2D9;
+            outline: none;
+        }
         .auth-button:focus,
         .auth-button:active {
             border-color: #808080;
@@ -414,6 +488,11 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             background: transparent;
             cursor: pointer;
             user-select: none;
+        }
+        /* Light theme: make tooltip icon visible on white button */
+        body[data-vscode-theme-kind="vscode-light"] .tooltip-icon {
+            border-color: #D9DAE6;
+            color: #2F2F2F;
         }
         .tooltip-text {
             position: absolute;
@@ -467,6 +546,11 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             transform: translateX(-50%);
             opacity: 0.95;
         }
+        /* Theme-specific footer image visibility */
+        .page-footer-dark { display: block; }
+        .page-footer-light { display: none; }
+        body[data-vscode-theme-kind="vscode-light"] .page-footer-dark { display: none; }
+        body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block; }
     </style>
 </head>
 <body>
@@ -500,7 +584,8 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">Need help logging in?</a>.
         </div>
     </div>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
 
