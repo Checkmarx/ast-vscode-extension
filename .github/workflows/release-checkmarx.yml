@@ -183,17 +183,17 @@ jobs:
 
           # Header: Plugins in this release (H2 - same level as package sections)
           # Mark as (NEW) only if the package is being released in this releaseType
-          BODY="## Plugins in this release\n"
+          BODY="### Plugins in this release\n"
           if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            BODY="${BODY}* Checkmarx (AST): v${{ env.CHECKMARX_VERSION }} (NEW)\n"
+            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }} (NEW)\n"
           else
-            BODY="${BODY}* Checkmarx (AST): v${{ env.CHECKMARX_VERSION }}\n"
+            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }}\n"
           fi
 
           if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            BODY="${BODY}* Checkmarx Dev Assist: v${{ env.IGNITE_VERSION }} (NEW)\n"
+            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }} (NEW)\n"
           else
-            BODY="${BODY}* Checkmarx Dev Assist: v${{ env.IGNITE_VERSION }}\n"
+            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }}\n"
           fi
           BODY="${BODY}\n"
 

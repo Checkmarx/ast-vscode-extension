@@ -122,7 +122,7 @@ function getCommits(pkg, lastTag) {
   let raw;
   try {
     raw = execSync(
-      `git log ${range} --pretty=format:"%H|||%s|||%an|||%ad" --date=short -- ${pkgPath}`,
+      `git log ${range} --pretty=format:"%H|||%s|||%an" -- ${pkgPath}`,
       { encoding: "utf8" },
     );
   } catch (e) {
@@ -132,19 +132,38 @@ function getCommits(pkg, lastTag) {
 
   if (!raw.trim()) return [];
 
-  return raw
-    .trim()
-    .split("\n")
-    .map((line) => {
-      const [hash, message, author, date] = line.split("|||");
-      return {
-        hash: hash?.trim(),
-        message: message?.trim(),
-        author: author?.trim(),
-        date: date?.trim(),
-      };
-    })
-    .filter((c) => c.message && !shouldExclude(c.message));
+  const lines = raw.trim().split("\n");
+  const commits = [];
+
+  for (const line of lines) {
+    const [hash, message, authorName] = line.split("|||");
+    if (!message || shouldExclude(message)) continue;
+
+    let githubUsername = authorName;
+
+    // Use GH CLI to get the real GitHub handle
+    try {
+      const login = execSync(
+        `gh api repos/${repo}/commits/${hash} --template "{{.author.login}}"`,
+        { encoding: "utf8" },
+      ).trim();
+
+      if (login && login !== "<no value>") {
+        githubUsername = login;
+      }
+    } catch (e) {
+      // Fallback: If GH CLI fails, strip spaces from name to avoid broken @mentions
+      githubUsername = authorName.replace(/\s+/g, "");
+    }
+
+    commits.push({
+      hash,
+      message,
+      author: githubUsername,
+    });
+  }
+
+  return commits;
 }
 
 /**
@@ -214,7 +233,7 @@ function formatCommits(commits, repoUrl, includeContributors = false) {
   let md = "";
   for (const [title, items] of Object.entries(groups)) {
     if (items.length) {
-      md += `### ${title}\n${items.join("\n")}\n\n`;
+      md += `#### ${title}\n${items.join("\n")}\n\n`;
     }
   }
   return md;
@@ -263,7 +282,7 @@ const compareLink = lastStableTag
 // ---------------------------------------------------------------------------
 const releaseBodySection =
   `## ${displayName}${packageName === "checkmarx" ? " (AST)" : ""}: v${version}\n` +
-  `## What's Changed\n` +
+  `### What's Changed\n` +
   changelogBodyWithContributors +
   `${compareLink}\n`;
 
