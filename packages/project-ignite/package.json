@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
-  "homepage": "https://github.com/Checkmarx/ast-vscode-extension/blob/main/packages/checkmarx/README.md",
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension/blob/main/packages/project-ignite/README.md",
   "bugs": {
     "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
   },
