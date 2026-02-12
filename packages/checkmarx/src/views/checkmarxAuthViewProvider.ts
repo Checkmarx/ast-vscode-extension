@@ -6,6 +6,7 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
+import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 
 export type AuthMethodType = "OAuth" | "API Key" | "Both";
 
@@ -75,6 +76,12 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             if (this.isAuthenticated !== newAuthState || !this.webviewView?.webview.html) {
                 this.isAuthenticated = newAuthState;
                 this.updateWebviewContent();
+                if (this.isAuthenticated) {
+                    const tenant = await this.getTenantFromToken();
+                    if (tenant) {
+                        this.webviewView?.webview.postMessage({ type: 'setTenant', tenant });
+                    }
+                }
             }
         } finally {
             this.isUpdating = false;
@@ -112,6 +119,12 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         const logoutIconUri = this.webviewView!.webview.asWebviewUri(
             vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "logout.svg"))
         );
+        const loggedInImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "logged_in.png"))
+        );
+        const footerImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
+        );
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -124,86 +137,117 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             font-family: var(--vscode-font-family);
             padding: 16px;
             color: var(--vscode-foreground);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+
+            /* Background same as login page */
+            background-color: rgba(0, 0, 0, 1);
+            background-image: 
+                radial-gradient(
+                    circle at 75% 90%,
+                    rgba(42, 12, 105, 1) 0%,
+                    rgba(8, 8, 8, 1) 75%
+                ),
+                radial-gradient(
+                    circle at 50% 50%,
+                    rgba(21, 188, 178, 0.63) 0%,
+                    rgba(0, 0, 0, 0) 100%
+                );
+            background-repeat: no-repeat;
+            background-size: cover;
         }
+
         .auth-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-        }
-        .auth-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .auth-description {
-            font-size: 12px;
-            color: var(--vscode-descriptionForeground);
-            margin-bottom: 16px;
-            line-height: 1.4;
-        }
-        .status-message {
-            display: flex;
+            gap: 4px; /* gap between status line and tenant line */
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: var(--vscode-inputValidation-infoBackground);
-            border: 1px solid var(--vscode-inputValidation-infoBorder);
-            border-radius: 4px;
-            font-size: 12px;
         }
-        .status-icon {
-            color: var(--vscode-charts-green);
-            font-size: 14px;
+        .status-image {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 12px;
         }
-        .logout-button {
+
+        .status-message {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 8px 16px;
-            background: var(--vscode-button-secondaryBackground);
-            color: var(--vscode-button-secondaryForeground);
+            padding: 0;
+            background: transparent;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            width: 100%;
+            border-radius: 0;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0;
+            text-align: center;
         }
+
+        .auth-description {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+            line-height: 1.5; /* 1.5 times the font size */
+            text-align: center;
+            margin-bottom: 24px; /* controls space to Logout button (~1.5–2 line) */
+        }
+
+  .logout-button {
+    display: inline-flex; /* instead of flex */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #000; /* black background */
+    color: #fff; /* white text */
+    border: 1px solid #fff; /* white border */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    width: auto; /* let button size naturally */
+}
         .logout-button:hover {
-            background: var(--vscode-button-secondaryHoverBackground);
+            background: #111;
         }
+
         .logout-button img {
             width: 16px;
             height: 16px;
         }
+
         .separator {
             border-top: 1px solid var(--vscode-panel-border);
             margin: 8px 0;
         }
+
         a {
             color: var(--vscode-textLink-foreground);
+        }
+        .page-footer {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.95;
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-title">Checkmarx Authentication</div>
+        <img class="status-image" src="${loggedInImageUri}" alt="logged in" />
         <div class="status-message">
-            <span class="status-icon">✓</span>
-            <span>You are signed in</span>
+            <span>You are Logged in</span>
         </div>
+        <div class="auth-description" id="tenantLabel"></div>
         <button class="logout-button" id="logoutBtn">
             <img src="${logoutIconUri}" alt="logout" />
-            Sign out
+            Logout
         </button>
-        <div class="separator"></div>
-        <div class="auth-description">
-            <a href="#" id="editSettingsBtn">Edit in settings.json</a>
-        </div>
-        <div class="auth-description">
-            To learn more about how to use Checkmarx, <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">read our docs</a>.
-        </div>
     </div>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
         document.getElementById('logoutBtn')?.addEventListener('click', () => {
@@ -212,6 +256,13 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         document.getElementById('editSettingsBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
             vscode.postMessage({ command: 'editSettingsJson' });
+        });
+        window.addEventListener('message', (event) => {
+            const msg = event.data;
+            if (msg?.type === 'setTenant' && msg.tenant) {
+                const el = document.getElementById('tenantLabel');
+                if (el) el.textContent = 'Tenant: ' + msg.tenant;
+            }
         });
     </script>
 </body>
@@ -222,12 +273,17 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         const nonce = getNonce();
         const authMethod = this.getAuthMethod();
 
-        const loginIconUri = this.webviewView!.webview.asWebviewUri(
-            vscode.Uri.file(MediaPathResolver.getMediaFilePath("icons", "login.svg"))
-        );
+        // Removed login icon for OAuth/API Key buttons
 
         const showOAuthButton = authMethod === "OAuth" || authMethod === "Both";
         const showApiKeyButton = authMethod === "API Key" || authMethod === "Both";
+
+        const notLoggedInImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "not_logged_in.png"))
+        );
+        const footerImageUri = this.webviewView!.webview.asWebviewUri(
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
+        );
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -240,22 +296,59 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             font-family: var(--vscode-font-family);
             padding: 16px;
             color: var(--vscode-foreground);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 1);
+
+            /* Two radial gradients layered */
+            background-image: 
+                radial-gradient(
+                    circle at 75% 90%,
+                    rgba(42, 12, 105, 1) 0%,
+                    rgba(8, 8, 8, 1) 75%
+                ),
+                radial-gradient(
+                    circle at 50% 50%,
+                    rgba(21, 188, 178, 0.63) 0%,
+                    rgba(0, 0, 0, 0) 100%
+                );
+            background-repeat: no-repeat;
+            background-size: cover;
         }
+
         .auth-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            align-items: center;
+        }
+        .status-image {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 12px;
         }
         .auth-title {
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
+            text-align: center;
         }
         .auth-description {
             font-size: 12px;
             color: var(--vscode-descriptionForeground);
             margin-bottom: 16px;
             line-height: 1.4;
+            text-align: center;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+            text-wrap: balance;
+            word-break: break-word;
         }
         .auth-button {
             display: flex;
@@ -263,16 +356,22 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             justify-content: center;
             gap: 8px;
             padding: 8px 16px;
-            background: var(--vscode-button-background);
+            background: #000;
             color: var(--vscode-button-foreground);
-            border: none;
+            border: 1px solid transparent;
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
             width: 100%;
+            position: relative; /* anchor tooltip inside button */
         }
         .auth-button:hover {
-            background: var(--vscode-button-hoverBackground);
+            background: #000;
+        }
+        .auth-button:focus,
+        .auth-button:active {
+            border-color: #808080;
+            outline: none;
         }
         .auth-button img {
             width: 16px;
@@ -285,30 +384,123 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         a {
             color: var(--vscode-textLink-foreground);
         }
+
+        /* Tooltip (shown only when a single auth method is available) */
+        .tooltip-wrapper {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-block;
+            width: 100%; /* span button width to center tooltip */
+            z-index: 2;
+        }
+        .tooltip-icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid #fff;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 1;
+            background: transparent;
+            cursor: pointer;
+            user-select: none;
+        }
+        .tooltip-text {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: min(100%, 320px);
+            background: var(--vscode-editorWidget-background, #2a2a2a);
+            color: var(--vscode-foreground);
+            border: 1px solid var(--vscode-editorWidget-border, #3c3c3c);
+            border-radius: 6px;
+            padding: 0; /* no padding as requested */
+            font-size: 12px;
+            line-height: 1.4;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 120ms ease-in-out, visibility 120ms ease-in-out;
+            box-sizing: border-box;
+            z-index: 3;
+        }
+        .tooltip-text::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent var(--vscode-editorWidget-background, #2a2a2a) transparent;
+        }
+        .tooltip-line {
+            display: block;
+            white-space: normal; /* allow wrapping */
+            word-break: break-word;
+            overflow-wrap: break-word;
+            text-align: left;
+        }
+        /* show only when hovering the icon */
+        .tooltip-icon:hover + .tooltip-text,
+        .tooltip-wrapper.open .tooltip-text {
+            opacity: 1;
+            visibility: visible;
+        }
+        .page-footer {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.95;
+        }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-title">Sign in to Checkmarx</div>
+        <img class="status-image" src="${notLoggedInImageUri}" alt="not logged in" />
+        <div class="auth-title">You are not logged in</div>
         <div class="auth-description">
-            Authenticate to access Checkmarx features and scan results.
+            Login in to Checkmarx One to gain visibility into your application security and manage risks early and efficiently.
         </div>
         ${showOAuthButton ? `<button class="auth-button" id="oauthBtn">
-            <img src="${loginIconUri}" alt="login" />
-            Sign in with OAuth
+            <span>OAuth login</span>
+            ${!showApiKeyButton ? `
+            <span class="tooltip-wrapper">
+                <span class="tooltip-icon" aria-label="More info">i</span>
+                <span class="tooltip-text">
+                    <span class="tooltip-line">You’ve opted out of signing in with API key. To use another sign-in method instead of an OAuth, update your login preferences in Settings.</span>
+                </span>
+            </span>` : ''}
         </button>` : ''}
         ${showApiKeyButton ? `<button class="auth-button" id="apiKeyBtn">
-            <img src="${loginIconUri}" alt="login" />
-            Sign in with API Key
+            <span>API Key login</span>
+            ${!showOAuthButton ? `
+            <span class="tooltip-wrapper">
+                <span class="tooltip-icon" aria-label="More info">i</span>
+                <span class="tooltip-text">
+                    <span class="tooltip-line">You’ve opted out of signing in with OAuth. To use another sign-in method instead of an API key, update your login preferences in Settings.</span>
+                </span>
+            </span>` : ''}
         </button>` : ''}
-        <div class="separator"></div>
         <div class="auth-description">
-            <a href="#" id="editSettingsBtn">Edit in settings.json</a>
-        </div>
-        <div class="auth-description">
-            To learn more about how to use Checkmarx, <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">read our docs</a>.
+            <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">Need help logging in?</a>.
         </div>
     </div>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
 
@@ -406,6 +598,31 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
             await vscode.commands.executeCommand(commands.refreshRiskManagementView);
             // The view will automatically update due to secrets.onDidChange listener
+        }
+    }
+
+    private async getTenantFromToken(): Promise<string | undefined> {
+        try {
+            const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
+            if (!token) return undefined;
+            // Decode JWT payload (base64url) and read issuer
+            const parts = token.split('.');
+            if (parts.length < 2) return undefined;
+            const payload = parts[1]
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            const json = JSON.parse(Buffer.from(payload, 'base64').toString('utf8')) as { iss?: string };
+            const iss = json?.iss;
+            if (!iss) return undefined;
+            const url = new URL(iss);
+            const marker = '/auth/realms/';
+            const idx = url.pathname.indexOf(marker);
+            if (idx === -1) return undefined;
+            const rest = url.pathname.slice(idx + marker.length);
+            const tenant = rest.split('/')[0];
+            return tenant || undefined;
+        } catch {
+            return undefined;
         }
     }
 }

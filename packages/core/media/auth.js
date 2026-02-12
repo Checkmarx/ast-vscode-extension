@@ -57,21 +57,51 @@
           if (tenantInput) tenantInput.disabled = false;
         }
       }
+      // Allow host to force the visible form (e.g., from sidebar navigation)
+      if (message.type === "setAuthMethod" && (message.method === "oauth" || message.method === "apiKey")) {
+        setAuthMethod(message.method);
+      }
     });
+
+    // Centralized toggle logic so radios and links reuse the same behavior
+    function setAuthMethod(method) {
+      const isOAuth = method === "oauth";
+      document.getElementById("oauthForm")?.classList.toggle("hidden", !isOAuth);
+      document.getElementById("apiKeyForm")?.classList.toggle("hidden", isOAuth);
+      document.getElementById("switchToApiKey")?.classList.toggle("hidden", !isOAuth);
+      document.getElementById("switchToOAuth")?.classList.toggle("hidden", isOAuth);
+      messageBox.style.display = "none";
+      const authMethodInput = document.getElementById("authMethodInput");
+      if (authMethodInput) authMethodInput.value = method;
+      isBtnDisabled();
+    }
 
     // Only add radio button listeners if they exist (for backward compatibility)
     document.querySelectorAll('input[name="authMethod"]').forEach((radio) => {
       radio.addEventListener("change", (e) => {
-        const isOAuth = e.target.value === "oauth";
-        document
-          .getElementById("oauthForm")
-          .classList.toggle("hidden", !isOAuth);
-        document
-          .getElementById("apiKeyForm")
-          .classList.toggle("hidden", isOAuth);
-        messageBox.style.display = "none";
-        isBtnDisabled();
+        const method = e.target.value === "oauth" ? "oauth" : "apiKey";
+        setAuthMethod(method);
       });
+    });
+
+    // Add switch link handlers to toggle between forms
+    document.getElementById("switchToApiKey")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Prefer existing radio-change flow if radios exist
+      const apiRadio = document.querySelector('input[name="authMethod"][value="apiKey"]');
+      if (apiRadio) {
+        apiRadio.checked = true;
+        apiRadio.dispatchEvent(new Event("change"));
+        return;
+      }
+      // Fallback: reuse centralized method
+      setAuthMethod("apiKey");
+    });
+
+    document.getElementById("switchToOAuth")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Request host to handle OAuth like the sidebar (reauth if possible, else show form)
+      vscode.postMessage({ command: "oauthLink" });
     });
 
     if (authButton) {

@@ -1,22 +1,34 @@
 body {
 	display: flex;
-	align-items: flex-start;
-	justify-content: flex-start;
+	align-items: center;
+	justify-content: center;
 	height: 100vh;
-	width: 635px;
-	background-color: var(--vscode-editor-background);
+	width: 100vw;
+	margin: 0;
+	padding: 20px;
 	font-family: var(--vscode-font-family);
 	color: var(--vscode-foreground);
-	padding: 20px;
+
+	/* Figma-accurate radial gradient without opaque black overlay */
+	background: radial-gradient(
+		83.74% 70.01% at 74.82% 90.69%,
+		rgba(42, 12, 105, 1) 0%,
+		rgba(8, 8, 8, 1) 75.48%
+	);
 }
 
+
 .auth-container {
-	padding: 50px;
-	background: var(--vscode-input-background);
-	border-radius: 12px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-	text-align: left;
-	width: 100%;
+    padding: 50px;   /* keep existing padding */
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: left;
+    width: 100%;
+    max-width: 435px;   /* was 420px — very slight increase */
+    margin: 0 auto;
+    border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 body[data-vscode-theme-kind="vscode-high-contrast"] {
@@ -37,6 +49,7 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 	font-size: 24px;
 	font-weight: bold;
 	margin-bottom: 15px;
+	text-align: center;
 }
 
 .radio-group {
@@ -47,20 +60,27 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 }
 
 .form-label {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 500;
-	margin-top: 10px;
+	margin-top: 14px;      /* spacing between groups */
+	margin-bottom: 5px;    /* tighter label-input gap */
+	display: block;
 }
 
 .auth-input {
 	width: 100%;
-	height: 27px;
-	padding: 8px;
-	border: 1px solid var(--vscode-input-foreground);
-	border-radius: 7px;
-	background: var(--vscode-input-background);
+	height: 32px;           /* slightly improved height */
+	padding: 0 8px;         /* horizontal padding only */
+	border: 1px solid #2a2a2a;
+	border-radius: 8px;     /* slightly softer corners */
+	background: #141414;
 	color: var(--vscode-input-foreground);
-	filter: brightness(1.5);
+	font-size: 14px;
+}
+
+.auth-input:focus {
+	border-color: var(--vscode-focusBorder);
+	outline: none;
 }
 
 .authenticated-message{
@@ -79,8 +99,16 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
     height: 32px;
     display: flex;
     align-items: center;
+	justify-content: center;
     padding-inline: 15px;
     font-size: 13px;
+}
+
+/* Center the primary login button element within the form */
+#authButton {
+	margin-left: auto;
+	margin-right: auto;
+	width: 100%;
 }
 
 .auth-button img {
@@ -149,4 +177,35 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 .autocomplete-items .autocomplete-item i {
 	margin-left: 10px;
 	color: #0d6efd;
+}
+
+/* Make auth method switch links clickable without underline */
+#switchToApiKey,
+#switchToOAuth {
+	text-decoration: none;
+	color: var(--vscode-textLink-foreground);
+	cursor: pointer;
+}
+
+#switchToApiKey:hover,
+#switchToOAuth:hover {
+	text-decoration: none;
+}
+
+#switchToApiKey:focus,
+#switchToOAuth:focus,
+#switchToApiKey:active,
+#switchToOAuth:active {
+	outline: none;
+	border: none;
+	box-shadow: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.page-footer {
+	position: fixed;
+	bottom: 16px;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: 0.95;
 }

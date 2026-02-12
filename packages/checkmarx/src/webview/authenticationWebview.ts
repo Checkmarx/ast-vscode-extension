@@ -78,6 +78,10 @@ export class AuthenticationWebview {
       } else {
         // Same auth method, just reveal the existing panel
         AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
+        // Ensure the currently visible form matches requested method
+        if (authMethod) {
+          AuthenticationWebview.currentPanel._panel.webview.postMessage({ type: "setAuthMethod", method: authMethod });
+        }
         return;
       }
     }
@@ -184,18 +188,18 @@ export class AuthenticationWebview {
     );
     const scriptUri = this.setWebUri("media", "auth.js");
     const styleAuth = this.setWebUri("media", "auth.css");
-    const loginIcon = this.setWebUri("media", "icons", "login.svg");
+    // Removed login icon for login buttons per request
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
+    const footerImageUri = this.setWebUri("media", "checkmarx_page_footer.png");
     const nonce = getNonce();
     const messages = this.messages;
 
-    // Determine which forms to show based on authMethod
-    const showOAuthForm = !this.authMethod || this.authMethod === 'oauth';
-    const showApiKeyForm = !this.authMethod || this.authMethod === 'apiKey';
-    const oauthFormClass = showOAuthForm ? 'auth-form' : 'auth-form hidden';
-    const apiKeyFormClass = showApiKeyForm ? '' : 'hidden';
+    // Determine initial visible form and classes
+    const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
+    const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
+    const apiKeyFormClass = oauthVisibleInitially ? 'hidden' : '';
 
     return `<!DOCTYPE html>
 <html>
@@ -205,7 +209,7 @@ export class AuthenticationWebview {
 	<link href="${styleBootStrap}" rel="stylesheet">
 	<link href="${styleAuth}" rel="stylesheet">
 	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>${messages.displayName} Authentication</title>
+  <title>Log in</title>
 
 
 </head>
@@ -218,7 +222,7 @@ export class AuthenticationWebview {
 		</div>
 	  </div>
 <div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">${messages.displayName} Authentication</div>
+  <div class="auth-form-title">Log in</div>
         <div id="loginForm">
         <!-- Hidden input to store the auth method -->
         <input type="hidden" id="authMethodInput" value="${this.authMethod || ''}">
@@ -233,15 +237,17 @@ export class AuthenticationWebview {
             <label for="tenant" class="form-label">Tenant Name:</label>
             <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
             <div id="tenants-list" class="autocomplete-items"></div>
-            ${showOAuthForm && !showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with OAuth</button>` : ''}
         </div>
 
         <div id="apiKeyForm" class="${apiKeyFormClass}">
           <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
 			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
-            ${showApiKeyForm && !showOAuthForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with API Key</button>` : ''}
         </div>
-        ${showOAuthForm && showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>` : ''}
+        <button id="authButton" class="auth-button" disabled>Log in</button>
+        <div class="auth-description" style="text-align:center;">
+          <a id="switchToApiKey" href="#" class="${oauthVisibleInitially ? '' : 'hidden'}">Log in via API Key</a>
+          <a id="switchToOAuth" href="#" class="${oauthVisibleInitially ? 'hidden' : ''}">Log in via OAuth</a>
+        </div>
         </div>
 
         <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
@@ -257,6 +263,7 @@ export class AuthenticationWebview {
         <div id="messageText"></div>
         </div>
     </div>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </html>`;
   }
@@ -270,6 +277,36 @@ export class AuthenticationWebview {
             type: "urlValidationResult",
             isValid,
           });
+        } else if (message.command === "oauthLink") {
+          // Make the OAuth link behave like the sidebar OAuth action:
+          // try re-auth with stored settings; if none, just show the OAuth form
+          try {
+            const authService = AuthService.getInstance(this.context, this.logs);
+            const hasStoredOAuth = authService.hasStoredOAuthCredentials();
+            if (hasStoredOAuth) {
+              // Match sidebar notification without showing the 'Connecting to Checkmarx One' progress
+              vscode.window.showInformationMessage("Re-authenticating with saved OAuth settings...");
+              try {
+                const token = await authService.reAuthenticateWithStoredOAuth();
+                if (token) {
+                  const isAiEnabled = await cx.isAiMcpServerEnabled();
+                  const commonCommand = new CommonCommand(this.context, this.logs);
+                  await commonCommand.executeCheckStandaloneEnabled();
+                  await commonCommand.executeCheckCxOneAssistEnabled();
+                  this.schedulePostAuth(isAiEnabled, { apiKey: token });
+                  return;
+                }
+              } catch (e) {
+                // If re-auth fails, fall through to show the form
+              }
+              this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
+            } else {
+              this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
+            }
+          } catch (e) {
+            // As a safety net, just show the OAuth form
+            this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
+          }
         } else if (message.command === "requestLogoutConfirmation") {
           vscode.window
             .showWarningMessage(
