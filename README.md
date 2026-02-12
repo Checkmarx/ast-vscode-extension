@@ -94,6 +94,7 @@ These features require authentication, using an API Key or login credentials for
 
 ---
 
+
 ### Prerequisites
 
 - An installation of a supported IDE. (**For VS Code**: VS Code version 1.63.0 or above)
