@@ -15,6 +15,12 @@
 				"${workspaceFolder}/packages/checkmarx/out/**/*.js",
 				"${workspaceFolder}/packages/core/out/**/*.js"
 			],
+			"sourceMaps": true,
+  			"sourceMapPathOverrides": {
+			"webpack:///*": "${workspaceFolder}/*",
+				"../*": "${workspaceFolder}/packages/*",
+				"../../core/src/*": "${workspaceFolder}/packages/core/src/*"
+			},
 			"preLaunchTask": "npm: watch",
 			"env": {
 				"CX_FEATURE_FLAGS": ""
@@ -30,6 +36,12 @@
 				"${workspaceFolder}/packages/project-ignite/out/**/*.js",
 				"${workspaceFolder}/packages/core/out/**/*.js"
 			],
+			"sourceMaps": true,
+  			"sourceMapPathOverrides": {
+			"webpack:///*": "${workspaceFolder}/*",
+				"../*": "${workspaceFolder}/packages/*",
+				"../../core/src/*": "${workspaceFolder}/packages/core/src/*"
+			},
 			"preLaunchTask": "npm: watch",
 			"env": {
 				"CX_FEATURE_FLAGS": ""
