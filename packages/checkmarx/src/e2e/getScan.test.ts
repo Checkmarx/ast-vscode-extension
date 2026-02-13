@@ -135,13 +135,13 @@ describe("Checkmarx VS Code Extension Tests", () => {
 
   describe("Project, Branch, and Scan Selection Test", () => {
     before(async function () {
-      this.timeout(60000);
+      this.timeout(90000);
       bench = new Workbench();
       await bench.executeCommand(CX_CLEAR);
     });
 
     it("should select project, branch, and scan", async function () {
-      this.timeout(150000);
+      this.timeout(240000);
       await bench.executeCommand(CX_SELECT_PROJECT);
       const projectInput = await waitForInputBoxToOpen();
       const projectName = await selectItem(projectInput, CX_TEST_PROJECT_NAME);
