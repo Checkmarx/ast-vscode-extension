@@ -123,10 +123,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "logged_in.png"))
         );
         const footerImageUri = this.webviewView!.webview.asWebviewUri(
-            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer.png"))
         );
         const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
-            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer_light_theme.png"))
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
         );
         return `<!DOCTYPE html>
 <html lang="en">
@@ -324,10 +324,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "not_logged_in.png"))
         );
         const footerImageUri = this.webviewView!.webview.asWebviewUri(
-            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer.png"))
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer.png"))
         );
         const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
-            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "checkmarx_page_footer_light_theme.png"))
+            vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
         );
 
         return `<!DOCTYPE html>
