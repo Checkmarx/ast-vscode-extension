@@ -7,7 +7,7 @@ import {
 export async function waitForElementToAppear(
     treeScans: CustomTreeSection,
     key: string,
-    maxRetries = 45,
+    maxRetries = 20,
     retryDelay = 500
   ) {
     for (let i = 0; i < maxRetries; i++) {
@@ -19,7 +19,7 @@ export async function waitForElementToAppear(
     }
   }
 
-  export async function waitForInputBoxToOpen(maxRetries = 60, retryDelay = 1000) {
+  export async function waitForInputBoxToOpen(maxRetries = 30, retryDelay = 800) {
     for (let i = 0; i < maxRetries; i++) {
       try {
         const input = await InputBox.create();
@@ -32,40 +32,32 @@ export async function waitForElementToAppear(
     }
     throw new Error("InputBox did not open in time.");
   }
-
+  
   export async function selectItem(input: InputBox, itemName: string) {
     await input.setText(itemName);
-    const selectedItem = await getQuickPickSelector(input, itemName);
+    
+    const selectedItem = await getQuickPickSelector(input);
     await input.setText(selectedItem);
     await input.confirm();
     return selectedItem;
   }
 
-  async function getQuickPickSelector(input: InputBox, preferredName?: string): Promise<string> {
-    const retries = 45;
-    const retryDelay = 600;
-    let projectList: Awaited<ReturnType<InputBox["getQuickPicks"]>> = [];
-
+  async function getQuickPickSelector(input: InputBox): Promise<string> {
+    const retries = 20;
+    let projectList = [];
+  
+    
     for (let i = 0; i < retries; i++) {
       projectList = await input.getQuickPicks();
       if (projectList.length > 0) {
         break;
       }
-      await sleep(retryDelay);
+      await sleep(500); 
     }
-
+  
     if (projectList.length === 0) {
       throw new Error("Failed to load project list in QuickPickSelector");
     }
-
-    if (preferredName) {
-      const preferredLower = preferredName.toLowerCase();
-      for (let i = 0; i < projectList.length; i++) {
-        const text = await projectList[i].getText();
-        if (text && text.toLowerCase().includes(preferredLower)) {
-          return text;
-        }
-      }
-    }
+  
     return projectList[0].getText();
   }
