@@ -79,16 +79,33 @@ function decodeJwt(apiKey: string): DecodedJwt | null {
 }
 
 function getMcpConfigPath(): string {
+	const homeDir = os.homedir();
+
 	if (isIDE(constants.cursorAgent)) {
-		const homeDir = os.homedir();
 		return path.join(homeDir, ".cursor", "mcp.json");
 	}
 	if (isIDE(constants.windsurfAgent)) {
-		return path.join(os.homedir(), ".codeium", "windsurf", "mcp_config.json");
+		return path.join(homeDir, ".codeium", "windsurf", "mcp_config.json");
 	}
 	if (isIDE(constants.kiroAgent)) {
-		return path.join(os.homedir(), ".kiro", "settings", "mcp.json");
+		return path.join(homeDir, ".kiro", "settings", "mcp.json");
 	}
+	// VSCode - platform specific paths
+	if (isIDE(constants.vsCodeAgentOrginalName)) {
+		const platform = process.platform;
+		if (platform === 'win32') {
+			// Windows: %APPDATA%\Code\User\mcp.json
+			const appData = process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming');
+			return path.join(appData, 'Code', 'User', 'mcp.json');
+		} else if (platform === 'darwin') {
+			// macOS: ~/Library/Application Support/Code/User/mcp.json
+			return path.join(homeDir, 'Library', 'Application Support', 'Code', 'User', 'mcp.json');
+		} else {
+			// Linux: ~/.config/Code/User/mcp.json
+			return path.join(homeDir, '.config', 'Code', 'User', 'mcp.json');
+		}
+	}
+	return path.join(homeDir, '.vscode', 'mcp.json');
 }
 
 async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<void> {
@@ -105,11 +122,18 @@ async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<
 		}
 	}
 
-	if (!mcpConfig.mcpServers) {
-		mcpConfig.mcpServers = {};
+	if (isIDE(constants.vsCodeAgentOrginalName)) {
+		if (!mcpConfig.servers) {
+			mcpConfig.servers = {};
+		}
+		mcpConfig.servers[getCheckmarxMcpServerName()] = mcpServer as McpServer;
 	}
-
-	mcpConfig.mcpServers[getCheckmarxMcpServerName()] = mcpServer;
+	else {
+		if (!mcpConfig.mcpServers) {
+			mcpConfig.mcpServers = {};
+		}
+		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = mcpServer;
+	}
 
 	try {
 		const dir = path.dirname(mcpConfigPath);
@@ -123,25 +147,33 @@ async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<
 	}
 }
 
+async function removeMcpFromJsonFile(): Promise<void> {
+	const mcpConfigPath = getMcpConfigPath();
+
+	if (!fs.existsSync(mcpConfigPath)) {
+		return;
+	}
+
+	const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
+	const mcpConfig: McpConfig = JSON.parse(fileContent);
+
+	// Remove from mcpServers (for Cursor, Windsurf, Kiro)
+	if (mcpConfig.mcpServers && mcpConfig.mcpServers[getCheckmarxMcpServerName()]) {
+		delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
+		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+	}
+	// Remove from servers (for VSCode fallback)
+	else if (mcpConfig.servers && mcpConfig.servers[getCheckmarxMcpServerName()]) {
+		delete mcpConfig.servers[getCheckmarxMcpServerName()];
+		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+	}
+}
+
 export async function uninstallMcp() {
 	try {
-
 		if (!isIDE(constants.vsCodeAgentOrginalName)) {
-			// Handle Cursor, Windsurf and Kiro: Remove from mcp json file 
-			const mcpConfigPath = getMcpConfigPath();
-
-			if (!fs.existsSync(mcpConfigPath)) {
-				return;
-			}
-
-			const fileContent = fs.readFileSync(mcpConfigPath, "utf-8");
-			const mcpConfig: McpConfig = JSON.parse(fileContent);
-
-			if (mcpConfig.mcpServers && mcpConfig.mcpServers[getCheckmarxMcpServerName()]) {
-				delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
-
-				fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
-			}
+			// Handle Cursor, Windsurf and Kiro: Remove from mcp json file
+			await removeMcpFromJsonFile();
 		} else {
 			// Handle VSCode: Remove from settings
 			const config = vscode.workspace.getConfiguration();
@@ -151,11 +183,17 @@ export async function uninstallMcp() {
 				// Create a new object without the Checkmarx server to avoid proxy issues
 				const updatedServers = { ...existingServers };
 				delete updatedServers[getCheckmarxMcpServerName()];
-				await config.update(
-					"mcp",
-					{ servers: updatedServers },
-					vscode.ConfigurationTarget.Global
-				);
+				try {
+					await config.update(
+						"mcp",
+						{ servers: updatedServers },
+						vscode.ConfigurationTarget.Global
+					);
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
+					await removeMcpFromJsonFile();
+				}
 			}
 		}
 	} catch (error) {
@@ -229,11 +267,17 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			const updatedServers = { ...existingServers };
 			updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
-			await config.update(
-				"mcp",
-				{ servers: updatedServers },
-				vscode.ConfigurationTarget.Global
-			);
+			try {
+				await config.update(
+					"mcp",
+					{ servers: updatedServers },
+					vscode.ConfigurationTarget.Global
+				);
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error);
+				console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
+				await updateMcpJsonFile(mcpServer);
+			}
 		}
 
 		vscode.window.showInformationMessage("MCP configuration saved successfully.");
