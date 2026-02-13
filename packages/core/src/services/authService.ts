@@ -372,6 +372,7 @@ export class AuthService {
       // Only refresh tree for Checkmarx extension (not Developer Assist)
       if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
         await vscode.commands.executeCommand(commands.refreshTree);
+        await vscode.commands.executeCommand(commands.refreshDastTree);
       }
       await vscode.commands.executeCommand(commands.updateCxOneAssist);
     }
@@ -433,7 +434,9 @@ export class AuthService {
     // Only refresh tree for Checkmarx extension (not Developer Assist)
     if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
       await vscode.commands.executeCommand(commands.refreshTree);
+      await vscode.commands.executeCommand(commands.refreshDastTree);
       await vscode.commands.executeCommand(commands.clear);
+      await vscode.commands.executeCommand(commands.clearDast);
     }
 
     await vscode.commands.executeCommand(commands.updateCxOneAssist);

@@ -6,6 +6,7 @@ import {
 import { multiStepInput } from "../views/resultsView/astMultiStepInput";
 import {
   branchPicker,
+  environmentPicker,
   projectPicker,
   scanInput,
   scanPicker,
@@ -16,10 +17,17 @@ export class PickerCommand {
   context: vscode.ExtensionContext;
   logs: Logs;
   resultsProvider: AstResultsProvider;
-  constructor(context: vscode.ExtensionContext, logs: Logs, resultsProvider: AstResultsProvider) {
+  isDastEnabled: boolean;
+  constructor(
+    context: vscode.ExtensionContext,
+    logs: Logs,
+    resultsProvider: AstResultsProvider,
+    isDastEnabled: boolean,
+  ) {
     this.context = context;
     this.logs = logs;
     this.resultsProvider = resultsProvider;
+    this.isDastEnabled = isDastEnabled;
   }
 
   public registerPickerCommands() {
@@ -28,6 +36,9 @@ export class PickerCommand {
     this.createBranchPickCommand();
     this.createScanPickCommand();
     this.createScanInputCommand();
+    if (this.isDastEnabled) {
+      this.createEnvironmentPickCommand();
+    }
   }
 
   private createGeneralPickCommand() {
@@ -66,6 +77,14 @@ export class PickerCommand {
     this.context.subscriptions.push(
       vscode.commands.registerCommand(commands.scanInput, async () => {
         await scanInput(this.context, this.logs);
+      })
+    );
+  }
+
+  private createEnvironmentPickCommand() {
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(commands.environmentPick, async () => {
+        await environmentPicker(this.context, this.logs);
       })
     );
   }

@@ -383,6 +383,13 @@
         "enablement": "ast-results.isValidCredentials"
       },
       {
+        "command": "ast-results.environmentPick",
+        "category": "ast-results",
+        "title": "Select Environment",
+        "icon": "$(edit)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
         "command": "ast-results.filterNotExploitableActive",
         "category": "ast-results",
         "title": "✓ Filter: Not Exploitable",
@@ -696,6 +703,11 @@
           "command": "ast-results.scanInput",
           "group": "inline",
           "when": "viewItem == scan-item"
+        },
+        {
+          "command": "ast-results.environmentPick",
+          "group": "inline",
+          "when": "viewItem == environment-item"
         }
       ],
       "view/title": [
@@ -882,7 +894,7 @@
         {
           "id": "dastResults",
           "type": "tree",
-          "name": "DAST Results",
+          "name": "Checkmarx One DAST Results",
           "when": "ast-results.isDastEnabled"
         },
         {
@@ -933,6 +945,11 @@
       {
         "view": "astResults",
         "contents": "In order to use Checkmarx One, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
+        "when": "!ast-results.isValidCredentials"
+      },
+      {
+        "view": "dastResults",
+        "contents": "In order to use Checkmarx One DAST, you need to setup your credentials.\n[Open settings](command:ast-results.viewSettings)\nTo learn more about how to use Checkmarx One DAST [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],

@@ -13,6 +13,7 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import CxDastEnvironment from "@checkmarx/ast-cli-javascript-wrapper/dist/main/dast/CxDastEnvironment";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1679,5 +1680,13 @@ export class CxMock implements CxPlatform {
   }
 
   setUserEventDataForDetectionLogs(): void {
+  }
+
+  async getDastEnvironmentsListWithParams(): Promise<CxDastEnvironment[] | undefined> {
+    return [];
+  }
+
+  async isDastLicenseEnabled(): Promise<boolean> {
+    return false;
   }
 }

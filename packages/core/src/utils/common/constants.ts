@@ -325,7 +325,15 @@ export const constants = {
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
   ignorePackage: "ignorePackage",
-  emptyResultsScanId: "3"
+  emptyResultsScanId: "3",
+
+  // DAST Scanner
+  dastLicenseEnabledGlobalState: "dastLicenseEnabled",
+  environmentIdKey: "ast-results-environment-id",
+  environmentLabel: "Environment: ",
+  environmentPlaceholder: "Select environment",
+  environmentPickerTitle: "Checkmarx One Environment selection",
+  environmentItem: "environment-item",
 };
 
 export enum Platform {

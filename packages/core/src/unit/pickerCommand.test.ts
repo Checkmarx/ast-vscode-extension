@@ -55,7 +55,7 @@ describe("PickerCommand", () => {
         sinon.stub(logs, "log");
 
         resultsProvider = {} as AstResultsProvider;
-        pickerCommand = new PickerCommand(mockContext, logs, resultsProvider);
+        pickerCommand = new PickerCommand(mockContext, logs, resultsProvider, false);
     });
 
     afterEach(() => {

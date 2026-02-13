@@ -184,12 +184,23 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     const isDastEnabled = isFeatureEnabled(DAST_ENABLED);
     vscode.commands.executeCommand(commands.setContext, commands.isDastEnabled, isDastEnabled);
 
+    let dastResultsProvider: DastResultsProvider | undefined;
     if (isDastEnabled) {
-        const dastResultsProvider = new DastResultsProvider();
+        dastResultsProvider = new DastResultsProvider(
+            context,
+            logs,
+            statusBarItem,
+            diagnosticCollection,
+            filterCommand,
+            groupByCommand
+        );
         vscode.window.registerTreeDataProvider(constants.dastTreeName, dastResultsProvider);
         vscode.window.createTreeView(constants.dastTreeName, {
             treeDataProvider: dastResultsProvider,
         });
+
+        // Refresh DAST tree to show root items on startup
+        dastResultsProvider.refreshData();
     }
 
     // SCA auto scanning commands register
@@ -249,7 +260,13 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     // Execute command to listen to settings change
     await executeCheckSettingsChange(context, kicsStatusBarItem, logs);
 
-    const treeCommand = new TreeCommand(context, astResultsProvider, scaResultsProvider, logs);
+    const treeCommand = new TreeCommand(
+        context,
+        astResultsProvider,
+        scaResultsProvider,
+        logs,
+        dastResultsProvider,
+    );
 
     // Register refresh sca and results Tree Command
     treeCommand.registerRefreshCommands();
@@ -264,7 +281,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     filterCommand.registerFilters();
 
     // Register pickers command
-    const pickerCommand = new PickerCommand(context, logs, astResultsProvider);
+    const pickerCommand = new PickerCommand(context, logs, astResultsProvider, isDastEnabled);
     pickerCommand.registerPickerCommands();
 
     // Visual feedback on wrapper errors
