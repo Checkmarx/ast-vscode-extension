@@ -37,7 +37,7 @@
   </ol>
 </details>
 
-> This document relates to the standalone ​**Checkmarx Developer Assist**​ extension. Checkmarx One customers with a Developer Assist license should use the ​[**Checkmarx**](https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results) extension, which has Developer Assist bundeled together with the Checkmarx One platform tool. <br>The two extensions are **mutually exclusive**, so that if you want to use this extension, you must **first ​uninstall**​​ the Checkmarx extension.
+> This document relates to the standalone ​**Checkmarx Developer Assist**​ extension. Checkmarx One customers with a Developer Assist license should use the ​[**Checkmarx**](https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist) extension, which has Developer Assist bundeled together with the Checkmarx One platform tool. <br>The two extensions are **mutually exclusive**, so that if you want to use this extension, you must **first ​uninstall**​​ the Checkmarx extension.
 ## Overview
 Checkmarx Developer Assist delivers context-aware security guidance directly within your IDE, helping prevent vulnerabilities before they reach the pipeline. As developers write or refine AI-generated and existing code, it provides real-time detection, remediation, and actionable insights—ensuring security is built in from the start.
 <br>

@@ -8,32 +8,19 @@
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
-  "homepage": "https://github.com/Checkmarx/ast-vscode-extension/blob/main/packages/project-ignite/README.md",
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
   "bugs": {
     "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
   },
   "icon": "media/icon.png",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.63.0"
   },
   "extensionKind": [
     "workspace"
   ],
   "categories": [
     "Other"
-  ],
-  "keywords": [
-    "AppSec",
-    "SAST",
-    "OSS",
-    "IaC",
-    "Secrets",
-    "Containers",
-    "Secure Coding",
-    "Developer Assist",
-    "Real-time Scanning",
-    "Kics",
-    "SCA"
   ],
   "activationEvents": [
     "onView:cx-dev-assist.cxDevAssist",
