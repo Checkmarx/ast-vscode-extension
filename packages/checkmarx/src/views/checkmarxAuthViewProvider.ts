@@ -140,23 +140,27 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             padding: 16px;
             color: var(--vscode-foreground);
             min-height: 100vh;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
+            box-sizing: border-box;
+            overflow: hidden; /* prevent sidebar dropdown/scroll */
 
             /* Background same as login page */
             background-color: rgba(0, 0, 0, 1);
-            background-image: 
+            background-image:
                 radial-gradient(
-                    circle at 75% 90%,
-                    rgba(42, 12, 105, 1) 0%,
-                    rgba(8, 8, 8, 1) 75%
+                    ellipse 83.74% 70.01% at 74.82% 90.69%,
+                    rgba(42, 12, 105, 0.76) 0%,
+                    rgba(8, 8, 8, 0.76) 75.48%
                 ),
                 radial-gradient(
-                    circle at 50% 50%,
-                    rgba(21, 188, 178, 0.63) 0%,
-                    rgba(0, 0, 0, 0) 100%
+                    ellipse 70% 40% at 20% 65%,
+                    rgba(21, 188, 178, 0.30) 0%, /* teal glow */
+                    rgba(21, 188, 178, 0.18) 30%,
+                    rgba(0, 0, 0, 0) 80%
                 );
             background-repeat: no-repeat;
             background-size: cover;
@@ -179,10 +183,12 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             flex-direction: column;
             gap: 4px; /* gap between status line and tenant line */
             align-items: center;
+            margin-top: clamp(160px, 30vh, 283px);
+            padding-bottom: 96px; /* ensure larger space above fixed footer */
         }
         .status-image {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             margin-bottom: 12px;
         }
 
@@ -342,25 +348,29 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             padding: 16px;
             color: var(--vscode-foreground);
             min-height: 100vh;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
+            box-sizing: border-box;
+            overflow: hidden; /* prevent sidebar dropdown/scroll */
 
             /* Fallback color */
             background-color: rgba(0, 0, 0, 1);
 
             /* Two radial gradients layered */
-            background-image: 
+            background-image:
                 radial-gradient(
-                    circle at 75% 90%,
-                    rgba(42, 12, 105, 1) 0%,
-                    rgba(8, 8, 8, 1) 75%
+                    ellipse 83.74% 70.01% at 74.82% 90.69%,
+                    rgba(42, 12, 105, 0.76) 0%,
+                    rgba(8, 8, 8, 0.76) 75.48%
                 ),
                 radial-gradient(
-                    circle at 50% 50%,
-                    rgba(21, 188, 178, 0.63) 0%,
-                    rgba(0, 0, 0, 0) 100%
+                    ellipse 70% 40% at 20% 65%,
+                    rgba(21, 188, 178, 0.30) 0%, /* teal glow */
+                    rgba(21, 188, 178, 0.18) 30%,
+                    rgba(0, 0, 0, 0) 80%
                 );
             background-repeat: no-repeat;
             background-size: cover;
@@ -382,10 +392,12 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             flex-direction: column;
             gap: 12px;
             align-items: center;
+            margin-top: clamp(160px, 30vh, 283px);
+            padding-bottom: 96px; /* ensure larger space above fixed footer */
         }
         .status-image {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             margin-bottom: 12px;
         }
         .auth-title {
@@ -581,7 +593,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             </span>` : ''}
         </button>` : ''}
         <div class="auth-description">
-            <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">Need help logging in?</a>.
+            <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html">Need help logging in?</a>
         </div>
     </div>
     <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
