@@ -1,5 +1,8 @@
 # CHANGELOG
 
+DevAssist-v1.2.0 - 2026-02-13 16:09:15
+Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...DevAssist-v1.2.0
+
 ## [DevAssist-v1.1.1-close_undo1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.1.1-close_undo1.0) - 2026-02-13 05:26:51
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

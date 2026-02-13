@@ -1,5 +1,8 @@
 # CHANGELOG
 
+Checkmarx-v2.48.0 - 2026-02-13 16:09:11
+Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...Checkmarx-v2.48.0
+
 <<<<<<< other/AST-134946-release-pipeline-refactor
 =======
 ## [v2.46.1-both-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-both-test-1.0) - 2026-02-12 10:39:21
