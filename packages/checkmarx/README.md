@@ -211,8 +211,8 @@ This tool enables VS Code users to initiate SCA scans directly from their VS Cod
 
 We appreciate feedback and contribution to the VsCode extension! Before you get started, please see the following:
 
-- [Checkmarx contribution guidelines](https://github.com/Checkmarx/ast-vscode-extension/blob/packages/checkmarx/contributing.md)
-- [Checkmarx Code of Conduct](https://github.com/Checkmarx/ast-vscode-extension/blob/packages/checkmarx/code_of_conduct.md)
+- [Checkmarx contribution guidelines](https://github.com/Checkmarx/ast-vscode-extension/blob/HEAD/packages/checkmarx/contributing.md)
+- [Checkmarx Code of Conduct](https://github.com/Checkmarx/ast-vscode-extension/blob/HEAD/packages/checkmarx/code_of_conduct.md)
 
 <!-- LICENSE -->
 ## License
