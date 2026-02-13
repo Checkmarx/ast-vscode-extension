@@ -53,6 +53,15 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+    // Clean up AI Suggestion Tracker
+    try {
+        const tracker = require('@checkmarx/vscode-core/dist/aiTracking/AISuggestionTracker').AISuggestionTracker.getInstance();
+        if (tracker) {
+            tracker.dispose();
+        }
+    } catch (error) {
+        // Tracker might not be initialized, silently ignore
+    }
     console.log('[CHECKMARX-DEVELOPER-ASSIST] Checkmarx Developer Assist extension is now deactivated');
 }
 
