@@ -46,17 +46,33 @@ body[data-vscode-theme-kind="vscode-light"] .auth-container {
 
 
 .auth-container {
-    padding: 50px;   /* keep existing padding */
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(12px);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    text-align: left;
-    width: 100%;
-    max-width: 435px;   /* was 420px — very slight increase */
-    margin: 0 auto;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+	width: 461px;
+	height: 467px;
+	padding: 40px 40px 36px; /* keep button slightly above bottom */
+	border-radius: 30px;
+	text-align: left;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start; /* avoid extra spacing pushing content up */
 }
+
+/* ===== Dark Theme Login Card ===== */
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-container {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--Disabled, rgba(98, 98, 98, 1));
+    backdrop-filter: blur(50px);
+    box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.25);
+}
+
+/* ===== Light Theme Login Card ===== */
+body[data-vscode-theme-kind="vscode-light"] .auth-container {
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(206, 201, 222, 1);
+    backdrop-filter: blur(50px);
+    box-shadow: 0px 30px 50px 0px rgba(174, 138, 218, 0.25);
+}
+
 
 body[data-vscode-theme-kind="vscode-high-contrast"] {
 
@@ -72,11 +88,66 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 	position: relative;
 }
 
-.auth-form-title {
+/* Make the login form fill available space and push the button down */
+#loginForm {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto; /* let form fill the card */
+	min-height: 0;  /* ensure flexbox can distribute space correctly */
+	position: relative; /* allow absolute centering of the visible form */
+}
+
+#loginForm .auth-form {
+	/* Robust vertical centering of the visible form between title and button */
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	transform: translateY(-50%);
+}
+
+/* ===== Updated Login Form Heading Styles ===== */
+#loginForm .auth-form-title {
+	width: 381px;
+	height: 35px;
+	font-family: 'Inter', sans-serif;
+	font-weight: 700;
 	font-size: 24px;
-	font-weight: bold;
-	margin-bottom: 15px;
+	line-height: 146%;
 	text-align: center;
+	opacity: 1;
+	margin-bottom: 15px;
+}
+
+/* Dark theme text color */
+body:not([data-vscode-theme-kind="vscode-light"]) #loginForm .auth-form-title {
+	color: rgba(233, 233, 233, 1);  /* as per your dark theme requirement */
+}
+
+/* Light theme text color */
+body[data-vscode-theme-kind="vscode-light"] #loginForm .auth-form-title {
+	color: rgba(52, 52, 52, 1);  /* as per your light theme requirement */
+}
+
+/* Unified top title (always at the top of the form) */
+.login-form-title {
+	width: 381px;
+	height: 35px;
+	font-family: 'Inter', sans-serif;
+	font-weight: 700;
+	font-size: 24px;
+	line-height: 146%;
+	text-align: center;
+	opacity: 1;
+	margin-bottom: 15px;
+	margin-left: auto;
+	margin-right: auto;
+}
+body:not([data-vscode-theme-kind="vscode-light"]) .login-form-title {
+	color: rgba(233, 233, 233, 1);
+}
+body[data-vscode-theme-kind="vscode-light"] .login-form-title {
+	color: rgba(52, 52, 52, 1);
 }
 
 .radio-group {
@@ -87,15 +158,30 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 }
 
 .form-label {
-	font-size: 13px;
-	font-weight: 500;
+	font-family: Inter, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500; /* Medium */
+	font-style: normal;
+	line-height: 1.44; /* 144% */
+	letter-spacing: 0;
 	margin-top: 14px;      /* spacing between groups */
-	margin-bottom: 5px;    /* tighter label-input gap */
+	margin-bottom: 10px;   /* login form label-input gap */
 	display: block;
+	width: 381px;          /* align with input and button */
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* Label colors per theme */
+body:not([data-vscode-theme-kind="vscode-light"]) .form-label {
+	color: var(--Main, rgba(233, 233, 233, 1));
+}
+body[data-vscode-theme-kind="vscode-light"] .form-label {
+	color: var(--Main, rgba(52, 52, 52, 1));
 }
 
 .auth-input {
-	width: 100%;
+	width: 381px;           /* consistent width across forms */
 	height: 32px;           /* slightly improved height */
 	padding: 0 8px;         /* horizontal padding only */
 	border: 1px solid #2a2a2a;
@@ -103,11 +189,70 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 	background: #141414;
 	color: var(--vscode-input-foreground);
 	font-size: 14px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .auth-input:focus {
 	border-color: var(--vscode-focusBorder);
 	outline: none;
+}
+
+/* ===== Auth Input States (Dark + Light) ===== */
+/* Dark theme idle */
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input {
+	background: rgba(0, 0, 0, 0.43);
+	border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
+	color: var(--Main, rgba(255, 255, 255, 1));
+	box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.3) inset;
+}
+
+/* Dark theme active */
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:focus,
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-active {
+	background: rgba(0, 0, 0, 0.43);
+	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1));
+}
+
+/* Dark theme filled */
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:not(:placeholder-shown),
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-filled {
+	background: rgba(0, 0, 0, 0.43);
+	border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
+}
+
+/* Light theme idle */
+body[data-vscode-theme-kind="vscode-light"] .auth-input {
+	background: var(--CTA-BG, rgba(255, 255, 255, 1));
+	border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
+	color: var(--Main, rgba(52, 52, 52, 1));
+	box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.3) inset;
+}
+
+/* Light theme active */
+body[data-vscode-theme-kind="vscode-light"] .auth-input:focus,
+body[data-vscode-theme-kind="vscode-light"] .auth-input.is-active {
+	background: var(--CTA-BG, rgba(255, 255, 255, 1));
+	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
+}
+
+/* Light theme filled */
+body[data-vscode-theme-kind="vscode-light"] .auth-input:not(:placeholder-shown),
+body[data-vscode-theme-kind="vscode-light"] .auth-input.is-filled {
+	background: var(--CTA-BG, rgba(255, 255, 255, 1));
+	border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
+}
+
+/* Light theme placeholder for dark field */
+body[data-vscode-theme-kind="vscode-light"] .auth-input::placeholder {
+	color: rgba(52, 52, 52, 0.7);
+}
+
+/* Ensure active border is visible and unified across themes */
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:focus,
+body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-active {
+	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
 }
 
 .authenticated-message{
@@ -131,12 +276,62 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
     font-size: 13px;
 }
 
-/* Center the primary login button element within the form */
+/* ===== Login Button Layout ===== */
 #authButton {
-	margin-left: auto;
-	margin-right: auto;
-	width: 100%;
+    width: 381px;
+    height: 40px;
+    border-radius: 6px;
+    padding: 8px;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 148%;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+	margin-top: auto; /* anchors near bottom of form */
+	margin-bottom: 0; /* minimize bottom gap */
+    opacity: 1;
+    transition: background 0.2s ease-in-out;
 }
+
+/* ===== Dark Theme Login Button ===== */
+body:not([data-vscode-theme-kind="vscode-light"]) #authButton {
+    background: rgba(68, 112, 236, 1); /* idle */
+    color: rgba(255, 255, 255, 1);
+    border: none;
+}
+
+body:not([data-vscode-theme-kind="vscode-light"]) #authButton:hover:not(:disabled) {
+    background: rgba(37, 89, 237, 1); /* hover */
+}
+
+body:not([data-vscode-theme-kind="vscode-light"]) #authButton:disabled {
+    background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
+    cursor: not-allowed;
+}
+
+/* ===== Light Theme Login Button ===== */
+body[data-vscode-theme-kind="vscode-light"] #authButton {
+    background: rgba(68, 112, 236, 1); /* idle */
+    color: rgba(255, 255, 255, 1);
+    border: none;
+}
+
+body[data-vscode-theme-kind="vscode-light"] #authButton:hover:not(:disabled) {
+    background: rgba(37, 89, 237, 1); /* hover */
+}
+
+body[data-vscode-theme-kind="vscode-light"] #authButton:disabled {
+    background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
+    cursor: not-allowed;
+}
+
 
 .auth-button img {
     margin-right: 4px;
@@ -157,9 +352,9 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 	padding: 10px;
 	border-radius: 27px;
 	font-size: 16px;
-	display: flex;
-    align-items: start;
-    gap: 5px;
+	display: none; /* do not reserve space unless shown by JS */
+	align-items: start;
+	gap: 5px;
 }
 
 .error-message {
@@ -179,14 +374,16 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 
 .autocomplete-items {
 	position: absolute;
-    background: var(--vscode-input-background);
-    border-radius: 7px;
-    width: 100%;
-    max-height: 190px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    display: none;
+	background: var(--vscode-input-background);
+	border-radius: 7px;
+	width: 381px;           /* match input width */
+	left: 50%;              /* center beneath input */
+	transform: translateX(-50%);
+	max-height: 190px;
+	overflow-y: auto;
+	z-index: 1000;
+	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+	display: none;
 	padding:5px;
 }
 
@@ -207,27 +404,7 @@ body[data-vscode-theme-kind="vscode-high-contrast"] {
 }
 
 /* Make auth method switch links clickable without underline */
-#switchToApiKey,
-#switchToOAuth {
-	text-decoration: none;
-	color: var(--vscode-textLink-foreground);
-	cursor: pointer;
-}
-
-#switchToApiKey:hover,
-#switchToOAuth:hover {
-	text-decoration: none;
-}
-
-#switchToApiKey:focus,
-#switchToOAuth:focus,
-#switchToApiKey:active,
-#switchToOAuth:active {
-	outline: none;
-	border: none;
-	box-shadow: none;
-	-webkit-tap-highlight-color: transparent;
-}
+/* Removed alternate auth method switch links */
 
 .page-footer {
 	position: fixed;

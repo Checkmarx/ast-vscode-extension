@@ -68,8 +68,6 @@
       const isOAuth = method === "oauth";
       document.getElementById("oauthForm")?.classList.toggle("hidden", !isOAuth);
       document.getElementById("apiKeyForm")?.classList.toggle("hidden", isOAuth);
-      document.getElementById("switchToApiKey")?.classList.toggle("hidden", !isOAuth);
-      document.getElementById("switchToOAuth")?.classList.toggle("hidden", isOAuth);
       messageBox.style.display = "none";
       const authMethodInput = document.getElementById("authMethodInput");
       if (authMethodInput) authMethodInput.value = method;
@@ -82,26 +80,6 @@
         const method = e.target.value === "oauth" ? "oauth" : "apiKey";
         setAuthMethod(method);
       });
-    });
-
-    // Add switch link handlers to toggle between forms
-    document.getElementById("switchToApiKey")?.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Prefer existing radio-change flow if radios exist
-      const apiRadio = document.querySelector('input[name="authMethod"][value="apiKey"]');
-      if (apiRadio) {
-        apiRadio.checked = true;
-        apiRadio.dispatchEvent(new Event("change"));
-        return;
-      }
-      // Fallback: reuse centralized method
-      setAuthMethod("apiKey");
-    });
-
-    document.getElementById("switchToOAuth")?.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Request host to handle OAuth like the sidebar (reauth if possible, else show form)
-      vscode.postMessage({ command: "oauthLink" });
     });
 
     if (authButton) {

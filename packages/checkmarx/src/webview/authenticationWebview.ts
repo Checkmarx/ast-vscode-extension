@@ -200,73 +200,74 @@ export class AuthenticationWebview {
     // Determine initial visible form and classes
     const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
     const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
-    const apiKeyFormClass = oauthVisibleInitially ? 'hidden' : '';
+    const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
 
     return `<!DOCTYPE html>
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<link href="${styleBootStrap}" rel="stylesheet">
-	<link href="${styleAuth}" rel="stylesheet">
-	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-  <title>Log in</title>
-
-
+    <meta charset="UTF-8">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleAuth}" rel="stylesheet">
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+    <title>Log in</title>
 </head>
 
 <body>
 
     <div id="loading">
-		<div class="spinner-border" role="status">
-		  <span class="visually-hidden">Checking authentication...</span>
-		</div>
-	  </div>
-<div id="authContainer" class="auth-container hidden">
-  <div class="auth-form-title">Log in</div>
-        <div id="loginForm">
-        <!-- Hidden input to store the auth method -->
-        <input type="hidden" id="authMethodInput" value="${this.authMethod || ''}">
-
-        <div id="oauthForm" class="${oauthFormClass}">
-            <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
-            <div id="urls-list" class="autocomplete-items"></div>
-			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
-
-
-            <label for="tenant" class="form-label">Tenant Name:</label>
-            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
-            <div id="tenants-list" class="autocomplete-items"></div>
-        </div>
-
-        <div id="apiKeyForm" class="${apiKeyFormClass}">
-          <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
-        </div>
-        <button id="authButton" class="auth-button" disabled>Log in</button>
-        <div class="auth-description" style="text-align:center;">
-          <a id="switchToApiKey" href="#" class="${oauthVisibleInitially ? '' : 'hidden'}">Log in via API Key</a>
-          <a id="switchToOAuth" href="#" class="${oauthVisibleInitially ? 'hidden' : ''}">Log in via OAuth</a>
-        </div>
-        </div>
-
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
-        <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
-        <div id="messageBox" class="message">
-        <div id="messageSuccessIcon" class="hidden">
-        <img src="${successIcon}" alt="success"/>
-        </div>
-        <div id="messageErrorIcon" class="hidden">
-
-        <img src="${errorIcon}" alt="error"/>
-        </div>
-        <div id="messageText"></div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Checking authentication...</span>
         </div>
     </div>
+    <div id="authContainer" class="auth-container hidden">
+      <div id="loginForm">
+        <div class="login-form-title">Log in</div>
+            <!-- OAuth Form -->
+            <div id="oauthForm" class="${oauthFormClass}">
+                <label for="baseUri" class="form-label">Checkmarx One Base URL</label>
+                <input type="text" id="baseUri" class="auth-input">
+                <div id="urls-list" class="autocomplete-items"></div>
+                <div id="urlError" class="text-danger mt-1" style="display: none;"></div>
+
+                <label for="tenant" class="form-label">Tenant Name</label>
+                <input type="text" id="tenant" class="auth-input">
+                <div id="tenants-list" class="autocomplete-items"></div>
+            </div>
+
+            <!-- API Key Form -->
+            <div id="apiKeyForm" class="${apiKeyFormClass}">
+                <label for="apiKey" class="form-label">Checkmarx One API Key</label>
+                <input type="password" id="apiKey" class="auth-input">
+            </div>
+            <button id="authButton" class="auth-button" disabled>Log in</button>
+        </div>
+
+        <!-- Authenticated Message -->
+        <div id="authenticatedMessage" class="hidden authenticated-message">
+            <img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}
+        </div>
+        <button id="logoutButton" class="auth-button hidden">
+            <img src="${logoutIcon}" alt="logout"/>Log out
+        </button>
+        <div id="messageBox" class="message">
+            <div id="messageSuccessIcon" class="hidden">
+                <img src="${successIcon}" alt="success"/>
+            </div>
+            <div id="messageErrorIcon" class="hidden">
+                <img src="${errorIcon}" alt="error"/>
+            </div>
+            <div id="messageText"></div>
+        </div>
+    </div>
+
+    <!-- Footer Images -->
     <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
     <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
+
     <script nonce="${nonce}" src="${scriptUri}"></script>
+
+</body>
 </html>`;
   }
 
@@ -279,36 +280,6 @@ export class AuthenticationWebview {
             type: "urlValidationResult",
             isValid,
           });
-        } else if (message.command === "oauthLink") {
-          // Make the OAuth link behave like the sidebar OAuth action:
-          // try re-auth with stored settings; if none, just show the OAuth form
-          try {
-            const authService = AuthService.getInstance(this.context, this.logs);
-            const hasStoredOAuth = authService.hasStoredOAuthCredentials();
-            if (hasStoredOAuth) {
-              // Match sidebar notification without showing the 'Connecting to Checkmarx One' progress
-              vscode.window.showInformationMessage("Re-authenticating with saved OAuth settings...");
-              try {
-                const token = await authService.reAuthenticateWithStoredOAuth();
-                if (token) {
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
-                  this.schedulePostAuth(isAiEnabled, { apiKey: token });
-                  return;
-                }
-              } catch (e) {
-                // If re-auth fails, fall through to show the form
-              }
-              this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
-            } else {
-              this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
-            }
-          } catch (e) {
-            // As a safety net, just show the OAuth form
-            this._panel.webview.postMessage({ type: "setAuthMethod", method: "oauth" });
-          }
         } else if (message.command === "requestLogoutConfirmation") {
           vscode.window
             .showWarningMessage(
