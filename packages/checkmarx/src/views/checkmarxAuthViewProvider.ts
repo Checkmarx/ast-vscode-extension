@@ -144,10 +144,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      background-color: rgba(0, 0, 0, 1);
-      background-image:
-        radial-gradient(ellipse 83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%),
-        radial-gradient(ellipse 70% 40% at 20% 65%, rgba(21, 188, 178, 0.3) 0%, rgba(21, 188, 178, 0.18) 30%, rgba(0, 0, 0, 0) 80%);
+      /* Dark theme gradient: green glow over purple base */
+      background:
+        radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
+        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
       background-repeat: no-repeat;
       background-size: cover;
     }
@@ -337,6 +337,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
     );
+    // Load tooltip icon explicitly from this extension's media folder
+    const infoTooltipUri = this.webviewView!.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'info_tooltip.svg')
+    );
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -354,10 +358,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      background-color: rgba(0, 0, 0, 1);
-      background-image:
-        radial-gradient(ellipse 83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%),
-        radial-gradient(ellipse 70% 40% at 20% 65%, rgba(21, 188, 178, 0.3) 0%, rgba(21, 188, 178, 0.18) 30%, rgba(0, 0, 0, 0) 80%);
+      /* Dark theme gradient: green glow over purple base */
+      background:
+        radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
+        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
       background-repeat: no-repeat;
       background-size: cover;
     }
@@ -429,6 +433,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       padding: 0 12px;
       cursor: pointer;
       font-size: 13px;
+      font-weight: 400; /* ensure tooltip inherits regular weight by default */
       color: var(--vscode-button-foreground);
       display: flex;
       align-items: center;
@@ -470,7 +475,7 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button.selected {
     backdrop-filter: blur(50px);
 }
 /* --- BUTTON TEXT STYLE: DARK THEME --- */
-body:not([data-vscode-theme-kind='vscode-light']) .auth-button span {
+body:not([data-vscode-theme-kind='vscode-light']) .auth-button .button-label {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-style: normal; /* Semi Bold handled via 600 */
@@ -482,7 +487,7 @@ body:not([data-vscode-theme-kind='vscode-light']) .auth-button span {
 }
 
 /* --- BUTTON TEXT STYLE: LIGHT THEME --- */
-body[data-vscode-theme-kind='vscode-light'] .auth-button span {
+body[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-style: normal; /* Semi Bold handled via 600 */
@@ -506,51 +511,60 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button span {
 
     /* --- TOOLTIP CSS --- */
     .tooltip-wrapper {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        display: inline-block;
-        width: 100%;
-        z-index: 2;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-block;
+      width: 24px; /* small interactive area at button's right */
+      height: 100%;
+      z-index: 3;
+      pointer-events: auto;
     }
     .tooltip-icon {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        border: 1px solid #fff;
-        color: #fff;
-        font-weight: 700;
-        font-size: 12px;
-        line-height: 1;
-        background: transparent;
-        cursor: pointer;
-        user-select: none;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      user-select: none;
+      z-index: 4;
+      pointer-events: auto; /* allow hover and click on icon */
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
     }
-    body[data-vscode-theme-kind="vscode-light"] .tooltip-icon {
-        border-color: #D9DAE6;
-        color: #2F2F2F;
+    /* Dark theme: draw icon as normal image */
+    body:not([data-vscode-theme-kind='vscode-light']) .tooltip-icon {
+      background-image: var(--icon-url);
+    }
+    /* Light theme: tint icon with requested Secondary color using mask */
+    body[data-vscode-theme-kind='vscode-light'] .tooltip-icon {
+      background: var(--Secondery, rgba(113, 113, 113, 1));
+      -webkit-mask-image: var(--icon-url);
+      mask-image: var(--icon-url);
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      -webkit-mask-size: contain; mask-size: contain;
     }
     .tooltip-text {
         position: absolute;
         top: calc(100% + 6px);
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        width: min(100%, 320px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 280px; /* align with button width */
+        max-width: 90vw; /* responsive bound in small panels */
         background: var(--vscode-editorWidget-background, #2a2a2a);
-        color: var(--vscode-foreground);
+      color: var(--vscode-foreground);
         border: 1px solid var(--vscode-editorWidget-border, #3c3c3c);
         border-radius: 6px;
-        padding: 0;
+      padding: 8px 8px; /* add subtle inner spacing so text doesn't touch edges */
         font-size: 12px;
+        font-family: 'Inter', sans-serif; /* enforce Inter on container as well */
+        font-weight: 400; /* baseline regular weight to avoid bold inherit */
         line-height: 1.4;
         box-shadow: 0 6px 18px rgba(0,0,0,0.35);
         opacity: 0;
@@ -571,13 +585,43 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button span {
         border-color: transparent transparent var(--vscode-editorWidget-background, #2a2a2a) transparent;
     }
     .tooltip-line {
-        display: block;
-        white-space: normal;
-        word-break: break-word;
-        overflow-wrap: break-word;
-        text-align: left;
+      display: block;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      text-align: left;
     }
-    .tooltip-icon:hover + .tooltip-text,
+
+    /* --- Tooltip Typography Overrides --- */
+    /* Base typography: same for both themes */
+    .tooltip-text .tooltip-line {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400 !important;
+      font-style: normal;
+      font-size: 13px;
+      line-height: 144%;
+      letter-spacing: 0;
+    }
+    /* Theme-specific text color only */
+    body:not([data-vscode-theme-kind='vscode-light']) .tooltip-text .tooltip-line {
+      color: var(--Main, rgba(233, 233, 233, 1));
+    }
+    body[data-vscode-theme-kind='vscode-light'] .tooltip-text .tooltip-line {
+      color: var(--vscode-foreground);
+    }
+
+    /* --- Light Theme Box Overrides --- */
+    body[data-vscode-theme-kind='vscode-light'] .tooltip-text {
+      padding: 6px 8px;
+      border-radius: 2px;
+      border: 1px solid var(--toast-msg-stroke, rgba(38, 40, 42, 1));
+      background: var(--toast-msg-background, rgba(243, 243, 243, 1));
+      opacity: 1; /* maintain same visibility behavior via hover; this sets default box opacity */
+    }
+    body[data-vscode-theme-kind='vscode-light'] .tooltip-text::after {
+      border-color: transparent transparent var(--toast-msg-background, rgba(243, 243, 243, 1)) transparent;
+    }
+    .tooltip-wrapper:hover + .tooltip-text,
     .tooltip-wrapper.open .tooltip-text {
         opacity: 1;
         visibility: visible;
@@ -613,26 +657,26 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button span {
     <!-- OAuth Button -->
     ${showOAuthButton ? `
     <button class="auth-button" id="oauthBtn">
-      <span>OAuth login</span>
+      <span class="button-label">OAuth login</span>
       ${!showApiKeyButton ? `
       <span class="tooltip-wrapper">
-        <span class="tooltip-icon" aria-label="More info">i</span>
-        <span class="tooltip-text">
-          <span class="tooltip-line">You’ve opted out of signing in with API key. To use another sign-in method instead of an OAuth, update your login preferences in Settings.</span>
-        </span>
+        <span class="tooltip-icon" style="--icon-url: url('${infoTooltipUri}');" aria-label="More info"></span>
+      </span>
+      <span class="tooltip-text">
+        <span class="tooltip-line">You’ve opted out of signing in with API key. To use another sign-in method instead of an OAuth, update your login preferences in Settings.</span>
       </span>` : ''}
     </button>` : ''}
 
     <!-- API Key Button -->
     ${showApiKeyButton ? `
     <button class="auth-button" id="apiKeyBtn">
-      <span>API Key login</span>
+      <span class="button-label">API Key login</span>
       ${!showOAuthButton ? `
       <span class="tooltip-wrapper">
-        <span class="tooltip-icon" aria-label="More info">i</span>
-        <span class="tooltip-text">
-          <span class="tooltip-line">You’ve opted out of signing in with OAuth. To use another sign-in method instead of an API key, update your login preferences in Settings.</span>
-        </span>
+        <span class="tooltip-icon" style="--icon-url: url('${infoTooltipUri}');" aria-label="More info"></span>
+      </span>
+      <span class="tooltip-text">
+        <span class="tooltip-line">You’ve opted out of signing in with OAuth. To use another sign-in method instead of an API key, update your login preferences in Settings.</span>
       </span>` : ''}
     </button>` : ''}
 
