@@ -20,90 +20,92 @@ jobs:
       pull-requests: write
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set Up npm Authentication
-      run: |
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.PERSONAL_ACCESS_TOKEN }}" > ~/.npmrc
-        echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+      - name: Set Up npm Authentication
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > packages/core/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> packages/core/.npmrc
 
-    - name: Determine Version
-      id: get_version
-      run: |
-        # Enable detailed debugging
-        set -x
+      - name: Determine Version
+        id: get_version
+        run: |
+          # Enable detailed debugging
+          set -x
 
-        # Check if a version input was provided
-        if [[ -n "${{ github.event.inputs.version }}" ]]; then
-          VERSION="${{ github.event.inputs.version }}"
-          echo "Input version provided: $VERSION"
-        else
-          echo "No input version provided. Fetching the latest release version from GitHub API..."
-          # Fetch the latest release tag from the GitHub API
-          API_RESPONSE=$(curl -s "https://api.github.com/repos/Checkmarx/ast-cli-javascript-wrapper/releases")
-          echo "API response received: $API_RESPONSE"
+          # Check if a version input was provided
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "Input version provided: $VERSION"
+          else
+            echo "No input version provided. Fetching the latest release version from GitHub API..."
+            # Fetch the latest release tag from the GitHub API
+            API_RESPONSE=$(curl -s "https://api.github.com/repos/Checkmarx/ast-cli-javascript-wrapper/releases")
+            echo "API response received: $API_RESPONSE"
 
-          # Extract the latest semantic version tag
-          VERSION=$(gh api repos/Checkmarx/ast-cli-javascript-wrapper/releases --jq '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")] | sort_by(split(".") | map(tonumber)) | .[-1]')
-          echo "Extracted version: $VERSION"
-        fi
+            # Extract the latest semantic version tag
+            VERSION=$(gh api repos/Checkmarx/ast-cli-javascript-wrapper/releases --jq '[.[] | select(.prerelease == false) | .tag_name | select(test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")] | sort_by(split(".") | map(tonumber)) | .[-1]')
+            echo "Extracted version: $VERSION"
+          fi
 
-        # Remove leading 'v' if present
-        VERSION="${VERSION#v}"
-        echo "Normalized version (without leading 'v'): $VERSION"
+          # Remove leading 'v' if present
+          VERSION="${VERSION#v}"
+          echo "Normalized version (without leading 'v'): $VERSION"
 
-        # Validate the extracted version
-        if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
-          echo "Error: Failed to determine a valid version."
-          exit 1
-        fi
+          # Validate the extracted version
+          if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
+            echo "Error: Failed to determine a valid version."
+            exit 1
+          fi
 
-        # Export the VERSION variable for subsequent steps
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # Export the VERSION variable for subsequent steps
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    - name: Update package.json
-      run: |
-        sed -i "s|\"@checkmarx/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarx/ast-cli-javascript-wrapper\": \"${VERSION}\"|" package.json
+      - name: Update package.json
+        run: |
+          sed -i "s|\"@checkmarx/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarx/ast-cli-javascript-wrapper\": \"${VERSION}\"|" packages/core/package.json
 
-    - name: Install Dependencies and Update package-lock.json
-      run: |
-        npm install
+      - name: Install Dependencies and Update package-lock.json
+        run: |
+          npm install:all
 
-    - name: Check for Changes
-      id: check_changes
-      run: |
-        if git diff --quiet; then
-          echo "No changes detected. Nothing to commit."
-          echo "changes=false" >> $GITHUB_ENV
-        else
-          echo "Changes detected."
-          echo "changes=true" >> $GITHUB_ENV
-        fi
+      - name: Check for Changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes detected. Nothing to commit."
+            echo "changes=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected."
+            echo "changes=true" >> $GITHUB_ENV
+          fi
 
-    - name: Commit Changes
-      if: env.changes == 'true'
-      run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
-        git add package.json package-lock.json
-        git commit -m "Update AST CLI JavaScript Wrapper to version ${VERSION}"
+      - name: Commit Changes
+        if: env.changes == 'true'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add packages/core/package.json packages/core/package-lock.json
+          git add packages/checkmarx/package.json packages/checkmarx/package-lock.json
+          git add packages/project-ignite/package.json packages/project-ignite/package-lock.json
+          git commit -m "Update AST CLI JavaScript Wrapper to version ${VERSION}"
 
-    - name: Create Pull Request
-      if: env.changes == 'true'
-      uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c #v6
-      with:
-        token: ${{ secrets.AUTOMATION_TOKEN }}
-        commit-message: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
-        title: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
-        body: |
-          Updates the AST CLI JavaScript Wrapper to version `${{ env.VERSION }}`
+      - name: Create Pull Request
+        if: env.changes == 'true'
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c #v6
+        with:
+          token: ${{ secrets.AUTOMATION_TOKEN }}
+          commit-message: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
+          title: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}
+          body: |
+            Updates the AST CLI JavaScript Wrapper to version `${{ env.VERSION }}`
 
-          Auto-generated by [create-pull-request][2]
-        labels: cxone
-        branch: other/update_js_wrapper_${{ env.VERSION }}
+            Auto-generated by [create-pull-request][2]
+          labels: cxone
+          branch: other/update_js_wrapper_${{ env.VERSION }}
 
-    - name: No Changes to Commit
-      if: env.changes == 'false'
-      run: |
-        echo "No changes detected in the package.json or package-lock.json. Exiting the workflow gracefully."
+      - name: No Changes to Commit
+        if: env.changes == 'false'
+        run: |
+          echo "No changes detected in the package.json or package-lock.json. Exiting the workflow gracefully."

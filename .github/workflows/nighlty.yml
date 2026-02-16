@@ -27,11 +27,5 @@ jobs:
   nightly-checkmarx:
     needs: check-dependabot-commits
     if: ${{needs.check-dependabot-commits.outputs.isDependabot == 'false'}}
-    uses: Checkmarx/ast-vscode-extension/.github/workflows/release-checkmarx.yml@main
-    secrets: inherit
-
-  nightly-project-ignite:
-    needs: check-dependabot-commits
-    if: ${{needs.check-dependabot-commits.outputs.isDependabot == 'false'}}
-    uses: Checkmarx/ast-vscode-extension/.github/workflows/release-project-ignte.yml@main
+    uses: Checkmarx/ast-vscode-extension/.github/workflows/release.yml@main
     secrets: inherit

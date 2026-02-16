@@ -34,6 +34,7 @@ on:
         description: "Which extension to release"
         required: true
         type: choice
+        default: both
         options:
           - checkmarx
           - devAssist
@@ -93,7 +94,7 @@ jobs:
 
       # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
       - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > packages/core/.npmrc
 
       # SETUP NODE
       - name: Setup Node.js
@@ -132,8 +133,8 @@ jobs:
             npm version minor --no-git-tag-version 2>/dev/null || true
           fi
 
-      # BUMP PROJECT IGNITE PACKAGE VERSION (only if releaseType is devAssist or both)
-      - name: Bump Project Ignite package version
+      # BUMP CHECKMARX DEVELOPER ASSIST PACKAGE VERSION (only if releaseType is devAssist or both)
+      - name: Bump Checkmarx Developer Assist package version
         if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
         run: |
           cd packages/project-ignite
@@ -158,25 +159,43 @@ jobs:
 
       # GENERATE CHANGELOG FOR CHECKMARX (if releaseType is checkmarx or both)
       - name: Generate Checkmarx changelog
+        id: checkmarx_changelog
         if: inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both'
         run: |
-          node .github/scripts/generateChangelog.js \
+          OUTPUT=$(node .github/scripts/generateChangelog.js \
             --package checkmarx \
             --version ${{ env.CHECKMARX_VERSION }} \
             --repo ${{ github.repository }} \
-            --dev ${{ inputs.dev }}
+            --dev ${{ inputs.dev }})
 
-      # GENERATE CHANGELOG FOR PROJECT IGNITE (if releaseType is devAssist or both)
-      - name: Generate Project Ignite changelog
+          # Extract content between delimiters
+          RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
+
+          # Save to environment for later use
+          echo "CHECKMARX_RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      # GENERATE CHANGELOG FOR CHECKMARX DEVELOPER ASSIST (if releaseType is devAssist or both)
+      - name: Generate Checkmarx Developer Assist changelog
+        id: ignite_changelog
         if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
         run: |
-          node .github/scripts/generateChangelog.js \
+          OUTPUT=$(node .github/scripts/generateChangelog.js \
             --package project-ignite \
             --version ${{ env.IGNITE_VERSION }} \
             --repo ${{ github.repository }} \
-            --dev ${{ inputs.dev }}
+            --dev ${{ inputs.dev }})
 
-      # BUILD UNIFIED RELEASE BODY
+          # Extract content between delimiters
+          RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
+
+          # Save to environment for later use
+          echo "DEVASSIST_RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      # BUILD UNIFIED RELEASE BODY IN MEMORY
       - name: Build release body
         run: |
           BODY=""
@@ -191,28 +210,28 @@ jobs:
           fi
 
           if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }} (NEW)\n"
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${{ env.IGNITE_VERSION }} (NEW)\n"
           else
-            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }}\n"
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${{ env.IGNITE_VERSION }}\n"
           fi
           BODY="${BODY}\n"
 
           # Append changelog section(s) based on releaseType
           if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            if [ -f ".github/scripts/release_body_checkmarx.md" ]; then
-              BODY="${BODY}$(cat .github/scripts/release_body_checkmarx.md)\n\n"
-            fi
+            BODY="${BODY}${CHECKMARX_RELEASE_BODY}\n\n"
           fi
 
           if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            if [ -f ".github/scripts/release_body_project-ignite.md" ]; then
-              BODY="${BODY}$(cat .github/scripts/release_body_project-ignite.md)\n\n"
-            fi
+            BODY="${BODY}${DEVASSIST_RELEASE_BODY}\n\n"
           fi
 
-          printf "%b" "$BODY" > release_body.md
-          echo "--- Release body ---"
-          cat release_body.md
+          # Store in environment variable for the release step
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          printf "%b" "$BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "--- Release body preview ---"
+          printf "%b" "$BODY"
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
@@ -276,9 +295,9 @@ jobs:
             npm run package:checkmarx
           fi
 
-      # PACKAGE PROJECT IGNITE VSIX
+      # PACKAGE CHECKMARX DEVELOPER ASSIST VSIX
       # Always built so asset is always present in release
-      - name: Package Project Ignite .vsix file
+      - name: Package Checkmarx Developer Assist .vsix file
         run: |
           if [ "${{ inputs.dev }}" == "true" ]; then
             # Only timestamp if this package is being released
@@ -369,7 +388,7 @@ jobs:
         with:
           name: ${{ env.RELEASE_NAME }}
           tag_name: ${{ env.TAG_NAME }}
-          body_path: release_body.md
+          body: ${{ env.RELEASE_BODY }}
           generate_release_notes: false
           files: |
             packages/checkmarx/ast-results-${{ env.CHECKMARX_VERSION_FINAL }}.vsix
@@ -392,8 +411,8 @@ jobs:
             vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
           fi
 
-      # PUBLISH PROJECT IGNITE TO VSCODE MARKETPLACE
-      - name: Publish Project Ignite to VSCode Marketplace
+      # PUBLISH Checkmarx Developer Assist TO VSCODE MARKETPLACE
+      - name: Publish Checkmarx Developer Assist to VSCode Marketplace
         env:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
         if: |
@@ -420,8 +439,8 @@ jobs:
           npm install -g ovsx
           ovsx publish packages/checkmarx/ast-results-${{ env.CHECKMARX_VERSION_FINAL }}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
 
-      # PUBLISH PROJECT IGNITE TO OPEN VSX
-      - name: Publish Project Ignite to Open VSX
+      # PUBLISH CHECKMARX DEVELOPER ASSIST TO OPEN VSX
+      - name: Publish Checkmarx Developer Assist to Open VSX
         if: |
           env.OPEN_VSX_TOKEN != null &&
           (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
