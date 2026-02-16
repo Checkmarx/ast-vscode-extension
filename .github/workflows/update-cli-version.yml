@@ -25,8 +25,8 @@ jobs:
 
       - name: Set Up npm Authentication
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > packages/core/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> packages/core/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >  ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Determine Version
         id: get_version
