@@ -68,7 +68,7 @@ jobs:
 
       - name: Install Dependencies and Update package-lock.json
         run: |
-          npm install:all
+          npm run install:all
 
       - name: Check for Changes
         id: check_changes
