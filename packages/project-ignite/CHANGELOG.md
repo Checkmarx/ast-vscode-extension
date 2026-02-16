@@ -16,7 +16,7 @@ Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.
 
 ## [v2.46.1-both-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-both-test-1.0) - 2026-02-12 10:39:21
 
-### Plugins in this release
+
 * **Checkmarx (AST):** v2.47.1-both-test-1.0 (NEW)
 * **Checkmarx Dev Assist:** v1.1.1-both-test-1.0 (NEW)
 
