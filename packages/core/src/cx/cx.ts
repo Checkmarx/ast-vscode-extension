@@ -906,4 +906,59 @@ export class Cx implements CxPlatform {
                 scanType, status, totalCount);
         }
     }
+
+    async sendAIFixOutcomeTelemetry(
+        eventType: string,
+        scannerType: string,
+        severity: string,
+        mcpSuggestedVersion?: string,
+        actualVersion?: string,
+        retryCount?: number,
+        additionalData?: string
+    ): Promise<void> {
+        try {
+            const config = await this.getAstConfiguration();
+            if (!config) {
+                console.warn("Cannot send AI fix telemetry: no configuration");
+                return;
+            }
+
+            const cxWrapper = new CxWrapper(config);
+            const aiProvider = isIDE(constants.kiroAgent)
+                ? constants.kiroAgent
+                : isIDE(constants.cursorAgent)
+                    ? constants.cursorAgent
+                    : isIDE(constants.windsurfAgent)
+                        ? "Cascade"
+                        : "Copilot";
+            const agent = isIDE(constants.kiroAgent)
+                ? constants.kiroAgent
+                : isIDE(constants.cursorAgent)
+                    ? constants.cursorAgent
+                    : isIDE(constants.windsurfAgent)
+                        ? constants.windsurfAgent
+                        : constants.vsCodeAgent;
+
+            // Build subType with fix outcome details
+            const subTypeData = {
+                mcpSuggestedVersion,
+                actualVersion,
+                retryCount,
+                ...(additionalData ? JSON.parse(additionalData) : {})
+            };
+
+            cxWrapper.telemetryAIEvent(
+                aiProvider,
+                "click",
+                eventType,
+                scannerType,
+                severity,
+                "",
+                "",
+                0
+            );
+        } catch (error) {
+            console.error(`Failed to send AI fix outcome telemetry: ${error}`);
+        }
+    }
 }

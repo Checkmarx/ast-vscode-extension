@@ -1,0 +1,449 @@
+name: Extension Release
+
+on:
+  workflow_call:
+    inputs:
+      jsTag:
+        description: "JS Wrapper tag name"
+        required: false
+        type: string
+        default: nightly
+      vscodeTag:
+        description: "Tag name"
+        required: false
+        type: string
+        default: nightly
+      dev:
+        description: "Is dev build"
+        required: false
+        default: true
+        type: boolean
+      publish:
+        description: "Publish to marketplace"
+        required: false
+        default: true
+        type: boolean
+      releaseType:
+        description: "Which extension to release (checkmarx | devAssist | both)"
+        required: false
+        type: string
+        default: both
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: "Which extension to release"
+        required: true
+        type: choice
+        options:
+          - checkmarx
+          - devAssist
+          - both
+      jsTag:
+        description: "JSW tag name (ignored if not dev build)"
+        required: false
+      vscodeTag:
+        description: "Tag name (ignored if not dev build)"
+        required: false
+      dev:
+        description: "Is dev build"
+        required: false
+        default: true
+        type: boolean
+      publish:
+        description: "Publish to marketplace"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  delete:
+    uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@main
+    with:
+      tag: ${{ inputs.vscodeTag }}
+    secrets: inherit
+    if: inputs.dev
+
+  release:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: update-extension-version
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    outputs:
+      TAG_NAME: ${{ steps.generate_tag_name.outputs.TAG_NAME }}
+      CLI_VERSION: ${{ steps.extract_cli_version.outputs.CLI_VERSION }}
+      CHECKMARX_VERSION: ${{ steps.get_versions.outputs.CHECKMARX_VERSION }}
+      IGNITE_VERSION: ${{ steps.get_versions.outputs.IGNITE_VERSION }}
+    steps:
+      # CHECKOUT PROJECT
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 0 # Full history needed for git log changelog generation
+
+      # GIT CONFIGURATION
+      - run: |
+          git config user.name vscode-releases
+          git config user.email vscode-releases@github.com
+
+      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
+      - name: Authenticate with GitHub package registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+
+      # SETUP NODE
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.11.0
+
+      # BUMP ROOT VERSION (source of truth for release tag)
+      - name: Generate Tag name from root package.json
+        id: generate_tag_name
+        run: |
+          echo "vscodeTag input: ${{ inputs.vscodeTag }}"
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
+            TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
+          else
+            echo "Running npm version minor"
+            TAG_NAME=$(npm version minor --no-git-tag-version 2>/dev/null || echo "error")
+          fi
+          if [ "$TAG_NAME" == "error" ]; then
+            echo "npm version command failed"
+            exit 1
+          fi
+          echo "Generated TAG_NAME: $TAG_NAME"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "::set-output name=TAG_NAME::$TAG_NAME"
+
+      # BUMP CHECKMARX PACKAGE VERSION (only if releaseType is checkmarx or both)
+      - name: Bump Checkmarx package version
+        if: inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both'
+        run: |
+          cd packages/checkmarx
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
+          else
+            npm version minor --no-git-tag-version 2>/dev/null || true
+          fi
+
+      # BUMP PROJECT IGNITE PACKAGE VERSION (only if releaseType is devAssist or both)
+      - name: Bump Project Ignite package version
+        if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
+        run: |
+          cd packages/project-ignite
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
+          else
+            npm version minor --no-git-tag-version 2>/dev/null || true
+          fi
+
+      # GET BOTH PACKAGE VERSIONS (always, for headers and assets)
+      - name: Get package versions
+        id: get_versions
+        run: |
+          CHECKMARX_VERSION=$(cat packages/checkmarx/package.json | jq -r .version)
+          IGNITE_VERSION=$(cat packages/project-ignite/package.json | jq -r .version)
+          echo "CHECKMARX_VERSION=$CHECKMARX_VERSION" >> $GITHUB_ENV
+          echo "IGNITE_VERSION=$IGNITE_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=CHECKMARX_VERSION::$CHECKMARX_VERSION"
+          echo "::set-output name=IGNITE_VERSION::$IGNITE_VERSION"
+          echo "Checkmarx version: $CHECKMARX_VERSION"
+          echo "DevAssist version: $IGNITE_VERSION"
+
+      # GENERATE CHANGELOG FOR CHECKMARX (if releaseType is checkmarx or both)
+      - name: Generate Checkmarx changelog
+        if: inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both'
+        run: |
+          node .github/scripts/generateChangelog.js \
+            --package checkmarx \
+            --version ${{ env.CHECKMARX_VERSION }} \
+            --repo ${{ github.repository }} \
+            --dev ${{ inputs.dev }}
+
+      # GENERATE CHANGELOG FOR PROJECT IGNITE (if releaseType is devAssist or both)
+      - name: Generate Project Ignite changelog
+        if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
+        run: |
+          node .github/scripts/generateChangelog.js \
+            --package project-ignite \
+            --version ${{ env.IGNITE_VERSION }} \
+            --repo ${{ github.repository }} \
+            --dev ${{ inputs.dev }}
+
+      # BUILD UNIFIED RELEASE BODY
+      - name: Build release body
+        run: |
+          BODY=""
+
+          # Header: Plugins in this release (H2 - same level as package sections)
+          # Mark as (NEW) only if the package is being released in this releaseType
+          BODY="### Plugins in this release\n"
+          if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }} (NEW)\n"
+          else
+            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }}\n"
+          fi
+
+          if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }} (NEW)\n"
+          else
+            BODY="${BODY}* **Checkmarx Dev Assist:** v${{ env.IGNITE_VERSION }}\n"
+          fi
+          BODY="${BODY}\n"
+
+          # Append changelog section(s) based on releaseType
+          if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            if [ -f ".github/scripts/release_body_checkmarx.md" ]; then
+              BODY="${BODY}$(cat .github/scripts/release_body_checkmarx.md)\n\n"
+            fi
+          fi
+
+          if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            if [ -f ".github/scripts/release_body_project-ignite.md" ]; then
+              BODY="${BODY}$(cat .github/scripts/release_body_project-ignite.md)\n\n"
+            fi
+          fi
+
+          printf "%b" "$BODY" > release_body.md
+          echo "--- Release body ---"
+          cat release_body.md
+
+      # INSTALL NPM DEPENDENCIES
+      - name: Install dependencies
+        run: npm run install:all
+
+      # GET AND INSTALL JS WRAPPER VERSION PROVIDED BY USER
+      - name: Get and install JS Wrapper if provided by user
+        if: inputs.dev == true && inputs.jsTag != ''
+        run: |
+          echo "Getting js wrapper ${{ inputs.jsTag }} version..."
+
+          JS_VERSION_NAME=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions \
+            | jq '.[]|select((.name | contains("-${{ inputs.jsTag }}.0")) or .name == "${{ inputs.jsTag }}")|.name' \
+            | tr -d '"')
+
+          if [ "${JS_VERSION_NAME}" != '' ]; then
+            echo "Install JS Wrapper version ${JS_VERSION_NAME}"
+            cd packages/core
+            npm install "@checkmarx/ast-cli-javascript-wrapper@"${JS_VERSION_NAME}
+          else
+            echo "JS wrapper with version ${JS_VERSION_NAME} not found"
+          fi
+
+      # EXTRACT CLI VERSION
+      - name: Extract CLI version
+        id: extract_cli_version
+        run: |
+          CLI_VERSION=$(./packages/core/node_modules/@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/resources/cx-linux version | grep -Eo '^[0-9]+\.[0-9]+\.[0-9]+')
+          echo "CLI version being packed is $CLI_VERSION"
+          echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=CLI_VERSION::$CLI_VERSION"
+
+      # INSTALL VSCE
+      - name: Install VSCE
+        run: npm install -g vsce
+
+      # BUILD ALL PACKAGES
+      - name: Build all packages
+        run: npm run build:all
+
+      # PACKAGE CHECKMARX VSIX
+      # Always built so asset is always present in release
+      - name: Package Checkmarx .vsix file
+        run: |
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            # Only timestamp if this package is being released
+            if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+              TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package checkmarx)
+              echo "Checkmarx timestamp version: $TIMESTAMP_VERSION"
+              cd packages/checkmarx
+              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            else
+              # Not being released, package at current version without timestamp
+              npm run package:checkmarx
+            fi
+          else
+            npm run package:checkmarx
+          fi
+
+      # PACKAGE PROJECT IGNITE VSIX
+      # Always built so asset is always present in release
+      - name: Package Project Ignite .vsix file
+        run: |
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            # Only timestamp if this package is being released
+            if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+              TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package project-ignite)
+              echo "Project Ignite timestamp version: $TIMESTAMP_VERSION"
+              cd packages/project-ignite
+              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+            else
+              # Not being released, package at current version without timestamp
+              npm run package:cx-dev-assist
+            fi
+          else
+            npm run package:cx-dev-assist
+          fi
+
+      # GET BOTH PACKAGE VERSIONS AFTER PACKAGING
+      # For dev builds, we need to extract the version from the .vsix filename
+      # For non-dev builds, we read from package.json
+      - name: Get package versions after packaging
+        id: get_versions_final
+        run: |
+          # Extract version from .vsix filename (works for both dev and non-dev)
+          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)
+          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)
+          CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
+          IGNITE_VERSION_FINAL=$(basename "$IGNITE_VSIX" .vsix | sed 's/cx-dev-assist-//')
+
+          echo "CHECKMARX_VERSION_FINAL=$CHECKMARX_VERSION_FINAL" >> $GITHUB_ENV
+          echo "IGNITE_VERSION_FINAL=$IGNITE_VERSION_FINAL" >> $GITHUB_ENV
+          echo "Checkmarx final vsix version: $CHECKMARX_VERSION_FINAL"
+          echo "DevAssist final vsix version: $IGNITE_VERSION_FINAL"
+
+      # CREATE PR FOR VERSION (non-dev only)
+      # Changelog is generated BEFORE this step so release commit is not included
+      - name: Create Pull Request
+        id: create_pr
+        if: inputs.dev == false
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e #v6.0.5
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          title: "Update Extension Version - Automated Changes (${{ inputs.releaseType }})"
+          body: "This is an automated PR created by GitHub Actions to update the extension version for: ${{ inputs.releaseType }}"
+          base: main
+          draft: false
+
+      # WAIT FOR PR CREATION
+      - name: Wait for PR to be created
+        id: pr
+        if: inputs.dev == false
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
+        with:
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ env.BRANCH_NAME }}
+
+      # MERGE PR TO MAIN
+      - name: Merge Pull Request
+        if: inputs.dev == false
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d #v2.3.1
+        with:
+          route: PUT /repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pull-request-number }}/merge
+          merge_method: squash
+
+      # PUSH TAGS
+      - name: Push tag
+        if: inputs.dev == false
+        run: |
+          git pull
+          git tag ${{ env.TAG_NAME }}
+          git push --tags
+
+      # CREATE UNIFIED GITHUB RELEASE (always 6 assets: 2 vsix + 2x source code auto-added by GitHub)
+      - name: Create Unified Release
+        run: |
+          # For dev builds, add timestamp to the release name
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            TIMESTAMP=$(date +%s)
+            RELEASE_NAME="${{ env.TAG_NAME }} ($TIMESTAMP)"
+          else
+            RELEASE_NAME="${{ env.TAG_NAME }}"
+          fi
+
+          echo "Creating release: $RELEASE_NAME"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+      - name: Upload release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 #v1
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.TAG_NAME }}
+          body_path: release_body.md
+          generate_release_notes: false
+          files: |
+            packages/checkmarx/ast-results-${{ env.CHECKMARX_VERSION_FINAL }}.vsix
+            packages/project-ignite/cx-dev-assist-${{ env.IGNITE_VERSION_FINAL }}.vsix
+          prerelease: ${{ inputs.dev }}
+
+      # PUBLISH CHECKMARX TO VSCODE MARKETPLACE
+      - name: Publish Checkmarx to VSCode Marketplace
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: |
+          env.MARKET_TOKEN != null &&
+          (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        run: |
+          cd packages/checkmarx
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          fi
+
+      # PUBLISH PROJECT IGNITE TO VSCODE MARKETPLACE
+      - name: Publish Project Ignite to VSCode Marketplace
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: |
+          env.MARKET_TOKEN != null &&
+          (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        run: |
+          cd packages/project-ignite
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          fi
+
+      # PUBLISH CHECKMARX TO OPEN VSX
+      - name: Publish Checkmarx to Open VSX
+        if: |
+          env.OPEN_VSX_TOKEN != null &&
+          (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        env:
+          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: |
+          npm install -g ovsx
+          ovsx publish packages/checkmarx/ast-results-${{ env.CHECKMARX_VERSION_FINAL }}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+
+      # PUBLISH PROJECT IGNITE TO OPEN VSX
+      - name: Publish Project Ignite to Open VSX
+        if: |
+          env.OPEN_VSX_TOKEN != null &&
+          (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        env:
+          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: |
+          npm install -g ovsx
+          ovsx publish packages/project-ignite/cx-dev-assist-${{ env.IGNITE_VERSION_FINAL }}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+
+  notify:
+    if: inputs.dev == false
+    needs: release
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/release-notify.yml@main
+    with:
+      product_name: >-
+        ${{ inputs.releaseType == 'checkmarx' && 'VS Code - Checkmarx' ||
+            inputs.releaseType == 'devAssist' && 'VS Code - DevAssist' ||
+            'VS Code - Checkmarx & DevAssist' }}
+      release_version: ${{ needs.release.outputs.TAG_NAME }}
+      cli_release_version: ${{ needs.release.outputs.CLI_VERSION }}
+      release_author: "Checkmarx"
+      release_url: https://github.com/Checkmarx/ast-vscode-extension/releases/tag/${{ needs.release.outputs.TAG_NAME }}
+      jira_product_name: VSCODE
+    secrets: inherit

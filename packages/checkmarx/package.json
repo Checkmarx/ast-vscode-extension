@@ -3,12 +3,12 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.47.0",
+  "version": "2.49.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
-  "homepage": "https://github.com/Checkmarx/ast-vscode-extension#readme",
+  "homepage": "https://github.com/Checkmarx/ast-vscode-extension/blob/main/packages/checkmarx/README.md",
   "bugs": {
     "url": "https://github.com/Checkmarx/ast-vscode-extension/issues"
   },
@@ -21,6 +21,19 @@
   ],
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "AppSec",
+    "SAST",
+    "OSS",
+    "IaC",
+    "Secrets",
+    "Containers",
+    "Secure Coding",
+    "Developer Assist",
+    "Real-time Scanning",
+    "Kics",
+    "SCA"
   ],
   "activationEvents": [
     "*"
@@ -1114,5 +1127,9 @@
     "mocha": "^10.8.2",
     "typescript": "^5.3.3",
     "vscode-extension-tester": "8.17.0"
+  },
+  "overrides": {
+    "@isaacs/brace-expansion": "5.0.1",
+    "qs": "6.14.2"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "checkmarx-vscode-extensions",
-  "version": "2.46.0",
+  "version": "2.49.0",
   "private": true,
   "description": "Monorepo for Checkmarx VS Code extensions",
   "repository": {

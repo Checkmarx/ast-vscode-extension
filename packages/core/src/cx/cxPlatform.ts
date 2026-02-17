@@ -240,4 +240,14 @@ export interface CxPlatform {
   authValidate(logs: Logs): Promise<boolean>;
 
   getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined>;
+
+  sendAIFixOutcomeTelemetry(
+    eventType: string,
+    scannerType: string,
+    severity: string,
+    mcpSuggestedVersion?: string,
+    actualVersion?: string,
+    retryCount?: number,
+    additionalData?: string
+  ): Promise<void>;
 }
