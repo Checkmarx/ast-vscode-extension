@@ -251,6 +251,8 @@ jobs:
             | jq '.[]|select((.name | contains("-${{ inputs.jsTag }}.0")) or .name == "${{ inputs.jsTag }}")|.name' \
             | tr -d '"')
 
+            echo "JS Wrapper version found: $JS_VERSION_NAME"
+
           if [ "${JS_VERSION_NAME}" != '' ]; then
             echo "Install JS Wrapper version ${JS_VERSION_NAME}"
             cd packages/core
