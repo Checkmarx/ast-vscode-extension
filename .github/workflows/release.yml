@@ -95,8 +95,10 @@ jobs:
       # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
       - name: Authenticate with GitHub package registry
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > packages/core/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+          echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> packages/core/.npmrc
+          echo "@checkmarx:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
 
       # SETUP NODE
       - name: Setup Node.js
