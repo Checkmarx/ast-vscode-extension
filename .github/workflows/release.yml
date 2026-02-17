@@ -248,13 +248,9 @@ jobs:
           TAG_WITHOUT_V="${{inputs.jsTag}}"
           TAG_WITHOUT_V="${TAG_WITHOUT_V#v}"
 
-          JS_VERSION_NAME=$(curl -L \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions \
-          | jq -r --arg tag "$TAG_WITHOUT_V" '.[] | select(.name == $tag or .name | contains("-" + $tag)) | .name' \
-          | head -n 1)
+          echo "Searching for version: $TAG_WITHOUT_V"
+
+          JS_VERSION_NAME=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions | jq -r --arg tag "$TAG_WITHOUT_V" '.[] | select(.name == $tag or (.name | contains("-" + $tag))) | .name' | head -n 1)
 
           echo "JS Wrapper version found: '$JS_VERSION_NAME'"
 
@@ -264,7 +260,7 @@ jobs:
             npm install "@checkmarx/ast-cli-javascript-wrapper@${JS_VERSION_NAME}"
           else
             echo "JS wrapper matching tag ${{inputs.jsTag}} not found"
-          exit 1
+            exit 1
           fi
 
       # EXTRACT CLI VERSION
