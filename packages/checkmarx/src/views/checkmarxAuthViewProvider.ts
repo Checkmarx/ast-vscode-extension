@@ -128,166 +128,20 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
     );
+    const authCssUri = this.webviewView!.webview.asWebviewUri(
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
+    );
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https: data: vscode-resource:; script-src 'nonce-${nonce}';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${this.webviewView!.webview.cspSource} 'unsafe-inline'; img-src https: data: ${this.webviewView!.webview.cspSource}; script-src 'nonce-${nonce}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: var(--vscode-font-family);
-      padding: 0;
-      margin: 0;
-      color: var(--vscode-foreground);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      /* Dark theme gradient: green glow over purple base */
-      background:
-        radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
-        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-
-    body[data-vscode-theme-kind='vscode-light'] {
-      background: linear-gradient(0deg, #f6f5ff, #f6f5ff),
-        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(213, 194, 253, 0.43) 0%, rgba(246, 245, 255, 0.43) 75.48%);
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-
-    .auth-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: clamp(160px, 30vh, 283px);
-      gap: 4px;
-      padding-bottom: 96px;
-      box-sizing: border-box;
-    }
-
-    .status-image {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 12px;
-    }
-
-    /* "You are logged in" text */
-    .status-message {
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 18px;
-      line-height: 150%;
-      text-align: center;
-      color: rgba(255, 255, 255, 0.9); /* Dark theme text color */
-      background: transparent; /* No background */
-      margin-bottom: 8px;
-      white-space: nowrap; /* Ensure single line */
-    }
-
-    body[data-vscode-theme-kind='vscode-light'] .status-message {
-      color: rgba(52, 52, 52, 1); /* Light theme text color */
-    }
-
-    /* Tenant label */
-    /* Dark Theme */
-    body:not([data-vscode-theme-kind="vscode-light"]) #tenantLabel {
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 15px;
-      line-height: 148%;
-      color: var(--Tertiery, rgba(143, 143, 143, 1));
-      background: transparent;
-      width: auto;
-      height: auto;
-    }
-
-    /* Light Theme */
-    body[data-vscode-theme-kind="vscode-light"] #tenantLabel {
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 15px;
-      line-height: 148%;
-      color: var(--Tertiery, rgba(146, 146, 146, 1));
-      background: transparent;
-      width: auto;
-      height: auto;
-    }
-
-    /* Logout Button */
-    .logout-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--Disabled, rgba(98, 98, 98, 1));
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(50px);
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 15px;
-      line-height: 148%;
-      color: var(--Secondery, rgba(188, 188, 188, 1));
-      transition: all 0.2s ease;
-      margin-top: 22px; /* adjust this value to control spacing */
-    }
-
-    .logout-button img {
-      width: 16px;
-      height: 16px;
-      color: currentColor; /* Match text color */
-    }
-
-    .logout-button:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid var(--Disabled, rgba(111, 111, 111, 1));
-      backdrop-filter: blur(50px);
-    }
-
-    /* ✅ FIX: Make icon visible in light theme */
-    body[data-vscode-theme-kind="vscode-light"] .logout-button img {
-      filter: invert(1);
-    }
-
-    /* Light Theme Logout Button */
-    body[data-vscode-theme-kind='vscode-light'] .logout-button {
-      background: rgba(255, 255, 255, 0.3);
-      border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
-      backdrop-filter: blur(50px);
-      color: var(--Secondery, rgba(113, 113, 113, 1));
-    }
-
-    body[data-vscode-theme-kind='vscode-light'] .logout-button:hover {
-      background: rgba(255, 255, 255, 0.6);
-      border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
-      backdrop-filter: blur(50px);
-    }
-
-    /* Footer Images */
-    .page-footer {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0.95;
-    }
-
-    .page-footer-dark { display: block; }
-    .page-footer-light { display: none; }
-
-    body[data-vscode-theme-kind='vscode-light'] .page-footer-dark { display: none; }
-    body[data-vscode-theme-kind='vscode-light'] .page-footer-light { display: block; }
-  </style>
+  <link rel="stylesheet" href="${authCssUri}" />
 </head>
 
-<body>
-  <div class="auth-container">
+<body class="sidebar-panel">
+  <div class="auth-container authenticated">
     <img class="status-image" src="${loggedInImageUri}" alt="logged in" />
     <div class="status-message">You are Logged in</div>
     <div class="auth-description" id="tenantLabel"></div>
@@ -341,309 +195,21 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     const infoTooltipUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, 'media', 'info_tooltip.svg')
     );
+    const authCssUri = this.webviewView!.webview.asWebviewUri(
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
+    );
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https: data: vscode-resource:; script-src 'nonce-${nonce}';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${this.webviewView!.webview.cspSource} 'unsafe-inline'; img-src https: data: ${this.webviewView!.webview.cspSource}; script-src 'nonce-${nonce}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: var(--vscode-font-family);
-      padding: 0;
-      margin: 0;
-      color: var(--vscode-foreground);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      /* Dark theme gradient: green glow over purple base */
-      background:
-        radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
-        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-
-    body[data-vscode-theme-kind='vscode-light'] {
-      background: linear-gradient(0deg, #f6f5ff, #f6f5ff),
-        radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(213, 194, 253, 0.43) 0%, rgba(246, 245, 255, 0.43) 75.48%);
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-
-    /* --- AUTH PANEL --- */
-    .auth-container {
-      width: 417px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: clamp(50px, 22vh, 110px);
-      padding-top: 8px;
-      padding-bottom: 32px;
-      gap: 4px;
-      box-sizing: border-box;
-    }
-
-    .status-image {
-      width: 60px;
-      height: 60px;
-      margin: 0;
-    }
-
-    .auth-status-box {
-      width: 185px;
-      height: 27px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 18px;
-      line-height: 150%;
-      text-align: center;
-      background: transparent;
-      border-radius: 2px;
-      margin-top: 6px;
-      margin-bottom: 6px;
-    }
-
-    .auth-content-box {
-      width: 280px;
-      text-align: center;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 12px;
-      line-height: 148%;
-      background: transparent;
-      padding: 0px 7px 7px 7px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-    }
-
-    /* --- BUTTONS --- */
-    .auth-button {
-      width: 280px;
-      height: 40px;
-      border-radius: 6px;
-      border: 1px solid var(--Disabled, rgba(111, 111, 111, 1));
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(50px);
-      padding: 0 12px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 400; /* ensure tooltip inherits regular weight by default */
-      color: var(--vscode-button-foreground);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .auth-button:hover {
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    .auth-button.selected {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid #0066ff;
-    }
-
-    .auth-button + .auth-button {
-      margin-top: 8px;
-    }
-
- /* --- LIGHT THEME BUTTON UPDATES --- */
-body[data-vscode-theme-kind='vscode-light'] .auth-button {
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
-    backdrop-filter: blur(50px);
-    color: #2f2f2f;
-}
-
-body[data-vscode-theme-kind='vscode-light'] .auth-button:hover {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
-    backdrop-filter: blur(50px);
-}
-
-body[data-vscode-theme-kind='vscode-light'] .auth-button.selected {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--CTA-Blue, rgba(43, 122, 204, 1));
-    backdrop-filter: blur(50px);
-}
-/* --- BUTTON TEXT STYLE: DARK THEME --- */
-body:not([data-vscode-theme-kind='vscode-light']) .auth-button .button-label {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-style: normal; /* Semi Bold handled via 600 */
-    font-size: 15px;
-    line-height: 148%;
-    letter-spacing: 0%;
-    vertical-align: bottom;
-    color: var(--Secondery, rgba(188, 188, 188, 1)); /* text color */
-}
-
-/* --- BUTTON TEXT STYLE: LIGHT THEME --- */
-body[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-style: normal; /* Semi Bold handled via 600 */
-    font-size: 15px;
-    line-height: 148%;
-    letter-spacing: 0%;
-    vertical-align: bottom;
-    color: var(--Secondery, rgba(113, 113, 113, 1)); /* text color for light theme */
-}
-
-    /* --- LINK --- */
-    .auth-description {
-      margin-top: 14px;
-      width: 280px;
-      text-align: left;
-    }
-
-    a {
-      color: var(--vscode-textLink-foreground);
-    }
-
-    /* --- TOOLTIP CSS --- */
-    .tooltip-wrapper {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: inline-block;
-      width: 24px; /* small interactive area at button's right */
-      height: 100%;
-      z-index: 3;
-      pointer-events: auto;
-    }
-    .tooltip-icon {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      user-select: none;
-      z-index: 4;
-      pointer-events: auto; /* allow hover and click on icon */
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: contain;
-    }
-    /* Dark theme: draw icon as normal image */
-    body:not([data-vscode-theme-kind='vscode-light']) .tooltip-icon {
-      background-image: var(--icon-url);
-    }
-    /* Light theme: tint icon with requested Secondary color using mask */
-    body[data-vscode-theme-kind='vscode-light'] .tooltip-icon {
-      background: var(--Secondery, rgba(113, 113, 113, 1));
-      -webkit-mask-image: var(--icon-url);
-      mask-image: var(--icon-url);
-      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-      -webkit-mask-position: center; mask-position: center;
-      -webkit-mask-size: contain; mask-size: contain;
-    }
-    .tooltip-text {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 50%;
-        transform: translateX(-50%);
-        width: 280px; /* align with button width */
-        max-width: 90vw; /* responsive bound in small panels */
-        background: var(--vscode-editorWidget-background, #2a2a2a);
-      color: var(--vscode-foreground);
-        border: 1px solid var(--vscode-editorWidget-border, #3c3c3c);
-        border-radius: 6px;
-      padding: 8px 8px; /* add subtle inner spacing so text doesn't touch edges */
-        font-size: 12px;
-        font-family: 'Inter', sans-serif; /* enforce Inter on container as well */
-        font-weight: 400; /* baseline regular weight to avoid bold inherit */
-        line-height: 1.4;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transition: opacity 120ms ease-in-out, visibility 120ms ease-in-out;
-        box-sizing: border-box;
-        z-index: 3;
-    }
-    .tooltip-text::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        top: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: transparent transparent var(--vscode-editorWidget-background, #2a2a2a) transparent;
-    }
-    .tooltip-line {
-      display: block;
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      text-align: left;
-    }
-
-    /* --- Tooltip Typography Overrides --- */
-    /* Base typography: same for both themes */
-    .tooltip-text .tooltip-line {
-      font-family: 'Inter', sans-serif;
-      font-weight: 400 !important;
-      font-style: normal;
-      font-size: 13px;
-      line-height: 144%;
-      letter-spacing: 0;
-    }
-    /* Theme-specific text color only */
-    body:not([data-vscode-theme-kind='vscode-light']) .tooltip-text .tooltip-line {
-      color: var(--Main, rgba(233, 233, 233, 1));
-    }
-    body[data-vscode-theme-kind='vscode-light'] .tooltip-text .tooltip-line {
-      color: var(--vscode-foreground);
-    }
-
-    /* --- Light Theme Box Overrides --- */
-    body[data-vscode-theme-kind='vscode-light'] .tooltip-text {
-      padding: 6px 8px;
-      border-radius: 2px;
-      border: 1px solid var(--toast-msg-stroke, rgba(38, 40, 42, 1));
-      background: var(--toast-msg-background, rgba(243, 243, 243, 1));
-      opacity: 1; /* maintain same visibility behavior via hover; this sets default box opacity */
-    }
-    body[data-vscode-theme-kind='vscode-light'] .tooltip-text::after {
-      border-color: transparent transparent var(--toast-msg-background, rgba(243, 243, 243, 1)) transparent;
-    }
-    .tooltip-wrapper:hover + .tooltip-text,
-    .tooltip-wrapper.open .tooltip-text {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    /* --- FOOTER --- */
-    .page-footer {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0.95;
-    }
-    .page-footer-dark { display: block; }
-    .page-footer-light { display: none; }
-    body[data-vscode-theme-kind='vscode-light'] .page-footer-dark { display: none; }
-    body[data-vscode-theme-kind='vscode-light'] .page-footer-light { display: block; }
-  </style>
+  <link rel="stylesheet" href="${authCssUri}" />
 </head>
 
-<body>
-  <div class="auth-container">
+<body class="sidebar-panel">
+  <div class="auth-container unauthenticated">
     <img class="status-image" src="${notLoggedInImageUri}" alt="not logged in" />
 
     <div class="auth-status-box">
@@ -660,7 +226,7 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
       <span class="button-label">OAuth login</span>
       ${!showApiKeyButton ? `
       <span class="tooltip-wrapper">
-        <span class="tooltip-icon" style="--icon-url: url('${infoTooltipUri}');" aria-label="More info"></span>
+        <span class="tooltip-icon" data-icon-url="${infoTooltipUri}" aria-label="More info"></span>
       </span>
       <span class="tooltip-text">
         <span class="tooltip-line">You’ve opted out of signing in with API key. To use another sign-in method instead of an OAuth, update your login preferences in Settings.</span>
@@ -673,7 +239,7 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
       <span class="button-label">API Key login</span>
       ${!showOAuthButton ? `
       <span class="tooltip-wrapper">
-        <span class="tooltip-icon" style="--icon-url: url('${infoTooltipUri}');" aria-label="More info"></span>
+        <span class="tooltip-icon" data-icon-url="${infoTooltipUri}" aria-label="More info"></span>
       </span>
       <span class="tooltip-text">
         <span class="tooltip-line">You’ve opted out of signing in with OAuth. To use another sign-in method instead of an API key, update your login preferences in Settings.</span>
@@ -693,6 +259,14 @@ body[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
+
+    // Set tooltip icon background images from data attributes
+    document.querySelectorAll('.tooltip-icon[data-icon-url]').forEach(icon => {
+      const url = icon.getAttribute('data-icon-url');
+      if (url) {
+        icon.style.backgroundImage = \`url('\${url}')\`;
+      }
+    });
 
     ${showOAuthButton ? `
     const oauthBtn = document.getElementById('oauthBtn');
