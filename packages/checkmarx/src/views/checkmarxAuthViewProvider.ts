@@ -2,11 +2,13 @@ import * as vscode from "vscode";
 import { getNonce } from "@checkmarx/vscode-core/out/utils/utils";
 import { Logs } from "@checkmarx/vscode-core/out/models/logs";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
 import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
+import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 
 export type AuthMethodType = "OAuth" | "API Key" | "Both";
 
@@ -49,6 +51,12 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
         // Force update the view when auth method changes (dropdown and buttons need to update)
         this.updateWebviewContent();
       }
+    });
+
+    // Listen for theme changes to refresh images
+    vscode.window.onDidChangeActiveColorTheme(() => {
+      // Refresh content when theme changes to load correct themed images
+      this.updateWebviewContent();
     });
 
     // Listen for secrets changes (token added/removed)
@@ -123,10 +131,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "logged_in.png"))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer.png"))
-    );
-    const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
     );
     const authCssUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
@@ -151,8 +156,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     </button>
   </div>
 
-  <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
-  <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
+  <img class="page-footer" src="${footerImageUri}" alt="footer" />
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -186,10 +190,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "not_logged_in.png"))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer.png"))
-    );
-    const footerLightImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "authentication_side_panel_footer_light_theme.png"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
     );
     // Load tooltip icon explicitly from this extension's media folder
     const infoTooltipUri = this.webviewView!.webview.asWebviewUri(
@@ -247,15 +248,14 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     </button>` : ''}
 
     <div class="auth-description">
-      <a href="https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html"
+      <a href="${DOC_LINKS.helpLoginUrl}"
          target="_blank" rel="noopener noreferrer">
          Need help logging in?
       </a>
     </div>
   </div>
 
-  <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
-  <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
+  <img class="page-footer" src="${footerImageUri}" alt="footer" />
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();

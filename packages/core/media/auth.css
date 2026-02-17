@@ -413,12 +413,6 @@ body[data-vscode-theme-kind="vscode-light"] #authButton:disabled {
 	opacity: 0.95;
 }
 
-/* Theme-specific footer visibility for auth page */
-.page-footer-dark { display: block; }
-.page-footer-light { display: none; }
-body[data-vscode-theme-kind="vscode-light"] .page-footer-dark { display: none; }
-body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block; }
-
 /* ============================================================================ */
 /* ===== SIDEBAR AUTHENTICATION PANEL STYLES ================================ */
 /* ============================================================================ */
