@@ -57,20 +57,28 @@
           if (tenantInput) tenantInput.disabled = false;
         }
       }
+      // Allow host to force the visible form (e.g., from sidebar navigation)
+      if (message.type === "setAuthMethod" && (message.method === "oauth" || message.method === "apiKey")) {
+        setAuthMethod(message.method);
+      }
     });
+
+    // Centralized toggle logic so radios and links reuse the same behavior
+    function setAuthMethod(method) {
+      const isOAuth = method === "oauth";
+      document.getElementById("oauthForm")?.classList.toggle("hidden", !isOAuth);
+      document.getElementById("apiKeyForm")?.classList.toggle("hidden", isOAuth);
+      messageBox.style.display = "none";
+      const authMethodInput = document.getElementById("authMethodInput");
+      if (authMethodInput) authMethodInput.value = method;
+      isBtnDisabled();
+    }
 
     // Only add radio button listeners if they exist (for backward compatibility)
     document.querySelectorAll('input[name="authMethod"]').forEach((radio) => {
       radio.addEventListener("change", (e) => {
-        const isOAuth = e.target.value === "oauth";
-        document
-          .getElementById("oauthForm")
-          .classList.toggle("hidden", !isOAuth);
-        document
-          .getElementById("apiKeyForm")
-          .classList.toggle("hidden", isOAuth);
-        messageBox.style.display = "none";
-        isBtnDisabled();
+        const method = e.target.value === "oauth" ? "oauth" : "apiKey";
+        setAuthMethod(method);
       });
     });
 

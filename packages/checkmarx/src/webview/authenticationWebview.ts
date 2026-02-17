@@ -78,6 +78,10 @@ export class AuthenticationWebview {
       } else {
         // Same auth method, just reveal the existing panel
         AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
+        // Ensure the currently visible form matches requested method
+        if (authMethod) {
+          AuthenticationWebview.currentPanel._panel.webview.postMessage({ type: "setAuthMethod", method: authMethod });
+        }
         return;
       }
     }
@@ -184,80 +188,86 @@ export class AuthenticationWebview {
     );
     const scriptUri = this.setWebUri("media", "auth.js");
     const styleAuth = this.setWebUri("media", "auth.css");
-    const loginIcon = this.setWebUri("media", "icons", "login.svg");
+    // Removed login icon for login buttons per request
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
+    const footerImageUri = this.setWebUri("media", "checkmarx_page_footer.png");
+    const footerLightImageUri = this.setWebUri("media", "checkmarx_page_footer_light_theme.png");
     const nonce = getNonce();
     const messages = this.messages;
 
-    // Determine which forms to show based on authMethod
-    const showOAuthForm = !this.authMethod || this.authMethod === 'oauth';
-    const showApiKeyForm = !this.authMethod || this.authMethod === 'apiKey';
-    const oauthFormClass = showOAuthForm ? 'auth-form' : 'auth-form hidden';
-    const apiKeyFormClass = showApiKeyForm ? '' : 'hidden';
+    // Determine initial visible form and classes
+    const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
+    const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
+    const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
 
     return `<!DOCTYPE html>
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<link href="${styleBootStrap}" rel="stylesheet">
-	<link href="${styleAuth}" rel="stylesheet">
-	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>${messages.displayName} Authentication</title>
-
-
+    <meta charset="UTF-8">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleAuth}" rel="stylesheet">
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+    <title>Log in</title>
 </head>
 
 <body>
 
     <div id="loading">
-		<div class="spinner-border" role="status">
-		  <span class="visually-hidden">Checking authentication...</span>
-		</div>
-	  </div>
-<div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">${messages.displayName} Authentication</div>
-        <div id="loginForm">
-        <!-- Hidden input to store the auth method -->
-        <input type="hidden" id="authMethodInput" value="${this.authMethod || ''}">
-
-        <div id="oauthForm" class="${oauthFormClass}">
-            <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
-            <div id="urls-list" class="autocomplete-items"></div>
-			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
-
-
-            <label for="tenant" class="form-label">Tenant Name:</label>
-            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
-            <div id="tenants-list" class="autocomplete-items"></div>
-            ${showOAuthForm && !showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with OAuth</button>` : ''}
-        </div>
-
-        <div id="apiKeyForm" class="${apiKeyFormClass}">
-          <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
-            ${showApiKeyForm && !showOAuthForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in with API Key</button>` : ''}
-        </div>
-        ${showOAuthForm && showApiKeyForm ? `<button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>` : ''}
-        </div>
-
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
-        <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
-        <div id="messageBox" class="message">
-        <div id="messageSuccessIcon" class="hidden">
-        <img src="${successIcon}" alt="success"/>
-        </div>
-        <div id="messageErrorIcon" class="hidden">
-
-        <img src="${errorIcon}" alt="error"/>
-        </div>
-        <div id="messageText"></div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Checking authentication...</span>
         </div>
     </div>
+    <div id="authContainer" class="auth-container hidden">
+      <div id="loginForm">
+        <div class="login-form-title">Log in</div>
+            <!-- OAuth Form -->
+            <div id="oauthForm" class="${oauthFormClass}">
+                <label for="baseUri" class="form-label">Checkmarx One Base URL</label>
+                <input type="text" id="baseUri" class="auth-input">
+                <div id="urls-list" class="autocomplete-items"></div>
+                <div id="urlError" class="text-danger mt-1" style="display: none;"></div>
+
+                <label for="tenant" class="form-label">Tenant Name</label>
+                <input type="text" id="tenant" class="auth-input">
+                <div id="tenants-list" class="autocomplete-items"></div>
+            </div>
+
+            <!-- API Key Form -->
+            <div id="apiKeyForm" class="${apiKeyFormClass}">
+                <label for="apiKey" class="form-label">Checkmarx One API Key</label>
+                <input type="password" id="apiKey" class="auth-input">
+            </div>
+            <button id="authButton" class="auth-button" disabled>Log in</button>
+        </div>
+
+        <!-- Authenticated Message -->
+        <div id="authenticatedMessage" class="hidden authenticated-message">
+            <img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}
+        </div>
+        <button id="logoutButton" class="auth-button hidden">
+            <img src="${logoutIcon}" alt="logout"/>Log out
+        </button>
+        <div id="messageBox" class="message">
+            <div id="messageSuccessIcon" class="hidden">
+                <img src="${successIcon}" alt="success"/>
+            </div>
+            <div id="messageErrorIcon" class="hidden">
+                <img src="${errorIcon}" alt="error"/>
+            </div>
+            <div id="messageText"></div>
+        </div>
+    </div>
+
+    <!-- Footer Images -->
+    <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
+    <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
+
     <script nonce="${nonce}" src="${scriptUri}"></script>
+
+</body>
 </html>`;
   }
 

@@ -994,7 +994,7 @@
             "enum": [
               "OAuth",
               "API Key",
-              "Both"
+              "Both (OAuth and API Key)"
             ],
             "enumDescriptions": [
               "OAuth authentication only",
