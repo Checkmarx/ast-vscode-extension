@@ -254,7 +254,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     </button>` : ''}
 
     <div class="auth-description">
-      <a href="${DOC_LINKS.helpLoginUrl}"
+      <a href="${DOC_LINKS.checkmarxOneHelpLoginUrl}"
          target="_blank" rel="noopener noreferrer">
          Need help logging in?
       </a>

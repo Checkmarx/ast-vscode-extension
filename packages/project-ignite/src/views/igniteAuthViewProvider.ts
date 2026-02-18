@@ -208,7 +208,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     </button>
 
     <div class="auth-description">
-      <a href="${DOC_LINKS.helpLoginUrl}"
+      <a href="${DOC_LINKS.devAssistHelpLoginUrl}"
          target="_blank" rel="noopener noreferrer">
          Need help logging in?
       </a>
