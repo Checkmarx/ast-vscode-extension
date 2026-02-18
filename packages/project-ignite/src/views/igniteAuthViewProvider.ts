@@ -172,7 +172,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     const nonce = getNonce();
 
     const notLoggedInImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "not_logged_in.png"))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("not_logged_in_light_theme.png", "not_logged_in.png")))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
@@ -199,7 +199,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     </div>
 
     <div class="auth-content-box">
-      Log in to Checkmarx Developer Assist to gain visibility into your application security and manage risks early and efficiently.
+      Log in to access your application security findings and manage risks in Checkmarx Developer Assist.
     </div>
 
     <!-- API Key Button (No tooltip since only one login method) -->
