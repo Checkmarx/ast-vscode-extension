@@ -212,6 +212,9 @@ export class AuthenticationWebview {
     const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
     const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
     const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
+    
+    // Set login title based on auth method
+    const loginTitle = oauthVisibleInitially ? 'OAuth Log in' : 'API Key Log in';
 
     return `<!DOCTYPE html>
 <html>
@@ -233,7 +236,7 @@ export class AuthenticationWebview {
     </div>
     <div id="authContainer" class="auth-container hidden">
       <div id="loginForm">
-        <div class="login-form-title">Log in</div>
+        <div class="login-form-title" id="loginTitle">${loginTitle}</div>
             <!-- OAuth Form -->
             <div id="oauthForm" class="${oauthFormClass}">
                 <label for="baseUri" class="form-label">Checkmarx One Base URL</label>
