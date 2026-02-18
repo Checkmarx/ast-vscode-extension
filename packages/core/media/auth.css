@@ -1,11 +1,14 @@
 body {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	height: 100vh;
+	min-height: 100vh;
 	width: 100vw;
 	margin: 0;
 	padding: 20px;
+	box-sizing: border-box;
+	overflow-y: auto;
 	font-family: var(--vscode-font-family);
 	color: var(--vscode-foreground);
 
@@ -405,19 +408,14 @@ body[data-vscode-theme-kind="vscode-light"] #authButton:disabled {
 /* Make auth method switch links clickable without underline */
 /* Removed alternate auth method switch links */
 
+/* Base footer styles for full-page auth modal */
 .page-footer {
-	position: fixed;
-	bottom: 16px;
-	left: 50%;
-	transform: translateX(-50%);
+	position: relative;
+	margin-top: 24px;
+	margin-bottom: 24px;
+	display: block;
 	opacity: 0.95;
 }
-
-/* Theme-specific footer visibility for auth page */
-.page-footer-dark { display: block; }
-.page-footer-light { display: none; }
-body[data-vscode-theme-kind="vscode-light"] .page-footer-dark { display: none; }
-body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block; }
 
 /* ============================================================================ */
 /* ===== SIDEBAR AUTHENTICATION PANEL STYLES ================================ */
@@ -429,25 +427,33 @@ body[data-vscode-theme-kind="vscode-light"] .page-footer-light { display: block;
 /* Sidebar body layout overrides */
 body.sidebar-panel {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   /* Gradients for sidebar (with green glow) */
   background:
     radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
     radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: 100% 100vh;
+  background-attachment: fixed; /* Fixed to viewport so gradient doesn't scroll */
 }
 
 body.sidebar-panel[data-vscode-theme-kind='vscode-light'] {
   background: linear-gradient(0deg, #f6f5ff, #f6f5ff),
     radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(213, 194, 253, 0.43) 0%, rgba(246, 245, 255, 0.43) 75.48%);
   background-repeat: no-repeat;
-  background-size: cover;
-  overflow: hidden;
+  background-size: 100% 100vh;
+  background-attachment: fixed; /* Fixed to viewport so gradient doesn't scroll */
+  padding: 0;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* --- AUTHENTICATED SIDEBAR VIEW STYLES --- */
@@ -456,13 +462,14 @@ body.sidebar-panel[data-vscode-theme-kind='vscode-light'] {
 body.sidebar-panel .auth-container.authenticated {
   width: 100%;
   max-width: 100%;
-  height: auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: clamp(160px, 30vh, 283px);
+  flex: 1 1 auto;
+  margin-top: 0;
   gap: 4px;
-  padding: 0 10px 96px 10px;
+  padding: 60px 10px 12px 10px;
   border-radius: 0;
   box-sizing: border-box;
   background: transparent;
@@ -574,12 +581,13 @@ body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .logout-button:hover {
 body.sidebar-panel .auth-container.unauthenticated {
   width: 100%;
   max-width: 100%;
-  height: auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: clamp(50px, 22vh, 110px);
-  padding: 8px 10px 32px 10px;
+  flex: 1 1 auto;
+  margin-top: 0;
+  padding: 60px 10px 12px 10px;
   gap: 4px;
   border-radius: 0;
   box-sizing: border-box;
@@ -608,7 +616,8 @@ body.sidebar-panel .auth-status-box {
 }
 
 body.sidebar-panel .auth-content-box {
-  width: 280px;
+  max-width: 280px;
+  width: calc(100% - 20px);
   text-align: center;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -623,7 +632,8 @@ body.sidebar-panel .auth-content-box {
 
 /* --- SIDEBAR BUTTONS (OAuth/API Key) --- */
 body.sidebar-panel .auth-button {
-  width: 280px;
+  max-width: 280px;
+  width: calc(100% - 20px);
   height: 38px;
   border-radius: 6px;
   border: 1px solid var(--Disabled, rgba(111, 111, 111, 1));
@@ -703,13 +713,24 @@ body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .button-l
 /* --- SIDEBAR LINK --- */
 body.sidebar-panel .auth-description {
   margin-top: 14px;
-  width: 280px;
+  max-width: 280px;
+  width: calc(100% - 20px);
   text-align: left;
   box-sizing: border-box;
 }
 
 body.sidebar-panel a {
   color: var(--vscode-textLink-foreground);
+}
+
+/* Footer inside sidebar containers */
+body.sidebar-panel .auth-container .page-footer {
+  position: relative;
+  display: block;
+  margin-top: auto;
+  margin-bottom: 0px;
+  padding-top: 24px;
+  opacity: 0.95;
 }
 
 /* --- TOOLTIP CSS --- */

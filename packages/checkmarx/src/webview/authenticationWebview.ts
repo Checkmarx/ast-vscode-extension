@@ -10,6 +10,7 @@ import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 export class AuthenticationWebview {
@@ -37,6 +38,17 @@ export class AuthenticationWebview {
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
+
+    // Listen for theme changes to refresh images
+    this._disposables.push(
+      vscode.window.onDidChangeActiveColorTheme(async () => {
+        // Refresh content when theme changes to load correct themed images
+        this._panel.webview.html = this._getWebviewContent();
+        // Re-initialize after content refresh
+        await this.initialize();
+      })
+    );
+
     this._panel.onDidDispose(
       () => {
         AuthenticationWebview.currentPanel = undefined;
@@ -192,8 +204,7 @@ export class AuthenticationWebview {
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
-    const footerImageUri = this.setWebUri("media", "checkmarx_page_footer.png");
-    const footerLightImageUri = this.setWebUri("media", "checkmarx_page_footer_light_theme.png");
+    const footerImageUri = this.setWebUri("media", ThemeUtils.selectIconByTheme("checkmarx_page_footer_light_theme.png", "checkmarx_page_footer.png"));
     const nonce = getNonce();
     const messages = this.messages;
 
@@ -201,6 +212,9 @@ export class AuthenticationWebview {
     const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
     const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
     const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
+
+    // Set login title based on auth method
+    const loginTitle = oauthVisibleInitially ? 'OAuth Log in' : 'API Key Log in';
 
     return `<!DOCTYPE html>
 <html>
@@ -222,7 +236,7 @@ export class AuthenticationWebview {
     </div>
     <div id="authContainer" class="auth-container hidden">
       <div id="loginForm">
-        <div class="login-form-title">Log in</div>
+        <div class="login-form-title" id="loginTitle">${loginTitle}</div>
             <!-- OAuth Form -->
             <div id="oauthForm" class="${oauthFormClass}">
                 <label for="baseUri" class="form-label">Checkmarx One Base URL</label>
@@ -261,9 +275,8 @@ export class AuthenticationWebview {
         </div>
     </div>
 
-    <!-- Footer Images -->
-    <img class="page-footer page-footer-dark" src="${footerImageUri}" alt="footer" />
-    <img class="page-footer page-footer-light" src="${footerLightImageUri}" alt="footer" />
+    <!-- Footer Image -->
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
 
     <script nonce="${nonce}" src="${scriptUri}"></script>
 

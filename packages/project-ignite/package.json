@@ -71,7 +71,7 @@
         {
           "command": "cx-dev-assist.viewSettings",
           "group": "@settings@2",
-          "when": " view==cx-dev-assist.cxDevAssist"
+          "when": "view == igniteAuth || view == cx-dev-assist.cxDevAssist"
         },
         {
           "command": "cx-dev-assist.openIgnoredView",
@@ -87,6 +87,11 @@
     },
     "views": {
       "cxDevAssistView": [
+        {
+          "id": "igniteAuth",
+          "type": "webview",
+          "name": "Checkmarx Authentication"
+        },
         {
           "id": "cx-dev-assist.cxDevAssist",
           "type": "webview",
@@ -110,11 +115,6 @@
         "id": "cx-dev-assist",
         "order": 1,
         "properties": {
-          "checkmarxDeveloperAssist.authentication": {
-            "type": "",
-            "order": 1,
-            "markdownDescription": "## [**Authentication**](command:cx-dev-assist.showAuth)"
-          },
           "checkmarxDeveloperAssist.additionalParams": {
             "type": "string",
             "order": 2,
