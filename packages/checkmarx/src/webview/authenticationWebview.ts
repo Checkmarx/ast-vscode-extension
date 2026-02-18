@@ -41,11 +41,11 @@ export class AuthenticationWebview {
 
     // Listen for theme changes to refresh images
     this._disposables.push(
-      vscode.window.onDidChangeActiveColorTheme(() => {
+      vscode.window.onDidChangeActiveColorTheme(async () => {
         // Refresh content when theme changes to load correct themed images
         this._panel.webview.html = this._getWebviewContent();
         // Re-initialize after content refresh
-        this.initialize();
+        await this.initialize();
       })
     );
 
@@ -212,7 +212,7 @@ export class AuthenticationWebview {
     const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
     const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
     const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
-    
+
     // Set login title based on auth method
     const loginTitle = oauthVisibleInitially ? 'OAuth Log in' : 'API Key Log in';
 

@@ -161,9 +161,8 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       <img src="${logoutIconUri}" alt="logout" />
       <span>Logout</span>
     </button>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
-
-  <img class="page-footer" src="${footerImageUri}" alt="footer" />
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -260,9 +259,8 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
          Need help logging in?
       </a>
     </div>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
-
-  <img class="page-footer" src="${footerImageUri}" alt="footer" />
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();

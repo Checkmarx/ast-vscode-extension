@@ -34,6 +34,17 @@ export class AuthenticationWebview {
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
+
+    // Listen for theme changes to refresh images
+    this._disposables.push(
+      vscode.window.onDidChangeActiveColorTheme(async () => {
+        // Refresh content when theme changes to load correct themed images
+        this._panel.webview.html = this._getWebviewContent();
+        // Re-initialize after content refresh
+        await this.initialize();
+      })
+    );
+
     this._panel.onDidDispose(
       () => {
         AuthenticationWebview.currentPanel = undefined;
