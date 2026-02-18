@@ -1,6 +1,6 @@
 {
   "name": "@checkmarx/vscode-core",
-  "version": "2.48.0",
+  "version": "1.0.0",
   "description": "Shared core library for Checkmarx VS Code extensions",
   "main": "./out/index.js",
   "types": "./out/index.d.ts",

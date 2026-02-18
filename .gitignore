@@ -6,5 +6,4 @@ node_modules
 test-resources
 .idea/
 .DS_Store
-.npmrc
 coverage/
