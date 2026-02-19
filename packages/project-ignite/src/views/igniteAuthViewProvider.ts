@@ -123,7 +123,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "logged_in.png"))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.svg", "authentication_side_panel_footer.svg")))
     );
     const authCssUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
@@ -146,8 +146,10 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       <img src="${logoutIconUri}" alt="logout" />
       <span>Logout</span>
     </button>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
+  <footer>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+  </footer>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -175,7 +177,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("not_logged_in_light_theme.png", "not_logged_in.png")))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.svg", "authentication_side_panel_footer.svg")))
     );
     const authCssUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
@@ -195,7 +197,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     <img class="status-image" src="${notLoggedInImageUri}" alt="not logged in" />
 
     <div class="auth-status-box">
-      You are not logged in
+      You're not logged in
     </div>
 
     <div class="auth-content-box">
@@ -213,8 +215,10 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
          Need help logging in?
       </a>
     </div>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
+  <footer>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+  </footer>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();

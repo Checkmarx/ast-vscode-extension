@@ -156,7 +156,7 @@ export class AuthenticationWebview {
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
-    const footerImageUri = this.setWebUri("media", ThemeUtils.selectIconByTheme("checkmarx_page_footer_light_theme.png", "checkmarx_page_footer.png"));
+    const footerImageUri = this.setWebUri("media", ThemeUtils.selectIconByTheme("checkmarx_page_footer_light_theme.svg", "checkmarx_page_footer.svg"));
     const nonce = getNonce();
     const messages = this.messages;
 
@@ -208,7 +208,9 @@ export class AuthenticationWebview {
     </div>
 
     <!-- Footer Image -->
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    <footer>
+      <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    </footer>
 
     <script nonce="${nonce}" src="${scriptUri}"></script>
 

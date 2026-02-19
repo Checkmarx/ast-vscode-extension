@@ -10,7 +10,7 @@ import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInj
 import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 
-export type AuthMethodType = "OAuth" | "API Key" | "Both";
+export type AuthMethodType = "OAuth" | "API Key" | "Both (OAuth and API Key)";
 
 export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "checkmarxAuth";
@@ -118,7 +118,19 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
 
   private getAuthMethod(): AuthMethodType {
     const config = vscode.workspace.getConfiguration("checkmarxOne");
-    return config.get<AuthMethodType>("authentication", "Both");
+    const configValue = config.get<string>("authentication", "Both (OAuth and API Key)");
+
+    // Validate the configuration value
+    const validValues: AuthMethodType[] = ["OAuth", "API Key", "Both (OAuth and API Key)"];
+    if (!validValues.includes(configValue as AuthMethodType)) {
+      // Show error message for invalid value
+      vscode.window.showErrorMessage(
+        `Invalid authentication method "${configValue}". Defaulting to "Both (OAuth and API Key)". Please update your settings to use one of: OAuth, API Key, or Both (OAuth and API Key).`
+      );
+      return "Both (OAuth and API Key)";
+    }
+
+    return configValue as AuthMethodType;
   }
 
   private getWebviewContent(): string {
@@ -138,7 +150,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "logged_in.png"))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.svg", "authentication_side_panel_footer.svg")))
     );
     const authCssUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", "auth.css"))
@@ -161,8 +173,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       <img src="${logoutIconUri}" alt="logout" />
       <span>Logout</span>
     </button>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
+  <footer>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+  </footer>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -189,14 +203,14 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
 
     // Removed login icon for OAuth/API Key buttons
 
-    const showOAuthButton = authMethod === "OAuth" || authMethod === "Both";
-    const showApiKeyButton = authMethod === "API Key" || authMethod === "Both";
+    const showOAuthButton = authMethod === "OAuth" || authMethod === "Both (OAuth and API Key)";
+    const showApiKeyButton = authMethod === "API Key" || authMethod === "Both (OAuth and API Key)";
 
     const notLoggedInImageUri = this.webviewView!.webview.asWebviewUri(
       vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("not_logged_in_light_theme.png", "not_logged_in.png")))
     );
     const footerImageUri = this.webviewView!.webview.asWebviewUri(
-      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.png", "authentication_side_panel_footer.png")))
+      vscode.Uri.file(MediaPathResolver.getMediaFilePath("", ThemeUtils.selectIconByTheme("authentication_side_panel_footer_light_theme.svg", "authentication_side_panel_footer.svg")))
     );
     // Load tooltip icon explicitly from this extension's media folder
     const infoTooltipUri = this.webviewView!.webview.asWebviewUri(
@@ -220,7 +234,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     <img class="status-image" src="${notLoggedInImageUri}" alt="not logged in" />
 
     <div class="auth-status-box">
-      You are not logged in
+      You're not logged in
     </div>
 
     <div class="auth-content-box">
@@ -259,8 +273,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
          Need help logging in?
       </a>
     </div>
-    <img class="page-footer" src="${footerImageUri}" alt="footer" />
   </div>
+  <footer>
+    <img class="page-footer" src="${footerImageUri}" alt="footer" />
+  </footer>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();

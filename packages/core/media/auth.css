@@ -1,420 +1,438 @@
 body {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-height: 100vh;
-	width: 100vw;
-	margin: 0;
-	padding: 20px;
-	box-sizing: border-box;
-	overflow-y: auto;
-	font-family: var(--vscode-font-family);
-	color: var(--vscode-foreground);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
 
-	/* Figma-accurate radial gradient without opaque black overlay */
-	background: radial-gradient(
-		83.74% 70.01% at 74.82% 90.69%,
-		rgba(42, 12, 105, 1) 0%,
-		rgba(8, 8, 8, 1) 75.48%
-	);
+  /* Figma-accurate radial gradient without opaque black overlay */
+  background: radial-gradient(
+    83.74% 70.01% at 74.82% 90.69%,
+    rgba(42, 12, 105, 1) 0%,
+    rgba(8, 8, 8, 1) 75.48%
+  );
 }
 
 /* Light theme: use provided white theme gradient */
 body[data-vscode-theme-kind="vscode-light"] {
-	background:
-		linear-gradient(0deg, #F6F5FF, #F6F5FF),
-		radial-gradient(
-			83.74% 70.01% at 74.82% 90.69%,
-			rgba(213, 194, 253, 0.43) 0%,
-			rgba(246, 245, 255, 0.43) 75.48%
-		);
+  background:
+    linear-gradient(0deg, #f6f5ff, #f6f5ff),
+    radial-gradient(
+      83.74% 70.01% at 74.82% 90.69%,
+      rgba(213, 194, 253, 0.43) 0%,
+      rgba(246, 245, 255, 0.43) 75.48%
+    );
 }
 
 /* Light theme input overrides: make fields light, readable */
 body[data-vscode-theme-kind="vscode-light"] .auth-input {
-	background: #FFFFFF;
-	border: 1px solid #D9DAE6;
-	color: #1F1F1F;
+  background: #ffffff;
+  border: 1px solid #d9dae6;
+  color: #1f1f1f;
 }
 body[data-vscode-theme-kind="vscode-light"] .auth-input::placeholder {
-	color: #6E6E78;
+  color: #6e6e78;
 }
 
 /* Optional: lighten the card in light mode for clarity */
 body[data-vscode-theme-kind="vscode-light"] .auth-container {
-	background: rgba(255, 255, 255, 0.95);
-	border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-
 .auth-container {
-	width: 461px;
-	height: 467px;
-	padding: 40px 40px 36px; /* keep button slightly above bottom */
-	border-radius: 30px;
-	text-align: left;
-	margin: 0 auto;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start; /* avoid extra spacing pushing content up */
+  width: 461px;
+  height: 467px;
+  padding: 40px 40px 36px; /* keep button slightly above bottom */
+  border-radius: 30px;
+  text-align: left;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* avoid extra spacing pushing content up */
+  flex-shrink: 0;
 }
 
 /* ===== Dark Theme Login Card ===== */
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-container {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid var(--Disabled, rgba(98, 98, 98, 1));
-    backdrop-filter: blur(50px);
-    box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--Disabled, rgba(98, 98, 98, 1));
+  backdrop-filter: blur(50px);
+  box-shadow: inset 1px 1px 0px 0px rgba(255, 255, 255, 0.25);
 }
 
 /* ===== Light Theme Login Card ===== */
 body[data-vscode-theme-kind="vscode-light"] .auth-container {
-    background: rgba(255, 255, 255, 0.58);
-    border: 1px solid rgba(206, 201, 222, 1);
-    backdrop-filter: blur(50px);
-    box-shadow: 0px 30px 50px 0px rgba(174, 138, 218, 0.25);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(206, 201, 222, 1);
+  backdrop-filter: blur(50px);
+  box-shadow: 0px 30px 50px 0px rgba(174, 138, 218, 0.25);
 }
-
 
 body[data-vscode-theme-kind="vscode-high-contrast"] {
-
-	.auth-container {
-		background: #3c3c3c
-	}
-	.auth-button{
-		background: #0e639c
-	}
+  .auth-container {
+    background: #3c3c3c;
+  }
+  .auth-button {
+    background: #0e639c;
+  }
 }
 
-.auth-form{
-	position: relative;
+.auth-form {
+  position: relative;
 }
 
 /* Make the login form fill available space and push the button down */
 #loginForm {
-	display: flex;
-	flex-direction: column;
-	flex: 1 1 auto; /* let form fill the card */
-	min-height: 0;  /* ensure flexbox can distribute space correctly */
-	position: relative; /* allow absolute centering of the visible form */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto; /* let form fill the card */
+  min-height: 0; /* ensure flexbox can distribute space correctly */
+  position: relative; /* allow absolute centering of the visible form */
 }
 
 #loginForm .auth-form {
-	/* Robust vertical centering of the visible form between title and button */
-	position: absolute;
-	top: 50%;
-	left: 0;
-	right: 0;
-	transform: translateY(-50%);
+  /* Robust vertical centering of the visible form between title and button */
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
 }
 
 /* ===== Updated Login Form Heading Styles ===== */
 #loginForm .auth-form-title {
-	width: 381px;
-	height: 35px;
-	font-family: 'Inter', sans-serif;
-	font-weight: 700;
-	font-size: 24px;
-	line-height: 146%;
-	text-align: center;
-	opacity: 1;
-	margin-bottom: 15px;
+  width: 381px;
+  height: 35px;
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 146%;
+  text-align: center;
+  opacity: 1;
+  margin-bottom: 15px;
 }
 
 /* Dark theme text color */
 body:not([data-vscode-theme-kind="vscode-light"]) #loginForm .auth-form-title {
-	color: rgba(233, 233, 233, 1);  /* as per your dark theme requirement */
+  color: rgba(233, 233, 233, 1); /* as per your dark theme requirement */
 }
 
 /* Light theme text color */
 body[data-vscode-theme-kind="vscode-light"] #loginForm .auth-form-title {
-	color: rgba(52, 52, 52, 1);  /* as per your light theme requirement */
+  color: rgba(52, 52, 52, 1); /* as per your light theme requirement */
 }
 
 /* Unified top title (always at the top of the form) */
 .login-form-title {
-	width: 381px;
-	height: 35px;
-	font-family: 'Inter', sans-serif;
-	font-weight: 700;
-	font-size: 24px;
-	line-height: 146%;
-	text-align: center;
-	opacity: 1;
-	margin-bottom: 15px;
-	margin-left: auto;
-	margin-right: auto;
+  width: 381px;
+  height: 35px;
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 146%;
+  text-align: center;
+  opacity: 1;
+  margin-bottom: 15px;
+  margin-left: auto;
+  margin-right: auto;
 }
 body:not([data-vscode-theme-kind="vscode-light"]) .login-form-title {
-	color: rgba(233, 233, 233, 1);
+  color: rgba(233, 233, 233, 1);
 }
 body[data-vscode-theme-kind="vscode-light"] .login-form-title {
-	color: rgba(52, 52, 52, 1);
+  color: rgba(52, 52, 52, 1);
 }
 
 .radio-group {
-	display: flex;
-	justify-content: flex-start;
-	gap: 20px;
-	margin-bottom: 15px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 15px;
 }
 
 .form-label {
-	font-family: Inter, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-	font-size: 14px;
-	font-weight: 500; /* Medium */
-	font-style: normal;
-	line-height: 1.44; /* 144% */
-	letter-spacing: 0;
-	margin-top: 14px;      /* spacing between groups */
-	margin-bottom: 10px;   /* login form label-input gap */
-	display: block;
-	width: 381px;          /* align with input and button */
-	margin-left: auto;
-	margin-right: auto;
+  font-family:
+    Inter,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500; /* Medium */
+  font-style: normal;
+  line-height: 1.44; /* 144% */
+  letter-spacing: 0;
+  margin-top: 14px; /* spacing between groups */
+  margin-bottom: 10px; /* login form label-input gap */
+  display: block;
+  width: 381px; /* align with input and button */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Label colors per theme */
 body:not([data-vscode-theme-kind="vscode-light"]) .form-label {
-	color: var(--Main, rgba(233, 233, 233, 1));
+  color: var(--Main, rgba(233, 233, 233, 1));
 }
 body[data-vscode-theme-kind="vscode-light"] .form-label {
-	color: var(--Main, rgba(52, 52, 52, 1));
+  color: var(--Main, rgba(52, 52, 52, 1));
 }
 
 .auth-input {
-	width: 381px;           /* consistent width across forms */
-	height: 32px;           /* slightly improved height */
-	padding: 0 8px;         /* horizontal padding only */
-	border: 1px solid #2a2a2a;
-	border-radius: 8px;     /* slightly softer corners */
-	background: #141414;
-	color: var(--vscode-input-foreground);
-	font-size: 14px;
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
+  width: 381px; /* consistent width across forms */
+  height: 32px; /* slightly improved height */
+  padding: 0 8px; /* horizontal padding only */
+  border: 1px solid #2a2a2a;
+  border-radius: 8px; /* slightly softer corners */
+  background: #141414;
+  color: var(--vscode-input-foreground);
+  font-size: 14px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .auth-input:focus {
-	border-color: var(--vscode-focusBorder);
-	outline: none;
+  border-color: var(--vscode-focusBorder);
+  outline: none;
 }
 
 /* ===== Auth Input States (Dark + Light) ===== */
 /* Dark theme idle */
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input {
-	background: rgba(0, 0, 0, 0.43);
-	border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
-	color: var(--Main, rgba(255, 255, 255, 1));
-	box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.3) inset;
+  background: rgba(0, 0, 0, 0.43);
+  border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
+  color: var(--Main, rgba(255, 255, 255, 1));
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.3) inset;
 }
 
 /* Dark theme active */
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:focus,
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-active {
-	background: rgba(0, 0, 0, 0.43);
-	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1));
+  background: rgba(0, 0, 0, 0.43);
+  border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1));
 }
 
 /* Dark theme filled */
-body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:not(:placeholder-shown),
+body:not([data-vscode-theme-kind="vscode-light"])
+  .auth-input:not(:placeholder-shown),
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-filled {
-	background: rgba(0, 0, 0, 0.43);
-	border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
+  background: rgba(0, 0, 0, 0.43);
+  border: 1px solid var(--toast-msg-stroke, rgba(67, 69, 74, 1));
 }
 
 /* Light theme idle */
 body[data-vscode-theme-kind="vscode-light"] .auth-input {
-	background: var(--CTA-BG, rgba(255, 255, 255, 1));
-	border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
-	color: var(--Main, rgba(52, 52, 52, 1));
+  background: var(--CTA-BG, rgba(255, 255, 255, 1));
+  border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
+  color: var(--Main, rgba(52, 52, 52, 1));
 }
 
 /* Light theme active */
 body[data-vscode-theme-kind="vscode-light"] .auth-input:focus,
 body[data-vscode-theme-kind="vscode-light"] .auth-input.is-active {
-	background: var(--CTA-BG, rgba(255, 255, 255, 1));
-	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
+  background: var(--CTA-BG, rgba(255, 255, 255, 1));
+  border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
 }
 
 /* Light theme filled */
 body[data-vscode-theme-kind="vscode-light"] .auth-input:not(:placeholder-shown),
 body[data-vscode-theme-kind="vscode-light"] .auth-input.is-filled {
-	background: var(--CTA-BG, rgba(255, 255, 255, 1));
-	border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
+  background: var(--CTA-BG, rgba(255, 255, 255, 1));
+  border: 1px solid var(--ignored-shield, rgba(161, 161, 161, 1));
 }
 
 /* Light theme placeholder for dark field */
 body[data-vscode-theme-kind="vscode-light"] .auth-input::placeholder {
-	color: rgba(52, 52, 52, 0.7);
+  color: rgba(52, 52, 52, 0.7);
 }
 
 /* Ensure active border is visible and unified across themes */
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input:focus,
 body:not([data-vscode-theme-kind="vscode-light"]) .auth-input.is-active {
-	border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
+  border: 1px solid var(--CTA-Blue, rgba(68, 112, 236, 1)) !important;
 }
 
-.authenticated-message{
-	display: flex;
-    align-items: center;
-	margin-top: 40px;
+.authenticated-message {
+  display: flex;
+  align-items: center;
+  margin-top: 40px;
 }
 
 .auth-button {
-    background: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 40px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-	justify-content: center;
-    padding-inline: 15px;
-    font-size: 13px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 15px;
+  font-size: 13px;
 }
 
 /* ===== Login Button Layout ===== */
 #authButton {
-    width: 381px;
-    height: 40px;
-    border-radius: 6px;
-    padding: 8px;
-    gap: 8px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 148%;
-    text-align: center;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-	margin-top: auto; /* anchors near bottom of form */
-	margin-bottom: 0; /* minimize bottom gap */
-    opacity: 1;
-    transition: background 0.2s ease-in-out;
+  width: 381px;
+  height: 40px;
+  border-radius: 6px;
+  padding: 8px;
+  gap: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 148%;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto; /* anchors near bottom of form */
+  margin-bottom: 0; /* minimize bottom gap */
+  opacity: 1;
 }
 
 /* ===== Dark Theme Login Button ===== */
 body:not([data-vscode-theme-kind="vscode-light"]) #authButton {
-    background: rgba(68, 112, 236, 1); /* idle */
-    color: rgba(255, 255, 255, 1);
-    border: none;
+  background: rgba(68, 112, 236, 1); /* idle */
+  color: rgba(255, 255, 255, 1);
+  border: none;
 }
 
-body:not([data-vscode-theme-kind="vscode-light"]) #authButton:hover:not(:disabled) {
-    background: rgba(37, 89, 237, 1); /* hover */
+body:not([data-vscode-theme-kind="vscode-light"])
+  #authButton:hover:not(:disabled) {
+  background: rgba(37, 89, 237, 1); /* hover */
 }
 
 body:not([data-vscode-theme-kind="vscode-light"]) #authButton:disabled {
-    background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
-    cursor: not-allowed;
+  background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
+  cursor: not-allowed;
 }
 
 /* ===== Light Theme Login Button ===== */
 body[data-vscode-theme-kind="vscode-light"] #authButton {
-    background: rgba(68, 112, 236, 1); /* idle */
-    color: rgba(255, 255, 255, 1);
-    border: none;
+  background: rgba(68, 112, 236, 1); /* idle */
+  color: rgba(255, 255, 255, 1);
+  border: none;
 }
 
 body[data-vscode-theme-kind="vscode-light"] #authButton:hover:not(:disabled) {
-    background: rgba(37, 89, 237, 1); /* hover */
+  background: rgba(37, 89, 237, 1); /* hover */
 }
 
 body[data-vscode-theme-kind="vscode-light"] #authButton:disabled {
-    background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
-    cursor: not-allowed;
+  background: rgba(68, 112, 236, 0.6); /* slightly dimmed for disabled */
+  cursor: not-allowed;
 }
-
 
 .auth-button img {
-    margin-right: 4px;
+  margin-right: 4px;
 }
 
-.auth-button svg { path { fill: var(--cx-v2-color-blue-70); }}
+.auth-button svg {
+  path {
+    fill: var(--cx-v2-color-blue-70);
+  }
+}
 .auth-button:disabled {
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .hidden {
-	display: none;
+  display: none;
 }
 
 .message {
-	margin-top: 40px;
-	padding: 10px;
-	border-radius: 27px;
-	font-size: 16px;
-	display: none; /* do not reserve space unless shown by JS */
-	align-items: start;
-	gap: 5px;
+  margin-top: 40px;
+  padding: 10px;
+  border-radius: 27px;
+  font-size: 16px;
+  display: none; /* do not reserve space unless shown by JS */
+  align-items: start;
+  gap: 5px;
 }
 
 .error-message {
-    background-color: #5C2E37;
-    color: white;
+  background-color: #5c2e37;
+  color: white;
 }
 
 .success-message {
-	background-color: #404D3F; 
-    color: white;
+  background-color: #404d3f;
+  color: white;
 }
 
 .message img {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .autocomplete-items {
-	position: absolute;
-	background: var(--vscode-input-background);
-	border-radius: 7px;
-	width: 381px;           /* match input width */
-	left: 50%;              /* center beneath input */
-	transform: translateX(-50%);
-	max-height: 190px;
-	overflow-y: auto;
-	z-index: 1000;
-	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-	display: none;
-	padding:5px;
+  position: absolute;
+  background: var(--vscode-input-background);
+  border-radius: 7px;
+  width: 381px; /* match input width */
+  left: 50%; /* center beneath input */
+  transform: translateX(-50%);
+  max-height: 190px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+  padding: 5px;
 }
 
 .autocomplete-items .autocomplete-item {
-	padding: 10px;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	transition: background-color 0.2s ease-in-out;
-	height: 16px;
-	margin: 3px;
-	font-size: 13px;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  margin: 3px;
+  font-size: 13px;
 }
 
 .autocomplete-items .autocomplete-item i {
-	margin-left: 10px;
-	color: #0d6efd;
+  margin-left: 10px;
+  color: #0d6efd;
 }
 
 /* Make auth method switch links clickable without underline */
 /* Removed alternate auth method switch links */
 
 /* Base footer styles for full-page auth modal */
-.page-footer {
-	position: relative;
-	margin-top: 24px;
-	margin-bottom: 24px;
-	display: block;
-	opacity: 0.95;
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  flex-shrink: 0;
+}
+
+footer .page-footer {
+  display: block;
+  opacity: 0.95;
+  max-width: 100%;
+  height: auto;
 }
 
 /* ============================================================================ */
@@ -432,26 +450,37 @@ body.sidebar-panel {
   justify-content: flex-start;
   padding: 0;
   margin: 0;
-  min-height: 100%;
+  min-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   /* Gradients for sidebar (with green glow) */
   background:
-    radial-gradient(112.57% 51.38% at -2.88% 66.89%, rgba(21, 188, 178, 0.2835) 0%, rgba(0, 0, 0, 0) 100%),
-    radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(42, 12, 105, 0.76) 0%, rgba(8, 8, 8, 0.76) 75.48%);
+    radial-gradient(
+      112.57% 51.38% at -2.88% 66.89%,
+      rgba(21, 188, 178, 0.2835) 0%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    radial-gradient(
+      83.74% 70.01% at 74.82% 90.69%,
+      rgba(42, 12, 105, 0.76) 0%,
+      rgba(8, 8, 8, 0.76) 75.48%
+    );
   background-repeat: no-repeat;
-  background-size: 100% 100vh;
-  background-attachment: fixed; /* Fixed to viewport so gradient doesn't scroll */
+  background-size: 100% 100%;
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] {
-  background: linear-gradient(0deg, #f6f5ff, #f6f5ff),
-    radial-gradient(83.74% 70.01% at 74.82% 90.69%, rgba(213, 194, 253, 0.43) 0%, rgba(246, 245, 255, 0.43) 75.48%);
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] {
+  background:
+    linear-gradient(0deg, #f6f5ff, #f6f5ff),
+    radial-gradient(
+      83.74% 70.01% at 74.82% 90.69%,
+      rgba(213, 194, 253, 0.43) 0%,
+      rgba(246, 245, 255, 0.43) 75.48%
+    );
   background-repeat: no-repeat;
-  background-size: 100% 100vh;
-  background-attachment: fixed; /* Fixed to viewport so gradient doesn't scroll */
+  background-size: 100% 100%;
   padding: 0;
-  min-height: 100%;
+  min-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -462,10 +491,10 @@ body.sidebar-panel[data-vscode-theme-kind='vscode-light'] {
 body.sidebar-panel .auth-container.authenticated {
   width: 100%;
   max-width: 100%;
-  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   flex: 1 1 auto;
   margin-top: 0;
   gap: 4px;
@@ -486,7 +515,7 @@ body.sidebar-panel .status-image {
 
 /* "You are logged in" text */
 body.sidebar-panel .status-message {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 700;
   font-size: 18px;
   line-height: 150%;
@@ -497,13 +526,13 @@ body.sidebar-panel .status-message {
   white-space: nowrap;
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .status-message {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .status-message {
   color: rgba(52, 52, 52, 1);
 }
 
 /* Tenant label - Dark Theme */
 body.sidebar-panel:not([data-vscode-theme-kind="vscode-light"]) #tenantLabel {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 15px;
   line-height: 148%;
@@ -515,7 +544,7 @@ body.sidebar-panel:not([data-vscode-theme-kind="vscode-light"]) #tenantLabel {
 
 /* Tenant label - Light Theme */
 body.sidebar-panel[data-vscode-theme-kind="vscode-light"] #tenantLabel {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 15px;
   line-height: 148%;
@@ -537,12 +566,11 @@ body.sidebar-panel .logout-button {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(50px);
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 15px;
   line-height: 148%;
   color: var(--Secondery, rgba(188, 188, 188, 1));
-  transition: all 0.2s ease;
   margin-top: 22px;
 }
 
@@ -562,14 +590,14 @@ body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .logout-button img {
   filter: invert(1);
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .logout-button {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .logout-button {
   background: rgba(255, 255, 255, 0.3);
   border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
   backdrop-filter: blur(50px);
   color: var(--Secondery, rgba(113, 113, 113, 1));
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .logout-button:hover {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .logout-button:hover {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
   backdrop-filter: blur(50px);
@@ -581,10 +609,10 @@ body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .logout-button:hover {
 body.sidebar-panel .auth-container.unauthenticated {
   width: 100%;
   max-width: 100%;
-  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   flex: 1 1 auto;
   margin-top: 0;
   padding: 60px 10px 12px 10px;
@@ -604,7 +632,7 @@ body.sidebar-panel .auth-status-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 700;
   font-size: 18px;
   line-height: 150%;
@@ -619,7 +647,7 @@ body.sidebar-panel .auth-content-box {
   max-width: 280px;
   width: calc(100% - 20px);
   text-align: center;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 12px;
   line-height: 148%;
@@ -647,7 +675,6 @@ body.sidebar-panel .auth-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
   position: relative;
   margin-top: 0;
   box-sizing: border-box;
@@ -667,28 +694,31 @@ body.sidebar-panel .auth-button + .auth-button {
 }
 
 /* Light theme sidebar buttons */
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .auth-button {
   background: rgba(255, 255, 255, 0.4);
   border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
   backdrop-filter: blur(50px);
   color: #2f2f2f;
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button:hover {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"] .auth-button:hover {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--Tertiery, rgba(146, 146, 146, 1));
   backdrop-filter: blur(50px);
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button.selected {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button.selected {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--CTA-Blue, rgba(43, 122, 204, 1));
   backdrop-filter: blur(50px);
 }
 
 /* Button text label - Dark theme */
-body.sidebar-panel:not([data-vscode-theme-kind='vscode-light']) .auth-button .button-label {
-  font-family: 'Inter', sans-serif;
+body.sidebar-panel:not([data-vscode-theme-kind="vscode-light"])
+  .auth-button
+  .button-label {
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   font-style: normal;
   font-size: 15px;
@@ -699,8 +729,10 @@ body.sidebar-panel:not([data-vscode-theme-kind='vscode-light']) .auth-button .bu
 }
 
 /* Button text label - Light theme */
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .button-label {
-  font-family: 'Inter', sans-serif;
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button
+  .button-label {
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   font-style: normal;
   font-size: 15px;
@@ -724,51 +756,68 @@ body.sidebar-panel a {
 }
 
 /* Footer inside sidebar containers */
-body.sidebar-panel .auth-container .page-footer {
-  position: relative;
-  display: block;
+body.sidebar-panel footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   margin-top: auto;
   margin-bottom: 0px;
   padding-top: 24px;
+  flex-shrink: 0;
+}
+
+body.sidebar-panel footer .page-footer {
+  display: block;
   opacity: 0.95;
+  max-width: 100%;
+  height: auto;
 }
 
 /* --- TOOLTIP CSS --- */
-    body.sidebar-panel .auth-button .tooltip-wrapper {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: inline-block;
-      width: 24px; /* small interactive area at button's right */
-      height: 100%;
-      z-index: 3;
-      pointer-events: auto;
-    }
-    body.sidebar-panel .auth-button .tooltip-wrapper .tooltip-icon {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      user-select: none;
-      z-index: 4;
-      pointer-events: auto;
-      background-size: 16px 16px;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-    /* Dark theme: lighten icon */
-    body.sidebar-panel:not([data-vscode-theme-kind='vscode-light']) .auth-button .tooltip-wrapper .tooltip-icon {
-      filter: brightness(0) saturate(100%) invert(84%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(88%) contrast(88%);
-    }
-    /* Light theme: darken icon */
-    body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .tooltip-wrapper .tooltip-icon {
-      filter: brightness(0) saturate(100%) invert(43%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(103%) contrast(92%);
-    }
+body.sidebar-panel .auth-button .tooltip-wrapper {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 24px; /* small interactive area at button's right */
+  height: 100%;
+  z-index: 3;
+  pointer-events: auto;
+}
+body.sidebar-panel .auth-button .tooltip-wrapper .tooltip-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 4;
+  pointer-events: auto;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* Dark theme: lighten icon */
+body.sidebar-panel:not([data-vscode-theme-kind="vscode-light"])
+  .auth-button
+  .tooltip-wrapper
+  .tooltip-icon {
+  filter: brightness(0) saturate(100%) invert(84%) sepia(0%) saturate(0%)
+    hue-rotate(180deg) brightness(88%) contrast(88%);
+}
+/* Light theme: darken icon */
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button
+  .tooltip-wrapper
+  .tooltip-icon {
+  filter: brightness(0) saturate(100%) invert(43%) sepia(0%) saturate(0%)
+    hue-rotate(180deg) brightness(103%) contrast(92%);
+}
 
 body.sidebar-panel .auth-button .tooltip-text {
   position: absolute;
@@ -783,27 +832,27 @@ body.sidebar-panel .auth-button .tooltip-text {
   border-radius: 6px;
   padding: 6px 6px;
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 400;
   line-height: 1.4;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 120ms ease-in-out, visibility 120ms ease-in-out;
   box-sizing: border-box;
   z-index: 3;
 }
 
 body.sidebar-panel .auth-button .tooltip-text::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   top: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent var(--vscode-editorWidget-background, #2a2a2a) transparent;
+  border-color: transparent transparent
+    var(--vscode-editorWidget-background, #2a2a2a) transparent;
 }
 
 body.sidebar-panel .auth-button .tooltip-line {
@@ -816,7 +865,7 @@ body.sidebar-panel .auth-button .tooltip-line {
 
 /* Tooltip typography */
 body.sidebar-panel .auth-button .tooltip-text .tooltip-line {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 400 !important;
   font-style: normal;
   font-size: 13px;
@@ -825,24 +874,35 @@ body.sidebar-panel .auth-button .tooltip-text .tooltip-line {
 }
 
 /* Theme-specific tooltip text color */
-body.sidebar-panel:not([data-vscode-theme-kind='vscode-light']) .auth-button .tooltip-text .tooltip-line {
+body.sidebar-panel:not([data-vscode-theme-kind="vscode-light"])
+  .auth-button
+  .tooltip-text
+  .tooltip-line {
   color: var(--Main, rgba(233, 233, 233, 1));
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .tooltip-text .tooltip-line {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button
+  .tooltip-text
+  .tooltip-line {
   color: var(--vscode-foreground);
 }
 
 /* Light theme tooltip box overrides */
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .tooltip-text {
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button
+  .tooltip-text {
   padding: 6px 8px;
   border-radius: 2px;
   border: 1px solid var(--toast-msg-stroke, rgba(38, 40, 42, 1));
   background: var(--toast-msg-background, rgba(243, 243, 243, 1));
 }
 
-body.sidebar-panel[data-vscode-theme-kind='vscode-light'] .auth-button .tooltip-text::after {
-  border-color: transparent transparent var(--toast-msg-background, rgba(243, 243, 243, 1)) transparent;
+body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
+  .auth-button
+  .tooltip-text::after {
+  border-color: transparent transparent
+    var(--toast-msg-background, rgba(243, 243, 243, 1)) transparent;
 }
 
 body.sidebar-panel .auth-button .tooltip-wrapper:hover + .tooltip-text,

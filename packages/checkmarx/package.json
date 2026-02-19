@@ -1003,7 +1003,7 @@
           "checkmarxOne.authentication": {
             "type": "string",
             "order": 5,
-            "default": "Both",
+            "default": "Both (OAuth and API Key)",
             "enum": [
               "OAuth",
               "API Key",
