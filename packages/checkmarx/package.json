@@ -876,7 +876,7 @@
         {
           "id": "checkmarxAuth",
           "type": "webview",
-          "name": "Checkmarx Authentication"
+          "name": "Checkmarx One Authentication"
         },
         {
           "id": "astResults",

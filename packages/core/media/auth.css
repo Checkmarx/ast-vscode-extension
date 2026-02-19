@@ -454,17 +454,11 @@ body.sidebar-panel {
   overflow-y: auto;
   overflow-x: hidden;
   /* Gradients for sidebar (with green glow) */
-  background:
-    radial-gradient(
-      112.57% 51.38% at -2.88% 66.89%,
-      rgba(21, 188, 178, 0.2835) 0%,
-      rgba(0, 0, 0, 0) 100%
-    ),
-    radial-gradient(
-      83.74% 70.01% at 74.82% 90.69%,
-      rgba(42, 12, 105, 0.76) 0%,
-      rgba(8, 8, 8, 0.76) 75.48%
-    );
+    background: radial-gradient(
+    83.74% 70.01% at 74.82% 90.69%,
+    rgba(42, 12, 105, 1) 0%,
+    rgba(8, 8, 8, 1) 75.48%
+  );
   background-repeat: no-repeat;
   background-size: 100% 100%;
 }
