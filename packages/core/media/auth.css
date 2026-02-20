@@ -454,7 +454,7 @@ body.sidebar-panel {
   overflow-y: auto;
   overflow-x: hidden;
   /* Gradients for sidebar (with green glow) */
-    background: radial-gradient(
+  background: radial-gradient(
     83.74% 70.01% at 74.82% 90.69%,
     rgba(42, 12, 105, 1) 0%,
     rgba(8, 8, 8, 1) 75.48%
@@ -638,7 +638,7 @@ body.sidebar-panel .auth-status-box {
 }
 
 body.sidebar-panel .auth-content-box {
-  max-width: 280px;
+  max-width: 369px;
   width: calc(100% - 20px);
   text-align: center;
   font-family: "Inter", sans-serif;
@@ -654,14 +654,15 @@ body.sidebar-panel .auth-content-box {
 
 /* --- SIDEBAR BUTTONS (OAuth/API Key) --- */
 body.sidebar-panel .auth-button {
-  max-width: 280px;
+  max-width: 369px;
   width: calc(100% - 20px);
-  height: 38px;
+  min-height: 40px;
+  height: auto;
   border-radius: 6px;
   border: 1px solid var(--Disabled, rgba(111, 111, 111, 1));
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(50px);
-  padding: 0 12px;
+  padding: 10px 40px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 400;
@@ -739,7 +740,7 @@ body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
 /* --- SIDEBAR LINK --- */
 body.sidebar-panel .auth-description {
   margin-top: 14px;
-  max-width: 280px;
+  max-width: 369px;
   width: calc(100% - 20px);
   text-align: left;
   box-sizing: border-box;
@@ -819,12 +820,14 @@ body.sidebar-panel .auth-button .tooltip-text {
   left: 50%;
   transform: translateX(-50%);
   width: calc(100vw - 70px);
-  max-width: 270px;
+  max-width: 369px;
+  min-height: 69px;
   background: var(--vscode-editorWidget-background, #2a2a2a);
   color: var(--vscode-foreground);
   border: 1px solid var(--vscode-editorWidget-border, #3c3c3c);
-  border-radius: 6px;
-  padding: 6px 6px;
+  border-radius: 4px;
+  padding: 6px 8px;
+  gap: 8px;
   font-size: 11px;
   font-family: "Inter", sans-serif;
   font-weight: 400;
@@ -887,7 +890,7 @@ body.sidebar-panel[data-vscode-theme-kind="vscode-light"]
   .auth-button
   .tooltip-text {
   padding: 6px 8px;
-  border-radius: 2px;
+  border-radius: 4px;
   border: 1px solid var(--toast-msg-stroke, rgba(38, 40, 42, 1));
   background: var(--toast-msg-background, rgba(243, 243, 243, 1));
 }
