@@ -90,7 +90,7 @@
         {
           "id": "igniteAuth",
           "type": "webview",
-          "name": "Checkmarx Authentication"
+          "name": "Checkmarx Developer Assist Authentication"
         },
         {
           "id": "cx-dev-assist.cxDevAssist",
