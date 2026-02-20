@@ -249,7 +249,7 @@ function setupIgnoredStatusBar(
 }
 
 /**
- * Register authentication launcher webview
+ * Register authentication launcher webview and sidebar auth view
  * [CHECKMARX-DEVELOPER-ASSIST]
  */
 function registerAuthenticationLauncher(
@@ -257,6 +257,23 @@ function registerAuthenticationLauncher(
     webViewCommand: WebViewCommand,
     logs: Logs,
 ) {
+    // Register the IgniteAuthViewProvider for the sidebar authentication view
+    try {
+        const projectIgniteExtPath = context.extensionPath;
+        const authViewProviderPath = `${projectIgniteExtPath}/out/views/igniteAuthViewProvider`;
+        import(authViewProviderPath).then(({ IgniteAuthViewProvider }) => {
+            const authViewProvider = new IgniteAuthViewProvider(context, webViewCommand, logs);
+            context.subscriptions.push(
+                vscode.window.registerWebviewViewProvider('igniteAuth', authViewProvider),
+            );
+        }).catch((error) => {
+            logs?.warn?.(`Failed to load IgniteAuthViewProvider: ${error}`);
+        });
+    } catch (error) {
+        logs?.warn?.(`Failed to initialize IgniteAuthViewProvider: ${error}`);
+    }
+
+    // Register the command to show the full authentication webview (when button is clicked)
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.showAuth, async () => {
             try {
