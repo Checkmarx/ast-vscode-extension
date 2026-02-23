@@ -20,7 +20,7 @@
     "https-proxy-agent": "^7.0.6",
     "jsonstream-ts": "^1.3.6",
     "jwt-decode": "^4.0.0",
-    "minimatch": "^10.0.1",
+    "minimatch": "^10.2.1",
     "serialize-javascript": "^6.0.2",
     "tree-kill": "^1.2.2",
     "validator": "13.15.22"
