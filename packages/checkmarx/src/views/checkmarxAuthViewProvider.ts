@@ -9,6 +9,9 @@ import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
 import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
+import { cx } from "@checkmarx/vscode-core/out/cx";
+import { initializeMcpConfiguration } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
+import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 
 export type AuthMethodType = "OAuth" | "API Key" | "Both (OAuth and API Key)";
 
@@ -348,7 +351,10 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             vscode.window.showInformationMessage("Re-authenticating with saved OAuth settings...");
             const token = await authService.reAuthenticateWithStoredOAuth();
             if (token) {
-              // Re-authentication succeeded
+              // Re-authentication succeeded: Always trigger MCP config and show Welcome page
+              const isAiEnabled = await cx.isAiMcpServerEnabled();
+              await initializeMcpConfiguration(token);
+              WelcomeWebview.show(this.context, isAiEnabled);
               return;
             }
             // If re-authentication failed, fall through to show the form

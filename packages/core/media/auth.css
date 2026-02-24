@@ -907,3 +907,42 @@ body.sidebar-panel .auth-button .tooltip-wrapper.open .tooltip-text {
   opacity: 1;
   visibility: visible;
 }
+
+/* Project-Ignite specific overrides for the unauthenticated login button
+   Keeps Checkmarx (core) styles unchanged to avoid regressions. */
+.ignite-auth-button {
+  max-width: 369px;
+  width: calc(100% - 20px);
+  min-height: 40px;
+  height: auto;
+  border-radius: 6px;
+  border: none;
+  background: rgba(43, 123, 228, 1);
+  backdrop-filter: blur(50px);
+  padding: 10px 40px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+/* Project-Ignite explanatory text shown under the API key input in the side panel.
+   Scoped so other consumers of core/auth.css remain unaffected. */
+.ignite-info-text-login-form {
+  width: 365px;
+  height: 51px;
+  margin: 12px auto 0;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 12px;
+  line-height: 144%;
+  letter-spacing: 0;
+  color: var(--Secondery, rgba(188, 188, 188, 1));
+}
