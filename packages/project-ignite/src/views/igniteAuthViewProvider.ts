@@ -7,7 +7,6 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
-
 import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 
 export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
