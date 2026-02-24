@@ -7,7 +7,7 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { AuthService } from "@checkmarx/vscode-core/out/services/authService";
 import { uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
-import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
+
 import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 
 export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
@@ -44,11 +44,9 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     this.checkAuthStateAndUpdate();
 
     // Listen for theme changes to refresh images
-    vscode.window.onDidChangeActiveColorTheme(async () => {
+    vscode.window.onDidChangeActiveColorTheme(() => {
       // Refresh content when theme changes to load correct themed images
       this.updateWebviewContent();
-      // Re-send tenant message if authenticated (HTML was regenerated with empty tenant label)
-      await this.refreshTenantDisplay();
     });
 
     // Listen for secrets changes (token added/removed)
@@ -57,11 +55,11 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       this.checkAuthStateAndUpdate();
     });
 
-    // Listen for visibility changes to refresh tenant when panel is reopened
-    webviewView.onDidChangeVisibility(async () => {
+    // Listen for visibility changes to refresh images when panel is reopened
+    webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) {
-        // Re-send tenant message when panel becomes visible (covers: close/reopen, drag left/right)
-        await this.refreshTenantDisplay();
+        // Panel became visible; refresh content
+        this.updateWebviewContent();
       }
     });
   }
@@ -84,8 +82,6 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       if (this.isAuthenticated !== newAuthState || !this.webviewView?.webview.html) {
         this.isAuthenticated = newAuthState;
         this.updateWebviewContent();
-        // Send tenant info after auth state update (covers: VS Code restart, initial load)
-        await this.refreshTenantDisplay();
       }
     } finally {
       this.isUpdating = false;
@@ -140,7 +136,6 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
   <div class="auth-container authenticated">
     <img class="status-image" src="${loggedInImageUri}" alt="logged in" />
     <div class="status-message">You are logged in</div>
-    <div class="auth-description" id="tenantLabel"></div>
     <button class="logout-button" id="logoutBtn">
       <img src="${logoutIconUri}" alt="logout" />
       <span>Logout</span>
@@ -155,14 +150,6 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
 
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
       vscode.postMessage({ command: 'logout' });
-    });
-
-    window.addEventListener('message', (event) => {
-      const msg = event.data;
-      if (msg?.type === 'setTenant' && msg.tenant) {
-        const el = document.getElementById('tenantLabel');
-        if (el) el.textContent = 'Tenant: ' + msg.tenant;
-      }
     });
   </script>
 </body>
@@ -204,8 +191,8 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     </div>
 
     <!-- API Key Button (No tooltip since only one login method) -->
-    <button class="auth-button" id="apiKeyBtn">
-      <span class="button-label">API Key login</span>
+    <button class="ignite-auth-button" id="apiKeyBtn">
+      <span class="button-label">Log in</span>
     </button>
 
     <div class="auth-description">
@@ -272,45 +259,6 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       uninstallMcp();
       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
       // The view will automatically update due to secrets.onDidChange listener
-    }
-  }
-
-  /**
-   * Common method to refresh tenant display in the webview
-   * Used by: theme changes, visibility changes, auth state updates
-   * Covers all scenarios: VS Code restart, panel close/reopen, drag left/right
-   */
-  private async refreshTenantDisplay(): Promise<void> {
-    if (this.isAuthenticated) {
-      const tenant = await this.getTenantFromToken();
-      if (tenant) {
-        this.webviewView?.webview.postMessage({ type: 'setTenant', tenant });
-      }
-    }
-  }
-
-  private async getTenantFromToken(): Promise<string | undefined> {
-    try {
-      const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
-      if (!token) return undefined;
-      // Decode JWT payload (base64url) and read issuer
-      const parts = token.split('.');
-      if (parts.length < 2) return undefined;
-      const payload = parts[1]
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
-      const json = JSON.parse(Buffer.from(payload, 'base64').toString('utf8')) as { iss?: string };
-      const iss = json?.iss;
-      if (!iss) return undefined;
-      const url = new URL(iss);
-      const marker = '/auth/realms/';
-      const idx = url.pathname.indexOf(marker);
-      if (idx === -1) return undefined;
-      const rest = url.pathname.slice(idx + marker.length);
-      const tenant = rest.split('/')[0];
-      return tenant || undefined;
-    } catch {
-      return undefined;
     }
   }
 }

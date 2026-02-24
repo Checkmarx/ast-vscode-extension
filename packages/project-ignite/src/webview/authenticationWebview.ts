@@ -183,8 +183,9 @@ export class AuthenticationWebview {
         <div class="login-form-title">Log in</div>
             <!-- API Key Form -->
             <div id="apiKeyForm" class="auth-form">
-                <label for="apiKey" class="form-label">Checkmarx One API Key</label>
+                <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key</label>
                 <input type="password" id="apiKey" class="auth-input">
+                <div class="ignite-info-text-login-form">Your API key is available through the ‘Activation Page’ link in your Welcome email. Copy it from the Activation Page and paste it here.</div>
             </div>
             <button id="authButton" class="auth-button" disabled>Log in</button>
         </div>
