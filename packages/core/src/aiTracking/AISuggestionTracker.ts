@@ -27,6 +27,11 @@ import {
     isContainersHoverData,
     isIacHoverData
 } from "../utils/utils";
+import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
+import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
+import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
+import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 type AnyHoverData = HoverData | AscaHoverData | ContainersHoverData | IacHoverData | SecretsHoverData;
 
 export class AISuggestionTracker {
@@ -39,6 +44,16 @@ export class AISuggestionTracker {
     private context: vscode.ExtensionContext;
 
     private logs: Logs;
+
+    private ascaScanner: AscaScannerService | undefined;
+
+    private secretsScanner: SecretsScannerService | undefined;
+
+    private containersScanner: ContainersScannerService | undefined;
+
+    private iacScanner: IacScannerService | undefined;
+
+    private ossScanner: OssScannerService | undefined;
 
     private saveListener: vscode.Disposable | undefined;
 
@@ -67,6 +82,21 @@ export class AISuggestionTracker {
             this.registerSaveListener();
             this.registerChangeListener();
         }
+    }
+    public setAscaScanner(scanner: AscaScannerService): void {
+        this.ascaScanner = scanner;
+    }
+    public setSecretsScanner(scanner: SecretsScannerService): void {
+        this.secretsScanner = scanner;
+    }
+    public setContainersScanner(scanner: ContainersScannerService): void {
+        this.containersScanner = scanner;
+    }
+    public setIacScanner(scanner: IacScannerService): void {
+        this.iacScanner = scanner;
+    }
+    public setOssScanner(scanner: OssScannerService): void {
+        this.ossScanner = scanner;
     }
 
     static getInstance(context?: vscode.ExtensionContext, logs?: Logs): AISuggestionTracker {
@@ -323,7 +353,7 @@ export class AISuggestionTracker {
             const checkInterval = setInterval(async () => {
                 attempts++;
 
-                const activeEditor = vscode.window.activeTextEditor;
+                const activeEditor = await this.ensureFileIsActive(fix.filePath);
                 const vulnerabilityStatus = await this.getCurrentValue(fix);
 
                 // Check if ghost text disappeared
@@ -347,6 +377,44 @@ export class AISuggestionTracker {
             }, 2000);
 
             this.activeIntervals.set(intervalKey, checkInterval);
+        }
+    }
+
+    //Ensure the specified file is the active editor, switching to it if necessary
+
+    private async ensureFileIsActive(filePath: string): Promise<vscode.TextEditor | undefined> {
+        try {
+            const visibleEditor = vscode.window.visibleTextEditors.find(
+                editor => editor.document.uri.fsPath === filePath
+            );
+
+            if (visibleEditor) {
+                await vscode.window.showTextDocument(visibleEditor.document, {
+                    preview: false,
+                    preserveFocus: false
+                });
+                return vscode.window.activeTextEditor;
+            }
+
+            const openDoc = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath);
+            if (openDoc) {
+                await vscode.window.showTextDocument(openDoc, {
+                    preview: false,
+                    preserveFocus: false
+                });
+                return vscode.window.activeTextEditor;
+            }
+
+            const uri = vscode.Uri.file(filePath);
+            const doc = await vscode.workspace.openTextDocument(uri);
+            await vscode.window.showTextDocument(doc, {
+                preview: false,
+                preserveFocus: false
+            });
+            return vscode.window.activeTextEditor;
+        } catch (error) {
+            this.logs.warn(`[AITracker] Failed to ensure file is active: ${error}`);
+            return undefined;
         }
     }
 
@@ -508,6 +576,9 @@ export class AISuggestionTracker {
             const uri = vscode.Uri.file(fix.filePath);
             const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
 
+            if (!hasActiveSuggestion) {
+                await this.triggerManualScan(fix);
+            }
             if (hasActiveSuggestion) {
                 return;
             }
@@ -557,6 +628,25 @@ export class AISuggestionTracker {
         }
     }
 
+    private async triggerManualScan(fix: PendingAIFix): Promise<void> {
+        try {
+            const document = await vscode.workspace.openTextDocument(fix.filePath);
+
+            if (fix.scannerType === 'Asca' && this.ascaScanner) {
+                await this.ascaScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Secrets' && this.secretsScanner) {
+                await this.secretsScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Containers' && this.containersScanner) {
+                await this.containersScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'IaC' && this.iacScanner) {
+                await this.iacScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Oss' && this.ossScanner) {
+                await this.ossScanner.scan(document, this.logs);
+            }
+        } catch (error) {
+            this.logs.warn(`[AITracker] Manual scan failed: ${error}`);
+        }
+    }
     // Get relative path from absolute path for Iac scans
     private getRelativePath(absolutePath: string): string {
         const normalizedPath = absolutePath.replace(/\\/g, '/');
