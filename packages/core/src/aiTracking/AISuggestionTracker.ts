@@ -370,8 +370,9 @@ export class AISuggestionTracker {
                             'timeout';
                     this.logs.info(`[AITracker] Ghost text DISAPPEARED (${reason})`);
 
-                    const changesAccepted = await this.validator.validate(fix.filePath, fix.validatorState);
-                    const outcome = changesAccepted ? 'changes_accepted' : 'changes_rejected';
+                    const diagnosticStillPresent = (await this.getCurrentValue(fix)) !== null;
+                    const outcome = diagnosticStillPresent ? 'changes_rejected' : 'changes_accepted';
+
                     await this.finalizeFix(fix, outcome);
                 }
             }, 2000);
@@ -447,7 +448,10 @@ export class AISuggestionTracker {
 
         if (hasActiveSuggestion) {
             return 'pending_user_action';
+        } else {
+            await this.triggerManualScan(fix);
         }
+
         const diagnostics = vscode.languages.getDiagnostics(uri);
 
         for (const diagnostic of diagnostics) {
@@ -576,9 +580,6 @@ export class AISuggestionTracker {
             const uri = vscode.Uri.file(fix.filePath);
             const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
 
-            if (!hasActiveSuggestion) {
-                await this.triggerManualScan(fix);
-            }
             if (hasActiveSuggestion) {
                 return;
             }
