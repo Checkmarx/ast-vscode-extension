@@ -337,7 +337,12 @@ export class AISuggestionTracker {
 
     private async checkFixOutcome(fix: PendingAIFix): Promise<void> {
 
-        await new Promise(resolve => setTimeout(resolve, 30000));
+        if (fix.scannerType !== 'Oss') {
+            await new Promise(resolve => setTimeout(resolve, 30000));
+        }
+        else {
+            await new Promise(resolve => setTimeout(resolve, 15000));
+        }
         const currentValue = await this.getCurrentValue(fix);
         const isFixed = currentValue === null;
 
