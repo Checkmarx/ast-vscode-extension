@@ -21,7 +21,7 @@ on:
       publish:
         description: "Publish to marketplace"
         required: false
-        default: true
+        default: false
         type: boolean
       releaseType:
         description: "Which extension to release (checkmarx | devAssist | both)"
