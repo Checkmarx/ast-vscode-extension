@@ -7,7 +7,7 @@
  *
  * Outputs:
  *   - packages/<name>/CHANGELOG.md  (prepends new entry to existing file)
- *   - release_body_<name>.md        (used for GitHub release window)
+ *   - Stdout with release body content (captured by workflow)
  */
 
 const { execSync } = require("child_process");
@@ -173,7 +173,7 @@ function getCommits(pkg, lastTag) {
  * @param {boolean} includeContributors - Whether to include author names (for GitHub release body)
  */
 function formatCommits(commits, repoUrl, includeContributors = false) {
-  if (!commits.length) return "_No changes_\n";
+  if (!commits.length) return "_No changes_\n\n";
 
   const groups = {
     "🚀 New Features": [],
@@ -233,7 +233,7 @@ function formatCommits(commits, repoUrl, includeContributors = false) {
   let md = "";
   for (const [title, items] of Object.entries(groups)) {
     if (items.length) {
-      md += `#### ${title}\n${items.join("\n")}\n\n`;
+      md += `#### ${title}\n\n${items.join("\n")}\n\n`;
     }
   }
   return md;
@@ -267,28 +267,33 @@ const changelogBodyWithContributors = formatCommits(commits, repoUrl, true);
 // Format changelog body WITHOUT contributors for CHANGELOG.md file
 const changelogBodyClean = formatCommits(commits, repoUrl, false);
 
+// Use full tag name (with prefix) for comparison links
+const fullTagName = `${tagPrefix}${newTag}`;
+
 // Full changelog comparison link
-const compareLink = lastStableTag
-  ? `**Full Changelog**: ${repoUrl}/compare/${lastStableTag}...${newTag}`
-  : `**Full Changelog**: ${repoUrl}/commits/${newTag}`;
+const compareLink = `**Full Changelog**: ${repoUrl}/compare/${lastStableTag}...${fullTagName}`;
 
 // ---------------------------------------------------------------------------
-// 1. Write release body file (for GitHub release window)
+// 1. Output release body content to GitHub Actions environment
 //    Format:
 //    ## Checkmarx (AST): v2.48.0
-//    ## What's Changed
+//
+//    ### What's Changed
+//
 //    <grouped commits with contributors>
+//
 //    Full Changelog: link
 // ---------------------------------------------------------------------------
 const releaseBodySection =
-  `## ${displayName}${packageName === "checkmarx" ? " (AST)" : ""}: v${version}\n` +
-  `### What's Changed\n` +
+  `## ${displayName}${packageName === "checkmarx" ? " (AST)" : ""}: v${version}\n\n` +
+  `### What's Changed\n\n` +
   changelogBodyWithContributors +
   `${compareLink}\n`;
 
-const releaseBodyPath = path.join(__dirname, `release_body_${packageName}.md`);
-fs.writeFileSync(releaseBodyPath, releaseBodySection);
-console.log(`Release body section written to ${releaseBodyPath}`);
+// Output to stdout with special delimiter for workflow to capture
+console.log("RELEASE_BODY_START");
+console.log(releaseBodySection);
+console.log("RELEASE_BODY_END");
 
 // ---------------------------------------------------------------------------
 // 2. Prepend to CHANGELOG.md (now includes dev builds for testing)
@@ -313,14 +318,14 @@ if (fs.existsSync(changelogPath)) {
   existingChangelog = existingChangelog.replace(/^# CHANGELOG\s*\n+/, "");
 }
 
-// Format: DevAssist-v1.1.1-mcp_fallnack_changes.0 - 2026-02-09 16:06:36
+// Format: ## [Checkmarx-v2.48.0](link) - 2026-02-09 16:06:36
 // Use full tag name (with prefix) for the changelog entry
 const timestamp = new Date().toISOString().replace("T", " ").substring(0, 19);
-const fullTagName = `${tagPrefix}${newTag}`;
+const releaseTagUrl = `${repoUrl}/releases/tag/${fullTagName}`;
 
 const newEntry =
-  `${fullTagName} - ${timestamp}\n` +
-  `Full Changelog: ${repoUrl}/compare/${lastStableTag || "initial"}...${fullTagName}\n\n`;
+  `## [${fullTagName}](${releaseTagUrl}) - ${timestamp}\n\n` +
+  `**Full Changelog**: ${repoUrl}/compare/${lastStableTag}...${fullTagName}\n\n`;
 
 const updatedChangelog = `# CHANGELOG\n\n${newEntry}${existingChangelog}`;
 fs.writeFileSync(changelogPath, updatedChangelog);
