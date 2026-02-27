@@ -56,6 +56,10 @@ export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
 			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: Authentication required`);
 			return;
 		}
+		else if (!await cx.isValidConfiguration()) {
+			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: Your login has expired. Please login again.`);
+			return;
+		}
 		else if (!await cx.isAiMcpServerEnabled()) {
 			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: This feature has not been enabled for your tenant account.`);
 			uninstallMcp();
