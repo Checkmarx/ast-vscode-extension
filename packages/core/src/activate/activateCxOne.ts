@@ -566,8 +566,24 @@ function registerAuthenticationLauncher(
     webViewCommand: WebViewCommand,
     logs: Logs,
 ) {
+    // Register the CheckmarxAuthViewProvider for the sidebar authentication view
+    try {
+        const checkmarxExtPath = context.extensionPath;
+        const authViewProviderPath = `${checkmarxExtPath}/out/views/checkmarxAuthViewProvider`;
+        import(authViewProviderPath).then(({ CheckmarxAuthViewProvider }) => {
+            const authViewProvider = new CheckmarxAuthViewProvider(context, webViewCommand, logs);
+            context.subscriptions.push(
+                vscode.window.registerWebviewViewProvider('checkmarxAuth', authViewProvider),
+            );
+        }).catch((error) => {
+            logs?.warn?.(`Failed to load CheckmarxAuthViewProvider: ${error}`);
+        });
+    } catch (error) {
+        logs?.warn?.(`Failed to initialize CheckmarxAuthViewProvider: ${error}`);
+    }
+
     context.subscriptions.push(
-        vscode.commands.registerCommand(commands.showAuth, async () => {
+        vscode.commands.registerCommand(commands.showAuth, async (authMethod?: string) => {
             // Dynamically import the Checkmarx-specific authentication webview
             // This avoids circular dependency issues since the checkmarx package depends on core
             try {
@@ -576,7 +592,7 @@ function registerAuthenticationLauncher(
                 const checkmarxExtPath = context.extensionPath;
                 const authWebviewPath = `${checkmarxExtPath}/out/webview/authenticationWebview`;
                 const { AuthenticationWebview } = await import(authWebviewPath);
-                AuthenticationWebview.show(context, webViewCommand, logs);
+                AuthenticationWebview.show(context, webViewCommand, logs, authMethod);
             } catch (error) {
                 logs?.error?.(`Failed to load authentication webview: ${error}`);
                 vscode.window.showErrorMessage('Failed to load authentication page. Please try again.');

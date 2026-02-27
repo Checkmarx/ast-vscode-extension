@@ -9,6 +9,7 @@ import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 export class AuthenticationWebview {
@@ -33,6 +34,17 @@ export class AuthenticationWebview {
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
+
+    // Listen for theme changes to refresh images
+    this._disposables.push(
+      vscode.window.onDidChangeActiveColorTheme(async () => {
+        // Refresh content when theme changes to load correct themed images
+        this._panel.webview.html = this._getWebviewContent();
+        // Re-initialize after content refresh
+        await this.initialize();
+      })
+    );
+
     this._panel.onDidDispose(
       () => {
         AuthenticationWebview.currentPanel = undefined;
@@ -136,66 +148,74 @@ export class AuthenticationWebview {
       "bootstrap",
       "bootstrap.min.js"
     );
-    // Use local auth.js from project-ignite/media instead of core
+    // Use Project Ignite's auth.js which has the proper loading handlers
     const scriptUri = this._panel.webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, 'media', 'auth.js')
     );
     const styleAuth = this.setWebUri("media", "auth.css");
-    const loginIcon = this.setWebUri("media", "icons", "login.svg");
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
+    const footerImageUri = this.setWebUri("media", ThemeUtils.selectIconByTheme("checkmarx_page_footer_light_theme.svg", "checkmarx_page_footer.svg"));
     const nonce = getNonce();
+    const messages = this.messages;
 
     return `<!DOCTYPE html>
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<link href="${styleBootStrap}" rel="stylesheet">
-	<link href="${styleAuth}" rel="stylesheet">
-	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>Checkmarx Developer Assist Authentication</title>
-	<style nonce="${nonce}">
-		/* Override .message to only show margin when visible */
-		.message[style*="display: none"] {
-			margin-top: 0 !important;
-		}
-	</style>
-
+    <meta charset="UTF-8">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleAuth}" rel="stylesheet">
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+    <title>Log in</title>
 </head>
 
 <body>
 
     <div id="loading">
-		<div class="spinner-border" role="status">
-		  <span class="visually-hidden">Checking authentication...</span>
-		</div>
-	  </div>
-<div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">Checkmarx Developer Assist Authentication</div>
-        <div id="loginForm">
-        <div id="apiKeyForm">
-          <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx Developer Assist API Key" class="auth-input">
-        </div>
-        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx Developer Assist</button>
-        </div>
-
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to Checkmarx Developer Assist</div>
-        <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
-        <div id="messageBox" class="message" style="display: none;">
-        <div id="messageSuccessIcon" class="hidden">
-        <img src="${successIcon}" alt="success"/>
-        </div>
-        <div id="messageErrorIcon" class="hidden">
-
-        <img src="${errorIcon}" alt="error"/>
-        </div>
-        <div id="messageText"></div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Checking authentication...</span>
         </div>
     </div>
+    <div id="authContainer" class="auth-container hidden">
+      <div id="loginForm">
+        <div class="login-form-title">Log in</div>
+            <!-- API Key Form -->
+            <div id="apiKeyForm" class="auth-form">
+                <label for="apiKey" class="form-label">Checkmarx Developer Assist API Key</label>
+                <input type="password" id="apiKey" class="auth-input">
+                <div class="ignite-info-text-login-form">Your API key is available through the ‘Activation Page’ link in your Welcome email. Copy it from the Activation Page and paste it here.</div>
+            </div>
+            <button id="authButton" class="auth-button" disabled>Log in</button>
+        </div>
+
+        <!-- Authenticated Message -->
+        <div id="authenticatedMessage" class="hidden authenticated-message">
+            <img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}
+        </div>
+        <button id="logoutButton" class="auth-button hidden">
+            <img src="${logoutIcon}" alt="logout"/>Log out
+        </button>
+        <div id="messageBox" class="message">
+            <div id="messageSuccessIcon" class="hidden">
+                <img src="${successIcon}" alt="success"/>
+            </div>
+            <div id="messageErrorIcon" class="hidden">
+                <img src="${errorIcon}" alt="error"/>
+            </div>
+            <div id="messageText"></div>
+        </div>
+    </div>
+
+    <!-- Footer Image -->
+    <footer>
+      <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    </footer>
+
     <script nonce="${nonce}" src="${scriptUri}"></script>
+
+</body>
 </html>`;
   }
 
