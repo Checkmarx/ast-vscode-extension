@@ -16,6 +16,18 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'authCredential' : 'authCredentialDevAssist';
   },
+  getLastAuthMethodKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'lastAuthMethod' : 'lastAuthMethodDevAssist';
+  },
+  getLastOAuthBaseUriKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'lastOAuthBaseUri' : 'lastOAuthBaseUriDevAssist';
+  },
+  getLastOAuthTenantKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'lastOAuthTenant' : 'lastOAuthTenantDevAssist';
+  },
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
