@@ -8,3 +8,4 @@ test-resources
 .DS_Store
 .npmrc
 coverage/
+packages/core/.npmrc
