@@ -273,7 +273,7 @@ jobs:
           echo "CLI version being packed is $CLI_VERSION"
           echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
           echo "::set-output name=CLI_VERSION::$CLI_VERSION"
-
+  
       # INSTALL VSCE
       - name: Install VSCE
         run: npm install -g vsce
@@ -281,7 +281,12 @@ jobs:
       # BUILD ALL PACKAGES
       - name: Build all packages
         run: npm run build:all
-
+        
+      - name: Keep packages/core/.npmrc local only
+        if: inputs.dev == false
+        run: |
+          git rm --cached -f packages/core/.npmrc || true
+          
       # PACKAGE CHECKMARX VSIX
       # Always built so asset is always present in release
       - name: Package Checkmarx .vsix file
