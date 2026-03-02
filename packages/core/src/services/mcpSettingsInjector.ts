@@ -57,7 +57,7 @@ export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
 			return;
 		}
 		else if (!await cx.isValidConfiguration()) {
-			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: Your login has expired. Please login again.`);
+			vscode.window.showErrorMessage(`Failed to install ${productName} MCP: Your session has been expired. Please login again.`);
 			return;
 		}
 		else if (!await cx.isAiMcpServerEnabled()) {
