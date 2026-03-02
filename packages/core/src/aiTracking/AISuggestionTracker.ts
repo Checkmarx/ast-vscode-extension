@@ -27,6 +27,11 @@ import {
     isContainersHoverData,
     isIacHoverData
 } from "../utils/utils";
+import { OssScannerService } from "../realtimeScanners/scanners/oss/ossScannerService";
+import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
+import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secretsScannerService";
+import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
+import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 type AnyHoverData = HoverData | AscaHoverData | ContainersHoverData | IacHoverData | SecretsHoverData;
 
 export class AISuggestionTracker {
@@ -39,6 +44,16 @@ export class AISuggestionTracker {
     private context: vscode.ExtensionContext;
 
     private logs: Logs;
+
+    private ascaScanner: AscaScannerService | undefined;
+
+    private secretsScanner: SecretsScannerService | undefined;
+
+    private containersScanner: ContainersScannerService | undefined;
+
+    private iacScanner: IacScannerService | undefined;
+
+    private ossScanner: OssScannerService | undefined;
 
     private saveListener: vscode.Disposable | undefined;
 
@@ -67,6 +82,21 @@ export class AISuggestionTracker {
             this.registerSaveListener();
             this.registerChangeListener();
         }
+    }
+    public setAscaScanner(scanner: AscaScannerService): void {
+        this.ascaScanner = scanner;
+    }
+    public setSecretsScanner(scanner: SecretsScannerService): void {
+        this.secretsScanner = scanner;
+    }
+    public setContainersScanner(scanner: ContainersScannerService): void {
+        this.containersScanner = scanner;
+    }
+    public setIacScanner(scanner: IacScannerService): void {
+        this.iacScanner = scanner;
+    }
+    public setOssScanner(scanner: OssScannerService): void {
+        this.ossScanner = scanner;
     }
 
     static getInstance(context?: vscode.ExtensionContext, logs?: Logs): AISuggestionTracker {
@@ -180,14 +210,13 @@ export class AISuggestionTracker {
             }
             case 'Secrets': {
                 const secretsItem = item as SecretsHoverData;
-                const secretType = secretsItem.title || 'unknown';
-                const secretValue = secretsItem.secretValue || 'unknown';
-                return `secrets:${secretType}:${secretValue}:${filePath}`;
+                const startIndex = secretsItem.location?.startIndex ?? 0;
+                return `secrets:${line}:${startIndex}:${filePath}`;
             }
             case 'Asca': {
                 const ascaItem = item as AscaHoverData;
                 const ruleId = ascaItem.ruleId || ascaItem.ruleName;
-                return `asca:${ruleId}:${filePath}`;
+                return `asca:${ruleId}:${line}:${filePath}`;
             }
             case 'Containers': {
                 const containersItem = item as ContainersHoverData;
@@ -195,7 +224,7 @@ export class AISuggestionTracker {
             }
             case 'IaC': {
                 const iacItem = item as IacHoverData;
-                return `iac:${iacItem.similarityId}:${iacItem}`;
+                return `iac:${iacItem.similarityId}:${filePath}`;
             }
             default:
                 return `unknown:${scannerType}:${line}:${filePath}`;
@@ -203,14 +232,13 @@ export class AISuggestionTracker {
     }
 
     private getFilePath(item: AnyHoverData): string {
-
-        if (isIacHoverData(item) && item.originalFilePath) {
+        if (this.getScannerType(item) === 'IaC' && 'originalFilePath' in item && item.originalFilePath) {
             return item.originalFilePath;
         }
         if ('filePath' in item && item.filePath) {
             return item.filePath;
         }
-        return vscode.window.activeTextEditor?.document.uri.fsPath || '';
+
     }
 
     private getLine(item: AnyHoverData): number {
@@ -253,6 +281,11 @@ export class AISuggestionTracker {
 
         this.logs.info(`User requested AI fix for ${scannerType} vulnerability`);
 
+        this.pendingConfirmation.set(vulnKey, {
+            detectedAt: Date.now(),
+            detectedValue: null
+        });
+
         // Check for duplicate request
         const existing = this.pendingFixes.get(vulnKey);
         if (existing) {
@@ -270,12 +303,7 @@ export class AISuggestionTracker {
             return existing.id;
         }
 
-        let validatorState: unknown;
-        try {
-            validatorState = await this.validator.captureInitialState(filePath);
-        } catch (error) {
-            throw error;
-        }
+        const validatorState = await this.validator.captureInitialState(filePath);
 
         const fix: PendingAIFix = {
             id: randomUUID(),
@@ -308,6 +336,13 @@ export class AISuggestionTracker {
     }
 
     private async checkFixOutcome(fix: PendingAIFix): Promise<void> {
+
+        if (fix.scannerType !== 'Oss') {
+            await new Promise(resolve => setTimeout(resolve, 30000));
+        }
+        else {
+            await new Promise(resolve => setTimeout(resolve, 15000));
+        }
         const currentValue = await this.getCurrentValue(fix);
         const isFixed = currentValue === null;
 
@@ -323,35 +358,27 @@ export class AISuggestionTracker {
             const checkInterval = setInterval(async () => {
                 attempts++;
 
-                const activeEditor = vscode.window.activeTextEditor;
+                const activeEditor = await this.ensureFileIsActive(fix.filePath);
                 const vulnerabilityStatus = await this.getCurrentValue(fix);
 
                 // Check if ghost text disappeared
                 const fileNotActive = !activeEditor || activeEditor?.document.uri.fsPath !== fix.filePath;
                 const vulnerabilityBack = vulnerabilityStatus !== null;
-                const timeout = attempts >= 150;
+                const timeout = attempts >= 300;
 
                 if (fileNotActive || vulnerabilityBack || timeout) {
                     clearInterval(checkInterval);
                     this.activeIntervals.delete(intervalKey);
 
-                    if (timeout) {
-                        return;
-                    }
+                    const reason = fileNotActive ? 'file closed' :
+                        vulnerabilityBack ? 'changes rejected' :
+                            'timeout';
+                    this.logs.info(`[AITracker] Ghost text DISAPPEARED (${reason})`);
 
-                    if (fix.scannerType === 'Secrets') {
-                        if (vulnerabilityBack && fileNotActive) {
-                            await this.finalizeFix(fix, 'changes_rejected');
-                        } if (!vulnerabilityBack && fileNotActive) {
-                            await this.finalizeFix(fix, 'changes_accepted');
-                        }
-                    } else {
-                        const fileChanged = await this.validator.validate(fix.filePath, fix.validatorState);
-                        const vulnerabilityGone = await this.getCurrentValue(fix) === null;
-                        const changesAccepted = fileChanged && vulnerabilityGone;
-                        const outcome = changesAccepted ? 'changes_accepted' : 'changes_rejected';
-                        await this.finalizeFix(fix, outcome);
-                    }
+                    const diagnosticStillPresent = (await this.getCurrentValue(fix)) !== null;
+                    const outcome = diagnosticStillPresent ? 'changes_rejected' : 'changes_accepted';
+
+                    await this.finalizeFix(fix, outcome);
                 }
             }, 2000);
 
@@ -359,36 +386,62 @@ export class AISuggestionTracker {
         }
     }
 
+    //Ensure the specified file is the active editor, switching to it if necessary
 
-    private isFileOpen(uri: vscode.Uri): boolean {
-        return vscode.window.visibleTextEditors.some(e => e.document.uri.fsPath === uri.fsPath)
-            || vscode.window.activeTextEditor?.document.uri.fsPath === uri.fsPath;
+    private async ensureFileIsActive(filePath: string): Promise<vscode.TextEditor | undefined> {
+        try {
+            const visibleEditor = vscode.window.visibleTextEditors.find(
+                editor => editor.document.uri.fsPath === filePath
+            );
+
+            if (visibleEditor) {
+                await vscode.window.showTextDocument(visibleEditor.document, {
+                    preview: false,
+                    preserveFocus: false
+                });
+                return vscode.window.activeTextEditor;
+            }
+
+            const openDoc = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath);
+            if (openDoc) {
+                await vscode.window.showTextDocument(openDoc, {
+                    preview: false,
+                    preserveFocus: false
+                });
+                return vscode.window.activeTextEditor;
+            }
+
+            const uri = vscode.Uri.file(filePath);
+            const doc = await vscode.workspace.openTextDocument(uri);
+            await vscode.window.showTextDocument(doc, {
+                preview: false,
+                preserveFocus: false
+            });
+            return vscode.window.activeTextEditor;
+        } catch (error) {
+            this.logs.warn(`[AITracker] Failed to ensure file is active: ${error}`);
+            return undefined;
+        }
     }
-
 
     private async hasActiveInlineSuggestion(uri: vscode.Uri, fix: PendingAIFix): Promise<boolean> {
         try {
-            if (!this.isFileOpen(uri)) {
+            const activeEditor = vscode.window.activeTextEditor;
+            if (!activeEditor) {
                 return false;
-            }
-
-            const timeSinceRequest = Date.now() - fix.requestedAt;
-            const gracePeriodMs = 5 * 1000; // 5 seconds (adjust as needed)
-
-            if (timeSinceRequest < gracePeriodMs) {
-                return true;
             }
 
             const pendingConf = this.pendingConfirmation.get(fix.vulnerabilityKey);
             if (pendingConf) {
                 const timeSinceDetection = Date.now() - pendingConf.detectedAt;
-                if (timeSinceDetection < 2000) {
+                if (timeSinceDetection < 10000) {
                     return true;
                 }
             }
 
             return false;
         } catch (error) {
+            this.logs.warn(`[AITracker] Error checking for active suggestions: ${error}`);
             return false;
         }
     }
@@ -400,10 +453,11 @@ export class AISuggestionTracker {
 
         if (hasActiveSuggestion) {
             return 'pending_user_action';
+        } else {
+            await this.triggerManualScan(fix);
         }
-        const diagnostics = vscode.languages.getDiagnostics(uri);
 
-        let matchingDiagnosticCount = 0;
+        const diagnostics = vscode.languages.getDiagnostics(uri);
 
         for (const diagnostic of diagnostics) {
             const data = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
@@ -412,7 +466,6 @@ export class AISuggestionTracker {
             }
 
             if (this.diagnosticMatchesFix(data, fix)) {
-                matchingDiagnosticCount++;
                 const currentValue = this.extractValueFromDiagnostic(data, fix.scannerType);
                 return currentValue;
             }
@@ -435,12 +488,10 @@ export class AISuggestionTracker {
 
                 const packageManager = keyParts[1];
                 const packageName = keyParts[2];
-                const expectedVersion = keyParts[3];
-
-                const matches = ossItem.packageManager === packageManager &&
-                    ossItem.packageName === packageName &&
-                    ossItem.version === expectedVersion;
-
+                const matches = ossItem.packageName === packageName && ossItem.packageManager === packageManager;
+                if (matches) {
+                    this.logs.info(`[AITracker] OSS Match: ${ossItem.packageName}@${ossItem.version}`);
+                }
                 return matches;
             }
             case 'Secrets': {
@@ -448,18 +499,13 @@ export class AISuggestionTracker {
                     return false;
                 }
                 const secretsItem = item as SecretsHoverData;
-
-                const expectedSecretType = keyParts[1];
-                const expectedLine = parseInt(keyParts[2]);
-                const expectedSecretValue = keyParts[3];
-
-                const actualSecretType = secretsItem.title || 'unknown';
-                const actualLine = secretsItem.location?.line ?? 0;
-                const actualSecretValue = secretsItem.secretValue || 'unknown';
-
-                const matches = actualSecretType === expectedSecretType &&
-                    actualLine === expectedLine &&
-                    actualSecretValue === expectedSecretValue;
+                const line = parseInt(keyParts[1]);
+                const startIndex = parseInt(keyParts[2]);
+                const matches = secretsItem.location?.line === line &&
+                    secretsItem.location?.startIndex === startIndex;
+                if (matches) {
+                    this.logs.info(`[AITracker] Secrets Match: line ${line}, index ${startIndex}`);
+                }
                 return matches;
             }
             case 'Asca': {
@@ -468,7 +514,12 @@ export class AISuggestionTracker {
                 }
                 const ascaItem = item as AscaHoverData;
                 const ruleId = keyParts[1];
-                const matches = String(ascaItem.ruleId) === ruleId || ascaItem.ruleName === ruleId;
+                const line = parseInt(keyParts[2]);
+                const matches = (String(ascaItem.ruleId) === ruleId || ascaItem.ruleName === ruleId) &&
+                    ascaItem.location?.line === line;
+                if (matches) {
+                    this.logs.info(`[AITracker] ASCA Match: ${ascaItem.ruleName} at line ${line}`);
+                }
                 return matches;
             }
             case 'Containers': {
@@ -527,45 +578,81 @@ export class AISuggestionTracker {
     }
 
     private async finalizeFix(fix: PendingAIFix, status: FixOutcome['status']): Promise<void> {
-        // Checking no active inline suggestions
-        const uri = vscode.Uri.file(fix.filePath);
-        const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
-
-        if (hasActiveSuggestion) {
-            return;
-        }
-
-        const relativePath = this.getRelativePath(fix.filePath);
-        const itemName = this.getItemName(fix);
-
-        let finalState: unknown;
-        let validatorMetadata: Record<string, unknown>;
-        try {
-            finalState = await this.validator.captureFinalState(fix.filePath);
-            validatorMetadata = this.validator.getMetadata(fix.validatorState, finalState);
-        } catch (error) {
-            return;
-        }
         const eventName = this.getEventNameFromStatus(status);
+        let telemetryData: FixOutcomeTelemetry | null = null;
+        try {
+            // Checking no active inline suggestions
+            const uri = vscode.Uri.file(fix.filePath);
+            const hasActiveSuggestion = await this.hasActiveInlineSuggestion(uri, fix);
 
-        const telemetryData: FixOutcomeTelemetry = {
-            status,
-            scannerType: fix.scannerType,
-            severity: fix.severity,
-            filePath: relativePath,
-            packageName: itemName,
-            duplicateRequests: fix.requestCount - 1,
-            initialFileHash: (validatorMetadata.initialFileHash as string) || '',
-            finalFileHash: (validatorMetadata.finalFileHash as string) || '',
-            hashesMatch: (validatorMetadata.hashesMatch as boolean) || false
-        };
+            if (hasActiveSuggestion) {
+                return;
+            }
 
-        await this.sendTelemetry(eventName, telemetryData);
-        this.pendingFixes.delete(fix.vulnerabilityKey);
+            const relativePath = this.getRelativePath(fix.filePath);
+            const itemName = this.getItemName(fix);
 
-        this.logs.info(`User ${status === 'changes_accepted' ? 'accepted' : 'rejected'} AI suggestion for ${fix.scannerType} vulnerability`);
+            let finalState: unknown;
+            let validatorMetadata: Record<string, unknown>;
+            try {
+                finalState = await this.validator.captureFinalState(fix.filePath);
+                validatorMetadata = this.validator.getMetadata(fix.validatorState, finalState);
+            } catch (error) {
+                return;
+            }
+            telemetryData = {
+                status,
+                scannerType: fix.scannerType,
+                severity: fix.severity,
+                filePath: relativePath,
+                packageName: itemName,
+                duplicateRequests: fix.requestCount - 1,
+                initialFileHash: (validatorMetadata.initialFileHash as string) || '',
+                finalFileHash: (validatorMetadata.finalFileHash as string) || '',
+                hashesMatch: (validatorMetadata.hashesMatch as boolean) || false
+            };
+        } catch (error) {
+            this.logs.warn(`[AITracker] Validation failed: ${error}`);
+        } finally {
+            if (!telemetryData) {
+                // Create basic telemetry data as fallback
+                telemetryData = {
+                    status,
+                    scannerType: fix.scannerType,
+                    severity: fix.severity,
+                    filePath: 'fallback',
+                    packageName: 'unknown',
+                    duplicateRequests: fix.requestCount - 1,
+                    initialFileHash: 'error',
+                    finalFileHash: 'error',
+                    hashesMatch: false
+                };
+            }
+            await this.sendTelemetry(eventName, telemetryData);
+            this.pendingFixes.delete(fix.vulnerabilityKey);
+            this.logs.info(`[AITracker] Deferred telemetry sent: ${eventName}`);
+        }
     }
 
+    private async triggerManualScan(fix: PendingAIFix): Promise<void> {
+        try {
+            const document = await vscode.workspace.openTextDocument(fix.filePath);
+
+            if (fix.scannerType === 'Asca' && this.ascaScanner) {
+                await this.ascaScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Secrets' && this.secretsScanner) {
+                await this.secretsScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Containers' && this.containersScanner) {
+                await this.containersScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'IaC' && this.iacScanner) {
+                await this.iacScanner.scan(document, this.logs);
+            } else if (fix.scannerType === 'Oss' && this.ossScanner) {
+                await this.ossScanner.scan(document, this.logs);
+            }
+        } catch (error) {
+            this.logs.warn(`[AITracker] Manual scan failed: ${error}`);
+        }
+    }
     // Get relative path from absolute path for Iac scans
     private getRelativePath(absolutePath: string): string {
         const normalizedPath = absolutePath.replace(/\\/g, '/');

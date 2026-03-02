@@ -18,6 +18,7 @@ import { IacScannerCommand } from '../realtimeScanners/scanners/iac/iacScannerCo
 import { AscaScannerCommand } from '../realtimeScanners/scanners/asca/ascaScannerCommand';
 import { ContainersScannerCommand } from '../realtimeScanners/scanners/containers/containersScannerCommand';
 import { WebViewCommand } from '../commands/webViewCommand';
+import { AISuggestionTracker } from '../aiTracking/AISuggestionTracker';
 
 /**
  * Activate Checkmarx Developer Assist specific features
@@ -144,7 +145,7 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
 
     const ascaCommand = scannerRegistry.getScanner(constants.ascaRealtimeScannerEngineName) as AscaScannerCommand;
     const ascaScanner = ascaCommand.getScannerService();
-
+ 
     const containersCommand = scannerRegistry.getScanner(
         constants.containersRealtimeScannerEngineName,
     ) as ContainersScannerCommand;
@@ -156,6 +157,12 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
     ignoreFileManager.setAscaScannerService(ascaScanner);
     ignoreFileManager.setContainersScannerService(containersScanner);
 
+    const aiTracker = AISuggestionTracker.getInstance(context, logs);
+    aiTracker.setAscaScanner(ascaScanner);
+    aiTracker.setSecretsScanner(secretScanner);
+    aiTracker.setIacScanner(iacScanner);
+    aiTracker.setOssScanner(ossScanner);
+    aiTracker.setContainersScanner(containersScanner);
     context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 
     return { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
