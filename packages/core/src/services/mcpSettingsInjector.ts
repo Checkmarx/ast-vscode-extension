@@ -88,6 +88,9 @@ function getMcpConfigPath(): string {
 	if (isIDE(constants.cursorAgent)) {
 		return path.join(homeDir, ".cursor", "mcp.json");
 	}
+	if (isIDE(constants.windsurfNextAgent)) {
+		return path.join(homeDir, ".codeium", "windsurf-next", "mcp_config.json");
+	}
 	if (isIDE(constants.windsurfAgent)) {
 		return path.join(homeDir, ".codeium", "windsurf", "mcp_config.json");
 	}
@@ -255,7 +258,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			...(isIDE(constants.windsurfAgent) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.windsurfAgent) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
+				"cx-origin": isIDE(constants.windsurfNextAgent) ? constants.windsurfNextAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
 				"Authorization": apiKey,
 			},
 		};
