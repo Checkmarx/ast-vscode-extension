@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [DevAssist-v1.4.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.4.0) - 2026-03-02 13:39:26
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.49.0...DevAssist-v1.4.0
+
 DevAssist-v1.3.0 - 2026-02-13 16:46:40
 Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.47.0...DevAssist-v1.3.0
 

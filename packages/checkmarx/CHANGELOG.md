@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [Checkmarx-v2.50.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.50.0) - 2026-03-02 13:39:25
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.49.0...Checkmarx-v2.50.0
+
 Checkmarx-v2.49.0 - 2026-02-13 16:46:40
 Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.47.0...Checkmarx-v2.49.0
 
