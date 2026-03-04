@@ -112,6 +112,61 @@ function getMcpConfigPath(): string {
 	return path.join(homeDir, '.vscode', 'mcp.json');
 }
 
+function getClaudeCodeConfigPath(): string {
+	const homeDir = os.homedir();
+	return path.join(homeDir, '.claude', 'claude_desktop_config.json');
+}
+
+function isClaudeCodeExtensionInstalled(): boolean {
+	return !!vscode.extensions.getExtension(constants.claudeCodeExtensionId);
+}
+
+async function updateClaudeCodeMcpJsonFile(mcpServer: McpServer): Promise<void> {
+	const claudeConfigPath = getClaudeCodeConfigPath();
+	let mcpConfig: McpConfig = {};
+
+	if (fs.existsSync(claudeConfigPath)) {
+		try {
+			const fileContent = fs.readFileSync(claudeConfigPath, "utf-8");
+			mcpConfig = JSON.parse(fileContent);
+		} catch (error) {
+			console.warn("Failed to read existing Claude Code config:", error);
+		}
+	}
+
+	if (!mcpConfig.mcpServers) {
+		mcpConfig.mcpServers = {};
+	}
+	mcpConfig.mcpServers[getCheckmarxMcpServerName()] = mcpServer;
+
+	try {
+		const dir = path.dirname(claudeConfigPath);
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+		fs.writeFileSync(claudeConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+	} catch (error) {
+		throw new Error(`Failed to write Claude Code config file: ${error}`);
+	}
+}
+
+async function removeClaudeCodeMcpFromJsonFile(): Promise<void> {
+	const claudeConfigPath = getClaudeCodeConfigPath();
+	if (!fs.existsSync(claudeConfigPath)) {
+		return;
+	}
+	try {
+		const fileContent = fs.readFileSync(claudeConfigPath, "utf-8");
+		const mcpConfig: McpConfig = JSON.parse(fileContent);
+		if (mcpConfig.mcpServers && mcpConfig.mcpServers[getCheckmarxMcpServerName()]) {
+			delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
+			fs.writeFileSync(claudeConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+		}
+	} catch (error) {
+		console.warn("Failed to remove Checkmarx entry from Claude Code config:", error);
+	}
+}
+
 async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<void> {
 	const mcpConfigPath = getMcpConfigPath();
 
@@ -200,6 +255,14 @@ export async function uninstallMcp() {
 				}
 			}
 		}
+		// Also remove from Claude Code CLI config if the extension is installed
+		if (isClaudeCodeExtensionInstalled()) {
+			try {
+				await removeClaudeCodeMcpFromJsonFile();
+			} catch (error) {
+				console.warn(`Failed to remove Claude Code MCP config: ${error}`);
+			}
+		}
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Failed to remove MCP configuration.";
 		vscode.window.showErrorMessage(message);
@@ -281,6 +344,22 @@ export async function initializeMcpConfiguration(apiKey: string) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
 				await updateMcpJsonFile(mcpServer);
+			}
+		}
+
+		// Also configure Claude Code CLI if the Claude Code extension is installed
+		if (isClaudeCodeExtensionInstalled()) {
+			const claudeCodeMcpServer: McpServer = {
+				url: fullUrl,
+				headers: {
+					"cx-origin": constants.claudeCodeAgent,
+					"Authorization": apiKey,
+				},
+			};
+			try {
+				await updateClaudeCodeMcpJsonFile(claudeCodeMcpServer);
+			} catch (error) {
+				console.warn(`Failed to write Claude Code MCP config: ${error}`);
 			}
 		}
 

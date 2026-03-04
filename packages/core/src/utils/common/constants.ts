@@ -333,6 +333,9 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
+  claudeCodeExtensionId: "anthropic.claude-code",
+  claudeCodeAgent: "Claude Code",
+
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",

@@ -193,6 +193,22 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private async handleClaudeCodeIDE(question: string): Promise<void> {
+        const executeFunction = async () => {
+            try {
+                await vscode.commands.executeCommand("claude-code.focus");
+            } catch {
+                // Claude Code panel focus may not be available; clipboard is already set
+            }
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await this.pasteCmd();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.pressEnter();
+        };
+
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
     private async handleKiroIDE(question: string) {
         const executeFunction = async () => {
             await vscode.commands.executeCommand("kiroAgent.focusContinueInputWithoutClear");
@@ -225,14 +241,20 @@ export class CopilotChatCommand {
             await this.handleKiroIDE(question);
             return;
         }
+        const claudeCodeExtension = vscode.extensions.getExtension(constants.claudeCodeExtensionId);
+        if (claudeCodeExtension) {
+            await this.handleClaudeCodeIDE(question);
+            return;
+        }
+
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         if (!copilotChatExtension) {
-            const installOption = "Install Copilot Chat";
+            const installCopilot = "Install Copilot Chat";
             const choice = await vscode.window.showErrorMessage(
-                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                installOption
+                "No AI chat extension found. Install GitHub Copilot Chat or Claude Code to use this feature.",
+                installCopilot
             );
-            if (choice === installOption) {
+            if (choice === installCopilot) {
                 await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
             }
             return;
