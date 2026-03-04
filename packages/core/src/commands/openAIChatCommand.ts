@@ -215,7 +215,7 @@ export class CopilotChatCommand {
             return;
         }
 
-        if (isIDE(constants.windsurfAgent)) {
+        if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
             await this.handleWindsurfIDE(question);
             return;
         }
