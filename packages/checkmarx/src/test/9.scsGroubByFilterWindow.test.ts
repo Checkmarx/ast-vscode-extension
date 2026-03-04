@@ -63,7 +63,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await new EditorView().closeAllEditors();
   });
 
-  it.skip("should clear groub by for scs secret detection and open details window ", async function () {
+  it("should clear groub by for scs secret detection and open details window ", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -534,7 +534,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it.skip("secret detection tree with GroupBy command ", async function () {
+  it("secret detection tree with GroupBy command ", async function () {
     treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
@@ -567,7 +567,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it.skip("Secret detection tree with Filter command", async function () {
+  it("Secret detection tree with Filter command", async function () {
     await initialize();
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
@@ -583,7 +583,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it.skip("should click on General tab", async function () {
+  it("should click on General tab", async function () {
     const detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
@@ -595,7 +595,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await detailsView.switchBack();
   });
 
-  it.skip("should click on Description tab", async function () {
+  it("should click on Description tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Description Tab
@@ -612,7 +612,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await detailsView.switchBack();
   });
 
-  it.skip("should click on Remediation tab", async function () {
+  it("should click on Remediation tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Remediation Tab

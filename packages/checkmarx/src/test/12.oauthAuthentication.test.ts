@@ -11,7 +11,7 @@ import { retryTest, sleep } from "./utils/utils";
 
 const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
 
-describe.skip("Checkmarx OAuth Authentication Tests", () => {
+describe("Checkmarx OAuth Authentication Tests", () => {
     let bench: Workbench;
     let driver: WebDriver;
 

@@ -32,7 +32,8 @@ describe("Scan ID load results test", () => {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     await bench.executeCommand(CX_LOOK_SCAN);
-    let input = await new InputBox();
+    //let input = await new InputBox();
+    const input = await InputBox.create()
     // Add delay to ensure input box is ready
     await new Promise((res) => setTimeout(res, 1000));
     await input.setText(SCAN_ID);
@@ -40,7 +41,7 @@ describe("Scan ID load results test", () => {
     await sleep(5000);
   });
 
-  it.skip("should check open webview and codebashing link", retryTest(async function () {
+  it("should check open webview and codebashing link", retryTest(async function () {
     // Make sure the results are loaded
     treeScans = await initialize();
     while (treeScans === undefined) {
@@ -80,9 +81,9 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   }));
 
-  it.skip("should click on details Learn More tab", async function () {
+  it("should click on details Learn More tab", async function () {
     // Open details view
-    sleep(5000)
+    await sleep(5000)
     let detailsView = await getDetailsView();
     if (!detailsView) {
       detailsView = await getDetailsView();
@@ -97,7 +98,7 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   });
 
-  it.skip("should click on details Changes tab", async function () {
+  it("should click on details Changes tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Changes Tab
@@ -125,7 +126,7 @@ describe("Scan ID load results test", () => {
     await detailsView.switchBack();
   });
 
-  it.skip("should click on details General tab", async function () {
+  it("should click on details General tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find General Tab
