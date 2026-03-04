@@ -212,49 +212,40 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
-    private setSelectedAIAssistant(copilotAvailable: boolean, geminiAvailable: boolean): string | null {
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, geminiAvailable: boolean): string | null {
         let assistantType: string | null = null;
         this.logs.info(`[DEBUG] setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, geminiAvailable: ${geminiAvailable}`);
+        if ((userPreferenceAIAssistant === 'Gemini' && !geminiAvailable) || (userPreferenceAIAssistant === 'Copilot' && !copilotAvailable)) {
+            const extensionName = userPreferenceAIAssistant === 'Gemini' ? 'Google Gemini Code Assist' : 'GitHub Copilot Chat';
+            const extensionId = userPreferenceAIAssistant === 'Gemini' ? constants.geminiChatExtensionId : constants.copilotChatExtensionId;
 
-        if (!geminiAvailable && !copilotAvailable) {
-            this.logs.error('[DEBUG] No AI assistant extensions are installed');
             vscode.window.showErrorMessage(
-                'No AI assistant extension found. Please install at least one of the following extensions and reload VSCode: GitHub Copilot Chat or Google Gemini Code Assist.',
-                'Install Copilot',
-                'Install Gemini'
+                `Your preferred AI assistant (${userPreferenceAIAssistant}) is not installed. Please install ${extensionName} and reload VSCode.`,
+                `Install ${userPreferenceAIAssistant}`
             ).then(selection => {
-                if (selection === 'Install Copilot') {
-                    vscode.commands.executeCommand('workbench.extensions.search', constants.copilotChatExtensionId);
-                } else if (selection === 'Install Gemini') {
-                    vscode.commands.executeCommand('workbench.extensions.search', constants.geminiChatExtensionId);
+                if (selection === `Install ${userPreferenceAIAssistant}`) {
+                    vscode.commands.executeCommand('workbench.extensions.search', extensionId);
                 }
             });
             return null;
-        } else if (geminiAvailable && !copilotAvailable) {
-            assistantType = constants.geminiAssistantName;
-            this.selectedChatExtensionId = constants.geminiChatExtensionId;
-            this.selectedNewChatOpen = constants.geminiNewChatOpen;
-            this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
-            this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
-            this.logs.info(`[DEBUG] Selected Gemini (only option)`);
+        } else {
+            this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
 
-        } else if (copilotAvailable && !geminiAvailable) {
-            assistantType = constants.copilotAssistantName;
-            this.selectedChatExtensionId = constants.copilotChatExtensionId;
-            this.selectedNewChatOpen = constants.copilotNewChatOpen;
-            this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
-            this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
-            this.logs.info(`[DEBUG] Selected Copilot (only option)`);
-
-        } else if (copilotAvailable && geminiAvailable) {
-            const preferredAssistant = this.context.globalState.get<string>('ast.preferredAiAssistant');
-            this.logs.info(`[DEBUG] Both available - preferredAssistant setting: ${preferredAssistant}`);
-            assistantType = preferredAssistant === constants.geminiAssistantName ? constants.geminiAssistantName : constants.copilotAssistantName;
-            this.selectedChatExtensionId = constants.copilotChatExtensionId;
-            this.selectedNewChatOpen = constants.copilotNewChatOpen;
-            this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
-            this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
-            this.logs.info(`[DEBUG] Selected ${assistantType} (defaulting to Copilot)`);
+            if (userPreferenceAIAssistant === 'Gemini' && geminiAvailable) {
+                assistantType = constants.geminiAssistantName;
+                this.selectedChatExtensionId = constants.geminiChatExtensionId;
+                this.selectedNewChatOpen = constants.geminiNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
+                this.logs.info(`[DEBUG] Selected Gemini (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+                assistantType = constants.copilotAssistantName;
+                this.selectedChatExtensionId = constants.copilotChatExtensionId;
+                this.selectedNewChatOpen = constants.copilotNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
+                this.logs.info(`[DEBUG] Selected Copilot (user preference)`);
+            }
         }
 
         this.logs.info(`[DEBUG] Final assistant type: ${assistantType}`);
@@ -293,7 +284,10 @@ export class CopilotChatCommand {
             this.logs.info(`[DEBUG] Gemini extension details - ID: ${geminiChatExtension.id}, Active: ${geminiChatExtension.isActive}`);
         }
 
+        const userPreferenceAIAssistant = vscode.workspace.getConfiguration('Checkmarx').get<string>('AI Assistant In VSCode', '');
+
         const selectedAssistant = this.setSelectedAIAssistant(
+            userPreferenceAIAssistant,
             copilotChatExtension !== undefined,
             geminiChatExtension !== undefined
         );
@@ -382,7 +376,7 @@ export class CopilotChatCommand {
                 }
                 try {
                     if (isIDE(constants.kiroAgent)) {
-                        let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
+                        const line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
                         question = `In ${item.filePath} line ${line} \n${question}`;
                     }
                     await this.openChatWithPrompt(question);
