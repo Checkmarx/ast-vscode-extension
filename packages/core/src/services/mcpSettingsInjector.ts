@@ -23,16 +23,9 @@ interface McpServer {
 	};
 }
 
-interface KiroMcpServer {
-	command: string,
-	args: string[],
-	disabled: boolean,
-	autoApprove: string[]
-}
-
 interface McpConfig {
 	servers?: Record<string, McpServer>;
-	mcpServers?: Record<string, McpServer | KiroMcpServer>;
+	mcpServers?: Record<string, McpServer>;
 }
 
 /**
@@ -115,7 +108,7 @@ function getMcpConfigPath(): string {
 	return path.join(homeDir, '.vscode', 'mcp.json');
 }
 
-async function updateMcpJsonFile(mcpServer: McpServer | KiroMcpServer): Promise<void> {
+async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 	const mcpConfigPath = getMcpConfigPath();
 
 	let mcpConfig: McpConfig = {};
@@ -236,29 +229,10 @@ export async function initializeMcpConfiguration(apiKey: string) {
 
 		const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
 
-		if (isIDE(constants.kiroAgent)) {
-			const kiroMcpServer: KiroMcpServer = {
-				command: "npx",
-				args: [
-					"mcp-remote",
-					fullUrl,
-					"--transport",
-					"sse",
-					"--header",
-					`Authorization:${apiKey}`,
-					`cx-origin : ${constants.kiroAgent}`
-				],
-				disabled: false,
-				autoApprove: ["codeRemediation", "imageRemediation", "packageRemediation"]
-			};
-			await updateMcpJsonFile(kiroMcpServer);
-			return;
-		}
-
 		const mcpServer: McpServer = {
-			...(isIDE(constants.windsurfAgent) ? { serverUrl: fullUrl } : { url: fullUrl }),
+			...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.windsurfNextAgent) ? constants.windsurfNextAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
+				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
 				"Authorization": apiKey,
 			},
 		};
