@@ -162,6 +162,7 @@ export const constants = {
   vsCodeAgentOrginalName: "Visual Studio Code",
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
+  windsurfNextAgent: "Windsurf - Next",
   kiroAgent: "Kiro",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
