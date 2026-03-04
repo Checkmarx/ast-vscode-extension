@@ -894,7 +894,7 @@ export class Cx implements CxPlatform {
     async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
-        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfNextAgent) ? "Cascade" : isIDE(constants.windsurfAgent) ? "Cascade" : "Copilot";
+        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? "Cascade" : "Copilot";
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
@@ -928,11 +928,9 @@ export class Cx implements CxPlatform {
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
-                    : isIDE(constants.windsurfNextAgent)
+                    : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent))
                         ? "Cascade"
-                        : isIDE(constants.windsurfAgent)
-                            ? "Cascade"
-                            : "Copilot";
+                        : "Copilot";
             const agent = isIDE(constants.kiroAgent)
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
