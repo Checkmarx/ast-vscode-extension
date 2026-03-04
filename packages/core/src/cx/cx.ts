@@ -302,7 +302,7 @@ export class Cx implements CxPlatform {
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
 
-        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : isIDE(constants.windsurfNextAgent) ? constants.windsurfNextAgent : isIDE(constants.windsurfAgent) ? constants.windsurfAgent : constants.vsCodeAgent;
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
 
@@ -935,11 +935,9 @@ export class Cx implements CxPlatform {
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
-                    : isIDE(constants.windsurfNextAgent)
-                        ? constants.windsurfNextAgent
-                        : isIDE(constants.windsurfAgent)
-                            ? constants.windsurfAgent
-                            : constants.vsCodeAgent;
+                    : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
+                        ? constants.windsurfAgent
+                        : constants.vsCodeAgent;
 
             // Build subType with fix outcome details
             const subTypeData = {
