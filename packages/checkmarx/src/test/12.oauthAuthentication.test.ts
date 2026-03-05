@@ -18,7 +18,8 @@ const WAIT_MS = {
     medium: 3000,
     quickFrame: 2000,
     webviewFrame: 10000,
-    refreshFrame: 5000
+    refreshFrame: 5000,
+    pollInterval: 200
 };
 
 type AuthMethod = "oauth" | "apiKey";
@@ -127,6 +128,23 @@ async function isElementVisibleById(webView: WebView, elementId: string): Promis
 }
 
 /**
+ * Waits until an element exists and is visible, or throws after timeout.
+ *
+ * This reduces reliance on fixed sleeps and makes UI tests more tolerant of
+ * slow CI agents.
+ */
+async function waitForVisibleElementById(webView: WebView, elementId: string, timeoutMs: number) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeoutMs) {
+        if (await isElementVisibleById(webView, elementId)) {
+            return;
+        }
+        await sleep(WAIT_MS.pollInterval);
+    }
+    throw new Error(`Timed out waiting for visible element: ${elementId}`);
+}
+
+/**
  * Runs a test action inside the authentication webview with guaranteed cleanup.
  *
  * This helper standardizes the open/switch/cleanup lifecycle so each test can
@@ -160,6 +178,7 @@ async function ensureLogoutButtonVisible(bench: Workbench, webView: WebView) {
     await new EditorView().closeAllEditors();
     await openAuthenticationEditor(bench);
     await webView.switchToFrame(WAIT_MS.refreshFrame);
+    await waitForVisibleElementById(webView, "logoutButton", WAIT_MS.webviewFrame);
 }
 
 /**
@@ -221,6 +240,7 @@ describe("Checkmarx OAuth Authentication Tests", () => {
         await runWithAuthenticationWebView(bench, async (webView) => {
             await ensureLogoutButtonVisible(bench, webView);
 
+            await waitForVisibleElementById(webView, "logoutButton", WAIT_MS.webviewFrame);
             const logoutButtons = await webView.findWebElements(By.id("logoutButton"));
             const canLogout = logoutButtons.length > 0 && await logoutButtons[0].isDisplayed();
 
@@ -232,6 +252,7 @@ describe("Checkmarx OAuth Authentication Tests", () => {
                 await webView.switchToFrame(WAIT_MS.refreshFrame);
             }
 
+            await waitForVisibleElementById(webView, "loginForm", WAIT_MS.webviewFrame);
             const loginForm = await webView.findWebElements(By.id("loginForm"));
             expect(loginForm.length).to.be.greaterThan(0, "Login form should be visible when logged out");
         });
