@@ -66,7 +66,7 @@ describe("Scan from IDE", () => {
         expect(firstNotification).to.not.be.undefined;
     }));
 
-    it.skip("should get wrong project notification", retryTest(async function () {
+    it("should get wrong project notification", retryTest(async function () {
         const treeScan = await initialize();
         await bench.executeCommand(CX_LOOK_SCAN);
         const input = await InputBox.create();
