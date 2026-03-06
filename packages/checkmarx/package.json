@@ -573,6 +573,11 @@
         "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
+      },
+      {
+        "command": "ast-results.clearOAuthCredentials",
+        "title": "Checkmarx: Clear OAuth Credentials",
+        "category": "Checkmarx"
       }
     ],
     "submenus": [
@@ -1015,7 +1020,7 @@
               "Both authentication methods available"
             ],
             "description": "Select which authentication method(s) to display in the sidebar authentication view",
-            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Edit in settings.json](command:workbench.action.openSettingsJson)"
+            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Reset Authentication Cache](command:ast-results.clearOAuthCredentials)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

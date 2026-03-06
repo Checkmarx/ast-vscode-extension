@@ -111,7 +111,7 @@
     "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Authentication",
+        "title": "General Settings",
         "id": "cx-dev-assist",
         "order": 1,
         "properties": {
