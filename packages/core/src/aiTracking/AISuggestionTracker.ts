@@ -83,6 +83,9 @@ export class AISuggestionTracker {
             this.registerChangeListener();
         }
     }
+
+    private static readonly INLINE_SUGGESTION_PENDING_MS = 120000;
+
     public setAscaScanner(scanner: AscaScannerService): void {
         this.ascaScanner = scanner;
     }
@@ -397,7 +400,7 @@ export class AISuggestionTracker {
             if (visibleEditor) {
                 await vscode.window.showTextDocument(visibleEditor.document, {
                     preview: false,
-                    preserveFocus: false
+                    preserveFocus: true
                 });
                 return vscode.window.activeTextEditor;
             }
@@ -406,7 +409,7 @@ export class AISuggestionTracker {
             if (openDoc) {
                 await vscode.window.showTextDocument(openDoc, {
                     preview: false,
-                    preserveFocus: false
+                    preserveFocus: true
                 });
                 return vscode.window.activeTextEditor;
             }
@@ -415,7 +418,7 @@ export class AISuggestionTracker {
             const doc = await vscode.workspace.openTextDocument(uri);
             await vscode.window.showTextDocument(doc, {
                 preview: false,
-                preserveFocus: false
+                preserveFocus: true
             });
             return vscode.window.activeTextEditor;
         } catch (error) {
@@ -434,9 +437,10 @@ export class AISuggestionTracker {
             const pendingConf = this.pendingConfirmation.get(fix.vulnerabilityKey);
             if (pendingConf) {
                 const timeSinceDetection = Date.now() - pendingConf.detectedAt;
-                if (timeSinceDetection < 10000) {
+                if (timeSinceDetection < AISuggestionTracker.INLINE_SUGGESTION_PENDING_MS) {
                     return true;
                 }
+                this.pendingConfirmation.delete(fix.vulnerabilityKey);
             }
 
             return false;
