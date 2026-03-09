@@ -47,7 +47,6 @@ import { ContainersScannerCommand } from '../realtimeScanners/scanners/container
 import { DiagnosticCommand } from '../commands/diagnosticCommand';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
-import { AISuggestionTracker } from '../aiTracking';
 
 /**
  * Activate Checkmarx One specific features
@@ -448,13 +447,6 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
     ignoreFileManager.setIacScannerService(iacScanner);
     ignoreFileManager.setAscaScannerService(ascaScanner);
     ignoreFileManager.setContainersScannerService(containersScanner);
-
-    const aiTracker = AISuggestionTracker.getInstance(context, logs);
-    aiTracker.setAscaScanner(ascaScanner);
-    aiTracker.setSecretsScanner(secretScanner);
-    aiTracker.setIacScanner(iacScanner);
-    aiTracker.setOssScanner(ossScanner);
-    aiTracker.setContainersScanner(containersScanner);
 
     context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 

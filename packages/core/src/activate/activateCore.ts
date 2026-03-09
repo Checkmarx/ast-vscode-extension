@@ -51,10 +51,6 @@ export async function activateCore(context: vscode.ExtensionContext) {
     // [SHARED] Register MCP settings injector
     registerMcpSettingsInjector(context);
 
-    // [SHARED] Initialize AI Suggestion Tracker monitoring
-    const aiTrackingModule = await import("../aiTracking/AISuggestionTracker");
-    aiTrackingModule.AISuggestionTracker.initialize(context, logs);
-
     console.log('[CORE] Core activation complete');
 
     return { logs, authService };
