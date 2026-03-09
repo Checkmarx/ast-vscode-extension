@@ -575,8 +575,8 @@
         "category": "Checkmarx"
       },
       {
-        "command": "ast-results.clearOAuthCredentials",
-        "title": "Checkmarx: Clear OAuth Credentials",
+        "command": "ast-results.resetAuthenticationCache",
+        "title": "Checkmarx: Reset Authentication Cache",
         "category": "Checkmarx"
       }
     ],
@@ -1020,7 +1020,7 @@
               "Both authentication methods available"
             ],
             "description": "Select which authentication method(s) to display in the sidebar authentication view",
-            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Reset Authentication Cache](command:ast-results.clearOAuthCredentials)"
+            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Reset Authentication Cache](command:ast-results.resetAuthenticationCache)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

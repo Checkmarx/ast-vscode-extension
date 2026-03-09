@@ -601,9 +601,9 @@ function registerAuthenticationLauncher(
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(commands.clearOAuthCredentials, async () => {
+        vscode.commands.registerCommand(commands.resetAuthenticationCache, async () => {
             const selection = await vscode.window.showWarningMessage(
-                "Do you want to clear all stored OAuth credentials?",
+                "Do you want to reset the OAuth credentials?",
                 "Yes",
                 "Cancel"
             );
@@ -631,8 +631,8 @@ function registerAuthenticationLauncher(
                 await vscode.commands.executeCommand(commands.updateCxOneAssist);
                 await vscode.commands.executeCommand(commands.setContext, commands.isStandaloneEnabled, false);
 
-                vscode.window.showInformationMessage("OAuth credentials cleared successfully.");
-                logs?.info?.("OAuth credentials cleared by user");
+                vscode.window.showInformationMessage("OAuth credentials reset successfully.");
+                logs?.info?.("OAuth credentials reset by user.");
             }
         }),
     );

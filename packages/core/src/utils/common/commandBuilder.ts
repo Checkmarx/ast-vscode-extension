@@ -12,7 +12,7 @@ const COMMAND_NAMES = {
     // Authentication
     showAuth: 'showAuth',
     authentication: 'authentication',
-    clearOAuthCredentials: 'clearOAuthCredentials',
+    resetAuthenticationCache: 'resetAuthenticationCache',
 
     // Checkmarx One Assist
     updateCxOneAssist: 'updateCxOneAssist',
@@ -192,8 +192,8 @@ class CommandBuilder {
         return this.buildCommand(COMMAND_NAMES.authentication);
     }
 
-    get clearOAuthCredentials(): string {
-        return this.buildCommand(COMMAND_NAMES.clearOAuthCredentials);
+    get resetAuthenticationCache(): string {
+        return this.buildCommand(COMMAND_NAMES.resetAuthenticationCache);
     }
 
     // Checkmarx One Assist
