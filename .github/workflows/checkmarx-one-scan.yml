@@ -1,6 +1,13 @@
 name: Checkmarx One Scan
 
-on: [pull_request, workflow_dispatch]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '00 7 * * *' # Every day at 07:00
 
 jobs:
   cx-scan:
@@ -16,3 +23,17 @@ jobs:
           cx_client_id: ${{ secrets.AST_RND_SCANS_CLIENT_ID }}
           cx_client_secret: ${{ secrets.AST_RND_SCANS_CLIENT_SECRET }}
           additional_params: --tags phoenix --debug --threshold "sca-high=1;sca-medium=1;sca-low=1;sca-critical=1;sast-high=1;sast-medium=1;sast-low=1;sast-critical=1;iac-security-high=1;iac-security-medium=1;iac-security-low=1;iac-security-critical=1"
+  notify:
+    needs: cx-scan
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/cxone-scan-teams-notify.yml@38cf7ab29e5021bb817ac38bdae3ac0fb210608c
+    if: always()
+    with:
+      cx_result: ${{ needs.cx-scan.result }}
+      repository: ${{ github.repository }}
+      ref_name: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      event_name: ${{ github.event_name }}
+      run_id: ${{ github.run_id }}
+      server_url: ${{ github.server_url }}
+    secrets:
+      teams_webhook_url: ${{ secrets.CXONE_SCAN_WEBHOOK_URL }}  
