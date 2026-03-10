@@ -609,28 +609,8 @@ function registerAuthenticationLauncher(
             );
             if (selection === "Yes") {
                 const authService = AuthService.getInstance(context, logs);
-
                 // Clear OAuth credentials from global state (baseUri and tenant)
                 await authService.clearOAuthCredentials();
-
-                // Clear token from secret storage
-                await context.secrets.delete(constants.getAuthCredentialSecretKey());
-
-                // Clear standalone state (like logout does)
-                await context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
-
-                // Uninstall MCP if configured
-                const { uninstallMcp } = await import('../services/mcpSettingsInjector');
-                uninstallMcp();
-
-                // Refresh UI components (same as logout)
-                await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
-                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
-                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
-                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
-                await vscode.commands.executeCommand(commands.updateCxOneAssist);
-                await vscode.commands.executeCommand(commands.setContext, commands.isStandaloneEnabled, false);
-
                 vscode.window.showInformationMessage("OAuth credentials reset successfully.");
                 logs?.info?.("OAuth credentials reset by user.");
             }
