@@ -624,6 +624,11 @@ function registerAuthenticationLauncher(
 
                 // Refresh UI components (same as logout)
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
+                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
+                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
+                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
+                await vscode.commands.executeCommand(commands.updateCxOneAssist);
+                await vscode.commands.executeCommand(commands.setContext, commands.isStandaloneEnabled, false);
                 vscode.window.showInformationMessage("OAuth credentials reset successfully.");
                 logs?.info?.("OAuth credentials reset by user.");
             }
