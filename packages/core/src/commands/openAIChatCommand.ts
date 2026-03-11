@@ -46,6 +46,11 @@ export class CopilotChatCommand {
     private iacScanner: IacScannerService;
     private ascaScanner: AscaScannerService;
     private containersScanner: ContainersScannerService;
+    private selectedAIAssistant: string = 'unknown';
+    private selectedChatExtensionId: string = '';
+    private selectedNewChatOpen: string = '';
+    private selectedChatOpenWithQueryCommand: string = '';
+    private newSelectedChatOpenWithQueryCommand: string = '';
 
     constructor(
         context: vscode.ExtensionContext,
@@ -207,6 +212,51 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, geminiAvailable: boolean): string | null {
+        let assistantType: string | null = null;
+        this.logs.info(`[DEBUG] setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, geminiAvailable: ${geminiAvailable}`);
+        if ((userPreferenceAIAssistant === 'Gemini' && !geminiAvailable) || (userPreferenceAIAssistant === 'Copilot' && !copilotAvailable)) {
+            const extensionName = userPreferenceAIAssistant === 'Gemini' ? 'Google Gemini Code Assist' : 'GitHub Copilot Chat';
+            const extensionId = userPreferenceAIAssistant === 'Gemini' ? constants.copilotChatExtensionId : constants.geminiChatExtensionId;
+
+            vscode.window.showErrorMessage(
+                `Your preferred AI assistant (${userPreferenceAIAssistant}) is not installed. Please install ${extensionName} and reload VSCode.`,
+                `Install ${userPreferenceAIAssistant}`
+            ).then(selection => {
+                if (selection === `Install ${userPreferenceAIAssistant}`) {
+                    vscode.commands.executeCommand('workbench.extensions.search', extensionId);
+                }
+            });
+            return null;
+        } else {
+            this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
+
+            if (userPreferenceAIAssistant === 'Gemini' && geminiAvailable) {
+                assistantType = constants.geminiAssistantName;
+                this.selectedChatExtensionId = constants.geminiChatExtensionId;
+                this.selectedNewChatOpen = constants.geminiNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
+                this.logs.info(`[DEBUG] Selected Gemini (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+                assistantType = constants.copilotAssistantName;
+                this.selectedChatExtensionId = constants.copilotChatExtensionId;
+                this.selectedNewChatOpen = constants.copilotNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
+                this.logs.info(`[DEBUG] Selected Copilot (user preference)`);
+            }
+        }
+
+        this.logs.info(`[DEBUG] Final assistant type: ${assistantType}`);
+        this.logs.info(`[DEBUG] Extension ID: ${this.selectedChatExtensionId}`);
+        this.logs.info(`[DEBUG] New Chat Command: ${this.selectedNewChatOpen}`);
+        this.logs.info(`[DEBUG] Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
+        this.logs.info(`[DEBUG] New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
+
+        return assistantType;
+    }
+
     private async openChatWithPrompt(question: string): Promise<void> {
 
         if (isIDE(constants.cursorAgent)) {
@@ -224,27 +274,59 @@ export class CopilotChatCommand {
             await this.handleKiroIDE(question);
             return;
         }
-        const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
-        if (!copilotChatExtension) {
-            const installOption = "Install Copilot Chat";
-            const choice = await vscode.window.showErrorMessage(
-                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                installOption
-            );
-            if (choice === installOption) {
-                await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
-            }
+        const copilotChatExtension = vscode.extensions.getExtension("GitHub.copilot-chat");
+        const geminiChatExtension = vscode.extensions.getExtension("Google.geminicodeassist");
+
+        this.logs.info(`[DEBUG] Copilot Extension ID: ${"GitHub.copilot-chat"} - Found: ${!!copilotChatExtension}`);
+        this.logs.info(`[DEBUG] Gemini Extension ID: ${"Google.geminicodeassist"} - Found: ${!!geminiChatExtension}`);
+
+        if (geminiChatExtension) {
+            this.logs.info(`[DEBUG] Gemini extension details - ID: ${geminiChatExtension.id}, Active: ${geminiChatExtension.isActive}`);
+        }
+
+        const config = vscode.workspace.getConfiguration('Checkmarx');
+
+        const userPreferenceAIAssistant = config.get<string>('AI Assistant In VSCode', 'Gemini');
+
+        const selectedAssistant = this.setSelectedAIAssistant(
+            userPreferenceAIAssistant,
+            copilotChatExtension !== undefined,
+            geminiChatExtension !== undefined
+        );
+
+        if (!selectedAssistant) {
+            this.logs.error('[DEBUG] No AI assistant could be selected');
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+        await vscode.commands.executeCommand(this.selectedNewChatOpen);
         try {
-            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (selectedAssistant === constants.geminiAssistantName) {
+                await this.sendChatWithPrompttoGemini(question);
+            } else {
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
+                this.logs.info(`[DEBUG] Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
+            }
         } catch (error) {
-            if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
-                await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (error.message.includes(`command '${this.newSelectedChatOpenWithQueryCommand}' not found`)) {
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
             }
 
         }
+    }
+
+    //Due to the reason that google block the option to send prompt directly to Gemini chat via command, we need to use workaround with clipboard and commands to open chat and paste prompt
+    private async sendChatWithPrompttoGemini(question: string) {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+        const geminiExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
+        if (!geminiExtension.isActive) {
+            await geminiExtension.activate();
+        }
+        await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
+        await vscode.env.clipboard.writeText(question);
+        await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
+        await vscode.commands.executeCommand(constants.geminiChatclipboardPasteActionCommand);
+        await sleep(200);
+        await this.pressEnter();
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {

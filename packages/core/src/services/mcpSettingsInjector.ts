@@ -21,11 +21,19 @@ interface McpServer {
 		"cx-origin": string;
 		"Authorization": string;
 	};
+	command?: string;
+	args?: string[];
+	disabled?: boolean;
+	autoApprove?: string[];
+	alwaysAllow?: string[],
+	toolChoice?: "any" | "required"
 }
 
 interface McpConfig {
 	servers?: Record<string, McpServer>;
 	mcpServers?: Record<string, McpServer>;
+	toolChoice?: string;
+	allowMCPServers?: string[];
 }
 
 /**
@@ -89,6 +97,9 @@ function getMcpConfigPath(): string {
 	}
 	if (isIDE(constants.kiroAgent)) {
 		return path.join(homeDir, ".kiro", "settings", "mcp.json");
+	}
+	if (isIDE(constants.geminiAgent)) {
+		return path.join(os.homedir(), ".gemini", "settings.json");
 	}
 	// VSCode - platform specific paths
 	if (isIDE(constants.vsCodeAgentOrginalName)) {
@@ -232,8 +243,12 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
-				"Authorization": apiKey,
+				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent : 
+				(isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ?
+					 constants.windsurfAgent : isIDE(constants.cursorAgent) ? 
+				 	constants.cursorAgent : isIDE(constants.geminiAgent) ?
+					constants.geminiAgent : "VsCode",
+					"Authorization": apiKey,
 			},
 		};
 

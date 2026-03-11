@@ -947,8 +947,19 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
+          "Checkmarx.AI Assistant In VSCode": {
+            "type": "string",
+            "description": "AI Assistant In VSCode",
+            "markdownDescription": "Select the AI Assistant to use in VSCode.",
+            "enum": [
+              "Copilot",
+              "Gemini",
+              "Manual"
+            ],
+            "default": "Copilot"
+          },
           "checkmarx.MCP": {
-            "type": "",
+            "type": "object",
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
           },
