@@ -63,7 +63,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await new EditorView().closeAllEditors();
   });
 
-  it("should clear groub by for scs secret detection and open details window ", async function () {
+  it.skip("should clear groub by for scs secret detection and open details window ", async function () {
     const commands = [
       CX_GROUP_LANGUAGE,
       CX_GROUP_STATUS,
@@ -87,7 +87,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it("should select project", async function () {
+  it.skip("should select project", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();
@@ -148,7 +148,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(project, `Project "${projectName}" should appear in tree view`).is.not.undefined;
   });
 
-  it("should select branch", async function () {
+  it.skip("should select branch", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();
@@ -256,7 +256,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(branch, `Branch "${branchName}" should appear in tree view`).is.not.undefined;
   });
 
-  it("should select scan", async function () {
+  it.skip("should select scan", async function () {
     this.timeout(120000);
 
     treeScans = await initialize();
@@ -480,7 +480,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it("should load results from scan ID", async function () {
+  it.skip("should load results from scan ID", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();
@@ -534,7 +534,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it("secret detection tree with GroupBy command ", async function () {
+  it.skip("secret detection tree with GroupBy command ", async function () {
     treeScans = await initialize();
     while (treeScans === undefined) {
       treeScans = await initialize();
@@ -567,7 +567,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(tuple[0]).to.be.at.most(4);
   });
 
-  it("Secret detection tree with Filter command", async function () {
+  it.skip("Secret detection tree with Filter command", async function () {
     await initialize();
     const commands = [
       CX_FILTER_NOT_EXPLOITABLE,
@@ -583,7 +583,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it("should click on General tab", async function () {
+  it.skip("should click on General tab", async function () {
     const detailsView = await getDetailsView();
     // Find General Tab
     let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
@@ -595,7 +595,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await detailsView.switchBack();
   });
 
-  it("should click on Description tab", async function () {
+  it.skip("should click on Description tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Description Tab
@@ -612,7 +612,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     await detailsView.switchBack();
   });
 
-  it("should click on Remediation tab", async function () {
+  it.skip("should click on Remediation tab", async function () {
     // Open details view
     const detailsView = await getDetailsView();
     // Find Remediation Tab

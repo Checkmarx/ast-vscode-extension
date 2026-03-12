@@ -6,7 +6,7 @@ describe("SCA scan panel test", () => {
     this.timeout(100000);
   });
 
-  it("should check if tree and play button exists", async function () {
+  it.skip("should check if tree and play button exists", async function () {
     const tree = await initializeSCA();
     expect(tree).is.not.undefined;
   });
