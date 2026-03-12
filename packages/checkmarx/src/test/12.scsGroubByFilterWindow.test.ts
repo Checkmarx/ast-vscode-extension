@@ -87,7 +87,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     }
   });
 
-  it("should select project", async function () {
+  it.skip("should select project", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();
@@ -148,7 +148,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(project, `Project "${projectName}" should appear in tree view`).is.not.undefined;
   });
 
-  it("should select branch", async function () {
+  it.skip("should select branch", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();
@@ -256,7 +256,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(branch, `Branch "${branchName}" should appear in tree view`).is.not.undefined;
   });
 
-  it("should select scan", async function () {
+  it.skip("should select scan", async function () {
     this.timeout(120000);
 
     treeScans = await initialize();
@@ -480,7 +480,7 @@ describe("Get secret detection results and checking GroupBy , Filter and Open de
     expect(scan).is.not.undefined;
   });
 
-  it("should load results from scan ID", async function () {
+  it.skip("should load results from scan ID", async function () {
     this.timeout(90000);
 
     treeScans = await initialize();

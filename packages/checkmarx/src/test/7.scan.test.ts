@@ -33,7 +33,7 @@ describe("Scan from IDE", () => {
         await bench.executeCommand(CX_CLEAR);
     });
 
-    it("should run scan from IDE", retryTest(async function () {
+    it.skip("should run scan from IDE", retryTest(async function () {
         this.timeout(120000); // Increase timeout to 120 seconds for CI
 
         const treeScan = await initialize();

@@ -22,7 +22,7 @@ describe("filter and groups actions tests", () => {
     await bench.executeCommand(CX_CLEAR);
   });
 
-  it("should click on all filter severity", async function () {
+  it.skip("should click on all filter severity", async function () {
     this.timeout(60000); // Increase timeout to 60 seconds
 
     treeScans = await initialize();

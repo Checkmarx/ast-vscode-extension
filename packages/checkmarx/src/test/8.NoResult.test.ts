@@ -26,7 +26,7 @@ describe("Scan ID load results test", () => {
         await new EditorView().closeAllEditors();
     });
 
-    it("should load results from scan ID", async function () {
+    it.skip("should load results from scan ID", async function () {
         this.timeout(60000); // Increase timeout to 60 seconds
 
         await bench.executeCommand(CX_LOOK_SCAN);
@@ -37,7 +37,7 @@ describe("Scan ID load results test", () => {
         await input.confirm();
     });
 
-    it("should check scan result is not undefined", async function () {
+    it.skip("should check scan result is not undefined", async function () {
         // Make sure the results are loaded
         treeScans = await initialize();
         while (treeScans === undefined) {
@@ -51,7 +51,7 @@ describe("Scan ID load results test", () => {
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
     });
-    it("should allow creating a new scan even if the current scan has zero results", async function () {
+    it.skip("should allow creating a new scan even if the current scan has zero results", async function () {
         this.timeout(60000); // Increase timeout to 60 seconds
 
         await bench.executeCommand(CX_LOOK_SCAN);

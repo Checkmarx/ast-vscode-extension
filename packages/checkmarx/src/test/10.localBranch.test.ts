@@ -34,7 +34,7 @@ function switchToBranch(branchName: string) {
 
 }
 
-describe.skip("Using a local branch if Git exists", () => {
+describe("Using a local branch if Git exists", () => {
 	let bench: Workbench;
 	let treeScans: CustomTreeSection;
 	let driver: WebDriver;
@@ -73,7 +73,7 @@ describe.skip("Using a local branch if Git exists", () => {
 		await bench.executeCommand(CX_CLEAR);
 
 	});
-	it("should select project and get local branch", retryTest(async function () {
+	it.skip("should select project and get local branch", retryTest(async function () {
 		//reload window to ensure the not exist branch is the git current branch
 		await bench.executeCommand("workbench.action.reloadWindow");
 		await sleep(3000);
@@ -90,7 +90,7 @@ describe.skip("Using a local branch if Git exists", () => {
 
 
 
-	it("should exist local branch in branches list", retryTest(async function () {
+	it.skip("should exist local branch in branches list", retryTest(async function () {
 		let treeScans = await initialize();
 		await bench.executeCommand(CX_SELECT_BRANCH);
 
@@ -100,14 +100,14 @@ describe.skip("Using a local branch if Git exists", () => {
 		expect(branch).is.not.undefined;
 	}, 3));
 
-	it("should not get a scans with local branch", retryTest(async function () {
+	it.skip("should not get a scans with local branch", retryTest(async function () {
 		let treeScans = await initialize();
 		let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
 		expect(scan).is.undefined;
 
 	}, 3));
 
-	it("should run scan with local branch", retryTest(async function () {
+	it.skip("should run scan with local branch", retryTest(async function () {
 		await bench.executeCommand("ast-results.createScan");
 
 		let firstNotification = await waitForNotificationWithTimeout(5000)
@@ -122,7 +122,7 @@ describe.skip("Using a local branch if Git exists", () => {
 
 	}, 3));
 
-	it("should select project and get branch main with scan", retryTest(async function () {
+	it.skip("should select project and get branch main with scan", retryTest(async function () {
 		const branchName = "main";
 		switchToBranch(branchName);
 		await bench.executeCommand("workbench.action.reloadWindow");
