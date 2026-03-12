@@ -15,6 +15,7 @@ import {
   CX_KICS_NAME,
   ASCA_REALTIME_SCANNER_CONSTANTS,
 } from "./utils/constants";
+import { loginWithMockToken, logoutIfVisible } from "./utils/utils";
 import { waitStatusBar } from "./utils/waiters";
 
 describe("Extension settings tests", () => {
@@ -31,12 +32,16 @@ describe("Extension settings tests", () => {
     await bottomBar.toggle(false);
 
     // Inject a mock token into secrets before running tests using the new command
-    await bench.executeCommand("ast-results.mockTokenTest");
-    // Short delay to allow the extension state to update
-    await new Promise((res) => setTimeout(res, 2000));
+    await loginWithMockToken(bench);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(60000);
+    try {
+      await logoutIfVisible(bench, driver);
+    } catch {
+      // Keep teardown resilient so tests don't fail on cleanup edge-cases.
+    }
     await new EditorView().closeAllEditors();
   });
 

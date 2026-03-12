@@ -7,10 +7,14 @@ import {
     Workbench
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { retryTest, sleep } from "./utils/utils";
+import {
+    confirmLogoutToast,
+    loginWithMockToken,
+    retryTest,
+    sleep
+} from "./utils/utils";
 
 const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const CX_MOCK_TOKEN_COMMAND = "ast-results.mockTokenTest";
 const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 
 const WAIT_MS = {
@@ -173,32 +177,11 @@ async function ensureLogoutButtonVisible(bench: Workbench, webView: WebView) {
 
     // Some runs start with a logged-out session; seed a token first so logout flow can be validated.
     await safeSwitchBack(webView);
-    await bench.executeCommand(CX_MOCK_TOKEN_COMMAND);
-    await sleep(WAIT_MS.medium);
+    await loginWithMockToken(bench, { waitMs: WAIT_MS.medium });
     await new EditorView().closeAllEditors();
     await openAuthenticationEditor(bench);
     await webView.switchToFrame(WAIT_MS.refreshFrame);
     await waitForVisibleElementById(webView, "logoutButton", WAIT_MS.webviewFrame);
-}
-
-/**
- * Confirms the logout toast prompt when it appears.
- *
- * Returns `true` if the expected confirmation prompt was found and accepted,
- * otherwise `false` when no matching notification is present.
- */
-async function handleLogoutConfirmation(driver: WebDriver): Promise<boolean> {
-    const notifications = await driver.findElements(By.className("notification-toast"));
-    for (const notification of notifications) {
-        const notificationText = await notification.getText();
-        if (notificationText.includes("Are you sure you want to log out?")) {
-            const yesButton = await notification.findElement(By.css(".monaco-button"));
-            await yesButton.click();
-            await sleep(WAIT_MS.quickFrame);
-            return true;
-        }
-    }
-    return false;
 }
 
 describe("Checkmarx OAuth Authentication Tests", () => {
@@ -228,8 +211,7 @@ describe("Checkmarx OAuth Authentication Tests", () => {
     after(async function () {
         this.timeout(30000);
         await safeSwitchBack(new WebView());
-        await bench.executeCommand(CX_MOCK_TOKEN_COMMAND);
-        await sleep(WAIT_MS.short);
+        await loginWithMockToken(bench, { waitMs: WAIT_MS.short });
         await new EditorView().closeAllEditors();
     });
 
@@ -248,7 +230,11 @@ describe("Checkmarx OAuth Authentication Tests", () => {
                 await logoutButtons[0].click();
                 await safeSwitchBack(webView);
                 await sleep(WAIT_MS.medium);
-                await handleLogoutConfirmation(driver);
+                await confirmLogoutToast(
+                    driver,
+                    "Are you sure you want to log out?",
+                    WAIT_MS.quickFrame
+                );
                 await webView.switchToFrame(WAIT_MS.refreshFrame);
             }
 

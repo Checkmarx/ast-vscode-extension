@@ -8,48 +8,94 @@ import {
   Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
-import { getDetailsView, getResults, initialize, retryTest, sleep } from "./utils/utils";
-import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
+import {
+  getDetailsView,
+  focusPanelAndCollapseOthers,
+  getResults,
+  initialize,
+  loginWithMockToken,
+  logoutIfVisible,
+  retryTest,
+  sleep,
+} from "./utils/utils";
+import { CHANGES_CONTAINER, CHANGES_LABEL, CODEBASHING_HEADER, COMMENT_BOX, CX_CLEAR, CX_LOOK_SCAN, GENERAL_LABEL, LEARN_MORE_LABEL, SAST_TYPE, SCAN_KEY_TREE_LABEL, UPDATE_BUTTON, WEBVIEW_TITLE } from "./utils/constants";
 import { waitByClassName } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
+
+const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
+
+async function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 describe("Scan ID load results test", () => {
   let bench: Workbench;
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
 
+  async function executeCommandWithRetry(command: string, retries = 3): Promise<void> {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await bench.executeCommand(command);
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt < retries) {
+          await wait(2000);
+        }
+      }
+    }
+    throw lastError;
+  }
+
   before(async function () {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
+    await initialize();
+    await loginWithMockToken(bench, {
+      executeCommandWithRetry: executeCommandWithRetry,
+      waitMs: 3000,
+    });
+    await executeCommandWithRetry(CX_CLEAR);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(60000);
+    try {
+      await logoutIfVisible(bench, driver, {
+        executeCommandWithRetry: executeCommandWithRetry,
+      });
+    } catch {
+      // Keep teardown resilient.
+    }
+    await executeCommandWithRetry(CX_CLEAR);
     await new EditorView().closeAllEditors();
   });
 
-  it("should load results from scan ID", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+  it("should load results from scan ID", retryTest(async function () {
+    this.timeout(60000);
 
     await bench.executeCommand(CX_LOOK_SCAN);
-    //let input = await new InputBox();
-    const input = await InputBox.create()
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+    const input = await InputBox.create();
+    await sleep(1000);
     await input.setText(SCAN_ID);
     await input.confirm();
     await sleep(5000);
-  });
+  }));
 
   it("should check open webview and codebashing link", retryTest(async function () {
     // Make sure the results are loaded
     treeScans = await initialize();
+    await focusPanelAndCollapseOthers(CHECKMARX_RESULTS_PANEL_TITLE);
     while (treeScans === undefined) {
       treeScans = await initialize();
     }
     let scan = await treeScans?.findItem(
       SCAN_KEY_TREE_LABEL
     );
+
     // Get results and open details page
     let sastNode = await scan?.findChildItem(SAST_TYPE);
     if (sastNode === undefined) {
@@ -83,7 +129,7 @@ describe("Scan ID load results test", () => {
 
   it("should click on details Learn More tab", async function () {
     // Open details view
-    await sleep(5000)
+    sleep(5000)
     let detailsView = await getDetailsView();
     if (!detailsView) {
       detailsView = await getDetailsView();
