@@ -112,6 +112,11 @@ export async function triageSubmit(
     vscode.window.showErrorMessage(messages.scaNoteMandatory);
     return;
   }
+
+  // Store original values before any modifications
+  const originalSeverity = result.severity;
+  const originalState = result.state;
+
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
     logs.info(messages.triageUpdateSeverity(data.severitySelection));
@@ -131,10 +136,17 @@ export async function triageSubmit(
     result.setState(data.stateSelection);
   }
 
+  // Check for actual changes in dropdowns
+  const hasSeverityChange = data.severitySelection.length > 0 &&
+    data.severitySelection !== originalSeverity;
+
+  const hasStateChange = data.stateSelection.length > 0 &&
+    data.stateSelection !== originalState;
+
   // Case the submit is sent without any change
   if (
-    data.stateSelection.length === 0 &&
-    data.severitySelection.length === 0 &&
+    !hasSeverityChange &&
+    !hasStateChange &&
     data.comment.length === 0
   ) {
     vscode.window.showErrorMessage(messages.triageNoChange);
