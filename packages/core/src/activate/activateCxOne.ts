@@ -603,34 +603,15 @@ function registerAuthenticationLauncher(
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.resetAuthenticationCache, async () => {
             const selection = await vscode.window.showWarningMessage(
-                "Do you want to reset the OAuth credentials?",
+                "Are you sure you want to reset Authentication cache?",
                 "Yes",
                 "Cancel"
             );
             if (selection === "Yes") {
                 const authService = AuthService.getInstance(context, logs);
-                // Clear OAuth credentials from global state (baseUri and tenant)
                 await authService.clearOAuthCredentials();
-
-                // Clear token from secret storage
-                await context.secrets.delete(constants.getAuthCredentialSecretKey());
-
-                // Clear standalone state (like logout does)
-                await context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
-
-                // Uninstall MCP if configured
-                const { uninstallMcp } = await import('../services/mcpSettingsInjector');
-                uninstallMcp();
-
-                // Refresh UI components (same as logout)
-                await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
-                await vscode.commands.executeCommand(commands.refreshScaStatusBar);
-                await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
-                await vscode.commands.executeCommand(commands.refreshRiskManagementView);
-                await vscode.commands.executeCommand(commands.updateCxOneAssist);
-                await vscode.commands.executeCommand(commands.setContext, commands.isStandaloneEnabled, false);
-                vscode.window.showInformationMessage("OAuth credentials reset successfully.");
-                logs?.info?.("OAuth credentials reset by user.");
+                vscode.window.showInformationMessage("Authentication cache cleared successfully.");
+                logs?.info?.("Authentication cache cleared successfully.");
             }
         }),
     );
