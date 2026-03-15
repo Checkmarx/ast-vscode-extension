@@ -954,6 +954,7 @@
             "enum": [
               "Copilot",
               "Gemini",
+              "Claude",
               "Manual"
             ],
             "default": "Copilot"

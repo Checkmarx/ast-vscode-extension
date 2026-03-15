@@ -165,6 +165,7 @@ export const constants = {
   windsurfNextAgent: "Windsurf - Next",
   kiroAgent: "Kiro",
   geminiAgent: "Gemini",
+  claudeAgent: "Claude",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -263,6 +264,7 @@ export const constants = {
   //Agent Assistants
   geminiAssistantName: "gemini",
   copilotAssistantName: "copilot",
+  claudeAssistantName: "claude",
   noneAssistantName: "none",
   manualSetupAssistName: "manual",
 
@@ -346,6 +348,12 @@ export const constants = {
   geminiChatOpenWithQueryCommand: "workbench.view.extension.gemini-code-assist",
   newGeminiChatOpenWithQueryCommand: "cloudcode.gemini.chatView.focus",
   geminiChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
+
+  claudeChatExtensionId: "anthropic.claude-code",
+  claudeNewChatOpen: "claude-vscode.sidebar.open",
+  claudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
