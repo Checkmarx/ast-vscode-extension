@@ -296,13 +296,22 @@ export class Cx implements CxPlatform {
         return r;
     }
 
+    private getSelectedAIAssistant(): string {
+        const config = vscode.workspace.getConfiguration("Checkmarx");
+        const setting = config.get<string>("AI Assistant In VSCode", "Copilot");
+        if (setting === "Manual" || !setting) {
+            return constants.vsCodeAgent;
+        }
+        return setting;
+    }
+
     getBaseAstConfiguration() {
         const config = new CxConfig();
         config.additionalParameters = vscode.workspace
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
 
-        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : this.getSelectedAIAssistant();
         return config;
     }
 
@@ -897,8 +906,7 @@ export class Cx implements CxPlatform {
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
             isIDE(constants.cursorAgent) ? constants.cursorAgent :
                 isIDE(constants.windsurfAgent) ? "Cascade" :
-                    vscode.extensions.getExtension(constants.geminiChatExtensionId)?.isActive
-                        ? constants.geminiAgent : constants.geminiAssistantName;
+                    this.getSelectedAIAssistant();
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
@@ -928,20 +936,21 @@ export class Cx implements CxPlatform {
             }
 
             const cxWrapper = new CxWrapper(config);
+            const vsCodeAssistant = this.getSelectedAIAssistant();
             const aiProvider = isIDE(constants.kiroAgent)
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
                     : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent))
                         ? "Cascade"
-                        : "Copilot";
+                        : vsCodeAssistant;
             const agent = isIDE(constants.kiroAgent)
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
                     : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
                         ? constants.windsurfAgent
-                        : constants.vsCodeAgent;
+                        : vsCodeAssistant;
 
             // Build subType with fix outcome details
             const subTypeData = {
