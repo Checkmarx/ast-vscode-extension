@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.50.0",
+  "version": "2.52.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -1130,6 +1130,9 @@
   },
   "overrides": {
     "@isaacs/brace-expansion": "5.0.1",
-    "qs": "6.14.2"
+    "qs": "6.14.2",
+    "mocha": {
+      "serialize-javascript": "7.0.3"
+    }
   }
 }
