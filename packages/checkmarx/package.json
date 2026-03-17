@@ -953,9 +953,7 @@
             "markdownDescription": "Select the AI Assistant to use in VSCode.",
             "enum": [
               "Copilot",
-              "Gemini",
-              "Claude",
-              "Manual"
+              "Disable"
             ],
             "default": "Copilot"
           },
