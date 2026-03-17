@@ -334,6 +334,10 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
+  geminiChatExtensionId: "Google.geminicodeassist",
+
+  claudeChatExtensionId: "anthropic.claude-code",
+
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
