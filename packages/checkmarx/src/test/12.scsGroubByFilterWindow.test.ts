@@ -1,627 +1,718 @@
 import {
-  By,
-  CustomTreeSection,
-  EditorView,
-  InputBox,
-  VSBrowser,
-  WebDriver,
-  Workbench,
-  BottomBarPanel,
+	By,
+	CustomTreeSection,
+	EditorView,
+	InputBox,
+	VSBrowser,
+	WebDriver,
+	WebView,
+	Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
-  getDetailsView,
-  getResults,
-  initialize,
-  validateRootNode,
-  getQuickPickSelector,
-  clickFirstVulnerability,
+	focusPanelAndCollapseOthers,
+	getDetailsView,
+	initialize,
+	loginWithMockToken,
+	logoutIfVisible,
+	sleep,
 } from "./utils/utils";
 import {
-  CHANGES_LABEL,
-  CX_LOOK_SCAN,
-  GENERAL_LABEL,
-  LEARN_MORE_LABEL,
-  SCAN_KEY_TREE_LABEL,
-  SCS_SECRET_DETECTION_Type,
-  CX_GROUP_STATUS,
-  CX_GROUP_STATE,
-  CX_GROUP_FILE,
-  CX_GROUP_SEVERITY,
-  CX_SELECT_PROJECT,
-  PROJECT_KEY_TREE,
-  CX_SELECT_BRANCH,
-  BRANCH_KEY_TREE,
-  CX_SELECT_SCAN,
-  SCAN_KEY_TREE,
-  CX_FILTER_NOT_EXPLOITABLE,
-  CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
-  CX_FILTER_CONFIRMED,
-  CX_FILTER_TO_VERIFY,
-  CX_FILTER_URGENT,
-  CX_FILTER_NOT_IGNORED,
-  CX_CLEAR,
-  CX_GROUP_LANGUAGE,
-  CX_GROUP_QUERY_NAME,
+	CHANGES_LABEL,
+	CX_CLEAR,
+	CX_LOOK_SCAN,
+	GENERAL_LABEL,
+	LEARN_MORE_LABEL,
+	SCAN_KEY_TREE_LABEL,
+	SCS_SECRET_DETECTION_Type,
 } from "./utils/constants";
-import { SCAN_ID, CX_TEST_SCAN_PROJECT_NAME, CX_TEST_SCAN_BRANCH_NAME } from "./utils/envs";
-
-describe("Get secret detection results and checking GroupBy , Filter and Open details window", () => {
-  let bench: Workbench;
-  let treeScans: CustomTreeSection;
-  let driver: WebDriver;
-
-  before(async function () {
-    this.timeout(100000); // Increase timeout to 100 seconds
-    bench = new Workbench();
-    driver = VSBrowser.instance.driver;
-    await new Workbench().executeCommand("workbench.action.closeActiveEditor");
-    await bench.executeCommand(CX_CLEAR);
-  });
-
-  after(async () => {
-    await new EditorView().closeAllEditors();
-  });
-
-  it.skip("should clear groub by for scs secret detection and open details window ", async function () {
-    const commands = [
-      CX_GROUP_LANGUAGE,
-      CX_GROUP_STATUS,
-      CX_GROUP_STATE,
-      CX_GROUP_QUERY_NAME,
-      CX_GROUP_FILE,
-      CX_FILTER_NOT_EXPLOITABLE,
-      CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
-      CX_FILTER_CONFIRMED,
-      CX_FILTER_TO_VERIFY,
-      CX_FILTER_URGENT,
-      CX_FILTER_NOT_IGNORED,
-      CX_GROUP_FILE,
-      CX_GROUP_STATE,
-      CX_GROUP_STATUS,
-      CX_GROUP_SEVERITY,
-    ];
-
-    for (var index in commands) {
-      await bench.executeCommand(commands[index]);
-    }
-  });
-
-  it.skip("should select project", async function () {
-    this.timeout(90000);
-
-    treeScans = await initialize();
-    await bench.executeCommand(CX_SELECT_PROJECT);
-
-    let input: InputBox | undefined;
-    const maxRetries = 30;
-    const retryDelay = 800;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        input = await InputBox.create();
-        if (input) {
-          break;
-        }
-      } catch (error) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!input) {
-      throw new Error("InputBox did not open in time after project selection command");
-    }
-
-    await input.setText(CX_TEST_SCAN_PROJECT_NAME);
-
-    let projectName: string | undefined;
-    const quickPickRetries = 20;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      const projectList = await input.getQuickPicks();
-      if (projectList.length > 0) {
-        projectName = await projectList[0].getText();
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    if (!projectName) {
-      throw new Error("Failed to load project list in QuickPickSelector");
-    }
-
-    await input.setText(projectName);
-    await input.confirm();
-
-    let project: any;
-    const treeRetries = 20;
-    const treeRetryDelay = 500;
-
-    for (let i = 0; i < treeRetries; i++) {
-      project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-      if (project) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeRetryDelay));
-    }
-
-    expect(project, `Project "${projectName}" should appear in tree view`).is.not.undefined;
-  });
-
-  it.skip("should select branch", async function () {
-    this.timeout(90000);
-
-    treeScans = await initialize();
-
-    // Select project first (prerequisite for branch selection)
-    await bench.executeCommand(CX_SELECT_PROJECT);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let projectInput: InputBox | undefined;
-    const maxRetries = 30;
-    const retryDelay = 800;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        projectInput = await InputBox.create();
-        if (projectInput) {
-          break;
-        }
-      } catch (error) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!projectInput) {
-      throw new Error("Project InputBox did not open in time");
-    }
-
-    await projectInput.setText(CX_TEST_SCAN_PROJECT_NAME);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let projectName: string | undefined;
-    const quickPickRetries = 20;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      const projectList = await projectInput.getQuickPicks();
-      if (projectList.length > 0) {
-        projectName = await projectList[0].getText();
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    if (!projectName) {
-      throw new Error("Failed to load project list");
-    }
-
-    await projectInput.setText(projectName);
-    await projectInput.confirm();
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Select branch
-    await bench.executeCommand(CX_SELECT_BRANCH);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let branchInput: InputBox | undefined;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        branchInput = await InputBox.create();
-        if (branchInput) {
-          break;
-        }
-      } catch (error) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!branchInput) {
-      throw new Error("Branch InputBox did not open in time after branch selection command");
-    }
-
-    await branchInput.setText(CX_TEST_SCAN_BRANCH_NAME);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let branchName: string | undefined;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      const branchList = await branchInput.getQuickPicks();
-      if (branchList.length > 0) {
-        branchName = await branchList[0].getText();
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    if (!branchName) {
-      throw new Error("Failed to load branch list in QuickPickSelector");
-    }
-
-    await branchInput.setText(branchName);
-    await branchInput.confirm();
-
-    let branch: any;
-    const treeRetries = 20;
-    const treeRetryDelay = 500;
-
-    for (let i = 0; i < treeRetries; i++) {
-      branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-      if (branch) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeRetryDelay));
-    }
-
-    expect(branch, `Branch "${branchName}" should appear in tree view`).is.not.undefined;
-  });
-
-  it.skip("should select scan", async function () {
-    this.timeout(120000);
-
-    treeScans = await initialize();
-
-    // Select project (prerequisite)
-    await bench.executeCommand(CX_SELECT_PROJECT);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let projectInput: InputBox | undefined;
-    const maxRetries = 30;
-    const retryDelay = 800;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        projectInput = await InputBox.create();
-        if (projectInput) {
-          break;
-        }
-      } catch (error) {
-        if (i === maxRetries - 1) {
-          throw new Error(
-            `Failed to create project InputBox after ${maxRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!projectInput) {
-      throw new Error("Project InputBox is undefined after all retries");
-    }
-
-    await projectInput.setText(CX_TEST_SCAN_PROJECT_NAME);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let projectName: string | undefined;
-    const quickPickRetries = 20;
-    const quickPickDelay = 500;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      try {
-        projectName = await getQuickPickSelector(projectInput);
-        if (projectName && projectName.trim() !== "") {
-          break;
-        }
-      } catch (error) {
-        if (i === quickPickRetries - 1) {
-          throw new Error(
-            `Failed to get project quick pick after ${quickPickRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
-      }
-    }
-
-    if (!projectName || projectName.trim() === "") {
-      throw new Error("Project name is empty after all retries");
-    }
-
-    await projectInput.setText(projectName);
-    await projectInput.confirm();
-
-    let project;
-    const treeRetries = 20;
-    const treeDelay = 500;
-
-    for (let i = 0; i < treeRetries; i++) {
-      try {
-        project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
-        if (project) {
-          break;
-        }
-      } catch (error) {
-        // Continue retrying
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeDelay));
-    }
-
-    expect(project).is.not.undefined;
-
-    // Select branch (prerequisite)
-    await bench.executeCommand(CX_SELECT_BRANCH);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let branchInput: InputBox | undefined;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        branchInput = await InputBox.create();
-        if (branchInput) {
-          break;
-        }
-      } catch (error) {
-        if (i === maxRetries - 1) {
-          throw new Error(
-            `Failed to create branch InputBox after ${maxRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!branchInput) {
-      throw new Error("Branch InputBox is undefined after all retries");
-    }
-
-    await branchInput.setText(CX_TEST_SCAN_BRANCH_NAME);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let branchName: string | undefined;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      try {
-        branchName = await getQuickPickSelector(branchInput);
-        if (branchName && branchName.trim() !== "") {
-          break;
-        }
-      } catch (error) {
-        if (i === quickPickRetries - 1) {
-          throw new Error(
-            `Failed to get branch quick pick after ${quickPickRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
-      }
-    }
-
-    if (!branchName || branchName.trim() === "") {
-      throw new Error("Branch name is empty after all retries");
-    }
-
-    await branchInput.setText(branchName);
-    await branchInput.confirm();
-
-    let branch;
-
-    for (let i = 0; i < treeRetries; i++) {
-      try {
-        branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
-        if (branch) {
-          break;
-        }
-      } catch (error) {
-        // Continue retrying
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeDelay));
-    }
-
-    expect(branch).is.not.undefined;
-
-    // Select scan
-    await bench.executeCommand(CX_SELECT_SCAN);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let scanInput: InputBox | undefined;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        scanInput = await InputBox.create();
-        if (scanInput) {
-          break;
-        }
-      } catch (error) {
-        if (i === maxRetries - 1) {
-          throw new Error(
-            `Failed to create scan InputBox after ${maxRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!scanInput) {
-      throw new Error("Scan InputBox is undefined after all retries");
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let scanLabel: string | undefined;
-
-    for (let i = 0; i < quickPickRetries; i++) {
-      try {
-        scanLabel = await getQuickPickSelector(scanInput);
-        if (scanLabel && scanLabel.trim() !== "") {
-          break;
-        }
-      } catch (error) {
-        if (i === quickPickRetries - 1) {
-          throw new Error(
-            `Failed to get scan quick pick after ${quickPickRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, quickPickDelay));
-      }
-    }
-
-    if (!scanLabel || scanLabel.trim() === "") {
-      throw new Error("Scan label is empty after all retries");
-    }
-
-    await scanInput.setText(scanLabel);
-    await scanInput.confirm();
-
-    const scanParts: string[] = scanLabel.split(" ");
-    const formattedId: string = scanParts.slice(-2).join(" ");
-
-    let scan;
-
-    for (let i = 0; i < treeRetries; i++) {
-      try {
-        scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
-        if (scan) {
-          break;
-        }
-      } catch (error) {
-        // Continue retrying
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeDelay));
-    }
-
-    expect(scan).is.not.undefined;
-  });
-
-  it.skip("should load results from scan ID", async function () {
-    this.timeout(90000);
-
-    treeScans = await initialize();
-    await bench.executeCommand(CX_LOOK_SCAN);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let input: InputBox | undefined;
-    const maxRetries = 30;
-    const retryDelay = 800;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        input = await InputBox.create();
-        if (input) {
-          break;
-        }
-      } catch (error) {
-        if (i === maxRetries - 1) {
-          throw new Error(
-            `Failed to create InputBox after ${maxRetries} attempts: ${error}`
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!input) {
-      throw new Error("InputBox is undefined after all retries");
-    }
-
-    await input.setText(SCAN_ID);
-    await input.confirm();
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    let scan;
-    const treeRetries = 20;
-    const treeDelay = 500;
-
-    for (let i = 0; i < treeRetries; i++) {
-      try {
-        scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-        if (scan) {
-          break;
-        }
-      } catch (error) {
-        // Continue retrying
-      }
-      await new Promise((resolve) => setTimeout(resolve, treeDelay));
-    }
-
-    expect(scan).is.not.undefined;
-  });
-
-  it.skip("secret detection tree with GroupBy command ", async function () {
-    treeScans = await initialize();
-    while (treeScans === undefined) {
-      treeScans = await initialize();
-    }
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
-
-    let secretDetectionNode = await scan?.findChildItem(
-      SCS_SECRET_DETECTION_Type
-    );
-    if (secretDetectionNode === undefined) {
-      secretDetectionNode = await scan?.findChildItem(
-        SCS_SECRET_DETECTION_Type
-      );
-    }
-    await clickFirstVulnerability(secretDetectionNode);
-
-    const commands = [
-      CX_GROUP_FILE,
-      CX_GROUP_SEVERITY,
-      CX_GROUP_STATE,
-      CX_GROUP_STATUS,
-    ];
-
-    let tuple = await validateRootNode(scan);
-
-    for (const command of commands) {
-      await bench.executeCommand(command);
-    }
-
-    expect(tuple[0]).to.be.at.most(4);
-  });
-
-  it.skip("Secret detection tree with Filter command", async function () {
-    await initialize();
-    const commands = [
-      CX_FILTER_NOT_EXPLOITABLE,
-      CX_FILTER_PROPOSED_NOT_EXPLOITABLE,
-      CX_FILTER_CONFIRMED,
-      CX_FILTER_TO_VERIFY,
-      CX_FILTER_URGENT,
-      CX_FILTER_NOT_IGNORED,
-    ];
-    for (var index in commands) {
-      await bench.executeCommand(commands[index]);
-      expect(index).not.to.be.undefined;
-    }
-  });
-
-  it.skip("should click on General tab", async function () {
-    const detailsView = await getDetailsView();
-    // Find General Tab
-    let generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
-    while (generalTab === undefined) {
-      generalTab = await detailsView.findWebElement(By.id(GENERAL_LABEL));
-    }
-    expect(generalTab).is.not.undefined;
-    await generalTab.click();
-    await detailsView.switchBack();
-  });
-
-  it.skip("should click on Description tab", async function () {
-    // Open details view
-    const detailsView = await getDetailsView();
-    // Find Description Tab
-    let descriptionTab = await detailsView.findWebElement(
-      By.id(LEARN_MORE_LABEL)
-    );
-    while (descriptionTab === undefined) {
-      descriptionTab = await detailsView.findWebElement(
-        By.id(LEARN_MORE_LABEL)
-      );
-    }
-    expect(descriptionTab).is.not.undefined;
-    await descriptionTab.click();
-    await detailsView.switchBack();
-  });
-
-  it.skip("should click on Remediation tab", async function () {
-    // Open details view
-    const detailsView = await getDetailsView();
-    // Find Remediation Tab
-    let remediationTab = await detailsView.findWebElement(By.id(CHANGES_LABEL));
-    while (remediationTab === undefined) {
-      remediationTab = await detailsView.findWebElement(By.id(CHANGES_LABEL));
-    }
-    expect(remediationTab).is.not.undefined;
-    await remediationTab.click();
-    await detailsView.switchBack();
-  });
+import { SCAN_ID } from "./utils/envs";
+
+const SUITE_SETUP_TIMEOUT_MS = 120000;
+const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
+const TEST_TIMEOUT_MS = 120000;
+
+const COMMAND_RETRIES = 3;
+const INPUTBOX_RETRIES = 30;
+const INPUTBOX_RETRY_DELAY_MS = 800;
+const TREE_RETRIES = 30;
+const TREE_RETRY_DELAY_MS = 700;
+const QUICK_PICK_RETRIES = 20;
+const QUICK_PICK_RETRY_DELAY_MS = 500;
+const MENU_OPEN_RETRIES = 6;
+
+const OPEN_PICKER_DELAY_MS = 1000;
+const POST_SELECTION_DELAY_MS = 2500;
+const AUTH_WAIT_MS = 3000;
+const MENU_REFRESH_DELAY_MS = 1000;
+const MENU_TOGGLE_TIMEOUT_MS = 8000;
+const LONG_TEST_TIMEOUT_MS = 300000;
+
+const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
+
+const GROUP_BY_MENU_LABELS = [
+	"Group by: Language",
+	"Group by: Status",
+	"Group by: State",
+	"Group by: Vulnerability Type",
+	"Group by: File",
+	"Group by: Severity",
+];
+
+const STATE_FILTER_MENU_LABELS = [
+	"Filter: Not Exploitable",
+	"Filter: Proposed Not Exploitable",
+	"Filter: Confirmed",
+	"Filter: To Verify",
+	"Filter: Urgent",
+	"Filter: Not Ignored",
+];
+
+type MenuStatus = { label: string; isActive: boolean };
+
+describe("Secret detection results tests (OAuth flow)", () => {
+	let bench: Workbench;
+	let treeScans: CustomTreeSection;
+	let driver: WebDriver;
+
+	async function executeCommandWithRetry(command: string, retries = COMMAND_RETRIES): Promise<void> {
+		let lastError: unknown;
+
+		for (let attempt = 1; attempt <= retries; attempt++) {
+			try {
+				await bench.executeCommand(command);
+				return;
+			} catch (error) {
+				lastError = error;
+				if (attempt < retries) {
+					await sleep(POST_SELECTION_DELAY_MS);
+				}
+			}
+		}
+
+		throw lastError;
+	}
+
+	async function initializeTree(): Promise<CustomTreeSection> {
+		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
+			const tree = await initialize();
+			if (tree) {
+				treeScans = tree;
+				return tree;
+			}
+
+			await sleep(TREE_RETRY_DELAY_MS);
+		}
+
+		throw new Error("Could not initialize Checkmarx results tree");
+	}
+
+	async function waitForInputBox(contextLabel: string): Promise<InputBox> {
+		for (let attempt = 1; attempt <= INPUTBOX_RETRIES; attempt++) {
+			try {
+				return await InputBox.create();
+			} catch {
+				if (attempt < INPUTBOX_RETRIES) {
+					await sleep(INPUTBOX_RETRY_DELAY_MS);
+				}
+			}
+		}
+
+		throw new Error(`${contextLabel} InputBox did not open in time`);
+	}
+
+	async function waitForTreeItem(treeItemLabel: string, contextLabel: string): Promise<any> {
+		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
+			try {
+				const item = await treeScans?.findItem(treeItemLabel);
+				if (item) {
+					return item;
+				}
+			} catch {
+				// Continue retrying while tree is refreshing.
+			}
+
+			await sleep(TREE_RETRY_DELAY_MS);
+		}
+
+		throw new Error(`Could not find ${contextLabel} in results tree`);
+	}
+
+	async function openScanById(scanId: string): Promise<void> {
+		await executeCommandWithRetry(CX_LOOK_SCAN);
+		await sleep(OPEN_PICKER_DELAY_MS);
+
+		const input = await waitForInputBox("scan id");
+		await input.setText(scanId);
+		await input.confirm();
+		await sleep(5000);
+	}
+
+	function normalizeMenuItemLabel(rawLabel: string): string {
+		return rawLabel.replace(/\u00AD/g, "").replace(/\s+/g, " ").trim();
+	}
+
+	function parseMenuItemLabel(rawLabel: string): MenuStatus {
+		const normalizedLabel = normalizeMenuItemLabel(rawLabel);
+		const isActive = normalizedLabel.startsWith("\u2713 ");
+
+		return {
+			label: isActive ? normalizedLabel.slice(2).trim() : normalizedLabel,
+			isActive,
+		};
+	}
+
+	async function focusResultsPanelAndSelectScan(): Promise<void> {
+		await focusPanelAndCollapseOthers(CHECKMARX_RESULTS_PANEL_TITLE);
+
+		try {
+			treeScans = await initialize();
+			const scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+			if (scan) {
+				await scan.select();
+				await sleep(300);
+			}
+		} catch {
+			// Best-effort: continue even if focus/select fails.
+		}
+	}
+
+	async function openResultsMoreActionsMenu(): Promise<any | undefined> {
+		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
+			await focusResultsPanelAndSelectScan();
+
+			const section = await initialize();
+			if (!section) {
+				await sleep(MENU_REFRESH_DELAY_MS);
+				continue;
+			}
+
+			try {
+				const menu = await section.moreActions();
+				if (menu) {
+					return menu;
+				}
+			} catch {
+				// Retry while panel actions are still initializing.
+			}
+
+			await sleep(MENU_REFRESH_DELAY_MS);
+		}
+
+		return undefined;
+	}
+
+	async function readGroupByStatuses(): Promise<MenuStatus[]> {
+		const menu = await openResultsMoreActionsMenu();
+		if (!menu) {
+			return [];
+		}
+
+		try {
+			const items = await menu.getItems();
+			const statuses: MenuStatus[] = [];
+
+			for (const item of items) {
+				const parsed = parseMenuItemLabel(await item.getLabel());
+				if (GROUP_BY_MENU_LABELS.includes(parsed.label)) {
+					statuses.push(parsed);
+				}
+			}
+
+			return statuses;
+		} catch {
+			return [];
+		} finally {
+			await menu.close().catch(() => {
+				// Ignore close failures when menu auto-closes.
+			});
+		}
+	}
+
+	async function tryToggleGroupByOption(menuLabel: string): Promise<boolean> {
+		const initialStatuses = await readGroupByStatuses();
+		const initialEntry = initialStatuses.find((status) => status.label === menuLabel);
+		if (!initialEntry) {
+			return false;
+		}
+
+		const desiredState = !initialEntry.isActive;
+
+		for (let attempt = 1; attempt <= 2; attempt++) {
+			if (attempt > 1) {
+				const midStatuses = await readGroupByStatuses();
+				const midEntry = midStatuses.find((status) => status.label === menuLabel);
+				if (midEntry && midEntry.isActive === desiredState) {
+					return true;
+				}
+			}
+
+			const menu = await openResultsMoreActionsMenu();
+			if (!menu) {
+				return false;
+			}
+
+			try {
+				const items = await menu.getItems();
+				let targetItem: any;
+
+				for (const item of items) {
+					const parsed = parseMenuItemLabel(await item.getLabel());
+					if (parsed.label === menuLabel) {
+						targetItem = item;
+						break;
+					}
+				}
+
+				if (!targetItem) {
+					return false;
+				}
+
+				await targetItem.select();
+			} catch {
+				return false;
+			} finally {
+				await menu.close().catch(() => {
+					// Ignore close failures when menu auto-closes after selection.
+				});
+			}
+
+			const giveUpAt = Date.now() + MENU_TOGGLE_TIMEOUT_MS;
+			while (Date.now() < giveUpAt) {
+				await sleep(MENU_REFRESH_DELAY_MS);
+				const latestStatuses = await readGroupByStatuses();
+				const latestEntry = latestStatuses.find((status) => status.label === menuLabel);
+				if (latestEntry && latestEntry.isActive === desiredState) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	async function openFilterDropdownFromHeader(): Promise<any | undefined> {
+		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
+			await focusResultsPanelAndSelectScan();
+
+			const section = await initialize();
+			if (!section) {
+				await sleep(MENU_REFRESH_DELAY_MS);
+				continue;
+			}
+
+			let filterAction: any = await (section as any).getAction("Filter");
+			if (!filterAction && typeof (section as any).getActions === "function") {
+				const actions = await (section as any).getActions();
+				for (const action of actions) {
+					const actionLabel = `${await action.getLabel()}`.trim();
+					if (/filter/i.test(actionLabel)) {
+						filterAction = action;
+						break;
+					}
+				}
+			}
+
+			if (!filterAction || typeof filterAction.open !== "function") {
+				await sleep(MENU_REFRESH_DELAY_MS);
+				continue;
+			}
+
+			try {
+				const filterMenu = await filterAction.open();
+				if (filterMenu) {
+					return filterMenu;
+				}
+			} catch {
+				// Retry while panel actions are still initializing.
+			}
+
+			await sleep(MENU_REFRESH_DELAY_MS);
+		}
+
+		return undefined;
+	}
+
+	async function readStateFilterStatuses(): Promise<MenuStatus[]> {
+		const filterMenu = await openFilterDropdownFromHeader();
+		if (!filterMenu) {
+			return [];
+		}
+
+		try {
+			const items = await filterMenu.getItems();
+			const statuses: MenuStatus[] = [];
+
+			for (const item of items) {
+				const parsed = parseMenuItemLabel(await item.getLabel());
+				if (STATE_FILTER_MENU_LABELS.includes(parsed.label)) {
+					statuses.push(parsed);
+				}
+			}
+
+			return statuses;
+		} catch {
+			return [];
+		} finally {
+			await filterMenu.close().catch(() => {
+				// Ignore close failures when menu auto-closes.
+			});
+		}
+	}
+
+	async function tryToggleStateFilterOption(filterLabel: string): Promise<boolean> {
+		const initialStatuses = await readStateFilterStatuses();
+		const initialEntry = initialStatuses.find((status) => status.label === filterLabel);
+		if (!initialEntry) {
+			return false;
+		}
+
+		const desiredState = !initialEntry.isActive;
+
+		for (let attempt = 1; attempt <= 2; attempt++) {
+			if (attempt > 1) {
+				const midStatuses = await readStateFilterStatuses();
+				const midEntry = midStatuses.find((status) => status.label === filterLabel);
+				if (midEntry && midEntry.isActive === desiredState) {
+					return true;
+				}
+			}
+
+			const filterMenu = await openFilterDropdownFromHeader();
+			if (!filterMenu) {
+				return false;
+			}
+
+			try {
+				const items = await filterMenu.getItems();
+				let targetItem: any;
+
+				for (const item of items) {
+					const parsed = parseMenuItemLabel(await item.getLabel());
+					if (parsed.label === filterLabel) {
+						targetItem = item;
+						break;
+					}
+				}
+
+				if (!targetItem) {
+					return false;
+				}
+
+				await targetItem.select();
+			} catch {
+				return false;
+			} finally {
+				await filterMenu.close().catch(() => {
+					// Ignore close failures when menu auto-closes.
+				});
+			}
+
+			const giveUpAt = Date.now() + MENU_TOGGLE_TIMEOUT_MS;
+			while (Date.now() < giveUpAt) {
+				await sleep(MENU_REFRESH_DELAY_MS);
+				const latestStatuses = await readStateFilterStatuses();
+				const latestEntry = latestStatuses.find((status) => status.label === filterLabel);
+				if (latestEntry && latestEntry.isActive === desiredState) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	async function waitForSecretDetectionNode(scan: any): Promise<any> {
+		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
+			try {
+				const secretDetectionNode = await scan?.findChildItem(SCS_SECRET_DETECTION_Type);
+				if (secretDetectionNode) {
+					return secretDetectionNode;
+				}
+			} catch {
+				// Keep retrying while tree elements are being refreshed.
+			}
+
+			await sleep(TREE_RETRY_DELAY_MS);
+		}
+
+		throw new Error("Could not find secret detection node");
+	}
+
+	async function getSecretVulnerabilitiesForCurrentScan(): Promise<any[]> {
+		let lastError: unknown;
+
+		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
+			try {
+				await focusResultsPanelAndSelectScan();
+				const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
+				const secretDetectionNode = await waitForSecretDetectionNode(scan);
+				return await secretDetectionNode.getChildren();
+			} catch (error) {
+				lastError = error;
+				if (attempt < TREE_RETRIES) {
+					await sleep(TREE_RETRY_DELAY_MS);
+				}
+			}
+		}
+
+		throw lastError ?? new Error("Could not read secret detection vulnerabilities");
+	}
+
+	async function waitForDetailsTab(detailsView: WebView, tabId: string): Promise<any> {
+		for (let attempt = 1; attempt <= QUICK_PICK_RETRIES; attempt++) {
+			try {
+				const tabs = await detailsView.findWebElements(By.id(tabId));
+				if (tabs.length > 0) {
+					return tabs[0];
+				}
+			} catch {
+				// Continue retrying while details view is loading.
+			}
+
+			await sleep(QUICK_PICK_RETRY_DELAY_MS);
+		}
+
+		throw new Error(`Could not find details tab with id ${tabId}`);
+	}
+
+	async function clickTabByScanningIframes(tabId: string): Promise<boolean> {
+		try {
+			await driver.switchTo().defaultContent();
+			const topLevelFrames = await driver.findElements(By.css("iframe"));
+
+			for (const topFrame of topLevelFrames) {
+				try {
+					await driver.switchTo().defaultContent();
+					await driver.switchTo().frame(topFrame);
+
+					let tabs = await driver.findElements(By.id(tabId));
+					if (tabs.length > 0) {
+						await tabs[0].click();
+						await driver.switchTo().defaultContent();
+						return true;
+					}
+
+					const nestedFrames = await driver.findElements(By.css("iframe"));
+					for (const nestedFrame of nestedFrames) {
+						try {
+							await driver.switchTo().frame(nestedFrame);
+							tabs = await driver.findElements(By.id(tabId));
+							if (tabs.length > 0) {
+								await tabs[0].click();
+								await driver.switchTo().defaultContent();
+								return true;
+							}
+							await driver.switchTo().parentFrame();
+						} catch {
+							await driver.switchTo().defaultContent();
+							await driver.switchTo().frame(topFrame);
+						}
+					}
+				} catch {
+					// Continue scanning other frames.
+				}
+			}
+		} catch {
+			// Continue with regular failure handling.
+		} finally {
+			await driver.switchTo().defaultContent().catch(() => {
+				// Best-effort reset to root context.
+			});
+		}
+
+		return false;
+	}
+
+	async function clickDetailsTabById(tabId: string): Promise<void> {
+		let lastError: unknown;
+
+		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
+			const detailsView = await getDetailsView();
+			if (detailsView) {
+				try {
+					const tab = await waitForDetailsTab(detailsView, tabId);
+					expect(tab).to.not.be.undefined;
+					await tab.click();
+					return;
+				} catch (error) {
+					lastError = error;
+				} finally {
+					await detailsView.switchBack().catch(() => {
+						// Best-effort cleanup if frame/context already changed.
+					});
+				}
+			}
+
+			const clickedViaIframeScan = await clickTabByScanningIframes(tabId);
+			if (clickedViaIframeScan) {
+				return;
+			}
+
+			await sleep(MENU_REFRESH_DELAY_MS);
+		}
+
+		throw lastError ?? new Error(`Could not find details tab with id ${tabId}`);
+	}
+
+	async function loadSecretDetectionNode(): Promise<any> {
+		await initializeTree();
+		await openScanById(SCAN_ID);
+		// Keep the Checkmarx results panel focused and collapse other panels
+		// before traversing the secret detection tree.
+		await focusResultsPanelAndSelectScan();
+
+		const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
+		return await waitForSecretDetectionNode(scan);
+	}
+
+	async function openFirstSecretResult(): Promise<void> {
+		await loadSecretDetectionNode();
+
+		let lastError: unknown;
+		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
+			try {
+				const vulnerabilities = await getSecretVulnerabilitiesForCurrentScan();
+				expect(vulnerabilities.length, "Secret detection should contain at least one vulnerability").to.be.greaterThan(0);
+
+				await vulnerabilities[0].click();
+				await sleep(POST_SELECTION_DELAY_MS);
+				return;
+			} catch (error) {
+				lastError = error;
+				if (attempt < TREE_RETRIES) {
+					await sleep(TREE_RETRY_DELAY_MS);
+				}
+			}
+		}
+
+		throw lastError ?? new Error("Could not open first secret vulnerability");
+	}
+
+	before(async function () {
+		this.timeout(SUITE_SETUP_TIMEOUT_MS);
+		bench = new Workbench();
+		driver = VSBrowser.instance.driver;
+
+		await loginWithMockToken(bench, {
+			executeCommandWithRetry,
+			waitMs: AUTH_WAIT_MS,
+		});
+
+		await executeCommandWithRetry(CX_CLEAR);
+	});
+
+	after(async function () {
+		this.timeout(SUITE_TEARDOWN_TIMEOUT_MS);
+
+		try {
+			await logoutIfVisible(bench, driver, {
+				executeCommandWithRetry,
+			});
+		} catch {
+			// Keep teardown resilient.
+		}
+
+		await executeCommandWithRetry(CX_CLEAR);
+		await new EditorView().closeAllEditors();
+	});
+
+	it.skip("should load secret detection results from scan id", async function () {
+		this.timeout(TEST_TIMEOUT_MS);
+
+		const secretDetectionNode = await loadSecretDetectionNode();
+		expect(secretDetectionNode).to.not.be.undefined;
+
+		const vulnerabilities = await getSecretVulnerabilitiesForCurrentScan();
+		expect(vulnerabilities.length, "Secret detection should contain vulnerabilities").to.be.greaterThan(0);
+	});
+
+	it.skip("should open first secret result in details view", async function () {
+		this.timeout(TEST_TIMEOUT_MS);
+
+		await openFirstSecretResult();
+
+		const detailsView = await getDetailsView();
+		expect(detailsView, "Details view should open after selecting a secret vulnerability").to.not.be.undefined;
+		await detailsView.switchBack();
+	});
+
+	it.skip("should navigate all details tabs for secret result", async function () {
+		this.timeout(LONG_TEST_TIMEOUT_MS);
+
+		await openFirstSecretResult();
+		await clickDetailsTabById(GENERAL_LABEL);
+		await openFirstSecretResult();
+		await clickDetailsTabById(LEARN_MORE_LABEL);
+		await openFirstSecretResult();
+		await clickDetailsTabById(CHANGES_LABEL);
+	});
+
+	it.skip("should toggle available Group By options for secret results", async function () {
+		this.timeout(LONG_TEST_TIMEOUT_MS);
+
+		await loadSecretDetectionNode();
+
+		const initialStatuses = await readGroupByStatuses();
+		const availableLabels = GROUP_BY_MENU_LABELS.filter((label) =>
+			initialStatuses.some((status) => status.label === label)
+		);
+
+		expect(availableLabels.length, "Expected Group By options in results panel").to.be.greaterThan(0);
+
+		const toggledLabels: string[] = [];
+		let toggledCount = 0;
+
+		try {
+			for (const label of availableLabels) {
+				const toggled = await tryToggleGroupByOption(label);
+				if (toggled) {
+					toggledLabels.push(label);
+					toggledCount++;
+				}
+			}
+
+			expect(toggledCount, "All available Group By options should toggle").to.equal(availableLabels.length);
+		} finally {
+			for (const label of toggledLabels) {
+				await tryToggleGroupByOption(label).catch(() => {
+					// Best-effort revert to reduce suite side effects.
+				});
+			}
+		}
+	});
+
+	it.skip("should toggle available State filters for secret results", async function () {
+		this.timeout(LONG_TEST_TIMEOUT_MS);
+
+		await loadSecretDetectionNode();
+
+		const initialStatuses = await readStateFilterStatuses();
+		const availableLabels = STATE_FILTER_MENU_LABELS.filter((label) =>
+			initialStatuses.some((status) => status.label === label)
+		);
+
+		expect(availableLabels.length, "Expected state filter options in Filter dropdown").to.be.greaterThan(0);
+
+		const toggledLabels: string[] = [];
+		let toggledCount = 0;
+
+		try {
+			for (const label of availableLabels) {
+				const toggled = await tryToggleStateFilterOption(label);
+				if (toggled) {
+					toggledLabels.push(label);
+					toggledCount++;
+				}
+			}
+
+			expect(toggledCount, "All available state filters should toggle").to.equal(availableLabels.length);
+		} finally {
+			for (const label of toggledLabels) {
+				await tryToggleStateFilterOption(label).catch(() => {
+					// Best-effort revert to reduce suite side effects.
+				});
+			}
+		}
+	});
 });

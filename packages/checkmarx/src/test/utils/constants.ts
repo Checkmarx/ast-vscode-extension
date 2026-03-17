@@ -27,6 +27,7 @@ export const CX_FILTER_INFO = "ast-results: Filter severity: Info";
 export const CX_FILTER_LOW = "ast-results: Filter severity: Low";
 export const CX_FILTER_MEDIUM = "ast-results: Filter severity: Medium";
 export const CX_FILTER_HIGH = "ast-results: Filter severity: High";
+export const CX_FILTER_CRITICAL = "ast-results: Filter severity: Critical";
 
 export const CX_FILTER_NOT_EXPLOITABLE = "ast-results:Filter: Not Exploitable";
 export const CX_FILTER_PROPOSED_NOT_EXPLOITABLE =
@@ -39,13 +40,6 @@ export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
 export const CX_CLEAR = "ast-results: Clear";
 export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
 export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
-
-export const CX_GROUP_FILE = "ast-results: Group by: File";
-export const CX_GROUP_SEVERITY = "ast-results: Group by: Severity";
-export const CX_GROUP_LANGUAGE = "ast-results: Group by: Language";
-export const CX_GROUP_STATUS = "ast-results: Group by: Status";
-export const CX_GROUP_STATE = "ast-results: Group by: State";
-export const CX_GROUP_QUERY_NAME = "ast-results: Group by: Vulnerability Type";
 
 export const CX_CATETORY = "Checkmarx One";
 export const CX_API_KEY_SETTINGS = "Api Key";
