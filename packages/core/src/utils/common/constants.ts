@@ -164,6 +164,7 @@ export const constants = {
   windsurfAgent: "Windsurf",
   windsurfNextAgent: "Windsurf - Next",
   kiroAgent: "Kiro",
+  claudeAgent: "Claude",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -259,6 +260,12 @@ export const constants = {
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
+  //Agent Assistants
+  copilotAssistantName: "copilot",
+  claudeAssistantName: "claude",
+  noneAssistantName: "none",
+  manualSetupAssistName: "manual",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -333,6 +340,12 @@ export const constants = {
   copilotNewChatOpen: "workbench.action.chat.newChat",
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
+
+  claudeChatExtensionId: "anthropic.claude-code",
+  claudeNewChatOpen: "claude-vscode.sidebar.open",
+  claudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

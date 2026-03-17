@@ -46,6 +46,13 @@ export class CopilotChatCommand {
     private iacScanner: IacScannerService;
     private ascaScanner: AscaScannerService;
     private containersScanner: ContainersScannerService;
+    private selectedAIAssistant: string = 'unknown';
+    private selectedChatExtensionId: string = '';
+    private selectedNewChatOpen: string = '';
+    private selectedChatOpenWithQueryCommand: string = '';
+    private newSelectedChatOpenWithQueryCommand: string = '';
+    private selectedChatclipboardPasteActionCommand: string = '';
+
 
     constructor(
         context: vscode.ExtensionContext,
@@ -207,6 +214,61 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean): string | null {
+        let assistantType: string | null = null;
+        this.logs.info(`[DEBUG] setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
+
+        const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
+            'Copilot': { extensionName: 'GitHub Copilot Chat', extensionId: constants.copilotChatExtensionId },
+            'Claude': { extensionName: 'Claude Code Extension', extensionId: constants.claudeChatExtensionId },
+        };
+
+        const availabilityMap: Record<string, boolean> = {
+            'Copilot': copilotAvailable,
+            'Claude': claudeAvailable,
+        };
+
+        if (unavailableMap[userPreferenceAIAssistant] && availabilityMap[userPreferenceAIAssistant] === false) {
+            const { extensionName, extensionId } = unavailableMap[userPreferenceAIAssistant];
+
+            vscode.window.showErrorMessage(
+                `Your preferred AI assistant (${userPreferenceAIAssistant}) is not installed. Please install ${extensionName} and reload VSCode.`,
+                `Install ${userPreferenceAIAssistant}`
+            ).then(selection => {
+                if (selection === `Install ${userPreferenceAIAssistant}`) {
+                    vscode.commands.executeCommand('workbench.extensions.search', extensionId);
+                }
+            });
+            return null;
+        } else {
+            this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
+                if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+                assistantType = constants.copilotAssistantName;
+                this.selectedChatExtensionId = constants.copilotChatExtensionId;
+                this.selectedNewChatOpen = constants.copilotNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
+                this.logs.info(`[DEBUG] Selected Copilot (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Claude' && claudeAvailable) {
+                assistantType = constants.claudeAssistantName;
+                this.selectedChatExtensionId = constants.claudeChatExtensionId;
+                this.selectedNewChatOpen = constants.claudeNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.claudeChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
+                this.logs.info(`[DEBUG] Selected Claude (user preference)`);
+            }
+        }
+
+        this.logs.info(`[DEBUG] Final assistant type: ${assistantType}`);
+        this.logs.info(`[DEBUG] Extension ID: ${this.selectedChatExtensionId}`);
+        this.logs.info(`[DEBUG] New Chat Command: ${this.selectedNewChatOpen}`);
+        this.logs.info(`[DEBUG] Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
+        this.logs.info(`[DEBUG] New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
+
+        return assistantType;
+    }
+
     private async openChatWithPrompt(question: string): Promise<void> {
 
         if (isIDE(constants.cursorAgent)) {
@@ -225,26 +287,58 @@ export class CopilotChatCommand {
             return;
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
-        if (!copilotChatExtension) {
-            const installOption = "Install Copilot Chat";
-            const choice = await vscode.window.showErrorMessage(
-                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                installOption
-            );
-            if (choice === installOption) {
-                await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
-            }
+        const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+
+        this.logs.info(`[DEBUG] Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
+        this.logs.info(`[DEBUG] Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
+
+        const config = vscode.workspace.getConfiguration('Checkmarx');
+
+        const userPreferenceAIAssistant = config.get<string>('AI Assistant In VSCode', 'Copilot');
+
+        const selectedAssistant = this.setSelectedAIAssistant(
+            userPreferenceAIAssistant,
+            copilotChatExtension !== undefined,
+            claudeChatExtension !== undefined
+        );
+
+        if (!selectedAssistant) {
+            this.logs.error('[DEBUG] No AI assistant could be selected');
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
+        await vscode.commands.executeCommand(this.selectedNewChatOpen);
         try {
-            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
-        } catch (error) {
-            if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
-                await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (selectedAssistant === constants.claudeAssistantName) {
+                await this.sendPromptToChatUseCopyPass(question);
+            } else {
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, {query: `${question}`});
+                this.logs.info(`[DEBUG] Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
             }
-
+        } catch (error) {
+            if (error.message.includes(`command '${this.newSelectedChatOpenWithQueryCommand}' not found`)) {
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
+            }
         }
+    }
+
+    //Send promt use Copy past
+    private async sendPromptToChatUseCopyPass(question: string) {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+        if (!claudeExtension.isActive) {
+            await claudeExtension.activate();
+        }
+        await vscode.commands.executeCommand(this.selectedNewChatOpen);
+        setTimeout(async () => {
+            await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
+            await vscode.env.clipboard.writeText(question);
+            await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
+            await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
+        }, 300);
+
+        await sleep(200);
+        await this.pressEnter();
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {

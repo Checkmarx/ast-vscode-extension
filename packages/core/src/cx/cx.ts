@@ -894,7 +894,9 @@ export class Cx implements CxPlatform {
     async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
-        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? "Cascade" : "Copilot";
+        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
+            isIDE(constants.cursorAgent) ? constants.cursorAgent :
+                isIDE(constants.windsurfAgent) ? "Cascade" : constants.vsCodeAgent;
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
