@@ -143,12 +143,14 @@ export async function triageSubmit(
   const hasStateChange = data.stateSelection.length > 0 &&
     data.stateSelection !== originalState;
 
+  // SCA-specific: Since comment is mandatory and already validated, check only state change
+  if (result.type === constants.sca && !hasStateChange) {
+    vscode.window.showErrorMessage(messages.triageNoChange);
+    return;
+  }
+
   // Case the submit is sent without any change
-  if (
-    !hasSeverityChange &&
-    !hasStateChange &&
-    data.comment.length === 0
-  ) {
+  if (!hasSeverityChange && !hasStateChange) {
     vscode.window.showErrorMessage(messages.triageNoChange);
     return;
   }
