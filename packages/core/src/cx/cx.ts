@@ -297,21 +297,27 @@ export class Cx implements CxPlatform {
     }
 
     private getSelectedAIAssistant(): string {
-        const config = vscode.workspace.getConfiguration("Checkmarx");
-        const setting = config.get<string>("AI Assistant In VSCode", "Copilot");
-        /* Once will add the custom Json logic. Need to enable current code
-        if (setting === "Custom" || !setting) {
-             return constants.vsCodeAgent;
-         }*/
-        return setting;
+        try {
+            const config = vscode.workspace.getConfiguration("Checkmarx");
+            const setting = config?.get?.("AI Assistant In VSCode", "Copilot") ?? "Copilot";
+            /* Once will add the custom Json logic. Need to enable current code
+            if (setting === "Custom" || !setting) {
+                 return constants.vsCodeAgent;
+             }*/
+            return setting;
+        } catch {
+            return "Copilot";
+        }
     }
 
     getBaseAstConfiguration() {
         const config = new CxConfig();
-        config.additionalParameters = vscode.workspace
-            .getConfiguration("checkmarxOne")
-            .get("additionalParams") as string;
-
+        try {
+            const checkmarxOneConfig = vscode.workspace.getConfiguration("checkmarxOne");
+            config.additionalParameters = (checkmarxOneConfig?.get?.("additionalParams") ?? "valid-api-key") as string;
+        } catch {
+            config.additionalParameters = "valid-api-key";
+        }
         config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : this.getSelectedAIAssistant();
         return config;
     }
