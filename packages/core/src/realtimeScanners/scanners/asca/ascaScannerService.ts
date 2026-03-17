@@ -76,6 +76,10 @@ export class AscaScannerService extends BaseScannerService {
 	}
 
 	public async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
+		if (!await cx.isValidConfiguration()) {
+			return
+		}
+
 		if (!this.shouldScanFile(document)) {
 			return;
 		}
@@ -360,6 +364,7 @@ export class AscaScannerService extends BaseScannerService {
 
 	public async clearProblems(): Promise<void> {
 		await super.clearProblems();
+		this.clearDecorationsFromEditors(this.decorationTypes);
 		this.diagnosticsMap.clear();
 		this.ascaHoverData.clear();
 		Object.values(this.decorationsMap).forEach(map => map.clear());

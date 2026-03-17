@@ -48,6 +48,7 @@ import { DiagnosticCommand } from '../commands/diagnosticCommand';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
 
+
 /**
  * Activate Checkmarx One specific features
  *
@@ -70,7 +71,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
         ignoredStatusBarItem,
     } = await setupStatusBars(context, logs);
 
-    const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
+    const { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
 
     await setScanButtonDefaultIfScanIsNotRunning(context);
@@ -281,6 +282,13 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
 
     // Checkmarx One Assist view & its commands
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
+    registerAssistRelatedCommands(context, cxOneAssistProvider);
+    // Register command to deactivate realtime scanners on logout
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearRealtimeScanners, async () => {
+            await scannerRegistry.clearAllScanners();
+        })
+    );
     registerAssistRelatedCommands(context, cxOneAssistProvider);
 
     const copilotChatCommand = new CopilotChatCommand(
