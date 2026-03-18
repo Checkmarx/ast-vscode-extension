@@ -216,7 +216,7 @@ export class CopilotChatCommand {
 
     private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, geminiAvailable: boolean): string | null {
         let assistantType: string | null = null;
-        this.logs.info(`[DEBUG] setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, geminiAvailable: ${geminiAvailable}`);
+        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, geminiAvailable: ${geminiAvailable}`);
 
         const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
             'Gemini': { extensionName: 'Google Gemini Code Assist', extensionId: constants.geminiChatExtensionId },
@@ -241,7 +241,7 @@ export class CopilotChatCommand {
             });
             return null;
         } else {
-            this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
+            this.logs.debug(`User preference from settings: ${userPreferenceAIAssistant}`);
 
             if (userPreferenceAIAssistant === 'Gemini' && geminiAvailable) {
                 assistantType = constants.geminiAssistantName;
@@ -250,22 +250,22 @@ export class CopilotChatCommand {
                 this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
                 this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.geminiChatclipboardPasteActionCommand;
-                this.logs.info(`[DEBUG] Selected Gemini (user preference)`);
+                this.logs.debug(`Selected Gemini (user preference)`);
             } else if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
                 assistantType = constants.copilotAssistantName;
                 this.selectedChatExtensionId = constants.copilotChatExtensionId;
                 this.selectedNewChatOpen = constants.copilotNewChatOpen;
                 this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
                 this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
-                this.logs.info(`[DEBUG] Selected Copilot (user preference)`);
+                this.logs.debug(`Selected Copilot (user preference)`);
             }
         }
 
-        this.logs.info(`[DEBUG] Final assistant type: ${assistantType}`);
-        this.logs.info(`[DEBUG] Extension ID: ${this.selectedChatExtensionId}`);
-        this.logs.info(`[DEBUG] New Chat Command: ${this.selectedNewChatOpen}`);
-        this.logs.info(`[DEBUG] Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
-        this.logs.info(`[DEBUG] New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
+        this.logs.debug(`Final assistant type: ${assistantType}`);
+        this.logs.debug(`Extension ID: ${this.selectedChatExtensionId}`);
+        this.logs.debug(`New Chat Command: ${this.selectedNewChatOpen}`);
+        this.logs.debug(`Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
+        this.logs.debug(`New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
 
         return assistantType;
     }
@@ -290,16 +290,16 @@ export class CopilotChatCommand {
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         const geminiChatExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
 
-        this.logs.info(`[DEBUG] Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
-        this.logs.info(`[DEBUG] Gemini Extension ID: ${constants.geminiChatExtensionId} - Found: ${geminiChatExtension}`);
+        this.logs.debug(`Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
+        this.logs.debug(`Gemini Extension ID: ${constants.geminiChatExtensionId} - Found: ${geminiChatExtension}`);
 
         if (geminiChatExtension) {
-            this.logs.info(`[DEBUG] Gemini extension details - ID: ${geminiChatExtension.id}, Active: ${geminiChatExtension.isActive}`);
+            this.logs.debug(`Gemini extension details - ID: ${geminiChatExtension.id}, Active: ${geminiChatExtension.isActive}`);
         }
 
         const config = vscode.workspace.getConfiguration('Checkmarx');
 
-        const userPreferenceAIAssistant = config.get<string>('AI Assistant In VSCode', 'Copilot');
+        const userPreferenceAIAssistant = config.get<string>('AI Assistant', 'Copilot');
 
         const selectedAssistant = this.setSelectedAIAssistant(
             userPreferenceAIAssistant,
@@ -308,7 +308,7 @@ export class CopilotChatCommand {
         );
 
         if (!selectedAssistant) {
-            this.logs.error('[DEBUG] No AI assistant could be selected');
+            this.logs.error('No AI assistant could be selected');
             return;
         }
         await vscode.commands.executeCommand(this.selectedNewChatOpen);
@@ -317,7 +317,7 @@ export class CopilotChatCommand {
                 await this.sendPromptToChatUseCopyPass(question);
             } else {
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
-                this.logs.info(`[DEBUG] Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
+                this.logs.debug(`Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
             }
         } catch (error) {
             if (error.message.includes(`command '${this.newSelectedChatOpenWithQueryCommand}' not found`)) {

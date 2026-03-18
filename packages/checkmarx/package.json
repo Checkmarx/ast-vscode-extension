@@ -947,10 +947,10 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
-          "Checkmarx.AI Assistant In VSCode": {
+          "Checkmarx.AI Assistant": {
             "type": "string",
-            "description": "AI Assistant In VSCode",
-            "markdownDescription": "Select the AI Assistant to use in VSCode.",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use.",
             "enum": [
               "Copilot",
               "Gemini"
