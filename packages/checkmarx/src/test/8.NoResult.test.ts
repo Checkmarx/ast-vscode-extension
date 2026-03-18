@@ -73,47 +73,50 @@ describe("Scan ID load results test", () => {
         await new EditorView().closeAllEditors();
     });
 
+    // Loads a known scan by ID to populate the results tree for subsequent assertions.
     it("should load results from scan ID", async function () {
-        this.timeout(60000); // Increase timeout to 60 seconds
+        this.timeout(60000);
 
         await runCommandWithRetry(CX_LOOK_SCAN);
         let input = await new InputBox();
-        // Add delay to ensure input box is ready
         await sleep(1000);
+        // Fixed scan ID used as a stable fixture with known non-empty results.
         await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
         await input.confirm();
     });
 
+    // Verifies the scan root node is present and expandable after loading results.
     it("should check scan result is not undefined", async function () {
-        // Make sure the results are loaded
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
         }
-        let scan = await treeScans?.findItem(
-            SCAN_KEY_TREE_LABEL
-        );
+        let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
         await scan?.expand();
+        // scanChildren is expanded but not asserted — expand ensures the node is interactive.
         let scanChildren = await scan?.getChildren();
         const isValidated = await validateRootNodeBool(scan);
         expect(isValidated).to.equal(true);
     });
-    it("should allow creating a new scan even if the current scan has zero results", async function () {
-        this.timeout(60000); // Increase timeout to 60 seconds
 
+    // Confirms a new scan can be triggered even when the currently loaded scan has zero findings.
+    it("should allow creating a new scan even if the current scan has zero results", async function () {
+        this.timeout(60000);
+
+        // Load a scan that returns zero results to exercise the empty-state code path.
         await runCommandWithRetry(CX_LOOK_SCAN);
         const input = await InputBox.create();
-        // Add delay to ensure input box is ready
         await sleep(1000);
         await input.setText(EMPTY_RESULTS_SCAN_ID);
         await input.confirm();
 
         await runCommandWithRetry("ast-results.createScan");
 
-        let firstNotification = await waitForNotificationWithTimeout(5000)
+        // If the git project does not match the CX project, confirm the mismatch dialog.
+        let firstNotification = await waitForNotificationWithTimeout(5000);
         let message = await firstNotification?.getMessage();
         if (message === MESSAGES.scanProjectNotMatch) {
-            let actions = await firstNotification?.getActions()
+            let actions = await firstNotification?.getActions();
             let action = await actions[0];
             await action.click();
             firstNotification = await waitForNotificationWithTimeout(5000);

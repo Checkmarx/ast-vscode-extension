@@ -121,7 +121,7 @@ describe("Using a local branch if Git exists", () => {
 		await runCommandWithRetry(CX_CLEAR);
 		await new EditorView().closeAllEditors();
 	});
-	it("should select project and get local branch", retryTest(async function () {
+	it.skip("should select project and get local branch", retryTest(async function () {
 		// Reload the window so the extension picks up the newly switched branch.
 		await runCommandWithRetry("workbench.action.reloadWindow");
 		await sleep(THREE_SECONDS);

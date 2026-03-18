@@ -104,9 +104,8 @@ async function setActiveAuthMethod(driver: WebDriver, method: AuthMethod) {
     `);
 }
 
-/**
- * Convenience wrapper that activates API Key mode for assertions.
- */
+
+//Convenience wrapper that activates API Key mode for assertions.
 async function switchToApiKeyForm(driver: WebDriver) {
     await setActiveAuthMethod(driver, "apiKey");
 }

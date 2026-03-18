@@ -23,6 +23,7 @@ import {
 } from "./utils/constants";
 import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
+// Small sleep helper used for UI settling delays between steps.
 async function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -32,6 +33,7 @@ describe("Wizard load results test", () => {
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
 
+  // Retries a VS Code command up to `retries` times to absorb transient UI delays.
   async function executeCommandWithRetry(command: string, retries = 3): Promise<void> {
     let lastError: unknown;
     for (let attempt = 1; attempt <= retries; attempt++) {

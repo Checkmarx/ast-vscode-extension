@@ -68,6 +68,7 @@ describe("filter and groups actions tests", () => {
     await input.confirm();
   }
 
+  // Polls the tree until the scan root node appears, or fails after max attempts.
   async function waitForScanRootItem(): Promise<any> {
     treeScans = await initialize();
     let scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);

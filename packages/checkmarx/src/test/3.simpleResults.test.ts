@@ -24,6 +24,7 @@ import {
 } from "./utils/constants";
 import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
+// Small sleep helper used for UI settling delays between steps.
 async function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -33,6 +34,7 @@ describe("Individual pickers load results test", () => {
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
 
+  // Retries a VS Code command up to `retries` times to absorb transient UI delays.
   async function executeCommandWithRetry(command: string, retries = 3): Promise<void> {
     let lastError: unknown;
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -49,6 +51,7 @@ describe("Individual pickers load results test", () => {
     throw lastError;
   }
 
+  // Opens the project quick-pick, selects the test project, and asserts it appears in the tree.
   async function selectProjectForTest(tree: CustomTreeSection): Promise<string> {
     await bench.executeCommand(CX_SELECT_PROJECT);
     const input = await InputBox.create();
@@ -63,6 +66,7 @@ describe("Individual pickers load results test", () => {
     return projectName;
   }
 
+  // Opens the branch quick-pick, selects the test branch, and asserts it appears in the tree.
   async function selectBranchForTest(tree: CustomTreeSection): Promise<string> {
     await bench.executeCommand(CX_SELECT_BRANCH);
     const input = await InputBox.create();
