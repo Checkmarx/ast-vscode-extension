@@ -289,7 +289,6 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
             await scannerRegistry.clearAllScanners();
         })
     );
-    registerAssistRelatedCommands(context, cxOneAssistProvider);
 
     const copilotChatCommand = new CopilotChatCommand(
         context,
