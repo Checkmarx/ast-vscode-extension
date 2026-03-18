@@ -216,7 +216,7 @@ export class CopilotChatCommand {
 
     private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean): string | null {
         let assistantType: string | null = null;
-        this.logs.info(`[DEBUG] setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
+        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
 
         const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
             'Copilot': { extensionName: 'GitHub Copilot Chat', extensionId: constants.copilotChatExtensionId },
@@ -241,14 +241,14 @@ export class CopilotChatCommand {
             });
             return null;
         } else {
-            this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
-                if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+            this.logs.debug(`User preference from settings: ${userPreferenceAIAssistant}`);
+            if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
                 assistantType = constants.copilotAssistantName;
                 this.selectedChatExtensionId = constants.copilotChatExtensionId;
                 this.selectedNewChatOpen = constants.copilotNewChatOpen;
                 this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
                 this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
-                this.logs.info(`[DEBUG] Selected Copilot (user preference)`);
+                this.logs.debug(`Selected Copilot (user preference)`);
             } else if (userPreferenceAIAssistant === 'Claude' && claudeAvailable) {
                 assistantType = constants.claudeAssistantName;
                 this.selectedChatExtensionId = constants.claudeChatExtensionId;
@@ -256,15 +256,15 @@ export class CopilotChatCommand {
                 this.selectedChatOpenWithQueryCommand = constants.claudeChatOpenWithQueryCommand;
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
-                this.logs.info(`[DEBUG] Selected Claude (user preference)`);
+                this.logs.debug(`Selected Claude (user preference)`);
             }
         }
 
-        this.logs.info(`[DEBUG] Final assistant type: ${assistantType}`);
-        this.logs.info(`[DEBUG] Extension ID: ${this.selectedChatExtensionId}`);
-        this.logs.info(`[DEBUG] New Chat Command: ${this.selectedNewChatOpen}`);
-        this.logs.info(`[DEBUG] Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
-        this.logs.info(`[DEBUG] New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
+        this.logs.debug(`Final assistant type: ${assistantType}`);
+        this.logs.debug(`Extension ID: ${this.selectedChatExtensionId}`);
+        this.logs.debug(`New Chat Command: ${this.selectedNewChatOpen}`);
+        this.logs.debug(`Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
+        this.logs.debug(`New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
 
         return assistantType;
     }
@@ -289,8 +289,8 @@ export class CopilotChatCommand {
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
 
-        this.logs.info(`[DEBUG] Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
-        this.logs.info(`[DEBUG] Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
+        this.logs.debug(`Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
+        this.logs.debug(`Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
 
         const config = vscode.workspace.getConfiguration('Checkmarx');
 
@@ -303,7 +303,7 @@ export class CopilotChatCommand {
         );
 
         if (!selectedAssistant) {
-            this.logs.error('[DEBUG] No AI assistant could be selected');
+            this.logs.error('No AI assistant could be selected');
             return;
         }
         await vscode.commands.executeCommand(this.selectedNewChatOpen);
@@ -311,8 +311,8 @@ export class CopilotChatCommand {
             if (selectedAssistant === constants.claudeAssistantName) {
                 await this.sendPromptToChatUseCopyPass(question);
             } else {
-                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, {query: `${question}`});
-                this.logs.info(`[DEBUG] Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
+                this.logs.debug(`Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
             }
         } catch (error) {
             if (error.message.includes(`command '${this.newSelectedChatOpenWithQueryCommand}' not found`)) {
