@@ -173,6 +173,17 @@
             ],
             "default": "docker"
           },
+          "checkmarxDeveloperAssist.AI Assistant": {
+            "type": "string",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use for remediation",
+            "enum": [
+              "Copilot",
+              "Claude"
+            ],
+            "default": "Copilot",
+            "order": 1
+          },
           "checkmarxDeveloperAssist.MCP": {
             "type": "",
             "order": 7,

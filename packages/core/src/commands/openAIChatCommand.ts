@@ -232,17 +232,18 @@ export class CopilotChatCommand {
             const { extensionName, extensionId } = unavailableMap[userPreferenceAIAssistant];
 
             vscode.window.showErrorMessage(
-                `Your preferred AI assistant (${userPreferenceAIAssistant}) is not installed. Please install ${extensionName} and reload VSCode.`,
-                `Install ${userPreferenceAIAssistant}`
+                `${extensionName} is not installed. To use ${userPreferenceAIAssistant} for AI assistance, please install it and reload VS Code.`,
+                `Install ${extensionName}`
             ).then(selection => {
-                if (selection === `Install ${userPreferenceAIAssistant}`) {
+                if (selection === `Install ${extensionName}`) {
                     vscode.commands.executeCommand('workbench.extensions.search', extensionId);
                 }
             });
+            this.logs.error(`[DEBUG] ${extensionName} (${extensionId}) not found. User cannot use ${userPreferenceAIAssistant}.`);
             return null;
         } else {
             this.logs.info(`[DEBUG] User preference from settings: ${userPreferenceAIAssistant}`);
-                if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+            if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
                 assistantType = constants.copilotAssistantName;
                 this.selectedChatExtensionId = constants.copilotChatExtensionId;
                 this.selectedNewChatOpen = constants.copilotNewChatOpen;
@@ -292,9 +293,9 @@ export class CopilotChatCommand {
         this.logs.info(`[DEBUG] Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
         this.logs.info(`[DEBUG] Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
 
-        const config = vscode.workspace.getConfiguration('Checkmarx');
+        const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
 
-        const userPreferenceAIAssistant = config.get<string>('AI Assistant In VSCode', 'Copilot');
+        const userPreferenceAIAssistant = config.get<string>('AI Assistant', 'Copilot');
 
         const selectedAssistant = this.setSelectedAIAssistant(
             userPreferenceAIAssistant,
@@ -306,12 +307,13 @@ export class CopilotChatCommand {
             this.logs.error('[DEBUG] No AI assistant could be selected');
             return;
         }
-        await vscode.commands.executeCommand(this.selectedNewChatOpen);
+
         try {
             if (selectedAssistant === constants.claudeAssistantName) {
                 await this.sendPromptToChatUseCopyPass(question);
             } else {
-                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, {query: `${question}`});
+                await vscode.commands.executeCommand(this.selectedNewChatOpen);
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
                 this.logs.info(`[DEBUG] Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
             }
         } catch (error) {
@@ -321,7 +323,7 @@ export class CopilotChatCommand {
         }
     }
 
-    //Send promt use Copy past
+    //Send prompt via clipboard paste
     private async sendPromptToChatUseCopyPass(question: string) {
         const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -333,10 +335,8 @@ export class CopilotChatCommand {
         setTimeout(async () => {
             await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
             await vscode.env.clipboard.writeText(question);
-            await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand);
             await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
         }, 300);
-
         await sleep(200);
         await this.pressEnter();
     }
