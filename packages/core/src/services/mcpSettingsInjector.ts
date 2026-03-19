@@ -244,11 +244,7 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent :
-					(isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ?
-						constants.windsurfAgent : isIDE(constants.cursorAgent) ?
-							constants.cursorAgent : isIDE(constants.geminiAgent) ?
-								constants.geminiAgent : "VsCode",
+				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
 				"Authorization": apiKey,
 			},
 		};

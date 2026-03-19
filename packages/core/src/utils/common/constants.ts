@@ -342,7 +342,7 @@ export const constants = {
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
   geminiChatExtensionId: "Google.geminicodeassist",
-  geminiNewChatOpen: "geminicodeassist.chat.new",
+  geminiNewChatOpen: "geminicodeassist.agent.chat.new",
   geminiChatOpenWithQueryCommand: "workbench.view.extension.gemini-code-assist",
   newGeminiChatOpenWithQueryCommand: "cloudcode.gemini.chatView.focus",
   geminiChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",

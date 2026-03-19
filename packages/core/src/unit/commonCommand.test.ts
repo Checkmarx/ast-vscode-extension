@@ -24,23 +24,17 @@ describe("CommonCommand", () => {
     });
 
     const mockOutputChannel = {
-      append: () => {},
-      appendLine: () => {},
-      clear: () => {},
-      show: () => {},
-      hide: () => {},
-      dispose: () => {},
-      replace: () => {},
       name: "Test"
     };
 
     logs = {
-      info: () => {},
-      error: () => {},
+      info: () => { },
+      error: () => { },
+      debug: () => { },
       output: mockOutputChannel,
-      log: () => {},
-      warn: () => {},
-      show: () => {}
+      log: () => { },
+      warn: () => { },
+      show: () => { }
     } as Logs;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,7 +48,7 @@ describe("CommonCommand", () => {
   });
 
   describe("executeCheckSettings", () => {
-    it("should execute setContext command with correct parameters", async() => {
+    it("should execute setContext command with correct parameters", async () => {
       await commonCommand.executeCheckSettings();
       expect(getCommandsExecuted()).to.include("setContext");
     });
