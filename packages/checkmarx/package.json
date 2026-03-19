@@ -950,7 +950,7 @@
           "Checkmarx.AI Assistant": {
             "type": "string",
             "description": "AI Assistant",
-            "markdownDescription": "Select the AI Assistant to use",
+            "markdownDescription": "Select the AI Assistant to use for remediation",
             "enum": [
               "Copilot",
               "Claude"

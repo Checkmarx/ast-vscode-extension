@@ -182,11 +182,11 @@
               "Claude"
             ],
             "default": "Copilot",
-            "order": 1
+            "order": 7
           },
           "checkmarxDeveloperAssist.MCP": {
             "type": "",
-            "order": 7,
+            "order": 8,
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
           }
