@@ -28,6 +28,10 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastOAuthTenant' : 'lastOAuthTenantDevAssist';
   },
+  getAiAssistantConfigSection: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx' : 'checkmarxDeveloperAssist';
+  },
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
@@ -342,7 +346,7 @@ export const constants = {
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
   claudeChatExtensionId: "anthropic.claude-code",
-  claudeNewChatOpen: "claude-vscode.sidebar.open",
+  claudeNewChatOpen: "claude-vscode.newConversation",
   claudeChatOpenWithQueryCommand: "claude-vscode.focus",
   newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
   claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",

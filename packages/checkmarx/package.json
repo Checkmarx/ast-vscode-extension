@@ -951,6 +951,8 @@
             "type": "string",
             "description": "AI Assistant",
             "markdownDescription": "Select the AI Assistant to use.",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use for remediation",
             "enum": [
               "Copilot",
               "Claude"
