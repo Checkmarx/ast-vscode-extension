@@ -350,6 +350,7 @@ export const constants = {
   claudeChatOpenWithQueryCommand: "claude-vscode.focus",
   newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
   claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
+  geminiChatExtensionId: "Google.geminicodeassist",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",
