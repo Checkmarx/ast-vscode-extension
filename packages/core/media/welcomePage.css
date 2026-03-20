@@ -7,20 +7,97 @@ body {
   box-sizing: border-box;
 }
 
-.welcome-container {
+/* Page header: title and tagline at top, full width (same as banner) */
+.welcome-page-header {
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.welcome-page-header h1 {
+  color: var(--vscode-editor-foreground);
+  font-family: Inter, sans-serif;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 500;
+  margin: 0 0 1.5em 0;
+}
+
+.welcome-page-header .welcome-tagline {
+  width: 100%;
+  margin: 0;
+  color: var(--vscode-editor-foreground);
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* Two frames in one row, same start location */
+.welcome-frames-row {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 2em;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .left-section {
-  flex: 1;
-  margin-top: -56px;
+  flex: 0 1 auto;
+  max-width: 420px;
+  margin-top: 0;
+  min-width: 0;
 }
 
 .right-section {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 50%;
   display: flex;
-  padding: 40.508px 32.908px 122.765px 10.125px;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 0 0 1em;
+  box-sizing: border-box;
+}
+
+.welcome-code-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.welcome-vision-frame {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+body[data-vscode-theme-kind*="dark"] .welcome-vision-frame,
+body[data-vscode-theme-kind="vscode-high-contrast"] .welcome-vision-frame {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+body[data-vscode-theme-kind*="light"] .welcome-vision-frame {
+  background-color: rgb(245, 245, 245);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.welcome-vision-frame .welcome-vision-text {
+  margin: 0;
+  color: var(--vscode-editor-foreground);
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.45;
 }
 
 h1 {
@@ -32,10 +109,96 @@ h1 {
   margin-bottom: 35px;
 }
 
-.subtitle-wrapper {
-  width: 404px;
-  min-height: 38px;
-  margin-bottom: 35px;
+/* Full-width banner above both left and right sections */
+.welcome-banner-wrapper {
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.welcome-banner-wrapper .welcome-banner {
+  max-width: none;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* AI Assistant welcome banners */
+.welcome-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-family: Inter, sans-serif;
+  max-width: 410px;
+  box-sizing: border-box;
+}
+
+.welcome-banner-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.welcome-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.welcome-banner-row {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.welcome-banner-row:last-child {
+  margin-bottom: 0;
+}
+
+.welcome-banner-info {
+  background-color: rgba(14, 155, 247, 0.15);
+  border: 1px solid rgba(14, 155, 247, 0.4);
+  color: var(--vscode-editor-foreground);
+}
+
+.welcome-banner-info .welcome-banner-icon,
+.welcome-banner-info .welcome-banner-icon-circle.welcome-banner-icon-info {
+  color: #0e9bf7;
+}
+
+.welcome-banner-warning {
+  background-color: rgba(190, 130, 50, 0.25);
+  border: 1px solid rgba(190, 130, 50, 0.45);
+  border-radius: 10px;
+  color: var(--vscode-editor-foreground);
+}
+
+.welcome-banner-warning .welcome-banner-icon {
+  color: #c49400;
+}
+
+.welcome-banner-icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.welcome-banner a {
+  color: #0e9bf7;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.welcome-banner a:hover {
+  text-decoration: underline;
 }
 
 .subtitle {
@@ -47,11 +210,22 @@ h1 {
 
 .feature-card {
   padding: 18px;
-  width: 410px;
+  width: 100%;
+  max-width: 410px;
   min-height: auto;
   border-radius: 10px;
   box-sizing: border-box;
   margin-bottom: 46px;
+}
+
+.feature-card-ai-disabled .card-header,
+.feature-card-ai-disabled .card-title {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.feature-card-ai-disabled #aiFeatureToggle:disabled {
+  cursor: not-allowed;
 }
 
 body[data-vscode-theme-kind*="dark"] .feature-card,
