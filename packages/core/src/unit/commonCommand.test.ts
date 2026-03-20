@@ -40,6 +40,7 @@ describe("CommonCommand", () => {
       output: mockOutputChannel,
       log: () => {},
       warn: () => {},
+      debug: () => {},
       show: () => {}
     } as Logs;
 

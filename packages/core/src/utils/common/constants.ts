@@ -28,6 +28,10 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastOAuthTenant' : 'lastOAuthTenantDevAssist';
   },
+  getAiAssistantConfigSection: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx' : 'checkmarxDeveloperAssist';
+  },
   scanIdKey: "ast-results-scan-id",
   scanCreateIdKey: "ast-results-scan-create-id",
   scanCreatePrepKey: "ast-results-scan-prep-id",
@@ -164,6 +168,7 @@ export const constants = {
   windsurfAgent: "Windsurf",
   windsurfNextAgent: "Windsurf - Next",
   kiroAgent: "Kiro",
+  claudeAgent: "Claude",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
   apiKey: "apiKey",
@@ -259,6 +264,12 @@ export const constants = {
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
+  //Agent Assistants
+  copilotAssistantName: "copilot",
+  claudeAssistantName: "claude",
+  noneAssistantName: "none",
+  manualSetupAssistName: "manual",
+
   supportedManifestFilePatterns: [
     "**/Directory.Packages.props",
     "**/packages.config",
@@ -334,9 +345,11 @@ export const constants = {
   copilotChatOpenWithQueryCommand: "workbench.action.chat.openAgent",
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
-  geminiChatExtensionId: "Google.geminicodeassist",
-
   claudeChatExtensionId: "anthropic.claude-code",
+  claudeNewChatOpen: "claude-vscode.newConversation",
+  claudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
+  claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

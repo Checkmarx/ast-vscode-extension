@@ -43,6 +43,7 @@ describe("ScanCommand", () => {
       output: mockOutputChannel,
       log: () => {},
       warn: () => {},
+      debug: () => {},
       show: () => {}
     } as Logs;
 
