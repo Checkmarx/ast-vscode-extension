@@ -62,11 +62,14 @@ export const SCS_SECRET_DETECTION_Type = "secret detection";
 export const WEBVIEW_TITLE = "cx_title";
 export const CODEBASHING_HEADER = "cx_header_codebashing";
 export const COMMENT_BOX = "comment_box";
+export const GENERAL_LABEL = "general-label";
+export const GENERAL_TAB_INPUT = "general-tab";
 export const LEARN_MORE_LABEL = "learn-label";
+export const LEARN_TAB_INPUT = "learn-tab";
 export const CHANGES_LABEL = "changes-label";
+export const CHANGES_TAB_INPUT = "changes-tab";
 export const CHANGES_CONTAINER = "history-container";
 export const UPDATE_BUTTON = "submit";
-export const GENERAL_LABEL = "general-label";
 
 // Constants from @checkmarx/vscode-core (copied to avoid loading the entire module in tests)
 export const ASCA_REALTIME_SCANNER_CONSTANTS = {

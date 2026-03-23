@@ -5,24 +5,28 @@ import {
 	InputBox,
 	VSBrowser,
 	WebDriver,
-	WebView,
 	Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
 	focusPanelAndCollapseOthers,
-	getDetailsView,
+	getResults,
 	initialize,
 	loginWithMockToken,
 	logoutIfVisible,
+	openDetailsFrame,
+	selectDetailsTab,
 	sleep,
 } from "./utils/utils";
 import {
 	CHANGES_LABEL,
+	CHANGES_TAB_INPUT,
 	CX_CLEAR,
 	CX_LOOK_SCAN,
 	GENERAL_LABEL,
+	GENERAL_TAB_INPUT,
 	LEARN_MORE_LABEL,
+	LEARN_TAB_INPUT,
 	SCAN_KEY_TREE_LABEL,
 	SCS_SECRET_DETECTION_Type,
 } from "./utils/constants";
@@ -37,8 +41,6 @@ const INPUTBOX_RETRIES = 30;
 const INPUTBOX_RETRY_DELAY_MS = 800;
 const TREE_RETRIES = 30;
 const TREE_RETRY_DELAY_MS = 700;
-const QUICK_PICK_RETRIES = 20;
-const QUICK_PICK_RETRY_DELAY_MS = 500;
 const MENU_OPEN_RETRIES = 6;
 
 const OPEN_PICKER_DELAY_MS = 1000;
@@ -71,16 +73,17 @@ const STATE_FILTER_MENU_LABELS = [
 type MenuStatus = { label: string; isActive: boolean };
 
 describe("Secret detection results tests (OAuth flow)", () => {
-	let bench: Workbench;
-	let treeScans: CustomTreeSection;
+	let workbench: Workbench;
+	let resultsTree: CustomTreeSection;
 	let driver: WebDriver;
 
-	async function executeCommandWithRetry(command: string, retries = COMMAND_RETRIES): Promise<void> {
+	// Retries a VS Code command up to `retries` times to absorb transient UI delays.
+	async function runCommand(command: string, retries = COMMAND_RETRIES): Promise<void> {
 		let lastError: unknown;
 
 		for (let attempt = 1; attempt <= retries; attempt++) {
 			try {
-				await bench.executeCommand(command);
+				await workbench.executeCommand(command);
 				return;
 			} catch (error) {
 				lastError = error;
@@ -93,11 +96,12 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw lastError;
 	}
 
+	// Retries `initialize()` until a valid tree section is returned.
 	async function initializeTree(): Promise<CustomTreeSection> {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			const tree = await initialize();
 			if (tree) {
-				treeScans = tree;
+				resultsTree = tree;
 				return tree;
 			}
 
@@ -107,6 +111,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw new Error("Could not initialize Checkmarx results tree");
 	}
 
+	// Waits for InputBox to become available, retrying on transient failures.
 	async function waitForInputBox(contextLabel: string): Promise<InputBox> {
 		for (let attempt = 1; attempt <= INPUTBOX_RETRIES; attempt++) {
 			try {
@@ -121,10 +126,11 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw new Error(`${contextLabel} InputBox did not open in time`);
 	}
 
+	// Waits for a named tree item to appear in the results tree.
 	async function waitForTreeItem(treeItemLabel: string, contextLabel: string): Promise<any> {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			try {
-				const item = await treeScans?.findItem(treeItemLabel);
+				const item = await resultsTree?.findItem(treeItemLabel);
 				if (item) {
 					return item;
 				}
@@ -138,8 +144,9 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw new Error(`Could not find ${contextLabel} in results tree`);
 	}
 
+	// Opens a scan by ID using the look-for-scan command and input box.
 	async function openScanById(scanId: string): Promise<void> {
-		await executeCommandWithRetry(CX_LOOK_SCAN);
+		await runCommand(CX_LOOK_SCAN);
 		await sleep(OPEN_PICKER_DELAY_MS);
 
 		const input = await waitForInputBox("scan id");
@@ -162,12 +169,13 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		};
 	}
 
+	// Focuses the Checkmarx results panel and selects the scan root node.
 	async function focusResultsPanelAndSelectScan(): Promise<void> {
 		await focusPanelAndCollapseOthers(CHECKMARX_RESULTS_PANEL_TITLE);
 
 		try {
-			treeScans = await initialize();
-			const scan = await treeScans?.findItem(SCAN_KEY_TREE_LABEL);
+			resultsTree = await initialize();
+			const scan = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
 			if (scan) {
 				await scan.select();
 				await sleep(300);
@@ -177,6 +185,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	}
 
+	// Opens the "More Actions" overflow menu of the results panel.
 	async function openResultsMoreActionsMenu(): Promise<any | undefined> {
 		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
 			await focusResultsPanelAndSelectScan();
@@ -202,6 +211,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		return undefined;
 	}
 
+	// Reads the current active/inactive state of all Group By menu items.
 	async function readGroupByStatuses(): Promise<MenuStatus[]> {
 		const menu = await openResultsMoreActionsMenu();
 		if (!menu) {
@@ -229,6 +239,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	}
 
+	// Toggles a Group By option and confirms the state flipped.
 	async function tryToggleGroupByOption(menuLabel: string): Promise<boolean> {
 		const initialStatuses = await readGroupByStatuses();
 		const initialEntry = initialStatuses.find((status) => status.label === menuLabel);
@@ -291,6 +302,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		return false;
 	}
 
+	// Opens the state filter dropdown from the panel header.
 	async function openFilterDropdownFromHeader(): Promise<any | undefined> {
 		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
 			await focusResultsPanelAndSelectScan();
@@ -333,6 +345,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		return undefined;
 	}
 
+	// Reads the current active/inactive state of all state filter items.
 	async function readStateFilterStatuses(): Promise<MenuStatus[]> {
 		const filterMenu = await openFilterDropdownFromHeader();
 		if (!filterMenu) {
@@ -360,6 +373,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	}
 
+	// Toggles a state filter option and confirms the state flipped.
 	async function tryToggleStateFilterOption(filterLabel: string): Promise<boolean> {
 		const initialStatuses = await readStateFilterStatuses();
 		const initialEntry = initialStatuses.find((status) => status.label === filterLabel);
@@ -422,6 +436,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		return false;
 	}
 
+	// Waits until the secret detection node appears under the scan root.
 	async function waitForSecretDetectionNode(scan: any): Promise<any> {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			try {
@@ -439,6 +454,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw new Error("Could not find secret detection node");
 	}
 
+	// Returns individual vulnerabilities from the secret detection node with retry.
+	// Uses getResults() which does a two-level expand: node → severity group → vulnerabilities.
 	async function getSecretVulnerabilitiesForCurrentScan(): Promise<any[]> {
 		let lastError: unknown;
 
@@ -446,8 +463,12 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			try {
 				await focusResultsPanelAndSelectScan();
 				const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
+				await scan?.expand();
 				const secretDetectionNode = await waitForSecretDetectionNode(scan);
-				return await secretDetectionNode.getChildren();
+				await secretDetectionNode.expand();
+				await sleep(500);
+				// getResults expands the first severity/type group and returns its children (actual vulnerabilities).
+				return await getResults(secretDetectionNode);
 			} catch (error) {
 				lastError = error;
 				if (attempt < TREE_RETRIES) {
@@ -459,113 +480,19 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw lastError ?? new Error("Could not read secret detection vulnerabilities");
 	}
 
-	async function waitForDetailsTab(detailsView: WebView, tabId: string): Promise<any> {
-		for (let attempt = 1; attempt <= QUICK_PICK_RETRIES; attempt++) {
-			try {
-				const tabs = await detailsView.findWebElements(By.id(tabId));
-				if (tabs.length > 0) {
-					return tabs[0];
-				}
-			} catch {
-				// Continue retrying while details view is loading.
-			}
-
-			await sleep(QUICK_PICK_RETRY_DELAY_MS);
-		}
-
-		throw new Error(`Could not find details tab with id ${tabId}`);
-	}
-
-	async function clickTabByScanningIframes(tabId: string): Promise<boolean> {
-		try {
-			await driver.switchTo().defaultContent();
-			const topLevelFrames = await driver.findElements(By.css("iframe"));
-
-			for (const topFrame of topLevelFrames) {
-				try {
-					await driver.switchTo().defaultContent();
-					await driver.switchTo().frame(topFrame);
-
-					let tabs = await driver.findElements(By.id(tabId));
-					if (tabs.length > 0) {
-						await tabs[0].click();
-						await driver.switchTo().defaultContent();
-						return true;
-					}
-
-					const nestedFrames = await driver.findElements(By.css("iframe"));
-					for (const nestedFrame of nestedFrames) {
-						try {
-							await driver.switchTo().frame(nestedFrame);
-							tabs = await driver.findElements(By.id(tabId));
-							if (tabs.length > 0) {
-								await tabs[0].click();
-								await driver.switchTo().defaultContent();
-								return true;
-							}
-							await driver.switchTo().parentFrame();
-						} catch {
-							await driver.switchTo().defaultContent();
-							await driver.switchTo().frame(topFrame);
-						}
-					}
-				} catch {
-					// Continue scanning other frames.
-				}
-			}
-		} catch {
-			// Continue with regular failure handling.
-		} finally {
-			await driver.switchTo().defaultContent().catch(() => {
-				// Best-effort reset to root context.
-			});
-		}
-
-		return false;
-	}
-
-	async function clickDetailsTabById(tabId: string): Promise<void> {
-		let lastError: unknown;
-
-		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
-			const detailsView = await getDetailsView();
-			if (detailsView) {
-				try {
-					const tab = await waitForDetailsTab(detailsView, tabId);
-					expect(tab).to.not.be.undefined;
-					await tab.click();
-					return;
-				} catch (error) {
-					lastError = error;
-				} finally {
-					await detailsView.switchBack().catch(() => {
-						// Best-effort cleanup if frame/context already changed.
-					});
-				}
-			}
-
-			const clickedViaIframeScan = await clickTabByScanningIframes(tabId);
-			if (clickedViaIframeScan) {
-				return;
-			}
-
-			await sleep(MENU_REFRESH_DELAY_MS);
-		}
-
-		throw lastError ?? new Error(`Could not find details tab with id ${tabId}`);
-	}
-
+	// Loads the scan by ID and returns the secret detection node from the results tree.
 	async function loadSecretDetectionNode(): Promise<any> {
 		await initializeTree();
 		await openScanById(SCAN_ID);
-		// Keep the Checkmarx results panel focused and collapse other panels
-		// before traversing the secret detection tree.
+		// Keep the Checkmarx results panel focused before traversing the tree.
 		await focusResultsPanelAndSelectScan();
 
 		const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
 		return await waitForSecretDetectionNode(scan);
 	}
 
+	// Loads the scan, expands the secret detection node, and clicks the first vulnerability.
+	// Closes all editors first to prevent competing webviews from blocking the details panel.
 	async function openFirstSecretResult(): Promise<void> {
 		await loadSecretDetectionNode();
 
@@ -575,8 +502,14 @@ describe("Secret detection results tests (OAuth flow)", () => {
 				const vulnerabilities = await getSecretVulnerabilitiesForCurrentScan();
 				expect(vulnerabilities.length, "Secret detection should contain at least one vulnerability").to.be.greaterThan(0);
 
+				// Exit any webview iframe and close all editors before clicking to ensure
+				// only one webview exists when the details panel opens.
+				await driver.switchTo().defaultContent();
+				await new EditorView().closeAllEditors();
+
 				await vulnerabilities[0].click();
-				await sleep(POST_SELECTION_DELAY_MS);
+				// Allow the details webview panel time to open and inject its HTML content.
+				await sleep(5000);
 				return;
 			} catch (error) {
 				lastError = error;
@@ -591,33 +524,36 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	before(async function () {
 		this.timeout(SUITE_SETUP_TIMEOUT_MS);
-		bench = new Workbench();
+		workbench = new Workbench();
 		driver = VSBrowser.instance.driver;
 
-		await loginWithMockToken(bench, {
-			executeCommandWithRetry,
+		await loginWithMockToken(workbench, {
+			executeCommandWithRetry: runCommand,
 			waitMs: AUTH_WAIT_MS,
 		});
 
-		await executeCommandWithRetry(CX_CLEAR);
+		await runCommand(CX_CLEAR);
 	});
 
 	after(async function () {
 		this.timeout(SUITE_TEARDOWN_TIMEOUT_MS);
+		// Exit any webview frame before interacting with VS Code UI.
+		try { await driver.switchTo().defaultContent(); } catch { /* ignore */ }
 
 		try {
-			await logoutIfVisible(bench, driver, {
-				executeCommandWithRetry,
+			await logoutIfVisible(workbench, driver, {
+				executeCommandWithRetry: runCommand,
 			});
 		} catch {
 			// Keep teardown resilient.
 		}
 
-		await executeCommandWithRetry(CX_CLEAR);
+		await runCommand(CX_CLEAR);
 		await new EditorView().closeAllEditors();
 	});
 
-	it.skip("should load secret detection results from scan id", async function () {
+	// Loads the scan and verifies the secret detection node with vulnerabilities is present.
+	it("should load secret detection results from scan id", async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
 		const secretDetectionNode = await loadSecretDetectionNode();
@@ -627,28 +563,51 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		expect(vulnerabilities.length, "Secret detection should contain vulnerabilities").to.be.greaterThan(0);
 	});
 
-	it.skip("should open first secret result in details view", async function () {
+	// Clicks the first secret vulnerability and confirms the details webview opens.
+	it("should open first secret result in details view", async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
 		await openFirstSecretResult();
+		// Allow the details webview panel time to open and inject its HTML content.
+		await sleep(5000);
 
-		const detailsView = await getDetailsView();
-		expect(detailsView, "Details view should open after selecting a secret vulnerability").to.not.be.undefined;
-		await detailsView.switchBack();
+		const isOpen = await openDetailsFrame(driver);
+		expect(isOpen, "Details view should open after selecting a secret vulnerability").to.be.true;
+
+		await driver.switchTo().defaultContent();
 	});
 
-	it.skip("should navigate all details tabs for secret result", async function () {
+	// Opens the details panel once, then navigates General → Description → Changes tabs and
+	// verifies each tab's label element is present.
+	it("should navigate all details tabs for secret result", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
 
+		// Open vulnerability and wait for details panel.
 		await openFirstSecretResult();
-		await clickDetailsTabById(GENERAL_LABEL);
-		await openFirstSecretResult();
-		await clickDetailsTabById(LEARN_MORE_LABEL);
-		await openFirstSecretResult();
-		await clickDetailsTabById(CHANGES_LABEL);
+		await sleep(3000);
+
+		const isOpen = await openDetailsFrame(driver);
+		expect(isOpen, "Vulnerability details panel did not open").to.be.true;
+
+		// General tab.
+		await selectDetailsTab(driver, GENERAL_TAB_INPUT);
+		const generalLabel = await driver.findElement(By.id(GENERAL_LABEL));
+		expect(generalLabel, "General tab label not found").to.not.be.undefined;
+
+		// Description tab.
+		await selectDetailsTab(driver, LEARN_TAB_INPUT);
+		const learnLabel = await driver.findElement(By.id(LEARN_MORE_LABEL));
+		expect(learnLabel, "Description tab label not found").to.not.be.undefined;
+
+		// Changes tab.
+		await selectDetailsTab(driver, CHANGES_TAB_INPUT);
+		const changesLabel = await driver.findElement(By.id(CHANGES_LABEL));
+		expect(changesLabel, "Changes tab label not found").to.not.be.undefined;
+
+		await driver.switchTo().defaultContent();
 	});
 
-	it.skip("should toggle available Group By options for secret results", async function () {
+	it("should toggle available Group By options for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
 
 		await loadSecretDetectionNode();
@@ -682,7 +641,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	});
 
-	it.skip("should toggle available State filters for secret results", async function () {
+	it("should toggle available State filters for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
 
 		await loadSecretDetectionNode();

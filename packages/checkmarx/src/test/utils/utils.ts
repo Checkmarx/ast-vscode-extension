@@ -12,7 +12,7 @@ import {
   Workbench,
   EditorView,
 } from "vscode-extension-tester";
-import { FIVE_SECONDS, THIRTY_SECONDS, THREE_SECONDS } from "./constants";
+import { WEBVIEW_TITLE } from "./constants";
 
 const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
 const CX_MOCK_TOKEN_COMMAND = "ast-results.mockTokenTest";
@@ -313,6 +313,51 @@ export async function selectItem(text) {
   await input.setText(item);
   await input.confirm();
   return item;
+}
+
+/**
+ * Enters both iframe levels of the VS Code webview (outer .webview + inner #active-frame).
+ * Iterates all found outer frames to skip competing webviews (e.g. Welcome tab).
+ * Returns true when the Checkmarx details panel (cx_title) is reached.
+ */
+export async function openDetailsFrame(driver: WebDriver): Promise<boolean> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      await driver.switchTo().defaultContent();
+      const webviewFrames = await driver.findElements(By.css(".webview.ready"));
+      const framesToCheck = webviewFrames.length > 0
+        ? webviewFrames
+        : await driver.findElements(By.css(".webview"));
+      for (const webviewFrame of framesToCheck) {
+        try {
+          await driver.switchTo().defaultContent();
+          await driver.switchTo().frame(webviewFrame);
+          const contentFrame = await driver.findElement(By.css("#active-frame"));
+          await driver.switchTo().frame(contentFrame);
+          // Presence of cx_title confirms this is the Checkmarx details panel.
+          await driver.findElement(By.id(WEBVIEW_TITLE));
+          return true;
+        } catch {
+          await driver.switchTo().defaultContent();
+        }
+      }
+    } catch { /* outer frame lookup failed — retry */ }
+    await sleep(1000);
+  }
+  return false;
+}
+
+/**
+ * Clicks a tab radio input via JS to reliably switch tabs inside nested webview iframes.
+ */
+export async function selectDetailsTab(driver: WebDriver, tabId: string): Promise<void> {
+  await driver.executeScript(`
+    var tab = document.getElementById('${tabId}');
+    tab.checked = true;
+    tab.dispatchEvent(new Event('change', { bubbles: true }));
+    tab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  `);
+  await sleep(500);
 }
 
 /**
