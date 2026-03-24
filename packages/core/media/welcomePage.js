@@ -64,13 +64,23 @@
         checkbox.classList.remove("hidden");
       }
 
-      if (message.enabled) {
+      const card = document.getElementById("aiFeatureCard");
+      const isAiDisabledByMissingExtension = card && card.classList.contains("feature-card-ai-disabled");
+
+      if (message.enabled && !isAiDisabledByMissingExtension) {
         toggleScannerState(message.scannersSettings);
         if (checkbox) {
           checkbox.disabled = false;
           checkbox.style.cursor = "pointer";
         }
+      } else if (isAiDisabledByMissingExtension) {
+        // No AI extension installed: show checked but grey/disabled checkbox (tick visible, not clickable)
+        if (checkbox) {
+          checkbox.checked = true;
+          checkbox.disabled = true;
+        }
       } else {
+        // MCP server disabled: uncheck and disable, show error icon
         toggleScannerState(false);
         if (checkbox) {
           checkbox.disabled = true;

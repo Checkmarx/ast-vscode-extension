@@ -18,7 +18,7 @@ interface WelcomeAiBannerState {
 export class WelcomeWebview {
   private static getWelcomeAiBannerState(): WelcomeAiBannerState {
     const config = vscode.workspace.getConfiguration("Checkmarx");
-    let userChoice = config.get<string>("AI Assistant In VSCode", "Copilot");
+    let userChoice = config.get<string>("AI Assistant", "Copilot");
     if (userChoice === "Disable") return { scenario: "ok" };
     if (userChoice === "Custom") {
       const customName = (config.get<string>("AI Assistant Custom Name", "") || "").trim();
@@ -272,7 +272,7 @@ export class WelcomeWebview {
     }
     if (bannerState.scenario === "switched" && bannerState.autoSwitchedTo) {
       const checkmarxConfig = vscode.workspace.getConfiguration("Checkmarx");
-      await checkmarxConfig.update("AI Assistant In VSCode", bannerState.autoSwitchedTo, vscode.ConfigurationTarget.Global);
+      await checkmarxConfig.update("AI Assistant", bannerState.autoSwitchedTo, vscode.ConfigurationTarget.Global);
     }
 
     const scannerConfigKeys = [

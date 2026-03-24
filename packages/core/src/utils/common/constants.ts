@@ -346,6 +346,7 @@ export const constants = {
   newCopilotChatOpenWithQueryCommand: "workbench.action.chat.openagent",
 
   claudeChatExtensionId: "anthropic.claude-code",
+  claudeSidebarOpen: "claude-vscode.sidebar.open",
   claudeNewChatOpen: "claude-vscode.newConversation",
   claudeChatOpenWithQueryCommand: "claude-vscode.focus",
   newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
