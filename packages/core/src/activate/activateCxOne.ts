@@ -606,4 +606,20 @@ function registerAuthenticationLauncher(
             }
         }),
     );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.resetAuthenticationCache, async () => {
+            const selection = await vscode.window.showWarningMessage(
+                "Are you sure you want to reset Authentication cache?",
+                "Yes",
+                "Cancel"
+            );
+            if (selection === "Yes") {
+                const authService = AuthService.getInstance(context, logs);
+                await authService.clearOAuthCredentials();
+                vscode.window.showInformationMessage("Authentication cache cleared successfully.");
+                logs?.info?.("Authentication cache cleared successfully.");
+            }
+        }),
+    );
 }
