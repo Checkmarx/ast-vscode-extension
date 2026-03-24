@@ -134,7 +134,7 @@ jobs:
           if [ "${{ inputs.dev }}" == "true" ]; then
             npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
           else
-            npm 2.54.0 minor --no-git-tag-version 2>/dev/null || true
+            npm version minor --no-git-tag-version 2>/dev/null || true
           fi
 
       # BUMP CHECKMARX DEVELOPER ASSIST PACKAGE VERSION (only if releaseType is devAssist or both)
@@ -145,7 +145,7 @@ jobs:
           if [ "${{ inputs.dev }}" == "true" ]; then
             npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
           else
-            npm 1.8.0 minor --no-git-tag-version 2>/dev/null || true
+            npm version minor --no-git-tag-version 2>/dev/null || true
           fi
 
       # GET BOTH PACKAGE VERSIONS (always, for headers and assets)
@@ -332,10 +332,9 @@ jobs:
         id: get_versions_final
         run: |
           # Extract version from .vsix filename (works for both dev and non-dev)
-          #CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)          
-          #IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)          
-          CHECKMARX_VSIX=2.54.0
-          IGNITE_VSIX=1.8.0
+          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)          
+          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)          
+          
 
 
           CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
