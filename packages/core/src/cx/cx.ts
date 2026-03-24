@@ -299,7 +299,7 @@ export class Cx implements CxPlatform {
     private getSelectedAIAssistant(): string {
         try {
             const config = vscode.workspace.getConfiguration("Checkmarx");
-            const setting = config?.get?.("AI Assistant In VSCode", "Copilot") ?? "Copilot";
+            const setting = config?.get?.("AI Assistant", "Copilot") ?? "Copilot";
             /* Once will add the custom Json logic. Need to enable current code
             if (setting === "Custom" || !setting) {
                  return constants.vsCodeAgent;
@@ -318,7 +318,7 @@ export class Cx implements CxPlatform {
         } catch {
             config.additionalParameters = "valid-api-key";
         }
-        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : this.getSelectedAIAssistant();
+        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
 
@@ -956,7 +956,7 @@ export class Cx implements CxPlatform {
                     ? constants.cursorAgent
                     : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
                         ? constants.windsurfAgent
-                        : vsCodeAssistant;
+                        : constants.vsCodeAgent;;
 
             // Build subType with fix outcome details
             const subTypeData = {
