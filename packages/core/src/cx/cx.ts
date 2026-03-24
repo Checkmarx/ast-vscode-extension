@@ -912,8 +912,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
             isIDE(constants.cursorAgent) ? constants.cursorAgent :
-                isIDE(constants.windsurfAgent) ? "Cascade" :
-                    this.getSelectedAIAssistant();
+                isIDE(constants.windsurfAgent) ? "Cascade" : constants.vsCodeAgent;
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 

@@ -17,6 +17,10 @@ export class Logs {
         this.log("INFO", message);
     }
 
+    public debug(message: string) {
+        this.log("DEBUG", message);
+    }
+
     public warn(message: string) {
         this.log("WARN", message);
     }

@@ -3,10 +3,40 @@ import { getNonce } from "@checkmarx/vscode-core/out/utils/utils";
 import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
+import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 
+type WelcomeAiBannerScenario = "ok" | "switched" | "multiple" | "none";
 
+interface WelcomeAiBannerState {
+  scenario: WelcomeAiBannerScenario;
+  defaultAssistantDisplayName?: string;
+  autoSwitchedTo?: string;
+}
 
 export class WelcomeWebview {
+  private static getWelcomeAiBannerState(): WelcomeAiBannerState {
+    const config = vscode.workspace.getConfiguration("checkmarxDeveloperAssist");
+    const userChoice = config.get<string>("AI Assistant", "Copilot");
+    const copilotAvailable = vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined;
+    const claudeAvailable = vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined;
+    const supportedAvailable: string[] = [];
+    if (copilotAvailable) supportedAvailable.push("Copilot");
+    if (claudeAvailable) supportedAvailable.push("Claude");
+    const displayNames: Record<string, string> = { Copilot: "GitHub Copilot", Claude: "Claude Code" };
+    const isPreferredAvailable = () => {
+      if (userChoice === "Copilot") return copilotAvailable;
+      if (userChoice === "Claude") return claudeAvailable;
+      return false;
+    };
+    const defaultDisplayName = () => (userChoice in displayNames ? displayNames[userChoice] : userChoice);
+    if (isPreferredAvailable()) return { scenario: "ok" };
+    const n = supportedAvailable.length;
+    if (n === 0) return { scenario: "none", defaultAssistantDisplayName: defaultDisplayName() };
+    if (n === 1) return { scenario: "switched", defaultAssistantDisplayName: defaultDisplayName(), autoSwitchedTo: supportedAvailable[0] };
+    return { scenario: "multiple", defaultAssistantDisplayName: defaultDisplayName() };
+  }
+
   private static generateHtml(
     bootstrapCssUri: vscode.Uri,
     scannerImgUri: vscode.Uri,
@@ -16,8 +46,13 @@ export class WelcomeWebview {
     jsUri: vscode.Uri,
     nonce: string,
     isAiMcpEnabled: boolean,
-    panel: vscode.WebviewPanel
+    panel: vscode.WebviewPanel,
+    productName: string,
+    banner: WelcomeAiBannerState | null
   ): string {
+    const settingsCommandUri = "command:" + commands.openSettings + "?" + encodeURIComponent(JSON.stringify([commands.openSettingsArgsAiAssistant]));
+    const bannerHtml = WelcomeWebview.getBannerHtml(banner, productName, settingsCommandUri);
+    const disableAiFeature = !!banner && (banner.scenario === "none" || banner.scenario === "multiple");
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -30,15 +65,14 @@ export class WelcomeWebview {
         <link rel="stylesheet" href="${cssUri}">
       </head>
       <body>
-        <div class="welcome-container">
+        <div class="welcome-page-header">
+          <h1>Welcome to Checkmarx Developer Assist</h1>
+          <p class="welcome-tagline">Checkmarx Developer Assist offers immediate threat detection with standalone real-time scanners and assists you in preventing vulnerabilities before they arise.</p>
+        </div>
+        ${bannerHtml ? `<div class="welcome-banner-wrapper">${bannerHtml}</div>` : ""}
+        <div class="welcome-frames-row">
           <div class="left-section">
-            <h1>Welcome to Checkmarx Developer Assist</h1>
-            <div class="subtitle-wrapper">
-              <p class="subtitle">
-                Checkmarx Developer Assist offers immediate threat detection with standalone real-time scanners and assists you in preventing vulnerabilities before they arise.
-              </p>
-            </div>
-            <div class="feature-card" id="aiFeatureCard">
+            <div class="feature-card${disableAiFeature ? " feature-card-ai-disabled" : ""}" id="aiFeatureCard">
               <div class="card-header">
                 <div class="status-icon" id="aiFeatureWrapper">
                   <div
@@ -55,9 +89,10 @@ export class WelcomeWebview {
                     class="status-icon-checkbox hidden"
                     aria-label="Toggle real-time scanners"
                     title="Toggle real-time scanners"
+                    ${disableAiFeature ? " disabled" : ""}
                   />
                 </div>
-                <span class="card-title">Code Smarter with Checkmarx Developer Assist</span>
+                <span class="card-title">Code Smarter with ${productName}</span>
               </div>
               <ul class="card-list">
                 <li>Get instant security feedback as you code with real-time scanners.</li>
@@ -97,7 +132,7 @@ export class WelcomeWebview {
             </div>
           </div>
           <div class="right-section">
-            <img src="${scannerImgUri}" alt="AI Example" />
+            <img src="${scannerImgUri}" alt="AI Example" class="welcome-code-image" />
           </div>
         </div>
         <script nonce="${nonce}" src="${jsUri}"></script>
@@ -126,6 +161,46 @@ export class WelcomeWebview {
     `;
   }
 
+  private static getBannerHtml(banner: WelcomeAiBannerState | null, productName: string, settingsCommandUri: string): string {
+    if (!banner || banner.scenario === "ok") return "";
+    const settingsLink = `<a href="${settingsCommandUri}">Go to Settings → ${productName} →</a>`;
+    if (banner.scenario === "switched") {
+      const name = banner.defaultAssistantDisplayName || "Your chosen assistant";
+      return `
+            <div class="welcome-banner welcome-banner-info" role="status">
+              <span class="welcome-banner-icon welcome-banner-icon-circle welcome-banner-icon-info">i</span>
+              <div class="welcome-banner-body">
+                <div class="welcome-banner-row"><strong>AI Assistant switched.</strong></div>
+                <div class="welcome-banner-row">${name} was not found. ${productName} is now using a detected and supported AI Assistant automatically.</div>
+              </div>
+            </div>`;
+    }
+    if (banner.scenario === "multiple") {
+      const name = banner.defaultAssistantDisplayName || "Your chosen assistant";
+      return `
+            <div class="welcome-banner welcome-banner-warning" role="alert">
+              <span class="welcome-banner-icon welcome-banner-icon-circle">!</span>
+              <div class="welcome-banner-body">
+                <div class="welcome-banner-row"><strong>AI Assistant not connected.</strong></div>
+                <div class="welcome-banner-row">${name} is not available. Multiple AI Assistants were detected in your IDE. Please select your preferred AI Assistant to continue using ${productName}.</div>
+                <div class="welcome-banner-row">${settingsLink}</div>
+              </div>
+            </div>`;
+    }
+    if (banner.scenario === "none") {
+      return `
+            <div class="welcome-banner welcome-banner-warning" role="alert">
+              <span class="welcome-banner-icon welcome-banner-icon-circle">!</span>
+              <div class="welcome-banner-body">
+                <div class="welcome-banner-row"><strong>MCP cannot be configured.</strong></div>
+                <div class="welcome-banner-row">No supported AI Assistant was found in your IDE. Install a supported assistant (e.g.- GitHub Copilot or Claude Code) and select it in Settings to enable ${productName} MCP features.</div>
+                <div class="welcome-banner-row">${settingsLink}</div>
+              </div>
+            </div>`;
+    }
+    return "";
+  }
+
   public static async show(context: vscode.ExtensionContext, isAiMcpEnabled: boolean) {
     const panel = vscode.window.createWebviewPanel(
       "devAssistWelcome",
@@ -134,6 +209,7 @@ export class WelcomeWebview {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
+        enableCommandUris: true,
         localResourceRoots: [
           vscode.Uri.joinPath(context.extensionUri, 'media'),
           vscode.Uri.file(MediaPathResolver.getCoreMediaPath())
@@ -157,7 +233,6 @@ export class WelcomeWebview {
       )
     );
 
-
     const doubleCheckUri = panel.webview.asWebviewUri(
       vscode.Uri.file(
         MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("double-check_light.svg", "double-check.svg"))
@@ -174,6 +249,20 @@ export class WelcomeWebview {
 
     const nonce = getNonce();
 
+    const messages = getMessages();
+    const productName = messages.productName;
+
+    let bannerState: WelcomeAiBannerState;
+    try {
+      bannerState = WelcomeWebview.getWelcomeAiBannerState();
+    } catch {
+      bannerState = { scenario: "none", defaultAssistantDisplayName: "Your chosen assistant" };
+    }
+    if (bannerState.scenario === "switched" && bannerState.autoSwitchedTo) {
+      const devAssistConfig = vscode.workspace.getConfiguration("checkmarxDeveloperAssist");
+      await devAssistConfig.update("AI Assistant", bannerState.autoSwitchedTo, vscode.ConfigurationTarget.Global);
+    }
+
     const scannerConfigKeys = [
       `${constants.getOssRealtimeScanner()}.${constants.activateOssRealtimeScanner}`,
       `${constants.getAscaRealtimeScanner()}.${constants.activateAscaRealtimeScanner}`,
@@ -184,7 +273,6 @@ export class WelcomeWebview {
 
     const config = vscode.workspace.getConfiguration();
 
-    // Set initial HTML using the reusable function
     panel.webview.html = this.generateHtml(
       bootstrapCssUri,
       scannerImgUri,
@@ -194,12 +282,12 @@ export class WelcomeWebview {
       jsUri,
       nonce,
       isAiMcpEnabled,
-      panel
+      panel,
+      productName,
+      bannerState
     );
 
-    // Listen for theme changes and refresh the webview content
     const themeChangeDisposable = vscode.window.onDidChangeActiveColorTheme(() => {
-      // Regenerate all URIs with new theme-appropriate icons
       const newScannerImgUri = panel.webview.asWebviewUri(
         vscode.Uri.file(
           MediaPathResolver.getMediaFilePath("icons", ThemeUtils.selectIconByTheme("welcomePageScanner_light.svg", "welcomePageScanner.svg"))
@@ -218,7 +306,6 @@ export class WelcomeWebview {
         )
       );
 
-      // Regenerate HTML with new theme-appropriate icons using the reusable function
       panel.webview.html = this.generateHtml(
         bootstrapCssUri,
         newScannerImgUri,
@@ -228,11 +315,12 @@ export class WelcomeWebview {
         jsUri,
         nonce,
         isAiMcpEnabled,
-        panel
+        panel,
+        productName,
+        bannerState
       );
     });
 
-    // Dispose theme listener when panel is disposed
     panel.onDidDispose(() => {
       themeChangeDisposable.dispose();
     });
@@ -287,6 +375,8 @@ export class WelcomeWebview {
         }
       } else if (message.type === 'close') {
         panel.dispose();
+      } else if (message.type === 'openSettings') {
+        vscode.commands.executeCommand(commands.openSettings, commands.openSettingsArgsAiAssistant);
       } else if (message.type === 'changeAllScannersStatus') {
         try {
           const status = message.value;
@@ -300,4 +390,3 @@ export class WelcomeWebview {
     });
   }
 }
-

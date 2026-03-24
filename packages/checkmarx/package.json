@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.52.0",
+  "version": "2.56.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -947,12 +947,13 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
-          "Checkmarx.AI Assistant In VSCode": {
+          "Checkmarx.AI Assistant": {
             "type": "string",
-            "description": "AI Assistant In VSCode",
-            "markdownDescription": "Select the AI Assistant to use in VSCode.",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use for remediation",
             "enum": [
-              "Copilot"
+              "Copilot",
+              "Claude"
             ],
             "default": "Copilot"
           },
