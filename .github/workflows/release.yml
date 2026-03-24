@@ -332,8 +332,10 @@ jobs:
         id: get_versions_final
         run: |
           # Extract version from .vsix filename (works for both dev and non-dev)
-          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)
-          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)
+          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)          
+          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)          
+
+
           CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
           IGNITE_VERSION_FINAL=$(basename "$IGNITE_VSIX" .vsix | sed 's/cx-dev-assist-//')
 
@@ -407,36 +409,38 @@ jobs:
           prerelease: ${{ inputs.dev }}
 
       # PUBLISH CHECKMARX TO VSCODE MARKETPLACE
-      - name: Publish Checkmarx to VSCode Marketplace
-        env:
-          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
-        if: |
-          env.MARKET_TOKEN != null &&
-          (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
-          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
-        run: |
-          cd packages/checkmarx
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-          else
-            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-          fi
+      # Temporarily disabled due to token permissions issue
+      # - name: Publish Checkmarx to VSCode Marketplace
+      #   env:
+      #     MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+      #   if: |
+      #     env.MARKET_TOKEN != null &&
+      #     (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
+      #     (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+      #   run: |
+      #     cd packages/checkmarx
+      #     if [ "${{ inputs.dev }}" == "true" ]; then
+      #       vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+      #     else
+      #       vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+      #     fi
 
       # PUBLISH Checkmarx Developer Assist TO VSCODE MARKETPLACE
-      - name: Publish Checkmarx Developer Assist to VSCode Marketplace
-        env:
-          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
-        if: |
-          env.MARKET_TOKEN != null &&
-          (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
-          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
-        run: |
-          cd packages/project-ignite
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-          else
-            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-          fi
+      # Temporarily disabled due to token permissions issue
+      # - name: Publish Checkmarx Developer Assist to VSCode Marketplace
+      #   env:
+      #     MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+      #   if: |
+      #     env.MARKET_TOKEN != null &&
+      #     (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
+      #     (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+      #   run: |
+      #     cd packages/project-ignite
+      #     if [ "${{ inputs.dev }}" == "true" ]; then
+      #       vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+      #     else
+      #       vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+      #     fi
 
       # PUBLISH CHECKMARX TO OPEN VSX
       - name: Publish Checkmarx to Open VSX

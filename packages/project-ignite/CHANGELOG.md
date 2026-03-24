@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [DevAssist-v1.10.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.10.0) - 2026-03-24 03:37:02
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.56.0...DevAssist-v1.10.0
+
+## [DevAssist-v1.9.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.9.0) - 2026-03-24 03:26:08
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.55.0...DevAssist-v1.9.0
+
+## [DevAssist-v1.7.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.7.0) - 2026-03-24 03:15:25
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.54.0...DevAssist-v1.7.0
+
+## [DevAssist-v1.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.6.0) - 2026-03-24 03:04:02
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.53.0...DevAssist-v1.6.0
+
+## [DevAssist-v1.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.6.0) - 2026-03-24 02:45:49
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.52.0...DevAssist-v1.6.0
+
 ## [DevAssist-v1.6.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.6.0) - 2026-03-09 12:43:38
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.51.0...DevAssist-v1.6.0
