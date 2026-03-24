@@ -1,0 +1,65 @@
+name: Check Checkmarx Plugin Version
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"  # every hour
+
+jobs:
+  check-plugin:
+    runs-on: ubuntu-latest
+    outputs:
+      update_available: ${{ steps.compare.outputs.update_available }}
+
+    steps:
+      - name: Get latest versions from Open VSX
+        id: get_versions
+        run: |
+          EXTENSIONS=("ast-results" "cx-dev-assist")
+
+          for EXT in "${EXTENSIONS[@]}"; do
+            URL="https://open-vsx.org/api/${EXT}"
+            RESPONSE=$(curl -s $URL)
+            VERSION=$(echo "$RESPONSE" | jq -r '.version')
+
+            echo "$EXT latest version: $VERSION"
+            echo "${EXT}_version=$VERSION" >> $GITHUB_OUTPUT
+          done
+
+      - name: Compare versions
+        id: compare
+        run: |
+          # 👇 Set your expected versions
+          AST_RESULTS_CURRENT="1.0.0"
+          CX_DEV_ASSIST_CURRENT="1.0.0"
+
+          UPDATE=false
+
+          if [ "${{ steps.get_versions.outputs.ast-results_version }}" != "$AST_RESULTS_CURRENT" ]; then
+            echo "ast-results has update"
+            UPDATE=true
+          fi
+
+          if [ "${{ steps.get_versions.outputs.cx-dev-assist_version }}" != "$CX_DEV_ASSIST_CURRENT" ]; then
+            echo "cx-dev-assist has update"
+            UPDATE=true
+          fi
+
+          echo "update_available=$UPDATE" >> $GITHUB_OUTPUT
+
+  notify:
+    needs: check-plugin
+    if: needs.check-plugin.outputs.update_available == 'true'
+    uses: Checkmarx/plugins-release-workflow/.github/workflows/cxone-scan-teams-notify.yml@38cf7ab29e5021bb817ac38bdae3ac0fb210608c
+
+    with:
+      cx_result: "update-available"
+      repository: ${{ github.repository }}
+      ref_name: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      event_name: ${{ github.event_name }}
+      run_id: ${{ github.run_id }}
+      server_url: ${{ github.server_url }}
+
+    secrets:
+      teams_webhook_url: ${{ secrets.CXONE_SCAN_WEBHOOK_URL }}
