@@ -226,17 +226,19 @@ h1 {
 
 .feature-card-ai-disabled #aiFeatureToggle:disabled {
   cursor: not-allowed;
+  accent-color: #8c8c8c;
+  opacity: 0.6;
 }
 
 body[data-vscode-theme-kind*="dark"] .feature-card,
 body[data-vscode-theme-kind="vscode-high-contrast"] .feature-card {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
 }
 
 body[data-vscode-theme-kind*="light"] .feature-card {
-    background-color: rgb(245, 245, 245);
-    border: 1px solid rgb(245, 245, 245);
+  background-color: rgb(245, 245, 245);
+  border: 1px solid rgb(245, 245, 245);
 }
 
 .card-header {

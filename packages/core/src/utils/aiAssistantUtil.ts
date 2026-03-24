@@ -2,10 +2,22 @@
  * AI Assistant utility for resolving custom assistant display names to extension config.
  */
 
+import * as vscode from 'vscode';
 import { constants } from './common/constants';
 
 export interface AiAssistantConfig {
   extensionId: string;
+}
+
+/**
+ * Returns true if any supported AI extension (Copilot, Gemini, or Claude) is installed.
+ */
+export function hasAnySupportedAiExtension(): boolean {
+  return (
+    vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined ||
+    vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined ||
+    vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined
+  );
 }
 
 /**
