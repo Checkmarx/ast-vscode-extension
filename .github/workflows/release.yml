@@ -332,8 +332,10 @@ jobs:
         id: get_versions_final
         run: |
           # Extract version from .vsix filename (works for both dev and non-dev)
-          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)
-          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)
+          CHECKMARX_VSIX=$(ls packages/checkmarx/ast-results-*.vsix | head -n 1)          
+          IGNITE_VSIX=$(ls packages/project-ignite/cx-dev-assist-*.vsix | head -n 1)          
+
+
           CHECKMARX_VERSION_FINAL=$(basename "$CHECKMARX_VSIX" .vsix | sed 's/ast-results-//')
           IGNITE_VERSION_FINAL=$(basename "$IGNITE_VSIX" .vsix | sed 's/cx-dev-assist-//')
 

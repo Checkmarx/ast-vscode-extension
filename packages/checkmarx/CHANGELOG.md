@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## [Checkmarx-v2.59.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.59.0) - 2026-03-25 10:02:13
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.59.0...Checkmarx-v2.59.0
+
+## [Checkmarx-v2.58.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.58.0) - 2026-03-24 17:00:05
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.58.0...Checkmarx-v2.58.0
+
+## [Checkmarx-v2.57.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.57.0) - 2026-03-24 13:54:32
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.57.0...Checkmarx-v2.57.0
+
+## [Checkmarx-v2.56.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.56.0) - 2026-03-24 03:37:01
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.56.0...Checkmarx-v2.56.0
+
+## [Checkmarx-v2.55.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.55.0) - 2026-03-24 03:26:08
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.55.0...Checkmarx-v2.55.0
+
+## [Checkmarx-v2.53.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.53.0) - 2026-03-24 03:15:25
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.54.0...Checkmarx-v2.53.0
+
+## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-24 03:04:02
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.53.0...Checkmarx-v2.52.0
+
+## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-24 02:45:49
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.52.0...Checkmarx-v2.52.0
+
 ## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-09 12:43:38
 
 **Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.51.0...Checkmarx-v2.52.0
