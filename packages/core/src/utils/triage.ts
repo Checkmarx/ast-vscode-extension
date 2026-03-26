@@ -112,6 +112,11 @@ export async function triageSubmit(
     vscode.window.showErrorMessage(messages.scaNoteMandatory);
     return;
   }
+
+  // Store original values before any modifications
+  const originalSeverity = result.severity;
+  const originalState = result.state;
+
   // Case there is feedback on the severity
   if (data.severitySelection.length > 0) {
     logs.info(messages.triageUpdateSeverity(data.severitySelection));
@@ -131,12 +136,21 @@ export async function triageSubmit(
     result.setState(data.stateSelection);
   }
 
+  // Check for actual changes in dropdowns
+  const hasSeverityChange = data.severitySelection.length > 0 &&
+    data.severitySelection !== originalSeverity;
+
+  const hasStateChange = data.stateSelection.length > 0 &&
+    data.stateSelection !== originalState;
+
+  // SCA-specific: Since comment is mandatory and already validated, check only state change
+  if (result.type === constants.sca && !hasStateChange) {
+    vscode.window.showErrorMessage(messages.triageNoChange);
+    return;
+  }
+
   // Case the submit is sent without any change
-  if (
-    data.stateSelection.length === 0 &&
-    data.severitySelection.length === 0 &&
-    data.comment.length === 0
-  ) {
+  if (!hasSeverityChange && !hasStateChange) {
     vscode.window.showErrorMessage(messages.triageNoChange);
     return;
   }
