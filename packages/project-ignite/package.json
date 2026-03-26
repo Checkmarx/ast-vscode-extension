@@ -93,6 +93,11 @@
           "name": "Checkmarx Developer Assist Authentication"
         },
         {
+          "id": "docAndFeedback",
+          "type": "tree",
+          "name": "Documentation & Feedback"
+        },
+        {
           "id": "cx-dev-assist.cxDevAssist",
           "type": "webview",
           "name": "Checkmarx Developer Assist"
