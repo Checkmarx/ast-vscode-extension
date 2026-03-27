@@ -617,6 +617,7 @@ export class AuthService {
       await vscode.commands.executeCommand(commands.clear);
     }
 
+    await vscode.commands.executeCommand(commands.clearRealtimeScanners);
     await vscode.commands.executeCommand(commands.updateCxOneAssist);
     await vscode.commands.executeCommand(
       commands.setContext,

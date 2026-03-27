@@ -1,4 +1,18 @@
 (function () {
+  // Utility function to debounce callbacks
+  function debounce(func, delay) {
+    let timeoutId = null;
+    return function (...args) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        func(...args);
+        timeoutId = null;
+      }, delay);
+    };
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     const vscode = acquireVsCodeApi();
     const authButton = document.getElementById("authButton");
@@ -236,6 +250,11 @@
       messageType,
       validateCallback,
     ) {
+      // Debounce the validation callback with 400ms delay
+      const debouncedValidateCallback = validateCallback
+        ? debounce(validateCallback, 400)
+        : null;
+
       window.addEventListener("message", (event) => {
         if (event.data.type === messageType) {
           const items = event.data.items;
@@ -259,8 +278,8 @@
 
             if (filteredItems.length === 0) {
               listElement.style.display = "none";
-              if (validateCallback) {
-                validateCallback(query);
+              if (debouncedValidateCallback) {
+                debouncedValidateCallback(query);
               }
               isBtnDisabled();
               return;
@@ -288,8 +307,8 @@
         if (event.target !== inputElement) {
           listElement.innerHTML = "";
           listElement.style.display = "none";
-          if (validateCallback) {
-            validateCallback(inputElement.value);
+          if (debouncedValidateCallback) {
+            debouncedValidateCallback(inputElement.value);
           }
           isBtnDisabled();
         }

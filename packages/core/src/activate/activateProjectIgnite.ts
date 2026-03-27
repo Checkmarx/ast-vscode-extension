@@ -158,6 +158,13 @@ async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Log
 
     context.subscriptions.push({ dispose: () => ignoreFileManager.dispose() });
 
+    // Register command to deactivate realtime scanners on logout
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearRealtimeScanners, async () => {
+            await scannerRegistry.clearAllScanners();
+        })
+    );
+
     return { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner };
 }
 
