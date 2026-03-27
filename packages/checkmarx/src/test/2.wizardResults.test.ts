@@ -10,6 +10,8 @@ import { expect } from "chai";
 import {
   getQuickPickSelector,
   initialize,
+  loginWithMockToken,
+  logoutIfVisible,
   quickPickSelector,
 } from "./utils/utils";
 import {
@@ -21,23 +23,57 @@ import {
 } from "./utils/constants";
 import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
+// Small sleep helper used for UI settling delays between steps.
+async function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe("Wizard load results test", () => {
   let bench: Workbench;
   let treeScans: CustomTreeSection;
   let driver: WebDriver;
 
+  // Retries a VS Code command up to `retries` times to absorb transient UI delays.
+  async function executeCommandWithRetry(command: string, retries = 3): Promise<void> {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await bench.executeCommand(command);
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt < retries) {
+          await wait(1500);
+        }
+      }
+    }
+    throw lastError;
+  }
+
   before(async function () {
     this.timeout(100000);
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
-    await bench.executeCommand(CX_CLEAR);
-    await bench.executeCommand(CX_SELECT_ALL);
+    await initialize();
+    await loginWithMockToken(bench, {
+      executeCommandWithRetry: executeCommandWithRetry,
+      waitMs: 3000,
+    });
+    await executeCommandWithRetry(CX_CLEAR);
+    await executeCommandWithRetry(CX_SELECT_ALL);
   });
 
-  after(async () => {
+  after(async function () {
+    this.timeout(60000);
+    try {
+      await logoutIfVisible(bench, driver, {
+        executeCommandWithRetry: executeCommandWithRetry,
+      });
+    } catch {
+      // Keep teardown resilient.
+    }
+    await executeCommandWithRetry(CX_CLEAR);
     await new EditorView().closeAllEditors();
-    await bench.executeCommand(CX_CLEAR);
-    // Wizard command execution
   });
 
   it("should load results using wizard", async function () {
