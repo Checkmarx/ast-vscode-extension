@@ -46,6 +46,14 @@ export class CopilotChatCommand {
     private iacScanner: IacScannerService;
     private ascaScanner: AscaScannerService;
     private containersScanner: ContainersScannerService;
+    private selectedAIAssistant: string = 'unknown';
+    private selectedChatExtensionId: string = '';
+    private selectedNewChatOpen: string = '';
+    private selectedChatOpenWithQueryCommand: string = '';
+    private newSelectedChatOpenWithQueryCommand: string = '';
+    private selectedChatclipboardPasteActionCommand: string = '';
+    private claudeExtensionActivated: boolean = false;
+
 
     constructor(
         context: vscode.ExtensionContext,
@@ -207,44 +215,156 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean): string | null {
+        let assistantType: string | null = null;
+        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
+
+        const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
+            'Copilot': { extensionName: 'GitHub Copilot Chat', extensionId: constants.copilotChatExtensionId },
+            'Claude': { extensionName: 'Claude Code Extension', extensionId: constants.claudeChatExtensionId },
+        };
+
+        const availabilityMap: Record<string, boolean> = {
+            'Copilot': copilotAvailable,
+            'Claude': claudeAvailable,
+        };
+
+        if (unavailableMap[userPreferenceAIAssistant] && availabilityMap[userPreferenceAIAssistant] === false) {
+            const { extensionName, extensionId } = unavailableMap[userPreferenceAIAssistant];
+
+            vscode.window.showErrorMessage(
+                `${extensionName} is not installed. To use ${userPreferenceAIAssistant} for AI assistance, please install it and reload your IDE.`,
+                `Install ${extensionName}`
+            ).then(selection => {
+                if (selection === `Install ${extensionName}`) {
+                    vscode.commands.executeCommand('workbench.extensions.search', extensionId);
+                }
+            });
+            this.logs.error(`[DEBUG] ${extensionName} (${extensionId}) not found. User cannot use ${userPreferenceAIAssistant}.`);
+            return null;
+        } else {
+            this.logs.debug(`User preference from settings: ${userPreferenceAIAssistant}`);
+            if (userPreferenceAIAssistant === 'Copilot' && copilotAvailable) {
+                assistantType = constants.copilotAssistantName;
+                this.selectedChatExtensionId = constants.copilotChatExtensionId;
+                this.selectedNewChatOpen = constants.copilotNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.copilotChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newCopilotChatOpenWithQueryCommand;
+                this.logs.debug(`Selected Copilot (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Claude' && claudeAvailable) {
+                assistantType = constants.claudeAssistantName;
+                this.selectedChatExtensionId = constants.claudeChatExtensionId;
+                this.selectedNewChatOpen = constants.claudeNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.claudeChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
+                this.logs.debug(`Selected Claude (user preference)`);
+            }
+        }
+
+        this.logs.debug(`Final assistant type: ${assistantType}`);
+        this.logs.debug(`Extension ID: ${this.selectedChatExtensionId}`);
+        this.logs.debug(`New Chat Command: ${this.selectedNewChatOpen}`);
+        this.logs.debug(`Chat Open With Query Command: ${this.selectedChatOpenWithQueryCommand}`);
+        this.logs.debug(`New Chat Open With Query Command: ${this.newSelectedChatOpenWithQueryCommand}`);
+
+        return assistantType;
+    }
+
     private async openChatWithPrompt(question: string): Promise<void> {
 
-        if (isIDE(constants.cursorAgent)) {
-            await this.handleCursorIDE(question);
-            return;
-        }
+        const isNonVsCodeIde = isIDE(constants.cursorAgent)
+            || isIDE(constants.windsurfAgent)
+            || isIDE(constants.windsurfNextAgent)
+            || isIDE(constants.kiroAgent);
 
-        if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
-            await this.handleWindsurfIDE(question);
-            return;
-        }
+        if (isNonVsCodeIde) {
+            const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
+            const userPreference = config.get<string>('AI Assistant', 'Copilot');
+            const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
 
-        if (
-            isIDE(constants.kiroAgent)) {
-            await this.handleKiroIDE(question);
-            return;
+            if (userPreference === 'Claude' && claudeExtension !== undefined) {
+                this.selectedChatExtensionId = constants.claudeChatExtensionId;
+                this.selectedNewChatOpen = constants.claudeNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.claudeChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
+                await this.sendPromptToChatUseCopyPass(question);
+                return;
+            }
+
+            // Default: use native IDE AI
+            if (isIDE(constants.cursorAgent)) {
+                await this.handleCursorIDE(question);
+                return;
+            }
+            if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
+                await this.handleWindsurfIDE(question);
+                return;
+            }
+            if (isIDE(constants.kiroAgent)) {
+                await this.handleKiroIDE(question);
+                return;
+            }
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
-        if (!copilotChatExtension) {
-            const installOption = "Install Copilot Chat";
-            const choice = await vscode.window.showErrorMessage(
-                "GitHub Copilot Chat extension is not installed. Install it to use this feature.",
-                installOption
-            );
-            if (choice === installOption) {
-                await vscode.commands.executeCommand('workbench.extensions.search', `@id:${constants.copilotChatExtensionId}`);
-            }
+        const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+
+        this.logs.debug(`Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
+        this.logs.debug(`Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
+
+        const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
+
+        const userPreferenceAIAssistant = config.get<string>('AI Assistant', 'Copilot');
+
+        const selectedAssistant = this.setSelectedAIAssistant(
+            userPreferenceAIAssistant,
+            copilotChatExtension !== undefined,
+            claudeChatExtension !== undefined
+        );
+
+        if (!selectedAssistant) {
+            this.logs.error('No AI assistant could be selected');
             return;
         }
-        await vscode.commands.executeCommand(constants.copilotNewChatOpen);
         try {
-            await vscode.commands.executeCommand(constants.newCopilotChatOpenWithQueryCommand, { query: `${question}` });
-        } catch (error) {
-            if (error.message.includes(`command '${constants.newCopilotChatOpenWithQueryCommand}' not found`)) {
-                await vscode.commands.executeCommand(constants.copilotChatOpenWithQueryCommand, { query: `${question}` });
+            if (selectedAssistant === constants.claudeAssistantName) {
+                await this.sendPromptToChatUseCopyPass(question);
+            } else {
+                await vscode.commands.executeCommand(this.selectedNewChatOpen);
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
+                this.logs.debug(`Successfully sent query with ${this.newSelectedChatOpenWithQueryCommand}`);
             }
-
+        } catch (error) {
+            if (error.message.includes(`command '${this.newSelectedChatOpenWithQueryCommand}' not found`)) {
+                await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
+            }
         }
+    }
+
+    //Send prompt via clipboard paste
+    private async sendPromptToChatUseCopyPass(question: string) {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+        if (!claudeExtension.isActive) {
+            await claudeExtension.activate();
+            this.claudeExtensionActivated = false;
+        }
+
+        // Always open the sidebar (safe if already open, ensures it's visible when closed).
+        // The sidebar webview needs time to initialize — use a longer delay on first activation.
+        // Always use a consistent 800ms delay since the sidebar may have been closed between calls.
+        await vscode.commands.executeCommand(constants.claudeSidebarOpen);
+        await sleep(this.claudeExtensionActivated ? 600 : 900);
+        this.claudeExtensionActivated = true;
+        // Always start a new conversation so previous context is not reused
+        await vscode.commands.executeCommand(constants.claudeNewChatOpen);
+        await sleep(400);
+        await vscode.env.clipboard.writeText(question);
+        await sleep(200);
+        await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
+        await this.pressEnter();
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {

@@ -173,9 +173,20 @@
             ],
             "default": "docker"
           },
+          "checkmarxDeveloperAssist.AI Assistant": {
+            "type": "string",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use for remediation",
+            "enum": [
+              "Copilot",
+              "Claude"
+            ],
+            "default": "Copilot",
+            "order": 7
+          },
           "checkmarxDeveloperAssist.MCP": {
             "type": "",
-            "order": 7,
+            "order": 8,
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
           }
