@@ -5,6 +5,7 @@ import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 import { getSelectedConfigFor } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
+import { isIDE } from "@checkmarx/vscode-core/out/utils/utils";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 
 type WelcomeAiBannerScenario = "ok" | "switched" | "multiple" | "none";
@@ -17,6 +18,10 @@ interface WelcomeAiBannerState {
 
 export class WelcomeWebview {
   private static getWelcomeAiBannerState(): WelcomeAiBannerState {
+    // Non-VS Code IDEs (Cursor, Windsurf, Kiro) have built-in AI assistants
+    if (isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.kiroAgent)) {
+      return { scenario: "ok" };
+    }
     const config = vscode.workspace.getConfiguration("Checkmarx");
     let userChoice = config.get<string>("AI Assistant", "Copilot");
     if (userChoice === "Disable") return { scenario: "ok" };

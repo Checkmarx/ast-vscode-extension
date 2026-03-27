@@ -233,7 +233,7 @@ export class CopilotChatCommand {
             const { extensionName, extensionId } = unavailableMap[userPreferenceAIAssistant];
 
             vscode.window.showErrorMessage(
-                `${extensionName} is not installed. To use ${userPreferenceAIAssistant} for AI assistance, please install it and reload VS Code.`,
+                `${extensionName} is not installed. To use ${userPreferenceAIAssistant} for AI assistance, please install it and reload your IDE.`,
                 `Install ${extensionName}`
             ).then(selection => {
                 if (selection === `Install ${extensionName}`) {
@@ -273,20 +273,39 @@ export class CopilotChatCommand {
 
     private async openChatWithPrompt(question: string): Promise<void> {
 
-        if (isIDE(constants.cursorAgent)) {
-            await this.handleCursorIDE(question);
-            return;
-        }
+        const isNonVsCodeIde = isIDE(constants.cursorAgent)
+            || isIDE(constants.windsurfAgent)
+            || isIDE(constants.windsurfNextAgent)
+            || isIDE(constants.kiroAgent);
 
-        if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
-            await this.handleWindsurfIDE(question);
-            return;
-        }
+        if (isNonVsCodeIde) {
+            const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
+            const userPreference = config.get<string>('AI Assistant', 'Copilot');
+            const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
 
-        if (
-            isIDE(constants.kiroAgent)) {
-            await this.handleKiroIDE(question);
-            return;
+            if (userPreference === 'Claude' && claudeExtension !== undefined) {
+                this.selectedChatExtensionId = constants.claudeChatExtensionId;
+                this.selectedNewChatOpen = constants.claudeNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.claudeChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
+                await this.sendPromptToChatUseCopyPass(question);
+                return;
+            }
+
+            // Default: use native IDE AI
+            if (isIDE(constants.cursorAgent)) {
+                await this.handleCursorIDE(question);
+                return;
+            }
+            if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
+                await this.handleWindsurfIDE(question);
+                return;
+            }
+            if (isIDE(constants.kiroAgent)) {
+                await this.handleKiroIDE(question);
+                return;
+            }
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
