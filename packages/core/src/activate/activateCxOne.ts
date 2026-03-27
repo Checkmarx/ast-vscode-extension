@@ -165,7 +165,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     const scaResultsProvider = new SCAResultsProvider(context, logs, statusBarItem, diagnosticCollection);
 
     // Documentation & Feedback view
-    const docAndFeedback = new DocAndFeedbackView();
+    const docAndFeedback = new DocAndFeedbackView(DOC_LINKS.checkmarxOne);
 
     const docAndFeedbackTree = vscode.window.createTreeView(commands.docAndFeedback, {
         treeDataProvider: docAndFeedback,

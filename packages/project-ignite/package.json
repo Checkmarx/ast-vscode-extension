@@ -96,6 +96,11 @@
           "id": "cx-dev-assist.cxDevAssist",
           "type": "webview",
           "name": "Checkmarx Developer Assist"
+        },
+        {
+          "id": "docAndFeedback",
+          "type": "tree",
+          "name": "Documentation & Feedback"
         }
       ]
     },
