@@ -18,10 +18,15 @@ interface WelcomeAiBannerState {
 export class WelcomeWebview {
   private static getWelcomeAiBannerState(): WelcomeAiBannerState {
     // Non-VS Code IDEs (Cursor, Windsurf, Kiro) have built-in AI assistants
-    if (isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.kiroAgent)) {
-      return { scenario: "ok" };
-    }
+    const isNonVsCodeIde = isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.kiroAgent);
     const config = vscode.workspace.getConfiguration("checkmarxDeveloperAssist");
+    if (isNonVsCodeIde) {
+      const preferNative = config.get<boolean>('Prefer Native AI Assistant', true);
+      if (preferNative) {
+        return { scenario: "ok" };
+      }
+      // Prefer Native unchecked: fall through to dropdown-based banner logic
+    }
     const userChoice = config.get<string>("AI Assistant", "Copilot");
     const copilotAvailable = vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined;
     const claudeAvailable = vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined;

@@ -280,6 +280,25 @@ export class CopilotChatCommand {
 
         if (isNonVsCodeIde) {
             const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
+            const preferNative = config.get<boolean>('Prefer Native AI Assistant', true);
+
+            if (preferNative) {
+                // Prefer Native AI Assistant is enabled: use native IDE AI directly, ignore dropdown
+                if (isIDE(constants.cursorAgent)) {
+                    await this.handleCursorIDE(question);
+                    return;
+                }
+                if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
+                    await this.handleWindsurfIDE(question);
+                    return;
+                }
+                if (isIDE(constants.kiroAgent)) {
+                    await this.handleKiroIDE(question);
+                    return;
+                }
+            }
+
+            // Prefer Native AI Assistant is unchecked: use dropdown value
             const userPreference = config.get<string>('AI Assistant', 'Copilot');
             const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
 
@@ -293,7 +312,7 @@ export class CopilotChatCommand {
                 return;
             }
 
-            // Default: use native IDE AI
+            // Fallback: use native IDE AI
             if (isIDE(constants.cursorAgent)) {
                 await this.handleCursorIDE(question);
                 return;

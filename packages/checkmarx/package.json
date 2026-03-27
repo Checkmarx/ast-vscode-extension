@@ -947,10 +947,15 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
+          "Checkmarx.Prefer Native AI Assistant": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "When enabled and running in a non-VS Code IDE (Cursor, Windsurf, Kiro), the extension uses the IDE's built-in AI assistant directly, ignoring the **AI Assistant** dropdown below. Uncheck to manually choose an AI assistant via the dropdown. _This setting has no effect in VS Code._"
+          },
           "Checkmarx.AI Assistant": {
             "type": "string",
             "description": "AI Assistant",
-            "markdownDescription": "Select the AI Assistant to use for remediation",
+            "markdownDescription": "Select the AI Assistant to use for remediation. _On non-VS Code IDEs, this setting is ignored when **Prefer Native AI Assistant** is enabled._",
             "enum": [
               "Copilot",
               "Claude"
