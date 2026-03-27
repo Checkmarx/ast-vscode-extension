@@ -235,4 +235,21 @@ export abstract class BaseScannerService implements IScannerService {
     const normalizedRelativePath = path.normalize(relativePath);
     return entry.files.find(f => path.normalize(f.path) === normalizedRelativePath && f.active);
   }
+
+  /**
+ * Clears all decorations from visible editors
+ * @param decorationTypes - Object containing all decoration type definitions
+ */
+  protected clearDecorationsFromEditors(decorationTypes: any): void {
+    if (vscode.window.visibleTextEditors) {
+      vscode.window.visibleTextEditors.forEach((editor) => {
+        Object.values(decorationTypes).forEach((decorationType) => {
+          if (decorationType && typeof (decorationType as any).dispose === 'function') {
+            editor.setDecorations(decorationType as vscode.TextEditorDecorationType, []);
+          }
+        });
+      });
+    }
+  }
+
 }
