@@ -17,6 +17,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
   private isAuthenticated: boolean = false;
   private isUpdating: boolean = false;
   private pendingUpdate: boolean = false;
+  private isFirstLoad: boolean = true;
 
   constructor(context: vscode.ExtensionContext, _webViewCommand: WebViewCommand, logs: Logs) {
     this.context = context;
@@ -39,8 +40,15 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
     // Set up message handling first (before content is rendered)
     this.setupMessageHandling();
 
-    // Check initial auth state and update content
-    this.checkAuthStateAndUpdate();
+    if (this.isFirstLoad) {
+      // First load: auth state unknown, must validate before rendering
+      this.isFirstLoad = false;
+      this.checkAuthStateAndUpdate();
+    } else {
+      // Re-show: render instantly with known auth state, then validate in background
+      this.updateWebviewContent();
+      this.checkAuthStateAndUpdate();
+    }
 
     // Listen for theme changes to refresh images
     vscode.window.onDidChangeActiveColorTheme(() => {
