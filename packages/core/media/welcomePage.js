@@ -67,12 +67,14 @@
       const card = document.getElementById("aiFeatureCard");
       const isAiDisabledByMissingExtension = card && card.classList.contains("feature-card-ai-disabled");
 
-      if (message.enabled && !isAiDisabledByMissingExtension) {
-        toggleScannerState(message.scannersSettings);
+      if (!message.enabled) {
+        // MCP server disabled at tenant level: uncheck and disable, show error icon
+        toggleScannerState(false);
         if (checkbox) {
-          checkbox.disabled = false;
-          checkbox.style.cursor = "pointer";
+          checkbox.disabled = true;
         }
+        aiBoxInfo.classList.remove("hidden");
+        aiFeatureBoxWrapper.classList.remove("hidden");
       } else if (isAiDisabledByMissingExtension) {
         // No AI extension installed: show checked but grey/disabled checkbox (tick visible, not clickable)
         if (checkbox) {
@@ -80,13 +82,11 @@
           checkbox.disabled = true;
         }
       } else {
-        // MCP server disabled: uncheck and disable, show error icon
-        toggleScannerState(false);
+        toggleScannerState(message.scannersSettings);
         if (checkbox) {
-          checkbox.disabled = true;
+          checkbox.disabled = false;
+          checkbox.style.cursor = "pointer";
         }
-        aiBoxInfo.classList.remove("hidden");
-        aiFeatureBoxWrapper.classList.remove("hidden");
       }
 
       vscode.setState({

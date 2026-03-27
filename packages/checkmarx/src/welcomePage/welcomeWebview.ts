@@ -62,7 +62,7 @@ export class WelcomeWebview {
   ): string {
     const settingsCommandUri = "command:" + commands.openSettings + "?" + encodeURIComponent(JSON.stringify([commands.openSettingsArgsAiAssistant]));
     const bannerHtml = WelcomeWebview.getBannerHtml(banner, productName, settingsCommandUri);
-    const disableAiFeature = !!banner && (banner.scenario === "none" || banner.scenario === "multiple");
+    const disableAiFeature = !isAiMcpEnabled || (!!banner && (banner.scenario === "none" || banner.scenario === "multiple"));
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -263,16 +263,18 @@ export class WelcomeWebview {
     const messages = getMessages();
     const productName = messages.productName;
 
-    let bannerState: WelcomeAiBannerState;
-    try {
-      bannerState = WelcomeWebview.getWelcomeAiBannerState();
-    } catch {
-      // If detection fails (e.g. config not ready), show "none" banner so user knows to check settings
-      bannerState = { scenario: "none", defaultAssistantDisplayName: "Your chosen assistant" };
-    }
-    if (bannerState.scenario === "switched" && bannerState.autoSwitchedTo) {
-      const checkmarxConfig = vscode.workspace.getConfiguration("Checkmarx");
-      await checkmarxConfig.update("AI Assistant", bannerState.autoSwitchedTo, vscode.ConfigurationTarget.Global);
+    let bannerState: WelcomeAiBannerState | null = null;
+    if (isAiMcpEnabled) {
+      try {
+        bannerState = WelcomeWebview.getWelcomeAiBannerState();
+      } catch {
+        // If detection fails (e.g. config not ready), show "none" banner so user knows to check settings
+        bannerState = { scenario: "none", defaultAssistantDisplayName: "Your chosen assistant" };
+      }
+      if (bannerState.scenario === "switched" && bannerState.autoSwitchedTo) {
+        const checkmarxConfig = vscode.workspace.getConfiguration("Checkmarx");
+        await checkmarxConfig.update("AI Assistant", bannerState.autoSwitchedTo, vscode.ConfigurationTarget.Global);
+      }
     }
 
     const scannerConfigKeys = [

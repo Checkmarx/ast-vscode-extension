@@ -10,13 +10,27 @@ export interface AiAssistantConfig {
 }
 
 /**
+ * Returns true if the GitHub Copilot Chat extension is installed.
+ */
+export function isCopilotInstalled(): boolean {
+  return vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined;
+}
+
+/**
+ * Returns true if the Claude Code extension is installed.
+ */
+export function isClaudeInstalled(): boolean {
+  return vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined;
+}
+
+/**
  * Returns true if any supported AI extension (Copilot, Gemini, or Claude) is installed.
  */
 export function hasAnySupportedAiExtension(): boolean {
   return (
-    vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined ||
+    isCopilotInstalled() ||
     vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined ||
-    vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined
+    isClaudeInstalled()
   );
 }
 

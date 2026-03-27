@@ -9,6 +9,7 @@ import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
 import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
 import { getMessages } from "../config/extensionMessages";
+import { isCopilotInstalled, isClaudeInstalled } from "../utils/aiAssistantUtil";
 
 interface DecodedJwt {
 	iss: string;
@@ -274,32 +275,36 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		};
 
 		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+			// Non-VSCode IDEs (Cursor, Windsurf, Kiro, Claude): always write to their own config
 			await updateMcpJsonFile(mcpServer);
 		} else {
-			const config = vscode.workspace.getConfiguration();
-			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
-			const existingServers = fullMcp.servers || {};
+			// VSCode: only write to Copilot mcp config if Copilot extension is installed
+			if (isCopilotInstalled()) {
+				const config = vscode.workspace.getConfiguration();
+				const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
+				const existingServers = fullMcp.servers || {};
 
-			// Create a new object to avoid proxy issues
-			const updatedServers = { ...existingServers };
-			updatedServers[getCheckmarxMcpServerName()] = mcpServer;
+				// Create a new object to avoid proxy issues
+				const updatedServers = { ...existingServers };
+				updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
-			try {
-				await config.update(
-					"mcp",
-					{ servers: updatedServers },
-					vscode.ConfigurationTarget.Global
-				);
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
-				await updateMcpJsonFile(mcpServer);
+				try {
+					await config.update(
+						"mcp",
+						{ servers: updatedServers },
+						vscode.ConfigurationTarget.Global
+					);
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
+					await updateMcpJsonFile(mcpServer);
+				}
 			}
 		}
 
-		// So Claude Code extension sees Checkmarx MCP when used inside Cursor/VS Code (it reads ~/.claude/* only).
+		// Write to Claude config only if Claude extension is installed.
 		// Skip when current IDE is Claude to avoid writing to ~/.claude/* twice (updateMcpJsonFile already did).
-		if (!isIDE(constants.claudeAgent)) {
+		if (!isIDE(constants.claudeAgent) && isClaudeInstalled()) {
 			writeToClaudeConfig(mcpServer);
 		}
 
@@ -316,7 +321,7 @@ function writeToClaudeConfig(mcpServer: McpServer): void {
 	const server = {
 		type: "http",
 		url: mcpServer.url,
-		headers: { ...mcpServer.headers, "cx-origin": constants.claudeAgent },
+		headers: { ...mcpServer.headers, "cx-origin": "VsCode" },
 	};
 	const name = getCheckmarxMcpServerName();
 	const writeOne = (filePath: string) => {

@@ -52,7 +52,7 @@ export class CopilotChatCommand {
     private selectedChatOpenWithQueryCommand: string = '';
     private newSelectedChatOpenWithQueryCommand: string = '';
     private selectedChatclipboardPasteActionCommand: string = '';
-    private claudeSidebarOpened: boolean = false;
+    private claudeExtensionActivated: boolean = false;
 
 
     constructor(
@@ -330,14 +330,15 @@ export class CopilotChatCommand {
         const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
         if (!claudeExtension.isActive) {
             await claudeExtension.activate();
-            await sleep(200);
+            this.claudeExtensionActivated = false;
         }
 
         // Always open the sidebar (safe if already open, ensures it's visible when closed).
-        // On first open the webview needs extra time to initialize — use a longer delay.
+        // The sidebar webview needs time to initialize — use a longer delay on first activation.
+        // Always use a consistent 800ms delay since the sidebar may have been closed between calls.
         await vscode.commands.executeCommand(constants.claudeSidebarOpen);
-        await sleep(this.claudeSidebarOpened ? 300 : 800);
-        this.claudeSidebarOpened = true;
+        await sleep(this.claudeExtensionActivated ? 600 : 900);
+        this.claudeExtensionActivated = true;
         // Always start a new conversation so previous context is not reused
         await vscode.commands.executeCommand(constants.claudeNewChatOpen);
         await sleep(400);

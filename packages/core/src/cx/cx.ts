@@ -312,12 +312,9 @@ export class Cx implements CxPlatform {
 
     getBaseAstConfiguration() {
         const config = new CxConfig();
-        try {
-            const checkmarxOneConfig = vscode.workspace.getConfiguration("checkmarxOne");
-            config.additionalParameters = (checkmarxOneConfig?.get?.("additionalParams") ?? "valid-api-key") as string;
-        } catch {
-            config.additionalParameters = "valid-api-key";
-        }
+        config.additionalParameters = vscode.workspace
+            .getConfiguration("checkmarxOne")
+            .get("additionalParams") as string;
         config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
         return config;
     }
