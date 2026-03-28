@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
+import * as vscode from "vscode";
 import { CommonCommand } from "../commands/commonCommand";
 import { Logs } from "../models/logs";
 import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
@@ -24,24 +25,17 @@ describe("CommonCommand", () => {
     });
 
     const mockOutputChannel = {
-      append: () => {},
-      appendLine: () => {},
-      clear: () => {},
-      show: () => {},
-      hide: () => {},
-      dispose: () => {},
-      replace: () => {},
-      name: "Test"
+      name: "Test",
+      append: () => { },
+      appendLine: () => { },
+      clear: () => { },
+      show: () => { },
+      hide: () => { },
+      dispose: () => { },
+      replace: () => { },
     };
 
-    logs = {
-      info: () => {},
-      error: () => {},
-      output: mockOutputChannel,
-      log: () => {},
-      warn: () => {},
-      show: () => {}
-    } as Logs;
+    logs = new Logs(mockOutputChannel as vscode.OutputChannel);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockContext = { subscriptions: [] } as any;
@@ -54,7 +48,7 @@ describe("CommonCommand", () => {
   });
 
   describe("executeCheckSettings", () => {
-    it("should execute setContext command with correct parameters", async() => {
+    it("should execute setContext command with correct parameters", async () => {
       await commonCommand.executeCheckSettings();
       expect(getCommandsExecuted()).to.include("setContext");
     });

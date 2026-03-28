@@ -952,6 +952,16 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
+          "Checkmarx.AI Assistant": {
+            "type": "string",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use.",
+            "enum": [
+              "Copilot",
+              "Gemini"
+            ],
+            "default": "Copilot"
+          },
           "checkmarx.MCP": {
             "type": "",
             "default": {},
