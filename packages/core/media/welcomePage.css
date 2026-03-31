@@ -24,7 +24,8 @@ body {
 }
 
 .welcome-page-header .welcome-tagline {
-  width: 100%;
+  width: 404px;
+  min-height: 38px;
   margin: 0;
   color: var(--vscode-editor-foreground);
   font-family: Inter, sans-serif;
@@ -48,7 +49,7 @@ body {
   flex: 0 1 auto;
   max-width: 420px;
   margin-top: 0;
-  min-width: 0;
+  min-width: auto;
 }
 
 .right-section {
@@ -60,6 +61,7 @@ body {
   gap: 20px;
   padding: 0 0 0 1em;
   box-sizing: border-box;
+  align-self: center;
 }
 
 .welcome-code-image {
@@ -210,8 +212,7 @@ h1 {
 
 .feature-card {
   padding: 18px;
-  width: 100%;
-  max-width: 410px;
+  width: 410px;
   min-height: auto;
   border-radius: 10px;
   box-sizing: border-box;
