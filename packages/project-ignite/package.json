@@ -176,19 +176,19 @@
           "checkmarxDeveloperAssist.Prefer Native AI Assistant": {
             "type": "boolean",
             "default": true,
-            "order": 7,
-            "markdownDescription": "When enabled and running in a non-VS Code IDE (Cursor, Windsurf, Kiro), the extension uses the IDE's built-in AI assistant directly, ignoring the **AI Assistant** dropdown below. Uncheck to manually choose an AI assistant via the dropdown. _This setting has no effect in VS Code._"
+            "order": 8,
+            "markdownDescription": "When enabled, the extension uses the IDE's built-in AI assistant and ignores the selection in **AI Assistant** above. This setting is only relevant for non-VS Code IDEs."
           },
           "checkmarxDeveloperAssist.AI Assistant": {
             "type": "string",
             "description": "AI Assistant",
-            "markdownDescription": "Select the AI Assistant to use for remediation. _On non-VS Code IDEs, this setting is ignored when **Prefer Native AI Assistant** is enabled._",
+            "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
             "enum": [
               "Copilot",
               "Claude"
             ],
             "default": "Copilot",
-            "order": 8
+            "order": 7
           },
           "checkmarxDeveloperAssist.MCP": {
             "type": "",
