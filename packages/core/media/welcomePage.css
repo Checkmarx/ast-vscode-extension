@@ -196,7 +196,7 @@ h1 {
 .welcome-banner a {
   color: #0e9bf7;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .welcome-banner a:hover {
