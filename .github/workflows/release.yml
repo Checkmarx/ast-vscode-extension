@@ -409,38 +409,36 @@ jobs:
           prerelease: ${{ inputs.dev }}
 
       # PUBLISH CHECKMARX TO VSCODE MARKETPLACE
-      # Temporarily disabled due to token permissions issue
-      # - name: Publish Checkmarx to VSCode Marketplace
-      #   env:
-      #     MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
-      #   if: |
-      #     env.MARKET_TOKEN != null &&
-      #     (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
-      #     (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
-      #   run: |
-      #     cd packages/checkmarx
-      #     if [ "${{ inputs.dev }}" == "true" ]; then
-      #       vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-      #     else
-      #       vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-      #     fi
+      - name: Publish Checkmarx to VSCode Marketplace
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: |
+          env.MARKET_TOKEN != null &&
+          (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        run: |
+          cd packages/checkmarx
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          fi
 
       # PUBLISH Checkmarx Developer Assist TO VSCODE MARKETPLACE
-      # Temporarily disabled due to token permissions issue
-      # - name: Publish Checkmarx Developer Assist to VSCode Marketplace
-      #   env:
-      #     MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
-      #   if: |
-      #     env.MARKET_TOKEN != null &&
-      #     (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
-      #     (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
-      #   run: |
-      #     cd packages/project-ignite
-      #     if [ "${{ inputs.dev }}" == "true" ]; then
-      #       vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-      #     else
-      #       vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
-      #     fi
+      - name: Publish Checkmarx Developer Assist to VSCode Marketplace
+        env:
+          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+        if: |
+          env.MARKET_TOKEN != null &&
+          (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both') &&
+          (inputs.dev == false || (inputs.dev == true && inputs.publish == true))
+        run: |
+          cd packages/project-ignite
+          if [ "${{ inputs.dev }}" == "true" ]; then
+            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          else
+            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          fi
 
       # PUBLISH CHECKMARX TO OPEN VSX
       - name: Publish Checkmarx to Open VSX

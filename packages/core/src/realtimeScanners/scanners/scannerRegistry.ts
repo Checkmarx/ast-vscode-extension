@@ -47,4 +47,24 @@ export class ScannerRegistry {
   getScanner(id: string): IScannerCommand | undefined {
     return this.scanners.get(id);
   }
+
+  public async clearAllScanners(): Promise<void> {
+    const scannerNames = [
+      constants.ossRealtimeScannerEngineName,
+      constants.secretsScannerEngineName,
+      constants.ascaRealtimeScannerEngineName,
+      constants.containersRealtimeScannerEngineName,
+      constants.iacRealtimeScannerEngineName,
+    ];
+
+    for (const scannerName of scannerNames) {
+      const command = this.getScanner(scannerName);
+      if (command) {
+        const scannerService = (command as any).getScannerService?.();
+        if (scannerService?.clearProblems) {
+          await scannerService.clearProblems();
+        }
+      }
+    }
+  }
 }

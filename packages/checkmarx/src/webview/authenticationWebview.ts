@@ -17,6 +17,7 @@ import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
   private static currentPanel: AuthenticationWebview | undefined;
+  private static isAuthenticating: boolean = false;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private readonly logs: Logs | undefined;
@@ -47,6 +48,17 @@ export class AuthenticationWebview {
         this._panel.webview.html = this._getWebviewContent();
         // Re-initialize after content refresh
         await this.initialize();
+      })
+    );
+
+    // Listen for authentication configuration changes
+    this._disposables.push(
+      vscode.workspace.onDidChangeConfiguration(async (e) => {
+        if (e.affectsConfiguration("checkmarxOne.authentication")) {
+          // Close the form panel when auth type changes in settings
+          // This ensures the form always matches the currently selected auth method
+          this._panel.dispose();
+        }
       })
     );
 
@@ -121,6 +133,27 @@ export class AuthenticationWebview {
       messages,
       authMethod
     );
+  }
+
+  /**
+   * Disposes any currently open authentication webview panel.
+   * Called when authentication succeeds via any method to ensure forms are closed.
+   * Safe to call multiple times (idempotent).
+   * 
+   * @param force - If true, dispose even if panel is currently authenticating.
+   *                If false (default), skip disposal if panel is handling its own auth.
+   */
+  public static disposeAll(force: boolean = false): void {
+    // Don't dispose if panel is currently processing its own authentication
+    // Let schedulePostAuth() handle disposal to complete post-auth actions
+    if (!force && AuthenticationWebview.isAuthenticating) {
+      return;
+    }
+
+    if (AuthenticationWebview.currentPanel) {
+      AuthenticationWebview.currentPanel._panel.dispose();
+      AuthenticationWebview.currentPanel = undefined;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -334,56 +367,88 @@ export class AuthenticationWebview {
               await this._panel.webview.postMessage({ command: "disableAuthButton" });
               try {
                 if (message.authMethod === "oauth") {
-                  // Existing OAuth handling
-                  const baseUri = message.baseUri.trim();
-                  const tenant = message.tenant.trim();
-                  const authService = AuthService.getInstance(this.context);
-                  const token = await authService.authenticate(baseUri, tenant);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
-                  if (token !== "") {
-                    this.schedulePostAuth(isAiEnabled, { apiKey: token });
-                  }
-                  else {
-                    this._panel.webview.postMessage({ command: "enableAuthButton" });
+                  // Mark that we're processing authentication to prevent external disposal
+                  AuthenticationWebview.isAuthenticating = true;
+
+                  try {
+                    // Existing OAuth handling
+                    const baseUri = message.baseUri.trim();
+                    const tenant = message.tenant.trim();
+                    const authService = AuthService.getInstance(this.context);
+                    const token = await authService.authenticate(baseUri, tenant);
+                    const isAiEnabled = await cx.isAiMcpServerEnabled();
+                    const commonCommand = new CommonCommand(this.context, this.logs);
+                    await commonCommand.executeCheckStandaloneEnabled();
+                    await commonCommand.executeCheckCxOneAssistEnabled();
+                    if (token !== "") {
+                      this.schedulePostAuth(isAiEnabled, { apiKey: token });
+                      // Clear flag after delay to allow schedulePostAuth to complete (success case only)
+                      setTimeout(() => {
+                        AuthenticationWebview.isAuthenticating = false;
+                      }, 2000);
+                    }
+                    else {
+                      // Clear flag immediately on authentication failure to allow retry
+                      AuthenticationWebview.isAuthenticating = false;
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                    }
+                  } catch (oauthError) {
+                    // Clear flag immediately on error to allow retry
+                    AuthenticationWebview.isAuthenticating = false;
+                    throw oauthError; // Re-throw to be caught by outer catch
                   }
                 } else if (message.authMethod === "apiKey") {
-                  // New API Key handling
-                  const authService = AuthService.getInstance(this.context);
+                  // Mark that we're processing authentication to prevent external disposal
+                  AuthenticationWebview.isAuthenticating = true;
 
-                  // Validate the API Key using AuthService
-                  const isValid = await authService.validateApiKey(
-                    message.apiKey
-                  );
-                  if (!isValid) {
-                    // Sending an error message to the window
+                  try {
+                    // New API Key handling
+                    const authService = AuthService.getInstance(this.context);
+
+                    // Validate the API Key using AuthService
+                    const isValid = await authService.validateApiKey(
+                      message.apiKey
+                    );
+                    if (!isValid) {
+                      // Clear flag immediately on validation failure to allow retry
+                      AuthenticationWebview.isAuthenticating = false;
+                      // Sending an error message to the window
+                      this._panel.webview.postMessage({
+                        type: "validation-error",
+                        message:
+                          "API Key validation failed. Please check your key.",
+                      });
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                      return;
+                    }
+
+                    authService.saveToken(this.context, message.apiKey);
+                    // Save auth method for returning user flow
+                    // NOTE: We intentionally preserve OAuth credentials (baseUri/tenant) so users can
+                    // switch back to OAuth later without re-entering their credentials
+                    await authService.saveLastAuthMethod('apiKey');
+                    const isAiEnabled = await cx.isAiMcpServerEnabled();
+                    const commonCommand = new CommonCommand(this.context, this.logs);
+                    await commonCommand.executeCheckStandaloneEnabled();
+                    await commonCommand.executeCheckCxOneAssistEnabled();
                     this._panel.webview.postMessage({
-                      type: "validation-error",
-                      message:
-                        "API Key validation failed. Please check your key.",
+                      type: "validation-success",
+                      message: "API Key validated successfully!",
                     });
-                    this._panel.webview.postMessage({ command: "enableAuthButton" });
-                    return;
+                    this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
+                    // Clear flag after delay to allow schedulePostAuth to complete (success case only)
+                    setTimeout(() => {
+                      AuthenticationWebview.isAuthenticating = false;
+                    }, 2000);
+                  } catch (apiKeyError) {
+                    // Clear flag immediately on error to allow retry
+                    AuthenticationWebview.isAuthenticating = false;
+                    throw apiKeyError; // Re-throw to be caught by outer catch
                   }
-
-                  authService.saveToken(this.context, message.apiKey);
-                  // Save auth method for returning user flow
-                  // NOTE: We intentionally preserve OAuth credentials (baseUri/tenant) so users can
-                  // switch back to OAuth later without re-entering their credentials
-                  await authService.saveLastAuthMethod('apiKey');
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
-                  this._panel.webview.postMessage({
-                    type: "validation-success",
-                    message: "API Key validated successfully!",
-                  });
-                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                 }
               } catch (error) {
+                // Clear flag immediately on any error to allow retry
+                AuthenticationWebview.isAuthenticating = false;
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
                 this._panel.webview.postMessage({
                   type: "validation-error",

@@ -48,6 +48,7 @@ import { DiagnosticCommand } from '../commands/diagnosticCommand';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
 
+
 /**
  * Activate Checkmarx One specific features
  *
@@ -70,7 +71,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
         ignoredStatusBarItem,
     } = await setupStatusBars(context, logs);
 
-    const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
+    const { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
 
     await setScanButtonDefaultIfScanIsNotRunning(context);
@@ -282,6 +283,12 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     // Checkmarx One Assist view & its commands
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
     registerAssistRelatedCommands(context, cxOneAssistProvider);
+    // Register command to deactivate realtime scanners on logout
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearRealtimeScanners, async () => {
+            await scannerRegistry.clearAllScanners();
+        })
+    );
 
     const copilotChatCommand = new CopilotChatCommand(
         context,
@@ -596,6 +603,22 @@ function registerAuthenticationLauncher(
             } catch (error) {
                 logs?.error?.(`Failed to load authentication webview: ${error}`);
                 vscode.window.showErrorMessage('Failed to load authentication page. Please try again.');
+            }
+        }),
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.resetAuthenticationCache, async () => {
+            const selection = await vscode.window.showWarningMessage(
+                "Are you sure you want to reset Authentication cache?",
+                "Yes",
+                "Cancel"
+            );
+            if (selection === "Yes") {
+                const authService = AuthService.getInstance(context, logs);
+                await authService.clearOAuthCredentials();
+                vscode.window.showInformationMessage("Authentication cache cleared successfully.");
+                logs?.info?.("Authentication cache cleared successfully.");
             }
         }),
     );

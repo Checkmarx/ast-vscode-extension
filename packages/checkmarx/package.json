@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.56.0",
+  "version": "2.59.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -573,6 +573,11 @@
         "command": "ast-results.showAuth",
         "title": "Checkmarx: Show Authentication",
         "category": "Checkmarx"
+      },
+      {
+        "command": "ast-results.resetAuthenticationCache",
+        "title": "Checkmarx: Reset Authentication Cache",
+        "category": "Checkmarx"
       }
     ],
     "submenus": [
@@ -1030,7 +1035,7 @@
               "Both authentication methods available"
             ],
             "description": "Select which authentication method(s) to display in the sidebar authentication view",
-            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Edit in settings.json](command:workbench.action.openSettingsJson)"
+            "markdownDescription": "Select which authentication method(s) to display in the sidebar authentication view. [Reset Authentication Cache](command:ast-results.resetAuthenticationCache)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",

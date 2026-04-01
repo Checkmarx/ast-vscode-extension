@@ -146,6 +146,10 @@ export class OssScannerService extends BaseScannerService {
   }
 
   async scan(document: vscode.TextDocument, logs: Logs): Promise<void> {
+    if (!(await cx.isValidConfiguration() && (await cx.isCxOneAssistEnabled(logs) || await cx.isStandaloneEnabled(logs)))) {
+      return;
+    }
+
     if (!this.shouldScanFile(document)) {
       return;
     }
@@ -670,6 +674,7 @@ export class OssScannerService extends BaseScannerService {
 
   public async clearProblems(): Promise<void> {
     await super.clearProblems();
+    this.clearDecorationsFromEditors(this.decorationTypes);
     this.diagnosticsMap.clear();
     Object.values(this.decorationsMap).forEach(map => map.clear());
   }
