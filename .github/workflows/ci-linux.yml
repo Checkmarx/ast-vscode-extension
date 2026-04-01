@@ -19,9 +19,9 @@ jobs:
         run: |
           npm run install:all
       - name: Run core unit tests with coverage
-        run: npm run unit-coverage:test:core
+        run: npm run unit-coverage:test:core 2>&1 | tee coverage-output.log
       - name: Display coverage report
-        run: cat packages/core/coverage/coverage-summary.json
+        run: grep -A 20 "coverage" coverage-output.log || cat coverage-output.log
       - name: Upload core coverage report
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
@@ -59,17 +59,10 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npm run e2e:test:checkmarx
+          npm run e2e:test:checkmarx 2>&1 | tee e2e-coverage-output.log
       - name: Display e2e coverage report
         if: runner.os == 'Linux'
-        run: cat packages/core/coverage/coverage-summary.json
-      - name: Upload e2e coverage report
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        with:
-          name: coverage-e2e
-          path: packages/core/coverage/
-          retention-days: 7
+        run: grep -A 20 "coverage" e2e-coverage-output.log || cat e2e-coverage-output.log
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
@@ -111,17 +104,10 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npm run ui:test:checkmarx
+          npm run ui:test:checkmarx 2>&1 | tee ui-coverage-output.log
       - name: Display ui coverage report
         if: runner.os == 'Linux'
-        run: cat packages/core/coverage/coverage-summary.json
-      - name: Upload ui coverage report
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        with:
-          name: coverage-ui
-          path: packages/core/coverage/
-          retention-days: 7
+        run: grep -A 20 "coverage" ui-coverage-output.log || cat ui-coverage-output.log
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
