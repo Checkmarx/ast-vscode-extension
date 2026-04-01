@@ -1,0 +1,61 @@
+src/**
+tsconfig.json
+.gitignore
+.vscode/**
+*.vsix
+**/*.ts
+**/*.map
+**/.eslintrc.json
+!out/**/*.js
+!out/**/*.json
+vsix-contents/**
+
+# Exclude core package test files and TypeScript declarations
+out/node_modules/@checkmarx/vscode-core/out/test/**
+out/node_modules/@checkmarx/vscode-core/out/e2e/**
+out/node_modules/@checkmarx/vscode-core/out/unit/**
+out/node_modules/@checkmarx/vscode-core/out/**/*.d.ts
+out/node_modules/@checkmarx/vscode-core/out/**/*.d.ts.map
+
+# Exclude Checkmarx One specific modules (not used by Developer Assist)
+out/node_modules/@checkmarx/vscode-core/out/codebashing/**
+out/node_modules/@checkmarx/vscode-core/out/gpt/**
+out/node_modules/@checkmarx/vscode-core/out/sast/**
+out/node_modules/@checkmarx/vscode-core/out/sca/**
+out/node_modules/@checkmarx/vscode-core/out/views/resultsView/**
+out/node_modules/@checkmarx/vscode-core/out/views/scaView/**
+out/node_modules/@checkmarx/vscode-core/out/views/dastView/**
+out/node_modules/@checkmarx/vscode-core/out/views/riskManagementView/**
+out/node_modules/@checkmarx/vscode-core/out/views/gptView/**
+out/node_modules/@checkmarx/vscode-core/out/commands/scanCommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/scanSCACommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/treeCommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/pickerCommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/groupByCommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/filterCommand.*
+out/node_modules/@checkmarx/vscode-core/out/commands/webViewCommand.*
+
+# Exclude Checkmarx One specific media files
+out/node_modules/@checkmarx/vscode-core/out/media/gpt.css
+out/node_modules/@checkmarx/vscode-core/out/media/gpt.js
+out/node_modules/@checkmarx/vscode-core/out/media/gpt-main.css
+out/node_modules/@checkmarx/vscode-core/out/media/details.css
+out/node_modules/@checkmarx/vscode-core/out/media/riskManagement.css
+out/node_modules/@checkmarx/vscode-core/out/media/riskManagement.js
+out/node_modules/@checkmarx/vscode-core/out/media/sca.css
+out/node_modules/@checkmarx/vscode-core/out/media/kics_autoscan.gif
+out/node_modules/@checkmarx/vscode-core/out/media/kics_quickfix.gif
+
+# Exclude Checkmarx One specific models
+out/node_modules/@checkmarx/vscode-core/out/models/sastNode.*
+out/node_modules/@checkmarx/vscode-core/out/models/scaNode.*
+out/node_modules/@checkmarx/vscode-core/out/models/kicsNode.*
+out/node_modules/@checkmarx/vscode-core/out/models/kicsFile.*
+out/node_modules/@checkmarx/vscode-core/out/models/gptResult.*
+out/node_modules/@checkmarx/vscode-core/out/models/triageCommand.*
+
+# Exclude KICS realtime (Checkmarx One specific)
+out/node_modules/@checkmarx/vscode-core/out/kics/**
+out/node_modules/@checkmarx/vscode-core/out/commands/kicsRealtimeCommand.*
+out/node_modules/@checkmarx/vscode-core/out/models/kicsRealtime.*
+

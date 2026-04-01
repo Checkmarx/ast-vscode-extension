@@ -1,9 +1,8 @@
 {
-  "name": "ast-results",
-  "publisher": "checkmarx",
-  "displayName": "Checkmarx",
-  "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.46.0",
+  "name": "checkmarx-vscode-extensions",
+  "version": "2.60.0",
+  "private": true,
+  "description": "Monorepo for Checkmarx VS Code extensions",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -983,15 +982,19 @@
         "order": 1,
         "properties": {
           "checkmarxOne.authentication": {
+            "type": "",
             "order": 5,
             "markdownDescription": "## [**Authentication**](command:ast-results.showAuth)"
           },
           "checkmarxOne.additionalParams": {
             "type": "string",
             "order": 6,
-            "default": "",
             "description": "Additional Parameters",
-            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html)."
+            "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
           }
         }
       },
@@ -1060,91 +1063,31 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && npm run copytestproject && npm run copymedia",
+    "install:all": "cd packages/core && npm install && cd ../checkmarx && npm install && cd ../project-ignite && npm install",
+    "clean": "cd packages/core && npm run clean && cd ../checkmarx && npm run clean && cd ../project-ignite && npm run clean",
+    "compile": "npm run build:all",
+    "build:core": "cd packages/core && npm run compile",
+    "build:checkmarx": "cd packages/checkmarx && npm run compile",
+    "build:cx-dev-assist": "cd packages/project-ignite && npm run compile",
+    "build:all": "npm run build:core && npm run build:checkmarx && npm run build:cx-dev-assist",
+    "package:checkmarx": "cd packages/checkmarx && npm run package",
+    "package:checkmarx:prerelease": "cd packages/checkmarx && npm run package:prerelease",
+    "package:checkmarx:publish": "cd packages/checkmarx && npm run package:publish",
+    "package:cx-dev-assist": "cd packages/project-ignite && npm run package",
+    "package:cx-dev-assist:prerelease": "cd packages/project-ignite && npm run package:prerelease",
+    "package:cx-dev-assist:publish": "cd packages/project-ignite && npm run package:publish",
+    "package:all": "npm run package:checkmarx && npm run package:cx-dev-assist",
+    "unit:test:core": "cd packages/core && npm run unit-test-core",
+    "unit-coverage:test:core": "cd packages/core && npx nyc npm run unit-test-core",
+    "ui:test:checkmarx": "cd packages/checkmarx && npm run ui-test",
+    "win-ui:test:checkmarx": "cd packages/checkmarx && npm run win-ui-test",
+    "e2e:test:checkmarx": "cd packages/checkmarx && npm run e2e-test",
+    "win-e2e:test:checkmarx": "cd packages/checkmarx && npm run win-e2e-test",
     "lint": "eslint . --ext .ts --no-fix --max-warnings 0",
-    "lint:fix": "npm run lint -- --fix",
-    "watch": "tsc -w -p ./ && npm run copytestproject",
-    "copytestproject": "copyfiles -u 2 \"src/resources/**/*\" out/test/ -E",
-    "copymedia": "copyfiles \"media/icons/*\" out/ -E",
-    "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
-    "test": "export TEST=true && npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.88.1  -i -r .",
-    "win-test": "set TEST=true&& npm run compile && extest setup-and-run './out/test/**/*test.js' -c 1.88.1  -i -r .",
-    "unit-test": "mocha --require ts-node/register './src/unit/**/*.test.ts'",
-    "unit-coverage": "npx nyc npm run unit-test",
-    "test:ui-end-to-end": "export TEST=uiEndToEnd && npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
-    "win-test:ui-end-to-end": "set TEST=uiEndToEnd&& npm run compile && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
+    "lint:fix": "npm run lint -- --fix"
   },
-  "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/chai": "4.3.11",
-    "@types/mocha": "10.0.6",
-    "@types/node": "^22.9.0",
-    "@types/sinon": "^17.0.3",
-    "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.1",
-    "@typescript-eslint/parser": "^7.2.0",
-    "chai": "4.3.1",
-    "codecov": "^3.8.3",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "mocha": "^10.8.2",
-    "mock-require": "^3.0.3",
-    "nock": "^14.0.1",
-    "nyc": "^17.1.0",
-    "sinon": "^19.0.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "vscode-extension-tester": "8.17.0",
-    "vscode-extension-tester-locators": "^3.12.2",
-    "webpack": "^5.94.0",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "@checkmarx/ast-cli-javascript-wrapper": "0.0.149",
-    "@popperjs/core": "^2.11.8",
-    "@vscode/codicons": "^0.0.36",
-    "axios": "1.12.2",
-    "copyfiles": "2.4.1",
-    "dotenv": "^16.4.7",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslintcc": "^0.8.3",
-    "https-proxy-agent": "^7.0.6",
-    "install": "^0.13.0",
-    "jsonstream-ts": "^1.3.6",
-    "jwt-decode": "^4.0.0",
-    "minimatch": "^10.0.1",
-    "serialize-javascript": "^6.0.2",
-    "tree-kill": "^1.2.2",
-    "validator": "13.15.22"
-  },
-  "overrides": {
-    "prebuild-install": "^7.1.1",
-    "bluebird": "^3.7.2",
-    "xml2js": "^0.6.2",
-    "tar-fs": "^2.1.4",
-    "tmp": "^0.2.5",
-    "jws": "3.2.3",
-    "c8": {
-      "glob": "10.5.0"
-    },
-    "vscode-extension-tester": {
-      "glob": "11.1.0"
-    },
-    "codecov": {
-      "js-yaml": "3.14.2"
-    }
-  },
-  "lint-staged": {
-    "**/*.{js,ts}": [
-      "eslint . --fix",
-      "prettier --write ."
-    ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

@@ -1,0 +1,25 @@
+{
+	  "compilerOptions": {
+	    "module": "commonjs",
+	    "target": "es2019",
+	    "lib": [
+	      "es2020",
+	      "dom",
+	      "esnext"
+	    ],
+	    "sourceMap": true,
+	    "strict": false,
+	    "esModuleInterop": true,
+	    "skipLibCheck": true,
+	    "forceConsistentCasingInFileNames": true,
+	    "resolveJsonModule": true,
+	    "moduleResolution": "node"
+	  },
+  "exclude": [
+    "node_modules",
+    ".vscode-test",
+    "out",
+    "dist"
+  ]
+}
+

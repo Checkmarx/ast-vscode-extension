@@ -43,7 +43,7 @@
 ## Overview
 > ⭐ Although this plugin was developed for VS Code, the plugin has been tested and found to be effective for use in Cursor, Windsurf and Kiro. This document was written for the VS Code plugin, and applies equally to the other supported IDEs. Any information that applies **only** to VS Code, and not to the other supported IDEs, is noted explicitly.
 
-Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. The Checkmarx Visual Studio Code plugin integrates seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The plugin offers actionable remediation insights in real-time.
+Checkmarx continues to spearhead the shift-left approach to AppSec by bringing our powerful AppSec tools into your IDE. This empowers developers to identify vulnerabilities and remediate them **as they code**. The Checkmarx Visual Studio Code extensions integrate seamlessly into your IDE, identifying vulnerabilities in your proprietary code, open source dependencies, and IaC files. The extensions offer actionable remediation insights in real-time.
 
 The Checkmarx Visual Studio Code extension contains four separate capabilities:
 
