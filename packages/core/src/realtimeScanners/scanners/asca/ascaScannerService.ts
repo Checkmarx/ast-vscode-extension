@@ -128,21 +128,6 @@ export class AscaScannerService extends BaseScannerService {
 		}
 	}
 
-	private hasSecretsAtLine(uri: vscode.Uri, lineNumber: number): boolean {
-		const secretsCollection = this.getOtherScannerCollection(constants.secretsScannerEngineName);
-		if (secretsCollection) {
-			const secretsDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
-				const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-				return diagnosticData?.cxType === constants.secretsScannerEngineName;
-			});
-
-			if (secretsDiagnostics.some(diagnostic => diagnostic.range.start.line === lineNumber)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private isAscaResultIgnored(result: any, filePath: string): boolean {
 		const ignoreManager = IgnoreFileManager.getInstance();
 		if (!ignoreManager) {
@@ -201,10 +186,6 @@ export class AscaScannerService extends BaseScannerService {
 
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
-
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
 
 			// Skip ignored results
 			if (this.isAscaResultIgnored(result, filePath)) {
@@ -298,10 +279,6 @@ export class AscaScannerService extends BaseScannerService {
 		// Check for ignored results
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
-
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
 
 			// Only include ignored results here
 			if (this.isAscaResultIgnored(result, filePath)) {

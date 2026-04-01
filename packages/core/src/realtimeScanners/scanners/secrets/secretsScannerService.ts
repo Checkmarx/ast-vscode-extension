@@ -180,29 +180,6 @@ export class SecretsScannerService extends BaseScannerService {
 		}
 	}
 
-	private removeAscaDiagnosticsAtLine(uri: vscode.Uri, lineNumber: number): void {
-		const ascaCollection = this.getOtherScannerCollection(constants.ascaRealtimeScannerEngineName);
-		if (!ascaCollection) { return; }
-
-		const ascaDiagnostics = vscode.languages.getDiagnostics(uri).filter(diagnostic => {
-			const diagnosticData = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
-			return diagnosticData?.cxType === 'asca';
-		});
-
-		const filteredDiagnostics = ascaDiagnostics.filter(diagnostic =>
-			diagnostic.range.start.line !== lineNumber
-		);
-		ascaCollection.set(uri, filteredDiagnostics);
-	}
-
-	private removeAscaHoverDataAtLine(filePath: string, lineNumber: number): void {
-		const ascaHoverData = this.getOtherScannerHoverData(constants.ascaRealtimeScannerEngineName);
-		if (ascaHoverData) {
-			const key = `${filePath}:${lineNumber}`;
-			ascaHoverData.delete(key);
-		}
-	}
-
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const secretsProblems = problems as CxSecretsResult[];
 		const filePath = uri.fsPath;
@@ -214,9 +191,6 @@ export class SecretsScannerService extends BaseScannerService {
 		for (const problem of secretsProblems) {
 			if (problem.locations.length === 0) { continue; }
 			const location = problem.locations[0];
-
-			this.removeAscaDiagnosticsAtLine(uri, location.line);
-			this.removeAscaHoverDataAtLine(filePath, location.line);
 
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),

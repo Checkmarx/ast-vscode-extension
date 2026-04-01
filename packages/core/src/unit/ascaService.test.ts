@@ -2,8 +2,9 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import './mocks/vscode-mock';
 import './mocks/cxWrapper-mock';
-import { mockDiagnosticCollection } from './mocks/vscode-mock';
+import { mock, mockDiagnosticCollection } from './mocks/vscode-mock';
 import { AscaScannerService } from '../realtimeScanners/scanners/asca/ascaScannerService';
+import { SecretsScannerService } from '../realtimeScanners/scanners/secrets/secretsScannerService';
 import type CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import type { Uri } from 'vscode';
 import { constants } from '../utils/common/constants';
@@ -31,6 +32,7 @@ describe('AscaScannerService', () => {
             fsPath: '/test/path/TestFile.java',
             scheme: 'file'
         } as Uri;
+        (mock.languages as any).getDiagnostics = sandbox.stub().returns([]);
         mockDiagnosticCollection.set.reset();
         mockDiagnosticCollection.delete.reset();
     });
@@ -183,6 +185,37 @@ describe('AscaScannerService', () => {
 
             const storedData = storedDataArray[0];
             expect(storedData.description).to.equal('Fix this issue'); // Should use remediationAdvise
+        });
+
+        it('should keep ASCA diagnostics when a Secret exists on the same line', () => {
+            // Register secrets scanner collection and simulate an existing secret diagnostic.
+            new SecretsScannerService();
+            (mock.languages as any).getDiagnostics = sandbox.stub().returns([
+                {
+                    range: { start: { line: 0, character: 0 }, end: { line: 0, character: 10 } },
+                    data: { cxType: constants.secretsScannerEngineName }
+                }
+            ]);
+
+            const mockScanResult: CxAsca = {
+                scanDetails: [
+                    {
+                        line: 1,
+                        problematicLine: 'const password = "secret"; eval(userInput);',
+                        ruleName: 'Avoid Eval Usage',
+                        description: 'Using eval() can lead to code injection vulnerabilities',
+                        remediationAdvise: 'Use safer alternatives to eval()',
+                        severity: 'HIGH',
+                        ruleId: 12345
+                    }
+                ]
+            } as CxAsca;
+
+            ascaService.updateProblems(mockScanResult, mockUri);
+
+            const diagnostics = mockDiagnosticCollection.set.getCall(0).args[1];
+            expect(diagnostics).to.have.length(1);
+            expect(diagnostics[0].message).to.equal('Avoid Eval Usage');
         });
 
         it.skip('should handle multiple problems on the same line', () => {
