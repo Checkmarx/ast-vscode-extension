@@ -20,6 +20,23 @@ jobs:
           npm run install:all
       - name: Run core unit tests with coverage
         run: npm run unit-coverage:test:core
+      - name: Write coverage summary
+        run: |
+          node -e "
+            const fs = require('fs');
+            const summary = JSON.parse(fs.readFileSync('packages/core/coverage/coverage-summary.json', 'utf8'));
+            const t = summary.total;
+            const lines = [
+              '## Core Unit Test Coverage',
+              '| Metric | Coverage | Covered / Total |',
+              '|--------|----------|-----------------|',
+              \`| Statements | \${t.statements.pct}% | \${t.statements.covered} / \${t.statements.total} |\`,
+              \`| Branches   | \${t.branches.pct}% | \${t.branches.covered} / \${t.branches.total} |\`,
+              \`| Functions  | \${t.functions.pct}% | \${t.functions.covered} / \${t.functions.total} |\`,
+              \`| Lines      | \${t.lines.pct}% | \${t.lines.covered} / \${t.lines.total} |\`,
+            ];
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          "
       - name: Upload core coverage report
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
