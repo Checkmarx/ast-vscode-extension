@@ -20,6 +20,8 @@ jobs:
           npm run install:all
       - name: Run core unit tests with coverage
         run: npm run unit-coverage:test:core
+      - name: Display coverage report
+        run: npx nyc report --reporter=text-summary
       - name: Upload core coverage report
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
@@ -58,6 +60,9 @@ jobs:
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
           npm run e2e:test:checkmarx
+      - name: Display e2e coverage report
+        if: runner.os == 'Linux'
+        run: npx nyc report --reporter=text-summary || echo "No coverage data available"
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
@@ -100,6 +105,9 @@ jobs:
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
           npm run ui:test:checkmarx
+      - name: Display ui coverage report
+        if: runner.os == 'Linux'
+        run: npx nyc report --reporter=text-summary || echo "No coverage data available"
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
