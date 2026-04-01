@@ -173,10 +173,16 @@
             ],
             "default": "docker"
           },
+          "checkmarxDeveloperAssist.Prefer Native AI Assistant": {
+            "type": "boolean",
+            "default": true,
+            "order": 8,
+            "markdownDescription": "When enabled, the extension uses the IDE's built-in AI assistant and ignores the selection in **AI Assistant** above. This setting is only relevant for non-VS Code IDEs."
+          },
           "checkmarxDeveloperAssist.AI Assistant": {
             "type": "string",
             "description": "AI Assistant",
-            "markdownDescription": "Select the AI Assistant to use for remediation",
+            "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
             "enum": [
               "Copilot",
               "Claude"
@@ -186,7 +192,7 @@
           },
           "checkmarxDeveloperAssist.MCP": {
             "type": "",
-            "order": 8,
+            "order": 9,
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
           }
