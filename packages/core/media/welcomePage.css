@@ -21,6 +21,7 @@ body {
   font-style: normal;
   font-weight: 500;
   margin: 0 0 1.5em 0;
+  width: 410px;
 }
 
 .welcome-page-header .welcome-tagline {
@@ -62,6 +63,7 @@ body {
   padding: 0 0 0 1em;
   box-sizing: border-box;
   align-self: center;
+  margin-top: -13em;
 }
 
 .welcome-code-image {
@@ -119,8 +121,7 @@ h1 {
 }
 
 .welcome-banner-wrapper .welcome-banner {
-  max-width: none;
-  width: 100%;
+  width: 410px;
   margin-bottom: 0;
 }
 
@@ -196,7 +197,7 @@ h1 {
 .welcome-banner a {
   color: #0e9bf7;
   text-decoration: none;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .welcome-banner a:hover {
