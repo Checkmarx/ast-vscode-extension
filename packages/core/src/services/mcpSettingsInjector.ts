@@ -320,7 +320,7 @@ function writeToClaudeConfig(mcpServer: McpServer): void {
 	// Claude Code requires "type": "http" in JSON to connect to remote MCP (see code.claude.com/docs/mcp)
 	const server = {
 		type: "http",
-		url: mcpServer.url,
+		url: mcpServer.url ?? mcpServer.serverUrl,
 		headers: { ...mcpServer.headers, "cx-origin": "VsCode" },
 	};
 	const name = getCheckmarxMcpServerName();
