@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
-  "version": "1.3.0",
+  "version": "1.13.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -71,7 +71,7 @@
         {
           "command": "cx-dev-assist.viewSettings",
           "group": "@settings@2",
-          "when": " view==cx-dev-assist.cxDevAssist"
+          "when": "view == igniteAuth || view == cx-dev-assist.cxDevAssist"
         },
         {
           "command": "cx-dev-assist.openIgnoredView",
@@ -87,6 +87,11 @@
     },
     "views": {
       "cxDevAssistView": [
+        {
+          "id": "igniteAuth",
+          "type": "webview",
+          "name": "Checkmarx Developer Assist Authentication"
+        },
         {
           "id": "cx-dev-assist.cxDevAssist",
           "type": "webview",
@@ -106,15 +111,10 @@
     "viewsWelcome": [],
     "configuration": [
       {
-        "title": "Authentication",
+        "title": "General Settings",
         "id": "cx-dev-assist",
         "order": 1,
         "properties": {
-          "checkmarxDeveloperAssist.authentication": {
-            "type": "",
-            "order": 1,
-            "markdownDescription": "## [**Authentication**](command:cx-dev-assist.showAuth)"
-          },
           "checkmarxDeveloperAssist.additionalParams": {
             "type": "string",
             "order": 2,

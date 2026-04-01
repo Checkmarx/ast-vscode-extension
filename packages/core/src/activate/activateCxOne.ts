@@ -48,6 +48,7 @@ import { DiagnosticCommand } from '../commands/diagnosticCommand';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
 
+
 /**
  * Activate Checkmarx One specific features
  *
@@ -70,7 +71,7 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
         ignoredStatusBarItem,
     } = await setupStatusBars(context, logs);
 
-    const { ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
+    const { scannerRegistry, ignoreFileManager, ossScanner, secretScanner, iacScanner, ascaScanner, containersScanner } =
         await setupRealtimeScanners(context, logs);
 
     await setScanButtonDefaultIfScanIsNotRunning(context);
@@ -282,6 +283,12 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     // Checkmarx One Assist view & its commands
     const cxOneAssistProvider = registerAssistView(context, ignoreFileManager, logs);
     registerAssistRelatedCommands(context, cxOneAssistProvider);
+    // Register command to deactivate realtime scanners on logout
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.clearRealtimeScanners, async () => {
+            await scannerRegistry.clearAllScanners();
+        })
+    );
 
     const copilotChatCommand = new CopilotChatCommand(
         context,
@@ -566,8 +573,24 @@ function registerAuthenticationLauncher(
     webViewCommand: WebViewCommand,
     logs: Logs,
 ) {
+    // Register the CheckmarxAuthViewProvider for the sidebar authentication view
+    try {
+        const checkmarxExtPath = context.extensionPath;
+        const authViewProviderPath = `${checkmarxExtPath}/out/views/checkmarxAuthViewProvider`;
+        import(authViewProviderPath).then(({ CheckmarxAuthViewProvider }) => {
+            const authViewProvider = new CheckmarxAuthViewProvider(context, webViewCommand, logs);
+            context.subscriptions.push(
+                vscode.window.registerWebviewViewProvider('checkmarxAuth', authViewProvider),
+            );
+        }).catch((error) => {
+            logs?.warn?.(`Failed to load CheckmarxAuthViewProvider: ${error}`);
+        });
+    } catch (error) {
+        logs?.warn?.(`Failed to initialize CheckmarxAuthViewProvider: ${error}`);
+    }
+
     context.subscriptions.push(
-        vscode.commands.registerCommand(commands.showAuth, async () => {
+        vscode.commands.registerCommand(commands.showAuth, async (authMethod?: string) => {
             // Dynamically import the Checkmarx-specific authentication webview
             // This avoids circular dependency issues since the checkmarx package depends on core
             try {
@@ -576,10 +599,26 @@ function registerAuthenticationLauncher(
                 const checkmarxExtPath = context.extensionPath;
                 const authWebviewPath = `${checkmarxExtPath}/out/webview/authenticationWebview`;
                 const { AuthenticationWebview } = await import(authWebviewPath);
-                AuthenticationWebview.show(context, webViewCommand, logs);
+                AuthenticationWebview.show(context, webViewCommand, logs, authMethod);
             } catch (error) {
                 logs?.error?.(`Failed to load authentication webview: ${error}`);
                 vscode.window.showErrorMessage('Failed to load authentication page. Please try again.');
+            }
+        }),
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.resetAuthenticationCache, async () => {
+            const selection = await vscode.window.showWarningMessage(
+                "Are you sure you want to reset Authentication cache?",
+                "Yes",
+                "Cancel"
+            );
+            if (selection === "Yes") {
+                const authService = AuthService.getInstance(context, logs);
+                await authService.clearOAuthCredentials();
+                vscode.window.showInformationMessage("Authentication cache cleared successfully.");
+                logs?.info?.("Authentication cache cleared successfully.");
             }
         }),
     );

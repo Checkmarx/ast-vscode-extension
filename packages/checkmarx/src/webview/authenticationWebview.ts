@@ -10,30 +10,57 @@ import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
+import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
   private static currentPanel: AuthenticationWebview | undefined;
+  private static isAuthenticating: boolean = false;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private readonly logs: Logs | undefined;
   private webview: WebViewCommand;
   private readonly messages: ReturnType<typeof getMessages>;
+  private readonly authMethod: string | undefined;
   private constructor(
     panel: vscode.WebviewPanel,
     private context: vscode.ExtensionContext,
     logs?: Logs,
     webview?: WebViewCommand,
-    messages?: ReturnType<typeof getMessages>
+    messages?: ReturnType<typeof getMessages>,
+    authMethod?: string
   ) {
     this.logs = logs;
     this._panel = panel;
     this.webview = webview;
     this.messages = messages || getMessages(); // Use provided messages or get them
+    this.authMethod = authMethod;
     this._panel.webview.html = this._getWebviewContent();
     this._setWebviewMessageListener(this._panel.webview);
     this.initialize();
+
+    // Listen for theme changes to refresh images
+    this._disposables.push(
+      vscode.window.onDidChangeActiveColorTheme(async () => {
+        // Refresh content when theme changes to load correct themed images
+        this._panel.webview.html = this._getWebviewContent();
+        // Re-initialize after content refresh
+        await this.initialize();
+      })
+    );
+
+    // Listen for authentication configuration changes
+    this._disposables.push(
+      vscode.workspace.onDidChangeConfiguration(async (e) => {
+        if (e.affectsConfiguration("checkmarxOne.authentication")) {
+          // Close the form panel when auth type changes in settings
+          // This ensures the form always matches the currently selected auth method
+          this._panel.dispose();
+        }
+      })
+    );
+
     this._panel.onDidDispose(
       () => {
         AuthenticationWebview.currentPanel = undefined;
@@ -66,10 +93,21 @@ export class AuthenticationWebview {
     await this._panel.webview.postMessage({ type: "hideLoader" });
   }
 
-  public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs) {
+  public static show(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs?: Logs, authMethod?: string) {
     if (AuthenticationWebview.currentPanel) {
-      AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
-      return;
+      // If panel exists but auth method changed, dispose and create new panel
+      if (AuthenticationWebview.currentPanel.authMethod !== authMethod) {
+        AuthenticationWebview.currentPanel._panel.dispose();
+        AuthenticationWebview.currentPanel = undefined;
+      } else {
+        // Same auth method, just reveal the existing panel
+        AuthenticationWebview.currentPanel._panel.reveal(vscode.ViewColumn.One);
+        // Ensure the currently visible form matches requested method
+        if (authMethod) {
+          AuthenticationWebview.currentPanel._panel.webview.postMessage({ type: "setAuthMethod", method: authMethod });
+        }
+        return;
+      }
     }
     const messages = getMessages();
 
@@ -91,8 +129,30 @@ export class AuthenticationWebview {
       context,
       logs,
       webViewCommand,
-      messages
+      messages,
+      authMethod
     );
+  }
+
+  /**
+   * Disposes any currently open authentication webview panel.
+   * Called when authentication succeeds via any method to ensure forms are closed.
+   * Safe to call multiple times (idempotent).
+   * 
+   * @param force - If true, dispose even if panel is currently authenticating.
+   *                If false (default), skip disposal if panel is handling its own auth.
+   */
+  public static disposeAll(force: boolean = false): void {
+    // Don't dispose if panel is currently processing its own authentication
+    // Let schedulePostAuth() handle disposal to complete post-auth actions
+    if (!force && AuthenticationWebview.isAuthenticating) {
+      return;
+    }
+
+    if (AuthenticationWebview.currentPanel) {
+      AuthenticationWebview.currentPanel._panel.dispose();
+      AuthenticationWebview.currentPanel = undefined;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -173,81 +233,89 @@ export class AuthenticationWebview {
     );
     const scriptUri = this.setWebUri("media", "auth.js");
     const styleAuth = this.setWebUri("media", "auth.css");
-    const loginIcon = this.setWebUri("media", "icons", "login.svg");
+    // Removed login icon for login buttons per request
     const logoutIcon = this.setWebUri("media", "icons", "logout.svg");
     const successIcon = this.setWebUri("media", "icons", "success.svg");
     const errorIcon = this.setWebUri("media", "icons", "error.svg");
+    const footerImageUri = this.setWebUri("media", ThemeUtils.selectIconByTheme("checkmarx_page_footer_light_theme.svg", "checkmarx_page_footer.svg"));
     const nonce = getNonce();
     const messages = this.messages;
+
+    // Determine initial visible form and classes
+    const oauthVisibleInitially = !this.authMethod || this.authMethod === 'oauth';
+    const oauthFormClass = oauthVisibleInitially ? 'auth-form' : 'auth-form hidden';
+    const apiKeyFormClass = oauthVisibleInitially ? 'auth-form hidden' : 'auth-form';
+
+    // Set login title based on auth method
+    const loginTitle = oauthVisibleInitially ? 'OAuth Log in' : 'API Key Log in';
 
     return `<!DOCTYPE html>
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<link href="${styleBootStrap}" rel="stylesheet">
-	<link href="${styleAuth}" rel="stylesheet">
-	<script nonce="${nonce}" src="${scriptBootStrap}"></script>
-	<title>${messages.displayName} Authentication</title>
-
-
+    <meta charset="UTF-8">
+    <link href="${styleBootStrap}" rel="stylesheet">
+    <link href="${styleAuth}" rel="stylesheet">
+    <script nonce="${nonce}" src="${scriptBootStrap}"></script>
+    <title>Log in</title>
 </head>
 
 <body>
 
     <div id="loading">
-		<div class="spinner-border" role="status">
-		  <span class="visually-hidden">Checking authentication...</span>
-		</div>
-	  </div>
-<div id="authContainer" class="auth-container hidden">
-        <div class="auth-form-title">${messages.displayName} Authentication</div>
-        <div id="loginForm">
-        <div class="radio-group">
-
-            <label>
-                <input type="radio" name="authMethod" value="oauth" checked> OAuth
-            </label>
-
-            <label>
-                <input type="radio" name="authMethod" value="apiKey">API Key
-            </label>
-        </div>
-
-        <div  id="oauthForm" class="auth-form">
-            <label for="baseUri" class="form-label">Checkmarx One Base URL:</label>
-            <input type="text" id="baseUri" class="auth-input" placeholder="Enter Checkmarx One Base URL">
-            <div id="urls-list" class="autocomplete-items"></div>
-			<div id="urlError" class="text-danger mt-1" style="display: none;"></div>
-
-
-            <label for="tenant" class="form-label">Tenant Name:</label>
-            <input type="text" id="tenant" class="auth-input" placeholder="Enter tenant name">
-            <div id="tenants-list" class="autocomplete-items"></div>
-        </div>
-
-             <!-- (We need to return it to the next div ) (class="hidden">)   -->
-        <div id="apiKeyForm" class="hidden">
-          <label for="apiKey" class="form-label">Checkmarx One API Key:</label>
-			    <input type="password" id="apiKey" placeholder="Enter Checkmarx One API Key" class="auth-input">
-        </div>
-        <button id="authButton" class="auth-button" disabled><img src="${loginIcon}" alt="login"/>Sign in to Checkmarx</button>
-        </div>
-
-        <div id="authenticatedMessage" class="hidden authenticated-message"><img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}</div>
-        <button id="logoutButton" class="auth-button hidden"><img src="${logoutIcon}" alt="logout"/>Log out</button>
-        <div id="messageBox" class="message">
-        <div id="messageSuccessIcon" class="hidden">
-        <img src="${successIcon}" alt="success"/>
-        </div>
-        <div id="messageErrorIcon" class="hidden">
-
-        <img src="${errorIcon}" alt="error"/>
-        </div>
-        <div id="messageText"></div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Checking authentication...</span>
         </div>
     </div>
+    <div id="authContainer" class="auth-container hidden">
+      <div id="loginForm">
+        <div class="login-form-title" id="loginTitle">${loginTitle}</div>
+            <!-- OAuth Form -->
+            <div id="oauthForm" class="${oauthFormClass}">
+                <label for="baseUri" class="form-label">Checkmarx One Base URL</label>
+                <input type="text" id="baseUri" class="auth-input">
+                <div id="urls-list" class="autocomplete-items"></div>
+                <div id="urlError" class="text-danger mt-1" style="display: none;"></div>
+
+                <label for="tenant" class="form-label">Tenant Name</label>
+                <input type="text" id="tenant" class="auth-input">
+                <div id="tenants-list" class="autocomplete-items"></div>
+            </div>
+
+            <!-- API Key Form -->
+            <div id="apiKeyForm" class="${apiKeyFormClass}">
+                <label for="apiKey" class="form-label">Checkmarx One API Key</label>
+                <input type="password" id="apiKey" class="auth-input">
+            </div>
+            <button id="authButton" class="auth-button" disabled>Log in</button>
+        </div>
+
+        <!-- Authenticated Message -->
+        <div id="authenticatedMessage" class="hidden authenticated-message">
+            <img src="${successIcon}" alt="success"/>You are connected to ${messages.displayName}
+        </div>
+        <button id="logoutButton" class="auth-button hidden">
+            <img src="${logoutIcon}" alt="logout"/>Log out
+        </button>
+        <div id="messageBox" class="message">
+            <div id="messageSuccessIcon" class="hidden">
+                <img src="${successIcon}" alt="success"/>
+            </div>
+            <div id="messageErrorIcon" class="hidden">
+                <img src="${errorIcon}" alt="error"/>
+            </div>
+            <div id="messageText"></div>
+        </div>
+    </div>
+
+    <!-- Footer Image -->
+    <footer>
+      <img class="page-footer" src="${footerImageUri}" alt="footer" />
+    </footer>
+
     <script nonce="${nonce}" src="${scriptUri}"></script>
+
+</body>
 </html>`;
   }
 
@@ -298,52 +366,88 @@ export class AuthenticationWebview {
               await this._panel.webview.postMessage({ command: "disableAuthButton" });
               try {
                 if (message.authMethod === "oauth") {
-                  // Existing OAuth handling
-                  const baseUri = message.baseUri.trim();
-                  const tenant = message.tenant.trim();
-                  const authService = AuthService.getInstance(this.context);
-                  const token = await authService.authenticate(baseUri, tenant);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
-                  if (token !== "") {
-                    this.schedulePostAuth(isAiEnabled, { apiKey: token });
-                  }
-                  else {
-                    this._panel.webview.postMessage({ command: "enableAuthButton" });
+                  // Mark that we're processing authentication to prevent external disposal
+                  AuthenticationWebview.isAuthenticating = true;
+
+                  try {
+                    // Existing OAuth handling
+                    const baseUri = message.baseUri.trim();
+                    const tenant = message.tenant.trim();
+                    const authService = AuthService.getInstance(this.context);
+                    const token = await authService.authenticate(baseUri, tenant);
+                    const isAiEnabled = await cx.isAiMcpServerEnabled();
+                    const commonCommand = new CommonCommand(this.context, this.logs);
+                    await commonCommand.executeCheckStandaloneEnabled();
+                    await commonCommand.executeCheckCxOneAssistEnabled();
+                    if (token !== "") {
+                      this.schedulePostAuth(isAiEnabled, { apiKey: token });
+                      // Clear flag after delay to allow schedulePostAuth to complete (success case only)
+                      setTimeout(() => {
+                        AuthenticationWebview.isAuthenticating = false;
+                      }, 2000);
+                    }
+                    else {
+                      // Clear flag immediately on authentication failure to allow retry
+                      AuthenticationWebview.isAuthenticating = false;
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                    }
+                  } catch (oauthError) {
+                    // Clear flag immediately on error to allow retry
+                    AuthenticationWebview.isAuthenticating = false;
+                    throw oauthError; // Re-throw to be caught by outer catch
                   }
                 } else if (message.authMethod === "apiKey") {
-                  // New API Key handling
-                  const authService = AuthService.getInstance(this.context);
+                  // Mark that we're processing authentication to prevent external disposal
+                  AuthenticationWebview.isAuthenticating = true;
 
-                  // Validate the API Key using AuthService
-                  const isValid = await authService.validateApiKey(
-                    message.apiKey
-                  );
-                  if (!isValid) {
-                    // Sending an error message to the window
+                  try {
+                    // New API Key handling
+                    const authService = AuthService.getInstance(this.context);
+
+                    // Validate the API Key using AuthService
+                    const isValid = await authService.validateApiKey(
+                      message.apiKey
+                    );
+                    if (!isValid) {
+                      // Clear flag immediately on validation failure to allow retry
+                      AuthenticationWebview.isAuthenticating = false;
+                      // Sending an error message to the window
+                      this._panel.webview.postMessage({
+                        type: "validation-error",
+                        message:
+                          "API Key validation failed. Please check your key.",
+                      });
+                      this._panel.webview.postMessage({ command: "enableAuthButton" });
+                      return;
+                    }
+
+                    authService.saveToken(this.context, message.apiKey);
+                    // Save auth method for returning user flow
+                    // NOTE: We intentionally preserve OAuth credentials (baseUri/tenant) so users can
+                    // switch back to OAuth later without re-entering their credentials
+                    await authService.saveLastAuthMethod('apiKey');
+                    const isAiEnabled = await cx.isAiMcpServerEnabled();
+                    const commonCommand = new CommonCommand(this.context, this.logs);
+                    await commonCommand.executeCheckStandaloneEnabled();
+                    await commonCommand.executeCheckCxOneAssistEnabled();
                     this._panel.webview.postMessage({
-                      type: "validation-error",
-                      message:
-                        "API Key validation failed. Please check your key.",
+                      type: "validation-success",
+                      message: "API Key validated successfully!",
                     });
-                    this._panel.webview.postMessage({ command: "enableAuthButton" });
-                    return;
+                    this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
+                    // Clear flag after delay to allow schedulePostAuth to complete (success case only)
+                    setTimeout(() => {
+                      AuthenticationWebview.isAuthenticating = false;
+                    }, 2000);
+                  } catch (apiKeyError) {
+                    // Clear flag immediately on error to allow retry
+                    AuthenticationWebview.isAuthenticating = false;
+                    throw apiKeyError; // Re-throw to be caught by outer catch
                   }
-
-                  authService.saveToken(this.context, message.apiKey);
-                  const isAiEnabled = await cx.isAiMcpServerEnabled();
-                  const commonCommand = new CommonCommand(this.context, this.logs);
-                  await commonCommand.executeCheckStandaloneEnabled();
-                  await commonCommand.executeCheckCxOneAssistEnabled();
-                  this._panel.webview.postMessage({
-                    type: "validation-success",
-                    message: "API Key validated successfully!",
-                  });
-                  this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                 }
               } catch (error) {
+                // Clear flag immediately on any error to allow retry
+                AuthenticationWebview.isAuthenticating = false;
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
                 this._panel.webview.postMessage({
                   type: "validation-error",

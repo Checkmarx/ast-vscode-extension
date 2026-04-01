@@ -1,72 +1,55 @@
 # CHANGELOG
 
+## [Checkmarx-v2.59.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.59.0) - 2026-03-25 10:02:13
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.59.0...Checkmarx-v2.59.0
+
+## [Checkmarx-v2.58.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.58.0) - 2026-03-24 17:00:05
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.58.0...Checkmarx-v2.58.0
+
+## [Checkmarx-v2.57.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.57.0) - 2026-03-24 13:54:32
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.57.0...Checkmarx-v2.57.0
+
+## [Checkmarx-v2.56.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.56.0) - 2026-03-24 03:37:01
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.56.0...Checkmarx-v2.56.0
+
+## [Checkmarx-v2.55.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.55.0) - 2026-03-24 03:26:08
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.55.0...Checkmarx-v2.55.0
+
+## [Checkmarx-v2.53.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.53.0) - 2026-03-24 03:15:25
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.54.0...Checkmarx-v2.53.0
+
+## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-24 03:04:02
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.53.0...Checkmarx-v2.52.0
+
+## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-24 02:45:49
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.52.0...Checkmarx-v2.52.0
+
+## [Checkmarx-v2.52.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.52.0) - 2026-03-09 12:43:38
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.51.0...Checkmarx-v2.52.0
+
+## [Checkmarx-v2.51.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.51.0) - 2026-03-04 14:26:58
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.50.0...Checkmarx-v2.51.0
+
+## [Checkmarx-v2.50.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.50.0) - 2026-03-02 13:39:25
+
+**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.49.0...Checkmarx-v2.50.0
+
 Checkmarx-v2.49.0 - 2026-02-13 16:46:40
 Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.47.0...Checkmarx-v2.49.0
 
 Checkmarx-v2.48.0 - 2026-02-13 16:09:11
 Full Changelog: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...Checkmarx-v2.48.0
 
-<<<<<<< other/AST-134946-release-pipeline-refactor
-=======
-## [v2.46.1-both-test-1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/v2.46.1-both-test-1.0) - 2026-02-12 10:39:21
-
-### Plugins in this release
-* **Checkmarx (AST):** v2.47.1-both-test-1.0 (NEW)
-* **Checkmarx Dev Assist:** v1.1.1-both-test-1.0 (NEW)
-
-## Checkmarx (AST): v2.47.1-both-test-1.0
-### What's Changed
-#### 🐛 Bug Fixes
-* Fix of publisher (AST-0000) (#1397) by @cx-rahul-pidde
-* Fix of publisher (#1395) by @cx-rahul-pidde
-* Fix  of publisher (AST-0000) (#1393) by @cx-rahul-pidde
-* Fix of publisher (AST-0000) (#1392) by @cx-rahul-pidde
-
-#### 🔧 Other Changes
-* Updated Changelogs logic by @cx-kedar-bhujade
-* Project Ignite Phase I - Forking VS Code Plugin (AST-130926) (#1369) by @cx-rahul-pidde
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...v2.47.1-both-test-1.0
-
-## DevAssist: v1.1.1-both-test-1.0
-### What's Changed
-#### 🐛 Bug Fixes
-* Fix of publisher (AST-0000) (#1397) by @cx-rahul-pidde
-* Fix of publisher (#1395) by @cx-rahul-pidde
-* Fix  of publisher (AST-0000) (#1393) by @cx-rahul-pidde
-* Fix of publisher (AST-0000) (#1392) by @cx-rahul-pidde
-
-#### 🔧 Other Changes
-* Updated Changelogs logic by @cx-kedar-bhujade
-* Project Ignite Phase I - Forking VS Code Plugin (AST-130926) (#1369) by @cx-rahul-pidde
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/v2.46.0...v1.1.1-both-test-1.0
-
-## [Checkmarx-v2.47.1-close_undo.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.1-close_undo.0) - 2026-02-12 15:07:15
-
-*No description*
-
-## [Checkmarx-v2.47.1-asca-location-dev.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.1-asca-location-dev.0) - 2026-02-12 08:33:32
-
-*No description*
-
-## [DevAssist-v1.1.1-mcp_fallnack_changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.1.1-mcp_fallnack_changes.0) - 2026-02-09 16:06:36
-
-<!-- Release notes generated using configuration in .github/release.yml at main -->
-
-
-
-**Full Changelog**: https://github.com/Checkmarx/ast-vscode-extension/compare/Checkmarx-v2.47.1-mcp-fallback.0...DevAssist-v1.1.1-mcp_fallnack_changes.0
-
-## [Checkmarx-v2.47.1-asca-location-changes.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.1-asca-location-changes.0) - 2026-02-09 17:10:26
-
-*No description*
-
-## [DevAssist-v1.1.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/DevAssist-v1.1.0) - 2026-02-06 10:56:18
-
-<!-- Release notes generated using configuration in .github/release.yml at DevAssist-v1.1.0 -->
-
->>>>>>> main
 ## [Checkmarx-v2.47.0](https://github.com/Checkmarx/ast-vscode-extension/releases/tag/Checkmarx-v2.47.0) - 2026-02-06 10:48:17
 
 _No description_

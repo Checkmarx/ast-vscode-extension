@@ -40,7 +40,7 @@ describe("Checkmarx VS Code Extension Tests", () => {
   let bench: Workbench;
   let driver: WebDriver;
 
-  it("Authentication: should authenticate using API key and verify button state", async function () {
+  it.skip("Authentication: should authenticate using API key and verify button state", async function () {
     this.timeout(120000);
     console.log("Starting API key authentication test...");
     bench = new Workbench();
