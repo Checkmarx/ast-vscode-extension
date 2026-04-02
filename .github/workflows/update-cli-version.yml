@@ -13,8 +13,6 @@ on:
 jobs:
   update-js-wrapper:
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
     permissions:
       contents: write
       pull-requests: write
@@ -25,12 +23,10 @@ jobs:
 
       - name: Set Up npm Authentication
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >  ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-          cat > packages/core/.npmrc << EOF
-          //npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}
-          registry=https://registry.npmjs.org/
-          EOF
+          echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> packages/core/.npmrc
+          echo "@checkmarx:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
 
       - name: Determine Version
         id: get_version
