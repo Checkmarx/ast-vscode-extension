@@ -1,18 +1,20 @@
 import * as vscode from "vscode";
 import { TreeItem } from "../../utils/tree/treeItem";
 import { constants } from "../../utils/common/constants";
-
-const feedbackUrl = "https://github.com/Checkmarx/ast-vscode-extension/issues/new/choose";
-const documentationUrl = "https://checkmarx.com/resource/documents/en/34965-68742-checkmarx-one-vs-code-extension--plugin-.html";
+import { DOC_LINKS } from "../../constants/documentation";
 
 export class DocAndFeedbackView implements vscode.TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<TreeItem | undefined> = new vscode.EventEmitter<TreeItem | undefined>();
     readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
 
-    private treeItems: Map<TreeItem, string> = new Map<TreeItem, string>([
-        [new TreeItem(constants.documentation, constants.bookItem, undefined), documentationUrl],
-        [new TreeItem(constants.feedback, constants.mailItem, undefined), feedbackUrl],
-    ]);
+    private treeItems: Map<TreeItem, string>;
+
+    constructor(documentationUrl: string) {
+        this.treeItems = new Map<TreeItem, string>([
+            [new TreeItem(constants.documentation, constants.bookItem, undefined), documentationUrl],
+            [new TreeItem(constants.feedback, constants.mailItem, undefined), DOC_LINKS.feedback],
+        ]);
+    }
 
     getTreeItem(element: TreeItem): vscode.TreeItem {
         return element;

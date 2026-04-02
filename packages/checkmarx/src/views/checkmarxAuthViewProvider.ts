@@ -11,6 +11,7 @@ import { constants } from "@checkmarx/vscode-core/out/utils/common/constants";
 import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
+import { hasAnySupportedAiExtension } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { AuthenticationWebview } from "../webview/authenticationWebview";
 
@@ -24,6 +25,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
   private isAuthenticated: boolean = false;
   private isUpdating: boolean = false;
   private pendingUpdate: boolean = false;
+  private isFirstLoad: boolean = true;
 
   constructor(context: vscode.ExtensionContext, _webViewCommand: WebViewCommand, logs: Logs) {
     this.context = context;
@@ -46,8 +48,16 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     // Set up message handling first (before content is rendered)
     this.setupMessageHandling();
 
-    // Check initial auth state and update content
-    this.checkAuthStateAndUpdate();
+    if (this.isFirstLoad) {
+      // First load: auth state unknown, must validate before rendering
+      this.isFirstLoad = false;
+      this.checkAuthStateAndUpdate();
+    } else {
+      // Re-show: render instantly with known auth state, then validate in background
+      this.updateWebviewContent();
+      this.refreshTenantDisplay();
+      this.checkAuthStateAndUpdate();
+    }
 
     // Listen for configuration changes
     vscode.workspace.onDidChangeConfiguration(async (e) => {
@@ -380,7 +390,11 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             if (token) {
               // Re-authentication succeeded: Always trigger MCP config and show Welcome page
               const isAiEnabled = await cx.isAiMcpServerEnabled();
-              await initializeMcpConfiguration(token);
+              if (isAiEnabled && hasAnySupportedAiExtension()) {
+                await initializeMcpConfiguration(token);
+              } else {
+                await uninstallMcp();
+              }
               WelcomeWebview.show(this.context, isAiEnabled);
               return;
             }
