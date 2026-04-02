@@ -64,19 +64,29 @@
         checkbox.classList.remove("hidden");
       }
 
-      if (message.enabled) {
-        toggleScannerState(message.scannersSettings);
-        if (checkbox) {
-          checkbox.disabled = false;
-          checkbox.style.cursor = "pointer";
-        }
-      } else {
+      const card = document.getElementById("aiFeatureCard");
+      const isAiDisabledByMissingExtension = card && card.classList.contains("feature-card-ai-disabled");
+
+      if (!message.enabled) {
+        // MCP server disabled at tenant level: uncheck and disable, show error icon
         toggleScannerState(false);
         if (checkbox) {
           checkbox.disabled = true;
         }
         aiBoxInfo.classList.remove("hidden");
         aiFeatureBoxWrapper.classList.remove("hidden");
+      } else if (isAiDisabledByMissingExtension) {
+        // No AI extension installed: show checked but grey/disabled checkbox (tick visible, not clickable)
+        if (checkbox) {
+          checkbox.checked = true;
+          checkbox.disabled = true;
+        }
+      } else {
+        toggleScannerState(message.scannersSettings);
+        if (checkbox) {
+          checkbox.disabled = false;
+          checkbox.style.cursor = "pointer";
+        }
       }
 
       vscode.setState({

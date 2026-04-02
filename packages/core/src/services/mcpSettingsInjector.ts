@@ -9,6 +9,7 @@ import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
 import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
 import { getMessages } from "../config/extensionMessages";
+import { isCopilotInstalled, isClaudeInstalled } from "../utils/aiAssistantUtil";
 
 interface DecodedJwt {
 	iss: string;
@@ -21,11 +22,19 @@ interface McpServer {
 		"cx-origin": string;
 		"Authorization": string;
 	};
+	command?: string;
+	args?: string[];
+	disabled?: boolean;
+	autoApprove?: string[];
+	alwaysAllow?: string[],
+	toolChoice?: "any" | "required"
 }
 
 interface McpConfig {
 	servers?: Record<string, McpServer>;
 	mcpServers?: Record<string, McpServer>;
+	toolChoice?: string;
+	allowMCPServers?: string[];
 }
 
 /**
@@ -90,6 +99,10 @@ function getMcpConfigPath(): string {
 	if (isIDE(constants.kiroAgent)) {
 		return path.join(homeDir, ".kiro", "settings", "mcp.json");
 	}
+	// Claude: primary path; updateMcpJsonFile also writes to ~/.claude.json for compatibility
+	if (isIDE(constants.claudeAgent)) {
+		return path.join(homeDir, ".claude", "settings.json");
+	}
 	// VSCode - platform specific paths
 	if (isIDE(constants.vsCodeAgentOrginalName)) {
 		const platform = process.platform;
@@ -132,7 +145,11 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 		if (!mcpConfig.mcpServers) {
 			mcpConfig.mcpServers = {};
 		}
-		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = mcpServer;
+		// Claude Code requires "type": "http" in JSON to connect to remote MCP (see code.claude.com/docs/mcp)
+		const serverEntry = mcpConfigPath.includes(".claude")
+			? { type: "http", url: mcpServer.url, headers: mcpServer.headers }
+			: mcpServer;
+		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = serverEntry as McpServer;
 	}
 
 	try {
@@ -142,6 +159,22 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 		}
 
 		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+
+		// Claude: also write to ~/.claude.json so MCP works in setups that read that file
+		if (mcpConfigPath.includes(".claude") && mcpConfigPath.endsWith("settings.json")) {
+			const claudeJsonPath = path.join(os.homedir(), ".claude.json");
+			let claudeJson: McpConfig = {};
+			if (fs.existsSync(claudeJsonPath)) {
+				try {
+					claudeJson = JSON.parse(fs.readFileSync(claudeJsonPath, "utf-8"));
+				} catch (e) {
+					console.warn("Failed to read existing .claude.json:", e);
+				}
+			}
+			if (!claudeJson.mcpServers) claudeJson.mcpServers = {};
+			claudeJson.mcpServers[getCheckmarxMcpServerName()] = { type: "http", url: mcpServer.url, headers: mcpServer.headers } as McpServer;
+			fs.writeFileSync(claudeJsonPath, JSON.stringify(claudeJson, null, 2), "utf-8");
+		}
 	} catch (error) {
 		throw new Error(`Failed to write mcp json file: ${error}`);
 	}
@@ -196,6 +229,7 @@ export async function uninstallMcp() {
 				}
 			}
 		}
+		removeFromClaudeConfig();
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Failed to remove MCP configuration.";
 		vscode.window.showErrorMessage(message);
@@ -232,33 +266,46 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : "VsCode",
+				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent :
+					(isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ?
+						constants.windsurfAgent : isIDE(constants.cursorAgent) ?
+							constants.cursorAgent : "VsCode",
 				"Authorization": apiKey,
 			},
 		};
 
 		if (!isIDE(constants.vsCodeAgentOrginalName)) {
+			// Non-VSCode IDEs (Cursor, Windsurf, Kiro, Claude): always write to their own config
 			await updateMcpJsonFile(mcpServer);
 		} else {
-			const config = vscode.workspace.getConfiguration();
-			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
-			const existingServers = fullMcp.servers || {};
+			// VSCode: only write to Copilot mcp config if Copilot extension is installed
+			if (isCopilotInstalled()) {
+				const config = vscode.workspace.getConfiguration();
+				const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
+				const existingServers = fullMcp.servers || {};
 
-			// Create a new object to avoid proxy issues
-			const updatedServers = { ...existingServers };
-			updatedServers[getCheckmarxMcpServerName()] = mcpServer;
+				// Create a new object to avoid proxy issues
+				const updatedServers = { ...existingServers };
+				updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
-			try {
-				await config.update(
-					"mcp",
-					{ servers: updatedServers },
-					vscode.ConfigurationTarget.Global
-				);
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
-				await updateMcpJsonFile(mcpServer);
+				try {
+					await config.update(
+						"mcp",
+						{ servers: updatedServers },
+						vscode.ConfigurationTarget.Global
+					);
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
+					await updateMcpJsonFile(mcpServer);
+				}
 			}
+		}
+
+		// Write to Claude config only if Claude extension is installed.
+		// Skip when current IDE is Claude to avoid writing to ~/.claude/* twice (updateMcpJsonFile already did).
+		if (!isIDE(constants.claudeAgent) && isClaudeInstalled()) {
+			writeToClaudeConfig(mcpServer);
 		}
 
 		vscode.window.showInformationMessage("MCP configuration saved successfully.");
@@ -267,4 +314,45 @@ export async function initializeMcpConfiguration(apiKey: string) {
 			err instanceof Error ? err.message : "An unexpected error occurred during MCP setup.";
 		vscode.window.showErrorMessage(message);
 	}
+}
+
+function writeToClaudeConfig(mcpServer: McpServer): void {
+	// Claude Code requires "type": "http" in JSON to connect to remote MCP (see code.claude.com/docs/mcp)
+	const server = {
+		type: "http",
+		url: mcpServer.url ?? mcpServer.serverUrl,
+		headers: { ...mcpServer.headers, "cx-origin": "VsCode" },
+	};
+	const name = getCheckmarxMcpServerName();
+	const writeOne = (filePath: string) => {
+		try {
+			let c: McpConfig = {};
+			if (fs.existsSync(filePath)) {
+				try { c = JSON.parse(fs.readFileSync(filePath, "utf-8")); } catch { }
+			}
+			if (!c.mcpServers) c.mcpServers = {};
+			c.mcpServers[name] = server;
+			const dir = path.dirname(filePath);
+			if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+			fs.writeFileSync(filePath, JSON.stringify(c, null, 2), "utf-8");
+		} catch (e) { console.warn("writeToClaudeConfig:", filePath, e); }
+	};
+	writeOne(path.join(os.homedir(), ".claude", "settings.json"));
+	writeOne(path.join(os.homedir(), ".claude.json"));
+}
+
+function removeFromClaudeConfig(): void {
+	const name = getCheckmarxMcpServerName();
+	const removeOne = (filePath: string) => {
+		if (!fs.existsSync(filePath)) return;
+		try {
+			const c: McpConfig = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+			if (c.mcpServers?.[name]) {
+				delete c.mcpServers[name];
+				fs.writeFileSync(filePath, JSON.stringify(c, null, 2), "utf-8");
+			}
+		} catch (e) { console.warn("removeFromClaudeConfig:", filePath, e); }
+	};
+	removeOne(path.join(os.homedir(), ".claude", "settings.json"));
+	removeOne(path.join(os.homedir(), ".claude.json"));
 }

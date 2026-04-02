@@ -18,6 +18,7 @@ import { IacScannerCommand } from '../realtimeScanners/scanners/iac/iacScannerCo
 import { AscaScannerCommand } from '../realtimeScanners/scanners/asca/ascaScannerCommand';
 import { ContainersScannerCommand } from '../realtimeScanners/scanners/containers/containersScannerCommand';
 import { WebViewCommand } from '../commands/webViewCommand';
+import { DocAndFeedbackView } from '../views/docsAndFeedbackView/docAndFeedbackView';
 
 /**
  * Activate Checkmarx Developer Assist specific features
@@ -177,6 +178,23 @@ function registerAssistView(context: vscode.ExtensionContext, ignoreFileManager:
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(commands.astCxDevAssist, cxOneAssistProvider),
     );
+
+    // Documentation & Feedback view
+    const docAndFeedback = new DocAndFeedbackView(DOC_LINKS.devAssist);
+    const docAndFeedbackTree = vscode.window.createTreeView(commands.docAndFeedback, {
+        treeDataProvider: docAndFeedback,
+    });
+    docAndFeedbackTree.onDidChangeSelection((event) => {
+        const selectedItem = event.selection[0];
+        if (selectedItem) {
+            const url = docAndFeedback.getUrl(selectedItem);
+            if (url) {
+                vscode.env.openExternal(vscode.Uri.parse(url));
+            }
+        }
+    });
+    context.subscriptions.push(docAndFeedbackTree);
+
     return cxOneAssistProvider;
 }
 
