@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.59.0",
+  "version": "2.60.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -952,6 +952,21 @@
         "id": "cxone-assist",
         "order": 2,
         "properties": {
+          "Checkmarx.Prefer Native AI Assistant": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "When enabled, the extension uses the IDE's built-in AI assistant and ignores the selection in **AI Assistant** above. This setting is only relevant for non-VS Code IDEs."
+          },
+          "Checkmarx.AI Assistant": {
+            "type": "string",
+            "description": "AI Assistant",
+            "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
+            "enum": [
+              "Copilot",
+              "Claude"
+            ],
+            "default": "Copilot"
+          },
           "checkmarx.MCP": {
             "type": "",
             "default": {},
@@ -1136,6 +1151,7 @@
   "overrides": {
     "@isaacs/brace-expansion": "5.0.1",
     "qs": "6.14.2",
+    "underscore": "1.13.8",
     "mocha": {
       "serialize-javascript": "7.0.3"
     }

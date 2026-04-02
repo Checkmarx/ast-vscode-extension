@@ -272,6 +272,10 @@ class CommandBuilder {
         return `@ext:checkmarx.${getCommandPrefix()}`;
     }
 
+    get openSettingsArgsAiAssistant(): string {
+        return `@ext:checkmarx.${getCommandPrefix()} AI Assistant`;
+    }
+
     // Errors
     get showError(): string {
         return this.buildCommand(COMMAND_NAMES.showError);

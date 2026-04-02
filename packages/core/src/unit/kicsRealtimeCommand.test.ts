@@ -32,7 +32,8 @@ const logs: Logs = {
   warn: () => { },
   show: () => { },
   output: { append: () => { }, appendLine: () => { }, clear: () => { }, show: () => { }, hide: () => { }, dispose: () => { }, replace: () => { }, name: "Test" },
-  log: () => { }
+  log: () => { },
+  debug: () => { }
 } as Logs;
 
 describe("KICSRealtimeCommand standalone gating", () => {
