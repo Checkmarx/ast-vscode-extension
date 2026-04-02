@@ -12,6 +12,7 @@ import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
+import { AuthenticationWebview } from "../webview/authenticationWebview";
 
 export type AuthMethodType = "OAuth" | "API Key" | "Both (OAuth and API Key)";
 
@@ -67,9 +68,23 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     });
 
     // Listen for secrets changes (token added/removed)
-    this.context.secrets.onDidChange(() => {
+    this.context.secrets.onDidChange(async () => {
       // Check if the changed secret is our auth token
-      this.checkAuthStateAndUpdate();
+      await this.checkAuthStateAndUpdate();
+
+      // Close any open authentication form panels when successfully authenticated
+      // This ensures forms are closed regardless of which auth method was used
+      if (this.isAuthenticated) {
+        // Dynamically import to avoid circular dependency
+        try {
+          const checkmarxExtPath = this.context.extensionPath;
+          const authWebviewPath = `${checkmarxExtPath}/out/webview/authenticationWebview`;
+          const { AuthenticationWebview } = await import(authWebviewPath);
+          AuthenticationWebview.disposeAll();
+        } catch (error) {
+          this.logs?.warn?.(`Failed to close authentication form: ${error}`);
+        }
+      }
     });
 
     // Listen for visibility changes to refresh tenant when panel is reopened
@@ -347,6 +362,18 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
           // This handles the case where user logged out but we preserved their credentials
           const hasStoredOAuth = authService.hasStoredOAuthCredentials();
           if (hasStoredOAuth) {
+            // Close any open API Key form panel before triggering OAuth browser authentication
+            // This prevents the form from remaining open during/after OAuth re-authentication
+            try {
+              // Access the private static currentPanel to close any open authentication form
+              if ((AuthenticationWebview as any).currentPanel) {
+                (AuthenticationWebview as any).currentPanel.dispose();
+              }
+            } catch (error) {
+              // Ignore errors if panel doesn't exist
+              this.logs?.warn?.(`Failed to close authentication panel: ${error}`);
+            }
+
             // Re-authenticate using stored credentials - opens browser directly
             vscode.window.showInformationMessage("Re-authenticating with saved OAuth settings...");
             const token = await authService.reAuthenticateWithStoredOAuth();

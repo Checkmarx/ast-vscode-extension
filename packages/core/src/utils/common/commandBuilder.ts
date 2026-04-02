@@ -12,6 +12,7 @@ const COMMAND_NAMES = {
     // Authentication
     showAuth: 'showAuth',
     authentication: 'authentication',
+    resetAuthenticationCache: 'resetAuthenticationCache',
 
     // Checkmarx One Assist
     updateCxOneAssist: 'updateCxOneAssist',
@@ -44,6 +45,9 @@ const COMMAND_NAMES = {
     kicsRealtime: 'kicsRealtime',
     kicsRemediation: 'kicsRemediation',
     kicsSetings: 'kicsSetings',
+
+    // Realtime Scanners
+    clearRealtimeScanners: 'clearRealtimeScanners',
 
     // Scan Commands
     createScan: 'createScan',
@@ -191,6 +195,10 @@ class CommandBuilder {
         return this.buildCommand(COMMAND_NAMES.authentication);
     }
 
+    get resetAuthenticationCache(): string {
+        return this.buildCommand(COMMAND_NAMES.resetAuthenticationCache);
+    }
+
     // Checkmarx One Assist
     get updateCxOneAssist(): string {
         return this.buildCommand(COMMAND_NAMES.updateCxOneAssist);
@@ -284,6 +292,11 @@ class CommandBuilder {
 
     get kicsSetings(): string {
         return this.buildCommand(COMMAND_NAMES.kicsSetings);
+    }
+
+    // Realtime Scanners
+    get clearRealtimeScanners(): string {
+        return this.buildCommand(COMMAND_NAMES.clearRealtimeScanners);
     }
 
     // Scan Commands
