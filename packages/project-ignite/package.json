@@ -226,6 +226,7 @@
     "typescript": "^5.3.3"
   },
   "overrides": {
-    "qs": "6.14.2"
+    "qs": "6.14.2",
+    "underscore": "1.13.8"
   }
 }
