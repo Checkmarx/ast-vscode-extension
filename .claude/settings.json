@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Project/ast-jetbrains-plugin/**)",
+      "Bash(ls -lah c:/Project/ast-vscode-extension/packages/core/media/icons/welcomePageScanner*)",
+      "Read(//c/Project/**)"
+    ]
+  }
+}
