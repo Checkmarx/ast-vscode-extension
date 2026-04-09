@@ -80,7 +80,7 @@ If any of these validations fail:
 
 **Output Prefix Based on Tool Availability:**
 - **If packageRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used (e.g., "Checkmarx One Assist -" or "Checkmarx Developer Assist -")
-- **If packageRemediation tool was NOT available:** Use \`Security Assistant -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+- **If packageRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
 
 ✅ **Remediation Summary**
 
@@ -223,7 +223,7 @@ If applicable for the language:
 
 **Output Prefix Based on Tool Availability:**
 - **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`Security Assistant -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
 
 Generate a structured remediation summary:
 
@@ -548,7 +548,7 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 **Output Prefix Based on Tool Availability:**
 - **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`Security Assistant -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
 
 ✅ **Remediation Summary**
 
@@ -860,7 +860,7 @@ If any of these validations fail:
 
 **Output Prefix Based on Tool Availability:**
 - **If imageRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If imageRemediation tool was NOT available:** Use \`Security Assistant -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+- **If imageRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
 
 ✅ **Remediation Summary**
 
@@ -1009,7 +1009,7 @@ If any of these validations fail:
 
 **Output Prefix Based on Tool Availability:**
 - **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`Security Assistant -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
 
 ✅ **Remediation Summary**
 
