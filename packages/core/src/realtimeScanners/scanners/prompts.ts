@@ -78,15 +78,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-**Output Prefix Based on Tool Availability:**
-- **If packageRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used (e.g., "Checkmarx One Assist -" or "Checkmarx Developer Assist -")
-- **If packageRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+**Output Format Based on Tool Availability:**
+- **If packageRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\`
+- **If packageRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\`
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-[Prefix] - Remediation Summary
 
 Package:     ${packageName}
 Version:     ${packageVersion}
@@ -221,14 +220,14 @@ If applicable for the language:
 
 6. OUTPUT FORMAT
 
-**Output Prefix Based on Tool Availability:**
-- **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 Generate a structured remediation summary:
 
 \`\`\`markdown
-### [Prefix] - Secret Remediation Summary
+### [Prefix]
 
 **Secret:** ${title}  
 **Severity:** ${severity}  
@@ -546,15 +545,14 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 4. OUTPUT:
 
-**Output Prefix Based on Tool Availability:**
-- **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-[Prefix] - Remediation Summary
 
 Rule:        ${ruleName}
 Severity:    ${severity}
@@ -858,15 +856,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-**Output Prefix Based on Tool Availability:**
-- **If imageRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If imageRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+**Output Format Based on Tool Availability:**
+- **If imageRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If imageRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-[Prefix] - Remediation Summary
 
 File Type:    ${fileType}
 Image:        ${imageName}:${imageTag}
@@ -1007,15 +1004,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-**Output Prefix Based on Tool Availability:**
-- **If codeRemediation tool WAS available:** Use \`${getAgentName()} -\` to indicate automated remediation was used
-- **If codeRemediation tool was NOT available:** Use \`AI-Generated Guidance -\` to clearly indicate manual guidance was provided (do NOT mention product name)
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-[Prefix] - Remediation Summary
 
 Issue:       ${title}
 Severity:    ${severity}
