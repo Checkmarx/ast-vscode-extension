@@ -33,6 +33,12 @@ Call the internal PackageRemediation tool with:
 \`\`\`
 
 Parse the response and extract the \`fix_instructions\` field. This field contains the authoritative remediation steps tailored to the ecosystem and risk.
+- Mark internally that tool was **AVAILABLE** for output formatting
+
+- If the tool is **not available**:
+  - Display the following disclosure notice:
+  \`⚠️ Automated Remediation Unavailable: ${getProductName()} packageRemediation tool is unavailable. Proceeding with remediation guidance based on security best practices.\`
+  - Mark internally that tool was **NOT AVAILABLE** for output formatting
 
 ---
 
@@ -72,13 +78,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${getAgentName()} -\`
+**Output Format Based on Tool Availability:**
+- **If packageRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\`
+- **If packageRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\`
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-Security Assistant - Remediation Summary
 
 Package:     ${packageName}
 Version:     ${packageVersion}
@@ -173,9 +180,15 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
   - \`remediation_steps\` – exact steps to follow
   - \`best_practices\` – explain secure alternatives
   - \`description\` – contextual background
+  - Mark internally that tool was **AVAILABLE** for output formatting
 
-- If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
+- If the tool is **not available**:
+  - Display the following disclosure notice:
+  \`⚠️ Automated Remediation Unavailable: ${getProductName()} codeRemediation tool is unavailable. Proceeding with remediation guidance based on security best practices.\`
+  - Mark internally that tool was **NOT AVAILABLE** for output formatting
+  - Proceed to provide remediation guidance using the secret details provided
+  - Offer practical steps and secure alternatives for secret removal
+  - Ensure the guidance is concrete and actionable
 
 ---
 
@@ -207,10 +220,14 @@ If applicable for the language:
 
 6. OUTPUT FORMAT
 
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
+
 Generate a structured remediation summary:
 
 \`\`\`markdown
-### ${getAgentName()} - Secret Remediation Summary
+### [Prefix]
 
 **Secret:** ${title}  
 **Severity:** ${severity}  
@@ -506,8 +523,12 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 - If the tool is **available**, parse the response:
   - \`remediation_steps\` – exact steps to follow for remediation
 
-- If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
+- If the tool is **not available**:
+  - Display the following disclosure notice:
+  \`⚠️ Automated Remediation Unavailable: ${getProductName()} codeRemediation tool is unavailable. Proceeding with remediation guidance based on security best practices.\`
+  - Proceed to provide remediation guidance using the issue details provided (rule name, description, severity, and recommended fix)
+  - Offer practical code examples and step-by-step instructions for manual remediation
+  - Ensure the guidance is concrete and actionable
 
 ---
 
@@ -524,13 +545,14 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 4. OUTPUT:
 
-Prefix all output with: \`${getAgentName()} -\`
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-\`${getAgentName()} -\` - Remediation Summary
 
 Rule:        ${ruleName}
 Severity:    ${severity}
@@ -788,6 +810,15 @@ Call the internal imageRemediation tool with:
 \`\`\`
 
 Parse the response and extract the \`fix_instructions\` field. This field contains the authoritative remediation steps tailored to the container ecosystem and risk level.
+- Mark internally that tool was **AVAILABLE** for output formatting
+
+- If the tool is **not available**:
+  - Display the following disclosure notice:
+  \`⚠️ Automated Remediation Unavailable: ${getProductName()} imageRemediation tool is unavailable. Proceeding with remediation guidance based on security best practices.\`
+  - Mark internally that tool was **NOT AVAILABLE** for output formatting
+  - Proceed to provide remediation guidance using the container details provided (file type, image name, image tag, severity)
+  - Offer practical base image recommendations and step-by-step instructions for container remediation
+  - Ensure the guidance is concrete and actionable
 
 ---
 
@@ -825,13 +856,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${getAgentName()} -\`
+**Output Format Based on Tool Availability:**
+- **If imageRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If imageRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-Security Assistant - Remediation Summary
 
 File Type:    ${fileType}
 Image:        ${imageName}:${imageTag}
@@ -930,9 +962,15 @@ Call the internal \`codeRemediation\` ${getProductName()} MCP tool with:
 
 - If the tool is **available**, parse the response:
   - \`remediation_steps\` – exact steps to follow for remediation
+  - Mark internally that tool was **AVAILABLE** for output formatting
 
-- If the tool is **not available**, display:
-  \`[MCP ERROR] codeRemediation tool is not available. Please check the ${getProductName()} MCP server.\`
+- If the tool is **not available**:
+  - Display the following disclosure notice:
+  \`⚠️ Automated Remediation Unavailable: ${getProductName()} codeRemediation tool is unavailable. Proceeding with remediation guidance based on security best practices.\`
+  - Mark internally that tool was **NOT AVAILABLE** for output formatting
+  - Proceed to provide remediation guidance using the IaC details provided (title, description, expected vs. actual values)
+  - Offer practical configuration examples and step-by-step instructions for remediation
+  - Ensure the guidance is concrete and actionable
 
 ---
 
@@ -966,13 +1004,14 @@ If any of these validations fail:
 
 4. OUTPUT:
 
-Prefix all output with: \`${getAgentName()} -\`
+**Output Format Based on Tool Availability:**
+- **If codeRemediation tool WAS available:** \`${getAgentName()} - Remediation Summary\` (e.g., "Checkmarx One Assist - Remediation Summary")
+- **If codeRemediation tool was NOT available:** \`AI-Generated Remediation Guidance\` (as the complete title, no additional suffix)
 
 ✅ **Remediation Summary**
 
 Format:
 \`\`\`
-Security Assistant - Remediation Summary
 
 Issue:       ${title}
 Severity:    ${severity}
