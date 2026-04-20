@@ -203,10 +203,10 @@ export async function getResultsJson() {
 export function readResultsFromFile(
   resultJsonPath: string,
   scan: string
-): Promise<CxResult[]> {
+): Promise<CxResult[] | undefined> {
   return new Promise((resolve, reject) => {
     if (!fs.existsSync(resultJsonPath) || !scan) {
-      resolve([]);
+      resolve(undefined);
       return;
     }
 
