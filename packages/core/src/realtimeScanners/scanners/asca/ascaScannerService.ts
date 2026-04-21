@@ -206,10 +206,6 @@ export class AscaScannerService extends BaseScannerService {
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
 
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
-
 			// Skip ignored results
 			if (this.isAscaResultIgnored(result, filePath)) {
 				continue;
@@ -302,10 +298,6 @@ export class AscaScannerService extends BaseScannerService {
 		// Check for ignored results
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
-
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
 
 			// Only include ignored results here
 			if (this.isAscaResultIgnored(result, filePath)) {

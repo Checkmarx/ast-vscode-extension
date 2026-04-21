@@ -219,9 +219,6 @@ export class SecretsScannerService extends BaseScannerService {
 			if (problem.locations.length === 0) { continue; }
 			const location = problem.locations[0];
 
-			this.removeAscaDiagnosticsAtLine(uri, location.line);
-			this.removeAscaHoverDataAtLine(filePath, location.line);
-
 			const range = new vscode.Range(
 				new vscode.Position(location.line, location.startIndex),
 				new vscode.Position(location.line, location.endIndex)
