@@ -4,10 +4,13 @@
 
 import * as vscode from 'vscode';
 import { constants } from './common/constants';
+import { isIDE } from './utils';
 
 export interface AiAssistantConfig {
   extensionId: string;
 }
+
+export type McpTarget = 'vscode-settings' | 'ide-native-json' | 'claude-settings';
 
 /**
  * Returns true if the GitHub Copilot Chat extension is installed.
@@ -32,6 +35,46 @@ export function hasAnySupportedAiExtension(): boolean {
     vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined ||
     isClaudeInstalled()
   );
+}
+
+/**
+ * Resolves which MCP config targets to write for the current IDE and settings.
+ * Drives both the post-login auto-install path and the manual "Install MCP" command.
+ */
+export function resolveMcpTargets(): McpTarget[] {
+  if (isIDE(constants.claudeAgent)) {
+    return ['claude-settings'];
+  }
+
+  const isVsCode = isIDE(constants.vsCodeAgentOrginalName);
+  const isNonVsCodeIde =
+    !isVsCode &&
+    (isIDE(constants.cursorAgent) ||
+      isIDE(constants.windsurfAgent) ||
+      isIDE(constants.windsurfNextAgent) ||
+      isIDE(constants.kiroAgent));
+
+  if (isNonVsCodeIde) {
+    const cfg = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
+    const preferNative = cfg.get<boolean>('Prefer Native AI Assistant', true);
+    const targets: McpTarget[] = [];
+    if (preferNative || isCopilotInstalled()) {
+      targets.push('ide-native-json');
+    }
+    if (isClaudeInstalled()) {
+      targets.push('claude-settings');
+    }
+    return targets;
+  }
+
+  const targets: McpTarget[] = [];
+  if (isCopilotInstalled()) {
+    targets.push('vscode-settings');
+  }
+  if (isClaudeInstalled()) {
+    targets.push('claude-settings');
+  }
+  return targets;
 }
 
 /**
