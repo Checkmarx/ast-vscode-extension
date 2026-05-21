@@ -6,7 +6,6 @@ import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
-import { hasAnySupportedAiExtension } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
@@ -125,7 +124,7 @@ export class AuthenticationWebview {
         WelcomeWebview.show(this.context, isAiEnabled);
         await vscode.commands.executeCommand(commands.updateCxOneAssist);
         await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
-        if (isAiEnabled && hasAnySupportedAiExtension()) {
+        if (isAiEnabled) {
           await initializeMcpConfiguration(options.apiKey);
         } else {
           await uninstallMcp();
