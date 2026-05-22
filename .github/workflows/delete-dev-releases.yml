@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   delete:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Delete releases and tags
         continue-on-error: true

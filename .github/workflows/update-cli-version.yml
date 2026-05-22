@@ -10,9 +10,12 @@ on:
   repository_dispatch:
     types: [js-wrapper-version-update]
 
+permissions:
+  contents: read
+
 jobs:
   update-js-wrapper:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     env:
       GH_TOKEN: ${{ github.token }}
     permissions:
@@ -21,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Set Up npm Authentication
         run: |
