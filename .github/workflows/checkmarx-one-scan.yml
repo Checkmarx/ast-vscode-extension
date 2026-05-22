@@ -11,10 +11,10 @@ on:
 
 jobs:
   cx-scan:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - name: Checkmarx One CLI Action
         uses: checkmarx/ast-github-action@327efb5d1dd16ac6c7c21a9ff8ec1e8ec393b5e6 #v2.3.32
         with:

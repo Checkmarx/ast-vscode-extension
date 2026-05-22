@@ -71,7 +71,7 @@ jobs:
     if: inputs.dev
 
   release:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     env:
       BRANCH_NAME: update-extension-version
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -83,7 +83,7 @@ jobs:
     steps:
       # CHECKOUT PROJECT
       - name: Checkout
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           fetch-depth: 0 # Full history needed for git log changelog generation
 
@@ -102,7 +102,7 @@ jobs:
 
       # SETUP NODE
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: 22.11.0
 
