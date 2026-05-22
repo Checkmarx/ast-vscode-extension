@@ -1,19 +1,34 @@
+# This action is no longer maintained. Repo owner - find a different solution.
 name: PR Labeler
 on:
   pull_request:
     types: [opened]
-
+    
 permissions:
   contents: read
-
+  
 jobs:
-  pr-labeler:
-    permissions:
-      pull-requests: write # for TimonVS/pr-labeler-action to add labels in PR
+  do-nothing:
     runs-on: cx-public-ubuntu-x64
     steps:
-      - uses: TimonVS/pr-labeler-action@cf8bb780d49439d85e4b34e4ac7ce7bd77aedf97 #v4
-        with:
-          configuration-path: .github/pr-labeler.yml # optional, .github/pr-labeler.yml is the default value
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Hello World
+        run: echo "The pr-labeler action is no longer maintained. Repo owner - find a different solution." && exit 1
+# name: PR Labeler
+# on:
+#   pull_request:
+#     types: [opened]
+
+# permissions:
+#   contents: read
+
+# jobs:
+#   pr-labeler:
+#     permissions:
+#       pull-requests: write # for TimonVS/pr-labeler-action to add labels in PR
+#     runs-on: cx-public-ubuntu-x64
+#     steps:
+#       - uses: TimonVS/pr-labeler-action@cf8bb780d49439d85e4b34e4ac7ce7bd77aedf97 #v4
+#         with:
+#           configuration-path: .github/pr-labeler.yml # optional, .github/pr-labeler.yml is the default value
+#         env:
+# #          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
