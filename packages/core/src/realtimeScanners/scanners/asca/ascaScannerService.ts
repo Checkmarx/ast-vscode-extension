@@ -167,12 +167,27 @@ export class AscaScannerService extends BaseScannerService {
 			return false;
 		}
 
-		// Check if there's an active file entry for this path and line
-		const fileEntry = ignoreEntry.files.find(f =>
-			f.path === relativePath &&
-			f.active &&
-			f.line === result.line
-		);
+		// Check if there's an active file entry matching:
+		// 1. Path + exact line match (original behavior), OR
+		// 2. Path + problematicLine (code content) match (new behavior for identical code)
+		const fileEntry = ignoreEntry.files.find(f => {
+			if (f.path !== relativePath || !f.active) {
+				return false;
+			}
+
+			// Exact line match
+			if (f.line === result.line) {
+				return true;
+			}
+
+			// Code content match (for identical code on different lines)
+			if (f.problematicLine && result.problematicLine &&
+			    f.problematicLine === result.problematicLine) {
+				return true;
+			}
+
+			return false;
+		});
 
 		return !!fileEntry;
 	}
@@ -205,10 +220,6 @@ export class AscaScannerService extends BaseScannerService {
 
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
-
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
 
 			// Skip ignored results
 			if (this.isAscaResultIgnored(result, filePath)) {
@@ -246,10 +257,13 @@ export class AscaScannerService extends BaseScannerService {
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: 'asca',
 				item: {
-					ruleName: problemCount === 1 ? lineResults[0].ruleName : titleMessage,
+					ruleName: lineResults[0].ruleName,
 					description: problemCount === 1 ? (lineResults[0].description || lineResults[0].remediationAdvise) : titleMessage,
 					severity: this.getHighestSeverity(lineResults.map(r => r.severity)),
 					remediationAdvise: problemCount === 1 ? lineResults[0].remediationAdvise : undefined,
+					filePath: filePath,
+					ruleId: lineResults[0].ruleId,
+					problematicLine: lineResults[0].problematicLine,
 					location: {
 						line: lineNumber,
 						startIndex: startIndex,
@@ -268,6 +282,7 @@ export class AscaScannerService extends BaseScannerService {
 				remediationAdvise: result.remediationAdvise,
 				filePath: filePath,
 				ruleId: result.ruleId,
+				problematicLine: result.problematicLine,
 				location: {
 					line: lineNumber,
 					startIndex: startIndex,
@@ -303,10 +318,6 @@ export class AscaScannerService extends BaseScannerService {
 		for (const result of scanResults.scanDetails) {
 			const lineNumber = result.line - 1;
 
-			if (this.hasSecretsAtLine(uri, lineNumber)) {
-				continue;
-			}
-
 			// Only include ignored results here
 			if (this.isAscaResultIgnored(result, filePath)) {
 				if (!ignoredResultsByLine.has(lineNumber)) {
@@ -317,6 +328,9 @@ export class AscaScannerService extends BaseScannerService {
 		}
 
 		// Create ignored decorations and hover data for ignored results
+		// Track which code content we've already shown the ignored icon for
+		const seenProblematicLines = new Set<string>();
+
 		for (const [lineNumber, ignoredResults] of ignoredResultsByLine) {
 			const firstResult = ignoredResults[0];
 			const problemText = firstResult.problematicLine;
@@ -327,9 +341,14 @@ export class AscaScannerService extends BaseScannerService {
 				new vscode.Position(lineNumber, problemText.length)
 			);
 
-			ignoredDecorations.push({ range });
+			// Only show ignored icon for FIRST occurrence of each unique code (JetBrains behavior)
+			// For identical code on multiple lines, only the first gets the icon
+			if (!seenProblematicLines.has(problemText)) {
+				seenProblematicLines.add(problemText);
+				ignoredDecorations.push({ range });
+			}
 
-			// Store hover data for ignored results too
+			// Store hover data for ALL ignored lines (not just first)
 			const key = `${filePath}:${lineNumber}`;
 			if (!this.ascaHoverData.has(key)) {
 				const hoverProblems: AscaHoverData[] = ignoredResults.map(result => ({
@@ -339,6 +358,7 @@ export class AscaScannerService extends BaseScannerService {
 					remediationAdvise: result.remediationAdvise,
 					filePath: filePath,
 					ruleId: result.ruleId,
+					problematicLine: result.problematicLine,
 					location: {
 						line: lineNumber,
 						startIndex: startIndex,
