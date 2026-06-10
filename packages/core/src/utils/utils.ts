@@ -72,7 +72,8 @@ export function isSystemFile(e: vscode.TextDocument): boolean {
   return (
     e.uri.scheme.toString() !== "git" &&
     !e.fileName.includes("package.json") &&
-    !e.fileName.includes("settings.json")
+    !e.fileName.includes("settings.json") &&
+    !e.fileName.includes("schema.json")
   );
 }
 
