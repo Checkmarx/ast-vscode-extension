@@ -14,18 +14,23 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   delete:
+    permissions:
+      contents: write
     runs-on: cx-public-ubuntu-x64
     steps:
       - name: Delete releases and tags
         continue-on-error: true
-        uses: dev-drprasad/delete-older-releases@653dc03d96473ac9e585c68c8bf5aaccb0dadb61 #v0.2.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          keep_latest: 0
-          delete_tag_pattern: "-${{inputs.tag}}.0"
-          delete_tags: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          gh release list --limit 100 --json tagName \
+            --jq ".[] | select(.tagName | contains(\"-${INPUT_TAG}.0\")) | .tagName" \
+            | while IFS= read -r tag; do
+                echo "Deleting release and tag: $tag"
+                gh release delete "$tag" --yes --cleanup-tag || true
+              done
