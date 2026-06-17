@@ -111,14 +111,13 @@ jobs:
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 22.11.0
+          registry-url: https://npm.echohq.com/
 
       # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
       - name: Authenticate with GitHub package registry
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${GH_TOKEN}" >> packages/core/.npmrc
           npm config set @checkmarx:registry https://npm.pkg.github.com
           npm config set //npm.pkg.github.com/:_authToken "${GH_TOKEN}"
 
@@ -300,12 +299,10 @@ jobs:
       # BUILD ALL PACKAGES
       - name: Build all packages
         run: npm run build:all
-        
-      - name: Keep packages/core/.npmrc local only
-        if: inputs.dev == false
-        run: |
-          git rm --cached -f packages/core/.npmrc || true
-          
+
+      - name: Remove .npmrc from git index
+        run: git rm --cached -f packages/core/.npmrc || true
+
       # PACKAGE CHECKMARX VSIX
       # Always built so asset is always present in release
       - name: Package Checkmarx .vsix file
