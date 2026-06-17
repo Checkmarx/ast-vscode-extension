@@ -9,7 +9,7 @@ import { commands } from "../utils/common/commandBuilder";
 import { cx } from "../cx";
 import { getExtensionType, EXTENSION_TYPE } from "../config/extensionConfig";
 import { getMessages } from "../config/extensionMessages";
-import { isCopilotInstalled, isClaudeInstalled } from "../utils/aiAssistantUtil";
+import { resolveMcpTargets } from "../utils/aiAssistantUtil";
 
 interface DecodedJwt {
 	iss: string;
@@ -47,6 +47,22 @@ function getCheckmarxMcpServerName(): string {
 		return "Checkmarx Developer Assist";
 	}
 	return "Checkmarx";
+}
+
+function getCxOrigin(): string {
+	if (isIDE(constants.kiroAgent)) {
+		return constants.kiroAgent;
+	}
+	if (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) {
+		return constants.windsurfAgent;
+	}
+	if (isIDE(constants.cursorAgent)) {
+		return constants.cursorAgent;
+	}
+	if (isIDE(constants.claudeAgent)) {
+		return constants.claudeAgent;
+	}
+	return "VsCode";
 }
 
 
@@ -254,8 +270,11 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		try {
 			const hostname = new URL(issuer).hostname;
 			if (hostname.includes("iam.checkmarx")) {
-				const astHostname = hostname.replace("iam", "ast");
-				baseUrl = `https://${astHostname}`;
+				// Multi-tenant: iam.checkmarx.* → ast.checkmarx.*
+				baseUrl = `https://${hostname.replace("iam", "ast")}`;
+			} else {
+				// Single-tenant issuer hostname is the API base
+				baseUrl = `https://${hostname}`;
 			}
 		} catch (e) {
 			console.warn("Invalid issuer URL format:", issuer);
@@ -266,26 +285,22 @@ export async function initializeMcpConfiguration(apiKey: string) {
 		const mcpServer: McpServer = {
 			...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 			headers: {
-				"cx-origin": isIDE(constants.kiroAgent) ? constants.kiroAgent :
-					(isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ?
-						constants.windsurfAgent : isIDE(constants.cursorAgent) ?
-							constants.cursorAgent : "VsCode",
+				"cx-origin": getCxOrigin(),
 				"Authorization": apiKey,
 			},
 		};
 
-		if (!isIDE(constants.vsCodeAgentOrginalName)) {
-			// Non-VSCode IDEs (Cursor, Windsurf, Kiro, Claude): always write to their own config
-			await updateMcpJsonFile(mcpServer);
-		} else {
-			// VSCode: only write to Copilot mcp config if Copilot extension is installed
-			if (isCopilotInstalled()) {
+		const targets = resolveMcpTargets();
+		if (targets.length === 0) {
+			await uninstallMcp();
+			return;
+		}
+
+		for (const target of targets) {
+			if (target === 'vscode-settings') {
 				const config = vscode.workspace.getConfiguration();
 				const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
-				const existingServers = fullMcp.servers || {};
-
-				// Create a new object to avoid proxy issues
-				const updatedServers = { ...existingServers };
+				const updatedServers = { ...(fullMcp.servers || {}) };
 				updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
 				try {
@@ -299,13 +314,11 @@ export async function initializeMcpConfiguration(apiKey: string) {
 					console.warn(`Failed to update MCP server details. Using fallback mechanism to configure mcp server details. Error: ${errorMessage}`);
 					await updateMcpJsonFile(mcpServer);
 				}
+			} else if (target === 'ide-native-json') {
+				await updateMcpJsonFile(mcpServer);
+			} else if (target === 'claude-settings') {
+				writeToClaudeConfig(mcpServer);
 			}
-		}
-
-		// Write to Claude config only if Claude extension is installed.
-		// Skip when current IDE is Claude to avoid writing to ~/.claude/* twice (updateMcpJsonFile already did).
-		if (!isIDE(constants.claudeAgent) && isClaudeInstalled()) {
-			writeToClaudeConfig(mcpServer);
 		}
 
 		vscode.window.showInformationMessage("MCP configuration saved successfully.");
@@ -321,7 +334,7 @@ function writeToClaudeConfig(mcpServer: McpServer): void {
 	const server = {
 		type: "http",
 		url: mcpServer.url ?? mcpServer.serverUrl,
-		headers: { ...mcpServer.headers, "cx-origin": "VsCode" },
+		headers: { ...mcpServer.headers },
 	};
 	const name = getCheckmarxMcpServerName();
 	const writeOne = (filePath: string) => {

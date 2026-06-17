@@ -297,11 +297,12 @@ export class IacScannerService extends BaseScannerService {
 			(diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data = {
 				cxType: constants.iacRealtimeScannerEngineName,
 				item: {
-					similarityId: problemCount === 1 ? lineResults[0].similarityID : undefined,
-					title: problemCount === 1 ? lineResults[0].title : titleMessage,
+					similarityId: lineResults[0].similarityID,
+					title: lineResults[0].title,
 					description: problemCount === 1 ? lineResults[0].description : titleMessage,
 					severity: highestSeverity,
 					filePath: lineResults[0].filepath,
+					originalFilePath: uri.fsPath,
 					location: lineResults[0].locations[0],
 					expectedValue: lineResults[0].expectedValue,
 					actualValue: lineResults[0].actualValue,

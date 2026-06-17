@@ -21,7 +21,7 @@ import { validateConfigurationAndLicense } from "../../utils/common/configValida
 
 export class AstResultsProvider extends ResultsProvider {
   public process;
-  public loadedResults: CxResult[];
+  public loadedResults: CxResult[] | undefined;
   private scan: Item | undefined;
   private riskManagementView: riskManagementView;
 
@@ -87,8 +87,8 @@ export class AstResultsProvider extends ResultsProvider {
       this.loadedResults = undefined;
       const scanIDItem = getFromState(this.context, constants.scanIdKey);
       let scanId = undefined;
-      if (scanIDItem && scanIDItem.name) {
-        scanId = getFromState(this.context, constants.scanIdKey).name;
+      if (scanIDItem && scanIDItem.id) {
+        scanId = getFromState(this.context, constants.scanIdKey).id;
       }
       if (scanId) {
         await getResultsWithProgress(this.logs, scanId);
