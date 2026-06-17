@@ -28,6 +28,15 @@ on:
         required: false
         type: string
         default: both
+    secrets:
+      GH_TOKEN:
+        required: true
+      MARKET_TOKEN:
+        required: true
+      OPEN_VSX_TOKEN:
+        required: true
+      PERSONAL_ACCESS_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       releaseType:
