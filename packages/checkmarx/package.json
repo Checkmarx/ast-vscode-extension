@@ -942,7 +942,7 @@
     "viewsWelcome": [
       {
         "view": "astResults",
-        "contents": "In order to use Checkmarx One, you need to setup your credentials.\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).%22,
+        "contents": "In order to use Checkmarx One, you need to setup your credentials.\nTo learn more about how to use Checkmarx One [read our docs](https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html).",
         "when": "!ast-results.isValidCredentials"
       }
     ],
@@ -1058,7 +1058,7 @@
             "type": "boolean",
             "order": 3,
             "default": true,
-            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html).%22
+            "markdownDescription": "Scans your infrastructure as code files for vulnerabilities, upon file save. **No Checkmarx credentials required.** [Read more](https://docs.checkmarx.com/en/34965-68744-using-the-checkmarx-vs-code-extension---kics-auto-scanning.html)."
           },
           "CheckmarxKICS.Additional Parameters": {
             "type": "string",
