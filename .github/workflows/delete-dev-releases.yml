@@ -26,7 +26,7 @@ jobs:
         continue-on-error: true
         uses: dev-drprasad/delete-older-releases@653dc03d96473ac9e585c68c8bf5aaccb0dadb61 #v0.2.1
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           keep_latest: 0
           delete_tag_pattern: "-${{inputs.tag}}.0"
