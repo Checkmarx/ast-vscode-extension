@@ -275,9 +275,18 @@ export const constants = {
     "**/packages.config",
     "**/pom.xml",
     "**/package.json",
-    "**/requirements.txt",
     "**/go.mod",
-    "**/*.csproj"
+    "**/*.csproj",
+    "**/*.gradle",
+    "**/*.gradle.kts",
+    "**/*.sbt",
+    "**/libs.versions.toml",
+    "**/requirement*.txt",
+    "**/constraints.txt",
+    "**/constraints-*.txt",
+    "**/pyproject.toml",
+    "**/setup.cfg",
+    "**/setup.py"
   ],
   ossIcons: {
     critical: "critical_severity.png",
