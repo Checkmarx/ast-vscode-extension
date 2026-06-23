@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
-import { cx } from "../cx";
+import * as vscode from "vscode";
+import { initialize, getCx } from "../cx";
 import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - getResults", () => {
@@ -14,6 +15,19 @@ describe("Cx - getResults", () => {
       displayName: 'Checkmarx',
       extensionType: 'checkmarx',
     });
+
+    // Initialize Cx with mock context
+    const mockContext = {
+      subscriptions: [],
+      extensionUri: vscode.Uri.parse("file:///test"),
+      extensionPath: "/test",
+      secrets: {
+        get: () => Promise.resolve("valid-api-key"),
+        store: () => Promise.resolve(),
+        delete: () => Promise.resolve()
+      }
+    } as any;
+    initialize(mockContext);
   });
 
   afterEach(() => {
@@ -22,17 +36,20 @@ describe("Cx - getResults", () => {
 
   it("should get results when scanId is provided", async () => {
     const scanId = "valid-scan-id";
+    const cx = getCx();
     await cx.getResults(scanId);
     // Since getResults doesn't return anything, we just verify it doesn't throw
   });
 
   it("should return undefined when scanId is not provided", async () => {
+    const cx = getCx();
     const result = await cx.getResults(undefined);
     expect(result).to.be.undefined;
   });
 
   it("should throw error when getting results fails", async () => {
     const scanId = "invalid-scan-id";
+    const cx = getCx();
 
     try {
       await cx.getResults(scanId);

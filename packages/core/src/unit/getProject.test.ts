@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
-import { cx } from "../cx";
+import * as vscode from "vscode";
+import { initialize, getCx } from "../cx";
 import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - getProject", () => {
@@ -14,6 +15,19 @@ describe("Cx - getProject", () => {
       displayName: 'Checkmarx',
       extensionType: 'checkmarx',
     });
+
+    // Initialize Cx with mock context
+    const mockContext = {
+      subscriptions: [],
+      extensionUri: vscode.Uri.parse("file:///test"),
+      extensionPath: "/test",
+      secrets: {
+        get: () => Promise.resolve("valid-api-key"),
+        store: () => Promise.resolve(),
+        delete: () => Promise.resolve()
+      }
+    } as any;
+    initialize(mockContext);
   });
 
   afterEach(() => {
@@ -22,6 +36,7 @@ describe("Cx - getProject", () => {
 
   it("should return project object when projectId is provided", async () => {
     const projectId = "test-project-id";
+    const cx = getCx();
     const result = await cx.getProject(projectId);
 
     expect(result).to.deep.equal({
@@ -36,6 +51,7 @@ describe("Cx - getProject", () => {
   });
 
   it("should return undefined when projectId is not provided", async () => {
+    const cx = getCx();
     const result = await cx.getProject(undefined);
     expect(result).to.be.undefined;
   });
