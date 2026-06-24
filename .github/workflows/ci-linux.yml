@@ -20,7 +20,7 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: |
-          npm run install:all
+          npm run ci:all
       - name: Run core unit tests with coverage
         run: npm run unit-coverage:test:core
       - name: Upload core coverage report
@@ -49,7 +49,7 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: |
-          npm run install:all
+          npm run ci:all
       - name: Build all packages
         run: npm run build:all
       - name: Run e2e tests
@@ -89,7 +89,7 @@ jobs:
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
         run: |
-          npm run install:all
+          npm run ci:all
       - name: Build all packages
         run: npm run build:all
 

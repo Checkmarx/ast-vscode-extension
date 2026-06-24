@@ -8,7 +8,8 @@
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
   },
   "scripts": {
-    "install:all": "cd packages/core && npm install && cd ../checkmarx && npm install && cd ../project-ignite && npm install",
+    "install:all": "cd packages/core && npm ci && cd ../checkmarx && npm ci && cd ../project-ignite && npm ci",
+    "ci:all": "cd packages/core && npm ci && cd ../checkmarx && npm ci && cd ../project-ignite && npm ci",
     "clean": "cd packages/core && npm run clean && cd ../checkmarx && npm run clean && cd ../project-ignite && npm run clean",
     "compile": "npm run build:all",
     "build:core": "cd packages/core && npm run compile",

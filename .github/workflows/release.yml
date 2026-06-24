@@ -257,7 +257,7 @@ jobs:
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
-        run: npm run install:all
+        run: npm run ci:all
 
       - name: Get and install JS Wrapper if provided by user
         if: inputs.dev == true && inputs.jsTag != ''
