@@ -1154,7 +1154,9 @@
     "mocha": {
       "serialize-javascript": "7.0.5"
     },
-    "undici": "7.26.0",
+    "undici": "7.28.0",
+    "markdown-it": "14.2.0",
+    "js-yaml": "4.2.0",
     "brace-expansion": "1.1.15",
     "tmp": "0.2.7",
     "uuid": "14.0.0"
