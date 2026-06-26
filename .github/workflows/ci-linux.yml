@@ -15,9 +15,11 @@ jobs:
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
-            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
-            echo "Policy requires exactly ONE package manager"
-            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
             exit 1
           fi
       - name: Setup Node.js
@@ -52,9 +54,11 @@ jobs:
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
-            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
-            echo "Policy requires exactly ONE package manager"
-            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
             exit 1
           fi
       - name: Setup Node.js
@@ -100,9 +104,11 @@ jobs:
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
-            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
-            echo "Policy requires exactly ONE package manager"
-            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
             exit 1
           fi
       - name: Setup Node.js
