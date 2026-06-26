@@ -26,6 +26,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+
       - name: Set Up npm Authentication
         run: |
           echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
