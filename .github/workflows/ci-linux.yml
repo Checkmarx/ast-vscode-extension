@@ -12,6 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
+            echo "Policy requires exactly ONE package manager"
+            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
@@ -41,6 +49,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
+            echo "Policy requires exactly ONE package manager"
+            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
@@ -81,6 +97,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
+            echo "Policy requires exactly ONE package manager"
+            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:

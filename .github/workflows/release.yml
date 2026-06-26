@@ -101,6 +101,16 @@ jobs:
         with:
           fetch-depth: 0 # Full history needed for git log changelog generation
 
+      # STEP 0 ENFORCEMENT - Verify single lockfile
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found"
+            echo "Policy requires exactly ONE package manager"
+            echo "Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+
       # GIT CONFIGURATION
       - run: |
           git config user.name vscode-releases
