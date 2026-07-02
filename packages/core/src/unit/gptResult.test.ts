@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from "chai";
+import * as path from "path";
 import "./mocks/vscode-mock";
 import { GptResult } from "../models/gptResult";
 import * as vscode from "vscode";
-import * as path from "path";
 import { AstResult } from "../models/results";
 import { mockAstResult } from "./mocks/astResult-mock";
 
@@ -120,7 +120,7 @@ describe("GptResult", () => {
 
       const gptResult = new GptResult(mockAstResult as AstResult, undefined);
 
-      expect(gptResult.filename).to.include("/home/user/project");
+      expect(gptResult.filename).to.include(path.normalize("/home/user/project"));
     });
 
     it("should handle multiple workspace folders (use first)", () => {
@@ -135,7 +135,7 @@ describe("GptResult", () => {
 
       const gptResult = new GptResult(mockAstResult as AstResult, undefined);
 
-      expect(gptResult.filename).to.include("/first/workspace");
+      expect(gptResult.filename).to.include(path.normalize("/first/workspace"));
     });
 
     it("should handle no workspace gracefully", () => {
@@ -161,7 +161,7 @@ describe("GptResult", () => {
     });
 
     it("should handle malformed astResult", () => {
-      const malformed = { type: "unknown" } as any;
+      const malformed = { type: "unknown", label: "test_label" } as any;
 
       expect(() => new GptResult(malformed, undefined)).to.not.throw();
     });

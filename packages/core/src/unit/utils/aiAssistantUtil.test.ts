@@ -2,6 +2,7 @@
 import "../mocks/vscode-mock";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { mock } from "../mocks/vscode-mock";
 import * as vscode from "vscode";
 import {
   isCopilotInstalled,
@@ -32,7 +33,7 @@ describe("aiAssistantUtil", () => {
       displayName: "Checkmarx",
       extensionType: "checkmarx",
     });
-    getExtensionStub = sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+    getExtensionStub = sandbox.stub(mock.extensions, "getExtension").returns(undefined);
   });
 
   afterEach(() => {

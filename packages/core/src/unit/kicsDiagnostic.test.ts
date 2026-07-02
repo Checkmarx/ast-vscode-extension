@@ -1,3 +1,4 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as vscode from "vscode";

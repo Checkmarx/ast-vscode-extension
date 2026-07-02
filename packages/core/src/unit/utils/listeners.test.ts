@@ -2,6 +2,7 @@
 import "../mocks/vscode-mock";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { mock } from "../mocks/vscode-mock";
 import * as vscode from "vscode";
 import {
   getBranchListener,
@@ -198,7 +199,7 @@ describe("listeners", () => {
       };
 
       sandbox
-        .stub(vscode.extensions, "getExtension")
+        .stub(mock.extensions, "getExtension")
         .withArgs("vscode.git")
         .returns(mockGitExtension as any);
 
@@ -213,7 +214,7 @@ describe("listeners", () => {
     });
 
     it("logs warning when git extension is not found", async () => {
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+      sandbox.stub(mock.extensions, "getExtension").returns(undefined);
 
       await gitExtensionListener(mockContext, mockLogs);
 
@@ -229,7 +230,7 @@ describe("listeners", () => {
       };
 
       sandbox
-        .stub(vscode.extensions, "getExtension")
+        .stub(mock.extensions, "getExtension")
         .withArgs("vscode.git")
         .returns(mockGitExtension as any);
 

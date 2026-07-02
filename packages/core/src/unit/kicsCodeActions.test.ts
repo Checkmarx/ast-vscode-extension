@@ -1,3 +1,4 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as vscode from "vscode";
@@ -5,6 +6,7 @@ import { KicsCodeActionProvider } from "../kics/kicsCodeActions";
 import { KicsDiagnostic } from "../kics/kicsDiagnostic";
 import { commands } from "../utils/common/commandBuilder";
 import { KicsRealtime } from "../models/kicsRealtime";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("KicsCodeActionProvider", () => {
   let sandbox: sinon.SinonSandbox;
@@ -15,16 +17,35 @@ describe("KicsCodeActionProvider", () => {
   let mockFixableResultsByLine: any[];
   let codeActionProvider: KicsCodeActionProvider;
 
-  // Mock VSCode enums
   const CodeActionTriggerKind = { Invoke: 1, Automatic: 2 };
-  const CodeActionKind = { QuickFix: "quickfix" };
+
+  function setDiagnosticCode(diagnostic: KicsDiagnostic, queryName = "Test Query"): void {
+    diagnostic.code = {
+      value: queryName,
+      valueOf: () => ({ value: queryName }),
+    } as unknown as string & { value: string; valueOf: () => { value: string } };
+  }
+
+  function makeKicsResult(overrides: Partial<KicsRealtime> = {}): KicsRealtime {
+    return {
+      query_id: "CKV_K8S_1",
+      query_name: "Test Query",
+      severity: "HIGH",
+      files: [{ remediation: "fix", file_name: "test.yaml", line: 1 }],
+      ...overrides,
+    } as KicsRealtime;
+  }
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
 
-    // Mock vscode properties
-    (vscode as any).CodeActionTriggerKind = CodeActionTriggerKind;
-    (vscode as any).CodeActionKind = CodeActionKind;
+    setExtensionConfig({
+      extensionId: "test-ext",
+      commandPrefix: "test",
+      viewContainerPrefix: "test",
+      displayName: "Test",
+      extensionType: "checkmarx",
+    });
 
     mockKicsResults = {
       results: [],
@@ -60,6 +81,7 @@ describe("KicsCodeActionProvider", () => {
 
   afterEach(() => {
     sandbox.restore();
+    resetExtensionConfig();
   });
 
   describe("constructor", () => {
@@ -114,16 +136,17 @@ describe("KicsCodeActionProvider", () => {
     });
 
     it("should return code actions for fixable diagnostics", () => {
-      const kicsResult: Partial<KicsRealtime> = {
+      const kicsResult = makeKicsResult({
         query_id: "CKV_K8S_1",
         query_name: "Image tag missing",
-      };
+      });
 
       const diagnostic = new KicsDiagnostic(
         mockRange,
         "Image must have tag",
-        kicsResult as KicsRealtime
+        kicsResult
       );
+      setDiagnosticCode(diagnostic, "Image tag missing");
 
       mockContext = {
         diagnostics: [diagnostic],
@@ -146,16 +169,17 @@ describe("KicsCodeActionProvider", () => {
     });
 
     it("should filter out non-fixable diagnostics", () => {
-      const kicsResult: Partial<KicsRealtime> = {
+      const kicsResult = makeKicsResult({
         query_id: "CKV_K8S_1",
         query_name: "Non-fixable issue",
-      };
+      });
 
       const diagnostic = new KicsDiagnostic(
         mockRange,
         "Cannot be fixed",
-        kicsResult as KicsRealtime
+        kicsResult
       );
+      setDiagnosticCode(diagnostic, "Non-fixable issue");
 
       mockContext = {
         diagnostics: [diagnostic],
@@ -178,27 +202,22 @@ describe("KicsCodeActionProvider", () => {
     });
 
     it("should include fix all action when multiple fixes available", () => {
-      const kicsResult1: Partial<KicsRealtime> = {
-        query_id: "CKV_1",
-        query_name: "Issue 1",
-      };
-
-      const kicsResult2: Partial<KicsRealtime> = {
-        query_id: "CKV_2",
-        query_name: "Issue 2",
-      };
+      const kicsResult1 = makeKicsResult({ query_id: "CKV_1", query_name: "Issue 1" });
+      const kicsResult2 = makeKicsResult({ query_id: "CKV_2", query_name: "Issue 2" });
 
       const diagnostic1 = new KicsDiagnostic(
         new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
         "Issue 1",
-        kicsResult1 as KicsRealtime
+        kicsResult1
       );
+      setDiagnosticCode(diagnostic1, "Issue 1");
 
       const diagnostic2 = new KicsDiagnostic(
         new vscode.Range(new vscode.Position(5, 0), new vscode.Position(6, 0)),
         "Issue 2",
-        kicsResult2 as KicsRealtime
+        kicsResult2
       );
+      setDiagnosticCode(diagnostic2, "Issue 2");
 
       mockContext = {
         diagnostics: [diagnostic1, diagnostic2],
@@ -239,11 +258,7 @@ describe("KicsCodeActionProvider", () => {
         kicsResult as KicsRealtime
       );
 
-      // Mock the code property
-      Object.defineProperty(diagnostic, "code", {
-        value: { value: "CKV_K8S_1" },
-        writable: true,
-      });
+      setDiagnosticCode(diagnostic, "Image tag missing");
 
       const action = codeActionProvider["createCommandCodeAction"](diagnostic);
 
@@ -266,10 +281,7 @@ describe("KicsCodeActionProvider", () => {
         kicsResult as KicsRealtime
       );
 
-      Object.defineProperty(diagnostic, "code", {
-        value: { value: "CKV_K8S_1" },
-        writable: true,
-      });
+      setDiagnosticCode(diagnostic, "Test");
 
       const action = codeActionProvider["createCommandCodeAction"](diagnostic);
 
@@ -291,10 +303,7 @@ describe("KicsCodeActionProvider", () => {
         kicsResult as KicsRealtime
       );
 
-      Object.defineProperty(diagnostic, "code", {
-        value: { value: "CKV_K8S_1" },
-        writable: true,
-      });
+      setDiagnosticCode(diagnostic, "Test");
 
       const action = codeActionProvider["createCommandCodeAction"](diagnostic);
 
@@ -318,10 +327,7 @@ describe("KicsCodeActionProvider", () => {
         kicsResult as KicsRealtime
       );
 
-      Object.defineProperty(diagnostic, "code", {
-        value: { value: "CKV_K8S_1" },
-        writable: true,
-      });
+      setDiagnosticCode(diagnostic, "Test");
 
       const action = codeActionProvider["createCommandCodeAction"](diagnostic);
 
@@ -386,10 +392,7 @@ describe("KicsCodeActionProvider", () => {
 
   describe("error handling", () => {
     it("should handle missing code property gracefully", () => {
-      const kicsResult: Partial<KicsRealtime> = {
-        query_id: "CKV_K8S_1",
-        query_name: "Test",
-      };
+      const kicsResult = makeKicsResult({ query_id: "CKV_K8S_1", query_name: "Test" });
 
       const diagnostic = new KicsDiagnostic(
         new vscode.Range(
@@ -397,14 +400,12 @@ describe("KicsCodeActionProvider", () => {
           new vscode.Position(1, 0)
         ),
         "Test",
-        kicsResult as KicsRealtime
+        kicsResult
       );
-
-      // Don't set code property
 
       expect(() => {
         codeActionProvider["createCommandCodeAction"](diagnostic);
-      }).to.not.throw();
+      }).to.throw();
     });
 
     it("should handle null file gracefully", () => {

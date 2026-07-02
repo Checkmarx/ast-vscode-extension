@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "../mocks/vscode-mock";
+import { mock } from "../mocks/vscode-mock";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { AuthService } from "../../services/authService";
 import { constants } from "../../utils/common/constants";
+import { setExtensionConfig, resetExtensionConfig } from "../../config/extensionConfig";
+import * as cxModule from "../../cx";
 import axios from "axios";
 
 describe("AuthService", () => {
@@ -15,6 +18,14 @@ describe("AuthService", () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+
+    setExtensionConfig({
+      extensionId: "ast-results",
+      commandPrefix: "ast-results",
+      viewContainerPrefix: "ast",
+      displayName: "Checkmarx",
+      extensionType: "checkmarx",
+    });
 
     mockContext = {
       subscriptions: [],
@@ -32,7 +43,7 @@ describe("AuthService", () => {
     };
 
     axiosStub = sandbox.stub(axios, "request");
-    sandbox.stub(vscode.env, "openExternal").resolves(true);
+    sandbox.stub(mock.env, "openExternal").resolves(true);
     sandbox.stub(vscode.window, "showInformationMessage").resolves();
     sandbox.stub(vscode.commands, "executeCommand" as any).resolves();
 
@@ -43,6 +54,7 @@ describe("AuthService", () => {
 
   afterEach(() => {
     sandbox.restore();
+    resetExtensionConfig();
     (AuthService as any).instance = undefined;
   });
 
@@ -76,7 +88,7 @@ describe("AuthService", () => {
       const mockCx = {
         authValidate: sandbox.stub().resolves(true),
       };
-      sandbox.stub(authService as any, "getCx" as any).returns(mockCx);
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
 
       const result = await authService.validateApiKey("valid-key");
 
@@ -88,7 +100,7 @@ describe("AuthService", () => {
       const mockCx = {
         authValidate: sandbox.stub().resolves(false),
       };
-      sandbox.stub(authService as any, "getCx" as any).returns(mockCx);
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
 
       const result = await authService.validateApiKey("invalid-key");
 
@@ -97,7 +109,11 @@ describe("AuthService", () => {
     });
 
     it("should return false on error", async () => {
-      sandbox.stub(mockContext.secrets, "store").rejects(new Error("Storage error"));
+      const mockCx = {
+        authValidate: sandbox.stub().resolves(true),
+      };
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
+      mockContext.secrets.store.rejects(new Error("Storage error"));
 
       const result = await authService.validateApiKey("key");
 
@@ -105,6 +121,11 @@ describe("AuthService", () => {
     });
 
     it("should handle empty API key", async () => {
+      const mockCx = {
+        authValidate: sandbox.stub().resolves(false),
+      };
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
+
       const result = await authService.validateApiKey("");
       expect(result).to.be.false;
     });
@@ -344,7 +365,7 @@ describe("AuthService", () => {
         authValidate: sandbox.stub().resolves(true),
         isScanEnabled: sandbox.stub().resolves(true),
       };
-      sandbox.stub(authService as any, "getCx" as any).returns(mockCx);
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
 
       const result = await authService.validateAndUpdateState();
 
@@ -366,7 +387,7 @@ describe("AuthService", () => {
         authValidate: sandbox.stub().resolves(true),
         isScanEnabled: sandbox.stub().resolves(true),
       };
-      sandbox.stub(authService as any, "getCx" as any).returns(mockCx);
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
       sandbox.stub(authService, "validateAndUpdateState").resolves(true);
 
       await authService.saveToken(mockContext, "new-token");
@@ -379,7 +400,7 @@ describe("AuthService", () => {
         authValidate: sandbox.stub().resolves(true),
         isScanEnabled: sandbox.stub().resolves(true),
       };
-      sandbox.stub(authService as any, "getCx" as any).returns(mockCx);
+      sandbox.stub(cxModule, "getCx").returns(mockCx as any);
       sandbox.stub(authService, "validateAndUpdateState").resolves(true);
 
       await authService.saveToken(mockContext, "token");

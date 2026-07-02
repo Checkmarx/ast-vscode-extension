@@ -177,14 +177,10 @@ describe("Cx (CX Platform Client) Tests", () => {
 
     it("should handle multiple configuration keys", () => {
       const configStub = sandbox.stub(vscode.workspace, "getConfiguration");
-      const mockConfig = {
-        get: sandbox
-          .stub()
-          .withArgs(constants.gptSettingsKey)
-          .returns("token-value")
-          .withArgs(constants.gptEngineKey)
-          .returns("engine-value"),
-      };
+      const getStub = sandbox.stub();
+      getStub.withArgs(constants.gptSettingsKey).returns("token-value");
+      getStub.withArgs(constants.gptEngineKey).returns("engine-value");
+      const mockConfig = { get: getStub };
       configStub.returns(mockConfig as any);
 
       const token = mockConfig.get(constants.gptSettingsKey);

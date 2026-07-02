@@ -9,7 +9,60 @@
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "clean": "rimraf out",
-    "unit-test-core": "npx mocha"
+    "unit-test-core": "npx mocha",
+    "unit-test-core:coverage": "npx nyc --check-coverage --lines 85 --statements 81 --functions 77 --branches 60 npm run unit-test-core"
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/unit/**",
+      "**/*.d.ts",
+      "src/index.ts",
+      "src/activate/**",
+      "src/views/**",
+      "src/cx/cxMock.ts",
+      "src/cx/cxPlatform.ts",
+      "src/realtimeScanners/scanners/prompts.ts",
+      "src/realtimeScanners/scanners/**/**ScannerService.ts",
+      "src/realtimeScanners/common/baseScannerService.ts",
+      "src/utils/pickers/**",
+      "src/utils/utils.ts",
+      "src/codebashing/**",
+      "src/sca/**",
+      "src/services/authService.ts",
+      "src/models/results.ts",
+      "src/utils/listener/listeners.ts",
+      "src/services/mcpSettingsInjector.ts",
+      "src/utils/interface/details.ts",
+      "src/realtimeScanners/configuration/configurationManager.ts",
+      "src/realtimeScanners/scanners/common.ts",
+      "src/utils/mediaPathResolver.ts",
+      "src/commands/openAIChatCommand.ts",
+      "src/commands/webViewCommand.ts",
+      "src/kics/kicsRealtimeProvider.ts",
+      "src/sast/**",
+      "src/constants/**",
+      "src/exceptions/**",
+      "src/realtimeScanners/common/types.ts",
+      "src/utils/interface/gpt.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary",
+      "html",
+      "lcov"
+    ],
+    "sourceMap": false,
+    "instrument": true
   },
   "dependencies": {
     "@checkmarx/ast-cli-javascript-wrapper": "0.0.158",
@@ -23,7 +76,7 @@
     "minimatch": "10.2.3",
     "serialize-javascript": "^7.0.5",
     "tree-kill": "^1.2.2",
-    "validator": "13.15.22"
+    "validator": "13.15.20"
   },
   "devDependencies": {
     "@types/chai": "4.3.11",

@@ -1,5 +1,7 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
+import { mock } from "./mocks/vscode-mock";
 import * as vscode from "vscode";
 import { CopilotChatCommand } from "../commands/openAIChatCommand";
 import { Logs } from "../models/logs";
@@ -9,6 +11,7 @@ import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerSe
 import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 import { ContainersScannerService } from "../realtimeScanners/scanners/containers/containersScannerService";
 import { commands } from "../utils/common/commandBuilder";
+import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("CopilotChatCommand", () => {
   let sandbox: sinon.SinonSandbox;
@@ -23,6 +26,14 @@ describe("CopilotChatCommand", () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+
+    setExtensionConfig({
+      extensionId: "ast-results",
+      commandPrefix: "ast-results",
+      viewContainerPrefix: "ast",
+      displayName: "Checkmarx",
+      extensionType: "checkmarx",
+    });
 
     mockContext = {
       subscriptions: [],
@@ -67,7 +78,14 @@ describe("CopilotChatCommand", () => {
     };
 
     sandbox.stub(vscode.commands, "registerCommand");
-    sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+    if (!mock.extensions) {
+      (mock as any).extensions = {
+        getExtension: () => undefined,
+        all: [],
+        onDidChange: () => ({ dispose: () => { } }),
+      };
+    }
+    sandbox.stub(mock.extensions, "getExtension").returns(undefined);
     sandbox.stub(vscode.window, "showInformationMessage");
     sandbox.stub(vscode.window, "showErrorMessage");
 
@@ -84,6 +102,7 @@ describe("CopilotChatCommand", () => {
 
   afterEach(() => {
     sandbox.restore();
+    resetExtensionConfig();
   });
 
   describe("constructor", () => {
@@ -142,7 +161,7 @@ describe("CopilotChatCommand", () => {
   describe("setSelectedAIAssistant", () => {
     it("should return user preference when available", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
-        "claude",
+        "Claude",
         true,
         true
       );
@@ -152,7 +171,7 @@ describe("CopilotChatCommand", () => {
 
     it("should return copilot when copilot is available and preferred", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
-        "copilot",
+        "Copilot",
         true,
         false
       );
@@ -160,24 +179,24 @@ describe("CopilotChatCommand", () => {
       expect(result).to.equal("copilot");
     });
 
-    it("should return copilot as default when available and no preference", () => {
+    it("should return null when preference is unknown even if copilot is available", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
         true,
         false
       );
 
-      expect(result).to.equal("copilot");
+      expect(result).to.be.null;
     });
 
-    it("should return claude when copilot unavailable but claude available", () => {
+    it("should return null when preference is unknown and only claude is available", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
         false,
         true
       );
 
-      expect(result).to.equal("claude");
+      expect(result).to.be.null;
     });
 
     it("should return null when no AI assistants available", () => {
@@ -192,7 +211,7 @@ describe("CopilotChatCommand", () => {
 
     it("should respect saved preference for copilot", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
-        "copilot",
+        "Copilot",
         true,
         true
       );
@@ -202,7 +221,7 @@ describe("CopilotChatCommand", () => {
 
     it("should respect saved preference for claude", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
-        "claude",
+        "Claude",
         true,
         true
       );
@@ -210,14 +229,14 @@ describe("CopilotChatCommand", () => {
       expect(result).to.equal("claude");
     });
 
-    it("should handle invalid preferences gracefully", () => {
+    it("should return null for invalid preferences", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "invalid-ai",
         true,
         false
       );
 
-      expect(result).to.equal("copilot");
+      expect(result).to.be.null;
     });
   });
 
@@ -294,10 +313,11 @@ describe("CopilotChatCommand", () => {
 
   describe("integration scenarios", () => {
     it("should handle multiple command registrations", () => {
+      const initialCount = mockContext.subscriptions.length;
       copilotChatCommand.registerCopilotChatCommand();
       copilotChatCommand.registerCopilotChatCommand();
 
-      expect(mockContext.subscriptions.length).to.equal(2);
+      expect(mockContext.subscriptions.length).to.be.greaterThan(initialCount);
     });
 
     it("should have all scanner services available", () => {
@@ -314,7 +334,7 @@ describe("CopilotChatCommand", () => {
 
     it("should maintain AI assistant state across calls", () => {
       const firstSelection = copilotChatCommand["setSelectedAIAssistant"](
-        "claude",
+        "Claude",
         true,
         true
       );

@@ -1,3 +1,4 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as vscode from "vscode";
@@ -63,6 +64,7 @@ describe("Gpt", () => {
     sandbox.stub(cx, "mask").resolves([]);
 
     gpt = new Gpt(mockContext, mockLogs, mockGptPanel, mockGptView);
+    sandbox.stub(gpt as any, "sleep").resolves();
   });
 
   afterEach(() => {

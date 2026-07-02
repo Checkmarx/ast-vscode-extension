@@ -71,7 +71,7 @@ describe("GroupByCommand Tests", () => {
     it("should return array of GroupBy values in fixed order", () => {
       const order = (groupByCommand as any).getFixedGroupOrder();
       expect(order).to.be.an("array");
-      expect(order.length).to.equal(8);
+      expect(order.length).to.equal(9);
     });
 
     it("should have typeLabel as first element", () => {
@@ -79,9 +79,9 @@ describe("GroupByCommand Tests", () => {
       expect(order[0]).to.equal(GroupBy.typeLabel);
     });
 
-    it("should have severity as second element", () => {
+    it("should have scaType as second element", () => {
       const order = (groupByCommand as any).getFixedGroupOrder();
-      expect(order[1]).to.equal(GroupBy.severity);
+      expect(order[1]).to.equal(GroupBy.scaType);
     });
 
     it("should include all GroupBy types", () => {

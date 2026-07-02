@@ -1,8 +1,7 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
-import * as fs from "fs";
 import * as path from "path";
-import * as os from "os";
 import * as vscode from "vscode";
 import {
   registerMcpSettingsInjector,
@@ -15,12 +14,46 @@ import { cx } from "../cx";
 import { getExtensionType, EXTENSION_TYPE, setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 import * as aiAssistantUtil from "../utils/aiAssistantUtil";
 
+const validMockJwt =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.c2lnbmF0dXJl";
+
 describe("MCP Settings Injector", () => {
   let sandbox: sinon.SinonSandbox;
   let mockContext: any;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const fs: any = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const osAny: any = require("os");
+  let osOriginals: { homedir: () => string };
+  let fsOriginals: Record<string, unknown>;
+  let fsStubs: {
+    existsSync: sinon.SinonStub;
+    readFileSync: sinon.SinonStub;
+    writeFileSync: sinon.SinonStub;
+    mkdirSync: sinon.SinonStub;
+  };
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    osOriginals = { homedir: osAny.homedir };
+    osAny.homedir = () => "/home/user";
+
+    fsOriginals = {
+      existsSync: fs.existsSync,
+      readFileSync: fs.readFileSync,
+      writeFileSync: fs.writeFileSync,
+      mkdirSync: fs.mkdirSync,
+    };
+    fsStubs = {
+      existsSync: sandbox.stub().returns(false),
+      readFileSync: sandbox.stub().returns("{}"),
+      writeFileSync: sandbox.stub(),
+      mkdirSync: sandbox.stub(),
+    };
+    fs.existsSync = fsStubs.existsSync;
+    fs.readFileSync = fsStubs.readFileSync;
+    fs.writeFileSync = fsStubs.writeFileSync;
+    fs.mkdirSync = fsStubs.mkdirSync;
 
     // Setup default extension config for tests
     setExtensionConfig({
@@ -39,12 +72,6 @@ describe("MCP Settings Injector", () => {
       },
     };
 
-    // Mock file system operations
-    sandbox.stub(fs, "existsSync").returns(false);
-    sandbox.stub(fs, "readFileSync").returns("{}");
-    sandbox.stub(fs, "writeFileSync").returns(undefined);
-    sandbox.stub(fs, "mkdirSync").returns(undefined);
-
     // Mock vscode operations
     sandbox.stub(vscode.window, "showErrorMessage");
     sandbox.stub(vscode.window, "showInformationMessage");
@@ -62,12 +89,15 @@ describe("MCP Settings Injector", () => {
     sandbox.stub(cx, "isAiMcpServerEnabled").resolves(true);
     sandbox.stub(aiAssistantUtil, "isCopilotInstalled").returns(false);
     sandbox.stub(aiAssistantUtil, "isClaudeInstalled").returns(false);
-
-    sandbox.stub(os, "homedir").returns("/home/user");
   });
 
   afterEach(() => {
     sandbox.restore();
+    osAny.homedir = osOriginals.homedir;
+    fs.existsSync = fsOriginals.existsSync;
+    fs.readFileSync = fsOriginals.readFileSync;
+    fs.writeFileSync = fsOriginals.writeFileSync;
+    fs.mkdirSync = fsOriginals.mkdirSync;
     resetExtensionConfig();
   });
 
@@ -221,7 +251,9 @@ describe("MCP Settings Injector", () => {
     });
 
     it("should gracefully handle errors", async () => {
-      (utils.isIDE as sinon.SinonStub).returns(true);
+      (utils.isIDE as sinon.SinonStub).withArgs(constants.vsCodeAgentOrginalName).returns(false);
+      (utils.isIDE as sinon.SinonStub).withArgs(constants.cursorAgent).returns(true);
+      (fs.existsSync as sinon.SinonStub).returns(true);
       (fs.readFileSync as sinon.SinonStub).throws(new Error("File read error"));
 
       await uninstallMcp();
@@ -244,14 +276,11 @@ describe("MCP Settings Injector", () => {
     });
 
     it("should construct MCP server configuration from valid API key", async () => {
-      // Create a mock JWT token with proper structure
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.signature";
-
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["vscode-settings"]);
       (fs.existsSync as sinon.SinonStub).returns(false);
 
-      await initializeMcpConfiguration(mockToken);
+      await initializeMcpConfiguration(validMockJwt);
 
-      // Verify that configuration attempt was made
       expect(
         (vscode.window.showInformationMessage as sinon.SinonStub).called ||
         (vscode.window.showErrorMessage as sinon.SinonStub).called
@@ -259,8 +288,8 @@ describe("MCP Settings Injector", () => {
     });
 
     it("should write to VSCode config when Copilot is installed", async () => {
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["vscode-settings"]);
       (utils.isIDE as sinon.SinonStub).withArgs(constants.vsCodeAgentOrginalName).returns(true);
-      (aiAssistantUtil.isCopilotInstalled as sinon.SinonStub).returns(true);
 
       const mockConfig = {
         get: sandbox.stub().returns({}),
@@ -268,43 +297,35 @@ describe("MCP Settings Injector", () => {
       };
       (vscode.workspace.getConfiguration as sinon.SinonStub).returns(mockConfig);
 
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.signature";
-      await initializeMcpConfiguration(mockToken);
+      await initializeMcpConfiguration(validMockJwt);
 
-      // Verify VSCode config update was attempted
       expect(mockConfig.update.called).to.be.true;
     });
 
     it("should handle different IDE types correctly", async () => {
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.signature";
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["ide-native-json"]);
 
-      // Test with Cursor IDE
       (utils.isIDE as sinon.SinonStub).withArgs(constants.cursorAgent).returns(true);
       (utils.isIDE as sinon.SinonStub).withArgs(constants.vsCodeAgentOrginalName).returns(false);
 
-      await initializeMcpConfiguration(mockToken);
+      await initializeMcpConfiguration(validMockJwt);
 
       expect((fs.mkdirSync as sinon.SinonStub).called).to.be.true;
     });
 
     it("should handle issuer URL extraction for Checkmarx domains", async () => {
-      // This test verifies that the code correctly extracts the AST domain from IAM domain
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.signature";
-
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["ide-native-json"]);
       (fs.existsSync as sinon.SinonStub).returns(false);
+      (utils.isIDE as sinon.SinonStub).withArgs(constants.cursorAgent).returns(true);
 
-      await initializeMcpConfiguration(mockToken);
+      await initializeMcpConfiguration(validMockJwt);
 
-      // Verify that file write occurred with expected configuration
-      expect((fs.writeFileSync as sinon.SinonStub).called ||
-             (vscode.workspace.getConfiguration as sinon.SinonStub).called).to.be.true;
+      expect((fs.writeFileSync as sinon.SinonStub).called).to.be.true;
     });
 
     it("should show success message when configuration is saved", async () => {
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["vscode-settings"]);
       (utils.isIDE as sinon.SinonStub).withArgs(constants.vsCodeAgentOrginalName).returns(true);
-      (aiAssistantUtil.isCopilotInstalled as sinon.SinonStub).returns(false);
-
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.signature";
 
       const mockConfig = {
         get: sandbox.stub().returns({}),
@@ -312,7 +333,7 @@ describe("MCP Settings Injector", () => {
       };
       (vscode.workspace.getConfiguration as sinon.SinonStub).returns(mockConfig);
 
-      await initializeMcpConfiguration(mockToken);
+      await initializeMcpConfiguration(validMockJwt);
 
       // Should show success message for non-Copilot VSCode
       expect(
@@ -336,7 +357,9 @@ describe("MCP Settings Injector", () => {
     });
 
     it("should handle missing home directory gracefully", async () => {
-      (os.homedir as sinon.SinonStub).throws(new Error("No home dir"));
+      osAny.homedir = () => {
+        throw new Error("No home dir");
+      };
 
       expect(() => {
         initializeMcpConfiguration("mock-token");

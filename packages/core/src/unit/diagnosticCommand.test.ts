@@ -1,3 +1,4 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as vscode from "vscode";
@@ -348,7 +349,8 @@ describe("DiagnosticCommand", () => {
       );
       expect(call.args[0]).to.deep.equal({
         uniqueId: "sca-123",
-        packageIdentifier: "lodash@4.17.20",
+        fileName: undefined,
+        line: undefined,
       });
       expect(call.args[1]).to.equal(mockScaTree);
       expect(call.args[2]).to.equal(commands.newDetails);

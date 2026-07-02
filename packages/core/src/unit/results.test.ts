@@ -1,3 +1,4 @@
+import "./mocks/vscode-mock";
 import { expect } from "chai";
 import { AstResult } from "../models/results";
 import * as vscode from "vscode";
@@ -206,7 +207,7 @@ describe("AstResult", () => {
       });
       const result = new AstResult(mockData);
 
-      expect(result.label).to.include("lodash@4.17.20");
+      expect(result.queryName).to.include("lodash@4.17.20");
     });
   });
 
@@ -223,7 +224,7 @@ describe("AstResult", () => {
       const mockData = createMockKicsResult();
       const result = new AstResult(mockData);
 
-      expect(result.fileName).to.include("terraform");
+      expect(result.kicsNode?.data.filename).to.include("terraform");
     });
   });
 
@@ -484,8 +485,8 @@ describe("AstResult", () => {
 
       expect(treeIcon).to.have.property("light");
       expect(treeIcon).to.have.property("dark");
-      expect(treeIcon.light).to.be.instanceof(vscode.Uri);
-      expect(treeIcon.dark).to.be.instanceof(vscode.Uri);
+      expect(treeIcon.light).to.have.property("fsPath");
+      expect(treeIcon.dark).to.have.property("fsPath");
     });
 
     it("should return SCA-related icon paths", () => {

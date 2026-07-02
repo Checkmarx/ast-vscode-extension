@@ -634,7 +634,7 @@ describe("IgnoreFileManager", () => {
     it("updates line when rule present at a different line", () => {
       setIgnoreData({
         "RuleX:9:app.py": {
-          files: [{ path: "app.py", active: true, line: 3 }],
+          files: [{ path: "app.py", active: true, line: 3, problematicLine: "const x = 1;" }],
           type: constants.ascaRealtimeScannerEngineName,
           PackageName: "RuleX",
           ruleId: 9,
@@ -642,7 +642,7 @@ describe("IgnoreFileManager", () => {
       });
       (manager as any).loadIgnoreData();
       const changed = manager.removeMissingAsca(
-        [{ ruleName: "RuleX", ruleId: 9, line: 12 }] as any,
+        [{ ruleName: "RuleX", ruleId: 9, line: 12, problematicLine: "const x = 1;" }] as any,
         `${WORKSPACE}/app.py`
       );
       expect(changed).to.be.true;
