@@ -909,7 +909,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
             isIDE(constants.cursorAgent) ? constants.cursorAgent :
-                (isIDE(constants.windsurfAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? "Cascade" : constants.vsCodeAgent;
+                (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? "Cascade" : constants.vsCodeAgent;
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
@@ -951,9 +951,11 @@ export class Cx implements CxPlatform {
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
-                    : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent))
+                    : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
                         ? constants.windsurfAgent
-                        : constants.vsCodeAgent;;
+                        : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent))
+                            ? constants.devinAgent
+                            : constants.vsCodeAgent;;
 
             // Build subType with fix outcome details
             const subTypeData = {
