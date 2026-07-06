@@ -391,9 +391,9 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
               // Re-authentication succeeded: Always trigger MCP config and show Welcome page
               const isAiEnabled = await cx.isAiMcpServerEnabled();
               if (isAiEnabled && hasAnySupportedAiExtension()) {
-                await initializeMcpConfiguration(token);
+                await initializeMcpConfiguration(token, this.context);
               } else {
-                await uninstallMcp();
+                await uninstallMcp(this.context, false);
               }
               WelcomeWebview.show(this.context, isAiEnabled);
               return;
@@ -430,7 +430,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
       const authService = AuthService.getInstance(this.context, this.logs);
       await authService.logout();
       vscode.window.showInformationMessage("Logged out successfully.");
-      uninstallMcp();
+      await uninstallMcp(this.context, true);
       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
       await vscode.commands.executeCommand(commands.refreshScaStatusBar);
       await vscode.commands.executeCommand(commands.refreshKicsStatusBar);

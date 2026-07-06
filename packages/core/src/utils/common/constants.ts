@@ -28,6 +28,10 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastOAuthTenant' : 'lastOAuthTenantDevAssist';
   },
+  getMcpConfigSourceKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'mcpConfigSource' : 'mcpConfigSourceDevAssist';
+  },
   getAiAssistantConfigSection: (): string => {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'Checkmarx' : 'checkmarxDeveloperAssist';
@@ -167,6 +171,8 @@ export const constants = {
   cursorAgent: "Cursor",
   windsurfAgent: "Windsurf",
   windsurfNextAgent: "Windsurf - Next",
+  devinAgent: "Devin",
+  devinNextAgent: "Devin - Next",
   kiroAgent: "Kiro",
   claudeAgent: "Claude",
   cxOne: "checkmarxOne",
