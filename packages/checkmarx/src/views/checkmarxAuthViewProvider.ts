@@ -22,14 +22,16 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
   private webviewView?: vscode.WebviewView;
   private readonly context: vscode.ExtensionContext;
   private readonly logs: Logs;
+  private readonly webViewCommand: WebViewCommand;
   private isAuthenticated: boolean = false;
   private isUpdating: boolean = false;
   private pendingUpdate: boolean = false;
   private isFirstLoad: boolean = true;
 
-  constructor(context: vscode.ExtensionContext, _webViewCommand: WebViewCommand, logs: Logs) {
+    constructor(context: vscode.ExtensionContext, webViewCommand: WebViewCommand, logs: Logs) {
     this.context = context;
     this.logs = logs;
+    this.webViewCommand = webViewCommand;
   }
 
   public resolveWebviewView(
@@ -429,6 +431,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
     if (selection === "Yes") {
       const authService = AuthService.getInstance(this.context, this.logs);
       await authService.logout();
+      this.webViewCommand.removedetailsPanel();
       vscode.window.showInformationMessage("Logged out successfully.");
       await uninstallMcp(this.context, true);
       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
