@@ -41,7 +41,10 @@ jobs:
         run: |
           echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> packages/core/.npmrc
-          echo "@checkmarx:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "registry=https://npm.echohq.com/" > ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "@checkmarx:registry=https://npm.pkg.github.com" >> ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
 
       - name: Determine Version
@@ -83,8 +86,6 @@ jobs:
           sed -i "s|\"@checkmarx/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarx/ast-cli-javascript-wrapper\": \"${VERSION}\"|" packages/core/package.json
 
       - name: Install Dependencies and Update package-lock.json
-        env:
-          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: |
           npm run install:all
 

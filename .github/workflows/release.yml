@@ -125,13 +125,16 @@ jobs:
           node-version: 22.11.0
           registry-url: https://npm.echohq.com/
 
-      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
-      - name: Authenticate with GitHub package registry
+      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY AND ECHO REGISTRY
+      - name: Authenticate with npm registries
         env:
           GH_TOKEN: ${{ github.token }}
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: |
           npm config set @checkmarx:registry https://npm.pkg.github.com
           npm config set //npm.pkg.github.com/:_authToken "${GH_TOKEN}"
+          npm config set //npm.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
+          npm config set //packages.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
 
       # BUMP ROOT VERSION (source of truth for release tag)
       - name: Generate Tag name from root package.json
@@ -269,8 +272,6 @@ jobs:
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
-        env:
-          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: npm run ci:all
 
       - name: Get and install JS Wrapper if provided by user
