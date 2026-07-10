@@ -83,6 +83,8 @@ jobs:
           sed -i "s|\"@checkmarx/ast-cli-javascript-wrapper\": \"[^\"]*\"|\"@checkmarx/ast-cli-javascript-wrapper\": \"${VERSION}\"|" packages/core/package.json
 
       - name: Install Dependencies and Update package-lock.json
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: |
           npm run install:all
 

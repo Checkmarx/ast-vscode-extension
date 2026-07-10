@@ -269,6 +269,8 @@ jobs:
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: npm run ci:all
 
       - name: Get and install JS Wrapper if provided by user

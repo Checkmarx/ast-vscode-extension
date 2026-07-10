@@ -29,6 +29,9 @@ jobs:
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          NPM_CONFIG_LOGLEVEL: http
         run: |
           npm run ci:all
       - name: Run core unit tests with coverage
@@ -68,6 +71,9 @@ jobs:
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          NPM_CONFIG_LOGLEVEL: http
         run: |
           npm run ci:all
       - name: Build all packages
@@ -118,6 +124,9 @@ jobs:
       - name: Authenticate with GitHub package registry
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
       - name: Install dependencies
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          NPM_CONFIG_LOGLEVEL: http
         run: |
           npm run ci:all
       - name: Build all packages
