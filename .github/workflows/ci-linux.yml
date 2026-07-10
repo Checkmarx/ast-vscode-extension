@@ -4,6 +4,7 @@ on: [pull_request]
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   # Test the shared core package independently
@@ -31,7 +32,7 @@ jobs:
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
           echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
           echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http
@@ -76,7 +77,7 @@ jobs:
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
           echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
           echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http
@@ -132,7 +133,7 @@ jobs:
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
           echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
           echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http

@@ -21,6 +21,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      packages: read
 
     steps:
       - name: Checkout Repository
@@ -40,12 +41,12 @@ jobs:
       - name: Set Up npm Authentication
         run: |
           echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> packages/core/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> packages/core/.npmrc
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
           echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
           echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
           echo "@checkmarx:registry=https://npm.pkg.github.com" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
 
       - name: Determine Version
         id: get_version
