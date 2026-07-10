@@ -30,12 +30,6 @@ interface McpServer {
 	toolChoice?: "any" | "required"
 }
 
-interface OAuthMcpServer {
-	url: string;
-	serverUrl?: string;
-	type?: string;
-}
-
 interface McpConfig {
 	servers?: Record<string, McpServer>;
 	mcpServers?: Record<string, McpServer>;
@@ -101,13 +95,16 @@ function getCxOrigin(): string {
 }
 
 function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>; mcpServers?: Record<string, any> } {
-	// VS Code uses 'servers' key with 'checkmarx' name
+	// VS Code uses 'servers' key with dynamic server name
 	if (isIDE(constants.vsCodeAgentOrginalName)) {
 		return {
 			servers: {
-				checkmarx: {
+				[getCheckmarxMcpServerName()]: {
+					type: "http",
 					url: url,
-					type: "http"
+					oauth: {
+						clientId: "cx-mcp-client"
+					}
 				}
 			}
 		};
@@ -117,7 +114,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 	if (isIDE(constants.cursorAgent)) {
 		return {
 			mcpServers: {
-				Checkmarx: {
+				[getCheckmarxMcpServerName()]: {
 					url: url,
 					auth: {
 						CLIENT_ID: "cx-mcp-client"
@@ -135,7 +132,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 		isIDE(constants.kiroAgent)) {
 		return {
 			mcpServers: {
-				Checkmarx: {
+				[getCheckmarxMcpServerName()]: {
 					url: url
 				}
 			}
@@ -146,7 +143,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 	if (isIDE(constants.claudeAgent)) {
 		return {
 			mcpServers: {
-				Checkmarx: {
+				[getCheckmarxMcpServerName()]: {
 					type: "http",
 					url: url
 				}
@@ -157,7 +154,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 	// Default fallback
 	return {
 		mcpServers: {
-			Checkmarx: {
+			[getCheckmarxMcpServerName()]: {
 				url: url
 			}
 		}
@@ -454,7 +451,7 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 					const updatedMcp = {
 						servers: {
 							...(existingMcp.servers || {}),
-							[getCheckmarxMcpServerName()]: oauthTemplate.servers?.checkmarx
+							[getCheckmarxMcpServerName()]: oauthTemplate.servers?.[getCheckmarxMcpServerName()]
 						}
 					};
 
@@ -587,7 +584,7 @@ async function updateMcpJsonFileOAuth(oauthUrl: string): Promise<void> {
 		}
 		// Clear old entry to avoid merging with old APIKey config
 		delete mcpConfig.servers[getCheckmarxMcpServerName()];
-		mcpConfig.servers[getCheckmarxMcpServerName()] = oauthTemplate.servers?.checkmarx as any;
+		mcpConfig.servers[getCheckmarxMcpServerName()] = oauthTemplate.servers?.[getCheckmarxMcpServerName()] as any;
 	}
 	// For other IDEs: update 'mcpServers' key
 	else {
@@ -596,7 +593,7 @@ async function updateMcpJsonFileOAuth(oauthUrl: string): Promise<void> {
 		}
 		// Clear old entry to avoid merging with old APIKey config
 		delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
-		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = oauthTemplate.mcpServers?.Checkmarx as any;
+		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = oauthTemplate.mcpServers?.[getCheckmarxMcpServerName()] as any;
 	}
 
 	try {
