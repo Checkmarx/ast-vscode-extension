@@ -6,6 +6,7 @@ import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathRes
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
 import { isIDE } from "@checkmarx/vscode-core/out/utils/utils";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
+import { getMcpOAuthSetupMessage } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
 
 type WelcomeAiBannerScenario = "ok" | "switched" | "multiple" | "none";
 
@@ -17,8 +18,8 @@ interface WelcomeAiBannerState {
 
 export class WelcomeWebview {
   private static getWelcomeAiBannerState(): WelcomeAiBannerState {
-    // Non-VS Code IDEs (Cursor, Windsurf, Kiro) have built-in AI assistants
-    const isNonVsCodeIde = isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.kiroAgent);
+    // Non-VS Code IDEs (Cursor, Windsurf, Devin, Kiro) have built-in AI assistants
+    const isNonVsCodeIde = isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent) || isIDE(constants.kiroAgent);
     const config = vscode.workspace.getConfiguration("checkmarxDeveloperAssist");
     if (isNonVsCodeIde) {
       const preferNative = config.get<boolean>('Prefer Native AI Assistant', true);
@@ -58,7 +59,8 @@ export class WelcomeWebview {
     isAiMcpEnabled: boolean,
     panel: vscode.WebviewPanel,
     productName: string,
-    banner: WelcomeAiBannerState | null
+    banner: WelcomeAiBannerState | null,
+    mcpSetupBannerHtml: string = ""
   ): string {
     const settingsCommandUri = "command:" + commands.openSettings + "?" + encodeURIComponent(JSON.stringify([commands.openSettingsArgsAiAssistant]));
     const bannerHtml = WelcomeWebview.getBannerHtml(banner, productName, settingsCommandUri);
@@ -80,6 +82,7 @@ export class WelcomeWebview {
           <p class="welcome-tagline">Checkmarx Developer Assist offers immediate threat detection with standalone real-time scanners and assists you in preventing vulnerabilities before they arise.</p>
         </div>
         ${bannerHtml ? `<div class="welcome-banner-wrapper">${bannerHtml}</div>` : ""}
+        ${mcpSetupBannerHtml ? `<div class="welcome-banner-wrapper">${mcpSetupBannerHtml}</div>` : ""}
         <div class="welcome-frames-row">
           <div class="left-section">
             <div class="feature-card${disableAiFeature ? " feature-card-ai-disabled" : ""}" id="aiFeatureCard">
@@ -283,6 +286,14 @@ export class WelcomeWebview {
 
     const config = vscode.workspace.getConfiguration();
 
+    // Get MCP OAuth setup message (if OAuth was used for MCP configuration)
+    let mcpSetupBannerHtml = "";
+    try {
+      mcpSetupBannerHtml = getMcpOAuthSetupMessage(context) || "";
+    } catch (e) {
+      console.error("Error getting MCP setup message:", e);
+    }
+
     panel.webview.html = this.generateHtml(
       bootstrapCssUri,
       scannerImgUri,
@@ -294,7 +305,8 @@ export class WelcomeWebview {
       isAiMcpEnabled,
       panel,
       productName,
-      bannerState
+      bannerState,
+      mcpSetupBannerHtml
     );
 
     const themeChangeDisposable = vscode.window.onDidChangeActiveColorTheme(() => {
@@ -327,7 +339,8 @@ export class WelcomeWebview {
         isAiMcpEnabled,
         panel,
         productName,
-        bannerState
+        bannerState,
+        mcpSetupBannerHtml
       );
     });
 

@@ -187,6 +187,14 @@ const mock = {
         OpenOpen: 1,
         OpenClosed: 2,
         ClosedOpen: 3
+    },
+
+    env: {
+        appName: "Visual Studio Code"
+    },
+
+    extensions: {
+        getExtension: (_id: string): any => undefined
     }
 };
 

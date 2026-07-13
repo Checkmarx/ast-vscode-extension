@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -200,6 +200,18 @@
             "order": 9,
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
+          },
+          "checkmarxDeveloperAssist.MCP Authentication": {
+            "type": "string",
+            "order": 10,
+            "default": "Token Based",
+            "enum": [
+              "Token Based"
+            ],
+            "enumDescriptions": [
+              "Token will be auto-configured in MCP configuration."
+            ],
+            "markdownDescription": "Select the authentication method to connect to the Checkmarx MCP Server."
           }
         }
       }
@@ -233,8 +245,8 @@
     },
     "undici": "7.28.0",
     "markdown-it": "14.2.0",
-    "js-yaml": "4.2.0",
-    "brace-expansion": "1.1.15",
+    "js-yaml": "4.3.0",
+    "brace-expansion": "1.1.16",
     "tmp": "0.2.7",
     "uuid": "14.0.0"
   }
