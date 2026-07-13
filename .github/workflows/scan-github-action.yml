@@ -1,0 +1,30 @@
+name: Scan for GitHub Actions issues
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Scan repository contents
+    runs-on: cx-private-ubuntu-x64
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Run Zizmor linter
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        with:
+          advanced-security: false
+          annotations: false
+          persona: pedantic
+          fail-on-no-inputs: false
+          online-audits: false

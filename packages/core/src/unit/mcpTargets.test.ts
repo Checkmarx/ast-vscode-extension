@@ -11,16 +11,14 @@ describe("resolveMcpTargets", () => {
     let sandbox: sinon.SinonSandbox;
 
     function setAppName(name: string) {
-        (mock as any).env = { appName: name };
+        (mock as any).env.appName = name;
     }
 
     function setExtensions(copilot: boolean, claude: boolean) {
-        (mock as any).extensions = {
-            getExtension: (id: string) => {
-                if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
-                if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
-                return undefined;
-            }
+        (mock as any).extensions.getExtension = (id: string) => {
+            if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
+            if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
+            return undefined;
         };
     }
 
@@ -49,8 +47,8 @@ describe("resolveMcpTargets", () => {
     afterEach(() => {
         sandbox.restore();
         resetExtensionConfig();
-        delete (mock as any).env;
-        delete (mock as any).extensions;
+        (mock as any).env.appName = "Visual Studio Code";
+        (mock as any).extensions.getExtension = (_id: string) => undefined;
     });
 
     // ── Claude IDE ──────────────────────────────────────────────────────────────
