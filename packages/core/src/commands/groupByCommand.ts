@@ -15,7 +15,6 @@ export class GroupByCommand {
   logs: Logs;
   public activeGroupBy: GroupBy[] = [
     GroupBy.typeLabel,
-    GroupBy.scaType,
     GroupBy.severity,
     GroupBy.queryName,
   ];
@@ -358,7 +357,6 @@ export class GroupByCommand {
   private getFixedGroupOrder(): GroupBy[] {
     return [
       GroupBy.typeLabel,
-      GroupBy.scaType,
       GroupBy.severity,
       GroupBy.queryName,
       GroupBy.state,

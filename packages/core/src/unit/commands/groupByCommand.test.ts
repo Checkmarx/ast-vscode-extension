@@ -49,7 +49,6 @@ describe("GroupByCommand Tests", () => {
     it("should initialize with default active groupBy values", () => {
       const activeGroupBy = groupByCommand.activeGroupBy;
       expect(activeGroupBy).to.include(GroupBy.typeLabel);
-      expect(activeGroupBy).to.include(GroupBy.scaType);
       expect(activeGroupBy).to.include(GroupBy.severity);
       expect(activeGroupBy).to.include(GroupBy.queryName);
     });
@@ -71,17 +70,12 @@ describe("GroupByCommand Tests", () => {
     it("should return array of GroupBy values in fixed order", () => {
       const order = (groupByCommand as any).getFixedGroupOrder();
       expect(order).to.be.an("array");
-      expect(order.length).to.equal(9);
+      expect(order.length).to.equal(8);
     });
 
     it("should have typeLabel as first element", () => {
       const order = (groupByCommand as any).getFixedGroupOrder();
       expect(order[0]).to.equal(GroupBy.typeLabel);
-    });
-
-    it("should have scaType as second element", () => {
-      const order = (groupByCommand as any).getFixedGroupOrder();
-      expect(order[1]).to.equal(GroupBy.scaType);
     });
 
     it("should include all GroupBy types", () => {
@@ -196,7 +190,6 @@ describe("GroupByCommand Tests", () => {
 
     it("should handle removing last groupBy", () => {
       (groupByCommand as any).updateResultsProviderGroup(GroupBy.typeLabel, false);
-      (groupByCommand as any).updateResultsProviderGroup(GroupBy.scaType, false);
       (groupByCommand as any).updateResultsProviderGroup(GroupBy.severity, false);
       (groupByCommand as any).updateResultsProviderGroup(GroupBy.queryName, false);
 
@@ -344,7 +337,6 @@ describe("GroupByCommand Tests", () => {
 
       (mockContext.globalState.get as sinon.SinonStub).returns(true);
       await (groupByCommand as any).group(mockLogs, mockContext, GroupBy.typeLabel, "typeGroup");
-      await (groupByCommand as any).group(mockLogs, mockContext, GroupBy.scaType, "scaType");
       await (groupByCommand as any).group(mockLogs, mockContext, GroupBy.severity, constants.severityGroup);
       await (groupByCommand as any).group(mockLogs, mockContext, GroupBy.queryName, constants.queryNameGroup);
 
