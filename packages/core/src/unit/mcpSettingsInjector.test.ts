@@ -15,7 +15,7 @@ import { getExtensionType, EXTENSION_TYPE, setExtensionConfig, resetExtensionCon
 import * as aiAssistantUtil from "../utils/aiAssistantUtil";
 
 const validMockJwt =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tIn0.c2lnbmF0dXJl";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lhbS5jaGVja21hcnguY29tL2F1dGgvcmVhbG1zL3Rlc3QtdGVuYW50In0.c2lnbmF0dXJl";
 
 describe("MCP Settings Injector", () => {
   let sandbox: sinon.SinonSandbox;
