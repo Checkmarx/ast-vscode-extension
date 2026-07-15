@@ -245,4 +245,4 @@ Find more integrations from our team [here](https://github.com/Checkmarx/ci-cd-i
 [license-shield]: https://img.shields.io/github/license/Checkmarx/ast-vscode-extension.svg
 [license-url]: https://github.com/Checkmarx/ast-vscode-extension/blob/master/LICENSE
 [installs-vscode-url]: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
-[installs-vscode-shield]: https://img.shields.io/visual-studio-marketplace/i/checkmarx.ast-results
+[installs-vscode-shield]: https://vsmarketplacebadges.dev/installs-short/checkmarx.ast-results.svg

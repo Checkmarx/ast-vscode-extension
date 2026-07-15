@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { CxWrapper } from "@checkmarx/ast-cli-javascript-wrapper";
 import CxScaRealtime from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scaRealtime/CxScaRealTime";
 import CxScan from "@checkmarx/ast-cli-javascript-wrapper/dist/main/scan/CxScan";
@@ -24,10 +26,13 @@ import { getMessages } from "../config/extensionMessages";
 
 export class Cx implements CxPlatform {
     private context: vscode.ExtensionContext;
+    private packageVersion: string | undefined;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
     }
+
+
 
     async scaScanCreate(sourcePath: string): Promise<CxScaRealtime | undefined> {
         const cx = new CxWrapper(this.getBaseAstConfiguration());
@@ -315,8 +320,27 @@ export class Cx implements CxPlatform {
         config.additionalParameters = vscode.workspace
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
-        config.agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
+        const agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent)) ? constants.devinAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
+        const version = this.getPackageVersion();
+        config.agentName = version ? `${agentName}_${version}` : agentName;
+        console.log(`Package version from VSCODE Plugin  ${config.agentName}: ${config.agentName}`);
         return config;
+    }
+
+    private getPackageVersion(): string {
+        if (this.packageVersion !== undefined) {
+            return this.packageVersion;
+        }
+        try {
+            const packageJsonPath = path.join(this.context.extensionPath, "package.json");
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+            this.packageVersion = packageJson.version ?? "";
+            console.log(`[Cx] Resolved package version from ${packageJsonPath}: ${this.packageVersion}`);
+        } catch (error) {
+            console.error(`[Cx] Failed to read package version: ${error}`);
+            this.packageVersion = "";
+        }
+        return this.packageVersion;
     }
 
     async getAstConfiguration() {
@@ -909,7 +933,7 @@ export class Cx implements CxPlatform {
         const cx = new CxWrapper(config);
         const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
             isIDE(constants.cursorAgent) ? constants.cursorAgent :
-                isIDE(constants.windsurfAgent) ? "Cascade" : constants.vsCodeAgent;
+                (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? "Cascade" : constants.vsCodeAgent;
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
     }
 
@@ -944,7 +968,7 @@ export class Cx implements CxPlatform {
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
-                    : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent))
+                    : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent))
                         ? "Cascade"
                         : vsCodeAssistant;
             const agent = isIDE(constants.kiroAgent)
@@ -953,7 +977,9 @@ export class Cx implements CxPlatform {
                     ? constants.cursorAgent
                     : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
                         ? constants.windsurfAgent
-                        : constants.vsCodeAgent;;
+                        : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent))
+                            ? constants.devinAgent
+                            : constants.vsCodeAgent;;
 
             // Build subType with fix outcome details
             const subTypeData = {

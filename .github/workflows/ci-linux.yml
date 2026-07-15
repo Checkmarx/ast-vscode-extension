@@ -4,6 +4,7 @@ on: [pull_request]
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   # Test the shared core package independently
@@ -12,15 +13,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: 22.11.0
-      - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-      - name: Install dependencies
+      - name: Authenticate with npm registries
         run: |
-          npm run install:all
+          echo "registry=https://npm.echohq.com/" > ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+      - name: Install dependencies
+        env:
+          NPM_CONFIG_LOGLEVEL: http
+        run: |
+          npm run ci:all
       - name: Run core unit tests with coverage
         run: npm run unit-coverage:test:core
       - name: Upload core coverage report
@@ -41,15 +58,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: 22.11.0
-      - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-      - name: Install dependencies
+      - name: Authenticate with npm registries
         run: |
-          npm run install:all
+          echo "registry=https://npm.echohq.com/" > ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+      - name: Install dependencies
+        env:
+          NPM_CONFIG_LOGLEVEL: http
+        run: |
+          npm run ci:all
       - name: Build all packages
         run: npm run build:all
       - name: Run e2e tests
@@ -81,15 +114,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
       - name: Setup Node.js
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: 22.11.0
-      - name: Authenticate with GitHub package registry
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
-      - name: Install dependencies
+      - name: Authenticate with npm registries
         run: |
-          npm run install:all
+          echo "registry=https://npm.echohq.com/" > ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+      - name: Install dependencies
+        env:
+          NPM_CONFIG_LOGLEVEL: http
+        run: |
+          npm run ci:all
       - name: Build all packages
         run: npm run build:all
 

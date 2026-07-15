@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.68.0",
+  "version": "2.69.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -972,6 +972,20 @@
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:ast-results.installMCP)"
           },
+          "Checkmarx.MCP Authentication": {
+            "type": "string",
+            "order": 6,
+            "default": "OAuth",
+            "enum": [
+              "OAuth",
+              "Token Based"
+            ],
+            "enumDescriptions": [
+              "Authenticate using your Checkmarx One/SSO credentials.",
+              "Token will be auto-configured in MCP configuration."
+            ],
+            "markdownDescription": "Select the authentication method to connect to the Checkmarx MCP Server."
+          },
           "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner.Activate ASCA Realtime": {
             "type": "boolean",
             "order": 1,
@@ -1119,17 +1133,17 @@
     "compile:tests": "tsc -b ./ && npm run copymedia && npm run copycore:dev && npm run copytestproject",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
-    "copycore": "cd ../core && npm install --production --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && node scripts/copy-core-package.js && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
-    "copycore:dev": "cd ../core && npm install --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore": "cd ../core && npm ci --ignore-scripts --omit=dev && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && node scripts/copy-core-package.js && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore:dev": "cd ../core && npm ci --ignore-scripts && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
     "copytestproject": "copyfiles -u 3 \"../core/src/resources/**/*\" out/test/ -E",
     "copyvalidator": "copyfiles \"node_modules/validator/**/*\" out/node_modules/ -u 1 -E",
     "package": "vsce package --allow-star-activation --no-dependencies",
     "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
     "clean": "rimraf out",
-    "ui-test": "export TEST=true && npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
-    "win-ui-test": "set TEST=true&& npm run compile:tests && extest setup-and-run './out/test/**/*test.js' -c 1.88.1 -i -r .",
-    "e2e-test": "export TEST=uiEndToEnd && npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r .",
-    "win-e2e-test": "set TEST=uiEndToEnd&& npm run compile:tests && extest setup-and-run './out/e2e/getScan.test.js' -c 1.88.1 -i -r ."
+    "ui-test": "node scripts/run-ui-tests.js true \"./out/test/**/*test.js\"",
+    "win-ui-test": "node scripts/run-ui-tests.js true \"./out/test/**/*test.js\"",
+    "e2e-test": "node scripts/run-ui-tests.js uiEndToEnd \"./out/e2e/getScan.test.js\"",
+    "win-e2e-test": "node scripts/run-ui-tests.js uiEndToEnd \"./out/e2e/getScan.test.js\""
   },
   "dependencies": {
     "@checkmarx/vscode-core": "file:../core",
@@ -1154,8 +1168,10 @@
     "mocha": {
       "serialize-javascript": "7.0.5"
     },
-    "undici": "7.26.0",
-    "brace-expansion": "1.1.15",
+    "undici": "7.28.0",
+    "markdown-it": "14.2.0",
+    "js-yaml": "4.3.0",
+    "brace-expansion": "1.1.16",
     "tmp": "0.2.7",
     "uuid": "14.0.0"
   }

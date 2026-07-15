@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -200,6 +200,18 @@
             "order": 9,
             "default": {},
             "markdownDescription": "The Model Context Protocol (MCP) provides advanced contextual analysis for secure coding. [**Install MCP**](command:cx-dev-assist.installMCP)"
+          },
+          "checkmarxDeveloperAssist.MCP Authentication": {
+            "type": "string",
+            "order": 10,
+            "default": "Token Based",
+            "enum": [
+              "Token Based"
+            ],
+            "enumDescriptions": [
+              "Token will be auto-configured in MCP configuration."
+            ],
+            "markdownDescription": "Select the authentication method to connect to the Checkmarx MCP Server."
           }
         }
       }
@@ -210,7 +222,7 @@
     "compile": "tsc -b ./ && npm run copymedia && npm run copycore",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
-    "copycore": "cd ../core && npm install --production --no-save && cd ../project-ignite && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore": "cd ../core && npm ci --ignore-scripts --omit=dev && cd ../project-ignite && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
     "package": "vsce package --allow-star-activation --no-dependencies",
     "package:prerelease": "vsce package --pre-release --allow-star-activation --no-dependencies",
     "clean": "rimraf out"
@@ -231,8 +243,10 @@
     "mocha": {
       "serialize-javascript": "7.0.5"
     },
-    "undici": "7.26.0",
-    "brace-expansion": "1.1.15",
+    "undici": "7.28.0",
+    "markdown-it": "14.2.0",
+    "js-yaml": "4.3.0",
+    "brace-expansion": "1.1.16",
     "tmp": "0.2.7",
     "uuid": "14.0.0"
   }

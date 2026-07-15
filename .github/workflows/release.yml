@@ -101,6 +101,18 @@ jobs:
         with:
           fetch-depth: 0 # Full history needed for git log changelog generation
 
+      # STEP 0 ENFORCEMENT - Verify single lockfile
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+
       # GIT CONFIGURATION
       - run: |
           git config user.name vscode-releases
@@ -113,13 +125,16 @@ jobs:
           node-version: 22.11.0
           registry-url: https://npm.echohq.com/
 
-      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY
-      - name: Authenticate with GitHub package registry
+      # AUTHENTICATE TO GITHUB PACKAGE REGISTRY AND ECHO REGISTRY
+      - name: Authenticate with npm registries
         env:
           GH_TOKEN: ${{ github.token }}
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: |
           npm config set @checkmarx:registry https://npm.pkg.github.com
           npm config set //npm.pkg.github.com/:_authToken "${GH_TOKEN}"
+          npm config set //npm.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
+          npm config set //packages.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
 
       # BUMP ROOT VERSION (source of truth for release tag)
       - name: Generate Tag name from root package.json
@@ -257,7 +272,7 @@ jobs:
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
-        run: npm run install:all
+        run: npm run ci:all
 
       - name: Get and install JS Wrapper if provided by user
         if: inputs.dev == true && inputs.jsTag != ''

@@ -11,16 +11,14 @@ describe("resolveMcpTargets", () => {
     let sandbox: sinon.SinonSandbox;
 
     function setAppName(name: string) {
-        (mock as any).env = { appName: name };
+        (mock as any).env.appName = name;
     }
 
     function setExtensions(copilot: boolean, claude: boolean) {
-        (mock as any).extensions = {
-            getExtension: (id: string) => {
-                if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
-                if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
-                return undefined;
-            }
+        (mock as any).extensions.getExtension = (id: string) => {
+            if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
+            if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
+            return undefined;
         };
     }
 
