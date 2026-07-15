@@ -128,11 +128,11 @@ jobs:
       # AUTHENTICATE TO GITHUB PACKAGE REGISTRY AND ECHO REGISTRY
       - name: Authenticate with npm registries
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         run: |
           npm config set @checkmarx:registry https://npm.pkg.github.com
-          npm config set //npm.pkg.github.com/:_authToken "${GH_TOKEN}"
+          npm config set //npm.pkg.github.com/:_authToken "${GITHUB_TOKEN}"
           npm config set //npm.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
           npm config set //packages.echohq.com/:_authToken "${ECHO_LIBRARIES_ACCESS_KEY}"
 
