@@ -7,6 +7,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import "./mocks/vscode-mock";
+import { mock } from "./mocks/vscode-mock";
 import { expect } from "chai";
 import sinon from "sinon";
 import nock from "nock";

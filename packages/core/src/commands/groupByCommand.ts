@@ -15,7 +15,6 @@ export class GroupByCommand {
   logs: Logs;
   public activeGroupBy: GroupBy[] = [
     GroupBy.typeLabel,
-    GroupBy.scaType,
     GroupBy.severity,
     GroupBy.queryName,
   ];

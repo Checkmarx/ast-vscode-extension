@@ -47,8 +47,8 @@ describe("resolveMcpTargets", () => {
     afterEach(() => {
         sandbox.restore();
         resetExtensionConfig();
-        (mock as any).env.appName = "Visual Studio Code";
-        (mock as any).extensions.getExtension = (_id: string) => undefined;
+        (mock as any).env = { appName: "Visual Studio Code", openExternal: () => Promise.resolve(true), clipboard: { writeText: () => Promise.resolve(), readText: () => Promise.resolve("") } };
+        (mock as any).extensions = { getExtension: () => undefined, all: [], onDidChange: () => ({ dispose: () => { } }) };
     });
 
     // ── Claude IDE ──────────────────────────────────────────────────────────────

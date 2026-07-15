@@ -1,5 +1,5 @@
 {
-  "require": ["ts-node/register"],
+  "require": ["ts-node/register", "src/unit/mocks/vscode-mock.ts"],
   "spec": ["src/unit/**/*.test.ts"],
   "node-option": ["loader=ts-node/esm"],
   "ts-node": {

@@ -390,7 +390,6 @@ export enum GroupBy {
   queryName = "queryName",
   packageIdentifier = "scaNode.packageIdentifier",
   directDependency = "scaNode.scaPackageData.typeOfDependency",
-  scaType = "scaType",
 }
 
 export enum SeverityLevel {
