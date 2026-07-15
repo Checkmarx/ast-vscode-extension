@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Zizmor linter
-        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        uses: step-security/zizmor-action@e4ba943ab717e2dc71e7276b8649f48fb7f2519d # v0.5.7
         with:
           advanced-security: false
           annotations: false
