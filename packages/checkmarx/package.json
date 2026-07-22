@@ -3,7 +3,7 @@
   "publisher": "checkmarx",
   "displayName": "Checkmarx",
   "description": "Beat vulnerabilities with more-secure code",
-  "version": "2.60.0",
+  "version": "2.68.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -1119,8 +1119,8 @@
     "compile:tests": "tsc -b ./ && npm run copymedia && npm run copycore:dev && npm run copytestproject",
     "watch": "tsc -w -p ./",
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
-    "copycore": "cd ../core && npm install --production --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && node scripts/copy-core-package.js && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
-    "copycore:dev": "cd ../core && npm install --no-save && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore": "cd ../core && npm ci --ignore-scripts --omit=dev && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && node scripts/copy-core-package.js && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
+    "copycore:dev": "cd ../core && npm ci --ignore-scripts && cd ../checkmarx && copyfiles \"../core/out/**/*\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/package.json\" out/node_modules/@checkmarx/vscode-core/ -u 2 -E && copyfiles \"../core/node_modules/**/*\" out/node_modules/@checkmarx/vscode-core/node_modules/ -u 3 -E",
     "copytestproject": "copyfiles -u 3 \"../core/src/resources/**/*\" out/test/ -E",
     "copyvalidator": "copyfiles \"node_modules/validator/**/*\" out/node_modules/ -u 1 -E",
     "package": "vsce package --allow-star-activation --no-dependencies",
@@ -1149,11 +1149,16 @@
     "vscode-extension-tester": "8.17.0"
   },
   "overrides": {
-    "@isaacs/brace-expansion": "5.0.1",
     "qs": "6.14.2",
     "underscore": "1.13.8",
     "mocha": {
-      "serialize-javascript": "7.0.3"
-    }
+      "serialize-javascript": "7.0.5"
+    },
+    "undici": "7.28.0",
+    "markdown-it": "14.2.0",
+    "js-yaml": "4.2.0",
+    "brace-expansion": "1.1.15",
+    "tmp": "0.2.7",
+    "uuid": "14.0.0"
   }
 }

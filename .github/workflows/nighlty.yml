@@ -16,7 +16,7 @@ jobs:
     name: Check if dependabot commits exist
     outputs:
       isDependabot: ${{ steps.check-dependabot.outputs.dependabotExists }}
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Check if dependabot commits exist
         id: check-dependabot

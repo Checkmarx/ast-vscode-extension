@@ -1,6 +1,7 @@
 src/**
 tsconfig.json
 .gitignore
+.npmrc
 .vscode/**
 *.vsix
 vsix-contents/**

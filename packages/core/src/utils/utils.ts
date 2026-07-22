@@ -72,7 +72,8 @@ export function isSystemFile(e: vscode.TextDocument): boolean {
   return (
     e.uri.scheme.toString() !== "git" &&
     !e.fileName.includes("package.json") &&
-    !e.fileName.includes("settings.json")
+    !e.fileName.includes("settings.json") &&
+    !e.fileName.includes("schema.json")
   );
 }
 
@@ -203,10 +204,10 @@ export async function getResultsJson() {
 export function readResultsFromFile(
   resultJsonPath: string,
   scan: string
-): Promise<CxResult[]> {
+): Promise<CxResult[] | undefined> {
   return new Promise((resolve, reject) => {
     if (!fs.existsSync(resultJsonPath) || !scan) {
-      resolve([]);
+      resolve(undefined);
       return;
     }
 

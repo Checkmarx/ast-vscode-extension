@@ -541,7 +541,8 @@ export class CopilotChatCommand {
                             line: (item.location?.line || 0),
                             severity: item.severity,
                             description: item.description,
-                            dateAdded: new Date().toISOString()
+                            dateAdded: new Date().toISOString(),
+                            problematicLine: item.problematicLine
                         });
 
                         vscode.window.showInformationMessage(`ASCA rule '${item.ruleName}' ignored successfully.`);

@@ -17,6 +17,7 @@ export interface IgnoreEntry {
 		path: string;
 		active: boolean;
 		line?: number;
+		problematicLine?: string;
 	}>;
 	secretValue?: string;
 	similarityId?: string;
@@ -610,6 +611,7 @@ export class IgnoreFileManager {
 		severity?: string;
 		description?: string;
 		dateAdded?: string;
+		problematicLine?: string;
 	}): void {
 		const relativePath = this.normalizePath(entry.filePath);
 		const packageKey = `${entry.ruleName}:${entry.ruleId}:${relativePath}`;
@@ -619,7 +621,8 @@ export class IgnoreFileManager {
 				files: [{
 					path: relativePath,
 					active: true,
-					line: entry.line + 1
+					line: entry.line + 1,
+					problematicLine: entry.problematicLine
 				}],
 				type: constants.ascaRealtimeScannerEngineName,
 				PackageName: entry.ruleName,
@@ -629,14 +632,18 @@ export class IgnoreFileManager {
 				dateAdded: entry.dateAdded
 			};
 		} else {
-			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath);
+			const existingFileEntry = this.ignoreData[packageKey].files.find(f => f.path === relativePath && f.line === entry.line + 1);
 			if (existingFileEntry) {
 				existingFileEntry.active = true;
+				if (entry.problematicLine && !existingFileEntry.problematicLine) {
+					existingFileEntry.problematicLine = entry.problematicLine;
+				}
 			} else {
 				this.ignoreData[packageKey].files.push({
 					path: relativePath,
 					active: true,
-					line: this.ignoreData[packageKey].files[0]?.line || (entry.line + 1)
+					line: entry.line + 1,
+					problematicLine: entry.problematicLine
 				});
 			}
 			if (entry.severity !== undefined) { this.ignoreData[packageKey].severity = entry.severity; }
@@ -903,34 +910,72 @@ export class IgnoreFileManager {
 		let hasChanges = false;
 		const relativePath = this.normalizePath(filePath);
 
-		const currentAsca = new Map<string, number[]>();
+		// Build map of current violations: ruleName:ruleId → [{ line, problematicLine }]
+		const currentAsca = new Map<string, Array<{ line: number; problematicLine?: string }>>();
 		currentResults.forEach(result => {
-			const scanDetail = result as { ruleName: string; ruleId: number; line: number };
+			const scanDetail = result as { ruleName: string; ruleId: number; line: number; problematicLine?: string };
 			const key = `${scanDetail.ruleName}:${scanDetail.ruleId}`;
-			const lines = currentAsca.get(key) || [];
-			lines.push(scanDetail.line);
-			currentAsca.set(key, lines);
+			const violations = currentAsca.get(key) || [];
+			violations.push({
+				line: scanDetail.line,
+				problematicLine: scanDetail.problematicLine
+			});
+			currentAsca.set(key, violations);
 		});
 
 		Object.entries(this.ignoreData).forEach(([packageKey, entry]) => {
 			if (entry.type !== constants.ascaRealtimeScannerEngineName) { return; }
 
-			const fileEntry = entry.files.find(f => f.path === relativePath);
-			if (!fileEntry) { return; }
+			const fileEntriesForPath = entry.files.filter(f => f.path === relativePath);
+			if (fileEntriesForPath.length === 0) { return; }
 
 			const ascaKey = `${entry.PackageName}:${entry.ruleId}`;
-			const currentLines = currentAsca.get(ascaKey) || [];
+			const currentViolations = currentAsca.get(ascaKey) || [];
 
-			const lineStillExists = currentLines.includes(fileEntry.line);
+			if (currentViolations.length === 0) {
+				delete this.ignoreData[packageKey];
+				hasChanges = true;
+				return;
+			}
 
-			if (!lineStillExists) {
-				if (currentLines.length === 0) {
-					delete this.ignoreData[packageKey];
-					hasChanges = true;
-				} else {
-					fileEntry.line = currentLines[0];
+			// For each ignored file entry, check if it still exists in current violations
+			for (const fileEntry of fileEntriesForPath) {
+				let found = false;
+				let newLineFromProblematicMatch: number | undefined;
+
+				// Try to find match by problematicLine (code content) first
+				if (fileEntry.problematicLine) {
+					const match = currentViolations.find(v => v.problematicLine === fileEntry.problematicLine);
+					if (match) {
+						found = true;
+						newLineFromProblematicMatch = match.line;
+					}
+				}
+
+				// Fallback: Try to find match by line number
+				if (!found) {
+					found = currentViolations.some(v => v.line === fileEntry.line);
+				}
+
+				// If found by problematicLine but at different line number, update the line
+				// This handles code shifts where identical code moves to a new line
+				if (found && newLineFromProblematicMatch !== undefined && fileEntry.line !== newLineFromProblematicMatch) {
+					fileEntry.line = newLineFromProblematicMatch;
 					hasChanges = true;
 				}
+
+				// If not found in current scan, remove the entry
+				if (!found) {
+					entry.files = entry.files.filter(
+						f => !(f.path === relativePath && f.line === fileEntry.line)
+					);
+					hasChanges = true;
+				}
+			}
+
+			// If no file entries left, delete the entire entry
+			if (entry.files.length === 0) {
+				delete this.ignoreData[packageKey];
 			}
 		});
 

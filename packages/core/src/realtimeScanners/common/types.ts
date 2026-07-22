@@ -56,6 +56,7 @@ export interface AscaHoverData {
   remediationAdvise: string;
   ruleId?: number;
   filePath?: string;
+  problematicLine?: string;
   location?: {
     line: number;
     startIndex: number;

@@ -10,9 +10,12 @@ on:
   repository_dispatch:
     types: [js-wrapper-version-update]
 
+permissions:
+  contents: read
+
 jobs:
   update-js-wrapper:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     env:
       GH_TOKEN: ${{ github.token }}
     permissions:
@@ -21,7 +24,18 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Verify single lockfile
+        run: |
+          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
+            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
+          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
+            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
+            exit 1
+          fi
 
       - name: Set Up npm Authentication
         run: |
@@ -95,7 +109,7 @@ jobs:
 
       - name: Create Pull Request
         if: env.changes == 'true'
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c #v6
+        uses: step-security/create-pull-request@50c103da2b9ca12cd5bc013fc6931051a5aa872b # v8.1.1
         with:
           token: ${{ secrets.AUTOMATION_TOKEN }}
           commit-message: Update AST CLI JavaScript Wrapper to version ${{ env.VERSION }}

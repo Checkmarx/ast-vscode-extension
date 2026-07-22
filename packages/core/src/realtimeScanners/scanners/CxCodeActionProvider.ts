@@ -1,6 +1,6 @@
 
 import * as vscode from "vscode";
-import { HoverData, SecretsHoverData, CxDiagnosticData, ContainersHoverData, AscaHoverData } from "../common/types";
+import { HoverData, SecretsHoverData, CxDiagnosticData, ContainersHoverData, AscaHoverData, IacHoverData } from "../common/types";
 import { commands } from "../../utils/common/commandBuilder";
 import { getMessages } from "../../config/extensionMessages";
 
@@ -26,7 +26,7 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				continue;
 			}
 
-			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData;
+			const item = data.item as HoverData | SecretsHoverData | AscaHoverData | IacHoverData | ContainersHoverData;
 
 			// Get extension-specific product name (e.g., "Checkmarx One Assist" or "Checkmarx Developer Assist")
 			const productName = getMessages().productName;
@@ -83,13 +83,13 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 	}
 
 	private isEligibleForIgnoreAll(
-		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+		item: HoverData | SecretsHoverData | AscaHoverData | IacHoverData | ContainersHoverData
 	): boolean {
 		return "packageManager" in item || "imageName" in item;
 	}
 
 	private isEligibleForIgnoreSecret(
-		item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData
+		item: HoverData | SecretsHoverData | AscaHoverData | IacHoverData | ContainersHoverData
 	): boolean {
 		return "title" in item && "secretValue" in item;
 	}
