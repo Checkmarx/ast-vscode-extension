@@ -33,6 +33,19 @@ on:
         required: false
         default: true
         type: boolean
+    secrets:
+      GITHUB_TOKEN:
+        description: "GitHub token for authentication"
+        required: true
+      ECHO_LIBRARIES_ACCESS_KEY:
+        description: "Echo libraries npm registry access key"
+        required: true
+      MARKET_TOKEN:
+        description: "VS Code Marketplace authentication token"
+        required: false
+      OPEN_VSX_TOKEN:
+        description: "Open VSX registry authentication token"
+        required: false
   workflow_dispatch:
     inputs:
       releaseType:
@@ -69,22 +82,29 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   delete:
+    name: Delete Old Dev Releases
     permissions:
-      contents: write
-    uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@main
+      contents: write # For deleting releases and tags
+    uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@dc1a49bbe008c82e5d856eae8cb18b2ae154a85a
     with:
       tag: ${{ inputs.vscodeTag }}
-    secrets: inherit
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     if: inputs.dev
 
   release:
+    name: Build and Release Extension
     permissions:
-      id-token: write
-      contents: write
-      packages: read
-      pull-requests: write
+      id-token: write # For signing artifacts
+      contents: write # For pushing tags and releases
+      packages: read # For reading package versions
+      pull-requests: write # For creating/updating version PRs
     runs-on: cx-public-ubuntu-x64
     env:
       BRANCH_NAME: update-extension-version
@@ -100,6 +120,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # Full history needed for git log changelog generation
+          persist-credentials: false
 
       # STEP 0 ENFORCEMENT - Verify single lockfile
       - name: Verify single lockfile
@@ -140,11 +161,11 @@ jobs:
       - name: Generate Tag name from root package.json
         id: generate_tag_name
         run: |
-          echo "vscodeTag input: ${{ inputs.vscodeTag }}"
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            echo "Running npm version prerelease with preid=${{ inputs.vscodeTag }}"
-            TAG_NAME=$(npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
-          elif [ "${{ inputs.bumpVersion }}" == "true" ]; then
+          echo "vscodeTag input: ${INPUTS_VSCODETAG}"
+          if [ "${INPUTS_DEV}" == "true" ]; then
+            echo "Running npm version prerelease with preid=${INPUTS_VSCODETAG}"
+            TAG_NAME=$(npm version prerelease --preid=${INPUTS_VSCODETAG} --no-git-tag-version --allow-same-version 2>/dev/null || echo "error")
+          elif [ "${INPUTS_BUMPVERSION}" == "true" ]; then
             echo "Running npm version minor"
             TAG_NAME=$(npm version minor --no-git-tag-version 2>/dev/null || echo "error")
           else
@@ -158,28 +179,40 @@ jobs:
           echo "Generated TAG_NAME: $TAG_NAME"
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+        env:
+          INPUTS_VSCODETAG: ${{ inputs.vscodeTag }}
+          INPUTS_DEV: ${{ inputs.dev }}
+          INPUTS_BUMPVERSION: ${{ inputs.bumpVersion }}
 
       # BUMP CHECKMARX PACKAGE VERSION (only if releaseType is checkmarx or both)
       - name: Bump Checkmarx package version
         if: inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both'
         run: |
           cd packages/checkmarx
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
-          elif [ "${{ inputs.bumpVersion }}" == "true" ]; then
+          if [ "${INPUTS_DEV}" == "true" ]; then
+            npm version prerelease --preid=${INPUTS_VSCODETAG} --no-git-tag-version --allow-same-version 2>/dev/null || true
+          elif [ "${INPUTS_BUMPVERSION}" == "true" ]; then
             npm version minor --no-git-tag-version 2>/dev/null || true
           fi
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          INPUTS_VSCODETAG: ${{ inputs.vscodeTag }}
+          INPUTS_BUMPVERSION: ${{ inputs.bumpVersion }}
 
       # BUMP CHECKMARX DEVELOPER ASSIST PACKAGE VERSION (only if releaseType is devAssist or both)
       - name: Bump Checkmarx Developer Assist package version
         if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
         run: |
           cd packages/project-ignite
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            npm version prerelease --preid=${{ inputs.vscodeTag }} --no-git-tag-version --allow-same-version 2>/dev/null || true
-          elif [ "${{ inputs.bumpVersion }}" == "true" ]; then
+          if [ "${INPUTS_DEV}" == "true" ]; then
+            npm version prerelease --preid=${INPUTS_VSCODETAG} --no-git-tag-version --allow-same-version 2>/dev/null || true
+          elif [ "${INPUTS_BUMPVERSION}" == "true" ]; then
             npm version minor --no-git-tag-version 2>/dev/null || true
           fi
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          INPUTS_VSCODETAG: ${{ inputs.vscodeTag }}
+          INPUTS_BUMPVERSION: ${{ inputs.bumpVersion }}
 
       # GET BOTH PACKAGE VERSIONS (always, for headers and assets)
       - name: Get package versions
@@ -201,9 +234,9 @@ jobs:
         run: |
           OUTPUT=$(node .github/scripts/generateChangelog.js \
             --package checkmarx \
-            --version ${{ env.CHECKMARX_VERSION }} \
-            --repo ${{ github.repository }} \
-            --dev ${{ inputs.dev }})
+            --version ${CHECKMARX_VERSION} \
+            --repo ${GITHUB_REPO} \
+            --dev ${INPUTS_DEV})
 
           # Extract content between delimiters
           RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
@@ -212,17 +245,23 @@ jobs:
           echo "CHECKMARX_RELEASE_BODY<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_BODY" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          GITHUB_REPO: ${{ github.repository }}
 
       # GENERATE CHANGELOG FOR CHECKMARX DEVELOPER ASSIST (if releaseType is devAssist or both)
       - name: Generate Checkmarx Developer Assist changelog
         id: ignite_changelog
         if: inputs.releaseType == 'devAssist' || inputs.releaseType == 'both'
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           OUTPUT=$(node .github/scripts/generateChangelog.js \
             --package project-ignite \
-            --version ${{ env.IGNITE_VERSION }} \
-            --repo ${{ github.repository }} \
-            --dev ${{ inputs.dev }})
+            --version ${IGNITE_VERSION} \
+            --repo ${GITHUB_REPO} \
+            --dev ${INPUTS_DEV})
 
           # Extract content between delimiters
           RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
@@ -240,25 +279,25 @@ jobs:
           # Header: Plugins in this release (H2 - same level as package sections)
           # Mark as (NEW) only if the package is being released in this releaseType
           BODY="### Plugins in this release\n"
-          if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }} (NEW)\n"
+          if [ "${INPUTS_RELEASETYPE}" == "checkmarx" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
+            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION} (NEW)\n"
           else
-            BODY="${BODY}* **Checkmarx (AST):** v${{ env.CHECKMARX_VERSION }}\n"
+            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION}\n"
           fi
 
-          if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
-            BODY="${BODY}* **Checkmarx Developer Assist:** v${{ env.IGNITE_VERSION }} (NEW)\n"
+          if [ "${INPUTS_RELEASETYPE}" == "devAssist" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION} (NEW)\n"
           else
-            BODY="${BODY}* **Checkmarx Developer Assist:** v${{ env.IGNITE_VERSION }}\n"
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION}\n"
           fi
           BODY="${BODY}\n"
 
           # Append changelog section(s) based on releaseType
-          if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+          if [ "${INPUTS_RELEASETYPE}" == "checkmarx" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
             BODY="${BODY}${CHECKMARX_RELEASE_BODY}\n\n"
           fi
 
-          if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+          if [ "${INPUTS_RELEASETYPE}" == "devAssist" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
             BODY="${BODY}${DEVASSIST_RELEASE_BODY}\n\n"
           fi
 
@@ -269,6 +308,8 @@ jobs:
 
           echo "--- Release body preview ---"
           printf "%b" "$BODY"
+        env:
+          INPUTS_RELEASETYPE: ${{ inputs.releaseType }}
 
       # INSTALL NPM DEPENDENCIES
       - name: Install dependencies
@@ -276,25 +317,28 @@ jobs:
 
       - name: Get and install JS Wrapper if provided by user
         if: inputs.dev == true && inputs.jsTag != ''
+        env:
+          INPUTS_JSTAG: ${{ inputs.jsTag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Getting js wrapper ${{inputs.jsTag}} version..."
+          echo "Getting js wrapper ${INPUTS_JSTAG} version..."
 
           # Remove 'v' prefix if present
-          TAG_WITHOUT_V="${{inputs.jsTag}}"
+          TAG_WITHOUT_V="${INPUTS_JSTAG}"
           TAG_WITHOUT_V="${TAG_WITHOUT_V#v}"
 
           echo "Searching for version: $TAG_WITHOUT_V"
 
-          JS_VERSION_NAME=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions | jq -r --arg tag "$TAG_WITHOUT_V" '.[] | select(.name == $tag or (.name | contains("-" + $tag))) | .name' | head -n 1)
+          JS_VERSION_NAME=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/orgs/Checkmarx/packages/npm/ast-cli-javascript-wrapper/versions | jq -r --arg tag "$TAG_WITHOUT_V" '.[] | select(.name == $tag or (.name | contains("-" + $tag))) | .name' | head -n 1)
 
           echo "JS Wrapper version found: '$JS_VERSION_NAME'"
 
           if [ -n "${JS_VERSION_NAME}" ]; then
             echo "Installing JS Wrapper version ${JS_VERSION_NAME}"
             cd packages/core
-            npm install "@checkmarx/ast-cli-javascript-wrapper@${JS_VERSION_NAME}"
+            npx -y npm@latest install --no-save "@checkmarx/ast-cli-javascript-wrapper@${JS_VERSION_NAME}"
           else
-            echo "JS wrapper matching tag ${{inputs.jsTag}} not found"
+            echo "JS wrapper matching tag ${INPUTS_JSTAG} not found"
             exit 1
           fi
 
@@ -307,9 +351,7 @@ jobs:
           echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
           echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_OUTPUT
   
-      # INSTALL VSCE
-      - name: Install VSCE
-        run: npm install -g vsce
+      # VSCE will be executed via npx (no need for global install)
 
       # BUILD ALL PACKAGES
       - name: Build all packages
@@ -322,13 +364,13 @@ jobs:
       # Always built so asset is always present in release
       - name: Package Checkmarx .vsix file
         run: |
-          if [ "${{ inputs.dev }}" == "true" ]; then
+          if [ "${INPUTS_DEV}" == "true" ]; then
             # Only timestamp if this package is being released
-            if [ "${{ inputs.releaseType }}" == "checkmarx" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            if [ "${INPUTS_RELEASETYPE}" == "checkmarx" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
               TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package checkmarx)
               echo "Checkmarx timestamp version: $TIMESTAMP_VERSION"
               cd packages/checkmarx
-              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+              npx vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
             else
               # Not being released, package at current version without timestamp
               npm run package:checkmarx
@@ -336,18 +378,21 @@ jobs:
           else
             npm run package:checkmarx
           fi
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          INPUTS_RELEASETYPE: ${{ inputs.releaseType }}
 
       # PACKAGE CHECKMARX DEVELOPER ASSIST VSIX
       # Always built so asset is always present in release
       - name: Package Checkmarx Developer Assist .vsix file
         run: |
-          if [ "${{ inputs.dev }}" == "true" ]; then
+          if [ "${INPUTS_DEV}" == "true" ]; then
             # Only timestamp if this package is being released
-            if [ "${{ inputs.releaseType }}" == "devAssist" ] || [ "${{ inputs.releaseType }}" == "both" ]; then
+            if [ "${INPUTS_RELEASETYPE}" == "devAssist" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
               TIMESTAMP_VERSION=$(node .github/scripts/updateDevVersion.js --package project-ignite)
               echo "Project Ignite timestamp version: $TIMESTAMP_VERSION"
               cd packages/project-ignite
-              vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
+              npx vsce package $TIMESTAMP_VERSION --pre-release --allow-star-activation --no-dependencies
             else
               # Not being released, package at current version without timestamp
               npm run package:cx-dev-assist
@@ -355,6 +400,9 @@ jobs:
           else
             npm run package:cx-dev-assist
           fi
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
+          INPUTS_RELEASETYPE: ${{ inputs.releaseType }}
 
       # GET BOTH PACKAGE VERSIONS AFTER PACKAGING
       # For dev builds, we need to extract the version from the .vsix filename
@@ -410,22 +458,24 @@ jobs:
         if: inputs.dev == false
         run: |
           git pull
-          git tag ${{ env.TAG_NAME }}
+          git tag ${TAG_NAME}
           git push --tags
 
       # CREATE UNIFIED GITHUB RELEASE (always 6 assets: 2 vsix + 2x source code auto-added by GitHub)
       - name: Create Unified Release
         run: |
           # For dev builds, add timestamp to the release name
-          if [ "${{ inputs.dev }}" == "true" ]; then
+          if [ "${INPUTS_DEV}" == "true" ]; then
             TIMESTAMP=$(date +%s)
-            RELEASE_NAME="${{ env.TAG_NAME }} ($TIMESTAMP)"
+            RELEASE_NAME="${TAG_NAME} ($TIMESTAMP)"
           else
-            RELEASE_NAME="${{ env.TAG_NAME }}"
+            RELEASE_NAME="${TAG_NAME}"
           fi
 
           echo "Creating release: $RELEASE_NAME"
           echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+        env:
+          INPUTS_DEV: ${{ inputs.dev }}
 
       - name: Upload release
         uses: step-security/action-gh-release@277bfa82abcfdb73e5bbb19e213fd76532ee2be5 # v3.0.0
@@ -443,32 +493,34 @@ jobs:
       - name: Publish Checkmarx to VSCode Marketplace
         env:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+          INPUTS_DEV: ${{ inputs.dev }}
         if: |
           inputs.publish == true &&
           env.MARKET_TOKEN != '' &&
           (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both')
         run: |
           cd packages/checkmarx
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          if [ "${INPUTS_DEV}" == "true" ]; then
+            npx vsce publish --pre-release --allow-star-activation --no-dependencies -p ${MARKET_TOKEN}
           else
-            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+            npx vsce publish --allow-star-activation --no-dependencies -p ${MARKET_TOKEN}
           fi
 
       # PUBLISH Checkmarx Developer Assist TO VSCODE MARKETPLACE
       - name: Publish Checkmarx Developer Assist to VSCode Marketplace
         env:
           MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+          INPUTS_DEV: ${{ inputs.dev }}
         if: |
           inputs.publish == true &&
           env.MARKET_TOKEN != '' &&
           (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both')
         run: |
           cd packages/project-ignite
-          if [ "${{ inputs.dev }}" == "true" ]; then
-            vsce publish --pre-release --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+          if [ "${INPUTS_DEV}" == "true" ]; then
+            npx vsce publish --pre-release --allow-star-activation --no-dependencies -p ${MARKET_TOKEN}
           else
-            vsce publish --allow-star-activation --no-dependencies -p ${{ env.MARKET_TOKEN }}
+            npx vsce publish --allow-star-activation --no-dependencies -p ${MARKET_TOKEN}
           fi
 
       # PUBLISH CHECKMARX TO OPEN VSX
@@ -480,8 +532,7 @@ jobs:
         env:
           OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
-          npm install -g ovsx
-          ovsx publish packages/checkmarx/ast-results-${{ env.CHECKMARX_VERSION_FINAL }}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+          npx ovsx publish packages/checkmarx/ast-results-${CHECKMARX_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 
       # PUBLISH CHECKMARX DEVELOPER ASSIST TO OPEN VSX
       - name: Publish Checkmarx Developer Assist to Open VSX
@@ -492,8 +543,7 @@ jobs:
         env:
           OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
-          npm install -g ovsx
-          ovsx publish packages/project-ignite/cx-dev-assist-${{ env.IGNITE_VERSION_FINAL }}.vsix --pat ${{ env.OPEN_VSX_TOKEN }}
+          npx ovsx publish packages/project-ignite/cx-dev-assist-${IGNITE_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 
   # notify:
   #   permissions:

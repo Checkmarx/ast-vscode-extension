@@ -81,6 +81,8 @@ export const LOCAL_BRANCH_CONSTANT = "scan my local branch";
 
 export const MESSAGES = {
   scanProjectNotMatch: "Git project doesn't match the selected Checkmarx project. Do you want to scan anyway?",
+  pickerProjectMissing: "Please select a project first",
+  pickerBranchProjectMissing: "Please select a branch and project first",
 };
 
 export enum QuickPickPaginationButtons {
