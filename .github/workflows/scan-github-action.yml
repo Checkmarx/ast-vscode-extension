@@ -2,6 +2,7 @@ name: Scan for GitHub Actions issues
 
 on:
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}
@@ -11,7 +12,7 @@ permissions: {}
 jobs:
   zizmor:
     name: Scan repository contents
-    runs-on: cx-private-ubuntu-x64
+    runs-on: cx-public-ubuntu-x64
     permissions:
       contents: read
     steps:
