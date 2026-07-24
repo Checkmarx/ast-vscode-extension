@@ -1,19 +1,22 @@
 name: Nightly Release
 
 permissions:
-  id-token: write
-  contents: write
-  packages: write
-  pull-requests: write
+  contents: read # For reading repository code
 
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check-dependabot-commits:
     name: Check if dependabot commits exist
+    permissions:
+      contents: read # For reading commits
     outputs:
       isDependabot: ${{ steps.check-dependabot.outputs.dependabotExists }}
     runs-on: cx-public-ubuntu-x64
@@ -25,7 +28,17 @@ jobs:
         run: echo "dependabotExists=$(echo $GITHUB_CONTEXT | jq '.event.commits[].author | any(. == "dependabot[bot]")')" >> $GITHUB_OUTPUT
 
   nightly-checkmarx:
+    name: Nightly Release Job
     needs: check-dependabot-commits
     if: ${{needs.check-dependabot-commits.outputs.isDependabot == 'false'}}
-    uses: Checkmarx/ast-vscode-extension/.github/workflows/release.yml@main
-    secrets: inherit
+    permissions:
+      id-token: write # For signing artifacts
+      contents: write # For pushing tags and releases
+      packages: write # For publishing packages
+      pull-requests: write # For creating/updating PRs
+    uses: Checkmarx/ast-vscode-extension/.github/workflows/release.yml@dc1a49bbe008c82e5d856eae8cb18b2ae154a85a
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+      MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
+      OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}

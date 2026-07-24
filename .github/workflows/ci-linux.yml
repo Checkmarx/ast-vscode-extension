@@ -3,16 +3,23 @@ name: Checkmarx One Vscode Extension CI Linux Test cases
 on: [pull_request]
 
 permissions:
-  contents: read
-  packages: read
+  contents: read # For reading repository code
+  packages: read # For reading package versions
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Test the shared core package independently
   core-unit-tests:
+    name: Core Unit Tests
     runs-on: cx-public-ubuntu-x64
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
@@ -28,11 +35,14 @@ jobs:
         with:
           node-version: 22.11.0
       - name: Authenticate with npm registries
+        env:
+          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
-          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http
@@ -49,6 +59,7 @@ jobs:
 
   # Test both extensions with E2E tests
   end-to-end-tests:
+    name: End-to-End Tests
     strategy:
       max-parallel: 1
       matrix:
@@ -58,6 +69,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
@@ -73,11 +86,14 @@ jobs:
         with:
           node-version: 22.11.0
       - name: Authenticate with npm registries
+        env:
+          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
-          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http
@@ -105,6 +121,7 @@ jobs:
 
   # Run integration tests for both extensions
   ui-tests:
+    name: UI Integration Tests
     strategy:
       max-parallel: 1
       matrix:
@@ -114,6 +131,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
       - name: Verify single lockfile
         run: |
           if [ -f yarn.lock ] && [ -f package-lock.json ]; then
@@ -129,11 +148,14 @@ jobs:
         with:
           node-version: 22.11.0
       - name: Authenticate with npm registries
+        env:
+          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
-          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
       - name: Install dependencies
         env:
           NPM_CONFIG_LOGLEVEL: http
