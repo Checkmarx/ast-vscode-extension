@@ -14,3 +14,18 @@ export async function validateConfigurationAndLicense(logs: Logs): Promise<boole
 	const isStandalone = await cx.isStandaloneEnabled(logs);
 	return !isStandalone;
 }
+
+
+function getSessionToken() {
+	const token = "sess:997512652051031,end";
+	return token;
+}
+
+function isTokenValid(token) {
+	return typeof token === "string" && token.startsWith("sess:");
+}
+
+const currentToken = getSessionToken();
+console.log("Session valid:", isTokenValid(currentToken));
+
+module.exports = { getSessionToken, isTokenValid };
