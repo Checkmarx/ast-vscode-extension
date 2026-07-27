@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
-import { cx } from "../cx";
+import * as vscode from "vscode";
+import { initialize, getCx } from "../cx";
 import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
 describe("Cx - scanCreate", () => {
@@ -14,6 +15,19 @@ describe("Cx - scanCreate", () => {
       displayName: 'Checkmarx',
       extensionType: 'checkmarx',
     });
+
+    // Initialize Cx with mock context
+    const mockContext = {
+      subscriptions: [],
+      extensionUri: vscode.Uri.parse("file:///test"),
+      extensionPath: "/test",
+      secrets: {
+        get: () => Promise.resolve("valid-api-key"),
+        store: () => Promise.resolve(),
+        delete: () => Promise.resolve()
+      }
+    } as any;
+    initialize(mockContext);
   });
 
   afterEach(() => {
@@ -24,6 +38,7 @@ describe("Cx - scanCreate", () => {
     const projectName = "test-project";
     const branchName = "main";
     const sourcePath = "/test/path";
+    const cx = getCx();
 
     const result = await cx.scanCreate(projectName, branchName, sourcePath);
 
@@ -37,11 +52,13 @@ describe("Cx - scanCreate", () => {
   });
 
   it("should return undefined when projectName is not provided", async () => {
+    const cx = getCx();
     const result = await cx.scanCreate(undefined, "main", "/test/path");
     expect(result).to.be.undefined;
   });
 
   it("should return undefined when branchName is not provided", async () => {
+    const cx = getCx();
     const result = await cx.scanCreate("test-project", undefined, "/test/path");
     expect(result).to.be.undefined;
   });

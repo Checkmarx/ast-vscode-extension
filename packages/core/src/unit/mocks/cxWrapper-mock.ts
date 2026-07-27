@@ -111,5 +111,147 @@ mockRequire("@checkmarx/ast-cli-javascript-wrapper", {
         };
       }
     }
+
+    async scanCancel(scanId: string) {
+      if (scanId === "cancel-scan-id") {
+        return { exitCode: 0, status: "Cancelled" };
+      }
+      return { exitCode: 1, status: "Cancel failed" };
+    }
+
+    async projectList(params: string) {
+      if (params === "valid") {
+        return {
+          exitCode: 0,
+          payload: [{ id: "proj-1", name: "Project 1" }],
+        };
+      }
+      return { exitCode: 1, status: "Failed to list projects", payload: [] };
+    }
+
+    async projectBranches(projectId: string, _params: string) {
+      if (projectId === "test-project-id") {
+        return { payload: ["main", "develop"], exitCode: 0 };
+      }
+      return { status: "Branches not found", payload: undefined, exitCode: 1 };
+    }
+
+    async scanList(_filter: string) {
+      return {
+        payload: [
+          {
+            id: "scan-1",
+            status: "Completed",
+            branch: "main",
+            projectID: "test-project-id",
+          },
+        ],
+        exitCode: 0,
+      };
+    }
+
+    async ideScansEnabled() {
+      return this.config?.apiKey === "valid-api-key";
+    }
+
+    async guidedRemediationEnabled() {
+      return true;
+    }
+
+    async standaloneEnabled() {
+      return this.config?.apiKey === "valid-api-key";
+    }
+
+    async cxOneAssistEnabled() {
+      return true;
+    }
+
+    async aiMcpServerEnabled() {
+      return this.config?.apiKey === "valid-api-key";
+    }
+
+    async mask(_filePath: string) {
+      return {
+        exitCode: 0,
+        payload: [{ masked: true }],
+        status: "ok",
+      };
+    }
+
+    async triageShow(_projectId: string, _similarityId: string, _scanType: string) {
+      return { exitCode: 0, payload: [{ state: "ToVerify" }] };
+    }
+
+    async triageUpdate(_params: Map<CxParamType, string>) {
+      return { exitCode: 0, status: "Updated" };
+    }
+
+    async triageGetStates(_all: boolean) {
+      return { exitCode: 0, payload: ["ToVerify", "Confirmed"] };
+    }
+
+    async codeBashingList(cweId: string, _language: string, _queryName: string) {
+      if (cweId) {
+        return { exitCode: 0, payload: [{ path: "lesson.html" }] };
+      }
+      return { exitCode: 1, status: "Not found" };
+    }
+
+    async getResultsBfl(_scanId: string, _queryId: string, _nodes: unknown) {
+      return { exitCode: 0, payload: [{ bfl: true }] };
+    }
+
+    async kicsRealtimeScan(fileSources: string, _a: string, _b: string) {
+      if (!fileSources) throw new Error("missing");
+      return [Promise.resolve({ exitCode: 0 }), { kill: () => { } }];
+    }
+
+    async scaRemediation(_packageFile: string, _packages: string, _version: string) {
+      return { exitCode: 0, status: "ok" };
+    }
+
+    async kicsRemediation(resultsFile: string, kicsFile: string, _engine: string, _ids?: string) {
+      if (!resultsFile || !kicsFile) throw new Error("missing");
+      return [Promise.resolve({ exitCode: 0 }), { kill: () => { } }];
+    }
+
+    async learnMore(queryId: string) {
+      if (queryId) {
+        return { exitCode: 0, payload: [{ description: "info" }] };
+      }
+      return { exitCode: 1, status: "failed" };
+    }
+
+    async scanAsca(_source: unknown, _install: boolean, _ignore: unknown) {
+      return { exitCode: 0, payload: [{ installed: true }] };
+    }
+
+    async containersRealtimeScanResults(_source: string, _ignore?: string) {
+      return { exitCode: 0, payload: [[]] };
+    }
+
+    async ossScanResults(_source: string, _ignore?: string) {
+      return { exitCode: 0, payload: [[]] };
+    }
+
+    async iacRealtimeScanResults(_source: string, _tool: string, _ignore?: string) {
+      return { exitCode: 0, payload: [[]] };
+    }
+
+    async secretsScanResults(_source: string, _ignore?: string) {
+      return { exitCode: 0, payload: [[]] };
+    }
+
+    async riskManagementResults(_projectId: string, _scanId: string) {
+      return { exitCode: 0, payload: {} };
+    }
+
+    async telemetry(_event: string, _sub: string, _engine: string, _severity: string) {
+      return { exitCode: 0 };
+    }
+
+    async detectionTelemetry(_scanType: string, _status: string, _count: number) {
+      return { exitCode: 0 };
+    }
   },
 });

@@ -263,7 +263,7 @@ export class IgniteAuthViewProvider implements vscode.WebviewViewProvider {
       const authService = AuthService.getInstance(this.context, this.logs);
       await authService.logout();
       vscode.window.showInformationMessage("Logged out successfully.");
-      uninstallMcp();
+      await uninstallMcp(this.context, true);
       await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
       // The view will automatically update due to secrets.onDidChange listener
     }

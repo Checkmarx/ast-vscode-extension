@@ -276,6 +276,8 @@ export class CopilotChatCommand {
         const isNonVsCodeIde = isIDE(constants.cursorAgent)
             || isIDE(constants.windsurfAgent)
             || isIDE(constants.windsurfNextAgent)
+            || isIDE(constants.devinAgent)
+            || isIDE(constants.devinNextAgent)
             || isIDE(constants.kiroAgent);
 
         if (isNonVsCodeIde) {
@@ -288,7 +290,7 @@ export class CopilotChatCommand {
                     await this.handleCursorIDE(question);
                     return;
                 }
-                if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
+                if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) {
                     await this.handleWindsurfIDE(question);
                     return;
                 }
@@ -317,7 +319,7 @@ export class CopilotChatCommand {
                 await this.handleCursorIDE(question);
                 return;
             }
-            if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent)) {
+            if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) {
                 await this.handleWindsurfIDE(question);
                 return;
             }

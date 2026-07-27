@@ -125,9 +125,9 @@ export class AuthenticationWebview {
         await vscode.commands.executeCommand(commands.updateCxOneAssist);
         await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
         if (isAiEnabled) {
-          await initializeMcpConfiguration(options.apiKey);
+          await initializeMcpConfiguration(options.apiKey, this.context);
         } else {
-          await uninstallMcp();
+          await uninstallMcp(this.context, false);
         }
         // Removed the second setTimeout that was trying to access disposed webview
         // The panel is already disposed above, so we can't send messages to it
@@ -242,7 +242,7 @@ export class AuthenticationWebview {
                 vscode.window.showInformationMessage(
                   "Logged out successfully."
                 );
-                uninstallMcp();
+                await uninstallMcp(this.context, true);
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
               }
             });

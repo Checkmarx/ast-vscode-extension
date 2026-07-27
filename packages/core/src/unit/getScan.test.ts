@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import "./mocks/vscode-mock";
 import "./mocks/cxWrapper-mock";
-import { cx } from "../cx";
+import * as vscode from "vscode";
+import { initialize, getCx } from "../cx";
 import { resetMocks } from "./mocks/vscode-mock";
 import { setExtensionConfig, resetExtensionConfig } from "../config/extensionConfig";
 
@@ -17,6 +18,19 @@ describe("Cx - getScan", () => {
       displayName: 'Checkmarx',
       extensionType: 'checkmarx',
     });
+
+    // Initialize Cx with mock context
+    const mockContext = {
+      subscriptions: [],
+      extensionUri: vscode.Uri.parse("file:///test"),
+      extensionPath: "/test",
+      secrets: {
+        get: () => Promise.resolve("valid-api-key"),
+        store: () => Promise.resolve(),
+        delete: () => Promise.resolve()
+      }
+    } as any;
+    initialize(mockContext);
   });
 
   afterEach(() => {
@@ -25,6 +39,7 @@ describe("Cx - getScan", () => {
 
   it("should return scan object when valid scanId is provided", async () => {
     const scanId = "e3b2505a-0634-4b41-8fa1-dfeb2edc26f9";
+    const cx = getCx();
     const result = await cx.getScan(scanId);
 
     expect(result).to.deep.equal({
@@ -42,12 +57,14 @@ describe("Cx - getScan", () => {
   });
 
   it("should return undefined when scanId is not provided", async () => {
+    const cx = getCx();
     const result = await cx.getScan(undefined);
     expect(result).to.be.undefined;
   });
 
   it("should return scan undefined when invalid scanId is provided", async () => {
     const scanId = "e3b2505a-0634-4b41-8fa1-dfeb2edc26f7";
+    const cx = getCx();
     const result = await cx.getScan(scanId);
 
     expect(result).to.be.undefined;

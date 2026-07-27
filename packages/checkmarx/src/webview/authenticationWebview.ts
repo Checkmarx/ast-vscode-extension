@@ -207,9 +207,9 @@ export class AuthenticationWebview {
         await vscode.commands.executeCommand(commands.refreshRiskManagementView);
         await vscode.commands.executeCommand(commands.clearKicsDiagnostics);
         if (isAiEnabled) {
-          await initializeMcpConfiguration(options.apiKey);
+          await initializeMcpConfiguration(options.apiKey, this.context);
         } else {
-          await uninstallMcp();
+          await uninstallMcp(this.context, false);
         }
         setTimeout(() => {
           this._panel.webview.postMessage({ type: "clear-message-api-validation" });
@@ -348,7 +348,7 @@ export class AuthenticationWebview {
                 vscode.window.showInformationMessage(
                   "Logged out successfully."
                 );
-                uninstallMcp();
+                await uninstallMcp(this.context, true);
                 await vscode.commands.executeCommand(commands.refreshIgnoredStatusBar);
                 await vscode.commands.executeCommand(commands.refreshScaStatusBar);
                 await vscode.commands.executeCommand(commands.refreshKicsStatusBar);
