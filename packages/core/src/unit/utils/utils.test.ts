@@ -445,6 +445,11 @@ describe("Utils Tests", () => {
       expect(JSON.parse(out).similarityId).to.equal("123456789012345");
     });
 
+    it("quotes a big number as the last array element (before ])", () => {
+      const out = quote('{"ids":[1,123456789012345]}');
+      expect(JSON.parse(out).ids[1]).to.equal("123456789012345");
+    });
+
     it("quotes a big number followed by whitespace", () => {
       const out = quote('{"similarityId":123456789012345 ,"x":1}');
       expect(JSON.parse(out).similarityId).to.equal("123456789012345");
