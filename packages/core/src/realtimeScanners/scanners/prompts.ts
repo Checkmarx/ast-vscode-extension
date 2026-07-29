@@ -67,8 +67,17 @@ Examples:
   - \`npm\`: \`npx tsc --noEmit\`, \`npm run build\`, \`npm test\`
   - \`go\`: \`go build ./...\`, \`go test ./...\`
   - \`maven\`: \`mvn compile\`, \`mvn test\`
-  - \`pypi\`: \`python -c "import ${packageName}"\`, \`pytest\`
+  - \`gradle\`: \`gradle build\`, \`gradle test\`
+  - \`sbt\`: \`sbt compile\`, \`sbt test\`
+  - \`pypi\`/\`setuptools\`/\`pyproject.toml\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
   - \`nuget\`: \`dotnet build\`, \`dotnet test\`
+  - \`bower\` (\`bower.json\`): \`bower install\`, \`bower list\`
+  - \`rubygems\` (\`Gemfile\`): \`bundle install\`, \`bundle exec rspec\`
+  - \`composer\` (\`composer.json\`): \`composer install\`, \`composer validate\`, \`vendor/bin/phpunit\`
+  - \`swift\` (\`Package.swift\`): \`swift build\`, \`swift test\`
+  - \`cocoapods\` (\`Podfile\`/\`Podfile.lock\`): \`pod install --repo-update\`, \`xcodebuild test\`
+  - \`carthage\` (\`Cartfile.resolved\`): \`carthage update --platform ios\`, \`carthage build\`
+  - \`pub\`/\`dart\` (\`pubspec.yaml\`/\`pubspec.lock\`): \`dart pub get\`, \`dart test\` (use \`flutter pub get\`, \`flutter test\` instead if this is a Flutter project)
 
 If any of these validations fail:
 - Attempt to fix the issue if it's obvious
