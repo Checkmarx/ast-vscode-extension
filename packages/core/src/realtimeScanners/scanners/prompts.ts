@@ -76,7 +76,8 @@ Examples:
   - \`nuget\`: \`dotnet build\`, \`dotnet test\`
   - \`bower\` (\`bower.json\`): \`bower install\`, \`bower list\`
   - \`rubygems\` (\`Gemfile\`): \`bundle install\`, \`bundle exec rspec\`
-  - \`packagist\` (\`composer.json\`): \`composer install\`, \`composer validate\`, \`vendor/bin/phpunit\` (**NOTE:** \`packagist\` means composer package manager)
+<<<<<<< HEAD
+  - \`composer\` (\`composer.json\`): \`composer install\`, \`composer validate\`, \`vendor/bin/phpunit\`
   - \`swift\` (\`Package.swift\`): \`swift build\`, \`swift test\`
   - \`cocoapods\` (\`Podfile\`/\`Podfile.lock\`): \`pod install --repo-update\`, \`xcodebuild test\`
   - \`carthage\` (\`Cartfile.resolved\`): \`carthage update --platform ios\`, \`carthage build\`
