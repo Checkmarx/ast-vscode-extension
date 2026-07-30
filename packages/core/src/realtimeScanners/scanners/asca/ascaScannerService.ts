@@ -204,6 +204,15 @@ export class AscaScannerService extends BaseScannerService {
 		return severities[0] || 'LOW';
 	}
 
+	private sortHoverDataBySeverity(hoverData: AscaHoverData[]): AscaHoverData[] {
+		const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+		return [...hoverData].sort((a, b) => {
+			const aIdx = severityOrder.indexOf(a.severity.toUpperCase());
+			const bIdx = severityOrder.indexOf(b.severity.toUpperCase());
+			return aIdx - bIdx;
+		});
+	}
+
 	updateProblems<T = unknown>(problems: T, uri: vscode.Uri): void {
 		const scanResults = problems as unknown as CxAsca;
 		const filePath = uri.fsPath;
@@ -290,7 +299,7 @@ export class AscaScannerService extends BaseScannerService {
 				}
 			}));
 
-			this.ascaHoverData.set(key, hoverProblems);
+			this.ascaHoverData.set(key, this.sortHoverDataBySeverity(hoverProblems));
 
 			const highestSeverity = this.getHighestSeverity(lineResults.map(r => r.severity));
 			const decoration = { range };
@@ -366,7 +375,7 @@ export class AscaScannerService extends BaseScannerService {
 					}
 				}));
 
-				this.ascaHoverData.set(key, hoverProblems);
+				this.ascaHoverData.set(key, this.sortHoverDataBySeverity(hoverProblems));
 			}
 		}
 
