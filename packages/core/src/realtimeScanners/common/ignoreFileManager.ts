@@ -388,15 +388,31 @@ export class IgnoreFileManager {
 			return false;
 		}
 
-		this.ignoreData[packageKey].files.forEach(file => {
-			file.active = false;
-		});
+		const affectedPaths = [...new Set(this.ignoreData[packageKey].files.map(file => file.path))];
+
+		delete this.ignoreData[packageKey];
 
 		this.saveIgnoreFile();
-
 		this.updateTempList();
+		this.syncWatcherBaseline();
+
+		if (this.uiRefreshCallback) {
+			this.uiRefreshCallback();
+		}
+
+		for (const filePath of affectedPaths) {
+			this.rescanFile(filePath);
+		}
 
 		return true;
+	}
+
+	public restorePackage(packageKey: string, snapshot: IgnoreEntry): void {
+		this.ignoreData[packageKey] = JSON.parse(JSON.stringify(snapshot));
+
+		this.saveIgnoreFile();
+		this.updateTempList();
+		this.syncWatcherBaseline();
 	}
 
 	public updatePackageLineNumber(packageKey: string, filePath: string, newLineNumber: number): boolean {
@@ -503,6 +519,7 @@ export class IgnoreFileManager {
 
 		this.saveIgnoreFile();
 		this.updateTempList();
+		this.syncWatcherBaseline();
 		this.uiRefreshCallback?.();
 		const countAfter = this.getIgnoredPackagesCount();
 		if (countBefore === 0 && countAfter > 0 && this.uiRefreshCallback) {
@@ -555,6 +572,7 @@ export class IgnoreFileManager {
 
 		this.saveIgnoreFile();
 		this.updateTempList();
+		this.syncWatcherBaseline();
 		this.uiRefreshCallback?.();
 	}
 
@@ -600,6 +618,7 @@ export class IgnoreFileManager {
 		}
 		this.saveIgnoreFile();
 		this.updateTempList();
+		this.syncWatcherBaseline();
 		this.uiRefreshCallback?.();
 	}
 
@@ -651,6 +670,7 @@ export class IgnoreFileManager {
 		}
 		this.saveIgnoreFile();
 		this.updateTempList();
+		this.syncWatcherBaseline();
 		this.uiRefreshCallback?.();
 	}
 
@@ -697,6 +717,7 @@ export class IgnoreFileManager {
 		}
 		this.saveIgnoreFile();
 		this.updateTempList();
+		this.syncWatcherBaseline();
 		this.uiRefreshCallback?.();
 	}
 
@@ -705,6 +726,20 @@ export class IgnoreFileManager {
 		if (this.statusBarUpdateCallback) {
 			this.statusBarUpdateCallback();
 		}
+	}
+
+	/**
+	 * Re-snapshots the watcher baseline after an entry is ignored (activated).
+	 *
+	 * detectAndHandleActiveChanges() spots a revive by diffing previousIgnoreData
+	 * against ignoreData and looking for files that went active -> inactive. If the
+	 * baseline predates the ignore, the newly ignored file is absent from it, the
+	 * diff comes back empty and the revive is never applied. Refreshing here keeps
+	 * the baseline aware that the file is active, so the next revive is detected on
+	 * the first click.
+	 */
+	private syncWatcherBaseline(): void {
+		this.previousIgnoreData = JSON.parse(JSON.stringify(this.ignoreData));
 	}
 
 	public updateTempList(): void {
