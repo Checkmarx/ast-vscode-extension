@@ -264,77 +264,77 @@ export class OssScannerService extends BaseScannerService {
   private saveCompanionFile(
     tempFolder: string,
     originalFilePath: string
-  ): void {
-    const companionFileNames = this.getCompanionFileNames(
+  ): string | null {
+    const companionFileName = this.getCompanionFileName(
       path.basename(originalFilePath)
     );
-    if (!companionFileNames.length) {
-      return;
+    if (!companionFileName) {
+      return null;
     }
 
-    const parentDir = path.dirname(originalFilePath);
-
-    for (const companionFileName of companionFileNames) {
-      const companionOriginalPath = path.join(parentDir, companionFileName);
-      if (!fs.existsSync(companionOriginalPath)) {
-        continue;
-      }
-
-      const companionTempPath = path.join(tempFolder, companionFileName);
-      fs.copyFileSync(companionOriginalPath, companionTempPath);
+    const companionOriginalPath = path.join(
+      path.dirname(originalFilePath),
+      companionFileName
+    );
+    if (!fs.existsSync(companionOriginalPath)) {
+      return null;
     }
+
+    const companionTempPath = path.join(tempFolder, companionFileName);
+    fs.copyFileSync(companionOriginalPath, companionTempPath);
+    return companionTempPath;
   }
 
-  private getCompanionFileNames(fileName: string): string[] {
-    // npm/Yarn - support both package-lock.json (npm) and yarn.lock (yarn)
+  private getCompanionFileName(fileName: string): string {
+    // npm/Yarn
     if (fileName === "package.json") {
-      return ["package-lock.json", "yarn.lock"];
+      return "package-lock.json";
     }
 
     // .NET
     if (fileName.includes(".csproj")) {
-      return ["packages.lock.json"];
+      return "packages.lock.json";
     }
 
-    // Swift Package Manager
+    // Swift Package Manager (AST-165765)
     if (fileName === "Package.swift") {
-      return ["Package.resolved"];
+      return "Package.resolved";
     }
     if (fileName.startsWith("Package@swift-") && fileName.endsWith(".swift")) {
-      return [fileName.replace(".swift", ".resolved")];
+      return fileName.replace(".swift", ".resolved");
     }
 
-    // CocoaPods
+    // CocoaPods (AST-165761)
     if (fileName === "Podfile") {
-      return ["Podfile.lock"];
+      return "Podfile.lock";
     }
 
     // Carthage
     if (fileName === "Cartfile" || fileName === "Cartfile.private") {
-      return ["Cartfile.resolved"];
+      return "Cartfile.resolved";
     }
 
     // Ruby Bundler
     if (fileName === "Gemfile") {
-      return ["Gemfile.lock"];
+      return "Gemfile.lock";
     }
 
     // PHP Composer
     if (fileName === "composer.json") {
-      return ["composer.lock"];
+      return "composer.lock";
     }
 
     // Python Poetry
     if (fileName === "pyproject.toml") {
-      return ["poetry.lock"];
+      return "poetry.lock";
     }
 
     // Dart/Flutter Pub
     if (fileName === "pubspec.yaml") {
-      return ["pubspec.lock"];
+      return "pubspec.lock";
     }
 
-    return [];
+    return "";
   }
 
   public updatePackageDecorationToIgnored(hoverData: HoverData): void {
