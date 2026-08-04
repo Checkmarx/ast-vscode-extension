@@ -45,6 +45,10 @@ import { IacScannerCommand } from '../realtimeScanners/scanners/iac/iacScannerCo
 import { AscaScannerCommand } from '../realtimeScanners/scanners/asca/ascaScannerCommand';
 import { ContainersScannerCommand } from '../realtimeScanners/scanners/containers/containersScannerCommand';
 import { DiagnosticCommand } from '../commands/diagnosticCommand';
+import { SecurityReviewCommand } from '../commands/securityReviewCommand';
+import { SecurityReviewSessionTracker } from '../utils/securityReviewSessionTracker';
+import { FixAllCheckmarxService } from '../services/fixAllCheckmarxService';
+import { FixBulkFindingsService } from '../services/fixBulkFindingsService';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
 
@@ -302,6 +306,31 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
 
     // MCP settings injector is handled in activateCore; no need to register again here
     copilotChatCommand.registerCopilotChatCommand();
+
+    const securityReviewSessionTracker = new SecurityReviewSessionTracker(context);
+    const securityReviewCommand = new SecurityReviewCommand(
+        context,
+        logs,
+        {
+            oss: ossScanner,
+            secrets: secretScanner,
+            iac: iacScanner,
+            asca: ascaScanner,
+            containers: containersScanner,
+        },
+        securityReviewSessionTracker,
+    );
+    securityReviewCommand.register();
+
+    // Initialize "Fix All Checkmarx" service
+    const fixAllCheckmarxService = new FixAllCheckmarxService(logs);
+    await fixAllCheckmarxService.initialize();
+    context.subscriptions.push(fixAllCheckmarxService);
+
+    // Initialize "Fix Bulk Findings" service (categorized remediation)
+    const fixBulkFindingsService = new FixBulkFindingsService(logs);
+    await fixBulkFindingsService.initialize();
+    context.subscriptions.push(fixBulkFindingsService);
 
     const ignoredView = new IgnoredView(context);
 

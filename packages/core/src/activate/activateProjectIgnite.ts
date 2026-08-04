@@ -18,6 +18,10 @@ import { IacScannerCommand } from '../realtimeScanners/scanners/iac/iacScannerCo
 import { AscaScannerCommand } from '../realtimeScanners/scanners/asca/ascaScannerCommand';
 import { ContainersScannerCommand } from '../realtimeScanners/scanners/containers/containersScannerCommand';
 import { WebViewCommand } from '../commands/webViewCommand';
+import { SecurityReviewCommand } from '../commands/securityReviewCommand';
+import { SecurityReviewSessionTracker } from '../utils/securityReviewSessionTracker';
+import { FixAllCheckmarxService } from '../services/fixAllCheckmarxService';
+import { FixBulkFindingsService } from '../services/fixBulkFindingsService';
 import { DocAndFeedbackView } from '../views/docsAndFeedbackView/docAndFeedbackView';
 
 /**
@@ -64,6 +68,31 @@ export async function activateProjectIgnite(context: vscode.ExtensionContext, lo
         containersScanner,
     );
     copilotChatCommand.registerCopilotChatCommand();
+
+    const securityReviewSessionTracker = new SecurityReviewSessionTracker(context);
+    const securityReviewCommand = new SecurityReviewCommand(
+        context,
+        logs,
+        {
+            oss: ossScanner,
+            secrets: secretScanner,
+            iac: iacScanner,
+            asca: ascaScanner,
+            containers: containersScanner,
+        },
+        securityReviewSessionTracker,
+    );
+    securityReviewCommand.register();
+
+    // Initialize "Fix All Checkmarx" service
+    const fixAllCheckmarxService = new FixAllCheckmarxService(logs);
+    await fixAllCheckmarxService.initialize();
+    context.subscriptions.push(fixAllCheckmarxService);
+
+    // Initialize "Fix Bulk Findings" service (categorized remediation)
+    const fixBulkFindingsService = new FixBulkFindingsService(logs);
+    await fixBulkFindingsService.initialize();
+    context.subscriptions.push(fixBulkFindingsService);
 
     const ignoredView = new IgnoredView(context);
     context.subscriptions.push(
