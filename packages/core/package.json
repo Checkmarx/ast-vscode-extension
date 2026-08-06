@@ -10,7 +10,9 @@
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "clean": "rimraf out",
     "unit-test-core": "npx mocha",
-    "unit-test-core:coverage": "npx nyc --check-coverage --lines 85 --statements 81 --functions 77 --branches 60 npm run unit-test-core"
+    "unit-test-core:coverage": "npx nyc --check-coverage --lines 85 --statements 81 --functions 77 --branches 60 npm run unit-test-core",
+    "integration-test-core": "npx mocha --config .mocharc.integration.json",
+    "integration-test-core:coverage": "npx nyc --nycrc-path .nycrc.integration.json npm run integration-test-core"
   },
   "nyc": {
     "all": true,
