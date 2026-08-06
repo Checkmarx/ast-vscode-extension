@@ -104,10 +104,10 @@ jobs:
           docker info
       - name: Run core integration tests with coverage
         env:
-          CX_API_KEY: ${{ secrets.API_KEY }}
+          CX_API_KEY: ${{ secrets.CX_API_KEY }}
           CX_TEST_PROJECT_ID: ${{ secrets.CX_TEST_PROJECT_ID }}
           CX_TEST_BRANCH: ${{ secrets.CX_TEST_BRANCH }}
-          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
+          CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
         run: npm run integration-coverage:test:core
       - name: Upload integration coverage report
         if: always()
@@ -227,8 +227,8 @@ jobs:
       - name: Run integration tests (Linux)
         if: runner.os == 'Linux'
         env:
-          CX_API_KEY: ${{ secrets.API_KEY }}
-          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
+          CX_API_KEY: ${{ secrets.CX_API_KEY }}
+          CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
