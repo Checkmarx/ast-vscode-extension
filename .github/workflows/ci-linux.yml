@@ -58,7 +58,7 @@ jobs:
           retention-days: 7
 
   core-integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     steps:
       - name: Checkout
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
@@ -90,7 +90,7 @@ jobs:
       - name: Ensure Docker is available (required by TestKicsRealtime.test.ts)
         run: |
           if ! command -v docker >/dev/null 2>&1; then
-            echo "❌ Docker is not installed on this runner. This job requires a runner image with Docker preinstalled (e.g. GitHub-hosted ubuntu-latest)."
+            echo "❌ Docker is not installed on this runner. This job requires a runner image with Docker preinstalled (e.g. GitHub-hosted cx-public-ubuntu-x64)."
             exit 1
           fi
           if ! docker info >/dev/null 2>&1; then
