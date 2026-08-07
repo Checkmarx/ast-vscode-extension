@@ -92,15 +92,31 @@ describe('Integration: Triage Operations', function () {
         expect(threw).to.equal(false, 'triageUpdate should not throw for a valid SAST result');
     });
 
-    it('should restore triage state after updating (round-trip)', async function () {
+    it('should restore triage state to its original value (round-trip)', async function () {
+        // Capture → mutate → restore to prevent corrupting shared tenant state across CI runs
         expect(firstSastResult, 'Expected a SAST result with a similarityId in the test scan').to.not.be.undefined;
+
+        let originalState = 'TO_VERIFY'; // Default fallback
+        try {
+            const predicates = await cx.triageShow(
+                firstSastResult!.projectId,
+                firstSastResult!.similarityId,
+                'sast'
+            );
+            if (predicates && predicates.length > 0) {
+                originalState = predicates[0].state || 'TO_VERIFY';
+            }
+        } catch {
+            // If retrieval fails, use default
+        }
+
         let threw = false;
         try {
             await cx.triageUpdate(
                 firstSastResult!.projectId,
                 firstSastResult!.similarityId,
                 'sast',
-                'TO_VERIFY',
+                originalState,
                 'Restored by integration test',
                 'HIGH',
                 null as unknown as number
@@ -108,7 +124,7 @@ describe('Integration: Triage Operations', function () {
         } catch {
             threw = true;
         }
-        expect(threw).to.equal(false, 'Restoring triage state should not throw');
+        expect(threw).to.equal(false);
     });
 
     it('should attempt triageSCAShow and handle gracefully', async function () {

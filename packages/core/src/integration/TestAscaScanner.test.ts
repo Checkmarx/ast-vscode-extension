@@ -27,7 +27,7 @@ module.exports = { add };
 `;
 
 describe('Integration: ASCA Real-Time Scanner', function () {
-    this.timeout(180000); // ASCA install + scan can be slow
+    this.timeout(60000); // 1m default; install test uses 3m
 
     let cx: Cx;
     let tmpDir: string;
@@ -54,6 +54,7 @@ describe('Integration: ASCA Real-Time Scanner', function () {
     });
 
     it('should install ASCA engine successfully', async function () {
+        this.timeout(180000); // Engine download is slow
         const result = await cx.installAsca();
         expect(result).to.not.be.undefined;
         expect(result.error, `ASCA install failed: ${result.error}`).to.be.undefined;
@@ -63,6 +64,8 @@ describe('Integration: ASCA Real-Time Scanner', function () {
         const result = await cx.scanAsca(vulnerableFile, '');
         expect(result).to.not.be.undefined;
         expect(result.error, `scanAsca failed: ${result.error}`).to.be.undefined;
+        const violations = result.scanDetails ?? [];
+        expect(violations.length).to.be.greaterThan(0, 'Expected ASCA to detect hardcoded secrets in vulnerable.js');
     });
 
     it('should run ASCA scan on a clean file and return no critical findings', async function () {

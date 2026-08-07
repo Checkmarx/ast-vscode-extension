@@ -78,12 +78,16 @@ describe('Integration: IAC Real-Time Scanner', function () {
         const result = await cx.iacScanResults(vulnerableTf, CONTAINERS_MANAGEMENT_TOOL, '');
         expect(result).to.not.be.undefined;
         expect(result).to.be.an('array');
+        const flatFindings = (result ?? []).flat ? (result ?? []).flat(Infinity) : (result ?? []);
+        expect(flatFindings.length).to.be.greaterThan(0, 'Expected IAC scan to detect misconfiguration in public S3 bucket');
     });
 
     it('should run IAC scan on a YAML file and return results', async function () {
         const result = await cx.iacScanResults(vulnerableYaml, CONTAINERS_MANAGEMENT_TOOL, '');
         expect(result).to.not.be.undefined;
         expect(result).to.be.an('array');
+        const flatFindings = (result ?? []).flat ? (result ?? []).flat(Infinity) : (result ?? []);
+        expect(flatFindings.length).to.be.greaterThan(0, 'Expected IAC scan to detect open security group in CloudFormation template');
     });
 
     it('should return empty findings for a clean IaC file', async function () {

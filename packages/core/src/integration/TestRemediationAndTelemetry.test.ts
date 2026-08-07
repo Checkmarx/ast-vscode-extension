@@ -34,17 +34,17 @@ describe('Integration: Remediation and Telemetry', function () {
     });
 
     it('should retrieve risk management results (or fail gracefully) for a known project/scan', async function () {
-        let threw = false;
+        let outcome: 'success' | 'error' = 'error';
         try {
             const result = await cx.getRiskManagementResults(CX_TEST_PROJECT_ID, CX_TEST_SCAN_ID);
             expect(result).to.not.be.undefined;
+            outcome = 'success';
         } catch (err: any) {
-            // Risk management may not be enabled for every tenant/project — a real
-            // error surfacing here still exercises the call path.
-            expect(err).to.not.be.undefined;
-            threw = true;
+            // Not enabled on all tenants; error still exercises the call path
+            expect(err.message).to.be.a('string');
+            outcome = 'error';
         }
-        expect(typeof threw).to.equal('boolean');
+        expect(['success', 'error']).to.include(outcome);
     });
 
     it('should send user event logs telemetry without throwing', async function () {

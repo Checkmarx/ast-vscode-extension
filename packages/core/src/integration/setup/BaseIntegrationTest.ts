@@ -74,12 +74,16 @@ export function createCx(): Cx {
     return new Cx(context);
 }
 
-/** Cx instance wired with an intentionally wrong API key, to verify error paths. */
+/** Cx with invalid API key; also wires singleton so AuthService sees invalid context */
 export function createInvalidCx(): Cx {
-    return new Cx(createMockContext(INVALID_API_KEY));
+    const context = createMockContext(INVALID_API_KEY);
+    initializeCxSingleton(context);
+    return new Cx(context);
 }
 
-/** Cx instance wired with an empty API key, to verify missing-credentials paths. */
+/** Cx with empty API key; also wires singleton so AuthService sees empty context */
 export function createEmptyCx(): Cx {
-    return new Cx(createMockContext(EMPTY_API_KEY));
+    const context = createMockContext(EMPTY_API_KEY);
+    initializeCxSingleton(context);
+    return new Cx(context);
 }

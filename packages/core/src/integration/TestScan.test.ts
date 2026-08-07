@@ -77,8 +77,9 @@ describe('Integration: Scan Operations', function () {
             expect(createdScanId).to.be.a('string');
         } finally {
             if (createdScanId) {
-                // Cancel the scan so we don't leave it running
-                try { await cx.scanCancel(createdScanId); } catch { /* ignore cancel errors */ }
+                // scanCancel returns boolean; verify it succeeded to avoid lingering scans
+                const cancelSuccess = await cx.scanCancel(createdScanId);
+                expect(cancelSuccess).to.equal(true, `Failed to cancel scan ${createdScanId}`);
             }
             fs.rmSync(tmpDir, { recursive: true, force: true });
         }
