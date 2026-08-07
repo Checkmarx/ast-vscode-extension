@@ -51,6 +51,7 @@ describe('Integration: Containers Real-Time Scanner', function () {
         const result = await cx.scanContainers(vulnerableDockerfile, '');
         expect(result).to.not.be.undefined;
         expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0, 'Expected Containers scan to detect vulnerabilities in ubuntu:14.04 base image');
     });
 
     it('should return results for a Dockerfile with a newer base image', async function () {

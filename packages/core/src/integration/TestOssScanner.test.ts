@@ -57,11 +57,13 @@ describe('Integration: OSS Real-Time Scanner', function () {
         const result = await cx.ossScanResults(vulnerableManifest, '');
         expect(result).to.not.be.undefined;
         expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0, 'Expected OSS scan to detect vulnerable package lodash@4.17.4');
     });
 
     it('should return results array for a manifest file', async function () {
         const result = await cx.ossScanResults(vulnerableManifest, '');
         expect(result).to.be.an('array');
+        expect(result.length).to.be.greaterThan(0, 'Expected OSS scan to detect vulnerabilities in package.json');
     });
 
     it('should complete without error or throw a known "unsupported file" error for a non-manifest source file', async function () {
