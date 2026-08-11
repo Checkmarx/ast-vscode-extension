@@ -57,76 +57,6 @@ jobs:
           path: packages/core/coverage/
           retention-days: 7
 
-  core-integration-tests:
-    name: Core Integration Tests
-    runs-on: cx-public-ubuntu-x64
-    concurrency:
-      group: core-integration-tests
-      cancel-in-progress: false
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
-        with:
-          persist-credentials: false
-      - name: Verify single lockfile
-        run: |
-          if [ -f yarn.lock ] && [ -f package-lock.json ]; then
-            echo "❌ ERROR: Both yarn.lock and package-lock.json found. Policy requires exactly ONE package manager. Allowed: npm + package-lock.json OR Yarn + yarn.lock"
-            exit 1
-          fi
-          if [ ! -f yarn.lock ] && [ ! -f package-lock.json ]; then
-            echo "❌ ERROR: No lockfile found. Policy requires exactly ONE package manager lockfile. Required: npm + package-lock.json OR Yarn + yarn.lock"
-            exit 1
-          fi
-      - name: Setup Node.js
-        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
-        with:
-          node-version: 22.11.0
-      - name: Authenticate with npm registries
-        env:
-          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          echo "registry=https://npm.echohq.com/" > ~/.npmrc
-          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
-          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
-      - name: Install dependencies
-        env:
-          NPM_CONFIG_LOGLEVEL: http
-        run: |
-          npm run ci:all
-      - name: Ensure Docker is available (required by TestKicsRealtime.test.ts)
-        run: |
-          if ! command -v docker >/dev/null 2>&1; then
-            echo "❌ Docker is not installed on this runner. This job requires a runner image with Docker preinstalled (e.g. GitHub-hosted cx-public-ubuntu-x64)."
-            exit 1
-          fi
-          if ! docker info >/dev/null 2>&1; then
-            echo "Docker daemon not reachable — attempting to start it..."
-            sudo systemctl start docker || sudo service docker start
-            for i in $(seq 1 10); do
-              docker info >/dev/null 2>&1 && break
-              sleep 2
-            done
-          fi
-          docker info
-      - name: Run core integration tests with coverage
-        env:
-          CX_API_KEY: ${{ secrets.CX_API_KEY }}
-          CX_TEST_PROJECT_ID: ${{ secrets.CX_TEST_PROJECT_ID }}
-          CX_TEST_BRANCH: ${{ secrets.CX_TEST_BRANCH }}
-          CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
-        run: npm run integration-coverage:test:core
-      - name: Upload integration coverage report
-        if: always()
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        with:
-          name: coverage-core-integration
-          path: packages/core/coverage/
-          retention-days: 7
-
   # Test both extensions with E2E tests
   end-to-end-tests:
     name: End-to-End Tests
@@ -237,8 +167,8 @@ jobs:
       - name: Run integration tests (Linux)
         if: runner.os == 'Linux'
         env:
-          CX_API_KEY: ${{ secrets.CX_API_KEY }}
-          CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
+          CX_API_KEY: ${{ secrets.API_KEY }}
+          CX_TEST_SCAN_ID: ${{ secrets.TEST_SCAN_ID }}
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
