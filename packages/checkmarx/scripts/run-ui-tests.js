@@ -34,7 +34,8 @@ const env = { ...process.env, TEST: testEnvValue };
 // Double quotes suppress glob expansion in both POSIX shells (bash/sh, used
 // on the Linux CI runner) and cmd.exe (used on Windows), so the pattern
 // reaches `extest` unexpanded on either platform.
-const extestCommand = `npx extest setup-and-run "${testPattern}" -c 1.88.1 -i -r .`;
+const testSettingsPath = path.join(__dirname, 'test-vscode-settings.json');
+const extestCommand = `npx extest setup-and-run "${testPattern}" -c 1.88.1 -i -r . -o "${testSettingsPath}"`;
 
 let exitCode = 0;
 try {

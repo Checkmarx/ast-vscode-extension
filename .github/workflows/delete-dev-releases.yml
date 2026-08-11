@@ -7,6 +7,10 @@ on:
         description: "Tag to delete"
         required: true
         type: string
+    secrets:
+      GITHUB_TOKEN:
+        description: "GitHub token for authentication"
+        required: true
   workflow_dispatch:
     inputs:
       tag:
@@ -16,10 +20,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   delete:
+    name: Delete Old Dev Releases
     permissions:
-      contents: write
+      contents: write # For deleting releases and tags
     runs-on: cx-public-ubuntu-x64
     steps:
       - name: Delete releases and tags
