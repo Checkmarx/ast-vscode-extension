@@ -65,11 +65,11 @@ This document was written for the VS Code plugin, and applies equally to the oth
   - **Developer Assist API Key** 
   - **For VS Code**: Supported for VS Code version **1.100.0** or above  
     (supports both `settings.json` (v1.100–1.101) and `mcp.json` (v1.102+))
-  - **For VS Code**: You must have **GitHub Copilot** installed
+  - **For VS Code**: You must have **GitHub Copilot** or **Claude Code** installed
 ### Installation
 1. Install the **Checkmarx Developer Assist** extension from the Marketplace.
 2. In the IDE, open Checkmarx **Settings**, click on **Authentication**, and enter your access key in the **Developer Assist API Key** field.
-3. Start running the Checkmarx MCP server.
+3. Start running the Checkmarx MCP server. The **Checkmarx MCP Authentication** setting is **Token Based** by default, authenticating using an API key, so no additional authentication steps are required.
 
 **GIF - Getting Started With Developer Assist**
 ![Getting Started With Developer Assist](https://raw.githubusercontent.com/Checkmarx/ci-cd-integrations/main/.images/VS_Code_Getting_Started_with_Developer_Assist_standalone.gif)
