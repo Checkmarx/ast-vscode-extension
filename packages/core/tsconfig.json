@@ -17,7 +17,8 @@
     "out",
 	    "src/test",
 	    "src/e2e",
-	    "src/unit"
+	    "src/unit",
+	    "src/integration"
   ]
 }
 
