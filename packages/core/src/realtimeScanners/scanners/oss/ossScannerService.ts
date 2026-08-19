@@ -264,35 +264,77 @@ export class OssScannerService extends BaseScannerService {
   private saveCompanionFile(
     tempFolder: string,
     originalFilePath: string
-  ): string | null {
-    const companionFileName = this.getCompanionFileName(
+  ): void {
+    const companionFileNames = this.getCompanionFileNames(
       path.basename(originalFilePath)
     );
-    if (!companionFileName) {
-      return null;
+    if (!companionFileNames.length) {
+      return;
     }
 
-    const companionOriginalPath = path.join(
-      path.dirname(originalFilePath),
-      companionFileName
-    );
-    if (!fs.existsSync(companionOriginalPath)) {
-      return null;
-    }
+    const parentDir = path.dirname(originalFilePath);
 
-    const companionTempPath = path.join(tempFolder, companionFileName);
-    fs.copyFileSync(companionOriginalPath, companionTempPath);
-    return companionTempPath;
+    for (const companionFileName of companionFileNames) {
+      const companionOriginalPath = path.join(parentDir, companionFileName);
+      if (!fs.existsSync(companionOriginalPath)) {
+        continue;
+      }
+
+      const companionTempPath = path.join(tempFolder, companionFileName);
+      fs.copyFileSync(companionOriginalPath, companionTempPath);
+    }
   }
 
-  private getCompanionFileName(fileName: string): string {
+  private getCompanionFileNames(fileName: string): string[] {
+    // npm/Yarn - support both package-lock.json (npm) and yarn.lock (yarn)
     if (fileName === "package.json") {
-      return "package-lock.json";
+      return ["package-lock.json", "yarn.lock"];
     }
+
+    // .NET
     if (fileName.includes(".csproj")) {
-      return "packages.lock.json";
+      return ["packages.lock.json"];
     }
-    return "";
+
+    // Swift Package Manager
+    if (fileName === "Package.swift") {
+      return ["Package.resolved"];
+    }
+    if (fileName.startsWith("Package@swift-") && fileName.endsWith(".swift")) {
+      return [fileName.replace(".swift", ".resolved")];
+    }
+
+    // CocoaPods
+    if (fileName === "Podfile") {
+      return ["Podfile.lock"];
+    }
+
+    // Carthage
+    if (fileName === "Cartfile" || fileName === "Cartfile.private") {
+      return ["Cartfile.resolved"];
+    }
+
+    // Ruby Bundler
+    if (fileName === "Gemfile") {
+      return ["Gemfile.lock"];
+    }
+
+    // PHP Composer
+    if (fileName === "composer.json") {
+      return ["composer.lock"];
+    }
+
+    // Python Poetry
+    if (fileName === "pyproject.toml") {
+      return ["poetry.lock"];
+    }
+
+    // Dart/Flutter Pub
+    if (fileName === "pubspec.yaml") {
+      return ["pubspec.lock"];
+    }
+
+    return [];
   }
 
   public updatePackageDecorationToIgnored(hoverData: HoverData): void {

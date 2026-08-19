@@ -277,22 +277,45 @@ export const constants = {
   manualSetupAssistName: "manual",
 
   supportedManifestFilePatterns: [
+    // .NET
     "**/Directory.Packages.props",
     "**/packages.config",
-    "**/pom.xml",
-    "**/package.json",
-    "**/go.mod",
     "**/*.csproj",
-    "**/*.gradle",
-    "**/*.gradle.kts",
-    "**/*.sbt",
-    "**/libs.versions.toml",
+    // Maven
+    "**/pom.xml",
+    // npm
+    "**/package.json",
+    // Bower
+    "**/bower.json",
+    // Python
     "**/requirement*.txt",
     "**/constraints.txt",
     "**/constraints-*.txt",
     "**/pyproject.toml",
     "**/setup.cfg",
-    "**/setup.py"
+    "**/setup.py",
+    // Go
+    "**/go.mod",
+    // Gradle
+    "**/*.gradle",
+    "**/*.gradle.kts",
+    "**/libs.versions.toml",
+    // SBT
+    "**/*.sbt",
+    // Ruby
+    "**/Gemfile",
+    // PHP Composer
+    "**/composer.json",
+    // TODO: iOS packages (CocoaPods, Carthage, Swift Package Manager) OSS realtime scanning will be enabled in future releases
+    // "**/Podfile",
+    // "**/*.podspec",
+    // "**/*.podspec.json",
+    // "**/Cartfile",
+    // "**/Cartfile.private",
+    // "**/Package.swift",
+    // "**/Package@swift-*.swift",
+    // TODO: Dart/Flutter pub OSS realtime scanning will be enabled in future releases
+    // "**/pubspec.yaml"
   ],
   ossIcons: {
     critical: "critical_severity.png",

@@ -1,4 +1,5 @@
 import { getMessages } from "../../config/extensionMessages";
+import { mapPackageManagerToRemediationFormat } from "./packageManagerMapper";
 
 const getAgentName = () => getMessages().productName;
 const getProductName = () => getMessages().displayName;
@@ -7,9 +8,11 @@ export const SCA_REMEDIATION_PROMPT = (
   packageVersion: string,
   packageManager: string,
   status: string
-) => `You are the ${getAgentName()}.
+) => {
+  const mappedPackageManager = mapPackageManagerToRemediationFormat(packageManager);
+  return `You are the ${getAgentName()}.
 
-A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${packageManager}\`).
+A security issue has been detected in \`${packageName}@${packageVersion}\` (package manager: \`${mappedPackageManager}\`).
 **Severity:** \`${status}\`
 Your task is to remediate the issue **completely and autonomously** using the internal PackageRemediation tool in ${getProductName()} MCP. Follow the exact instructions in \`fix_instructions\` — no assumptions or manual interaction allowed.
 
@@ -27,7 +30,7 @@ Call the internal PackageRemediation tool with:
 {
   "packageName": "${packageName}",
   "packageVersion": "${packageVersion}",
-  "packageManager": "${packageManager}",
+  "packageManager": "${mappedPackageManager}",
   "issueType": "{determined issueType}"
 }
 \`\`\`
@@ -63,12 +66,21 @@ Examples:
 3. VERIFICATION:
 
 - If the instructions include build, test, or audit steps — run them exactly as written
-- If instructions do not explicitly cover validation, perform basic checks based on \`${packageManager}\`:
-  - \`npm\`: \`npx tsc --noEmit\`, \`npm run build\`, \`npm test\`
+- If instructions do not explicitly cover validation, perform basic checks based on \`${mappedPackageManager}\`:
+  - \`npm\`: \`npx tsc --noEmit\`, \`npm run build\`, \`npm test\` (**IMPORTANT:** If you detect the file is \`bower.json\`, use \`bower install\`, \`bower list\` instead)
   - \`go\`: \`go build ./...\`, \`go test ./...\`
   - \`maven\`: \`mvn compile\`, \`mvn test\`
-  - \`pypi\`: \`python -c "import ${packageName}"\`, \`pytest\`
+  - \`gradle\`: \`gradle build\`, \`gradle test\`
+  - \`sbt\`: \`sbt compile\`, \`sbt test\`
+  - \`pypi\`/\`setuptools\`/\`pyproject.toml\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
   - \`nuget\`: \`dotnet build\`, \`dotnet test\`
+  - \`bower\` (\`bower.json\`): \`bower install\`, \`bower list\`
+  - \`rubygems\` (\`Gemfile\`): \`bundle install\`, \`bundle exec rspec\`
+  - \`packagist\` (\`composer.json\`): \`composer install\`, \`composer validate\`, \`vendor/bin/phpunit\` (**NOTE:** \`packagist\` means composer package manager)
+  - \`swift\` (\`Package.swift\`): \`swift build\`, \`swift test\`
+  - \`cocoapods\` (\`Podfile\`/\`Podfile.lock\`): \`pod install --repo-update\`, \`xcodebuild test\`
+  - \`carthage\` (\`Cartfile.resolved\`): \`carthage update --platform ios\`, \`carthage build\`
+  - \`pub\`/\`dart\` (\`pubspec.yaml\`/\`pubspec.lock\`): \`dart pub get\`, \`dart test\` (use \`flutter pub get\`, \`flutter test\` instead if this is a Flutter project)
 
 If any of these validations fail:
 - Attempt to fix the issue if it's obvious
@@ -89,7 +101,7 @@ Format:
 
 Package:     ${packageName}
 Version:     ${packageVersion}
-Manager:     ${packageManager}
+Manager:     ${mappedPackageManager}
 Severity:    ${status}
 
 Files Modified:
@@ -136,6 +148,7 @@ If failed:
 - Insert clear TODO comments for unresolved issues
 - Ensure remediation is deterministic, auditable, and fully automated
 `;
+};
 
 export const SECRET_REMEDIATION_PROMPT = (
   title: string,
