@@ -331,19 +331,26 @@ const CX_AI_BADGE_CONFIG = {
 } as const;
 
 /**
- * Renders the CxAI badge with appropriate theming and extension-specific icons
- * Uses local file paths from the core media folder
+ * Resolves the absolute filesystem path of the "Checkmarx One Assist" / "Checkmarx Developer Assist"
+ * badge icon for the current extension + theme. Shared by the native hover (which can use a raw
+ * file:// path directly) and any webview (which must convert this via `webview.asWebviewUri()`).
  */
-export function renderCxAiBadge(): string {
+export function getCxAiBadgeIconPath(): string {
   const extensionType = getExtensionType();
   const icons = extensionType === EXTENSION_TYPE.CHECKMARX
     ? CX_AI_BADGE_CONFIG.checkmarxIcons
     : CX_AI_BADGE_CONFIG.devAssistIcons;
 
   const iconFile = ThemeUtils.selectIconByTheme(icons.light, icons.dark);
-  const iconPath = MediaPathResolver.getMediaFilePath('icons', iconFile);
-  const iconUri = vscode.Uri.file(iconPath).toString();
+  return MediaPathResolver.getMediaFilePath('icons', iconFile);
+}
 
+/**
+ * Renders the CxAI badge with appropriate theming and extension-specific icons
+ * Uses local file paths from the core media folder
+ */
+export function renderCxAiBadge(): string {
+  const iconUri = vscode.Uri.file(getCxAiBadgeIconPath()).toString();
   return `<img src="${iconUri}" style="${CX_AI_BADGE_CONFIG.style}"/>`;
 }
 

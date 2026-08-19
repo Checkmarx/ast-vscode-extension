@@ -17,6 +17,7 @@ import CxResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/results/Cx
 import { getResultsWithProgress } from "../../utils/pickers/pickers";
 import { ResultsProvider } from "../resultsProviders";
 import { riskManagementView } from '../riskManagementView/riskManagementView';
+import { AiTriageViewProvider } from '../aiTriageView/aiTriageViewProvider';
 import { validateConfigurationAndLicense } from "../../utils/common/configValidators";
 
 export class AstResultsProvider extends ResultsProvider {
@@ -24,6 +25,7 @@ export class AstResultsProvider extends ResultsProvider {
   public loadedResults: CxResult[] | undefined;
   private scan: Item | undefined;
   private riskManagementView: riskManagementView;
+  private aiTriageView: AiTriageViewProvider;
 
   constructor(
     protected readonly context: vscode.ExtensionContext,
@@ -50,9 +52,30 @@ export class AstResultsProvider extends ResultsProvider {
       })
     );
 
+    // AI Triage table webview (Checkmarx One only) — mirrors the risk view lifecycle
+    this.aiTriageView = new AiTriageViewProvider(context, logs);
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        commands.aiTriageView,
+        this.aiTriageView
+      )
+    );
+    context.subscriptions.push(
+      vscode.commands.registerCommand(commands.refreshAiTriage, async () => {
+        // Reload the latest results for the selected scan, then re-render.
+        await this.openRefreshData();
+        await this.aiTriageView.refresh(this.loadedResults);
+      })
+    );
+
     // Syncing with AST everytime the extension gets opened
     this.openRefreshData()
       .then(() => logs.info(messages.dataRefreshed));
+  }
+
+  /** Mark a result as AI-triaged so the AI Triage view shows the completed icon. */
+  public markAiTriaged(similarityId: string, stateDisplay: string): void {
+    this.aiTriageView.markTriaged(similarityId, stateDisplay);
   }
 
   async clean(): Promise<void> {
@@ -123,6 +146,7 @@ export class AstResultsProvider extends ResultsProvider {
       else {
         this.loadedResults = undefined;
         this.riskManagementView.updateContent();
+        void this.aiTriageView.refresh();
 
       }
     }
@@ -141,6 +165,7 @@ export class AstResultsProvider extends ResultsProvider {
       // Update the risks management webview with project info
       const project = getFromState(this.context, constants.projectIdKey);
       this.riskManagementView.updateContent({ project, scan: this.scan, cxResults: this.loadedResults });
+      void this.aiTriageView.refresh(this.loadedResults);
 
       const newItem = new TreeItem(`${this.scan.scanDatetime}`, constants.calendarItem);
       treeItems = treeItems.concat(newItem);

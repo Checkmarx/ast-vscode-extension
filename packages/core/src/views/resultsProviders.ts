@@ -241,7 +241,9 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
       line: node.line,
       uniqueId: node.uniqueId,
       packageIdentifier: resultForLink.scaNode?.packageIdentifier,
-      resultId: resultForLink.id
+      resultId: resultForLink.id,
+      scanId: (this.context.workspaceState.get(constants.scanIdKey) as { id?: string })?.id,
+      resultType: resultForLink.type
     };
 
     // Link name for both SAST and SCA results

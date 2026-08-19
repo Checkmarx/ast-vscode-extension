@@ -1693,4 +1693,8 @@ export class CxMock implements CxPlatform {
     // Mock implementation - no actual telemetry sent in tests
     console.log(`[CxMock] AI Fix Outcome Telemetry: ${eventType}, ${scannerType}, ${severity}`);
   }
+
+  async aiTriage(_scanId: string, _scannerType: string, _resultIds: string[]): Promise<void> {
+    // Mock implementation
+  }
 }

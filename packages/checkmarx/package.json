@@ -46,6 +46,49 @@
         "title": "Details"
       },
       {
+        "command": "ast-results.refreshPullRequests",
+        "category": "ast-results",
+        "title": "Refresh Pull Requests",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ast-results.filterPullRequestsByAuthor",
+        "category": "ast-results",
+        "title": "Filter Pull Requests by Author",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "ast-results.rescanPullRequest",
+        "category": "ast-results",
+        "title": "Rescan"
+      },
+      {
+        "command": "ast-results.commitMessageRiskCheck",
+        "category": "ast-results",
+        "title": "Commit Message Risk Check"
+      },
+      {
+        "command": "ast-results.gitBlameRiskCheck",
+        "category": "ast-results",
+        "title": "Git Blame Risk"
+      },
+      {
+        "command": "ast-results.prHealthCheck",
+        "category": "ast-results",
+        "title": "PR Health"
+      },
+      {
+        "command": "ast-results.remediateVulnerability",
+        "category": "ast-results",
+        "title": "Remediate vulnerability"
+      },
+      {
+        "command": "ast-results.openPullRequestDiff",
+        "category": "ast-results",
+        "title": "Open Pull Request Diff",
+        "icon": "$(diff)"
+      },
+      {
         "command": "ast-results.viewResult",
         "category": "ast-results",
         "title": "View",
@@ -78,6 +121,37 @@
         "command": "ast-results.kicsRealtime",
         "category": "ast-results",
         "title": "Run kics realtime scan"
+      },
+      {
+        "command": "ast-results.refreshAiTriage",
+        "category": "ast-results",
+        "title": "Refresh AI Triage",
+        "icon": "$(refresh)",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.triageWithAI",
+        "category": "ast-results",
+        "title": "Triage with AI",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.remediateWithAI",
+        "category": "ast-results",
+        "title": "Remediate with AI",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.aiRemediationAnalysis",
+        "category": "ast-results",
+        "title": "AI Remediation Analysis",
+        "enablement": "ast-results.isValidCredentials"
+      },
+      {
+        "command": "ast-results.openAiTriageView",
+        "category": "ast-results",
+        "title": "Open AI Triage",
+        "enablement": "ast-results.isValidCredentials"
       },
       {
         "command": "ast-results.clear",
@@ -683,6 +757,31 @@
       ],
       "view/item/context": [
         {
+          "command": "ast-results.rescanPullRequest",
+          "group": "pullrequest@1",
+          "when": "view == ast-results.pullRequests && viewItem == pullRequestItem"
+        },
+        {
+          "command": "ast-results.commitMessageRiskCheck",
+          "group": "pullrequest@2",
+          "when": "view == ast-results.pullRequests && viewItem == pullRequestItem"
+        },
+        {
+          "command": "ast-results.gitBlameRiskCheck",
+          "group": "pullrequest@3",
+          "when": "view == ast-results.pullRequests && viewItem == pullRequestItem"
+        },
+        {
+          "command": "ast-results.prHealthCheck",
+          "group": "pullrequest@4",
+          "when": "view == ast-results.pullRequests && viewItem == pullRequestItem"
+        },
+        {
+          "command": "ast-results.remediateVulnerability",
+          "group": "pullrequest@1",
+          "when": "view == ast-results.pullRequests && viewItem == pullRequestNewIssue"
+        },
+        {
           "command": "ast-results.projectPick",
           "group": "inline@3",
           "when": "viewItem == project-item"
@@ -704,6 +803,21 @@
         }
       ],
       "view/title": [
+        {
+          "command": "ast-results.refreshAiTriage",
+          "group": "navigation@0",
+          "when": "view == ast-results.aiTriage"
+        },
+        {
+          "command": "ast-results.filterPullRequestsByAuthor",
+          "group": "navigation@0",
+          "when": "view == ast-results.pullRequests"
+        },
+        {
+          "command": "ast-results.refreshPullRequests",
+          "group": "navigation@1",
+          "when": "view == ast-results.pullRequests"
+        },
         {
           "command": "ast-results.createSCAScan",
           "group": "navigation@1",
@@ -877,6 +991,13 @@
       ]
     },
     "views": {
+      "cx-pull-requests": [
+        {
+          "id": "ast-results.pullRequests",
+          "type": "tree",
+          "name": "Pull Requests"
+        }
+      ],
       "astView": [
         {
           "id": "checkmarxAuth",
@@ -928,6 +1049,13 @@
           "type": "tree",
           "name": "Documentation & Feedback"
         }
+      ],
+      "checkmarxAiTriage": [
+        {
+          "id": "ast-results.aiTriage",
+          "type": "webview",
+          "name": "AI Triage and AI Remediation"
+        }
       ]
     },
     "viewsContainers": {
@@ -935,6 +1063,18 @@
         {
           "id": "astView",
           "title": "Checkmarx",
+          "icon": "media/cx-icon.svg"
+        }
+      ],
+      "panel": [
+        {
+          "id": "cx-pull-requests",
+          "title": "Pull Requests",
+          "icon": "$(git-pull-request)"
+        },
+        {
+          "id": "checkmarxAiTriage",
+          "title": "AI Triage and AI Remediation",
           "icon": "media/cx-icon.svg"
         }
       ]
@@ -1056,6 +1196,16 @@
             "order": 7,
             "description": "Additional Parameters",
             "markdownDescription": "CLI command that supports a set of global flags - [Global Flags](https://checkmarx.com/resource/documents/en/34965-68626-global-flags.html).",
+            "properties": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          "checkmarxOne.aiTriageApiBaseUrl": {
+            "type": "string",
+            "order": 8,
+            "description": "AI Triage Base URL",
+            "markdownDescription": "Override the base URL used for AI Triage API calls (e.g. https://ast-master-components.dev.cxast.net). Leave empty to derive it automatically from your authentication token.",
             "properties": {
               "type": "string",
               "default": ""

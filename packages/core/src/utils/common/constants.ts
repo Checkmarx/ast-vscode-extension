@@ -197,6 +197,7 @@ export const constants = {
 
   // TRIAGE
   triageUpdate: "ast-result-triage",
+  aiTriageEndpoint: "/api/ai-triage/triage",
   customStates: "cxStates",
 
   // ASCA Realtime Scanner
@@ -372,6 +373,9 @@ export const constants = {
   viewDetails: "viewDetails",
   ignoreAll: "ignoreAll",
   ignorePackage: "ignorePackage",
+  triageWithAI: "triageWithAI",
+  remediateWithAI: "remediateWithAI",
+  aiRemediationAnalysis: "aiRemediationAnalysis",
   emptyResultsScanId: "3"
 };
 

@@ -4,7 +4,9 @@
  */
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { AstResultsProvider } from '../views/resultsView/astResultsProvider';
+import { AiTriageCommand } from '../commands/aiTriageCommand';
 import { AstResultsPromoProvider } from '../views/resultsView/astResultsPromoProvider';
 import { constants } from '../utils/common/constants';
 import { Logs } from '../models/logs';
@@ -47,6 +49,11 @@ import { ContainersScannerCommand } from '../realtimeScanners/scanners/container
 import { DiagnosticCommand } from '../commands/diagnosticCommand';
 import { DOC_LINKS } from '../constants/documentation';
 import { cx } from '../cx';
+import { PullRequestProvider, PullRequestItem, NewIssueItem } from '../views/pullRequestView/pullRequestProvider';
+import { GitHubService, CheckmarxIssue } from '../services/githubService';
+import { generatePullRequestDiffHtml, PullRequestDiffWebviewUris } from '../views/pullRequestView/pullRequestDiffView';
+import { COMMIT_MESSAGE_RISK_PROMPT, GIT_BLAME_RISK_PROMPT, PR_HEALTH_PROMPT, PR_ISSUE_REMEDIATION_PROMPT, PR_ISSUE_EXPLANATION_PROMPT, PullRequestIssueForPrompt } from '../realtimeScanners/scanners/prompts';
+import { getCxAiBadgeIconPath } from '../utils/utils';
 
 
 /**
@@ -157,6 +164,15 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     const webViewCommand = new WebViewCommand(context, logs, astResultsProvider);
     webViewCommand.registerGpt();
     webViewCommand.registerNewDetails();
+
+    // AI Triage/Remediation commands, driven from the AI Triage table view
+    const aiTriageCommand = new AiTriageCommand(
+        context,
+        logs,
+        astResultsProvider,
+        (payload, result) => astResultsProvider.markAiTriaged(payload.similarityId, result.stateDisplay),
+    );
+    aiTriageCommand.register();
 
     // Branch change listener
     await gitExtensionListener(context, logs);
@@ -312,6 +328,9 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
     );
 
     setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
+
+    // Pull Request panel view
+    registerPullRequestView(context, logs, copilotChatCommand);
 
     // Development/testing command - not exposed in package.json
     vscode.commands.registerCommand(commands.mockTokenTest, async () => {
@@ -566,6 +585,330 @@ function registerAssistRelatedCommands(
             vscode.commands.executeCommand(commands.showAuth);
         }),
     );
+}
+
+function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, copilotChatCommand: CopilotChatCommand) {
+    const provider = new PullRequestProvider(logs);
+    const openPanels = new Map<number, vscode.WebviewPanel>();
+    // Stores a scroll target for a PR whose diff panel is still loading
+    const pendingScrolls = new Map<number, { filename: string; line: number }>();
+
+    const treeView = vscode.window.createTreeView(commands.pullRequests, {
+        treeDataProvider: provider,
+        showCollapseAll: true,
+    });
+    context.subscriptions.push(treeView);
+
+    // Refresh button in view/title toolbar
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.refreshPullRequests, () => {
+            provider.refresh();
+        }),
+    );
+
+    // Filter button in view/title toolbar — opens a picker of PR authors and shows only their PRs.
+    // VS Code view titles don't support a native dropdown widget; a QuickPick is the standard
+    // equivalent and is what every built-in VS Code view (e.g. Source Control) uses for this.
+    const updateFilterMessage = () => {
+        const author = provider.authorFilter;
+        treeView.message = author ? `Filtered by author: ${author}` : undefined;
+    };
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.filterPullRequestsByAuthor, async () => {
+            const authors = provider.getAvailableAuthors();
+            if (authors.length === 0) {
+                vscode.window.showInformationMessage('No pull requests loaded yet.');
+                return;
+            }
+
+            const current = provider.authorFilter;
+            const picked = await vscode.window.showQuickPick(
+                [
+                    { label: 'All Authors', description: current ? '' : '● current', author: undefined as string | undefined },
+                    ...authors.map(author => ({
+                        label: author,
+                        description: author === current ? '● current' : '',
+                        author,
+                    })),
+                ],
+                {
+                    title: 'Filter Pull Requests by Author',
+                    placeHolder: 'Select a developer to filter the Pull Requests list',
+                },
+            );
+            if (!picked) { return; }
+
+            provider.setAuthorFilter(picked.author);
+            updateFilterMessage();
+            logs.info(`Pull Requests: filtered by author "${picked.author ?? 'All Authors'}"`);
+        }),
+    );
+
+    // Right-click "Remediate vulnerability" on a vulnerability item — posts "@Checkmarx remediate vulnerability number N".
+    // Shared with the PR-diff hover popup's "PR Remediation" action so both call the exact same logic.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.remediateVulnerability, async (item: NewIssueItem) => {
+            if (!(item instanceof NewIssueItem)) { return; }
+            await remediateVulnerabilityViaGitHubComment(item.prItem, item.index, logs);
+        }),
+    );
+
+    // Right-click "Rescan" on a PR item — posts "@Checkmarx rescan this PR" to GitHub
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.rescanPullRequest, async (item: PullRequestItem) => {
+            if (!(item instanceof PullRequestItem)) { return; }
+            const { pr, repoInfo } = item;
+            try {
+                await GitHubService.getInstance().postComment(repoInfo, pr.number, '@Checkmarx rescan this PR');
+                vscode.window.showInformationMessage(`Rescan comment posted on PR #${pr.number}.`);
+                logs.info(`Pull Requests: rescan comment posted on PR #${pr.number}`);
+            } catch (err: any) {
+                const msg = err?.response?.data?.message ?? err?.message ?? String(err);
+                vscode.window.showErrorMessage(`Failed to post rescan comment: ${msg}`);
+                logs.error(`Pull Requests: failed to post rescan comment — ${msg}`);
+            }
+        }),
+    );
+
+    // Right-click "Commit Message Risk Check" on a PR item — hands every commit message on the PR
+    // to the AI assistant, which is solely responsible for judging whether any of it is risky.
+    // No local keyword pre-filtering or gating, and no diff/security-relevance cross-referencing —
+    // this check is about commit message wording only.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.commitMessageRiskCheck, async (item: PullRequestItem) => {
+            if (!(item instanceof PullRequestItem)) { return; }
+            const { pr, repoInfo } = item;
+            try {
+                const githubService = GitHubService.getInstance();
+                const commits = await githubService.getPullRequestCommits(repoInfo, pr.number);
+                const commitsForReview = GitHubService.toCommitMessagesForReview(commits);
+                logs.debug(
+                    `Pull Requests: commit message risk check scanning ${commits.length} commit(s) on PR #${pr.number} — ` +
+                    commits.map(c => `${c.sha.slice(0, 7)}: "${c.commit.message.split('\n')[0]}"`).join(' | ')
+                );
+
+                const question = COMMIT_MESSAGE_RISK_PROMPT(commitsForReview);
+
+                await copilotChatCommand.sendPromptToAssistant(question);
+                logs.info(`Pull Requests: commit message risk prompt sent to AI assistant for ${commits.length} commit(s) on PR #${pr.number}`);
+            } catch (err: any) {
+                const msg = err?.response?.data?.message ?? err?.message ?? String(err);
+                vscode.window.showErrorMessage(`Failed to run commit message risk check: ${msg}`);
+                logs.error(`Pull Requests: failed to run commit message risk check — ${msg}`);
+            }
+        }),
+    );
+
+    // Right-click "Git Blame Risk" on a PR item — hands the PR's identity to the AI assistant, which is
+    // solely responsible for running its own git blame/log analysis to spot hotspots and high-churn files.
+    // No local git/blame logic here — the assistant gathers and judges everything itself.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.gitBlameRiskCheck, async (item: PullRequestItem) => {
+            if (!(item instanceof PullRequestItem)) { return; }
+            const { pr, repoInfo } = item;
+            const question = GIT_BLAME_RISK_PROMPT(pr.number, repoInfo.owner, repoInfo.repo, pr.base.ref, pr.head.ref);
+
+            await copilotChatCommand.sendPromptToAssistant(question);
+            logs.info(`Pull Requests: git blame risk prompt sent to AI assistant for PR #${pr.number}`);
+        }),
+    );
+
+    // Right-click "PR Health" on a PR item — hands the PR's identity to the AI assistant, which is
+    // solely responsible for checking CI, merge conflicts, reviewers, comments, branch sync, and
+    // required checks itself. No local GitHub API polling here — the assistant gathers everything.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.prHealthCheck, async (item: PullRequestItem) => {
+            if (!(item instanceof PullRequestItem)) { return; }
+            const { pr, repoInfo } = item;
+            const question = PR_HEALTH_PROMPT(pr.number, repoInfo.owner, repoInfo.repo, pr.base.ref, pr.head.ref);
+
+            await copilotChatCommand.sendPromptToAssistant(question);
+            logs.info(`Pull Requests: PR health prompt sent to AI assistant for PR #${pr.number}`);
+        }),
+    );
+
+    // Triggered by clicking a PR item in the tree — opens the diff webview with vulnerability markers
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.openPullRequestDiff, async (item: PullRequestItem) => {
+            if (!item?.pr || !item?.repoInfo) { return; }
+            const { pr, repoInfo } = item;
+
+            const existing = openPanels.get(pr.number);
+            if (existing) {
+                try {
+                    existing.reveal(existing.viewColumn ?? vscode.ViewColumn.One);
+                    return;
+                } catch {
+                    openPanels.delete(pr.number);
+                }
+            }
+
+            const badgeIconPath = getCxAiBadgeIconPath();
+            const panel = vscode.window.createWebviewPanel(
+                'pullRequestDiff',
+                `PR #${pr.number}: ${pr.title}`,
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true,
+                    retainContextWhenHidden: true,
+                    localResourceRoots: [vscode.Uri.file(path.dirname(badgeIconPath))],
+                },
+            );
+            const webviewUris: PullRequestDiffWebviewUris = {
+                cspSource: panel.webview.cspSource,
+                badgeIconUri: panel.webview.asWebviewUri(vscode.Uri.file(badgeIconPath)).toString(),
+            };
+
+            openPanels.set(pr.number, panel);
+            panel.onDidDispose(() => {
+                openPanels.delete(pr.number);
+                pendingScrolls.delete(pr.number);
+            }, null, context.subscriptions);
+
+            // Hover-popup actions on a PR issue: "Fix with Checkmarx One Assist" / "View details" open the
+            // real file in the workspace (the webview diff itself isn't editable) and hand off to the AI
+            // assistant; "PR Remediation" calls the exact same GitHub-bot comment as the tree's right-click
+            // "Remediate vulnerability" action.
+            panel.webview.onDidReceiveMessage(async (message: { command?: string; issue?: PullRequestIssueForPrompt & { index?: number } }) => {
+                if (!message?.issue) { return; }
+                if (message.command === 'fixPRIssue') {
+                    await handlePRIssueAction(message.issue, pr.number, logs, copilotChatCommand, 'fix');
+                } else if (message.command === 'viewPRIssueDetails') {
+                    await handlePRIssueAction(message.issue, pr.number, logs, copilotChatCommand, 'explain');
+                } else if (message.command === 'remediatePRIssue') {
+                    if (message.issue.index == null) {
+                        vscode.window.showWarningMessage(`Couldn't determine the vulnerability number for "${message.issue.name}".`);
+                        return;
+                    }
+                    await remediateVulnerabilityViaGitHubComment(item, message.issue.index, logs);
+                }
+            }, undefined, context.subscriptions);
+
+            panel.webview.html = generatePullRequestDiffHtml(pr, [], [], webviewUris);
+
+            try {
+                const githubService = GitHubService.getInstance();
+                const [fullPr, files, comments] = await Promise.all([
+                    githubService.getPullRequest(repoInfo, pr.number),
+                    githubService.getPullRequestFiles(repoInfo, pr.number),
+                    githubService.getPullRequestComments(repoInfo, pr.number),
+                ]);
+                const issues = GitHubService.parseCheckmarxNewIssues(comments);
+                panel.webview.html = generatePullRequestDiffHtml(fullPr, files, issues, webviewUris);
+
+                // Send pending scroll (set by openPRIssueLocation before the panel finished loading)
+                const pending = pendingScrolls.get(pr.number);
+                if (pending) {
+                    pendingScrolls.delete(pr.number);
+                    setTimeout(() => panel.webview.postMessage({ command: 'scrollToVuln', ...pending }), 300);
+                }
+            } catch (err: any) {
+                const msg = err?.response?.data?.message ?? err?.message ?? String(err);
+                logs.error(`Pull Requests: failed to load diff for PR #${pr.number} — ${msg}`);
+                vscode.window.showErrorMessage(`Failed to load PR diff: ${msg}`);
+            }
+        }),
+    );
+
+    // Clicking a vulnerability item: reveal/open the PR diff webview and scroll to the vulnerable line
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.openPRIssueLocation, async (issue: CheckmarxIssue, prItem: PullRequestItem) => {
+            if (!issue || !prItem?.pr) { return; }
+            const prNum = prItem.pr.number;
+            const hasLocation = !!issue.fileName && issue.line > 0;
+
+            const panel = openPanels.get(prNum);
+            if (panel) {
+                // Panel is already open — reveal it and send scroll message immediately
+                try { panel.reveal(panel.viewColumn ?? vscode.ViewColumn.One); } catch { /* stale ref */ }
+                if (hasLocation) {
+                    panel.webview.postMessage({ command: 'scrollToVuln', filename: issue.fileName, line: issue.line });
+                }
+            } else {
+                // Panel not open yet — store scroll target then open the diff (which picks it up after load)
+                if (hasLocation) {
+                    pendingScrolls.set(prNum, { filename: issue.fileName, line: issue.line });
+                }
+                await vscode.commands.executeCommand(commands.openPullRequestDiff, prItem);
+            }
+        }),
+    );
+
+    // Load PRs the first time the panel becomes visible; subsequent visibility changes do not re-fetch
+    treeView.onDidChangeVisibility(e => {
+        if (e.visible) { provider.refreshIfNeeded(); }
+    });
+}
+
+/**
+ * Posts "@Checkmarx remediate vulnerability number N" to the PR — the same GitHub-bot-driven
+ * remediation triggered by right-clicking "Remediate vulnerability" in the Pull Requests tree,
+ * and by the PR-diff hover popup's "PR Remediation" action.
+ */
+async function remediateVulnerabilityViaGitHubComment(
+    prItem: PullRequestItem,
+    index: number,
+    logs: Logs,
+): Promise<void> {
+    const { pr, repoInfo } = prItem;
+    try {
+        await GitHubService.getInstance().postComment(
+            repoInfo,
+            pr.number,
+            `@Checkmarx remediate vulnerability number ${index}`,
+        );
+        vscode.window.showInformationMessage(
+            `Remediate comment posted for vulnerability #${index} on PR #${pr.number}.`
+        );
+        logs.info(`Pull Requests: remediate comment posted for vulnerability #${index} on PR #${pr.number}`);
+    } catch (err: any) {
+        const msg = err?.response?.data?.message ?? err?.message ?? String(err);
+        vscode.window.showErrorMessage(`Failed to post remediate comment: ${msg}`);
+        logs.error(`Pull Requests: failed to post remediate comment — ${msg}`);
+    }
+}
+
+/**
+ * Handles the PR-diff hover popup's "Fix with Checkmarx One Assist" / "View details" actions.
+ * The webview diff is inert HTML, not an editable document, so this opens the real file in the
+ * workspace first — the AI assistant then acts on that real file, not on the diff rendering.
+ */
+async function handlePRIssueAction(
+    issue: PullRequestIssueForPrompt,
+    prNumber: number,
+    logs: Logs,
+    copilotChatCommand: CopilotChatCommand,
+    mode: 'fix' | 'explain',
+): Promise<void> {
+    if (!issue.fileName || issue.line <= 0) {
+        vscode.window.showWarningMessage(`Couldn't determine a file/line for "${issue.name}".`);
+        return;
+    }
+
+    const fileUri = await GitHubService.resolveWorkspaceFile(issue.fileName);
+    if (!fileUri) {
+        vscode.window.showWarningMessage(
+            `Couldn't find ${issue.fileName} in your workspace — check out this PR's branch locally to apply fixes.`
+        );
+        logs.warn(`Pull Requests: could not resolve ${issue.fileName} in the workspace for PR #${prNumber}`);
+        return;
+    }
+
+    try {
+        const document = await vscode.workspace.openTextDocument(fileUri);
+        const position = new vscode.Position(Math.max(0, issue.line - 1), 0);
+        await vscode.window.showTextDocument(document, { selection: new vscode.Range(position, position), preview: false });
+    } catch (err: any) {
+        vscode.window.showErrorMessage(`Failed to open ${issue.fileName}: ${err?.message ?? err}`);
+        return;
+    }
+
+    const question = mode === 'fix'
+        ? PR_ISSUE_REMEDIATION_PROMPT(issue, prNumber)
+        : PR_ISSUE_EXPLANATION_PROMPT(issue, prNumber);
+
+    await copilotChatCommand.sendPromptToAssistant(question);
+    logs.info(`Pull Requests: ${mode} prompt sent to AI assistant for "${issue.name}" (${issue.fileName}:${issue.line}) on PR #${prNumber}`);
 }
 
 function registerAuthenticationLauncher(

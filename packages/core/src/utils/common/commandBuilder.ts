@@ -30,6 +30,12 @@ const COMMAND_NAMES = {
     openAIChat: 'openAIChat',
     ignorePackage: 'ignorePackage',
     ignoreAll: 'ignoreAll',
+    // AI Triage
+    triageWithAI: 'triageWithAI',
+    remediateWithAI: 'remediateWithAI',
+    aiRemediationAnalysis: 'aiRemediationAnalysis',
+    refreshAiTriage: 'refreshAiTriage',
+    openAiTriageView: 'openAiTriageView',
 
     // MCP
     installMCP: 'installMCP',
@@ -169,6 +175,18 @@ const COMMAND_NAMES = {
     isScanEnabled: 'isScanEnabled',
     isScaScanEnabled: 'isScaScanEnabled',
 
+    // Pull Requests
+    pullRequests: 'pullRequests',
+    refreshPullRequests: 'refreshPullRequests',
+    openPullRequestDiff: 'openPullRequestDiff',
+    openPRIssueLocation: 'openPRIssueLocation',
+    rescanPullRequest: 'rescanPullRequest',
+    remediateVulnerability: 'remediateVulnerability',
+    commitMessageRiskCheck: 'commitMessageRiskCheck',
+    gitBlameRiskCheck: 'gitBlameRiskCheck',
+    prHealthCheck: 'prHealthCheck',
+    filterPullRequestsByAuthor: 'filterPullRequestsByAuthor',
+
     // Development/Testing
     mockTokenTest: 'mockTokenTest',
 } as const;
@@ -248,6 +266,33 @@ class CommandBuilder {
 
     get ignoreAll(): string {
         return this.buildCommand(COMMAND_NAMES.ignoreAll);
+    }
+
+    // AI Triage
+    get triageWithAI(): string {
+        return this.buildCommand(COMMAND_NAMES.triageWithAI);
+    }
+
+    get remediateWithAI(): string {
+        return this.buildCommand(COMMAND_NAMES.remediateWithAI);
+    }
+
+    get aiRemediationAnalysis(): string {
+        return this.buildCommand(COMMAND_NAMES.aiRemediationAnalysis);
+    }
+
+    get refreshAiTriage(): string {
+        return this.buildCommand(COMMAND_NAMES.refreshAiTriage);
+    }
+
+    get openAiTriageView(): string {
+        return this.buildCommand(COMMAND_NAMES.openAiTriageView);
+    }
+
+    get aiTriageView(): string {
+        // View ID (not a command) - must match package.json view ID
+        const prefix = getCommandPrefix();
+        return `${prefix}.aiTriage`;
     }
 
     // MCP
@@ -718,6 +763,49 @@ class CommandBuilder {
 
     get isScaScanEnabled(): string {
         return this.buildCommand(COMMAND_NAMES.isScaScanEnabled);
+    }
+
+    // Pull Requests
+    get pullRequests(): string {
+        // View ID — must match package.json view ID (prefix.pullRequests)
+        const prefix = getCommandPrefix();
+        return `${prefix}.pullRequests`;
+    }
+
+    get refreshPullRequests(): string {
+        return this.buildCommand(COMMAND_NAMES.refreshPullRequests);
+    }
+
+    get openPullRequestDiff(): string {
+        return this.buildCommand(COMMAND_NAMES.openPullRequestDiff);
+    }
+
+    get openPRIssueLocation(): string {
+        return this.buildCommand(COMMAND_NAMES.openPRIssueLocation);
+    }
+
+    get rescanPullRequest(): string {
+        return this.buildCommand(COMMAND_NAMES.rescanPullRequest);
+    }
+
+    get remediateVulnerability(): string {
+        return this.buildCommand(COMMAND_NAMES.remediateVulnerability);
+    }
+
+    get commitMessageRiskCheck(): string {
+        return this.buildCommand(COMMAND_NAMES.commitMessageRiskCheck);
+    }
+
+    get gitBlameRiskCheck(): string {
+        return this.buildCommand(COMMAND_NAMES.gitBlameRiskCheck);
+    }
+
+    get prHealthCheck(): string {
+        return this.buildCommand(COMMAND_NAMES.prHealthCheck);
+    }
+
+    get filterPullRequestsByAuthor(): string {
+        return this.buildCommand(COMMAND_NAMES.filterPullRequestsByAuthor);
     }
 
     // Development/Testing

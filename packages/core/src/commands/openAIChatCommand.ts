@@ -413,6 +413,11 @@ export class CopilotChatCommand {
 
 
 
+    /** Sends an arbitrary prompt to the user's configured AI assistant (same path as the "Fix"/"Explain" actions). */
+    public async sendPromptToAssistant(question: string): Promise<void> {
+        await this.openChatWithPrompt(question);
+    }
+
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
@@ -650,5 +655,8 @@ export class CopilotChatCommand {
             })
         );
 
+        // triageWithAI / remediateWithAI are registered by AiTriageCommand (see activateCxOne.ts) —
+        // it's the single entry point for both, shared by the AI Triage webview and this Problems-panel
+        // quick fix. Registering them here too would throw ("command already exists").
     }
 }

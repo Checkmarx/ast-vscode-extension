@@ -18,9 +18,38 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 		token: vscode.CancellationToken
 	): vscode.CodeAction[] | undefined {
 		const actions: vscode.CodeAction[] = [];
+		let aiActionsAdded = false;
 
 		for (const diagnostic of context.diagnostics) {
 			const data = (diagnostic as vscode.Diagnostic & { data?: CxDiagnosticData }).data;
+
+			// Full scan results are the only diagnostics that have diagnostic.code with a target URI (set in resultsProviders.ts)
+			const code = diagnostic.code as { value?: string; target?: vscode.Uri } | undefined;
+			if (code?.target) {
+				if (!aiActionsAdded) {
+					const triageWithAIAction = new vscode.CodeAction("Triage with AI", vscode.CodeActionKind.QuickFix);
+					triageWithAIAction.command = {
+						command: commands.triageWithAI,
+						title: triageWithAIAction.title,
+						arguments: [data]
+					};
+					const remediateWithAIAction = new vscode.CodeAction("Remediate with AI", vscode.CodeActionKind.QuickFix);
+					remediateWithAIAction.command = {
+						command: commands.remediateWithAI,
+						title: remediateWithAIAction.title,
+						arguments: [data]
+					};
+					const aiRemediationAnalysisAction = new vscode.CodeAction("AI Remediation Analysis", vscode.CodeActionKind.QuickFix);
+					aiRemediationAnalysisAction.command = {
+						command: commands.aiRemediationAnalysis,
+						title: aiRemediationAnalysisAction.title,
+						arguments: [data]
+					};
+					actions.push(triageWithAIAction, remediateWithAIAction, aiRemediationAnalysisAction);
+					aiActionsAdded = true;
+				}
+				continue;
+			}
 
 			if (!data || !data.item || !data.cxType) {
 				continue;
@@ -75,7 +104,6 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 				actionList.push(ignoreAllAction);
 			}
 
-
 			actions.push(...actionList);
 		}
 
@@ -93,4 +121,5 @@ export class CxCodeActionProvider implements vscode.CodeActionProvider {
 	): boolean {
 		return "title" in item && "secretValue" in item;
 	}
+
 }

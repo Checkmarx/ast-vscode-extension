@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['scripts'], indent=2\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(rm -f \"c:/Checkmarx/GitHub_repo/Cx1/ast-vscode-extension/packages/core/out/.tsbuildinfo\")",
+      "PowerShell(head -20)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('devDependencies',{}\\), indent=2\\)\\)\")",
+      "PowerShell(if \\(-not $?\\) { \"Directory not found or empty\" })",
+      "Bash(./node_modules/.bin/tsc --noEmit)"
+    ]
+  }
+}

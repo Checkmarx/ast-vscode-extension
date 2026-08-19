@@ -23,6 +23,8 @@ import { AuthService } from "../services/authService";
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import { getMessages } from "../config/extensionMessages";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 export class Cx implements CxPlatform {
     private context: vscode.ExtensionContext;
@@ -192,6 +194,21 @@ export class Cx implements CxPlatform {
         }
         if (!scanId) {
             return;
+        }
+        const additionalParamsForResults = vscode.workspace.getConfiguration("checkmarxOne").get<string>("additionalParams") ?? "";
+        const baseUriFromParams = additionalParamsForResults.match(/--base-uri\s+(\S+)/);
+        if (baseUriFromParams) {
+            console.log(`[getResults] CLI will use --base-uri from additionalParams: ${baseUriFromParams[1]}`);
+        } else {
+            try {
+                const decoded = jwtDecode<{ iss: string }>(config.apiKey);
+                const hostname = new URL(decoded.iss).hostname;
+                const derivedUrl = `https://${hostname.replace("iam", "ast")}`;
+                console.log(`[getResults] JWT iss: ${decoded.iss}`);
+                console.log(`[getResults] CLI binary will auto-derive hostname: ${derivedUrl}`);
+            } catch {
+                console.log(`[getResults] could not decode JWT to derive hostname`);
+            }
         }
         const cx = new CxWrapper(config);
         await cx.getResults(
@@ -1003,4 +1020,56 @@ export class Cx implements CxPlatform {
             console.error(`Failed to send AI fix outcome telemetry: ${error}`);
         }
     }
+
+    async aiTriage(scanId: string, scannerType: string, resultIds: string[]): Promise<void> {
+        const apiKey = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
+        if (!apiKey) {
+            throw new Error("Not authenticated");
+        }
+
+        let baseUrl: string;
+        const additionalParams = vscode.workspace.getConfiguration("checkmarxOne").get<string>("additionalParams") ?? "";
+        const baseUriMatch = additionalParams.match(/--base-uri\s+(\S+)/);
+        if (baseUriMatch) {
+            baseUrl = baseUriMatch[1].replace(/\/$/, "");
+            console.log(`[aiTriage] baseUrl from --base-uri: ${baseUrl}`);
+        } else {
+            try {
+                const decoded = jwtDecode<{ iss: string }>(apiKey);
+                const jwtHostname = new URL(decoded.iss).hostname;
+                baseUrl = `https://${jwtHostname.replace("iam", "ast")}`;
+                console.log(`[aiTriage] JWT iss: ${decoded.iss}`);
+                console.log(`[aiTriage] baseUrl derived from JWT: ${baseUrl}`);
+            } catch {
+                throw new Error("Failed to determine API base URL from credentials");
+            }
+        }
+
+        const url = `${baseUrl}${constants.aiTriageEndpoint}`;
+        const payload = {
+            scanID: scanId,
+            buckets: [{ scannerType, resultIDs: resultIds }]
+        };
+        console.log(`[aiTriage] Method: POST`);
+        console.log(`[aiTriage] URL: ${url}`);
+        console.log(`[aiTriage] Payload: ${JSON.stringify(payload, null, 2)}`);
+        console.log(`[aiTriage] Authorization: Bearer ${apiKey}`);
+        try {
+            await axios.post(
+                url,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    validateStatus: (status) => status === 202
+                }
+            );
+        } catch (err: unknown) {
+            const status = (err as { response?: { status?: number } })?.response?.status;
+            throw new Error(`AI Triage API call failed (URL: ${url}, status: ${status ?? "no response"}): ${err}`);
+        }
+    }
+
 }

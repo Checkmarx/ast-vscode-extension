@@ -91,6 +91,14 @@ export interface CxPlatform {
   getBaseAstConfiguration();
 
   /**
+   * Trigger AI triage for one or more results in a scan.
+   * @param scanId The scan ID containing the results.
+   * @param scannerType The scanner type ("sast" or "sca").
+   * @param resultIds The list of result IDs to triage.
+   */
+  aiTriage(scanId: string, scannerType: string, resultIds: string[]): Promise<void>;
+
+  /**
    * Get the API key from the extension settings to be sent to the cli for authentication.
    */
   getAstConfiguration(): Promise<CxConfig | undefined>;
@@ -250,4 +258,5 @@ export interface CxPlatform {
     retryCount?: number,
     additionalData?: string
   ): Promise<void>;
+
 }
