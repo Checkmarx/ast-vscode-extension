@@ -302,22 +302,20 @@ export const constants = {
     "**/libs.versions.toml",
     // SBT
     "**/*.sbt",
-    // iOS CocoaPods
-    "**/Podfile",
-    "**/*.podspec",
-    "**/*.podspec.json",
-    // iOS Carthage
-    "**/Cartfile",
-    "**/Cartfile.private",
-    // Swift Package Manager
-    "**/Package.swift",
-    "**/Package@swift-*.swift",
-    // Dart/Flutter
-    "**/pubspec.yaml",
     // Ruby
     "**/Gemfile",
     // PHP Composer
-    "**/composer.json"
+    "**/composer.json",
+    // TODO: iOS packages (CocoaPods, Carthage, Swift Package Manager) OSS realtime scanning will be enabled in future releases
+    // "**/Podfile",
+    // "**/*.podspec",
+    // "**/*.podspec.json",
+    // "**/Cartfile",
+    // "**/Cartfile.private",
+    // "**/Package.swift",
+    // "**/Package@swift-*.swift",
+    // TODO: Dart/Flutter pub OSS realtime scanning will be enabled in future releases
+    // "**/pubspec.yaml"
   ],
   ossIcons: {
     critical: "critical_severity.png",
