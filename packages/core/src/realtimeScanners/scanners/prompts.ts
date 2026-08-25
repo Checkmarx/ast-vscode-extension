@@ -385,7 +385,7 @@ Conclude with:
 - Immediate remediation steps
 - Whether this specific version is linked to online reports
 - If not, reference ${getProductName()} attribution (per above rules)
-- Never mention competitor vendors or tools
+- Never mention checkmarx competitor(appsec vendors) or tools in the output. (MUST only include open-source advisory sources in the Sources section)
 
 ---
 
@@ -766,7 +766,7 @@ Conclude with:
 - Immediate remediation steps
 - Whether this specific image/tag is linked to online reports
 - If not, reference ${getProductName()} attribution (per above rules)
-- Never mention competitor vendors or tools
+- Never mention checkmarx competitor(appsec vendors) or tools in the output. (MUST only include open-source advisory sources in the Sources section)
 
 ---
 
