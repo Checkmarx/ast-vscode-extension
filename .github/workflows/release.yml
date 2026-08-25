@@ -34,6 +34,9 @@ on:
         default: true
         type: boolean
     secrets:
+      GITHUB_TOKEN:
+        description: "GitHub token for authentication"
+        required: true
       ECHO_LIBRARIES_ACCESS_KEY:
         description: "Echo libraries npm registry access key"
         required: true
