@@ -34,18 +34,9 @@ on:
         default: true
         type: boolean
     secrets:
-      GITHUB_TOKEN:
-        description: "GitHub token for authentication"
-        required: true
       ECHO_LIBRARIES_ACCESS_KEY:
         description: "Echo libraries npm registry access key"
         required: true
-      MARKET_TOKEN:
-        description: "VS Code Marketplace authentication token"
-        required: false
-      OPEN_VSX_TOKEN:
-        description: "Open VSX registry authentication token"
-        required: false
   workflow_dispatch:
     inputs:
       releaseType:
@@ -94,12 +85,11 @@ jobs:
     uses: Checkmarx/ast-vscode-extension/.github/workflows/delete-dev-releases.yml@dc1a49bbe008c82e5d856eae8cb18b2ae154a85a
     with:
       tag: ${{ inputs.vscodeTag }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     if: inputs.dev
 
   release:
     name: Build and Release Extension
+    environment: release
     permissions:
       id-token: write # For signing artifacts
       contents: write # For pushing tags and releases
@@ -489,10 +479,25 @@ jobs:
             packages/project-ignite/cx-dev-assist-${{ env.IGNITE_VERSION_FINAL }}.vsix
           prerelease: ${{ inputs.dev }}
 
+      - name: Configure AWS Credentials for Secrets Manager
+        if: inputs.publish == true
+        uses: step-security/configure-aws-credentials@1448016543d4432bd608e0de7871c7bf9e9be925 # v6.2.1
+        with:
+          role-to-assume: ${{ secrets.SECRET_MANAGER_ROLE_ARN }}
+          aws-region: ${{ secrets.SECRET_MANAGER_AWS_REGION }}
+          role-session-name: release-secrets-fetch
+
+      - name: Fetch secrets from AWS Secrets Manager
+        if: inputs.publish == true
+        uses: step-security/aws-secretsmanager-get-secrets@102b6b2a2528747bcc321bb99ef326d8be7ef58f # v3.0.1
+        with:
+          secret-ids: |
+            ,${{ secrets.SECRET_MANAGER_SECRET_NAME }}
+          parse-json-secrets: true
+
       # PUBLISH CHECKMARX TO VSCODE MARKETPLACE
       - name: Publish Checkmarx to VSCode Marketplace
         env:
-          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
           INPUTS_DEV: ${{ inputs.dev }}
         if: |
           inputs.publish == true &&
@@ -509,7 +514,6 @@ jobs:
       # PUBLISH Checkmarx Developer Assist TO VSCODE MARKETPLACE
       - name: Publish Checkmarx Developer Assist to VSCode Marketplace
         env:
-          MARKET_TOKEN: ${{ secrets.MARKET_TOKEN }}
           INPUTS_DEV: ${{ inputs.dev }}
         if: |
           inputs.publish == true &&
@@ -529,8 +533,6 @@ jobs:
           inputs.publish == true &&
           env.OPEN_VSX_TOKEN != '' &&
           (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both')
-        env:
-          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
           npx ovsx publish packages/checkmarx/ast-results-${CHECKMARX_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 
@@ -540,8 +542,6 @@ jobs:
           inputs.publish == true &&
           env.OPEN_VSX_TOKEN != '' &&
           (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both')
-        env:
-          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
         run: |
           npx ovsx publish packages/project-ignite/cx-dev-assist-${IGNITE_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 

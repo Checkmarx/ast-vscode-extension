@@ -7,10 +7,6 @@ on:
         description: "Tag to delete"
         required: true
         type: string
-    secrets:
-      GITHUB_TOKEN:
-        description: "GitHub token for authentication"
-        required: true
   workflow_dispatch:
     inputs:
       tag:
