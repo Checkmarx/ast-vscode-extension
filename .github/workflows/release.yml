@@ -533,6 +533,8 @@ jobs:
 
       # PUBLISH CHECKMARX TO OPEN VSX
       - name: Publish Checkmarx to Open VSX
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         if: |
           inputs.publish == true &&
           env.OPEN_VSX_TOKEN != '' &&
@@ -542,6 +544,8 @@ jobs:
 
       # PUBLISH CHECKMARX DEVELOPER ASSIST TO OPEN VSX
       - name: Publish Checkmarx Developer Assist to Open VSX
+        env:
+          ECHO_LIBRARIES_ACCESS_KEY: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
         if: |
           inputs.publish == true &&
           env.OPEN_VSX_TOKEN != '' &&
