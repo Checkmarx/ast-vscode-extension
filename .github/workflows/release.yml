@@ -446,10 +446,14 @@ jobs:
       # PUSH TAGS
       - name: Push tag
         if: inputs.dev == false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git pull
-          git tag ${TAG_NAME}
-          git push --tags
+          SHA=$(gh api repos/${{ github.repository }}/commits/${{ github.ref_name }} --jq '.sha')
+          echo "Tagging ${TAG_NAME} at ${SHA}"
+          gh api repos/${{ github.repository }}/git/refs \
+            -f ref="refs/tags/${TAG_NAME}" \
+            -f sha="${SHA}"
 
       # CREATE UNIFIED GITHUB RELEASE (always 6 assets: 2 vsix + 2x source code auto-added by GitHub)
       - name: Create Unified Release
