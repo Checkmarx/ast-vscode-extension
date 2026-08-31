@@ -448,10 +448,12 @@ jobs:
         if: inputs.dev == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          SHA=$(gh api repos/${{ github.repository }}/commits/${{ github.ref_name }} --jq '.sha')
+          SHA=$(gh api repos/${GITHUB_REPO}/commits/${REF_NAME} --jq '.sha')
           echo "Tagging ${TAG_NAME} at ${SHA}"
-          gh api repos/${{ github.repository }}/git/refs \
+          gh api repos/${GITHUB_REPO}/git/refs \
             -f ref="refs/tags/${TAG_NAME}" \
             -f sha="${SHA}"
 
