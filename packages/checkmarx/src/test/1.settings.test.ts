@@ -4,6 +4,7 @@ import {
   SettingsEditor,
   WebDriver,
   LinkSetting,
+  TextSetting,
   VSBrowser,
   BottomBarPanel,
 } from "vscode-extension-tester";
@@ -14,6 +15,11 @@ import {
   CX_KICS,
   CX_KICS_NAME,
   ASCA_REALTIME_SCANNER_CONSTANTS,
+  AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS,
+  OSS_REALTIME_SCANNER_CONSTANTS,
+  SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS,
+  CONTAINERS_REALTIME_SCANNER_CONSTANTS,
+  IAC_REALTIME_SCANNER_CONSTANTS,
 } from "./utils/constants";
 import { loginWithMockToken, logoutIfVisible } from "./utils/utils";
 import { waitStatusBar } from "./utils/waiters";
@@ -91,5 +97,111 @@ describe("Extension settings tests", () => {
     await ascaRealtimeCheckbox.setValue(true);
     let ascaRealtimeCheckboxValue = await ascaRealtimeCheckbox.getValue();
     expect(ascaRealtimeCheckboxValue).to.be.true;
+  });
+
+  // TC94: Verifies the AI Security Champion Custom Model field keeps the last
+  // value the user entered, even after the Settings editor is closed and reopened.
+  it("should retain the last entered Custom Model value after reopening settings", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const customModelSetting = (await settingsEditor.findSetting(
+      AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS.customModelTitle,
+      AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS.customModelCategory
+    )) as TextSetting;
+    expect(customModelSetting, "Custom Model setting not found").to.not.be.undefined;
+
+    const uniqueModelName = `automation-model-${Date.now()}`;
+    await customModelSetting.setValue(uniqueModelName);
+
+    // Reopen the Settings editor fresh, simulating the user leaving and returning.
+    await new EditorView().closeAllEditors();
+    settingsEditor = await bench.openSettings();
+    const reopenedSetting = (await settingsEditor.findSetting(
+      AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS.customModelTitle,
+      AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS.customModelCategory
+    )) as TextSetting;
+    const persistedValue = await reopenedSetting.getValue();
+
+    expect(persistedValue).to.equal(uniqueModelName);
+
+    // Reset to default so this test doesn't leak state to later suites.
+    await reopenedSetting.setValue("");
+  });
+
+  // Verifies the OSS-Realtime scanner checkbox exists and its value persists once set.
+  it("verify OSS-Realtime scanning checkbox exists and persists when set to True", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const ossRealtimeCheckbox = await settingsEditor.findSetting(
+      OSS_REALTIME_SCANNER_CONSTANTS.activateOssRealtimeScanner,
+      OSS_REALTIME_SCANNER_CONSTANTS.ossRealtimeScanner
+    );
+    expect(ossRealtimeCheckbox, "OSS-Realtime checkbox not found").to.not.be.undefined;
+
+    await ossRealtimeCheckbox.setValue(true);
+    const ossRealtimeCheckboxValue = await ossRealtimeCheckbox.getValue();
+    expect(ossRealtimeCheckboxValue).to.be.true;
+  });
+
+  // Verifies the Secret Detection Realtime scanner checkbox exists and its value persists once set.
+  it("verify Secret Detection Realtime scanning checkbox exists and persists when set to True", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const secretRealtimeCheckbox = await settingsEditor.findSetting(
+      SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS.activateSecretDetectionRealtimeScanner,
+      SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS.secretDetectionRealtimeScanner
+    );
+    expect(secretRealtimeCheckbox, "Secret Detection Realtime checkbox not found").to.not.be.undefined;
+
+    await secretRealtimeCheckbox.setValue(true);
+    const secretRealtimeCheckboxValue = await secretRealtimeCheckbox.getValue();
+    expect(secretRealtimeCheckboxValue).to.be.true;
+  });
+
+  // Verifies the Containers Realtime scanner checkbox exists and its value persists once set.
+  it("verify Containers Realtime scanning checkbox exists and persists when set to True", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const containersRealtimeCheckbox = await settingsEditor.findSetting(
+      CONTAINERS_REALTIME_SCANNER_CONSTANTS.activateContainersRealtimeScanner,
+      CONTAINERS_REALTIME_SCANNER_CONSTANTS.containersRealtimeScanner
+    );
+    expect(containersRealtimeCheckbox, "Containers Realtime checkbox not found").to.not.be.undefined;
+
+    await containersRealtimeCheckbox.setValue(true);
+    const containersRealtimeCheckboxValue = await containersRealtimeCheckbox.getValue();
+    expect(containersRealtimeCheckboxValue).to.be.true;
+  });
+
+  // Verifies the IAC Realtime scanner checkbox exists and its value persists once set.
+  it("verify IAC Realtime scanning checkbox exists and persists when set to True", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const iacRealtimeCheckbox = await settingsEditor.findSetting(
+      IAC_REALTIME_SCANNER_CONSTANTS.activateIacRealtimeScanner,
+      IAC_REALTIME_SCANNER_CONSTANTS.iacRealtimeScanner
+    );
+    expect(iacRealtimeCheckbox, "IAC Realtime checkbox not found").to.not.be.undefined;
+
+    await iacRealtimeCheckbox.setValue(true);
+    const iacRealtimeCheckboxValue = await iacRealtimeCheckbox.getValue();
+    expect(iacRealtimeCheckboxValue).to.be.true;
+  });
+
+  // Verifies the KICS real-time scanning setting can be toggled off and back on,
+  // extending the existing "enabled by default" check with a full roundtrip.
+  it("should toggle KICS real-time scanning off and back on", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const kicsSetting = (await settingsEditor.findSetting(
+      CX_KICS_NAME,
+      CX_KICS
+    )) as LinkSetting;
+
+    await kicsSetting.setValue(false);
+    expect(await kicsSetting.getValue()).to.equal(false);
+
+    await kicsSetting.setValue(true);
+    expect(await kicsSetting.getValue()).to.equal(true);
   });
 });

@@ -70,11 +70,41 @@ export const CHANGES_LABEL = "changes-label";
 export const CHANGES_TAB_INPUT = "changes-tab";
 export const CHANGES_CONTAINER = "history-container";
 export const UPDATE_BUTTON = "submit";
+export const REMEDIATION_TAB_INPUT = "code-tab";
+export const REMEDIATION_LABEL = "code-label";
+export const REMEDIATION_CODE_CONTAINER = "tab-code";
+
+// Setting label/category as rendered by VS Code's settings search ("category>title"),
+// derived from the "CheckmarxSecurityChampion.customModel" contribution key.
+export const AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS = {
+  customModelTitle: "Custom Model",
+  customModelCategory: "Checkmarx Security Champion",
+};
 
 // Constants from @checkmarx/vscode-core (copied to avoid loading the entire module in tests)
 export const ASCA_REALTIME_SCANNER_CONSTANTS = {
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
+};
+
+export const OSS_REALTIME_SCANNER_CONSTANTS = {
+  activateOssRealtimeScanner: "Activate OSS-Realtime",
+  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
+};
+
+export const SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS = {
+  activateSecretDetectionRealtimeScanner: "Activate Secret Detection Realtime",
+  secretDetectionRealtimeScanner: "Checkmarx Secret Detection Realtime Scanner",
+};
+
+export const CONTAINERS_REALTIME_SCANNER_CONSTANTS = {
+  activateContainersRealtimeScanner: "Activate Containers Realtime",
+  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
+};
+
+export const IAC_REALTIME_SCANNER_CONSTANTS = {
+  activateIacRealtimeScanner: "Activate IAC Realtime",
+  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
 };
 
 export const LOCAL_BRANCH_CONSTANT = "scan my local branch";

@@ -31,6 +31,9 @@ import {
   GENERAL_TAB_INPUT,
   LEARN_MORE_LABEL,
   LEARN_TAB_INPUT,
+  REMEDIATION_CODE_CONTAINER,
+  REMEDIATION_LABEL,
+  REMEDIATION_TAB_INPUT,
   SAST_TYPE,
   SCAN_KEY_TREE_LABEL,
   UPDATE_BUTTON,
@@ -183,6 +186,31 @@ describe("Scan ID load results test", () => {
     await selectDetailsTab(driver,LEARN_TAB_INPUT);
     const descriptionLabel = await driver.findElement(By.id(LEARN_MORE_LABEL));
     expect(descriptionLabel, "Description tab label not found").to.not.be.undefined;
+
+    await driver.switchTo().defaultContent();
+  });
+
+  // TC28: The Remediation Examples tab loads asynchronously (same fetch as the
+  // Description tab) — it should show either fetched code samples or the
+  // "no remediation examples" fallback text, never an empty/unrendered tab.
+  it("should display remediation examples on the Remediation Examples tab", async function () {
+    this.timeout(60000);
+
+    await driver.switchTo().defaultContent();
+
+    const isOpen = await openDetailsFrame(driver);
+    expect(isOpen, "Vulnerability details panel is not open").to.be.true;
+
+    await selectDetailsTab(driver, REMEDIATION_TAB_INPUT);
+    const remediationLabel = await driver.findElement(By.id(REMEDIATION_LABEL));
+    expect(remediationLabel, "Remediation Examples tab label not found").to.not.be.undefined;
+
+    const codeContainer = await driver.findElement(By.id(REMEDIATION_CODE_CONTAINER));
+    const codeContainerText = (await codeContainer.getText()).trim();
+    expect(
+      codeContainerText,
+      "Remediation Examples tab should render either fetched samples or the fallback message"
+    ).to.not.be.empty;
 
     await driver.switchTo().defaultContent();
   });
