@@ -39,6 +39,7 @@ export class AiTriageError extends Error {
 const DEFAULT_PLATFORM_BASE_URL = "https://ast-master-components.dev.cxast.net";
 const HTTP_TIMEOUT_MS = 30_000;
 const DEFAULT_MONITOR_TIMEOUT_MS = 180_000;
+const DEFAULT_REMEDIATION_MONITOR_TIMEOUT_MS = 600_000;
 const POLL_INTERVAL_MS = 3_000;
 
 /**
@@ -389,6 +390,92 @@ export class AiTriageService {
     } catch (error) {
       throw this.wrapTransportError(error, "remediate");
     }
+  }
+
+  /**
+   * Poll the remediation-status gateway until the phase becomes COMPLETED (or
+   * fails/times out). Uses the same `engine`, `scanId` and `resultHash` the
+   * remediation request was submitted with.
+   * GET /api/ssegateway/remediation-status?engine=&scanId=&resultHash=
+   */
+  public async monitorRemediationStatus(
+    engine: AiTriageEngine,
+    scanId: string,
+    resultHash: string,
+    options?: {
+      signal?: AbortSignal;
+      timeoutMs?: number;
+      intervalMs?: number;
+      onPhase?: (p: AiTriagePhase) => void;
+    }
+  ): Promise<AiTriagePhase> {
+    const { baseUrl, token } = await this.getApiContext();
+    const timeoutMs = options?.timeoutMs ?? DEFAULT_REMEDIATION_MONITOR_TIMEOUT_MS;
+    const intervalMs = options?.intervalMs ?? POLL_INTERVAL_MS;
+    const deadline = Date.now() + timeoutMs;
+    const params = new URLSearchParams({ engine, scanId, resultHash });
+    const url = `${baseUrl}/api/ssegateway/remediation-status?${params.toString()}`;
+    this.logs?.debug(`[AI Remediation] monitoring GET ${url}`);
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (options?.signal?.aborted) {
+        throw new AiTriageError(AiTriageErrorKind.cancelled, "AI Remediation was cancelled.");
+      }
+      let response;
+      try {
+        response = await axios.get(url, this.baseConfig(token, { signal: options?.signal }));
+      } catch (error) {
+        throw this.wrapTransportError(error, "remediation-status");
+      }
+      this.logs?.debug(
+        `[AI Remediation] status response status=${response.status} body=${this.bodyText(response.data)}`
+      );
+      if (response.status < 200 || response.status >= 300) {
+        throw this.errorForStatus(response.status, "remediation-status", url);
+      }
+      const phase = this.extractRemediationPhase(response.data);
+      if (phase) {
+        options?.onPhase?.(phase);
+        if (phase === AiTriagePhase.completed) {
+          return AiTriagePhase.completed;
+        }
+        if (phase === AiTriagePhase.failed) {
+          throw new AiTriageError(AiTriageErrorKind.api, "AI Remediation processing failed.");
+        }
+      }
+      if (Date.now() >= deadline) {
+        throw new AiTriageError(
+          AiTriageErrorKind.timeout,
+          "Timed out waiting for AI Remediation to complete."
+        );
+      }
+      await this.delay(Math.min(intervalMs, Math.max(0, deadline - Date.now())), options?.signal);
+    }
+  }
+
+  /** Extract the `currentPhase` value from a remediation-status response body. */
+  private extractRemediationPhase(data: unknown): AiTriagePhase | undefined {
+    if (!data) {
+      return undefined;
+    }
+    if (typeof data === "string") {
+      return parseSsePhase(data);
+    }
+    if (typeof data === "object") {
+      const raw = (data as Record<string, unknown>).currentPhase;
+      if (typeof raw === "string") {
+        const upper = raw.toUpperCase();
+        if (
+          upper === AiTriagePhase.completed ||
+          upper === AiTriagePhase.failed ||
+          upper === AiTriagePhase.running
+        ) {
+          return upper as AiTriagePhase;
+        }
+      }
+    }
+    return undefined;
   }
 
   /**

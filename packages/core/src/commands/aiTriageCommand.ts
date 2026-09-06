@@ -12,6 +12,7 @@ import {
 } from "../services/aiTriageService";
 import {
   AiTriageEngine,
+  AiTriagePhase,
   NormalizedTriageResult,
   isAiTriageSupported,
   toAiTriageEngine,
@@ -259,8 +260,27 @@ export class AiTriageCommand {
             submitResultId,
             controller.signal
           );
+          progress.report({
+            message: `AI Remediation is in progress for "${label}". Please wait until it completes…`,
+          });
+          await service.monitorRemediationStatus(
+            engine,
+            scan.id,
+            submitResultId,
+            {
+              signal: controller.signal,
+              onPhase: (phase) => {
+                if (phase === AiTriagePhase.running) {
+                  progress.report({
+                    message: `AI Remediation is in progress for "${label}". Please wait until it completes…`,
+                  });
+                }
+              },
+            }
+          );
+          progress.report({ message: `AI Remediation completed for "${label}".` });
           vscode.window.showInformationMessage(
-            `${productName}: AI Remediation requested for "${label}". The fix is generated on the platform (an auto-PR is created when configured).`
+            `${productName}: AI Remediation completed for "${label}". The fix is generated on the platform (an auto-PR is created when configured).`
           );
           return true;
         } catch (error) {
