@@ -254,6 +254,36 @@ export function buildRiskNameMapFromRisks(
   return map;
 }
 
+const ENGINE_LABEL: Record<string, string> = { sast: "SAST", sca: "SCA" };
+
+/** Sliders/filter icon reused from the risk management view for visual consistency. */
+const FILTER_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00033 3.33338C5.82351 3.33338 5.65395 3.40362 5.52892 3.52864C5.4039 3.65367 5.33366 3.82324 5.33366 4.00005C5.33366 4.17686 5.4039 4.34643 5.52892 4.47145C5.65395 4.59648 5.82351 4.66671 6.00033 4.66671C6.17714 4.66671 6.34671 4.59648 6.47173 4.47145C6.59675 4.34643 6.66699 4.17686 6.66699 4.00005C6.66699 3.82324 6.59675 3.65367 6.47173 3.52864C6.34671 3.40362 6.17714 3.33338 6.00033 3.33338ZM4.11366 3.33338C4.25139 2.94302 4.50682 2.605 4.84473 2.36591C5.18263 2.12681 5.58638 1.99841 6.00033 1.99841C6.41427 1.99841 6.81802 2.12681 7.15593 2.36591C7.49383 2.605 7.74926 2.94302 7.88699 3.33338H12.667C12.8438 3.33338 13.0134 3.40362 13.1384 3.52864C13.2634 3.65367 13.3337 3.82324 13.3337 4.00005C13.3337 4.17686 13.2634 4.34643 13.1384 4.47145C13.0134 4.59648 12.8438 4.66671 12.667 4.66671H7.88699C7.74926 5.05707 7.49383 5.39509 7.15593 5.63419C6.81802 5.87328 6.41427 6.00168 6.00033 6.00168C5.58638 6.00168 5.18263 5.87328 4.84473 5.63419C4.50682 5.39509 4.25139 5.05707 4.11366 4.66671H3.33366C3.15685 4.66671 2.98728 4.59648 2.86225 4.47145C2.73723 4.34643 2.66699 4.17686 2.66699 4.00005C2.66699 3.82324 2.73723 3.65367 2.86225 3.52864C2.98728 3.40362 3.15685 3.33338 3.33366 3.33338H4.11366ZM10.0003 7.33338C9.82351 7.33338 9.65395 7.40362 9.52892 7.52864C9.4039 7.65367 9.33366 7.82324 9.33366 8.00005C9.33366 8.17686 9.4039 8.34643 9.52892 8.47145C9.65395 8.59648 9.82351 8.66671 10.0003 8.66671C10.1771 8.66671 10.3467 8.59648 10.4717 8.47145C10.5968 8.34643 10.667 8.17686 10.667 8.00005C10.667 7.82324 10.5968 7.65367 10.4717 7.52864C10.3467 7.40362 10.1771 7.33338 10.0003 7.33338ZM8.11366 7.33338C8.25139 6.94303 8.50682 6.605 8.84473 6.36591C9.18263 6.12681 9.58638 5.99841 10.0003 5.99841C10.4143 5.99841 10.818 6.12681 11.1559 6.36591C11.4938 6.605 11.7493 6.94303 11.887 7.33338H12.667C12.8438 7.33338 13.0134 7.40362 13.1384 7.52864C13.2634 7.65367 13.3337 7.82324 13.3337 8.00005C13.3337 8.17686 13.2634 8.34643 13.1384 8.47145C13.0134 8.59648 12.8438 8.66671 12.667 8.66671H11.887C11.7493 9.05707 11.4938 9.39509 11.1559 9.63419C10.818 9.87328 10.4143 10.0017 10.0003 10.0017C9.58638 10.0017 9.18263 9.87328 8.84473 9.63419C8.50682 9.39509 8.25139 9.05707 8.11366 8.66671H3.33366C3.15685 8.66671 2.98728 8.59648 2.86225 8.47145C2.73723 8.34643 2.66699 8.17686 2.66699 8.00005C2.66699 7.82324 2.73723 7.65367 2.86225 7.52864C2.98728 7.40362 3.15685 7.33338 3.33366 7.33338H8.11366ZM6.00033 11.3334C5.82351 11.3334 5.65395 11.4036 5.52892 11.5286C5.4039 11.6537 5.33366 11.8232 5.33366 12C5.33366 12.1769 5.4039 12.3464 5.52892 12.4715C5.65395 12.5965 5.82351 12.6667 6.00033 12.6667C6.17714 12.6667 6.34671 12.5965 6.47173 12.4715C6.59675 12.3464 6.66699 12.1769 6.66699 12C6.66699 11.8232 6.59675 11.6537 6.47173 11.5286C6.34671 11.4036 6.17714 11.3334 6.00033 11.3334ZM4.11366 11.3334C4.25139 10.943 4.50682 10.605 4.84473 10.3659C5.18263 10.1268 5.58638 9.99841 6.00033 9.99841C6.41427 9.99841 6.81802 10.1268 7.15593 10.3659C7.49383 10.605 7.74926 10.943 7.88699 11.3334H12.667C12.8438 11.3334 13.0134 11.4036 13.1384 11.5286C13.2634 11.6537 13.3337 11.8232 13.3337 12C13.3337 12.1769 13.2634 12.3464 13.1384 12.4715C13.0134 12.5965 12.8438 12.6667 12.667 12.6667H7.88699C7.74926 13.0571 7.49383 13.3951 7.15593 13.6342C6.81802 13.8733 6.41427 14.0017 6.00033 14.0017C5.58638 14.0017 5.18263 13.8733 4.84473 13.6342C4.50682 13.3951 4.25139 13.0571 4.11366 12.6667H3.33366C3.15685 12.6667 2.98728 12.5965 2.86225 12.4715C2.73723 12.3464 2.66699 12.1769 2.66699 12C2.66699 11.8232 2.73723 11.6537 2.86225 11.5286C2.98728 11.4036 3.15685 11.3334 3.33366 11.3334H4.11366Z" fill="currentColor" /></svg>`;
+
+/** Build the engine-filter dropdown (button + checkbox menu) from the distinct engines present in `rows`. */
+function renderEngineFilter(rows: AiTriageRow[]): string {
+  const engines = Array.from(new Set(rows.map((r) => r.engine))).sort();
+  if (engines.length === 0) {
+    return "";
+  }
+  const options = engines
+    .map(
+      (engine) => `<label class="filter-item">
+        <input type="checkbox" class="engine-checkbox" value="${escapeHtml(engine)}" checked />
+        <span>${escapeHtml(ENGINE_LABEL[engine] || engine.toUpperCase())}</span>
+      </label>`
+    )
+    .join("");
+  return `<div class="filter-wrap">
+    <button class="filter-btn" id="engineFilterBtn" title="Filter by engine" aria-label="Filter by engine">
+      <span class="filter-icon">${FILTER_ICON}</span>
+    </button>
+    <div class="filter-menu" id="engineFilterMenu">
+      <div class="filter-menu-title">Engine</div>
+      ${options}
+    </div>
+  </div>`;
+}
+
 /** Inner HTML badge for the "Triaged By" cell for a known source. */
 export function sourceBadgeHtml(source: "AI" | "Manual"): string {
   return source === "AI"
@@ -297,7 +327,7 @@ function renderRow(
   const doneIcon = isDecided
     ? `<span class="ai-done" title="Triaged">✦</span> `
     : "";
-  return `<tr data-similarity="${escapeHtml(row.similarityId)}" data-payload="${encoded}">
+  return `<tr data-similarity="${escapeHtml(row.similarityId)}" data-payload="${encoded}" data-engine="${escapeHtml(row.engine)}">
     <td><span class="badge ${sevClass}">${escapeHtml(row.severity || "N/A")}</span></td>
     <td><span class="badge engine">${escapeHtml(row.engine.toUpperCase())}</span></td>
     <td class="riskname" data-sim="${escapeHtml(row.similarityId)}" title="${escapeHtml(riskName)}">${riskName ? escapeHtml(riskName) : '<span class="src-none">—</span>'}</td>
@@ -330,9 +360,12 @@ export function buildAiTriageHtml(params: {
   const sourceBySimilarity = params.sourceBySimilarity ?? {};
   const riskNameBySimilarity = params.riskNameBySimilarity ?? {};
 
-  const header = `<div class="details">
-      <div class="ellipsis">Project: ${escapeHtml(projectName || "—")}</div>
-      <div class="ellipsis">Scan: ${escapeHtml(scanId || "—")}</div>
+  const header = `<div class="details-row">
+      <div class="details">
+        <div class="ellipsis">Project: ${escapeHtml(projectName || "—")}</div>
+        <div class="ellipsis">Scan: ${escapeHtml(scanId || "—")}</div>
+      </div>
+      ${renderEngineFilter(rows)}
     </div>`;
 
   let body: string;
@@ -369,8 +402,19 @@ export function buildAiTriageHtml(params: {
     <title>${escapeHtml(productName)} AI Triage and Remediation</title>
   <style>
     body { font-family: var(--vscode-font-family); color: var(--vscode-foreground); padding: 6px 8px; font-size: 12px; }
-    .details { display:flex; gap:16px; margin-bottom:8px; color: var(--vscode-descriptionForeground); }
+    .details-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .details { display:flex; gap:16px; color: var(--vscode-descriptionForeground); min-width:0; }
     .ellipsis { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:50%; }
+    .filter-wrap { position:relative; flex-shrink:0; }
+    .filter-btn { display:flex; align-items:center; justify-content:center; width:24px; height:24px; border:1px solid var(--vscode-panel-border); border-radius:4px; background:transparent; color: var(--vscode-foreground); cursor:pointer; padding:0; }
+    .filter-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
+    .filter-btn.active { border-color: var(--vscode-focusBorder); color: var(--vscode-focusBorder); }
+    .filter-icon svg { display:block; }
+    .filter-menu { display:none; position:absolute; right:0; top:28px; z-index:1000; min-width:140px; background: var(--vscode-menu-background, var(--vscode-editorWidget-background)); color: var(--vscode-menu-foreground, var(--vscode-foreground)); border:1px solid var(--vscode-menu-border, var(--vscode-panel-border)); border-radius:5px; box-shadow:0 2px 8px rgba(0,0,0,0.3); padding:6px 0; }
+    .filter-menu.show { display:block; }
+    .filter-menu-title { padding:4px 12px; font-weight:600; font-size:11px; color: var(--vscode-descriptionForeground); text-transform:uppercase; }
+    .filter-item { display:flex; align-items:center; gap:6px; padding:4px 12px; cursor:pointer; white-space:nowrap; }
+    .filter-item:hover { background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground)); }
     .message { padding:12px; color: var(--vscode-descriptionForeground); }
     .hint { margin-top:8px; color: var(--vscode-descriptionForeground); font-size:11px; }
     table.triage-table { width:100%; border-collapse:collapse; }
@@ -455,6 +499,52 @@ export function buildAiTriageHtml(params: {
     }
     document.addEventListener('click', hideMenu);
     document.addEventListener('scroll', hideMenu, true);
+    (function setupEngineFilter(){
+      const btn = document.getElementById('engineFilterBtn');
+      const menu = document.getElementById('engineFilterMenu');
+      if (!btn || !menu) { return; }
+      const checkboxes = Array.from(menu.querySelectorAll('.engine-checkbox'));
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        menu.classList.toggle('show');
+      });
+      document.addEventListener('click', function(e){
+        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+          menu.classList.remove('show');
+        }
+      });
+      function applyEngineFilter(){
+        const selected = checkboxes.filter(function(cb){ return cb.checked; }).map(function(cb){ return cb.value; });
+        btn.classList.toggle('active', selected.length !== checkboxes.length);
+        const rows = document.querySelectorAll('tr[data-engine]');
+        let anyVisible = false;
+        rows.forEach(function(row){
+          const show = selected.indexOf(row.getAttribute('data-engine')) !== -1;
+          row.style.display = show ? '' : 'none';
+          if (show) { anyVisible = true; }
+        });
+        let emptyRow = document.getElementById('engineFilterEmptyRow');
+        const tbody = document.querySelector('table.triage-table tbody');
+        if (!anyVisible && tbody) {
+          if (!emptyRow) {
+            emptyRow = document.createElement('tr');
+            emptyRow.id = 'engineFilterEmptyRow';
+            const td = document.createElement('td');
+            td.colSpan = 6;
+            td.style.textAlign = 'center';
+            td.style.padding = '12px';
+            td.style.color = 'var(--vscode-descriptionForeground)';
+            td.textContent = 'No findings match the selected engine filter.';
+            emptyRow.appendChild(td);
+            tbody.appendChild(emptyRow);
+          }
+          emptyRow.style.display = '';
+        } else if (emptyRow) {
+          emptyRow.style.display = 'none';
+        }
+      }
+      checkboxes.forEach(function(cb){ cb.addEventListener('change', applyEngineFilter); });
+    })();
     document.querySelectorAll('tr[data-similarity]').forEach(function(row){
       const payloadStr = row.getAttribute('data-payload');
       row.addEventListener('contextmenu', function(e){ e.preventDefault(); showMenu(e.pageX, e.pageY, payloadStr); });
