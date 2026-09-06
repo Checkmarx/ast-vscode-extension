@@ -101,7 +101,8 @@ describe("AiTriageCommand", () => {
   it("surfaces service errors without throwing", async () => {
     const errStub = sandbox.stub(vscode.window, "showErrorMessage").resolves(undefined as any);
     const submitTriage = sandbox.stub().rejects(new Error("network down"));
-    sandbox.stub(AiTriageService, "getInstance").returns({ submitTriage } as any);
+    const resolveScaResultId = sandbox.stub().resolves("hash-1");
+    sandbox.stub(AiTriageService, "getInstance").returns({ submitTriage, resolveScaResultId } as any);
 
     const command = new AiTriageCommand(makeContext(), logs);
     sandbox.stub(command as any, "getTriageChanges").resolves([]);
@@ -113,6 +114,58 @@ describe("AiTriageCommand", () => {
     });
     expect(result).to.equal(undefined);
     expect(errStub.called).to.equal(true);
+  });
+
+  it("resolves the SCA CVE to the Risks API's risk-hash id before submitting", async () => {
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined as any);
+    const submitTriage = sandbox.stub().resolves({ status: "accepted" });
+    const resolveScaResultId = sandbox.stub().resolves("risk-hash-1");
+    sandbox
+      .stub(AiTriageService, "getInstance")
+      .returns({ submitTriage, resolveScaResultId } as any);
+
+    const command = new AiTriageCommand(makeContext(), logs);
+    const getChanges = sandbox.stub(command as any, "getTriageChanges");
+    getChanges.onCall(0).resolves([]);
+    getChanges.resolves([{ State: "Not Exploitable" }]);
+
+    await command.triageWithAI({
+      resultId: "cve-2026-33228",
+      similarityId: "cve-2026-33228",
+      resultType: "sca",
+    });
+
+    expect(
+      resolveScaResultId.calledWith(
+        "p",
+        ["cve-2026-33228", "cve-2026-33228"],
+        "cve-2026-33228"
+      )
+    ).to.equal(true);
+    expect(submitTriage.calledWith("p", "sca", "risk-hash-1")).to.equal(true);
+  });
+
+  it("does not resolve a risk-hash id for SAST — submits the local resultId as-is", async () => {
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined as any);
+    const submitTriage = sandbox.stub().resolves({ status: "accepted" });
+    const resolveScaResultId = sandbox.stub().resolves("should-not-be-used");
+    sandbox
+      .stub(AiTriageService, "getInstance")
+      .returns({ submitTriage, resolveScaResultId } as any);
+
+    const command = new AiTriageCommand(makeContext(), logs);
+    const getChanges = sandbox.stub(command as any, "getTriageChanges");
+    getChanges.onCall(0).resolves([]);
+    getChanges.resolves([{ State: "Not Exploitable" }]);
+
+    await command.triageWithAI({
+      resultId: "hash-1",
+      similarityId: "sim-1",
+      resultType: "sast",
+    });
+
+    expect(resolveScaResultId.called).to.equal(false);
+    expect(submitTriage.calledWith("p", "sast", "hash-1")).to.equal(true);
   });
 
   it("register() registers the command handlers on the context", () => {

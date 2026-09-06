@@ -235,10 +235,10 @@ export class AiTriageService {
   }
 
   /** Safely stringify a response body for diagnostic logging (truncated). */
-  private bodyText(data: unknown): string {
+  private bodyText(data: unknown, maxLen = 2000): string {
     try {
       const s = typeof data === "string" ? data : JSON.stringify(data);
-      return (s ?? "").slice(0, 500);
+      return (s ?? "").slice(0, maxLen);
     } catch {
       return "<unserializable body>";
     }
@@ -311,10 +311,17 @@ export class AiTriageService {
     this.logs?.debug(
       `[AI Triage] POST ${url} scanID=${scanId} engine=${engine} resultID=${resultId}`
     );
+    this.logs?.debug(`[AI Triage] request body: ${this.bodyText(body)}`);
     try {
       const response = await axios.post(url, body, this.baseConfig(token, { signal }));
-      this.logs?.debug(`[AI Triage] submit status ${response.status}: ${this.bodyText(response.data)}`);
+      this.logs?.debug(
+        `[AI Triage] submit response status=${response.status} body=${this.bodyText(response.data)}`
+      );
       if (response.status < 200 || response.status >= 300) {
+        this.logs?.error(
+          `[AI Triage] submit FAILED status=${response.status} url=${url} ` +
+          `requestBody=${this.bodyText(body)} responseBody=${this.bodyText(response.data)}`
+        );
         throw this.errorForStatus(response.status, "submit", url);
       }
       const data = response.data as Partial<AiTriageAcceptedResponse>;
@@ -355,13 +362,20 @@ export class AiTriageService {
       projectID: projectId,
       buckets: [{ scannerType: engine, resultIDs: [resultId] }],
     };
-    this.logs?.debug(`[AI Remediation] POST ${url} scanID=${scanId} engine=${engine}`);
+    this.logs?.debug(
+      `[AI Remediation] POST ${url} scanID=${scanId} projectID=${projectId} engine=${engine} resultID=${resultId}`
+    );
+    this.logs?.debug(`[AI Remediation] request body: ${this.bodyText(body)}`);
     try {
       const response = await axios.post(url, body, this.baseConfig(token, { signal }));
       this.logs?.debug(
-        `[AI Remediation] submit status ${response.status}: ${this.bodyText(response.data)}`
+        `[AI Remediation] submit response status=${response.status} body=${this.bodyText(response.data)}`
       );
       if (response.status < 200 || response.status >= 300) {
+        this.logs?.error(
+          `[AI Remediation] submit FAILED status=${response.status} url=${url} ` +
+          `requestBody=${this.bodyText(body)} responseBody=${this.bodyText(response.data)}`
+        );
         throw this.errorForStatus(response.status, "remediate", url);
       }
       const data = response.data as Partial<AiTriageAcceptedResponse>;
@@ -429,6 +443,68 @@ export class AiTriageService {
       }
     }
     return all;
+  }
+
+  /**
+   * Resolve the platform Risks API's own `id` (a stable risk hash, e.g.
+   * `"bZ2wOA1Z8MmjhUWYNzzde3AOwVg1F830SiCAt0RPvJk="`) for an SCA finding.
+   *
+   * Unlike SAST (whose local `resultHash` is already the correct submit-time
+   * identifier), the local scan result's SCA `id` is the CVE/riskName (e.g.
+   * `"cve-2011-3374"`) — the AI Triage/Remediation submit endpoints reject that
+   * CVE as a `resultID` ("Result id '...' not found for scanner 'sca'"). This
+   * correlates the finding against the bulk Risks API using every plausible
+   * identifier (riskName, similarityId, groupId, hash) and returns the matching
+   * item's `id`. Falls back to `fallbackResultId` (the CVE) when no match is
+   * found or the lookup fails, so this never blocks submission outright — the
+   * caller ends up no worse off than before this resolution existed.
+   */
+  public async resolveScaResultId(
+    projectId: string,
+    identifiers: Array<string | undefined>,
+    fallbackResultId: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const keys = new Set(
+      identifiers
+        .filter((id): id is string => !!id && id.trim().length > 0)
+        .map((id) => id.trim().toLowerCase())
+    );
+    if (keys.size === 0) {
+      return fallbackResultId;
+    }
+    try {
+      const risks = await this.getRisks(projectId, undefined, signal);
+      for (const item of risks) {
+        if (!item || typeof item !== "object") {
+          continue;
+        }
+        const riskId = String(item.id ?? "").trim();
+        if (!riskId) {
+          continue;
+        }
+        const candidates = [
+          item.riskName,
+          item.risk_name,
+          item.similarityId,
+          item.similarity_id,
+          item.groupId,
+          item.group_id,
+          item.hash,
+        ]
+          .filter((v) => v !== undefined && v !== null && String(v).trim().length > 0)
+          .map((v) => String(v).trim().toLowerCase());
+        if (candidates.some((c) => keys.has(c))) {
+          return riskId;
+        }
+      }
+    } catch (error) {
+      this.logs?.debug(
+        `[AI Triage] resolveScaResultId lookup failed, falling back to CVE '${fallbackResultId}': ${(error as Error)?.message
+        }`
+      );
+    }
+    return fallbackResultId;
   }
 
   /**

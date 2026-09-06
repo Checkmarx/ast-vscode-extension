@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { CheckmarxIssue, GitHubService, PullRequest, RepoInfo } from '../../services/githubService';
 import { Logs } from '../../models/logs';
 import { getCommandPrefix } from '../../config/extensionConfig';
+import { getFromState } from '../../utils/common/globalState';
+import { constants } from '../../utils/common/constants';
 
 export class PullRequestItem extends vscode.TreeItem {
     // undefined = not yet fetched; array = cached result (may be empty)
@@ -98,18 +100,37 @@ export class PullRequestProvider implements vscode.TreeDataProvider<vscode.TreeI
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     private items: vscode.TreeItem[] = [];
-    // Unfiltered PR items from the last successful load — the author filter is applied on top of this.
+    // Unfiltered PR items from the last successful load — author/branch filters are applied on top of this.
     private allPrItems: PullRequestItem[] = [];
     private _authorFilter: string | undefined;
+    // Source (head) branch name selected via the "Filter by Branch" picker; undefined shows all branches.
+    private _branchFilter: string | undefined;
+    // Display text for the header, e.g. "Project: owner/repo  ·  Branch: main".
+    private _selectionDescription: string | undefined;
     private _repoInfo: RepoInfo | undefined;
     private _loaded = false;
     private readonly githubService = GitHubService.getInstance();
 
-    constructor(private readonly logs: Logs) {}
+    constructor(
+        private readonly logs: Logs,
+        private readonly context: vscode.ExtensionContext,
+    ) {
+        this.loadSelectionContext();
+    }
 
     /** Currently selected author filter, or undefined if showing PRs from all authors. */
     get authorFilter(): string | undefined {
         return this._authorFilter;
+    }
+
+    /** Currently selected source-branch filter, or undefined if showing PRs from all branches. */
+    get branchFilter(): string | undefined {
+        return this._branchFilter;
+    }
+
+    /** "Project: X  ·  Branch: Y" text describing the currently selected Checkmarx One project/branch. */
+    get selectionDescription(): string | undefined {
+        return this._selectionDescription;
     }
 
     /** Unique PR author usernames from the last successful load, sorted alphabetically. */
@@ -117,25 +138,63 @@ export class PullRequestProvider implements vscode.TreeDataProvider<vscode.TreeI
         return Array.from(new Set(this.allPrItems.map(item => item.pr.user.login))).sort();
     }
 
+    /** Unique PR source (head) branch names from the last successful load, sorted alphabetically. */
+    getAvailableBranches(): string[] {
+        return Array.from(new Set(this.allPrItems.map(item => item.pr.head.ref))).sort();
+    }
+
     /** Applies (or clears, when author is undefined) the author filter and refreshes the tree. */
     setAuthorFilter(author: string | undefined): void {
         this._authorFilter = author;
-        this.applyAuthorFilter();
+        this.applyFilters();
         this._onDidChangeTreeData.fire(undefined);
     }
 
-    private applyAuthorFilter(): void {
+    /** Applies (or clears, when branch is undefined) the source-branch filter and refreshes the tree. */
+    setBranchFilter(branch: string | undefined): void {
+        this._branchFilter = branch;
+        this.applyFilters();
+        this._onDidChangeTreeData.fire(undefined);
+    }
+
+    /**
+     * Re-reads the currently selected Checkmarx One project/branch (without re-fetching PRs from GitHub)
+     * so the view header stays in sync. Cheap enough to call whenever the view regains visibility.
+     * Does not affect the (manual, user-controlled) branch/author filters.
+     */
+    syncSelectionContext(): void {
+        this.loadSelectionContext();
+        this._onDidChangeTreeData.fire(undefined);
+    }
+
+    private loadSelectionContext(): void {
+        const projectItem = getFromState(this.context, constants.projectIdKey);
+        const branchItem = getFromState(this.context, constants.branchIdKey);
+        this._selectionDescription = `${projectItem?.name ?? constants.projectLabel}  ·  ${branchItem?.name ?? constants.branchLabel}`;
+    }
+
+    private applyFilters(): void {
         if (this.allPrItems.length === 0) {
             return;
         }
-        if (!this._authorFilter) {
+        if (!this._authorFilter && !this._branchFilter) {
             this.items = this.allPrItems;
             return;
         }
-        const filtered = this.allPrItems.filter(item => item.pr.user.login === this._authorFilter);
+        const filtered = this.allPrItems.filter(item =>
+            (!this._branchFilter || item.pr.head.ref === this._branchFilter) &&
+            (!this._authorFilter || item.pr.user.login === this._authorFilter)
+        );
         this.items = filtered.length > 0
             ? filtered
-            : [new StatusItem(`No open pull requests from ${this._authorFilter}`, 'info')];
+            : [new StatusItem(this.buildNoResultsMessage(), 'info')];
+    }
+
+    private buildNoResultsMessage(): string {
+        const parts: string[] = [];
+        if (this._branchFilter) { parts.push(`from branch "${this._branchFilter}"`); }
+        if (this._authorFilter) { parts.push(`by ${this._authorFilter}`); }
+        return `No open pull requests ${parts.join(' ')}`.trim();
     }
 
     getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
@@ -169,6 +228,7 @@ export class PullRequestProvider implements vscode.TreeDataProvider<vscode.TreeI
     /** Call this to trigger a full reload (e.g. refresh button). */
     async refresh(): Promise<void> {
         this._loaded = false;
+        this.loadSelectionContext();
         this.items = [new StatusItem('Loading pull requests…', 'loading~spin')];
         this._onDidChangeTreeData.fire(undefined);
 
@@ -197,7 +257,7 @@ export class PullRequestProvider implements vscode.TreeDataProvider<vscode.TreeI
                     prItem.setIssueCount(count);
                 }));
                 this.allPrItems = prItems;
-                this.applyAuthorFilter();
+                this.applyFilters();
             }
 
             this._loaded = true;

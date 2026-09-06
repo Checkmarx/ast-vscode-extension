@@ -18,11 +18,14 @@ import {
 } from "../../models/aiTriage";
 import type { AiTriagePayload } from "../../commands/aiTriageCommand";
 import { AiTriageService } from "../../services/aiTriageService";
+import { cx } from "../../cx";
 
 /** A single row rendered in the AI Triage table (one triage-able result). */
 export interface AiTriageRow {
   resultId: string;
   similarityId: string;
+  /** Platform-wide risk hash — the key the Risks API's `id`/`hash` correlates to. */
+  alternateId: string;
   engine: AiTriageEngine;
   resultType: string;
   severity: string;
@@ -30,6 +33,8 @@ export interface AiTriageRow {
   stateDisplay: string;
   name: string;
   description: string;
+  /** Risk name from the platform's Risks API, resolved lazily after the initial render. */
+  riskName?: string;
 }
 
 /** Strip HTML tags/entities and collapse whitespace for a short description. */
@@ -66,6 +71,9 @@ interface ResultLike {
   queryName?: string;
   description?: string;
   id?: string;
+  // Platform-wide risk hash — the correlation key shared with the Risks API's
+  // `id`/`hash` (also used to match ASPM results in riskManagementView.ts).
+  alternateId?: string;
   getResultHash?: () => string;
 }
 
@@ -83,6 +91,7 @@ export function mapResultToRow(result: ResultLike): AiTriageRow | undefined {
   return {
     resultId,
     similarityId,
+    alternateId: result.alternateId || "",
     engine,
     resultType: result.type as string,
     severity: (result.severity || "").toUpperCase(),
@@ -145,9 +154,50 @@ export function classifyTriageSource(
 }
 
 /**
- * Build a similarityId -> source map from the Risks API response. Each risk item
- * carries `stateChangedBy` ("AI" | "manual" | "unchanged"); "unchanged" is
- * omitted so those findings render as untriaged.
+ * Every plausible identifier a Risks API item might be looked up by, lower-cased.
+ * For SCA findings the decisive one is `riskName` itself: it's the CVE ID (or
+ * internal "Cx..." ID when there's no CVE) in upper/mixed case, while the matching
+ * local scan result's `id`/`similarityId` carry the *same* value lower-cased
+ * (confirmed against a real captured scan sample, e.g. local `id: "cve-2011-3374"`
+ * vs. a Risks API `riskName: "CVE-2011-3374"`). The rest are kept as fallbacks for
+ * engines/deployments where that isn't true.
+ */
+function riskLookupKeys(item: Record<string, unknown>, riskName: string): string[] {
+  const keys: unknown[] = [
+    riskName,
+    item.similarityId,
+    item.similarity_id,
+    item.groupId,
+    item.group_id,
+    item.hash,
+    item.id,
+  ];
+  return keys
+    .filter((key) => key !== undefined && key !== null && String(key).length > 0)
+    .map((key) => String(key).toLowerCase());
+}
+
+/**
+ * Look up a row in a Risks-API-derived map, trying every identifier the row could
+ * plausibly be indexed under (case-insensitively), most-likely first.
+ */
+export function lookupByRow<T>(map: Record<string, T>, row: AiTriageRow): T | undefined {
+  for (const key of [row.alternateId, row.similarityId, row.resultId]) {
+    if (key) {
+      const hit = map[key.toLowerCase()];
+      if (hit !== undefined) {
+        return hit;
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Build a source map from the Risks API response, keyed by every plausible
+ * identifier (see {@link riskLookupKeys}). Each risk item carries `stateChangedBy`
+ * ("AI" | "manual" | "unchanged"); "unchanged" is omitted so those findings render
+ * as untriaged.
  */
 export function buildSourceMapFromRisks(
   risks: Array<Record<string, unknown>> | undefined
@@ -173,19 +223,32 @@ export function buildSourceMapFromRisks(
     if (!source) {
       continue;
     }
-    // The risk carries no similarityId, so index by every plausible identifier
-    // (id, groupId, …); rows are matched against these by similarityId/resultId.
-    for (const key of [
-      item.similarityId,
-      item.similarity_id,
-      item.groupId,
-      item.group_id,
-      item.hash,
-      item.id,
-    ]) {
-      if (key !== undefined && key !== null && String(key).length > 0) {
-        map[String(key)] = source;
-      }
+    const riskName = String(item.riskName ?? item.risk_name ?? "").trim();
+    for (const key of riskLookupKeys(item, riskName)) {
+      map[key] = source;
+    }
+  }
+  return map;
+}
+
+/**
+ * Build a riskName map from the Risks API response (`riskName`), keyed by every
+ * plausible identifier (see {@link riskLookupKeys}).
+ */
+export function buildRiskNameMapFromRisks(
+  risks: Array<Record<string, unknown>> | undefined
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const item of risks || []) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+    const riskName = String(item.riskName ?? item.risk_name ?? "").trim();
+    if (!riskName) {
+      continue;
+    }
+    for (const key of riskLookupKeys(item, riskName)) {
+      map[key] = riskName;
     }
   }
   return map;
@@ -212,7 +275,8 @@ function renderSourceCell(row: AiTriageRow, source: string | undefined): string 
 function renderRow(
   row: AiTriageRow,
   triagedIds: Set<string>,
-  sourceBySimilarity: Record<string, string>
+  sourceBySimilarity: Record<string, string>,
+  riskNameBySimilarity: Record<string, string>
 ): string {
 
   const sevClass = SEVERITY_CLASS[row.severity] || "sev-info";
@@ -227,6 +291,7 @@ function renderRow(
   };
   const encoded = escapeHtml(JSON.stringify(payload));
   const source = triagedIds.has(row.similarityId) ? "AI" : sourceBySimilarity[row.similarityId];
+  const riskName = row.riskName || riskNameBySimilarity[row.similarityId] || "";
 
   const isDecided = triagedIds.has(row.similarityId) || isTriagedState(row.stateDisplay);
   const doneIcon = isDecided
@@ -235,6 +300,7 @@ function renderRow(
   return `<tr data-similarity="${escapeHtml(row.similarityId)}" data-payload="${encoded}">
     <td><span class="badge ${sevClass}">${escapeHtml(row.severity || "N/A")}</span></td>
     <td><span class="badge engine">${escapeHtml(row.engine.toUpperCase())}</span></td>
+    <td class="riskname" data-sim="${escapeHtml(row.similarityId)}" title="${escapeHtml(riskName)}">${riskName ? escapeHtml(riskName) : '<span class="src-none">—</span>'}</td>
     <td class="name" title="${escapeHtml(row.name + (row.description ? " — " + row.description : ""))}">
       <span class="vname">${escapeHtml(row.name)}</span>${row.description ? `<span class="vdesc">${escapeHtml(row.description)}</span>` : ""}
     </td>
@@ -252,13 +318,17 @@ export function buildAiTriageHtml(params: {
   productName: string;
   nonce: string;
   authenticated: boolean;
+  isLatestScan?: boolean;
   triagedIds?: Set<string>;
   sourceBySimilarity?: Record<string, string>;
+  riskNameBySimilarity?: Record<string, string>;
 
 }): string {
   const { rows, projectName, scanId, productName, nonce, authenticated } = params;
+  const isLatestScan = params.isLatestScan ?? true;
   const triagedIds = params.triagedIds ?? new Set<string>();
   const sourceBySimilarity = params.sourceBySimilarity ?? {};
+  const riskNameBySimilarity = params.riskNameBySimilarity ?? {};
 
   const header = `<div class="details">
       <div class="ellipsis">Project: ${escapeHtml(projectName || "—")}</div>
@@ -270,6 +340,8 @@ export function buildAiTriageHtml(params: {
     body = `<div class="message">Authentication to Checkmarx One is required to use AI Triage and Remediation.</div>`;
   } else if (!projectName || !scanId) {
     body = `<div class="message">Select a project and scan in the Checkmarx One Results view to see triage-able SAST/SCA findings.</div>`;
+  } else if (!isLatestScan) {
+    body = `<div class="message">AI Triage and Remediation is only available for the latest scan. Select the latest scan for this project/branch in the Checkmarx One Results view.</div>`;
   } else if (rows.length === 0) {
     body = `<div class="message">No SAST or SCA findings available to triage for the selected scan.</div>`;
   } else {
@@ -277,10 +349,10 @@ export function buildAiTriageHtml(params: {
       <table class="triage-table">
         <thead>
           <tr>
-            <th>Severity</th><th>Engine</th><th>Vulnerability</th><th>State</th><th>Triaged By</th>
+            <th>Severity</th><th>Engine</th><th>RiskName</th><th>Vulnerability</th><th>State</th><th>Triaged By</th>
           </tr>
         </thead>
-          <tbody>${rows.map((r) => renderRow(r, triagedIds, sourceBySimilarity)).join("")}</tbody>
+          <tbody>${rows.map((r) => renderRow(r, triagedIds, sourceBySimilarity, riskNameBySimilarity)).join("")}</tbody>
       </table>
         <div class="hint">Right-click a row to access <b>Triage with AI</b> or <b>Remediate with AI</b> options.</div>`;
   }
@@ -306,6 +378,7 @@ export function buildAiTriageHtml(params: {
     table.triage-table td { padding:6px; border-bottom:1px solid var(--vscode-panel-border); vertical-align:middle; }
     table.triage-table tbody tr { cursor: pointer; }
     table.triage-table tr:hover { background: var(--vscode-list-hoverBackground); }
+    td.riskname { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     td.name { max-width:520px; }
     td.name .vname { font-weight:600; }
     td.name .vdesc { display:block; color: var(--vscode-descriptionForeground); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:520px; }
@@ -372,6 +445,7 @@ export function buildAiTriageHtml(params: {
         it.addEventListener('click', function(ev){
           ev.stopPropagation();
           setBusy(p.similarityId, pair[0]);
+          console.log('[AI Triage/Remediation] sending "' + pair[0] + '" with payload:', JSON.stringify(p, null, 2));
           vscode.postMessage({ command: pair[0], payload: p });
           hideMenu();
         });
@@ -396,6 +470,13 @@ export function buildAiTriageHtml(params: {
         const cell = document.querySelector('td.source[data-sim="' + cssEsc(m.similarityId) + '"]');
         if (cell && m.html){ cell.innerHTML = m.html; }
       }
+            else if (m.command === 'setRiskName'){
+        const cell = document.querySelector('td.riskname[data-sim="' + cssEsc(m.similarityId) + '"]');
+        if (cell && m.riskName){
+          cell.textContent = m.riskName;
+          cell.setAttribute('title', m.riskName);
+        }
+      }
     });
   </script>
 </body>
@@ -415,6 +496,8 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
   private readonly triagedIds = new Set<string>();
   /** similarityId -> "AI" | "Manual", resolved lazily from the triage change-log. */
   private readonly sourceCache = new Map<string, "AI" | "Manual">();
+  /** similarityId -> riskName, resolved lazily from the Risks API. */
+  private readonly riskNameCache = new Map<string, string>();
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -439,27 +522,42 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
     }
     const authenticated = await this.isAuthenticated();
     const project = getFromState(this.context, constants.projectIdKey) as Item | undefined;
+    const branch = getFromState(this.context, constants.branchIdKey) as Item | undefined;
     const scan = getFromState(this.context, constants.scanIdKey) as Item | undefined;
 
     this.rows = [];
     this.detailResults = [];
-    if (authenticated && project?.id && scan?.id) {
-      try {
-        const raw = cxResults ?? (await readResultsFromFile(getResultsFilePath(), scan.id)) ?? [];
-        const astResults = (raw as unknown[]).map((r) =>
-          typeof (r as ResultLike).getResultHash === "function"
-            ? (r as ResultLike)
-            : new AstResult(r)
-        );
-        this.detailResults = astResults;
-        this.rows = mapResultsToRows(astResults);
-      } catch (error) {
-        this.logs.warn(`AI Triage: failed to load results: ${error}`);
+    let isLatestScan = true;
+    if (authenticated && project?.id && branch?.id && scan?.id) {
+      isLatestScan = await this.isSelectedScanLatest(project.id, branch.id, scan.id);
+      if (isLatestScan) {
+        try {
+          const raw = cxResults ?? (await readResultsFromFile(getResultsFilePath(), scan.id)) ?? [];
+          const astResults = (raw as unknown[]).map((r) =>
+            typeof (r as ResultLike).getResultHash === "function"
+              ? (r as ResultLike)
+              : new AstResult(r)
+          );
+          this.detailResults = astResults;
+          this.rows = mapResultsToRows(astResults);
+          for (const row of this.rows) {
+            this.logs.debug(
+              `[AI Triage] row loaded: engine=${row.engine} severity=${row.severity} ` +
+              `resultId=${row.resultId} similarityId=${row.similarityId} alternateId=${row.alternateId} name=${row.name}`
+            );
+          }
+        } catch (error) {
+          this.logs.warn(`AI Triage: failed to load results: ${error}`);
+        }
       }
     }
     const sourceBySimilarity: Record<string, string> = {};
     for (const [sim, src] of this.sourceCache) {
       sourceBySimilarity[sim] = src;
+    }
+    const riskNameBySimilarity: Record<string, string> = {};
+    for (const [sim, riskName] of this.riskNameCache) {
+      riskNameBySimilarity[sim] = riskName;
     }
 
     this.view.webview.html = buildAiTriageHtml({
@@ -469,14 +567,35 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
       productName: getMessages().productName,
       nonce: getNonce(),
       authenticated,
+      isLatestScan,
       triagedIds: this.triagedIds,
       sourceBySimilarity,
+      riskNameBySimilarity,
     });
 
     // Resolve "Triaged By" for already-triaged rows in the background (bounded),
     // then patch each cell so the initial render is never blocked.
-    if (authenticated && project?.id) {
+    if (authenticated && project?.id && isLatestScan) {
       void this.resolveTriageSources(project.id);
+    }
+  }
+
+  /**
+   * Whether `scanId` is the most recent completed scan for `projectId`/`branchName`.
+   * Fails open (returns true) on error so a transient API issue doesn't block the view.
+   */
+  private async isSelectedScanLatest(
+    projectId: string,
+    branchName: string,
+    scanId: string
+  ): Promise<boolean> {
+    try {
+      const scans = await cx.getScans(projectId, branchName, 1);
+      const latest = scans?.[0];
+      return latest ? latest.id === scanId : true;
+    } catch (error) {
+      this.logs.warn(`AI Triage: failed to check latest scan: ${error}`);
+      return true;
     }
   }
 
@@ -520,13 +639,13 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
       }
 
       const map = buildSourceMapFromRisks(items);
-      let matched = 0;
+      const riskNameMap = buildRiskNameMapFromRisks(items);
+      let sourceMatched = 0;
+      let riskNameMatched = 0;
       for (const row of this.rows) {
-        const source = this.triagedIds.has(row.similarityId)
-          ? "AI"
-          : (map[row.similarityId] ?? map[row.resultId]);
+        const source = this.triagedIds.has(row.similarityId) ? "AI" : lookupByRow(map, row);
         if (source) {
-          matched++;
+          sourceMatched++;
           this.sourceCache.set(row.similarityId, source);
           this.view?.webview.postMessage({
             command: "setSource",
@@ -534,21 +653,37 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
             html: sourceBadgeHtml(source),
           });
         }
-      }
-      this.logs.debug(`[AI Triage] source matched ${matched}/${this.rows.length} rows`);
 
-      // If nothing matched, log a sample from both sides so the correlation key
-      // can be pinned down.
-      if (matched === 0 && items.length > 0) {
+        const riskName = lookupByRow(riskNameMap, row);
+        if (riskName) {
+          riskNameMatched++;
+          row.riskName = riskName;
+          this.riskNameCache.set(row.similarityId, riskName);
+          this.view?.webview.postMessage({
+            command: "setRiskName",
+            similarityId: row.similarityId,
+            riskName,
+          });
+        }
+      }
+      this.logs.debug(
+        `[AI Triage] source matched ${sourceMatched}/${this.rows.length}, ` +
+        `riskName matched ${riskNameMatched}/${this.rows.length} rows`
+      );
+
+      // If riskName correlation is failing, log a sample from both sides so the
+      // mismatched key can be pinned down without another guess-and-check round.
+      if (riskNameMatched === 0 && items.length > 0) {
         const s = items[0];
         this.logs.debug(
-          `[AI Triage] sample risk: id=${s.id} groupId=${s.groupId} riskName=${s.riskName} ` +
-          `stateChangedBy=${s.stateChangedBy} isAiGenerated=${s.isAiGenerated}`
+          `[AI Triage] sample risk: id=${s.id} groupId=${s.groupId} hash=${s.hash} ` +
+          `riskName=${s.riskName} stateChangedBy=${s.stateChangedBy} isAiGenerated=${s.isAiGenerated}`
         );
         const r = this.rows[0];
         if (r) {
           this.logs.debug(
-            `[AI Triage] sample row: similarityId=${r.similarityId} resultId=${r.resultId} name=${r.name}`
+            `[AI Triage] sample row: similarityId=${r.similarityId} resultId=${r.resultId} ` +
+            `alternateId=${r.alternateId} name=${r.name}`
           );
         }
       }
@@ -561,6 +696,7 @@ export class AiTriageViewProvider implements vscode.WebviewViewProvider {
     command: string;
     payload?: AiTriagePayload;
   }): Promise<void> {
+    this.logs.debug(`[AI Triage] webview message received: ${JSON.stringify(message)}`);
     switch (message?.command) {
       case "triageWithAI": {
         if (!message.payload) {

@@ -588,7 +588,7 @@ function registerAssistRelatedCommands(
 }
 
 function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, copilotChatCommand: CopilotChatCommand) {
-    const provider = new PullRequestProvider(logs);
+    const provider = new PullRequestProvider(logs, context);
     const openPanels = new Map<number, vscode.WebviewPanel>();
     // Stores a scroll target for a PR whose diff panel is still loading
     const pendingScrolls = new Map<number, { filename: string; line: number }>();
@@ -598,6 +598,18 @@ function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, c
         showCollapseAll: true,
     });
     context.subscriptions.push(treeView);
+
+    // Reflects the currently selected Checkmarx One project/branch in the view header, and
+    // shows which filters (branch/author) are currently narrowing the PR list.
+    const updateHeader = () => {
+        treeView.description = provider.selectionDescription;
+        const parts: string[] = [];
+        if (provider.branchFilter) { parts.push(`branch: ${provider.branchFilter}`); }
+        if (provider.authorFilter) { parts.push(`author: ${provider.authorFilter}`); }
+        treeView.message = parts.length > 0 ? `Filtered by ${parts.join(', ')}` : undefined;
+    };
+    context.subscriptions.push(provider.onDidChangeTreeData(() => updateHeader()));
+    updateHeader();
 
     // Refresh button in view/title toolbar
     context.subscriptions.push(
@@ -609,10 +621,6 @@ function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, c
     // Filter button in view/title toolbar — opens a picker of PR authors and shows only their PRs.
     // VS Code view titles don't support a native dropdown widget; a QuickPick is the standard
     // equivalent and is what every built-in VS Code view (e.g. Source Control) uses for this.
-    const updateFilterMessage = () => {
-        const author = provider.authorFilter;
-        treeView.message = author ? `Filtered by author: ${author}` : undefined;
-    };
     context.subscriptions.push(
         vscode.commands.registerCommand(commands.filterPullRequestsByAuthor, async () => {
             const authors = provider.getAvailableAuthors();
@@ -639,8 +647,39 @@ function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, c
             if (!picked) { return; }
 
             provider.setAuthorFilter(picked.author);
-            updateFilterMessage();
             logs.info(`Pull Requests: filtered by author "${picked.author ?? 'All Authors'}"`);
+        }),
+    );
+
+    // Filter button in view/title toolbar — opens a picker of PR source branches and shows only
+    // PRs created from the selected branch. "All Branches" (the default) clears the filter.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(commands.filterPullRequestsByBranch, async () => {
+            const branches = provider.getAvailableBranches();
+            if (branches.length === 0) {
+                vscode.window.showInformationMessage('No pull requests loaded yet.');
+                return;
+            }
+
+            const current = provider.branchFilter;
+            const picked = await vscode.window.showQuickPick(
+                [
+                    { label: 'All Branches', description: current ? '' : '● current', branch: undefined as string | undefined },
+                    ...branches.map(branch => ({
+                        label: branch,
+                        description: branch === current ? '● current' : '',
+                        branch,
+                    })),
+                ],
+                {
+                    title: 'Filter Pull Requests by Source Branch',
+                    placeHolder: 'Select the source branch to filter the Pull Requests list',
+                },
+            );
+            if (!picked) { return; }
+
+            provider.setBranchFilter(picked.branch);
+            logs.info(`Pull Requests: filtered by branch "${picked.branch ?? 'All Branches'}"`);
         }),
     );
 
@@ -834,9 +873,14 @@ function registerPullRequestView(context: vscode.ExtensionContext, logs: Logs, c
         }),
     );
 
-    // Load PRs the first time the panel becomes visible; subsequent visibility changes do not re-fetch
+    // Load PRs the first time the panel becomes visible; subsequent visibility changes do not re-fetch,
+    // but do cheaply re-sync the project/branch header and re-apply the branch filter in case the
+    // Checkmarx One Results view's selected project/branch changed while this panel was hidden.
     treeView.onDidChangeVisibility(e => {
-        if (e.visible) { provider.refreshIfNeeded(); }
+        if (e.visible) {
+            provider.syncSelectionContext();
+            provider.refreshIfNeeded();
+        }
     });
 }
 

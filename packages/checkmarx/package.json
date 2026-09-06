@@ -55,7 +55,13 @@
         "command": "ast-results.filterPullRequestsByAuthor",
         "category": "ast-results",
         "title": "Filter Pull Requests by Author",
-        "icon": "$(filter)"
+        "icon": "$(person)"
+      },
+      {
+        "command": "ast-results.filterPullRequestsByBranch",
+        "category": "ast-results",
+        "title": "Filter Pull Requests by Source Branch",
+        "icon": "$(git-branch)"
       },
       {
         "command": "ast-results.rescanPullRequest",
@@ -809,13 +815,18 @@
           "when": "view == ast-results.aiTriage"
         },
         {
-          "command": "ast-results.filterPullRequestsByAuthor",
+          "command": "ast-results.filterPullRequestsByBranch",
           "group": "navigation@0",
           "when": "view == ast-results.pullRequests"
         },
         {
-          "command": "ast-results.refreshPullRequests",
+          "command": "ast-results.filterPullRequestsByAuthor",
           "group": "navigation@1",
+          "when": "view == ast-results.pullRequests"
+        },
+        {
+          "command": "ast-results.refreshPullRequests",
+          "group": "navigation@2",
           "when": "view == ast-results.pullRequests"
         },
         {

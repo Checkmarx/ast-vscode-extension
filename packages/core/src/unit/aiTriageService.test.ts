@@ -185,6 +185,81 @@ describe("AiTriageService", () => {
     });
   });
 
+  describe("resolveScaResultId", () => {
+    it("resolves the Risks API's own risk-hash id when the CVE/riskName matches", async () => {
+      stubToken(makeToken());
+      nock(HOST)
+        .get("/api/risks")
+        .query(true)
+        .reply(200, [
+          { id: "bZ2wOA1Z8MmjhUWYNzzde3AOwVg1F830SiCAt0RPvJk=", riskName: "CVE-2026-33228" },
+        ]);
+
+      const service = AiTriageService.getInstance(context);
+      const resultId = await service.resolveScaResultId(
+        "proj",
+        ["cve-2026-33228", "cve-2026-33228"],
+        "cve-2026-33228"
+      );
+      expect(resultId).to.equal("bZ2wOA1Z8MmjhUWYNzzde3AOwVg1F830SiCAt0RPvJk=");
+    });
+
+    it("matches case-insensitively on similarityId/groupId/hash as well as riskName", async () => {
+      stubToken(makeToken());
+      nock(HOST)
+        .get("/api/risks")
+        .query(true)
+        .reply(200, [{ id: "risk-hash-1", groupId: "CVE-2026-1#-#Npm-x-1.0.0#-#proj" }]);
+
+      const service = AiTriageService.getInstance(context);
+      const resultId = await service.resolveScaResultId(
+        "proj",
+        ["cve-2026-1#-#npm-x-1.0.0#-#proj"],
+        "cve-2026-1"
+      );
+      expect(resultId).to.equal("risk-hash-1");
+    });
+
+    it("falls back to the given fallback when no risk item matches", async () => {
+      stubToken(makeToken());
+      nock(HOST)
+        .get("/api/risks")
+        .query(true)
+        .reply(200, [{ id: "other-hash", riskName: "CVE-9999-0001" }]);
+
+      const service = AiTriageService.getInstance(context);
+      const resultId = await service.resolveScaResultId(
+        "proj",
+        ["cve-2026-33228"],
+        "cve-2026-33228"
+      );
+      expect(resultId).to.equal("cve-2026-33228");
+    });
+
+    it("falls back to the given fallback when the Risks API call fails", async () => {
+      stubToken(makeToken());
+      nock(HOST).get("/api/risks").query(true).replyWithError("boom");
+
+      const service = AiTriageService.getInstance(context);
+      const resultId = await service.resolveScaResultId(
+        "proj",
+        ["cve-2026-33228"],
+        "cve-2026-33228"
+      );
+      expect(resultId).to.equal("cve-2026-33228");
+    });
+
+    it("returns the fallback without calling the API when no identifiers are given", async () => {
+      stubToken(makeToken());
+      const scope = nock(HOST).get("/api/risks").query(true).reply(200, []);
+
+      const service = AiTriageService.getInstance(context);
+      const resultId = await service.resolveScaResultId("proj", [undefined, ""], "cve-2026-33228");
+      expect(resultId).to.equal("cve-2026-33228");
+      expect(scope.isDone()).to.equal(false);
+    });
+  });
+
   describe("runTriage (end to end, polling monitor)", () => {
     it("submits then resolves the decision via the info API", async () => {
       stubToken(makeToken());

@@ -14,10 +14,13 @@ import {
   parseSsePhase,
 } from "../services/aiTriageService";
 import {
+  AiTriageRow,
   buildAiTriageHtml,
+  buildRiskNameMapFromRisks,
   buildSourceMapFromRisks,
   classifyTriageSource,
   escapeHtml,
+  lookupByRow,
   mapResultToRow,
   mapResultsToRows,
 } from "../views/aiTriageView/aiTriageViewProvider";
@@ -187,6 +190,13 @@ describe("AI Triage view rendering", () => {
       const row = mapResultToRow({ ...sastResult, state: "" });
       expect(row?.stateDisplay).to.equal("To Verify");
     });
+
+    it("carries alternateId through when present, and defaults to '' when absent", () => {
+      expect(mapResultToRow(sastResult)?.alternateId).to.equal("");
+      expect(mapResultToRow({ ...sastResult, alternateId: "risk-hash-1" })?.alternateId).to.equal(
+        "risk-hash-1"
+      );
+    });
   });
 
   describe("buildAiTriageHtml", () => {
@@ -200,7 +210,7 @@ describe("AI Triage view rendering", () => {
 
     it("renders a table with the expected columns (no Status) and both AI actions", () => {
       const html = buildAiTriageHtml({ ...baseArgs, rows: mapResultsToRows([sastResult]) });
-      ["Severity", "Engine", "Vulnerability", "State", "Triaged By"].forEach((col) =>
+      ["Severity", "Engine", "RiskName", "Vulnerability", "State", "Triaged By"].forEach((col) =>
         expect(html).to.contain(`<th>${col}</th>`)
       );
       expect(html).to.not.contain("<th>Status</th>");
@@ -210,6 +220,19 @@ describe("AI Triage view rendering", () => {
       expect(html).to.contain('data-similarity="sim-1"');
       expect(html).to.contain(`nonce="abc123"`);
       expect(html).to.contain("Content-Security-Policy");
+    });
+
+    it("renders the RiskName cell when provided, and a placeholder when not", () => {
+      const withRiskName = buildAiTriageHtml({
+        ...baseArgs,
+        rows: mapResultsToRows([sastResult]),
+        riskNameBySimilarity: { "sim-1": "Vulnerable and Outdated Components" },
+      });
+      expect(withRiskName).to.contain('td class="riskname"');
+      expect(withRiskName).to.contain("Vulnerable and Outdated Components");
+
+      const withoutRiskName = buildAiTriageHtml({ ...baseArgs, rows: mapResultsToRows([sastResult]) });
+      expect(withoutRiskName).to.contain('<td class="riskname" data-sim="sim-1" title=""><span class="src-none">—</span></td>');
     });
 
     it("shows the completed icon for current-session triaged rows", () => {
@@ -326,5 +349,92 @@ describe("buildSourceMapFromRisks (Risks API stateChangedBy)", () => {
   it("returns an empty map for empty/undefined input", () => {
     expect(buildSourceMapFromRisks(undefined)).to.deep.equal({});
     expect(buildSourceMapFromRisks([])).to.deep.equal({});
+  });
+});
+
+describe("buildRiskNameMapFromRisks (Risks API riskName)", () => {
+  it("maps riskName keyed by similarityId, tolerating alternate id/field names", () => {
+    const map = buildRiskNameMapFromRisks([
+      { similarityId: "-101", riskName: "Vulnerable and Outdated Components" },
+      { hash: "h1", risk_name: "SQL Injection" },
+      { id: "-404" }, // missing riskName
+    ]);
+    expect(map["-101"]).to.equal("Vulnerable and Outdated Components");
+    expect(map["h1"]).to.equal("SQL Injection");
+    expect(map).to.not.have.property("-404");
+  });
+
+  it("indexes by groupId/id in addition to similarityId", () => {
+    const map = buildRiskNameMapFromRisks([
+      { groupId: "-999", riskName: "Broken Access Control" },
+      { id: "risk-1", riskName: "Insecure Deserialization" },
+    ]);
+    expect(map["-999"]).to.equal("Broken Access Control");
+    expect(map["risk-1"]).to.equal("Insecure Deserialization");
+  });
+
+  it("returns an empty map for empty/undefined input", () => {
+    expect(buildRiskNameMapFromRisks(undefined)).to.deep.equal({});
+    expect(buildRiskNameMapFromRisks([])).to.deep.equal({});
+  });
+
+  it("is keyed by riskName itself, case-insensitively (SCA: local id is the lower-cased CVE/risk id)", () => {
+    // Regression test: a real captured scan sample has a local SCA result with
+    // id/similarityId "cve-2011-3374", while the Risks API returns the same
+    // vulnerability as riskName "CVE-2011-3374" (upper-case) — and for findings
+    // with no CVE, riskName is an internal "Cx..." id instead (still lower-cased
+    // on the local side). Neither the risk's own `id`/`hash`/`groupId` fields
+    // match the local result at all — riskName is the only key that does.
+    const map = buildRiskNameMapFromRisks([
+      {
+        id: "0KxUMfzMm0kh5W4Km909vlN0VMf7jWefhVJ1guHCtsU=",
+        riskName: "CVE-2026-13676",
+        groupId: "CVE-2026-13676#-#Npm-fast-uri-3.0.6#-#907fe279-51d0-4f5e-8c94-4a57cd984d28",
+      },
+      {
+        id: "3IJd+Bt33rlaM/MP2ubtTm88BKMMaxNe5bBwKjJ0XeY=",
+        riskName: "Cxf5fb15b0-6576",
+        groupId: "Cxf5fb15b0-6576#-#Npm-serialize-javascript-6.0.2#-#907fe279-51d0-4f5e-8c94-4a57cd984d28",
+      },
+    ]);
+    expect(map["cve-2026-13676"]).to.equal("CVE-2026-13676");
+    expect(map["cxf5fb15b0-6576"]).to.equal("Cxf5fb15b0-6576");
+  });
+});
+
+describe("lookupByRow (row -> Risks-API-derived map correlation)", () => {
+  function makeRow(overrides: Partial<AiTriageRow>): AiTriageRow {
+    return {
+      resultId: "",
+      similarityId: "",
+      alternateId: "",
+      engine: "sca",
+      resultType: "sca",
+      severity: "HIGH",
+      status: "",
+      stateDisplay: "To Verify",
+      name: "",
+      description: "",
+      ...overrides,
+    };
+  }
+
+  it("matches an SCA row via its (lower-cased) CVE id against the riskName-keyed map", () => {
+    const riskNameMap = buildRiskNameMapFromRisks([
+      { id: "hash-1", riskName: "CVE-2026-13676" },
+    ]);
+    const row = makeRow({ resultId: "cve-2026-13676", similarityId: "cve-2026-13676" });
+    expect(lookupByRow(riskNameMap, row)).to.equal("CVE-2026-13676");
+  });
+
+  it("prefers alternateId when present, but falls back to similarityId/resultId", () => {
+    const map = { "alt-1": "A", "sim-1": "B", "res-1": "C" };
+    expect(lookupByRow(map, makeRow({ alternateId: "alt-1", similarityId: "sim-1", resultId: "res-1" }))).to.equal("A");
+    expect(lookupByRow(map, makeRow({ similarityId: "sim-1", resultId: "res-1" }))).to.equal("B");
+    expect(lookupByRow(map, makeRow({ resultId: "res-1" }))).to.equal("C");
+  });
+
+  it("returns undefined when no identifier matches", () => {
+    expect(lookupByRow({ "some-key": "value" }, makeRow({ resultId: "other" }))).to.equal(undefined);
   });
 });

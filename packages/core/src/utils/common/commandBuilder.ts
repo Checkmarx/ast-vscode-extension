@@ -186,6 +186,7 @@ const COMMAND_NAMES = {
     gitBlameRiskCheck: 'gitBlameRiskCheck',
     prHealthCheck: 'prHealthCheck',
     filterPullRequestsByAuthor: 'filterPullRequestsByAuthor',
+    filterPullRequestsByBranch: 'filterPullRequestsByBranch',
 
     // Development/Testing
     mockTokenTest: 'mockTokenTest',
@@ -806,6 +807,10 @@ class CommandBuilder {
 
     get filterPullRequestsByAuthor(): string {
         return this.buildCommand(COMMAND_NAMES.filterPullRequestsByAuthor);
+    }
+
+    get filterPullRequestsByBranch(): string {
+        return this.buildCommand(COMMAND_NAMES.filterPullRequestsByBranch);
     }
 
     // Development/Testing

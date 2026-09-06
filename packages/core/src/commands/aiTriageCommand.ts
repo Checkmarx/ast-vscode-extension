@@ -111,6 +111,11 @@ export class AiTriageCommand {
     const project = getFromState(this.context, constants.projectIdKey);
     const scan = getFromState(this.context, constants.scanIdKey);
 
+    this.logs.debug(
+      `[AI Triage] triageWithAI invoked: payload=${JSON.stringify(payload)} ` +
+      `resolvedEngine=${engine} projectId=${project?.id ?? ""} scanId=${scan?.id ?? ""}`
+    );
+
     if (!project?.id || !scan?.id) {
       vscode.window.showErrorMessage(
         `${productName}: Select a project and scan in the Checkmarx One Results view before running AI Triage.`
@@ -145,7 +150,14 @@ export class AiTriageCommand {
           const baseCount = baseline.length;
 
           progress.report({ message: `Submitting AI Triage for "${label}"…` });
-          await service.submitTriage(scan.id, engine, payload.resultId, controller.signal);
+          const submitResultId = await this.resolveSubmitResultId(
+            service,
+            engine,
+            project.id,
+            payload,
+            controller.signal
+          );
+          await service.submitTriage(scan.id, engine, submitResultId, controller.signal);
 
           // AI Triage runs asynchronously (typically up to ~5 minutes). Poll the
           // triage change-log via the CLI path (avoids the info microservice).
@@ -201,6 +213,12 @@ export class AiTriageCommand {
     const engine = payload.engine ?? toAiTriageEngine(payload.resultType)!;
     const project = getFromState(this.context, constants.projectIdKey);
     const scan = getFromState(this.context, constants.scanIdKey);
+
+    this.logs.debug(
+      `[AI Remediation] remediateWithAI invoked: payload=${JSON.stringify(payload)} ` +
+      `resolvedEngine=${engine} projectId=${project?.id ?? ""} scanId=${scan?.id ?? ""}`
+    );
+
     if (!project?.id || !scan?.id) {
       vscode.window.showErrorMessage(
         `${productName}: Select a project and scan in the Checkmarx One Results view before running AI Remediation.`
@@ -227,11 +245,18 @@ export class AiTriageCommand {
         progress.report({ message: `Requesting AI Remediation for "${label}"…` });
         const service = AiTriageService.getInstance(this.context, this.logs);
         try {
+          const submitResultId = await this.resolveSubmitResultId(
+            service,
+            engine,
+            project.id,
+            payload,
+            controller.signal
+          );
           await service.submitRemediation(
             scan.id,
             project.id,
             engine,
-            payload.resultId,
+            submitResultId,
             controller.signal
           );
           vscode.window.showInformationMessage(
@@ -268,6 +293,40 @@ export class AiTriageCommand {
     }
 
     vscode.window.showInformationMessage(`${productName}: AI Remediation Analysis is under development. Coming soon.`);
+  }
+
+  /**
+   * The resultID to send to the AI Triage/Remediation submit endpoints.
+   *
+   * SAST's `payload.resultId` is already the platform-correct `resultHash`, so
+   * it is returned unchanged. SCA's local `payload.resultId` is the CVE/riskName
+   * instead (that's what the local scan file carries as its `id`), which the
+   * submit endpoints reject as an unknown `resultID` — so for SCA it is resolved
+   * to the Risks API's own risk-hash `id` first, falling back to the CVE if the
+   * lookup fails (never blocks submission outright).
+   */
+  private async resolveSubmitResultId(
+    service: AiTriageService,
+    engine: AiTriageEngine,
+    projectId: string,
+    payload: AiTriagePayload,
+    signal: AbortSignal
+  ): Promise<string> {
+    if (engine !== "sca") {
+      return payload.resultId;
+    }
+    const resolved = await service.resolveScaResultId(
+      projectId,
+      [payload.similarityId, payload.resultId],
+      payload.resultId,
+      signal
+    );
+    if (resolved !== payload.resultId) {
+      this.logs.debug(
+        `[AI Triage] SCA resultId resolved via Risks API: ${payload.resultId} -> ${resolved}`
+      );
+    }
+    return resolved;
   }
 
   /** Read current triage predicates for a result via the CLI wrapper. */
