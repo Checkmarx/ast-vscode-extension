@@ -365,7 +365,10 @@ export function buildAiTriageHtml(params: {
         <div class="ellipsis">Project: ${escapeHtml(projectName || "—")}</div>
         <div class="ellipsis">Scan: ${escapeHtml(scanId || "—")}</div>
       </div>
-      ${renderEngineFilter(rows)}
+      <div class="header-controls">
+        <input type="text" id="triageSearchInput" class="search-input" placeholder="Filter by severity, engine, risk name, vulnerability, or state" />
+        ${renderEngineFilter(rows)}
+      </div>
     </div>`;
 
   let body: string;
@@ -405,6 +408,9 @@ export function buildAiTriageHtml(params: {
     .details-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
     .details { display:flex; gap:16px; color: var(--vscode-descriptionForeground); min-width:0; }
     .ellipsis { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:50%; }
+    .header-controls { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .search-input { width:260px; max-width:40vw; padding:3px 8px; font-size:12px; font-family:var(--vscode-font-family); color: var(--vscode-input-foreground); background: var(--vscode-input-background); border:1px solid var(--vscode-input-border, var(--vscode-panel-border)); border-radius:4px; }
+    .search-input:focus { outline:1px solid var(--vscode-focusBorder); outline-offset:-1px; }
     .filter-wrap { position:relative; flex-shrink:0; }
     .filter-btn { display:flex; align-items:center; justify-content:center; width:24px; height:24px; border:1px solid var(--vscode-panel-border); border-radius:4px; background:transparent; color: var(--vscode-foreground); cursor:pointer; padding:0; }
     .filter-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
@@ -499,42 +505,58 @@ export function buildAiTriageHtml(params: {
     }
     document.addEventListener('click', hideMenu);
     document.addEventListener('scroll', hideMenu, true);
-    (function setupEngineFilter(){
+    let applyFilters = function(){};
+    (function setupFilters(){
       const btn = document.getElementById('engineFilterBtn');
       const menu = document.getElementById('engineFilterMenu');
-      if (!btn || !menu) { return; }
-      const checkboxes = Array.from(menu.querySelectorAll('.engine-checkbox'));
-      btn.addEventListener('click', function(e){
-        e.stopPropagation();
-        menu.classList.toggle('show');
-      });
-      document.addEventListener('click', function(e){
-        if (!menu.contains(e.target) && !btn.contains(e.target)) {
-          menu.classList.remove('show');
-        }
-      });
-      function applyEngineFilter(){
-        const selected = checkboxes.filter(function(cb){ return cb.checked; }).map(function(cb){ return cb.value; });
-        btn.classList.toggle('active', selected.length !== checkboxes.length);
+      const searchInput = document.getElementById('triageSearchInput');
+      const checkboxes = menu ? Array.from(menu.querySelectorAll('.engine-checkbox')) : [];
+      if (btn && menu) {
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          menu.classList.toggle('show');
+        });
+        document.addEventListener('click', function(e){
+          if (!menu.contains(e.target) && !btn.contains(e.target)) {
+            menu.classList.remove('show');
+          }
+        });
+      }
+      function rowMatchesSearch(row, term){
+        if (!term) { return true; }
+        const sevText = (row.querySelector('td:nth-child(1)') || {}).textContent || '';
+        const engineText = (row.querySelector('td:nth-child(2)') || {}).textContent || '';
+        const riskText = (row.querySelector('td.riskname') || {}).textContent || '';
+        const nameText = (row.querySelector('td.name') || {}).textContent || '';
+        const stateText = (row.querySelector('td.state') || {}).textContent || '';
+        const haystack = (sevText + ' ' + engineText + ' ' + riskText + ' ' + nameText + ' ' + stateText).toLowerCase();
+        return haystack.indexOf(term) !== -1;
+      }
+      applyFilters = function(){
+        const selected = checkboxes.length ? checkboxes.filter(function(cb){ return cb.checked; }).map(function(cb){ return cb.value; }) : null;
+        if (btn) { btn.classList.toggle('active', !!selected && selected.length !== checkboxes.length); }
+        const term = searchInput ? searchInput.value.trim().toLowerCase() : '';
         const rows = document.querySelectorAll('tr[data-engine]');
         let anyVisible = false;
         rows.forEach(function(row){
-          const show = selected.indexOf(row.getAttribute('data-engine')) !== -1;
+          const engineOk = !selected || selected.indexOf(row.getAttribute('data-engine')) !== -1;
+          const searchOk = rowMatchesSearch(row, term);
+          const show = engineOk && searchOk;
           row.style.display = show ? '' : 'none';
           if (show) { anyVisible = true; }
         });
-        let emptyRow = document.getElementById('engineFilterEmptyRow');
+        let emptyRow = document.getElementById('filterEmptyRow');
         const tbody = document.querySelector('table.triage-table tbody');
         if (!anyVisible && tbody) {
           if (!emptyRow) {
             emptyRow = document.createElement('tr');
-            emptyRow.id = 'engineFilterEmptyRow';
+            emptyRow.id = 'filterEmptyRow';
             const td = document.createElement('td');
             td.colSpan = 6;
             td.style.textAlign = 'center';
             td.style.padding = '12px';
             td.style.color = 'var(--vscode-descriptionForeground)';
-            td.textContent = 'No findings match the selected engine filter.';
+            td.textContent = 'No findings match the current filters.';
             emptyRow.appendChild(td);
             tbody.appendChild(emptyRow);
           }
@@ -542,8 +564,9 @@ export function buildAiTriageHtml(params: {
         } else if (emptyRow) {
           emptyRow.style.display = 'none';
         }
-      }
-      checkboxes.forEach(function(cb){ cb.addEventListener('change', applyEngineFilter); });
+      };
+      checkboxes.forEach(function(cb){ cb.addEventListener('change', applyFilters); });
+      if (searchInput) { searchInput.addEventListener('input', applyFilters); }
     })();
     document.querySelectorAll('tr[data-similarity]').forEach(function(row){
       const payloadStr = row.getAttribute('data-payload');
@@ -559,6 +582,7 @@ export function buildAiTriageHtml(params: {
             else if (m.command === 'setSource'){
         const cell = document.querySelector('td.source[data-sim="' + cssEsc(m.similarityId) + '"]');
         if (cell && m.html){ cell.innerHTML = m.html; }
+        applyFilters();
       }
             else if (m.command === 'setRiskName'){
         const cell = document.querySelector('td.riskname[data-sim="' + cssEsc(m.similarityId) + '"]');
@@ -566,6 +590,7 @@ export function buildAiTriageHtml(params: {
           cell.textContent = m.riskName;
           cell.setAttribute('title', m.riskName);
         }
+        applyFilters();
       }
     });
   </script>
