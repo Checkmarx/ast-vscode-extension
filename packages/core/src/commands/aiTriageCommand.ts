@@ -21,6 +21,7 @@ import {
 } from "../models/aiTriage";
 import { AstResult } from "../models/results";
 import { buildScaVulnerabilityString } from "../utils/triage";
+import { applyRemediationFileChanges } from "../utils/remediation/applyRemediationDiff";
 
 /** Payload posted from the AI Triage webview (or passed by other callers). */
 export interface AiTriagePayload {
@@ -278,10 +279,38 @@ export class AiTriageCommand {
               },
             }
           );
-          progress.report({ message: `AI Remediation completed for "${label}".` });
-          vscode.window.showInformationMessage(
-            `${productName}: AI Remediation completed for "${label}". The fix is generated on the platform (an auto-PR is created when configured).`
+          progress.report({ message: `Applying AI Remediation changes for "${label}"…` });
+          const details = await service.getRemediationDetails(
+            scan.id,
+            submitResultId,
+            controller.signal
           );
+          const remediationResult =
+            details.results.find((r) => r.resultID === submitResultId) ?? details.results[0];
+          const { applied, failed } = await applyRemediationFileChanges(
+            remediationResult.data.file_changes,
+            this.logs
+          );
+
+          const autoPr = remediationResult.autoPr;
+          const prItem = "Open Pull Request";
+          const hasPr = autoPr?.status === "created" && !!autoPr.url;
+
+          if (failed.length === 0) {
+            const choice = await vscode.window.showInformationMessage(
+              `${productName}: AI Remediation completed for "${label}". Updated ${applied.length} file(s).` +
+              (hasPr ? " An auto-PR was created." : ""),
+              ...(hasPr ? [prItem] : [])
+            );
+            if (choice === prItem && autoPr?.url) {
+              vscode.env.openExternal(vscode.Uri.parse(autoPr.url));
+            }
+          } else {
+            vscode.window.showWarningMessage(
+              `${productName}: AI Remediation completed for "${label}", but ${failed.length} file(s) ` +
+              `could not be updated automatically: ${failed.map((f) => f.filePath).join(", ")}.`
+            );
+          }
           return true;
         } catch (error) {
           this.handleError(error, productName);

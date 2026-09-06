@@ -112,6 +112,54 @@ export function isAiTriageSupported(resultType: string | undefined): boolean {
   return toAiTriageEngine(resultType) !== undefined;
 }
 
+/**
+ * A single file change returned by the remediation-details API
+ * (GET /api/remediation/remediation-details/{scanId}/{resultHash}).
+ * `diff` is a unified/git-style diff to apply to `file_path`.
+ */
+export interface RemediationFileChange {
+  file_path: string;
+  analysis?: string;
+  diff: string;
+}
+
+/** Auto-PR outcome reported alongside a remediation result. */
+export interface RemediationAutoPr {
+  status: string;
+  url: string | null;
+  error_msg: string | null;
+  file_url: string | null;
+}
+
+/** The remediation payload nested under each `results[]` entry's `data` field. */
+export interface RemediationResultData {
+  error: string | null;
+  summary?: string;
+  analysis?: { what?: string; why?: string; how?: string };
+  pr_title?: string;
+  file_changes: RemediationFileChange[];
+  // Preserve anything else the backend returns without losing it.
+  [key: string]: unknown;
+}
+
+/** One entry of the remediation-details API's `results` array. */
+export interface RemediationResultEntry {
+  resultID: string;
+  createdAt?: string;
+  finishedAt?: string;
+  autoPr?: RemediationAutoPr;
+  data: RemediationResultData;
+}
+
+/**
+ * Response body of GET /api/remediation/remediation-details/{scanId}/{resultHash}.
+ * File changes live under `results[].data.file_changes`, not at the top level.
+ */
+export interface RemediationDetailsResponse {
+  scanID: string;
+  results: RemediationResultEntry[];
+}
+
 /** Normalize an arbitrary state string to its platform tag (best effort). */
 export function toStateTag(state: string | undefined): string {
   if (!state) {
