@@ -72,7 +72,8 @@ Examples:
   - \`maven\`: \`mvn compile\`, \`mvn test\`
   - \`gradle\`: \`gradle build\`, \`gradle test\`
   - \`sbt\`: \`sbt compile\`, \`sbt test\`
-  - \`pypi\`/\`setuptools\`/\`pyproject.toml\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
+  - \`pypi\`/\`setuptools\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
+  - \`pyproject.toml\` (Poetry/uv): \`python -c "import ${packageName}"\`, \`pytest\`, then \`uv lock\` or \`poetry lock\` if lock present
   - \`nuget\`: \`dotnet build\`, \`dotnet test\`
   - \`bower\` (\`bower.json\`): \`bower install\`, \`bower list\`
   - \`rubygems\` (\`Gemfile\`): \`bundle install\`, \`bundle exec rspec\`
