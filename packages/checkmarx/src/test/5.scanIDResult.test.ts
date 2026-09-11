@@ -27,6 +27,7 @@ import {
   COMMENT_BOX,
   CX_CLEAR,
   CX_LOOK_SCAN,
+  DETAILS_ICON_IMG,
   GENERAL_LABEL,
   GENERAL_TAB_INPUT,
   LEARN_MORE_LABEL,
@@ -36,6 +37,7 @@ import {
   REMEDIATION_TAB_INPUT,
   SAST_TYPE,
   SCAN_KEY_TREE_LABEL,
+  SEVERITY_ICON_NAMES,
   UPDATE_BUTTON,
   WEBVIEW_TITLE,
 } from "./utils/constants";
@@ -48,6 +50,7 @@ describe("Scan ID load results test", () => {
   let workbench: Workbench;
   let resultsTree: CustomTreeSection;
   let driver: WebDriver;
+  let openedSeverityGroup: string;
 
   // Retries a VS Code command up to `retries` times to absorb transient UI delays.
   async function runCommand(command: string, retries = 3): Promise<void> {
@@ -145,6 +148,12 @@ describe("Scan ID load results test", () => {
       await sleep(1000);
       vulnItems = await getResults(sastItem);
     }
+
+    // getResults() expanded the first severity group to reach these leaf vulnerabilities —
+    // capture that group's name here so a later test can compare it against the details panel.
+    const severityGroups = await sastItem?.getChildren();
+    const rawSeverityLabel = ((await severityGroups![0].getLabel()) as string).trim();
+    openedSeverityGroup = rawSeverityLabel.replace(/\s*\(.*\)$/, "").trim().toUpperCase();
 
     // Step 5: Close open editors so no competing webview interferes with frame search,
     // then click the vulnerability immediately to avoid stale element references.
@@ -257,6 +266,35 @@ describe("Scan ID load results test", () => {
     await selectDetailsTab(driver,GENERAL_TAB_INPUT);
     const generalLabel = await driver.findElement(By.id(GENERAL_LABEL));
     expect(generalLabel, "General tab label not found").to.not.be.undefined;
+
+    await driver.switchTo().defaultContent();
+  });
+
+  // TC29: Verifies the severity icon shown in the vulnerability details panel header
+  // matches the severity of the tree group the vulnerability was opened from. The header
+  // icon is rendered unconditionally (unlike the risk-score badge), and its filename
+  // always encodes the severity name (e.g. "high_untoggle.svg"), making this a reliable check.
+  it("should verify severity icon in details panel matches the severity group in the list", async function () {
+    this.timeout(60000);
+
+    await driver.switchTo().defaultContent();
+
+    const isOpen = await openDetailsFrame(driver);
+    expect(isOpen, "Vulnerability details panel is not open").to.be.true;
+
+    const iconImg = await driver.findElement(By.id(DETAILS_ICON_IMG));
+    const iconSrc = await iconImg.getAttribute("src");
+    expect(iconSrc, "Details panel severity icon not found").to.not.be.empty;
+
+    const matchedSeverity = SEVERITY_ICON_NAMES.find((name) =>
+      iconSrc.toLowerCase().includes(name)
+    );
+    expect(
+      matchedSeverity,
+      `Icon src should encode a known severity name: ${iconSrc}`
+    ).to.not.be.undefined;
+
+    expect(matchedSeverity!.toUpperCase()).to.equal(openedSeverityGroup);
 
     await driver.switchTo().defaultContent();
   });

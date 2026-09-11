@@ -73,6 +73,9 @@ export const UPDATE_BUTTON = "submit";
 export const REMEDIATION_TAB_INPUT = "code-tab";
 export const REMEDIATION_LABEL = "code-label";
 export const REMEDIATION_CODE_CONTAINER = "tab-code";
+export const RESULT_FILE_LINK = "ast-node";
+export const DETAILS_ICON_IMG = "logo_img";
+export const SEVERITY_ICON_NAMES = ["critical", "high", "medium", "low", "info"];
 
 // Setting label/category as rendered by VS Code's settings search ("category>title"),
 // derived from the "CheckmarxSecurityChampion.customModel" contribution key.
