@@ -99,8 +99,6 @@ describe("Extension settings tests", () => {
     expect(ascaRealtimeCheckboxValue).to.be.true;
   });
 
-  // TC94: Verifies the AI Security Champion Custom Model field keeps the last
-  // value the user entered, even after the Settings editor is closed and reopened.
   it("should retain the last entered Custom Model value after reopening settings", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();
@@ -113,7 +111,6 @@ describe("Extension settings tests", () => {
     const uniqueModelName = `automation-model-${Date.now()}`;
     await customModelSetting.setValue(uniqueModelName);
 
-    // Reopen the Settings editor fresh, simulating the user leaving and returning.
     await new EditorView().closeAllEditors();
     settingsEditor = await bench.openSettings();
     const reopenedSetting = (await settingsEditor.findSetting(
@@ -128,7 +125,6 @@ describe("Extension settings tests", () => {
     await reopenedSetting.setValue("");
   });
 
-  // Verifies the OSS-Realtime scanner checkbox exists and its value persists once set.
   it("verify OSS-Realtime scanning checkbox exists and persists when set to True", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();
@@ -143,7 +139,6 @@ describe("Extension settings tests", () => {
     expect(ossRealtimeCheckboxValue).to.be.true;
   });
 
-  // Verifies the Secret Detection Realtime scanner checkbox exists and its value persists once set.
   it("verify Secret Detection Realtime scanning checkbox exists and persists when set to True", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();
@@ -158,7 +153,6 @@ describe("Extension settings tests", () => {
     expect(secretRealtimeCheckboxValue).to.be.true;
   });
 
-  // Verifies the Containers Realtime scanner checkbox exists and its value persists once set.
   it("verify Containers Realtime scanning checkbox exists and persists when set to True", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();
@@ -173,7 +167,6 @@ describe("Extension settings tests", () => {
     expect(containersRealtimeCheckboxValue).to.be.true;
   });
 
-  // Verifies the IAC Realtime scanner checkbox exists and its value persists once set.
   it("verify IAC Realtime scanning checkbox exists and persists when set to True", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();
@@ -188,8 +181,7 @@ describe("Extension settings tests", () => {
     expect(iacRealtimeCheckboxValue).to.be.true;
   });
 
-  // Verifies the KICS real-time scanning setting can be toggled off and back on,
-  // extending the existing "enabled by default" check with a full roundtrip.
+  // Extends the default-value check above with a full off/on roundtrip.
   it("should toggle KICS real-time scanning off and back on", async function () {
     this.timeout(30000);
     settingsEditor = await bench.openSettings();

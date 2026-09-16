@@ -77,8 +77,7 @@ export const RESULT_FILE_LINK = "ast-node";
 export const DETAILS_ICON_IMG = "logo_img";
 export const SEVERITY_ICON_NAMES = ["critical", "high", "medium", "low", "info"];
 
-// Setting label/category as rendered by VS Code's settings search ("category>title"),
-// derived from the "CheckmarxSecurityChampion.customModel" contribution key.
+// Category/title as VS Code renders the "CheckmarxSecurityChampion.customModel" setting.
 export const AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS = {
   customModelTitle: "Custom Model",
   customModelCategory: "Checkmarx Security Champion",

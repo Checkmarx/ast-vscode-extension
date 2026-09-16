@@ -609,9 +609,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		await driver.switchTo().defaultContent();
 	});
 
-	// TC83 / TC86: Verifies the General tab shows a clickable file-path link carrying
-	// file/line data, and that clicking it — against a file that doesn't exist in this
-	// local test workspace — surfaces the "not found in workspace" error notification.
+	// The scan result's file doesn't exist in this local workspace, so clicking the
+	// link always hits the not-found path — that's expected, not a bug.
 	it("should show a clickable file path link and a not-found error when clicked", async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
@@ -623,14 +622,11 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 		await selectDetailsTab(driver, GENERAL_TAB_INPUT);
 
-		// TC83: the clickable file path link should exist with file/line data attributes.
 		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
 		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
 		const filename = await fileLink.getAttribute("data-filename");
 		expect(filename, "File path link should carry a data-filename attribute").to.not.be.empty;
 
-		// TC86: clicking it shows the "not found in workspace" error, since this local
-		// test workspace does not contain the file referenced by the live scan result.
 		await fileLink.click();
 		await driver.switchTo().defaultContent();
 

@@ -149,8 +149,7 @@ describe("Scan ID load results test", () => {
       vulnItems = await getResults(sastItem);
     }
 
-    // getResults() expanded the first severity group to reach these leaf vulnerabilities —
-    // capture that group's name here so a later test can compare it against the details panel.
+    // getResults() already expanded the first severity group; capture its name for TC29.
     const severityGroups = await sastItem?.getChildren();
     const rawSeverityLabel = ((await severityGroups![0].getLabel()) as string).trim();
     openedSeverityGroup = rawSeverityLabel.replace(/\s*\(.*\)$/, "").trim().toUpperCase();
@@ -199,9 +198,7 @@ describe("Scan ID load results test", () => {
     await driver.switchTo().defaultContent();
   });
 
-  // TC28: The Remediation Examples tab loads asynchronously (same fetch as the
-  // Description tab) — it should show either fetched code samples or the
-  // "no remediation examples" fallback text, never an empty/unrendered tab.
+  // Content loads async; accept either fetched samples or the fallback text, but not empty.
   it("should display remediation examples on the Remediation Examples tab", async function () {
     this.timeout(60000);
 
@@ -270,10 +267,7 @@ describe("Scan ID load results test", () => {
     await driver.switchTo().defaultContent();
   });
 
-  // TC29: Verifies the severity icon shown in the vulnerability details panel header
-  // matches the severity of the tree group the vulnerability was opened from. The header
-  // icon is rendered unconditionally (unlike the risk-score badge), and its filename
-  // always encodes the severity name (e.g. "high_untoggle.svg"), making this a reliable check.
+  // The header icon's filename always encodes severity (e.g. "high_untoggle.svg").
   it("should verify severity icon in details panel matches the severity group in the list", async function () {
     this.timeout(60000);
 
