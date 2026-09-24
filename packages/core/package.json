@@ -10,7 +10,9 @@
     "copymedia": "copyfiles \"media/**/*\" out/ -E",
     "clean": "rimraf out",
     "unit-test-core": "npx mocha",
-    "unit-test-core:coverage": "npx nyc --check-coverage --lines 85 --statements 81 --functions 77 --branches 60 npm run unit-test-core"
+    "unit-test-core:coverage": "npx nyc --check-coverage --lines 85 --statements 81 --functions 77 --branches 60 npm run unit-test-core",
+    "integration-test-core": "npx mocha --config .mocharc.integration.json",
+    "integration-test-core:coverage": "npx nyc --nycrc-path .nycrc.integration.json npm run integration-test-core"
   },
   "nyc": {
     "all": true,
@@ -65,10 +67,10 @@
     "instrument": true
   },
   "dependencies": {
-    "@checkmarx/ast-cli-javascript-wrapper": "0.0.160",
+    "@checkmarx/ast-cli-javascript-wrapper": "0.0.162",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
-    "axios": "1.16.0",
+    "axios": "1.18.0",
     "dotenv": "^16.4.7",
     "https-proxy-agent": "^7.0.6",
     "jsonstream-ts": "^1.3.6",
@@ -103,14 +105,17 @@
       "serialize-javascript": "7.0.5",
       "picomatch": "2.3.2"
     },
-    "undici": "7.28.0",
+    "undici": "7.29.0",
     "markdown-it": "14.2.0",
-    "js-yaml": "4.3.0",
-    "brace-expansion": "5.0.7",
+    "js-yaml": "4.3.2",
+    "brace-expansion": "5.0.9",
+    "fast-uri": "3.1.4",
+    "linkify-it": "5.0.2",
     "flatted": "3.4.2",
     "tmp": "0.2.7",
     "follow-redirects": "1.16.0",
     "path-to-regexp": "8.4.2",
-    "uuid": "14.0.0"
+    "uuid": "14.0.0",
+    "qs": "6.15.2"
   }
 }

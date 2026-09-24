@@ -189,13 +189,99 @@ export async function getRepositoryFullName(): Promise<string | undefined> {
   return extractRepoFullName(remoteURL);
 }
 
+type QuoteState = {
+  inString: boolean;
+  escaped: boolean;
+  /**
+   * Text held back from the end of the previous chunk because it may be an
+   * incomplete `:<digits>` token whose terminator has not arrived yet. It is
+   * prepended to the next chunk so a big number split across a chunk boundary
+   * is still quoted correctly. Empty when nothing is pending.
+   */
+  pending: string;
+};
+
+/**
+ * Quotes 15+ digit numeric literals so they survive JSON.parse without losing
+ * precision (values can exceed Number.MAX_SAFE_INTEGER), while tracking JSON
+ * string boundaries (respecting escapes) so digit runs inside string values
+ * are left untouched.
+ *
+ * `state` carries in-string/escape status AND any trailing partial token across
+ * calls, so it can be safely applied to a file split into arbitrary chunks
+ * (the streaming path). A number is recognised as `:<15+ digits>` followed by a
+ * value terminator (`,`, `}`, `]`, or whitespace); the terminator itself is not
+ * consumed.
+ *
+ * @param text  the next chunk of JSON text
+ * @param state carried state; pass the same object across chunks. Call once
+ *              more with `flush: true` at end-of-stream to emit any held-back tail.
+ * @param flush when true, no more input follows, so emit `pending` as-is.
+ */
+export function quoteOversizedNumbers(
+  text: string,
+  state: QuoteState = { inString: false, escaped: false, pending: "" },
+  flush = false
+): string {
+  const input = state.pending + text;
+  state.pending = "";
+
+  let out = "";
+  let i = 0;
+  while (i < input.length) {
+    const ch = input[i];
+
+    if (state.inString) {
+      out += ch;
+      if (state.escaped) {
+        state.escaped = false;
+      } else if (ch === "\\") {
+        state.escaped = true;
+      } else if (ch === '"') {
+        state.inString = false;
+      }
+      i++;
+      continue;
+    }
+
+    if (ch === '"') {
+      state.inString = true;
+      out += ch;
+      i++;
+      continue;
+    }
+
+    if (ch === ":") {
+      const rest = input.slice(i + 1);
+      // A big number is `:<15+ digits><terminator>`. The terminator (, } ] or
+      // whitespace) must be present to know the digit run has ended.
+      const match = /^([0-9]{15,})([,}\]\s])/.exec(rest);
+      if (match) {
+        out += `:"${match[1]}"`;
+        i += 1 + match[1].length; // leave the terminator for normal handling
+        continue;
+      }
+      // If the remainder is `:` + a digit run that reaches the end of the input
+      // without a terminator, it may be an oversized number split across a
+      // chunk boundary. Hold it back until the next chunk (unless flushing).
+      if (!flush && /^[0-9]*$/.test(rest)) {
+        state.pending = input.slice(i);
+        return out;
+      }
+    }
+
+    out += ch;
+    i++;
+  }
+
+  return out;
+}
+
 export async function getResultsJson() {
   const resultJsonPath = getResultsFilePath();
   if (fs.existsSync(resultJsonPath)) {
     return JSON.parse(
-      fs
-        .readFileSync(resultJsonPath, "utf-8")
-        .replace(/:([0-9]{15,}),/g, ':"$1",')
+      quoteOversizedNumbers(fs.readFileSync(resultJsonPath, "utf-8"))
     );
   }
   return { results: [] };
@@ -214,12 +300,22 @@ export function readResultsFromFile(
     const results: CxResult[] = [];
     const stream = fs.createReadStream(resultJsonPath, { encoding: "utf-8" });
 
+    const transformState: QuoteState = {
+      inString: false,
+      escaped: false,
+      pending: "",
+    };
     const transformStream = new Transform({
       transform(chunk, encoding, callback) {
-        const transformed = chunk
-          .toString()
-          .replace(/:([0-9]{15,}),/g, ':"$1",');
+        const transformed = quoteOversizedNumbers(
+          chunk.toString(),
+          transformState
+        );
         callback(null, transformed);
+      },
+      flush(callback) {
+        // Emit any token held back across the final chunk boundary.
+        callback(null, quoteOversizedNumbers("", transformState, true));
       },
     });
 

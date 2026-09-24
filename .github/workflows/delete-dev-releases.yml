@@ -16,10 +16,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   delete:
+    name: Delete Old Dev Releases
+    environment: release
     permissions:
-      contents: write
+      contents: write # For deleting releases and tags
     runs-on: cx-public-ubuntu-x64
     steps:
       - name: Delete releases and tags

@@ -1,0 +1,17 @@
+{
+  "all": true,
+  "include": ["src/cx/cx.ts"],
+  "exclude": [
+    "src/unit/**",
+    "src/integration/**",
+    "**/*.d.ts",
+    "src/index.ts",
+    "src/cx/cxMock.ts",
+    "src/cx/cxPlatform.ts"
+  ],
+  "extension": [".ts"],
+  "require": ["ts-node/register"],
+  "reporter": ["text", "text-summary", "html", "lcov"],
+  "sourceMap": false,
+  "instrument": true
+}

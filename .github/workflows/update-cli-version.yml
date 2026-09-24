@@ -13,19 +13,26 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-js-wrapper:
+    name: Update JavaScript Wrapper Version
     runs-on: cx-public-ubuntu-x64
     env:
       GH_TOKEN: ${{ github.token }}
     permissions:
-      contents: write
-      pull-requests: write
-      packages: read
+      contents: write # For pushing version updates
+      pull-requests: write # For creating version update PRs
+      packages: read # For reading package versions
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Verify single lockfile
         run: |
@@ -39,14 +46,17 @@ jobs:
           fi
 
       - name: Set Up npm Authentication
+        env:
+          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "@checkmarx:registry=https://npm.pkg.github.com" > packages/core/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> packages/core/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> packages/core/.npmrc
           echo "registry=https://npm.echohq.com/" > ~/.npmrc
-          echo "//npm.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
-          echo "//packages.echohq.com/:_authToken=${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}" >> ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
           echo "@checkmarx:registry=https://npm.pkg.github.com" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
 
       - name: Determine Version
         id: get_version
@@ -55,8 +65,8 @@ jobs:
           set -x
 
           # Check if a version input was provided
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            VERSION="${{ github.event.inputs.version }}"
+          if [[ -n "${GITHUB_EVENT_INPUTS_VERSION}" ]]; then
+            VERSION="${GITHUB_EVENT_INPUTS_VERSION}"
             echo "Input version provided: $VERSION"
           else
             echo "No input version provided. Fetching the latest release version from GitHub API..."
@@ -81,6 +91,8 @@ jobs:
 
           # Export the VERSION variable for subsequent steps
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+        env:
+          GITHUB_EVENT_INPUTS_VERSION: ${{ github.event.inputs.version }}
 
       - name: Update package.json
         run: |

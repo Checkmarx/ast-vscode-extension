@@ -10,3 +10,5 @@ test-resources
 coverage/
 packages/core/.npmrc
 /.vscode
+.env
+packages/core/.env

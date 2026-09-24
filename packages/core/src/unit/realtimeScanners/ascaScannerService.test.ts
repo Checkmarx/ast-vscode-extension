@@ -133,6 +133,27 @@ describe("AscaScannerService (diagnostics)", () => {
       expect(hover![0].description).to.equal("use safer alternatives");
     });
 
+    it("should sort multiple violations on the same line by severity (Critical > High > Medium > Low)", () => {
+      const uri = makeUri("/test/app.js");
+      service.updateProblems<any>(
+        makeAsca([
+          detail({ line: 3, ruleName: "Rule A", severity: "High" }),
+          detail({ line: 3, ruleName: "Rule B", severity: "Critical" }),
+          detail({ line: 3, ruleName: "Rule C", severity: "Low" }),
+          detail({ line: 3, ruleName: "Rule D", severity: "Medium" }),
+        ]),
+        uri
+      );
+
+      const hover = service.getHoverData().get("/test/app.js:2");
+      expect(hover).to.exist;
+      expect(hover!.length).to.equal(4);
+      expect(hover![0].severity).to.equal("Critical");
+      expect(hover![1].severity).to.equal("High");
+      expect(hover![2].severity).to.equal("Medium");
+      expect(hover![3].severity).to.equal("Low");
+    });
+
     it("should handle critical/medium/low severities", () => {
       const uri = makeUri("/test/app.js");
       service.updateProblems<any>(

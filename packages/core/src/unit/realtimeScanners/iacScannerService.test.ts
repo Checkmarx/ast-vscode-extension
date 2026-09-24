@@ -167,6 +167,27 @@ describe("IacScannerService", () => {
       expect(hover!.length).to.equal(2);
     });
 
+    it("should sort multiple issues on the same line by severity (Critical > High > Medium > Low)", () => {
+      const uri = makeUri("/test/main.tf");
+      service.updateProblems<any>(
+        [
+          makeIac({ title: "Issue A", severity: "High", locations: [{ line: 5, startIndex: 0, endIndex: 5 }] }),
+          makeIac({ title: "Issue B", severity: "Critical", locations: [{ line: 5, startIndex: 0, endIndex: 5 }] }),
+          makeIac({ title: "Issue C", severity: "Low", locations: [{ line: 5, startIndex: 0, endIndex: 5 }] }),
+          makeIac({ title: "Issue D", severity: "Medium", locations: [{ line: 5, startIndex: 0, endIndex: 5 }] }),
+        ],
+        uri
+      );
+
+      const hover = service.getHoverData().get("/test/main.tf:5");
+      expect(hover).to.exist;
+      expect(hover!.length).to.equal(4);
+      expect(hover![0].severity).to.equal("Critical");
+      expect(hover![1].severity).to.equal("High");
+      expect(hover![2].severity).to.equal("Medium");
+      expect(hover![3].severity).to.equal("Low");
+    });
+
     it("should handle empty problems array without throwing", () => {
       const uri = makeUri("/test/main.tf");
       expect(() => service.updateProblems<any>([], uri)).to.not.throw();

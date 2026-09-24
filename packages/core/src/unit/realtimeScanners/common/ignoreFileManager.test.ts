@@ -364,16 +364,34 @@ describe("IgnoreFileManager", () => {
       expect(manager.revivePackage("missing:key")).to.be.false;
     });
 
-    it("deactivates all files and returns true", () => {
+    // Regression: AST-156288 - revive only took effect on the second click because
+    // it depended on detectAndHandleActiveChanges()'s async diff/rescan machinery.
+    // revivePackage() now removes the entry immediately and synchronously.
+    it("removes the entry immediately on the FIRST revive", () => {
+      manager.addIgnoredEntry({
+        packageManager: "npm",
+        packageName: "lodash",
+        packageVersion: "4.17.0",
+        filePath: `${WORKSPACE}/package.json`,
+        line: 5,
+      });
+
+      expect(manager.revivePackage("npm:lodash:4.17.0")).to.be.true;
+
+      expect(manager.getIgnoredPackagesCount()).to.equal(0);
+      expect(readWrittenByName(".checkmarxIgnored")["npm:lodash:4.17.0"]).to.be.undefined;
+    });
+
+    it("a second revive on an already-revived package returns false", () => {
       manager.addIgnoredEntry({
         packageManager: "npm",
         packageName: "lodash",
         packageVersion: "4.17.0",
         filePath: `${WORKSPACE}/package.json`,
       });
+
       expect(manager.revivePackage("npm:lodash:4.17.0")).to.be.true;
-      const data = readWrittenByName(".checkmarxIgnored");
-      expect(data["npm:lodash:4.17.0"].files.every((f: any) => f.active === false)).to.be.true;
+      expect(manager.revivePackage("npm:lodash:4.17.0")).to.be.false;
     });
   });
 
@@ -402,7 +420,7 @@ describe("IgnoreFileManager", () => {
         packageVersion: "4.17.0",
         filePath: `${WORKSPACE}/package.json`,
       });
-      manager.revivePackage("npm:lodash:4.17.0"); // sets inactive
+      manager.revivePackage("npm:lodash:4.17.0"); // removes the entry
       expect(manager.updatePackageLineNumber("npm:lodash:4.17.0", `${WORKSPACE}/package.json`, 5)).to.be.false;
     });
   });

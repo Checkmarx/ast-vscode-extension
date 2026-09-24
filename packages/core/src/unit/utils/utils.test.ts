@@ -16,6 +16,7 @@ import {
   formatLabel,
   enableButton,
   disableButton,
+  quoteOversizedNumbers,
 } from "../../utils/utils";
 import { constants } from "../../utils/common/constants";
 
@@ -425,6 +426,83 @@ describe("Utils Tests", () => {
     it("should be async", () => {
       const result = disableButton("test");
       expect(result).to.have.property("then");
+    });
+  });
+
+  describe("quoteOversizedNumbers() method", () => {
+    // A single-chunk call uses a fresh default state.
+    const quote = (text: string) => quoteOversizedNumbers(text);
+
+    it("quotes a 15+ digit number followed by a comma", () => {
+      const out = quote('{"similarityId":123456789012345,"x":1}');
+      expect(out).to.equal('{"similarityId":"123456789012345","x":1}');
+      expect(() => JSON.parse(out)).to.not.throw();
+    });
+
+    it("quotes a big number that is the last property (before })", () => {
+      const out = quote('{"a":1,"similarityId":123456789012345}');
+      expect(out).to.equal('{"a":1,"similarityId":"123456789012345"}');
+      expect(JSON.parse(out).similarityId).to.equal("123456789012345");
+    });
+
+    it("quotes a big number followed by whitespace", () => {
+      const out = quote('{"similarityId":123456789012345 ,"x":1}');
+      expect(JSON.parse(out).similarityId).to.equal("123456789012345");
+    });
+
+    it("leaves numbers shorter than 15 digits untouched", () => {
+      const out = quote('{"n":12345678901234,"m":42}');
+      const parsed = JSON.parse(out);
+      expect(parsed.n).to.equal(12345678901234);
+      expect(parsed.m).to.equal(42);
+    });
+
+    it("does not touch a 15+ digit run inside a string value", () => {
+      const out = quote('{"note":"id is 123456789012345, ok"}');
+      expect(out).to.equal('{"note":"id is 123456789012345, ok"}');
+      expect(JSON.parse(out).note).to.equal("id is 123456789012345, ok");
+    });
+
+    it("respects escaped quotes when tracking string boundaries", () => {
+      const out = quote('{"note":"a \\" 123456789012345,","id":123456789012345}');
+      const parsed = JSON.parse(out);
+      expect(parsed.note).to.equal('a " 123456789012345,');
+      expect(parsed.id).to.equal("123456789012345");
+    });
+
+    it("quotes a big number split across a chunk boundary (regression)", () => {
+      // Reproduces the streaming bug: `:<digits>` straddles two chunks.
+      const state = { inString: false, escaped: false, pending: "" };
+      const first = quoteOversizedNumbers('{"similarityId":12345678', state);
+      const second = quoteOversizedNumbers('9012345,"x":1}', state);
+      const out = first + second;
+      expect(JSON.parse(out).similarityId).to.equal("123456789012345");
+    });
+
+    it("handles a chunk boundary right after the colon", () => {
+      const state = { inString: false, escaped: false, pending: "" };
+      const first = quoteOversizedNumbers('{"similarityId":', state);
+      const second = quoteOversizedNumbers('123456789012345,"x":1}', state);
+      const out = first + second;
+      expect(JSON.parse(out).similarityId).to.equal("123456789012345");
+    });
+
+    it("flushes a held-back tail at end of stream", () => {
+      const state = { inString: false, escaped: false, pending: "" };
+      // Chunk ends with a digit run and no terminator arrives; the value is a
+      // normal number here, so flushing must emit it verbatim.
+      const first = quoteOversizedNumbers('{"n":123', state);
+      const flushed = quoteOversizedNumbers("", state, true);
+      expect(state.pending).to.equal("");
+      expect(first + flushed).to.equal('{"n":123');
+    });
+
+    it("does not corrupt a string boundary split across chunks", () => {
+      const state = { inString: false, escaped: false, pending: "" };
+      const first = quoteOversizedNumbers('{"note":"big 12345678', state);
+      const second = quoteOversizedNumbers('9012345 inside"}', state);
+      const out = first + second;
+      expect(JSON.parse(out).note).to.equal("big 123456789012345 inside");
     });
   });
 

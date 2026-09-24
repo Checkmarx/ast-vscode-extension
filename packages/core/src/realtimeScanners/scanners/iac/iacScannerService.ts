@@ -88,6 +88,15 @@ export class IacScannerService extends BaseScannerService {
 		return false;
 	}
 
+	private sortHoverDataBySeverity(hoverData: IacHoverData[]): IacHoverData[] {
+		const severityOrder = [CxRealtimeEngineStatus.critical, CxRealtimeEngineStatus.high, CxRealtimeEngineStatus.medium, CxRealtimeEngineStatus.low];
+		return [...hoverData].sort((a, b) => {
+			const aIdx = severityOrder.indexOf(a.severity as any);
+			const bIdx = severityOrder.indexOf(b.severity as any);
+			return aIdx - bIdx;
+		});
+	}
+
 	private getContainersManagementTool(): string {
 		const containersManagementTool = vscode.workspace
 			.getConfiguration(this.config.configSection)
@@ -283,7 +292,7 @@ export class IacScannerService extends BaseScannerService {
 				fileType: fileType
 			}));
 
-			this.iacHoverData.set(key, hoverProblems);
+			this.iacHoverData.set(key, this.sortHoverDataBySeverity(hoverProblems));
 
 			const problemCount = lineResults.length;
 			const titleMessage = problemCount === 1

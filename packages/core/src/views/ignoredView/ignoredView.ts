@@ -154,33 +154,31 @@ export class IgnoredView {
 
 		try {
 			const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
-			const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
+			if (!packageData) {
+				vscode.window.showErrorMessage(`Package ${packageKey} not found in ignored list`);
+				return;
+			}
 
-			const displayName = packageData ? ignoredViewUtils.formatPackageDisplayName(packageKey, packageData.type) : packageKey;
+			const snapshot: IgnoreEntry = JSON.parse(JSON.stringify(packageData));
+			const fileCount = packageData.files.filter(file => file.active).length;
+			const displayName = ignoredViewUtils.formatPackageDisplayName(packageKey, packageData.type);
+
+			const success = ignoreManager.revivePackage(packageKey);
+			if (!success) {
+				vscode.window.showErrorMessage(`Package ${packageKey} not found in ignored list`);
+				return;
+			}
+
+			this.refresh();
+
 			const closeUndo = await vscode.window.showInformationMessage(
 				`'${displayName}' vulnerability has been revived in ${fileCount} files.`,
 				'Close',
 				'Undo'
 			);
 			if (closeUndo === 'Undo') {
-				ignoreManager.getIgnoredPackagesData()[packageKey].files.forEach(file => {
-					file.active = true;
-				});
-				return;
-			}
-
-			const success = ignoreManager.revivePackage(packageKey);
-
-			if (success) {
-
-
-				setTimeout(async () => {
-					await ignoreManager.triggerActiveChangesDetection();
-					this.refresh();
-				}, 100);
-
-			} else {
-				vscode.window.showErrorMessage(`Package ${packageKey} not found in ignored list`);
+				ignoreManager.restorePackage(packageKey, snapshot);
+				this.refresh();
 			}
 		} catch (error) {
 			console.error('Error reviving package:', error);
@@ -195,58 +193,50 @@ export class IgnoredView {
 			let totalSuccesses = 0;
 			let totalFileCount = 0;
 			const failedPackages: string[] = [];
+			const snapshots: Record<string, IgnoreEntry> = {};
 
-			const closeUndoReviveAll = await vscode.window.showInformationMessage(
-				`Revive all selected vulnerabilities?`,
-				'Close',
-				'Undo'
-			);
-			if (closeUndoReviveAll === 'Undo') {
-				packageKeys.forEach(packageKey => {
-					ignoreManager.getIgnoredPackagesData()[packageKey].files.forEach(file => {
-						file.active = true;
+			for (const packageKey of packageKeys) {
+				const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
+				if (!packageData) {
+					failedPackages.push(packageKey);
+					continue;
+				}
+
+				snapshots[packageKey] = JSON.parse(JSON.stringify(packageData));
+				const fileCount = packageData.files.filter(file => file.active).length;
+
+				const success = ignoreManager.revivePackage(packageKey);
+				if (success) {
+					totalSuccesses++;
+					totalFileCount += fileCount;
+				} else {
+					failedPackages.push(packageKey);
+				}
+			}
+
+			if (totalSuccesses > 0) {
+				this.refresh();
+
+				const message = totalSuccesses === 1
+					? `1 vulnerability has been revived in ${totalFileCount} files.`
+					: `${totalSuccesses} vulnerabilities have been revived in ${totalFileCount} files.`;
+
+				const closeUndo = await vscode.window.showInformationMessage(message, 'Close', 'Undo');
+				if (closeUndo === 'Undo') {
+					Object.entries(snapshots).forEach(([packageKey, snapshot]) => {
+						ignoreManager.restorePackage(packageKey, snapshot);
 					});
-				});
-				return;
-			}
-
-			if (closeUndoReviveAll === 'Close') {
-				for (const packageKey of packageKeys) {
-					const packageData = ignoreManager.getIgnoredPackagesData()[packageKey];
-					const fileCount = packageData ? packageData.files.filter(file => file.active).length : 0;
-
-					const success = ignoreManager.revivePackage(packageKey);
-
-					if (success) {
-						totalSuccesses++;
-						totalFileCount += fileCount;
-					} else {
-						failedPackages.push(packageKey);
-					}
-				}
-
-				if (totalSuccesses > 0) {
-					const message = totalSuccesses === 1
-						? `1 vulnerability has been revived in ${totalFileCount} files.`
-						: `${totalSuccesses} vulnerabilities have been revived in ${totalFileCount} files.`;
-
-					vscode.window.showInformationMessage(message, 'Close');
-
-					setTimeout(async () => {
-						await ignoreManager.triggerActiveChangesDetection();
-						this.refresh();
-					}, 100);
-				}
-
-				if (failedPackages.length > 0) {
-					vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
+					this.refresh();
 				}
 			}
+
+			if (failedPackages.length > 0) {
+				vscode.window.showErrorMessage(`Failed to revive: ${failedPackages.join(', ')}`);
+			}
+		} catch (error) {
+			console.error('Error reviving packages:', error);
+			vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
 		}
-			catch (error) {
-				console.error('Error reviving packages:', error);
-				vscode.window.showErrorMessage(`Failed to revive packages: ${error}`);
-			}
 	}
 
 	private async openFile(filePath: string, line: number): Promise<void> {

@@ -138,11 +138,13 @@ Developer Assist is an agentic AI tool that delivers real-time context-aware pre
   - Credentials for a Checkmarx One account with a **Checkmarx One Assist** license, and with the **Checkmarx MCP** activated for your tenant account in the Checkmarx One UI under **Settings → Plugins**. This must be done by an account admin.
   - **For VS Code**: Supported for VS Code version **1.100.0** or above  
     (supports both `settings.json` (v1.100–1.101) and `mcp.json` (v1.102+))
-  - **For VS Code**: You must have **GitHub Copilot** installed
+  - **For VS Code**: You must have **GitHub Copilot** or **Claude Code** installed
 ### Installation
 1. Install the **Checkmarx** extension from the Marketplace.
 2. In the IDE, open Checkmarx Settings, click on **Authentication**, and enter your  Access Key or login credentials.
-3. Start the Checkmarx MCP server running.
+3. To start the Checkmarx MCP server, configure the **Checkmarx MCP Authentication** setting first:
+   - **Token Based**: Select **Token Based** to authenticate using an API key. No additional authentication steps are required.
+   - **OAuth** (default): Select **OAuth** if you want to authenticate using OAuth. Open the respective AI assistant's `mcp.json` configuration and start the Checkmarx MCP server. You will be redirected to your browser to complete the login and authorization process.
 
 **GIF - Getting Started With Developer Assist**
 
