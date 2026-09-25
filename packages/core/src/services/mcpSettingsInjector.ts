@@ -515,6 +515,9 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 		try {
 			const hostname = new URL(issuer).hostname;
 			if (hostname.includes("iam-dev")) {
+				// Dev/staging IAM (Checkmarx internal): keep the dev MCP backend default above.
+				// The iam.checkmarx.* rewrite and the single-tenant fallback below would otherwise
+				// produce a non-existent dev host for these issuers.
 				baseUrl = baseUrl;
 			} else if (hostname.includes("iam.checkmarx")) {
 				// Multi-tenant: iam.checkmarx.* → ast.checkmarx.*
