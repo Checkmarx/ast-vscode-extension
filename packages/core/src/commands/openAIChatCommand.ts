@@ -279,7 +279,7 @@ export class CopilotChatCommand {
         return assistantType;
     }
 
-    private async openChatWithPrompt(question: string, fileContext?: { filePath?: string; line?: number }): Promise<void> {
+    private async openChatWithPrompt(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<void> {
 
         const isNonVsCodeIde = isIDE(constants.cursorAgent)
             || isIDE(constants.windsurfAgent)
@@ -327,7 +327,7 @@ export class CopilotChatCommand {
                 this.selectedChatExtensionId = constants.codexChatExtensionId;
                 this.selectedNewChatOpen = constants.codexNewChatOpen;
                 this.selectedChatclipboardPasteActionCommand = constants.codexChatclipboardPasteActionCommand;
-                await this.sendPromptToCodex(question, fileContext);
+                await this.sendPromptToCodex(question, fileContext, isRemediationFlow);
                 return;
             }
 
@@ -372,7 +372,7 @@ export class CopilotChatCommand {
             if (selectedAssistant === constants.claudeAssistantName) {
                 await this.sendPromptToChatUseCopyPass(question);
             } else if (selectedAssistant === constants.codexAssistantName) {
-                await this.sendPromptToCodex(question, fileContext);
+                await this.sendPromptToCodex(question, fileContext, isRemediationFlow);
             } else {
                 await vscode.commands.executeCommand(this.selectedNewChatOpen);
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
@@ -385,27 +385,37 @@ export class CopilotChatCommand {
         }
     }
 
-    // Codex: try the undocumented implementTodo command (opens the sidebar with the prompt
-    // pre-loaded); fall back to the documented openSidebar/newChat + clipboard-paste flow
-    // if it's unavailable or fails, mirroring Claude's sendPromptToChatUseCopyPass.
-    private async sendPromptToCodex(question: string, fileContext?: { filePath?: string; line?: number }): Promise<void> {
-        if (fileContext?.filePath) {
-            try {
-                const workspaceFolder = getWorkspaceFolder(fileContext.filePath);
-                await vscode.commands.executeCommand(constants.codexImplementTodoCommand, {
-                    fileName: fileContext.filePath,
-                    cwd: workspaceFolder?.uri.fsPath,
-                    line: fileContext.line ?? 0,
-                    comment: question,
-                });
-                this.logs.debug(`Successfully sent prompt to Codex via ${constants.codexImplementTodoCommand}`);
+    private async sendPromptToCodexImplementTodo(question: string, fileContext: { filePath: string; line?: number }): Promise<boolean> {
+        try {
+            const workspaceFolder = getWorkspaceFolder(fileContext.filePath);
+            await vscode.commands.executeCommand(constants.codexImplementTodoCommand, {
+                fileName: fileContext.filePath,
+                cwd: workspaceFolder?.uri.fsPath,
+                line: fileContext.line ?? 0,
+                comment: question,
+            });
+            this.logs.debug(`Successfully sent prompt to Codex via ${constants.codexImplementTodoCommand}`);
+            return true;
+        } catch (error) {
+            const isCommandNotFound = error instanceof Error && error.message.includes(`command '${constants.codexImplementTodoCommand}' not found`);
+            if (isCommandNotFound) {
+                this.logs.debug(`Codex ${constants.codexImplementTodoCommand} command not found, will use fallback`);
+            } else {
+                this.logs.warn(`Codex ${constants.codexImplementTodoCommand} rejected after invocation (command may not be atomic; a duplicate prompt may already be visible in Codex), using fallback: ${error}`);
+            }
+            return false;
+        }
+    }
+
+    private async sendPromptToCodex(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<void> {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        if (isRemediationFlow && fileContext?.filePath) {
+            if (await this.sendPromptToCodexImplementTodo(question, { filePath: fileContext.filePath, line: fileContext.line })) {
                 return;
-            } catch (error) {
-                this.logs.debug(`Codex ${constants.codexImplementTodoCommand} unavailable/failed, falling back to clipboard paste: ${error}`);
             }
         }
 
-        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
         const codexExtension = vscode.extensions.getExtension(constants.codexChatExtensionId);
         if (codexExtension && !codexExtension.isActive) {
             await codexExtension.activate();
@@ -501,7 +511,7 @@ export class CopilotChatCommand {
                         let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
                         question = `In ${item.filePath} line ${line} \n${question}`
                     }
-                    await this.openChatWithPrompt(question, this.getFileContext(item));
+                    await this.openChatWithPrompt(question, this.getFileContext(item), true);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
@@ -527,7 +537,7 @@ export class CopilotChatCommand {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
                 try {
-                    await this.openChatWithPrompt(question, this.getFileContext(item));
+                    await this.openChatWithPrompt(question, this.getFileContext(item), false);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);

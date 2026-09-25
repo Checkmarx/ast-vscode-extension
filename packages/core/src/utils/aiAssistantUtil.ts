@@ -194,8 +194,8 @@ export function getMcpOAuthSetupMessage(context?: vscode.ExtensionContext): stri
       }
     }
 
-    // Codex reads MCP config from its own file regardless of host IDE
-    if (aiAssistantSelection === 'Codex' && isCodexInstalled()) {
+    // Codex reads MCP config from its own file, but only if it's the active routing choice
+    if (!preferNative && aiAssistantSelection === 'Codex' && isCodexInstalled()) {
       aiAgentName = 'Codex';
     }
 

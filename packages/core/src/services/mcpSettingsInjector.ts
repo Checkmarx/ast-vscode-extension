@@ -143,10 +143,12 @@ function writeCodexTomlBlock(newBlock: string): void {
 	}
 
 	const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	// Matches the server's table header through to (but not including) the next top-level
-	// `[...]` header or end of file, so nested `[mcp_servers."name".oauth]` tables are removed too.
+	// Matches the server's table header through to (but not including) the next top-level `[...]`
+	// header or end of file. Nested tables like `[mcp_servers."name".oauth]` are removed via the
+	// negative lookahead `(?!mcp_servers\\."${escapedName}\\.")`, which stops at any header not
+	// under this server's namespace.
 	const blockPattern = new RegExp(
-		`\\[mcp_servers\\."${escapedName}"\\](?:\\.[^\\]]*\\])?[\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
+		`\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
 		"g"
 	);
 
@@ -186,13 +188,15 @@ function removeFromCodexConfig(): void {
 		const serverName = getCodexMcpServerName();
 		const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 		const blockPattern = new RegExp(
-			`\\n?\\[mcp_servers\\."${escapedName}"\\](?:\\.[^\\]]*\\])?[\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
+			`\\n?\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
 			"g"
 		);
 		const updated = content.replace(blockPattern, "").trimEnd();
 		fs.writeFileSync(configPath, updated.length > 0 ? `${updated}\n` : "", "utf-8");
 	} catch (e) {
-		console.warn("removeFromCodexConfig:", e);
+		const msg = `Failed to remove Codex MCP config: ${e}`;
+		console.warn(msg);
+		throw new Error(msg);
 	}
 }
 
