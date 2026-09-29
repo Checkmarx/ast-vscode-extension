@@ -324,9 +324,9 @@ export class OssScannerService extends BaseScannerService {
       return ["composer.lock"];
     }
 
-    // Python Poetry
+    // Python Poetry / uv
     if (fileName === "pyproject.toml") {
-      return ["poetry.lock"];
+      return ["poetry.lock", "uv.lock"];
     }
 
     // Dart/Flutter Pub

@@ -23,6 +23,7 @@ concurrency:
 jobs:
   delete:
     name: Delete Old Dev Releases
+    environment: release
     permissions:
       contents: write # For deleting releases and tags
     runs-on: cx-public-ubuntu-x64
