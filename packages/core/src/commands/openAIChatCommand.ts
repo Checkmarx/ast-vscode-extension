@@ -215,18 +215,20 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
-    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean): string | null {
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean, codexAvailable: boolean): string | null {
         let assistantType: string | null = null;
-        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
+        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}, codexAvailable: ${codexAvailable}`);
 
         const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
             'Copilot': { extensionName: 'GitHub Copilot Chat', extensionId: constants.copilotChatExtensionId },
             'Claude': { extensionName: 'Claude Code Extension', extensionId: constants.claudeChatExtensionId },
+            'Codex': { extensionName: 'Codex Extension', extensionId: constants.codexChatExtensionId },
         };
 
         const availabilityMap: Record<string, boolean> = {
             'Copilot': copilotAvailable,
             'Claude': claudeAvailable,
+            'Codex': codexAvailable,
         };
 
         if (unavailableMap[userPreferenceAIAssistant] && availabilityMap[userPreferenceAIAssistant] === false) {
@@ -259,6 +261,12 @@ export class CopilotChatCommand {
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
                 this.logs.debug(`Selected Claude (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Codex' && codexAvailable) {
+                assistantType = constants.codexAssistantName;
+                this.selectedChatExtensionId = constants.codexChatExtensionId;
+                this.selectedNewChatOpen = constants.codexNewChatOpen;
+                this.selectedChatclipboardPasteActionCommand = constants.codexChatclipboardPasteActionCommand;
+                this.logs.debug(`Selected Codex (user preference)`);
             }
         }
 
@@ -271,7 +279,7 @@ export class CopilotChatCommand {
         return assistantType;
     }
 
-    private async openChatWithPrompt(question: string): Promise<void> {
+    private async openChatWithPrompt(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<void> {
 
         const isNonVsCodeIde = isIDE(constants.cursorAgent)
             || isIDE(constants.windsurfAgent)
@@ -303,6 +311,7 @@ export class CopilotChatCommand {
             // Prefer Native AI Assistant is unchecked: use dropdown value
             const userPreference = config.get<string>('AI Assistant', 'Copilot');
             const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+            const codexExtension = vscode.extensions.getExtension(constants.codexChatExtensionId);
 
             if (userPreference === 'Claude' && claudeExtension !== undefined) {
                 this.selectedChatExtensionId = constants.claudeChatExtensionId;
@@ -311,6 +320,14 @@ export class CopilotChatCommand {
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
                 await this.sendPromptToChatUseCopyPass(question);
+                return;
+            }
+
+            if (userPreference === 'Codex' && codexExtension !== undefined) {
+                this.selectedChatExtensionId = constants.codexChatExtensionId;
+                this.selectedNewChatOpen = constants.codexNewChatOpen;
+                this.selectedChatclipboardPasteActionCommand = constants.codexChatclipboardPasteActionCommand;
+                await this.sendPromptToCodex(question, fileContext, isRemediationFlow);
                 return;
             }
 
@@ -330,9 +347,11 @@ export class CopilotChatCommand {
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+        const codexChatExtension = vscode.extensions.getExtension(constants.codexChatExtensionId);
 
         this.logs.debug(`Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
         this.logs.debug(`Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
+        this.logs.debug(`Codex Extension ID: ${constants.codexChatExtensionId} - Found: ${codexChatExtension}`);
 
         const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
 
@@ -341,7 +360,8 @@ export class CopilotChatCommand {
         const selectedAssistant = this.setSelectedAIAssistant(
             userPreferenceAIAssistant,
             copilotChatExtension !== undefined,
-            claudeChatExtension !== undefined
+            claudeChatExtension !== undefined,
+            codexChatExtension !== undefined
         );
 
         if (!selectedAssistant) {
@@ -351,6 +371,8 @@ export class CopilotChatCommand {
         try {
             if (selectedAssistant === constants.claudeAssistantName) {
                 await this.sendPromptToChatUseCopyPass(question);
+            } else if (selectedAssistant === constants.codexAssistantName) {
+                await this.sendPromptToCodex(question, fileContext, isRemediationFlow);
             } else {
                 await vscode.commands.executeCommand(this.selectedNewChatOpen);
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
@@ -361,6 +383,51 @@ export class CopilotChatCommand {
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
             }
         }
+    }
+
+    private async sendPromptToCodexImplementTodo(question: string, fileContext: { filePath: string; line?: number }): Promise<boolean> {
+        try {
+            const workspaceFolder = getWorkspaceFolder(fileContext.filePath);
+            await vscode.commands.executeCommand(constants.codexImplementTodoCommand, {
+                fileName: fileContext.filePath,
+                cwd: workspaceFolder?.uri.fsPath,
+                line: fileContext.line ?? 0,
+                comment: question,
+            });
+            this.logs.debug(`Successfully sent prompt to Codex via ${constants.codexImplementTodoCommand}`);
+            return true;
+        } catch (error) {
+            const isCommandNotFound = error instanceof Error && error.message.includes(`command '${constants.codexImplementTodoCommand}' not found`);
+            if (isCommandNotFound) {
+                this.logs.debug(`Codex ${constants.codexImplementTodoCommand} command not found, will use fallback`);
+            } else {
+                this.logs.warn(`Codex ${constants.codexImplementTodoCommand} rejected after invocation (command may not be atomic; a duplicate prompt may already be visible in Codex), using fallback: ${error}`);
+            }
+            return false;
+        }
+    }
+
+    private async sendPromptToCodex(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<void> {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        if (isRemediationFlow && fileContext?.filePath) {
+            if (await this.sendPromptToCodexImplementTodo(question, { filePath: fileContext.filePath, line: fileContext.line })) {
+                return;
+            }
+        }
+
+        const codexExtension = vscode.extensions.getExtension(constants.codexChatExtensionId);
+        if (codexExtension && !codexExtension.isActive) {
+            await codexExtension.activate();
+        }
+        await vscode.commands.executeCommand(constants.codexOpenSidebarCommand);
+        await sleep(800);
+        await vscode.commands.executeCommand(constants.codexNewChatOpen);
+        await sleep(400);
+        await vscode.env.clipboard.writeText(question);
+        await sleep(200);
+        await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
+        await this.pressEnter();
     }
 
     //Send prompt via clipboard paste
@@ -386,6 +453,14 @@ export class CopilotChatCommand {
         await sleep(200);
         await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
         await this.pressEnter();
+    }
+
+    private getFileContext(item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): { filePath?: string; line?: number } {
+        if (isContainersHoverData(item)) {
+            return { filePath: vscode.window.activeTextEditor?.document.uri.fsPath, line: item.location?.line };
+        }
+        const line = isAscaHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location?.line : item.line;
+        return { filePath: item.filePath, line };
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
@@ -436,7 +511,7 @@ export class CopilotChatCommand {
                         let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
                         question = `In ${item.filePath} line ${line} \n${question}`
                     }
-                    await this.openChatWithPrompt(question);
+                    await this.openChatWithPrompt(question, this.getFileContext(item), true);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
@@ -462,7 +537,7 @@ export class CopilotChatCommand {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
                 try {
-                    await this.openChatWithPrompt(question);
+                    await this.openChatWithPrompt(question, this.getFileContext(item), false);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);

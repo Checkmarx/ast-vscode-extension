@@ -190,7 +190,8 @@
             "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
             "enum": [
               "Copilot",
-              "Claude"
+              "Claude",
+              "Codex"
             ],
             "default": "Copilot",
             "order": 7
