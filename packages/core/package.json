@@ -21,6 +21,7 @@
     ],
     "exclude": [
       "src/unit/**",
+      "src/integration/**",
       "**/*.d.ts",
       "src/index.ts",
       "src/activate/**",
