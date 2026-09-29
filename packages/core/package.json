@@ -21,6 +21,7 @@
     ],
     "exclude": [
       "src/unit/**",
+      "src/integration/**",
       "**/*.d.ts",
       "src/index.ts",
       "src/activate/**",
@@ -107,8 +108,8 @@
     },
     "undici": "7.29.0",
     "markdown-it": "14.2.0",
-    "js-yaml": "4.3.1",
-    "brace-expansion": "5.0.9",
+    "js-yaml": "4.3.2",
+    "brace-expansion": "5.0.12",
     "fast-uri": "3.1.4",
     "linkify-it": "5.0.2",
     "flatted": "3.4.2",

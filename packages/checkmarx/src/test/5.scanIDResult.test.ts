@@ -27,12 +27,17 @@ import {
   COMMENT_BOX,
   CX_CLEAR,
   CX_LOOK_SCAN,
+  DETAILS_ICON_IMG,
   GENERAL_LABEL,
   GENERAL_TAB_INPUT,
   LEARN_MORE_LABEL,
   LEARN_TAB_INPUT,
+  REMEDIATION_CODE_CONTAINER,
+  REMEDIATION_LABEL,
+  REMEDIATION_TAB_INPUT,
   SAST_TYPE,
   SCAN_KEY_TREE_LABEL,
+  SEVERITY_ICON_NAMES,
   UPDATE_BUTTON,
   WEBVIEW_TITLE,
 } from "./utils/constants";
@@ -45,6 +50,7 @@ describe("Scan ID load results test", () => {
   let workbench: Workbench;
   let resultsTree: CustomTreeSection;
   let driver: WebDriver;
+  let openedSeverityGroup: string;
 
   // Retries a VS Code command up to `retries` times to absorb transient UI delays.
   async function runCommand(command: string, retries = 3): Promise<void> {
@@ -143,6 +149,11 @@ describe("Scan ID load results test", () => {
       vulnItems = await getResults(sastItem);
     }
 
+    // getResults() already expanded the first severity group; capture its name for TC29.
+    const severityGroups = await sastItem?.getChildren();
+    const rawSeverityLabel = ((await severityGroups![0].getLabel()) as string).trim();
+    openedSeverityGroup = rawSeverityLabel.replace(/\s*\(.*\)$/, "").trim().toUpperCase();
+
     // Step 5: Close open editors so no competing webview interferes with frame search,
     // then click the vulnerability immediately to avoid stale element references.
     await driver.switchTo().defaultContent();
@@ -183,6 +194,29 @@ describe("Scan ID load results test", () => {
     await selectDetailsTab(driver,LEARN_TAB_INPUT);
     const descriptionLabel = await driver.findElement(By.id(LEARN_MORE_LABEL));
     expect(descriptionLabel, "Description tab label not found").to.not.be.undefined;
+
+    await driver.switchTo().defaultContent();
+  });
+
+  // Content loads async; accept either fetched samples or the fallback text, but not empty.
+  it("should display remediation examples on the Remediation Examples tab", async function () {
+    this.timeout(60000);
+
+    await driver.switchTo().defaultContent();
+
+    const isOpen = await openDetailsFrame(driver);
+    expect(isOpen, "Vulnerability details panel is not open").to.be.true;
+
+    await selectDetailsTab(driver, REMEDIATION_TAB_INPUT);
+    const remediationLabel = await driver.findElement(By.id(REMEDIATION_LABEL));
+    expect(remediationLabel, "Remediation Examples tab label not found").to.not.be.undefined;
+
+    const codeContainer = await driver.findElement(By.id(REMEDIATION_CODE_CONTAINER));
+    const codeContainerText = (await codeContainer.getText()).trim();
+    expect(
+      codeContainerText,
+      "Remediation Examples tab should render either fetched samples or the fallback message"
+    ).to.not.be.empty;
 
     await driver.switchTo().defaultContent();
   });
@@ -229,6 +263,32 @@ describe("Scan ID load results test", () => {
     await selectDetailsTab(driver,GENERAL_TAB_INPUT);
     const generalLabel = await driver.findElement(By.id(GENERAL_LABEL));
     expect(generalLabel, "General tab label not found").to.not.be.undefined;
+
+    await driver.switchTo().defaultContent();
+  });
+
+  // The header icon's filename always encodes severity (e.g. "high_untoggle.svg").
+  it("should verify severity icon in details panel matches the severity group in the list", async function () {
+    this.timeout(60000);
+
+    await driver.switchTo().defaultContent();
+
+    const isOpen = await openDetailsFrame(driver);
+    expect(isOpen, "Vulnerability details panel is not open").to.be.true;
+
+    const iconImg = await driver.findElement(By.id(DETAILS_ICON_IMG));
+    const iconSrc = await iconImg.getAttribute("src");
+    expect(iconSrc, "Details panel severity icon not found").to.not.be.empty;
+
+    const matchedSeverity = SEVERITY_ICON_NAMES.find((name) =>
+      iconSrc.toLowerCase().includes(name)
+    );
+    expect(
+      matchedSeverity,
+      `Icon src should encode a known severity name: ${iconSrc}`
+    ).to.not.be.undefined;
+
+    expect(matchedSeverity!.toUpperCase()).to.equal(openedSeverityGroup);
 
     await driver.switchTo().defaultContent();
   });

@@ -17,6 +17,7 @@ import {
 	openDetailsFrame,
 	selectDetailsTab,
 	sleep,
+	waitForNotificationWithTimeout,
 } from "./utils/utils";
 import {
 	CHANGES_LABEL,
@@ -27,6 +28,7 @@ import {
 	GENERAL_TAB_INPUT,
 	LEARN_MORE_LABEL,
 	LEARN_TAB_INPUT,
+	RESULT_FILE_LINK,
 	SCAN_KEY_TREE_LABEL,
 	SCS_SECRET_DETECTION_Type,
 } from "./utils/constants";
@@ -605,6 +607,33 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		expect(changesLabel, "Changes tab label not found").to.not.be.undefined;
 
 		await driver.switchTo().defaultContent();
+	});
+
+	// The scan result's file doesn't exist in this local workspace, so clicking the
+	// link always hits the not-found path — that's expected, not a bug.
+	it("should show a clickable file path link and a not-found error when clicked", async function () {
+		this.timeout(TEST_TIMEOUT_MS);
+
+		await openFirstSecretResult();
+		await sleep(3000);
+
+		const isOpen = await openDetailsFrame(driver);
+		expect(isOpen, "Vulnerability details panel did not open").to.be.true;
+
+		await selectDetailsTab(driver, GENERAL_TAB_INPUT);
+
+		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
+		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
+		const filename = await fileLink.getAttribute("data-filename");
+		expect(filename, "File path link should carry a data-filename attribute").to.not.be.empty;
+
+		await fileLink.click();
+		await driver.switchTo().defaultContent();
+
+		const notification = await waitForNotificationWithTimeout(10000);
+		expect(notification, "Expected a notification after clicking the file path link").to.not.be.undefined;
+		const notificationText = await notification.getText();
+		expect(notificationText).to.include("not found in workspace");
 	});
 
 	it("should toggle available Group By options for secret results", async function () {

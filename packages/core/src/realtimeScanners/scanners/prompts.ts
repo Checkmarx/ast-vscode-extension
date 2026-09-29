@@ -72,7 +72,8 @@ Examples:
   - \`maven\`: \`mvn compile\`, \`mvn test\`
   - \`gradle\`: \`gradle build\`, \`gradle test\`
   - \`sbt\`: \`sbt compile\`, \`sbt test\`
-  - \`pypi\`/\`setuptools\`/\`pyproject.toml\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
+  - \`pypi\`/\`setuptools\`: \`python -c "import ${packageName}"\`, \`pytest\`, \`python -m build\`
+  - \`pyproject.toml\` (Poetry/uv): \`python -c "import ${packageName}"\`, \`pytest\`, then \`uv lock\` or \`poetry lock\` if lock present
   - \`nuget\`: \`dotnet build\`, \`dotnet test\`
   - \`bower\` (\`bower.json\`): \`bower install\`, \`bower list\`
   - \`rubygems\` (\`Gemfile\`): \`bundle install\`, \`bundle exec rspec\`
@@ -398,7 +399,7 @@ Conclude with:
 - Immediate remediation steps
 - Whether this specific version is linked to online reports
 - If not, reference ${getProductName()} attribution (per above rules)
-- Never mention competitor vendors or tools
+- Never mention checkmarx competitor(appsec vendors) or tools in the output. (MUST only include open-source advisory sources in the Sources section)
 
 ---
 
@@ -779,7 +780,7 @@ Conclude with:
 - Immediate remediation steps
 - Whether this specific image/tag is linked to online reports
 - If not, reference ${getProductName()} attribution (per above rules)
-- Never mention competitor vendors or tools
+- Never mention checkmarx competitor(appsec vendors) or tools in the output. (MUST only include open-source advisory sources in the Sources section)
 
 ---
 

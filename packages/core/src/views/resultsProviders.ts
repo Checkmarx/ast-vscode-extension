@@ -175,8 +175,8 @@ export class ResultsProvider implements vscode.TreeDataProvider<TreeItem> {
           isScaNode &&
           scaHideDevTest &&
           (
-            (obj.data?.scaPackageData.isDevelopmentDependency === true) ||
-            (obj.data?.scaPackageData.isTestDependency === true)
+            (obj.data?.scaPackageData?.isDevelopmentDependency === true) ||
+            (obj.data?.scaPackageData?.isTestDependency === true)
           )
         ) {
           // Skip adding this item if it's a dev dependency and the filter is ON
