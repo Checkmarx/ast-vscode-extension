@@ -31,13 +31,16 @@ export class WelcomeWebview {
     const userChoice = config.get<string>("AI Assistant", "Copilot");
     const copilotAvailable = vscode.extensions.getExtension(constants.copilotChatExtensionId) !== undefined;
     const claudeAvailable = vscode.extensions.getExtension(constants.claudeChatExtensionId) !== undefined;
+    const codexAvailable = vscode.extensions.getExtension(constants.codexChatExtensionId) !== undefined;
     const supportedAvailable: string[] = [];
     if (copilotAvailable) supportedAvailable.push("Copilot");
     if (claudeAvailable) supportedAvailable.push("Claude");
-    const displayNames: Record<string, string> = { Copilot: "GitHub Copilot", Claude: "Claude Code" };
+    if (codexAvailable) supportedAvailable.push("Codex");
+    const displayNames: Record<string, string> = { Copilot: "GitHub Copilot", Claude: "Claude Code", Codex: "Codex" };
     const isPreferredAvailable = () => {
       if (userChoice === "Copilot") return copilotAvailable;
       if (userChoice === "Claude") return claudeAvailable;
+      if (userChoice === "Codex") return codexAvailable;
       return false;
     };
     const defaultDisplayName = () => (userChoice in displayNames ? displayNames[userChoice] : userChoice);
@@ -206,7 +209,7 @@ export class WelcomeWebview {
               <span class="welcome-banner-icon welcome-banner-icon-circle">!</span>
               <div class="welcome-banner-body">
                 <div class="welcome-banner-row"><strong>MCP cannot be configured.</strong></div>
-                <div class="welcome-banner-row">No supported AI Assistant was found in your IDE. Install a supported assistant (e.g.- GitHub Copilot or Claude Code) and select it in Settings to enable ${productName} MCP features.</div>
+                <div class="welcome-banner-row">No supported AI Assistant was found in your IDE. Install a supported assistant (e.g.- GitHub Copilot, Claude Code, or Codex) and select it in Settings to enable ${productName} MCP features.</div>
                 <div class="welcome-banner-row">${settingsLink}</div>
               </div>
             </div>`;

@@ -273,6 +273,7 @@ export const constants = {
   //Agent Assistants
   copilotAssistantName: "copilot",
   claudeAssistantName: "claude",
+  codexAssistantName: "codex",
   noneAssistantName: "none",
   manualSetupAssistName: "manual",
 
@@ -390,6 +391,12 @@ export const constants = {
   newclaudeChatOpenWithQueryCommand: "claude-vscode.focus",
   claudeChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
   geminiChatExtensionId: "Google.geminicodeassist",
+
+  codexChatExtensionId: "openai.chatgpt",
+  codexImplementTodoCommand: "chatgpt.implementTodo",
+  codexOpenSidebarCommand: "chatgpt.openSidebar",
+  codexNewChatOpen: "chatgpt.newChat",
+  codexChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

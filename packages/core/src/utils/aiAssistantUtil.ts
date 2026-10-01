@@ -11,7 +11,7 @@ export interface AiAssistantConfig {
   extensionId: string;
 }
 
-export type McpTarget = 'vscode-settings' | 'ide-native-json' | 'claude-settings';
+export type McpTarget = 'vscode-settings' | 'ide-native-json' | 'claude-settings' | 'codex-settings';
 
 /**
  * Returns true if the GitHub Copilot Chat extension is installed.
@@ -28,13 +28,21 @@ export function isClaudeInstalled(): boolean {
 }
 
 /**
- * Returns true if any supported AI extension (Copilot, Gemini, or Claude) is installed.
+ * Returns true if the Codex (openai.chatgpt) extension is installed.
+ */
+export function isCodexInstalled(): boolean {
+  return vscode.extensions.getExtension(constants.codexChatExtensionId) !== undefined;
+}
+
+/**
+ * Returns true if any supported AI extension (Copilot, Gemini, Claude, or Codex) is installed.
  */
 export function hasAnySupportedAiExtension(): boolean {
   return (
     isCopilotInstalled() ||
     vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined ||
-    isClaudeInstalled()
+    isClaudeInstalled() ||
+    isCodexInstalled()
   );
 }
 
@@ -67,6 +75,9 @@ export function resolveMcpTargets(): McpTarget[] {
     if (isClaudeInstalled()) {
       targets.push('claude-settings');
     }
+    if (isCodexInstalled()) {
+      targets.push('codex-settings');
+    }
     return targets;
   }
 
@@ -76,6 +87,9 @@ export function resolveMcpTargets(): McpTarget[] {
   }
   if (isClaudeInstalled()) {
     targets.push('claude-settings');
+  }
+  if (isCodexInstalled()) {
+    targets.push('codex-settings');
   }
   return targets;
 }
@@ -95,6 +109,8 @@ export function getSelectedConfigFor(assistantName: string): AiAssistantConfig |
       return { extensionId: constants.geminiChatExtensionId };
     case 'Claude':
       return { extensionId: constants.claudeChatExtensionId };
+    case 'Codex':
+      return { extensionId: constants.codexChatExtensionId };
     default:
       // Custom or unknown assistant name – no built-in extension ID
       return undefined;
@@ -176,6 +192,11 @@ export function getMcpOAuthSetupMessage(context?: vscode.ExtensionContext): stri
         // Use AI Assistant dropdown
         aiAgentName = aiAssistantSelection === 'Claude' ? 'Claude Code' : aiAssistantSelection;
       }
+    }
+
+    // Codex reads MCP config from its own file, but only if it's the active routing choice
+    if (!preferNative && aiAssistantSelection === 'Codex' && isCodexInstalled()) {
+      aiAgentName = 'Codex';
     }
 
     if (!aiAgentName) return null;
