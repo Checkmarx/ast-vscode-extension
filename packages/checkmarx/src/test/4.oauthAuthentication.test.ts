@@ -215,7 +215,7 @@ describe("Checkmarx OAuth Authentication Tests", () => {
     });
 
     it("should open OAuth authentication panel and verify logout/login flow", retryTest(async function () {
-        // Scenario: enter auth panel, force logout (if possible), and verify login form returns.
+        // Scenario: enter auth panel, force logout, and verify login form returns.
         this.timeout(60000);
 
         await runWithAuthenticationWebView(bench, async (webView) => {
@@ -343,3 +343,4 @@ describe("Checkmarx OAuth Authentication Tests", () => {
         });
     }, 3));
 });
+
