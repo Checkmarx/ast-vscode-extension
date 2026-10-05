@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -190,7 +190,8 @@
             "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
             "enum": [
               "Copilot",
-              "Claude"
+              "Claude",
+              "Codex"
             ],
             "default": "Copilot",
             "order": 7
@@ -246,7 +247,7 @@
     "undici": "7.29.0",
     "markdown-it": "14.2.0",
     "js-yaml": "4.3.2",
-    "brace-expansion": "1.1.18",
+    "brace-expansion": "1.1.21",
     "linkify-it": "5.0.2",
     "tmp": "0.2.7",
     "uuid": "14.0.0"

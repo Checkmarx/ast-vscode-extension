@@ -323,6 +323,72 @@ describe("MCP Settings Injector", () => {
       expect((fs.writeFileSync as sinon.SinonStub).called).to.be.true;
     });
 
+    it("should write a codex config.toml block when codex-settings target is resolved", async () => {
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["codex-settings"]);
+      (vscode.workspace.getConfiguration as sinon.SinonStub).callsFake((section?: string) => ({
+        get: sandbox.stub().returns(section === "chatgpt" ? false : {}),
+        update: sandbox.stub().resolves(),
+        has: sandbox.stub().returns(true),
+        inspect: sandbox.stub().returns(undefined),
+      }));
+      (fs.existsSync as sinon.SinonStub).returns(false);
+
+      await initializeMcpConfiguration(validMockJwt);
+
+      const tomlCall = (fs.writeFileSync as sinon.SinonStub).getCalls()
+        .find(call => String(call.args[0]).includes("config.toml"));
+      expect(tomlCall).to.not.be.undefined;
+      expect(String(tomlCall.args[1])).to.include('[mcp_servers."Checkmarx"]');
+      expect(String(tomlCall.args[1])).to.include('auth = "oauth"');
+      // Uses Dynamic Client Registration: no predefined client_id/[oauth] block, so Codex
+      // negotiates its own client and scopes with the server (avoids Keycloak invalid_scope).
+      expect(String(tomlCall.args[1])).to.not.include('client_id');
+      expect(String(tomlCall.args[1])).to.not.include('.oauth]');
+    });
+
+    it("should write token-based codex config.toml with http_headers for Developer Assist", async () => {
+      setExtensionConfig({
+        extensionId: 'test-dev-assist',
+        commandPrefix: 'test',
+        viewContainerPrefix: 'test',
+        displayName: 'Test Dev Assist',
+        extensionType: EXTENSION_TYPE.DEVELOPER_ASSIST,
+      });
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["codex-settings"]);
+      (vscode.workspace.getConfiguration as sinon.SinonStub).callsFake((section?: string) => ({
+        get: sandbox.stub().returns(section === "chatgpt" ? false : {}),
+        update: sandbox.stub().resolves(),
+        has: sandbox.stub().returns(true),
+        inspect: sandbox.stub().returns(undefined),
+      }));
+      (fs.existsSync as sinon.SinonStub).returns(false);
+
+      await initializeMcpConfiguration(validMockJwt);
+
+      const tomlCall = (fs.writeFileSync as sinon.SinonStub).getCalls()
+        .find(call => String(call.args[0]).includes("config.toml"));
+      expect(tomlCall).to.not.be.undefined;
+      expect(String(tomlCall.args[1])).to.include('[mcp_servers."Checkmarx_Developer_Assist"]');
+      expect(String(tomlCall.args[1])).to.include("http_headers");
+      expect(String(tomlCall.args[1])).to.include("Authorization");
+    });
+
+    it("should skip writing codex config.toml when Codex runs in WSL", async () => {
+      sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["codex-settings"]);
+      (vscode.workspace.getConfiguration as sinon.SinonStub).callsFake((section?: string) => ({
+        get: sandbox.stub().returns(section === "chatgpt" ? true : {}),
+        update: sandbox.stub().resolves(),
+        has: sandbox.stub().returns(true),
+        inspect: sandbox.stub().returns(undefined),
+      }));
+
+      await initializeMcpConfiguration(validMockJwt);
+
+      const tomlCall = (fs.writeFileSync as sinon.SinonStub).getCalls()
+        .find(call => String(call.args[0]).includes("config.toml"));
+      expect(tomlCall).to.be.undefined;
+    });
+
     it("should show success message when configuration is saved", async () => {
       sandbox.stub(aiAssistantUtil, "resolveMcpTargets").returns(["vscode-settings"]);
       (utils.isIDE as sinon.SinonStub).withArgs(constants.vsCodeAgentOrginalName).returns(true);

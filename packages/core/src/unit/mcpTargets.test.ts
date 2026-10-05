@@ -14,10 +14,11 @@ describe("resolveMcpTargets", () => {
         (mock as any).env.appName = name;
     }
 
-    function setExtensions(copilot: boolean, claude: boolean) {
+    function setExtensions(copilot: boolean, claude: boolean, codex: boolean = false) {
         (mock as any).extensions.getExtension = (id: string) => {
             if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
             if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
+            if (id === constants.codexChatExtensionId) { return codex ? {} : undefined; }
             return undefined;
         };
     }
@@ -80,6 +81,16 @@ describe("resolveMcpTargets", () => {
         it("returns both targets when Copilot and Claude Code are installed", () => {
             setExtensions(true, true);
             expect(resolveMcpTargets()).to.deep.equal(["vscode-settings", "claude-settings"]);
+        });
+
+        it("returns ['codex-settings'] when only Codex is installed", () => {
+            setExtensions(false, false, true);
+            expect(resolveMcpTargets()).to.deep.equal(["codex-settings"]);
+        });
+
+        it("returns all three targets when Copilot, Claude Code, and Codex are installed", () => {
+            setExtensions(true, true, true);
+            expect(resolveMcpTargets()).to.deep.equal(["vscode-settings", "claude-settings", "codex-settings"]);
         });
     });
 

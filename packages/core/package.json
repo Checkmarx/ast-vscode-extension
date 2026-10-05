@@ -21,6 +21,7 @@
     ],
     "exclude": [
       "src/unit/**",
+      "src/integration/**",
       "**/*.d.ts",
       "src/index.ts",
       "src/activate/**",
@@ -67,7 +68,7 @@
     "instrument": true
   },
   "dependencies": {
-    "@checkmarx/ast-cli-javascript-wrapper": "0.0.162",
+    "@checkmarx/ast-cli-javascript-wrapper": "0.0.164",
     "@popperjs/core": "^2.11.8",
     "@vscode/codicons": "^0.0.36",
     "axios": "1.18.0",
@@ -108,7 +109,7 @@
     "undici": "7.29.0",
     "markdown-it": "14.2.0",
     "js-yaml": "4.3.2",
-    "brace-expansion": "5.0.9",
+    "brace-expansion": "5.0.12",
     "fast-uri": "3.1.4",
     "linkify-it": "5.0.2",
     "flatted": "3.4.2",

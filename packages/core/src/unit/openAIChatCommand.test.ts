@@ -87,7 +87,7 @@ describe("CopilotChatCommand", () => {
     }
     sandbox.stub(mock.extensions, "getExtension").returns(undefined);
     sandbox.stub(vscode.window, "showInformationMessage");
-    sandbox.stub(vscode.window, "showErrorMessage");
+    sandbox.stub(vscode.window, "showErrorMessage").resolves(undefined);
 
     copilotChatCommand = new CopilotChatCommand(
       mockContext,
@@ -163,7 +163,8 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "Claude",
         true,
-        true
+        true,
+        false
       );
 
       expect(result).to.equal("claude");
@@ -173,6 +174,7 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "Copilot",
         true,
+        false,
         false
       );
 
@@ -183,6 +185,7 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
         true,
+        false,
         false
       );
 
@@ -193,7 +196,8 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
         false,
-        true
+        true,
+        false
       );
 
       expect(result).to.be.null;
@@ -202,6 +206,7 @@ describe("CopilotChatCommand", () => {
     it("should return null when no AI assistants available", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
+        false,
         false,
         false
       );
@@ -213,7 +218,8 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "Copilot",
         true,
-        true
+        true,
+        false
       );
 
       expect(result).to.equal("copilot");
@@ -223,7 +229,8 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "Claude",
         true,
-        true
+        true,
+        false
       );
 
       expect(result).to.equal("claude");
@@ -233,6 +240,29 @@ describe("CopilotChatCommand", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "invalid-ai",
         true,
+        false,
+        false
+      );
+
+      expect(result).to.be.null;
+    });
+
+    it("should return codex when codex is available and preferred", () => {
+      const result = copilotChatCommand["setSelectedAIAssistant"](
+        "Codex",
+        false,
+        false,
+        true
+      );
+
+      expect(result).to.equal("codex");
+    });
+
+    it("should return null when codex preferred but not available", () => {
+      const result = copilotChatCommand["setSelectedAIAssistant"](
+        "Codex",
+        false,
+        false,
         false
       );
 
@@ -336,7 +366,8 @@ describe("CopilotChatCommand", () => {
       const firstSelection = copilotChatCommand["setSelectedAIAssistant"](
         "Claude",
         true,
-        true
+        true,
+        false
       );
 
       copilotChatCommand["selectedAIAssistant"] = firstSelection || "unknown";
@@ -377,6 +408,7 @@ describe("CopilotChatCommand", () => {
     it("should handle setSelectedAIAssistant with no AI assistants", () => {
       const result = copilotChatCommand["setSelectedAIAssistant"](
         "unknown",
+        false,
         false,
         false
       );

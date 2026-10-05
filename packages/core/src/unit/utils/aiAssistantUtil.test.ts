@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import {
   isCopilotInstalled,
   isClaudeInstalled,
+  isCodexInstalled,
   hasAnySupportedAiExtension,
   getSelectedConfigFor,
 } from "../../utils/aiAssistantUtil";
@@ -63,6 +64,17 @@ describe("aiAssistantUtil", () => {
     });
   });
 
+  describe("isCodexInstalled", () => {
+    it("returns true when codex extension is present", () => {
+      installExtensions(constants.codexChatExtensionId);
+      expect(isCodexInstalled()).to.be.true;
+    });
+
+    it("returns false when codex extension is absent", () => {
+      expect(isCodexInstalled()).to.be.false;
+    });
+  });
+
   describe("hasAnySupportedAiExtension", () => {
     it("returns false when none of the supported extensions are installed", () => {
       expect(hasAnySupportedAiExtension()).to.be.false;
@@ -80,6 +92,11 @@ describe("aiAssistantUtil", () => {
 
     it("returns true when only Claude is installed", () => {
       installExtensions(constants.claudeChatExtensionId);
+      expect(hasAnySupportedAiExtension()).to.be.true;
+    });
+
+    it("returns true when only Codex is installed", () => {
+      installExtensions(constants.codexChatExtensionId);
       expect(hasAnySupportedAiExtension()).to.be.true;
     });
   });
@@ -100,6 +117,12 @@ describe("aiAssistantUtil", () => {
     it("maps 'Claude' to the claude extension id", () => {
       expect(getSelectedConfigFor("Claude")).to.deep.equal({
         extensionId: constants.claudeChatExtensionId,
+      });
+    });
+
+    it("maps 'Codex' to the codex extension id", () => {
+      expect(getSelectedConfigFor("Codex")).to.deep.equal({
+        extensionId: constants.codexChatExtensionId,
       });
     });
 

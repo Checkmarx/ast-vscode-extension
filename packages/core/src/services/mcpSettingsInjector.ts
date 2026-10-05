@@ -75,6 +75,131 @@ function getCheckmarxMcpServerName(): string {
 	return "Checkmarx";
 }
 
+/**
+ * Codex (openai.chatgpt) reads MCP config from ~/.codex/config.toml, shared with Codex CLI
+ * and the desktop app. When the user has enabled "Run Codex in WSL", that file lives inside
+ * the WSL filesystem instead, which we cannot reliably resolve/write from the Windows host.
+ */
+function isCodexRunningInWsl(): boolean {
+	return vscode.workspace.getConfiguration("chatgpt").get<boolean>("runCodexInWindowsSubsystemForLinux", false);
+}
+
+function getCodexConfigPath(): string {
+	return path.join(os.homedir(), ".codex", "config.toml");
+}
+
+function getCodexMcpServerName(): string {
+	const extensionType = getExtensionType();
+	if (extensionType === EXTENSION_TYPE.DEVELOPER_ASSIST) {
+		return "Checkmarx_Developer_Assist";
+	}
+	return "Checkmarx";
+}
+
+function buildCodexTokenTomlBlock(serverName: string, url: string, apiKey: string): string {
+	return `[mcp_servers."${serverName}"]\n` +
+		`url = "${url}"\n` +
+		`http_headers = { "cx-origin" = "${getCxOrigin()}", "Authorization" = "${apiKey}" }\n` +
+		`enabled = true\n`;
+}
+
+// Uses Dynamic Client Registration (DCR): no [oauth] block, so Codex registers its own client
+// against the server's OAuth metadata and negotiates scopes with it directly, the same way
+// Claude does. The alternative "predefined client" form (client_id = "cx-mcp-client") forces
+// Codex to request that client's full registered scope set, which Keycloak has been rejecting
+// with invalid_scope for scopes like service_account/iam-api/microprofile-jwt that Codex's own
+// OAuth client enumerates but that aren't granted to cx-mcp-client for this grant type.
+function buildCodexOAuthTomlBlock(serverName: string, url: string): string {
+	return `[mcp_servers."${serverName}"]\n` +
+		`url = "${url}"\n` +
+		`auth = "oauth"\n` +
+		`enabled = true\n`;
+}
+
+/**
+ * Replaces only the `[mcp_servers."<name>"]` block (and any nested `[mcp_servers."<name>".*]`
+ * sub-tables) with a targeted text-block replace, leaving the rest of the user's config.toml
+ * (model choice, approval policy, other MCP servers) untouched rather than parsing the full TOML.
+ */
+function writeCodexTomlBlock(newBlock: string): void {
+	if (isCodexRunningInWsl()) {
+		console.warn("Codex is configured to run inside WSL; skipping ~/.codex/config.toml write. Add the Checkmarx MCP server manually inside WSL.");
+		vscode.window.showWarningMessage(
+			"Codex is set to run inside WSL, so its config.toml could not be updated automatically. Please add the Checkmarx MCP server manually inside your WSL environment."
+		);
+		return;
+	}
+
+	const configPath = getCodexConfigPath();
+	const serverName = getCodexMcpServerName();
+
+	let content = "";
+	if (fs.existsSync(configPath)) {
+		try {
+			content = fs.readFileSync(configPath, "utf-8");
+		} catch (e) {
+			console.warn("Failed to read existing codex config.toml:", e);
+		}
+	}
+
+	const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	// Matches the server's table header through to (but not including) the next top-level `[...]`
+	// header or end of file. Nested tables like `[mcp_servers."name".oauth]` are removed via the
+	// negative lookahead `(?!mcp_servers\\."${escapedName}\\.")`, which stops at any header not
+	// under this server's namespace.
+	const blockPattern = new RegExp(
+		`\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
+		"g"
+	);
+
+	let updated = content.replace(blockPattern, "").trimEnd();
+	updated = updated.length > 0 ? `${updated}\n\n${newBlock}` : newBlock;
+
+	try {
+		const dir = path.dirname(configPath);
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+		fs.writeFileSync(configPath, `${updated.trimEnd()}\n`, "utf-8");
+	} catch (e) {
+		throw new Error(`Failed to write codex config.toml: ${e}`);
+	}
+}
+
+function writeToCodexConfig(mcpServer: McpServer): void {
+	const url = mcpServer.url ?? mcpServer.serverUrl;
+	if (!url) return;
+	const block = buildCodexTokenTomlBlock(getCodexMcpServerName(), url, mcpServer.headers.Authorization);
+	writeCodexTomlBlock(block);
+}
+
+function writeToCodexConfigOAuth(oauthUrl: string): void {
+	const block = buildCodexOAuthTomlBlock(getCodexMcpServerName(), oauthUrl);
+	writeCodexTomlBlock(block);
+}
+
+function removeFromCodexConfig(): void {
+	if (isCodexRunningInWsl()) return;
+	const configPath = getCodexConfigPath();
+	if (!fs.existsSync(configPath)) return;
+
+	try {
+		const content = fs.readFileSync(configPath, "utf-8");
+		const serverName = getCodexMcpServerName();
+		const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const blockPattern = new RegExp(
+			`\\n?\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
+			"g"
+		);
+		const updated = content.replace(blockPattern, "").trimEnd();
+		fs.writeFileSync(configPath, updated.length > 0 ? `${updated}\n` : "", "utf-8");
+	} catch (e) {
+		const msg = `Failed to remove Codex MCP config: ${e}`;
+		console.warn(msg);
+		throw new Error(msg);
+	}
+}
+
 function getCxOrigin(): string {
 	if (isIDE(constants.kiroAgent)) {
 		return constants.kiroAgent;
@@ -362,6 +487,7 @@ export async function uninstallMcp(context?: vscode.ExtensionContext, preserveMc
 			}
 		}
 		removeFromClaudeConfig();
+		removeFromCodexConfig();
 
 		// Clear the flag after successfully removing MCP
 		await context?.globalState.update(constants.getMcpConfigSourceKey(), null);
@@ -388,7 +514,12 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 		let baseUrl = "https://ast-master-components.dev.cxast.net";
 		try {
 			const hostname = new URL(issuer).hostname;
-			if (hostname.includes("iam.checkmarx")) {
+			if (hostname.includes("iam-dev")) {
+				// Dev/staging IAM (Checkmarx internal): keep the dev MCP backend default above.
+				// The iam.checkmarx.* rewrite and the single-tenant fallback below would otherwise
+				// produce a non-existent dev host for these issuers.
+				baseUrl = baseUrl;
+			} else if (hostname.includes("iam.checkmarx")) {
 				// Multi-tenant: iam.checkmarx.* → ast.checkmarx.*
 				baseUrl = `https://${hostname.replace("iam", "ast")}`;
 			} else {
@@ -471,6 +602,8 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 					await updateMcpJsonFileOAuth(fullUrl);
 				} else if (target === 'claude-settings') {
 					writeToClaudeConfigOAuth(fullUrl);
+				} else if (target === 'codex-settings') {
+					writeToCodexConfigOAuth(fullUrl);
 				}
 			}
 		}
@@ -514,6 +647,8 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 					await updateMcpJsonFile(mcpServer);
 				} else if (target === 'claude-settings') {
 					writeToClaudeConfig(mcpServer);
+				} else if (target === 'codex-settings') {
+					writeToCodexConfig(mcpServer);
 				}
 			}
 		}
