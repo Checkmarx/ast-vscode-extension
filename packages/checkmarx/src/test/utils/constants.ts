@@ -83,6 +83,13 @@ export const AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS = {
   customModelCategory: "Checkmarx Security Champion",
 };
 
+// Category/title as VS Code renders the "Checkmarx.AI Assistant" setting.
+export const AI_ASSISTANT_SETTINGS_CONSTANTS = {
+  title: "AI Assistant",
+  category: "Checkmarx",
+  options: ["Copilot", "Claude", "Codex"],
+};
+
 // Constants from @checkmarx/vscode-core (copied to avoid loading the entire module in tests)
 export const ASCA_REALTIME_SCANNER_CONSTANTS = {
   activateAscaRealtimeScanner: "Activate ASCA Realtime",

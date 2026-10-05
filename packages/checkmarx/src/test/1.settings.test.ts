@@ -5,6 +5,7 @@ import {
   WebDriver,
   LinkSetting,
   TextSetting,
+  ComboSetting,
   VSBrowser,
   BottomBarPanel,
 } from "vscode-extension-tester";
@@ -16,6 +17,7 @@ import {
   CX_KICS_NAME,
   ASCA_REALTIME_SCANNER_CONSTANTS,
   AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS,
+  AI_ASSISTANT_SETTINGS_CONSTANTS,
   OSS_REALTIME_SCANNER_CONSTANTS,
   SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS,
   CONTAINERS_REALTIME_SCANNER_CONSTANTS,
@@ -195,5 +197,34 @@ describe("Extension settings tests", () => {
 
     await kicsSetting.setValue(true);
     expect(await kicsSetting.getValue()).to.equal(true);
+  });
+
+  // New in this release: the "AI Assistant" combo gained a "Codex" option
+  // (AST-178631). Verifies it's selectable and persists after reopening settings.
+  it("should offer and persist the Codex option for the AI Assistant setting", async function () {
+    this.timeout(30000);
+    settingsEditor = await bench.openSettings();
+    const aiAssistantSetting = (await settingsEditor.findSetting(
+      AI_ASSISTANT_SETTINGS_CONSTANTS.title,
+      AI_ASSISTANT_SETTINGS_CONSTANTS.category
+    )) as ComboSetting;
+    expect(aiAssistantSetting, "AI Assistant setting not found").to.not.be.undefined;
+
+    const options = await aiAssistantSetting.getValues();
+    expect(options).to.include.members(AI_ASSISTANT_SETTINGS_CONSTANTS.options);
+
+    await aiAssistantSetting.setValue("Codex");
+    expect(await aiAssistantSetting.getValue()).to.equal("Codex");
+
+    await new EditorView().closeAllEditors();
+    settingsEditor = await bench.openSettings();
+    const reopenedSetting = (await settingsEditor.findSetting(
+      AI_ASSISTANT_SETTINGS_CONSTANTS.title,
+      AI_ASSISTANT_SETTINGS_CONSTANTS.category
+    )) as ComboSetting;
+    expect(await reopenedSetting.getValue()).to.equal("Codex");
+
+    // Reset to default so this test doesn't leak state to later suites.
+    await reopenedSetting.setValue("Copilot");
   });
 });

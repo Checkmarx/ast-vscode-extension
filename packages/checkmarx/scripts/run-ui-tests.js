@@ -41,7 +41,12 @@ let exitCode = 0;
 try {
   stripCoreDevDependencies();
   execSync('npm run compile:tests', { stdio: 'inherit', env });
-  execSync(extestCommand, { stdio: 'inherit', env });
+  // extest packages the extension via `vsce.createVSIX()` without exposing
+  // `--allow-star-activation`, so it falls back to an interactive "Do you
+  // want to continue? [y/N]" prompt for the '*' activation event both
+  // extensions intentionally use. Feed it a "y" so the run doesn't abort
+  // when stdin isn't an attached TTY (e.g. launched via a debugger).
+  execSync(extestCommand, { stdio: ['pipe', 'inherit', 'inherit'], input: 'y\n', env });
 } catch (err) {
   exitCode = typeof err.status === 'number' && err.status !== null ? err.status : 1;
 } finally {
