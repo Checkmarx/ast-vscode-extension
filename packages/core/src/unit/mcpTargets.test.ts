@@ -14,11 +14,12 @@ describe("resolveMcpTargets", () => {
         (mock as any).env = { appName: name };
     }
 
-    function setExtensions(copilot: boolean, claude: boolean) {
+    function setExtensions(copilot: boolean, claude: boolean, gemini: boolean = false) {
         (mock as any).extensions = {
             getExtension: (id: string) => {
                 if (id === constants.copilotChatExtensionId) { return copilot ? {} : undefined; }
                 if (id === constants.claudeChatExtensionId) { return claude ? {} : undefined; }
+                if (id === constants.geminiChatExtensionId) { return gemini ? {} : undefined; }
                 return undefined;
             }
         };
@@ -81,6 +82,26 @@ describe("resolveMcpTargets", () => {
 
         it("returns both targets when Copilot and Claude Code are installed", () => {
             setExtensions(true, true);
+            expect(resolveMcpTargets()).to.deep.equal(["vscode-settings", "claude-settings"]);
+        });
+
+        it("returns ['vscode-settings'] when only Gemini is installed", () => {
+            setExtensions(false, false, true);
+            expect(resolveMcpTargets()).to.deep.equal(["vscode-settings"]);
+        });
+
+        it("returns ['vscode-settings'] when Copilot and Gemini are installed", () => {
+            setExtensions(true, false, true);
+            expect(resolveMcpTargets()).to.deep.equal(["vscode-settings"]);
+        });
+
+        it("returns ['vscode-settings', 'claude-settings'] when Gemini and Claude Code are installed", () => {
+            setExtensions(false, true, true);
+            expect(resolveMcpTargets()).to.deep.equal(["vscode-settings", "claude-settings"]);
+        });
+
+        it("returns ['vscode-settings', 'claude-settings'] when all three assistants are installed", () => {
+            setExtensions(true, true, true);
             expect(resolveMcpTargets()).to.deep.equal(["vscode-settings", "claude-settings"]);
         });
     });

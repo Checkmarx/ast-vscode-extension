@@ -53,6 +53,7 @@ export class CopilotChatCommand {
     private newSelectedChatOpenWithQueryCommand: string = '';
     private selectedChatclipboardPasteActionCommand: string = '';
     private claudeExtensionActivated: boolean = false;
+    private geminiExtensionActivated: boolean = false;
 
 
     constructor(
@@ -215,18 +216,20 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
-    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean): string | null {
+    private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean, geminiAvailable: boolean): string | null {
         let assistantType: string | null = null;
-        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}`);
+        this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}, geminiAvailable: ${geminiAvailable}`);
 
         const unavailableMap: Record<string, { extensionName: string; extensionId: string }> = {
             'Copilot': { extensionName: 'GitHub Copilot Chat', extensionId: constants.copilotChatExtensionId },
             'Claude': { extensionName: 'Claude Code Extension', extensionId: constants.claudeChatExtensionId },
+            'Gemini': { extensionName: 'Gemini Code Assist', extensionId: constants.geminiChatExtensionId },
         };
 
         const availabilityMap: Record<string, boolean> = {
             'Copilot': copilotAvailable,
             'Claude': claudeAvailable,
+            'Gemini': geminiAvailable,
         };
 
         if (unavailableMap[userPreferenceAIAssistant] && availabilityMap[userPreferenceAIAssistant] === false) {
@@ -259,6 +262,14 @@ export class CopilotChatCommand {
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
                 this.logs.debug(`Selected Claude (user preference)`);
+            } else if (userPreferenceAIAssistant === 'Gemini' && geminiAvailable) {
+                assistantType = constants.geminiAssistantName;
+                this.selectedChatExtensionId = constants.geminiChatExtensionId;
+                this.selectedNewChatOpen = constants.geminiNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.geminiChatclipboardPasteActionCommand;
+                this.logs.debug(`Selected Gemini (user preference)`);
             }
         }
 
@@ -301,6 +312,7 @@ export class CopilotChatCommand {
             // Prefer Native AI Assistant is unchecked: use dropdown value
             const userPreference = config.get<string>('AI Assistant', 'Copilot');
             const claudeExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+            const geminiExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
 
             if (userPreference === 'Claude' && claudeExtension !== undefined) {
                 this.selectedChatExtensionId = constants.claudeChatExtensionId;
@@ -309,6 +321,16 @@ export class CopilotChatCommand {
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
                 await this.sendPromptToChatUseCopyPass(question);
+                return;
+            }
+
+            if (userPreference === 'Gemini' && geminiExtension !== undefined) {
+                this.selectedChatExtensionId = constants.geminiChatExtensionId;
+                this.selectedNewChatOpen = constants.geminiNewChatOpen;
+                this.selectedChatOpenWithQueryCommand = constants.geminiChatOpenWithQueryCommand;
+                this.newSelectedChatOpenWithQueryCommand = constants.newGeminiChatOpenWithQueryCommand;
+                this.selectedChatclipboardPasteActionCommand = constants.geminiChatclipboardPasteActionCommand;
+                await this.sendPromptToChatUseGemini(question);
                 return;
             }
 
@@ -328,9 +350,11 @@ export class CopilotChatCommand {
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
         const claudeChatExtension = vscode.extensions.getExtension(constants.claudeChatExtensionId);
+        const geminiChatExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
 
         this.logs.debug(`Copilot Extension ID: ${constants.copilotChatExtensionId} - Found: ${copilotChatExtension}`);
         this.logs.debug(`Claude Extension ID: ${constants.claudeChatExtensionId} - Found: ${claudeChatExtension}`);
+        this.logs.debug(`Gemini Extension ID: ${constants.geminiChatExtensionId} - Found: ${geminiChatExtension}`);
 
         const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
 
@@ -339,7 +363,8 @@ export class CopilotChatCommand {
         const selectedAssistant = this.setSelectedAIAssistant(
             userPreferenceAIAssistant,
             copilotChatExtension !== undefined,
-            claudeChatExtension !== undefined
+            claudeChatExtension !== undefined,
+            geminiChatExtension !== undefined
         );
 
         if (!selectedAssistant) {
@@ -349,6 +374,8 @@ export class CopilotChatCommand {
         try {
             if (selectedAssistant === constants.claudeAssistantName) {
                 await this.sendPromptToChatUseCopyPass(question);
+            } else if (selectedAssistant === constants.geminiAssistantName) {
+                await this.sendPromptToChatUseGemini(question);
             } else {
                 await vscode.commands.executeCommand(this.selectedNewChatOpen);
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
@@ -379,6 +406,26 @@ export class CopilotChatCommand {
         this.claudeExtensionActivated = true;
         // Always start a new conversation so previous context is not reused
         await vscode.commands.executeCommand(constants.claudeNewChatOpen);
+        await sleep(400);
+        await vscode.env.clipboard.writeText(question);
+        await sleep(200);
+        await vscode.commands.executeCommand(this.selectedChatclipboardPasteActionCommand);
+        await this.pressEnter();
+    }
+
+    private async sendPromptToChatUseGemini(question: string) {
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        const geminiExtension = vscode.extensions.getExtension(constants.geminiChatExtensionId);
+        if (!geminiExtension.isActive) {
+            await geminiExtension.activate();
+            this.geminiExtensionActivated = false;
+        }
+
+        await vscode.commands.executeCommand(constants.geminiSidebarOpen);
+        await sleep(this.geminiExtensionActivated ? 600 : 900);
+        this.geminiExtensionActivated = true;
+        await vscode.commands.executeCommand(constants.geminiNewChatOpen);
         await sleep(400);
         await vscode.env.clipboard.writeText(question);
         await sleep(200);

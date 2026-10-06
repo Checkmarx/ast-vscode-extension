@@ -27,14 +27,17 @@ export function isClaudeInstalled(): boolean {
 }
 
 /**
+ * Returns true if the Gemini Code Assist extension is installed.
+ */
+export function isGeminiInstalled(): boolean {
+  return vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined;
+}
+
+/**
  * Returns true if any supported AI extension (Copilot, Gemini, or Claude) is installed.
  */
 export function hasAnySupportedAiExtension(): boolean {
-  return (
-    isCopilotInstalled() ||
-    vscode.extensions.getExtension(constants.geminiChatExtensionId) !== undefined ||
-    isClaudeInstalled()
-  );
+  return isCopilotInstalled() || isGeminiInstalled() || isClaudeInstalled();
 }
 
 /**
@@ -68,7 +71,7 @@ export function resolveMcpTargets(): McpTarget[] {
   }
 
   const targets: McpTarget[] = [];
-  if (isCopilotInstalled()) {
+  if (isCopilotInstalled() || isGeminiInstalled()) {
     targets.push('vscode-settings');
   }
   if (isClaudeInstalled()) {
