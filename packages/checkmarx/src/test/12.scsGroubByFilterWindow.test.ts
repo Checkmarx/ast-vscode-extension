@@ -532,6 +532,42 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw lastError ?? new Error("Could not open first secret vulnerability");
 	}
 
+	// Polls for an editor tab titled `title` to appear, instead of a fixed sleep -
+	// CI runners are slower than local dev machines, so opening a file after
+	// clicking the link can take longer than a fixed wait accounts for.
+	async function waitForEditorTitle(title: string, timeoutMs = 20000): Promise<void> {
+		const deadline = Date.now() + timeoutMs;
+		let lastTitles: string[] = [];
+		while (Date.now() < deadline) {
+			lastTitles = await new EditorView().getOpenEditorTitles();
+			if (lastTitles.includes(title)) {
+				return;
+			}
+			await sleep(500);
+		}
+		throw new Error(`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)})`);
+	}
+
+	// Polls getCoordinates() rather than reading it once - the status bar's cursor
+	// indicator may not exist yet immediately after a file opens, and this tolerates
+	// that transient state instead of failing on the first NoSuchElementError.
+	async function waitForCursorLine(editor: TextEditor, line: number, timeoutMs = 10000): Promise<number[]> {
+		const deadline = Date.now() + timeoutMs;
+		let lastCoordinates: number[] = [];
+		while (Date.now() < deadline) {
+			try {
+				lastCoordinates = await editor.getCoordinates();
+				if (lastCoordinates[0] === line) {
+					return lastCoordinates;
+				}
+			} catch {
+				// Status bar cursor indicator not rendered yet - keep polling.
+			}
+			await sleep(500);
+		}
+		throw new Error(`Timed out waiting for cursor at line ${line} (last seen: ${JSON.stringify(lastCoordinates)})`);
+	}
+
 	before(async function () {
 		this.timeout(SUITE_SETUP_TIMEOUT_MS);
 		workbench = new Workbench();
@@ -638,13 +674,10 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 		await fileLink.click();
 		await driver.switchTo().defaultContent();
-		await sleep(2000);
-
-		const openTitles = await new EditorView().getOpenEditorTitles();
-		expect(openTitles, "secrets.go should open in an editor tab").to.include("secrets.go");
+		await waitForEditorTitle("secrets.go");
 
 		const editor = new TextEditor();
-		const coordinates = await editor.getCoordinates();
+		const coordinates = await waitForCursorLine(editor, expectedLine);
 		expect(coordinates[0], "Cursor should land on the result's recorded line").to.equal(expectedLine);
 	});
 
@@ -704,10 +737,10 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 			await fileLink.click();
 			await driver.switchTo().defaultContent();
-			await sleep(2000);
+			await waitForEditorTitle("secrets.go");
 
 			const editor = new TextEditor();
-			const coordinates = await editor.getCoordinates();
+			const coordinates = await waitForCursorLine(editor, Number(line));
 			expect(coordinates[0], `Cursor should land on line ${line}`).to.equal(Number(line));
 
 			return { filename, line };
@@ -720,45 +753,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			first.filename === second.filename && first.line === second.line,
 			"Each result should carry its own file/line, not a shared or stale value"
 		).to.be.false;
-	});
-
-	// TEMPORARY diagnostic - not a regression test, remove after investigation.
-	// Prints which backend-dependent checks pass/fail under the mock token, and the
-	// real file-path/line data secret-detection results carry, so we can scope which
-	// Manual regression TCs are safe to automate against this fixture.
-	it("DIAG: print auth/config probe and real secret-result file paths", async function () {
-		this.timeout(LONG_TEST_TIMEOUT_MS);
-
-		await driver.switchTo().defaultContent();
-		// The probe logs via console.log (visible directly in the extest run output
-		// as "[Extension Host] ... DIAG_PROBE ..."), not a notification - those proved
-		// unreliable to catch in time via the WebDriver.
-		await runCommand("ast-results.diagnosticProbe");
-		await sleep(2000);
-
-		await loadSecretDetectionNode();
-		const vulnerabilities = await getSecretVulnerabilitiesForCurrentScan();
-		console.log(`DIAG_VULN_COUNT: ${vulnerabilities.length}`);
-
-		const sampleSize = Math.min(vulnerabilities.length, 3);
-		for (let i = 0; i < sampleSize; i++) {
-			await driver.switchTo().defaultContent();
-			await new EditorView().closeAllEditors();
-			await vulnerabilities[i].click();
-			await sleep(5000);
-
-			const isOpen = await openDetailsFrame(driver);
-			if (!isOpen) {
-				console.log(`DIAG_RESULT_${i}: <details panel did not open>`);
-				continue;
-			}
-			await selectDetailsTab(driver, GENERAL_TAB_INPUT);
-			const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
-			const filename = await fileLink.getAttribute("data-filename");
-			const line = await fileLink.getAttribute("data-line");
-			console.log(`DIAG_RESULT_${i}: filename=${filename} line=${line}`);
-			await driver.switchTo().defaultContent();
-		}
 	});
 
 	it("should toggle available Group By options for secret results", async function () {
