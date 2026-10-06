@@ -1,8 +1,11 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
 	By,
 	CustomTreeSection,
 	EditorView,
 	InputBox,
+	TextEditor,
 	VSBrowser,
 	WebDriver,
 	Workbench,
@@ -37,6 +40,11 @@ import { SCAN_ID } from "./utils/envs";
 const SUITE_SETUP_TIMEOUT_MS = 120000;
 const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
 const TEST_TIMEOUT_MS = 120000;
+
+// Matches the scan's recorded path for every secret-detection result in this
+// fixture; copied into out/test/resources by the copytestproject build step.
+const SECRETS_FIXTURE_PATH = path.join(__dirname, "resources", "secrets.go");
+const SECRETS_FIXTURE_BACKUP_PATH = `${SECRETS_FIXTURE_PATH}.bak`;
 
 const COMMAND_RETRIES = 3;
 const INPUTBOX_RETRIES = 30;
@@ -524,6 +532,42 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw lastError ?? new Error("Could not open first secret vulnerability");
 	}
 
+	// Polls for an editor tab titled `title` to appear, instead of a fixed sleep -
+	// CI runners are slower than local dev machines, so opening a file after
+	// clicking the link can take longer than a fixed wait accounts for.
+	async function waitForEditorTitle(title: string, timeoutMs = 20000): Promise<void> {
+		const deadline = Date.now() + timeoutMs;
+		let lastTitles: string[] = [];
+		while (Date.now() < deadline) {
+			lastTitles = await new EditorView().getOpenEditorTitles();
+			if (lastTitles.includes(title)) {
+				return;
+			}
+			await sleep(500);
+		}
+		throw new Error(`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)})`);
+	}
+
+	// Polls getCoordinates() rather than reading it once - the status bar's cursor
+	// indicator may not exist yet immediately after a file opens, and this tolerates
+	// that transient state instead of failing on the first NoSuchElementError.
+	async function waitForCursorLine(editor: TextEditor, line: number, timeoutMs = 10000): Promise<number[]> {
+		const deadline = Date.now() + timeoutMs;
+		let lastCoordinates: number[] = [];
+		while (Date.now() < deadline) {
+			try {
+				lastCoordinates = await editor.getCoordinates();
+				if (lastCoordinates[0] === line) {
+					return lastCoordinates;
+				}
+			} catch {
+				// Status bar cursor indicator not rendered yet - keep polling.
+			}
+			await sleep(500);
+		}
+		throw new Error(`Timed out waiting for cursor at line ${line} (last seen: ${JSON.stringify(lastCoordinates)})`);
+	}
+
 	before(async function () {
 		this.timeout(SUITE_SETUP_TIMEOUT_MS);
 		workbench = new Workbench();
@@ -609,9 +653,9 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		await driver.switchTo().defaultContent();
 	});
 
-	// The scan result's file doesn't exist in this local workspace, so clicking the
-	// link always hits the not-found path — that's expected, not a bug.
-	it("should show a clickable file path link and a not-found error when clicked", async function () {
+	// TC84: a local fixture file (secrets.go) matches the scan's recorded path, so
+	// clicking the link should open the real file and land on the correct line.
+	it("should open the correct file at the correct line when the file path link is clicked", async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
 		await openFirstSecretResult();
@@ -625,15 +669,90 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
 		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
 		const filename = await fileLink.getAttribute("data-filename");
-		expect(filename, "File path link should carry a data-filename attribute").to.not.be.empty;
+		const expectedLine = Number(await fileLink.getAttribute("data-line"));
+		expect(filename, "File path link should carry the scan's recorded file path").to.equal("/secrets.go");
 
 		await fileLink.click();
 		await driver.switchTo().defaultContent();
+		await waitForEditorTitle("secrets.go");
 
-		const notification = await waitForNotificationWithTimeout(10000);
-		expect(notification, "Expected a notification after clicking the file path link").to.not.be.undefined;
-		const notificationText = await notification.getText();
-		expect(notificationText).to.include("not found in workspace");
+		const editor = new TextEditor();
+		const coordinates = await waitForCursorLine(editor, expectedLine);
+		expect(coordinates[0], "Cursor should land on the result's recorded line").to.equal(expectedLine);
+	});
+
+	// TC86: verify the not-found path is still exercised for real - temporarily
+	// rename the fixture file out of the way so the file genuinely doesn't exist.
+	it("should show a not-found error when the file no longer exists in the workspace", async function () {
+		this.timeout(TEST_TIMEOUT_MS);
+
+		await openFirstSecretResult();
+		await sleep(3000);
+
+		const isOpen = await openDetailsFrame(driver);
+		expect(isOpen, "Vulnerability details panel did not open").to.be.true;
+
+		await selectDetailsTab(driver, GENERAL_TAB_INPUT);
+		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
+		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
+
+		fs.renameSync(SECRETS_FIXTURE_PATH, SECRETS_FIXTURE_BACKUP_PATH);
+		try {
+			await fileLink.click();
+			await driver.switchTo().defaultContent();
+
+			const notification = await waitForNotificationWithTimeout(10000);
+			expect(notification, "Expected a notification after clicking the file path link").to.not.be.undefined;
+			const notificationText = await notification.getText();
+			expect(notificationText).to.include("not found in workspace");
+		} finally {
+			fs.renameSync(SECRETS_FIXTURE_BACKUP_PATH, SECRETS_FIXTURE_PATH);
+		}
+	});
+
+	// TC87: each result's file-path link must navigate to its own correct line in the
+	// real file, not a stale or shared value left over from a previously opened one.
+	it("should navigate to the correct line for different vulnerabilities in the same file", async function () {
+		this.timeout(LONG_TEST_TIMEOUT_MS);
+
+		await loadSecretDetectionNode();
+		const vulnerabilities = await getSecretVulnerabilitiesForCurrentScan();
+		if (vulnerabilities.length < 2) {
+			this.skip();
+		}
+
+		async function openAndVerify(vulnItem: any): Promise<{ filename: string; line: string }> {
+			await driver.switchTo().defaultContent();
+			await new EditorView().closeAllEditors();
+			await vulnItem.click();
+			await sleep(5000);
+
+			const isOpen = await openDetailsFrame(driver);
+			expect(isOpen, "Vulnerability details panel did not open").to.be.true;
+			await selectDetailsTab(driver, GENERAL_TAB_INPUT);
+
+			const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
+			const filename = await fileLink.getAttribute("data-filename");
+			const line = await fileLink.getAttribute("data-line");
+
+			await fileLink.click();
+			await driver.switchTo().defaultContent();
+			await waitForEditorTitle("secrets.go");
+
+			const editor = new TextEditor();
+			const coordinates = await waitForCursorLine(editor, Number(line));
+			expect(coordinates[0], `Cursor should land on line ${line}`).to.equal(Number(line));
+
+			return { filename, line };
+		}
+
+		const first = await openAndVerify(vulnerabilities[0]);
+		const second = await openAndVerify(vulnerabilities[1]);
+
+		expect(
+			first.filename === second.filename && first.line === second.line,
+			"Each result should carry its own file/line, not a shared or stale value"
+		).to.be.false;
 	});
 
 	it("should toggle available Group By options for secret results", async function () {
