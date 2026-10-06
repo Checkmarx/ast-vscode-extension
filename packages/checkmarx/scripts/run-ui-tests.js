@@ -2,7 +2,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const [, , testEnvValue, testPattern] = process.argv;
+const [, , testEnvValue, ...testPatterns] = process.argv;
 
 const corePackagePath = path.join(__dirname, '../../core/package.json');
 const originalCorePackageJson = fs.readFileSync(corePackagePath, 'utf8');
@@ -30,12 +30,20 @@ function restoreCorePackageJson() {
 }
 
 const env = { ...process.env, TEST: testEnvValue };
+// If inherited from the parent shell, this forces every spawned Electron
+// process (including the test VS Code instance extest launches) to run as
+// plain Node with no window, so ChromeDriver can never find a browser to
+// attach to and reports it as "crashed".
+delete env.ELECTRON_RUN_AS_NODE;
 
 // Double quotes suppress glob expansion in both POSIX shells (bash/sh, used
-// on the Linux CI runner) and cmd.exe (used on Windows), so the pattern
-// reaches `extest` unexpanded on either platform.
+// on the Linux CI runner) and cmd.exe (used on Windows), so each pattern
+// reaches `extest` unexpanded on either platform. Multiple patterns/file
+// paths can be passed (e.g. to run one batch of test files in CI); extest's
+// `<testFiles...>` argument accepts any number of them.
 const testSettingsPath = path.join(__dirname, 'test-vscode-settings.json');
-const extestCommand = `npx extest setup-and-run "${testPattern}" -c 1.88.1 -i -r . -o "${testSettingsPath}"`;
+const quotedPatterns = testPatterns.map((p) => `"${p}"`).join(' ');
+const extestCommand = `npx extest setup-and-run ${quotedPatterns} -c 1.88.1 -i -r . -o "${testSettingsPath}"`;
 
 let exitCode = 0;
 try {

@@ -189,14 +189,50 @@ jobs:
             packages/core/test-resources/screenshots/*.png
           retention-days: 2
 
-  # Run integration tests for both extensions
+  # Run integration tests for both extensions, split into independent batches
+  # so one failing/flaky file doesn't block or hide the result of the rest,
+  # and so the ~41-minute single-job runtime is spread across parallel runners.
   ui-tests:
-    name: UI Integration Tests
+    name: UI Integration Tests (${{ matrix.batch.name }})
     strategy:
-      max-parallel: 1
+      fail-fast: false
+      max-parallel: 4
       matrix:
         extension: [checkmarx]
         os: [cx-public-ubuntu-x64]
+        batch:
+          - name: auth-and-settings
+            files: >-
+              ./out/test/0.welcome.test.js
+              ./out/test/1.settings.test.js
+              ./out/test/4.oauthAuthentication.test.js
+              ./out/test/20.oauthInvalidAuthentication.test.js
+              ./out/test/9.scaResults.test.js
+              ./out/test/16.branchFilterByProject.test.js
+              ./out/test/24.scaRealtimeScanner.test.js
+          - name: results-tree-and-menus
+            files: >-
+              ./out/test/2.wizardResults.test.js
+              ./out/test/3.simpleResults.test.js
+              ./out/test/6.customActions.test.js
+              ./out/test/12.scsGroubByFilterWindow.test.js
+          - name: scan-id-and-details
+            files: >-
+              ./out/test/5.scanIDResult.test.js
+              ./out/test/7.scan.test.js
+              ./out/test/8.NoResult.test.js
+              ./out/test/13.editIconErrors.test.js
+              ./out/test/14.severityIconsDefault.test.js
+              ./out/test/21.sastTriageUpdate.test.js
+          - name: groupby-pagination-and-sca
+            files: >-
+              ./out/test/11.pagination.test.js
+              ./out/test/15.scaVulnerabilityDetails.test.js
+              ./out/test/17.runScanFromIde.test.js
+              ./out/test/18.groupByMenuOptions.test.js
+              ./out/test/19.groupBySelectionPersistence.test.js
+              ./out/test/22.secretFilePathLink.test.js
+              ./out/test/23.aiSecurityChampionTab.test.js
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -243,12 +279,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npm run ui:test:checkmarx
+          cd packages/checkmarx
+          node scripts/run-ui-tests.js true ${{ matrix.batch.files }}
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
-          name: integration-artifacts-${{ matrix.extension }}-${{ matrix.os }}
+          name: integration-artifacts-${{ matrix.extension }}-${{ matrix.os }}-${{ matrix.batch.name }}
           path: |
             packages/core/test-resources/screenshots/*.png
           retention-days: 2
@@ -256,5 +293,5 @@ jobs:
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         if: failure() && runner.os == 'macOS'
         with:
-          name: screenshots-${{ matrix.extension }}
+          name: screenshots-${{ matrix.extension }}-${{ matrix.batch.name }}
           path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/packages/core/test-resources/screenshots/*.png
