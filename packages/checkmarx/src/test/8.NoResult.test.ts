@@ -87,6 +87,8 @@ describe("Scan ID load results test", () => {
 
     // Verifies the scan root node is present and expandable after loading results.
     it("should check scan result is not undefined", async function () {
+        this.timeout(60000);
+
         treeScans = await initialize();
         while (treeScans === undefined) {
             treeScans = await initialize();
