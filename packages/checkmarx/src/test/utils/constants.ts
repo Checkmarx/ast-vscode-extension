@@ -83,37 +83,10 @@ export const AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS = {
   customModelCategory: "Checkmarx Security Champion",
 };
 
-// Category/title as VS Code renders the "Checkmarx.AI Assistant" setting.
-export const AI_ASSISTANT_SETTINGS_CONSTANTS = {
-  title: "AI Assistant",
-  category: "Checkmarx",
-  options: ["Copilot", "Claude", "Codex"],
-};
-
 // Constants from @checkmarx/vscode-core (copied to avoid loading the entire module in tests)
 export const ASCA_REALTIME_SCANNER_CONSTANTS = {
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
-};
-
-export const OSS_REALTIME_SCANNER_CONSTANTS = {
-  activateOssRealtimeScanner: "Activate OSS-Realtime",
-  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
-};
-
-export const SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS = {
-  activateSecretDetectionRealtimeScanner: "Activate Secret Detection Realtime",
-  secretDetectionRealtimeScanner: "Checkmarx Secret Detection Realtime Scanner",
-};
-
-export const CONTAINERS_REALTIME_SCANNER_CONSTANTS = {
-  activateContainersRealtimeScanner: "Activate Containers Realtime",
-  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
-};
-
-export const IAC_REALTIME_SCANNER_CONSTANTS = {
-  activateIacRealtimeScanner: "Activate IAC Realtime",
-  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
 };
 
 export const LOCAL_BRANCH_CONSTANT = "scan my local branch";

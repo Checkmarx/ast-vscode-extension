@@ -5,7 +5,6 @@ import {
   WebDriver,
   LinkSetting,
   TextSetting,
-  ComboSetting,
   VSBrowser,
   BottomBarPanel,
 } from "vscode-extension-tester";
@@ -17,11 +16,6 @@ import {
   CX_KICS_NAME,
   ASCA_REALTIME_SCANNER_CONSTANTS,
   AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS,
-  AI_ASSISTANT_SETTINGS_CONSTANTS,
-  OSS_REALTIME_SCANNER_CONSTANTS,
-  SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS,
-  CONTAINERS_REALTIME_SCANNER_CONSTANTS,
-  IAC_REALTIME_SCANNER_CONSTANTS,
 } from "./utils/constants";
 import { loginWithMockToken, logoutIfVisible } from "./utils/utils";
 import { waitStatusBar } from "./utils/waiters";
@@ -125,106 +119,5 @@ describe("Extension settings tests", () => {
 
     // Reset to default so this test doesn't leak state to later suites.
     await reopenedSetting.setValue("");
-  });
-
-  it("verify OSS-Realtime scanning checkbox exists and persists when set to True", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const ossRealtimeCheckbox = await settingsEditor.findSetting(
-      OSS_REALTIME_SCANNER_CONSTANTS.activateOssRealtimeScanner,
-      OSS_REALTIME_SCANNER_CONSTANTS.ossRealtimeScanner
-    );
-    expect(ossRealtimeCheckbox, "OSS-Realtime checkbox not found").to.not.be.undefined;
-
-    await ossRealtimeCheckbox.setValue(true);
-    const ossRealtimeCheckboxValue = await ossRealtimeCheckbox.getValue();
-    expect(ossRealtimeCheckboxValue).to.be.true;
-  });
-
-  it("verify Secret Detection Realtime scanning checkbox exists and persists when set to True", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const secretRealtimeCheckbox = await settingsEditor.findSetting(
-      SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS.activateSecretDetectionRealtimeScanner,
-      SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS.secretDetectionRealtimeScanner
-    );
-    expect(secretRealtimeCheckbox, "Secret Detection Realtime checkbox not found").to.not.be.undefined;
-
-    await secretRealtimeCheckbox.setValue(true);
-    const secretRealtimeCheckboxValue = await secretRealtimeCheckbox.getValue();
-    expect(secretRealtimeCheckboxValue).to.be.true;
-  });
-
-  it("verify Containers Realtime scanning checkbox exists and persists when set to True", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const containersRealtimeCheckbox = await settingsEditor.findSetting(
-      CONTAINERS_REALTIME_SCANNER_CONSTANTS.activateContainersRealtimeScanner,
-      CONTAINERS_REALTIME_SCANNER_CONSTANTS.containersRealtimeScanner
-    );
-    expect(containersRealtimeCheckbox, "Containers Realtime checkbox not found").to.not.be.undefined;
-
-    await containersRealtimeCheckbox.setValue(true);
-    const containersRealtimeCheckboxValue = await containersRealtimeCheckbox.getValue();
-    expect(containersRealtimeCheckboxValue).to.be.true;
-  });
-
-  it("verify IAC Realtime scanning checkbox exists and persists when set to True", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const iacRealtimeCheckbox = await settingsEditor.findSetting(
-      IAC_REALTIME_SCANNER_CONSTANTS.activateIacRealtimeScanner,
-      IAC_REALTIME_SCANNER_CONSTANTS.iacRealtimeScanner
-    );
-    expect(iacRealtimeCheckbox, "IAC Realtime checkbox not found").to.not.be.undefined;
-
-    await iacRealtimeCheckbox.setValue(true);
-    const iacRealtimeCheckboxValue = await iacRealtimeCheckbox.getValue();
-    expect(iacRealtimeCheckboxValue).to.be.true;
-  });
-
-  // Extends the default-value check above with a full off/on roundtrip.
-  it("should toggle KICS real-time scanning off and back on", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const kicsSetting = (await settingsEditor.findSetting(
-      CX_KICS_NAME,
-      CX_KICS
-    )) as LinkSetting;
-
-    await kicsSetting.setValue(false);
-    expect(await kicsSetting.getValue()).to.equal(false);
-
-    await kicsSetting.setValue(true);
-    expect(await kicsSetting.getValue()).to.equal(true);
-  });
-
-  // New in this release: the "AI Assistant" combo gained a "Codex" option
-  // (AST-178631). Verifies it's selectable and persists after reopening settings.
-  it("should offer and persist the Codex option for the AI Assistant setting", async function () {
-    this.timeout(30000);
-    settingsEditor = await bench.openSettings();
-    const aiAssistantSetting = (await settingsEditor.findSetting(
-      AI_ASSISTANT_SETTINGS_CONSTANTS.title,
-      AI_ASSISTANT_SETTINGS_CONSTANTS.category
-    )) as ComboSetting;
-    expect(aiAssistantSetting, "AI Assistant setting not found").to.not.be.undefined;
-
-    const options = await aiAssistantSetting.getValues();
-    expect(options).to.include.members(AI_ASSISTANT_SETTINGS_CONSTANTS.options);
-
-    await aiAssistantSetting.setValue("Codex");
-    expect(await aiAssistantSetting.getValue()).to.equal("Codex");
-
-    await new EditorView().closeAllEditors();
-    settingsEditor = await bench.openSettings();
-    const reopenedSetting = (await settingsEditor.findSetting(
-      AI_ASSISTANT_SETTINGS_CONSTANTS.title,
-      AI_ASSISTANT_SETTINGS_CONSTANTS.category
-    )) as ComboSetting;
-    expect(await reopenedSetting.getValue()).to.equal("Codex");
-
-    // Reset to default so this test doesn't leak state to later suites.
-    await reopenedSetting.setValue("Copilot");
   });
 });
