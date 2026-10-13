@@ -277,12 +277,13 @@ jobs:
         env:
           CX_API_KEY: ${{ secrets.CX_API_KEY }}
           CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
+          UI_TEST_FILES: ${{ matrix.batch.files }}
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
           cd packages/checkmarx
-          node scripts/run-ui-tests.js true ${{ matrix.batch.files }}
+          node scripts/run-ui-tests.js true $UI_TEST_FILES
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
