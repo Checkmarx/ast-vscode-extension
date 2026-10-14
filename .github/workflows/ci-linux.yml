@@ -330,4 +330,14 @@ jobs:
           path: ui-test-results
           merge-multiple: true
       - name: Publish combined report
+        env:
+          UI_TEST_REPORT_FILE: ${{ github.workspace }}/ui-test-report.md
         run: node packages/checkmarx/scripts/ui-test-summary.js ui-test-results packages/checkmarx/src/test
+      - name: Upload combined report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: ui-test-report
+          path: ui-test-report.md
+          if-no-files-found: warn
+          retention-days: 14

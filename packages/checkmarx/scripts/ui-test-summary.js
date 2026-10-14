@@ -138,8 +138,11 @@ const emptyBatches = batches.filter((b) => b.results.length === 0);
 const markdown = out.join('\n');
 if (process.env.GITHUB_STEP_SUMMARY) {
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown + '\n');
-} else {
-  console.log(markdown);
+}
+// always echo to the log too, and keep a copy as a file the workflow uploads
+console.log(markdown);
+if (process.env.UI_TEST_REPORT_FILE) {
+  fs.writeFileSync(process.env.UI_TEST_REPORT_FILE, markdown + '\n');
 }
 
 process.exit(totals.failed > 0 || emptyBatches.length > 0 || totals.total === 0 ? 1 : 0);
