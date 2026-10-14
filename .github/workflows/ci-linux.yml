@@ -284,7 +284,7 @@ jobs:
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
           cd packages/checkmarx
-          node scripts/run-ui-tests.js true $UI_TEST_FILES
+          node scripts/run-ui-batch.js "$UI_TEST_RESULTS_FILE" $UI_TEST_FILES
       - name: Upload test results (for the combined report)
         if: ${{ always() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4

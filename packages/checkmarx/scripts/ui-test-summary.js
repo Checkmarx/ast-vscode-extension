@@ -29,17 +29,22 @@ const jsonFiles = fs.existsSync(resultsDir)
 
 const batches = jsonFiles.map((f) => {
   let results = [];
+  let recovered = [];
   try {
-    results = JSON.parse(fs.readFileSync(path.join(resultsDir, f), 'utf8')).results || [];
+    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, f), 'utf8'));
+    results = data.results || [];
+    recovered = data.recovered || [];
   } catch (e) {
     // unreadable file is reported below as a batch with no results
   }
-  return { name: f.replace(/\.json$/, ''), results };
+  return { name: f.replace(/\.json$/, ''), results, recovered };
 });
 
 const all = batches.flatMap((b) => b.results.map((r) => ({ ...r, batch: b.name })));
 const totals = count(all);
 const executed = totals.passed + totals.failed;
+// tests that failed on the first attempt and passed when their file was re-run
+const recovered = batches.flatMap((b) => b.recovered.map((r) => ({ ...r, batch: b.name })));
 
 // test files that exist in the repo vs files that actually reported results
 const sourceFiles = fs.existsSync(testSourceDir)
@@ -62,6 +67,7 @@ out.push('|---|---:|');
 out.push(`| Pass % (of all tests) | ${pct(totals.passed, totals.total)} |`);
 out.push(`| Fail % (of all tests) | ${pct(totals.failed, totals.total)} |`);
 out.push(`| Skipped % (of all tests) | ${pct(totals.skipped, totals.total)} |`);
+out.push(`| Flaky (failed first, passed on rerun) | ${recovered.length} |`);
 out.push(`| Pass rate of executed tests | ${pct(totals.passed, executed)} |`);
 out.push(`| Test coverage (executed / defined) | ${pct(executed, totals.total)} (${executed}/${totals.total}) |`);
 out.push(`| Test file coverage | ${pct(reportedFiles.size, sourceFiles.length)} (${reportedFiles.size}/${sourceFiles.length} files) |`);
@@ -101,6 +107,17 @@ const fileNum = (k) => parseInt(k, 10);
     out.push(`| ${file} ${c.failed ? '❌' : ''} | ${batch} | ${c.total} | ${c.passed} | ${c.failed} | ${c.skipped} | ${pct(c.passed, c.total)} |`);
   });
 out.push('');
+
+if (recovered.length) {
+  out.push('## Recovered on rerun (flaky)');
+  out.push('');
+  out.push('These tests failed on the first attempt and passed when their file was re-run; the final counts above treat them as passed.');
+  out.push('');
+  out.push('| File | Test | Batch |');
+  out.push('|---|---|---|');
+  recovered.forEach((r) => out.push(`| ${r.file} | ${escapeCell(r.title)} | ${r.batch} |`));
+  out.push('');
+}
 
 const failed = all.filter((r) => r.status === 'failed');
 if (failed.length) {
