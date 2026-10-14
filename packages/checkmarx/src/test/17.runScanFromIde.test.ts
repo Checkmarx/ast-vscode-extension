@@ -313,7 +313,7 @@ describe("Running Scans from VS Code", () => {
   );
 
   // selecting "scan my local branch" creates a new Checkmarx branch - no previous Scan node
-  // SKIPPED: failing - "scan my local branch" option not offered in the Branch picker.
+  // SKIPPED: the Branch picker does not offer "scan my local branch" in this setup (mock/workspace has no local branch to list).
   it.skip(
     "should switch the branch to 'scan my local branch' to scan as a new Checkmarx branch",
     retryTest(async function () {
@@ -346,7 +346,7 @@ describe("Running Scans from VS Code", () => {
   );
 
   // a completed scan should prompt to load the new results
-  // SKIPPED: failing - "scan my local branch" option not offered in the Branch picker.
+  // SKIPPED: the Branch picker does not offer "scan my local branch" in this setup (mock/workspace has no local branch to list).
   it.skip(
     "should run a scan on the local branch and offer to load the new results",
     retryTest(async function () {

@@ -42,8 +42,10 @@ delete env.ELECTRON_RUN_AS_NODE;
 // paths can be passed (e.g. to run one batch of test files in CI); extest's
 // `<testFiles...>` argument accepts any number of them.
 const testSettingsPath = path.join(__dirname, 'test-vscode-settings.json');
+// Swaps in a reporter that also dumps results to JSON when UI_TEST_RESULTS_FILE is set (used by the CI report).
+const mochaConfigPath = path.join(__dirname, 'mocharc.ui.js');
 const quotedPatterns = testPatterns.map((p) => `"${p}"`).join(' ');
-const extestCommand = `npx extest setup-and-run ${quotedPatterns} -c 1.88.1 -i -r . -o "${testSettingsPath}"`;
+const extestCommand = `npx extest setup-and-run ${quotedPatterns} -c 1.88.1 -i -r . -o "${testSettingsPath}" -m "${mochaConfigPath}"`;
 
 let exitCode = 0;
 try {

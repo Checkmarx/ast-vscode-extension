@@ -278,12 +278,21 @@ jobs:
           CX_API_KEY: ${{ secrets.CX_API_KEY }}
           CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
           UI_TEST_FILES: ${{ matrix.batch.files }}
+          UI_TEST_RESULTS_FILE: ${{ github.workspace }}/ui-test-results/${{ matrix.batch.name }}.json
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
           cd packages/checkmarx
           node scripts/run-ui-tests.js true $UI_TEST_FILES
+      - name: Upload test results (for the combined report)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: ui-test-results-${{ matrix.batch.name }}
+          path: ui-test-results/${{ matrix.batch.name }}.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Upload test artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
@@ -298,3 +307,27 @@ jobs:
         with:
           name: screenshots-${{ matrix.extension }}-${{ matrix.batch.name }}
           path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/packages/core/test-resources/screenshots/*.png
+
+  # Merges the JSON results of every UI batch into one report on the run's Summary tab
+  ui-test-report:
+    name: UI Test Report
+    needs: ui-tests
+    if: ${{ always() }}
+    runs-on: cx-public-ubuntu-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 22.11.0
+      - name: Download batch results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ui-test-results-*
+          path: ui-test-results
+          merge-multiple: true
+      - name: Publish combined report
+        run: node packages/checkmarx/scripts/ui-test-summary.js ui-test-results packages/checkmarx/src/test

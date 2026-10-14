@@ -161,6 +161,7 @@ describe("AI Security Champion tab for SAST vulnerabilities (TC37)", () => {
     await new EditorView().closeAllEditors();
   });
 
+  // TC37: SAST details should include the AI Security Champion tab, and opening it shows Start Remediation
   it(
     "TC37 - should show the AI Security Champion tab for a SAST vulnerability",
     retryTest(async function () {
@@ -297,6 +298,7 @@ describe("AI Security Champion tab for IaC vulnerabilities (TC44)", () => {
     await new EditorView().closeAllEditors();
   });
 
+  // TC44: IaC details should include the AI Security Champion tab, and opening it shows the suggested questions
   it(
     "TC44 - should show the AI Security Champion tab for an IaC vulnerability",
     retryTest(async function () {

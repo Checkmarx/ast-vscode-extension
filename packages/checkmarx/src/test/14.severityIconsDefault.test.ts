@@ -145,6 +145,7 @@ describe("Severity filter icons and vulnerability counts (TC05, TC12)", () => {
         await new EditorView().closeAllEditors();
     });
 
+    // TC05: on first load all severity filters are ON, so each button shows its "untoggle" icon
     it(
         "should show every severity filter icon in its selected (untoggle) state by default",
         retryTest(async function (this: Mocha.Context) {

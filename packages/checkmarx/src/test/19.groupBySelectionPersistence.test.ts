@@ -423,7 +423,7 @@ describe("Group By / filter selection persistence (TC20, TC19)", () => {
   });
 
   // TC20: Group By selection should carry over when switching projects
-  // SKIPPED: failing - branch "develop" not selectable for project "test-proj-3" (mock data gap).
+  // SKIPPED: mock data gap - branch "develop" cannot be selected for project "test-proj-3", so the project switch cannot complete.
   it.skip(
     "should retain the Group By selection when fetching another project (TC20)",
     retryTest(async function () {

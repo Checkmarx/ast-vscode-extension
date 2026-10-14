@@ -102,7 +102,7 @@ describe("Branch filter is scoped to the selected project", () => {
     await new EditorView().closeAllEditors();
   });
 
-  // SKIPPED: failing - mock getBranchesWithParams ignores projectId and has no "develop" branch.
+  // SKIPPED: the mocked getBranchesWithParams ignores projectId and has no "develop" branch, so per-project filtering cannot be verified yet.
   it.skip(
     "should display only the branches that belong to the selected project",
     retryTest(async function () {

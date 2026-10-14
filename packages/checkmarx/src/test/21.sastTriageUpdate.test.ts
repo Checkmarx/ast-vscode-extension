@@ -233,7 +233,7 @@ describe("SAST triage updates (TC33, TC34, TC35)", () => {
   });
 
   // TC33: change severity, submit, check the dropdown reflects the new value
-  // SKIPPED: failing - triageSubmit throws TypeError (projectId state undefined), see triage.ts.
+  // SKIPPED: triageSubmit throws a TypeError because projectId is undefined in extension state (see triage.ts), so the update never goes through.
   it.skip(
     "TC33 - should update the severity and reflect it in the vulnerability details",
     retryTest(async function () {
@@ -268,7 +268,7 @@ describe("SAST triage updates (TC33, TC34, TC35)", () => {
   );
 
   // TC34: change state, submit, check the dropdown reflects the new value
-  // SKIPPED: failing - state dropdown has no alternative option (likely cascades from TC33 crash).
+  // SKIPPED: the state dropdown offers no alternative value to pick, most likely a knock-on from the TC33 triage crash.
   it.skip(
     "TC34 - should update the state and reflect it in the vulnerability details",
     retryTest(async function () {
@@ -302,7 +302,7 @@ describe("SAST triage updates (TC33, TC34, TC35)", () => {
   );
 
   // TC35: comment + state change should submit successfully (comment alone is rejected)
-  // SKIPPED: failing - state dropdown has no alternative option (likely cascades from TC33 crash).
+  // SKIPPED: the state dropdown offers no alternative value to pick, most likely a knock-on from the TC33 triage crash.
   it.skip(
     "TC35 - should accept a comment and submit it with a state change",
     retryTest(async function () {

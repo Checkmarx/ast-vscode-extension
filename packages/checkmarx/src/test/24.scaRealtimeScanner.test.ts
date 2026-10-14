@@ -76,7 +76,7 @@ const SCANNING_POLL_INTERVAL_MS = 2000;
 
 type TreeSnapshot = { labels: string[]; leaves: { item: any; label: string; depth: number }[] };
 
-// SKIPPED: failing - "before all" hook never clears "Scanning project for vulnerabilities...".
+// SKIPPED: the "before all" hook times out because "Scanning project for vulnerabilities..." never clears, so no test in this suite can run.
 describe.skip("SCA Real-Time Scanner (TC60, TC61, TC63, TC66)", () => {
   let workbench: Workbench;
   let driver: WebDriver;
