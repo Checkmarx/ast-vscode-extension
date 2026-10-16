@@ -439,9 +439,15 @@ describe("Secret detection results tests (OAuth flow)", () => {
 	}
 
 	// Waits until the secret detection node appears under the scan root.
-	async function waitForSecretDetectionNode(scan: any): Promise<any> {
+	// Re-fetches the scan tree item on every attempt instead of reusing a
+	// single reference: a tree re-render (e.g. right after the scan's results
+	// finish loading) can leave a previously fetched item stale, and a stale
+	// Selenium element fails identically on every retry no matter how many
+	// times or how long it's retried, since it's the same broken handle.
+	async function waitForSecretDetectionNode(): Promise<any> {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			try {
+				const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
 				const secretDetectionNode = await scan?.findChildItem(SCS_SECRET_DETECTION_Type);
 				if (secretDetectionNode) {
 					return secretDetectionNode;
@@ -464,9 +470,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			try {
 				await focusResultsPanelAndSelectScan();
-				const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
-				await scan?.expand();
-				const secretDetectionNode = await waitForSecretDetectionNode(scan);
+				const secretDetectionNode = await waitForSecretDetectionNode();
 				await secretDetectionNode.expand();
 				await sleep(500);
 				// getResults expands the first severity/type group and returns its children (actual vulnerabilities).
@@ -489,8 +493,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		// Keep the Checkmarx results panel focused before traversing the tree.
 		await focusResultsPanelAndSelectScan();
 
-		const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
-		return await waitForSecretDetectionNode(scan);
+		return await waitForSecretDetectionNode();
 	}
 
 	// Loads the scan, expands the secret detection node, and clicks the first vulnerability.
