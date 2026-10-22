@@ -232,9 +232,10 @@ jobs:
           RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
 
           # Save to environment for later use
-          echo "CHECKMARX_RELEASE_BODY<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_BODY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          DELIM="ghadelim_$(openssl rand -hex 16)"
+          echo "CHECKMARX_RELEASE_BODY<<${DELIM}" >> $GITHUB_ENV
+          printf '%s\n' "$RELEASE_BODY" >> $GITHUB_ENV
+          echo "${DELIM}" >> $GITHUB_ENV
         env:
           INPUTS_DEV: ${{ inputs.dev }}
           GITHUB_REPO: ${{ github.repository }}
@@ -257,47 +258,51 @@ jobs:
           RELEASE_BODY=$(echo "$OUTPUT" | sed -n '/RELEASE_BODY_START/,/RELEASE_BODY_END/p' | sed '1d;$d')
 
           # Save to environment for later use
-          echo "DEVASSIST_RELEASE_BODY<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_BODY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          DELIM="ghadelim_$(openssl rand -hex 16)"
+          echo "DEVASSIST_RELEASE_BODY<<${DELIM}" >> $GITHUB_ENV
+          printf '%s\n' "$RELEASE_BODY" >> $GITHUB_ENV
+          echo "${DELIM}" >> $GITHUB_ENV
 
       # BUILD UNIFIED RELEASE BODY IN MEMORY
       - name: Build release body
         run: |
+          # Real newlines only: never expand escapes (printf %b) on text derived from commit subjects
+          NL=$'\n'
           BODY=""
 
           # Header: Plugins in this release (H2 - same level as package sections)
           # Mark as (NEW) only if the package is being released in this releaseType
-          BODY="### Plugins in this release\n"
+          BODY="### Plugins in this release${NL}"
           if [ "${INPUTS_RELEASETYPE}" == "checkmarx" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
-            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION} (NEW)\n"
+            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION} (NEW)${NL}"
           else
-            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION}\n"
+            BODY="${BODY}* **Checkmarx (AST):** v${CHECKMARX_VERSION}${NL}"
           fi
 
           if [ "${INPUTS_RELEASETYPE}" == "devAssist" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
-            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION} (NEW)\n"
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION} (NEW)${NL}"
           else
-            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION}\n"
+            BODY="${BODY}* **Checkmarx Developer Assist:** v${IGNITE_VERSION}${NL}"
           fi
-          BODY="${BODY}\n"
+          BODY="${BODY}${NL}"
 
           # Append changelog section(s) based on releaseType
           if [ "${INPUTS_RELEASETYPE}" == "checkmarx" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
-            BODY="${BODY}${CHECKMARX_RELEASE_BODY}\n\n"
+            BODY="${BODY}${CHECKMARX_RELEASE_BODY}${NL}${NL}"
           fi
 
           if [ "${INPUTS_RELEASETYPE}" == "devAssist" ] || [ "${INPUTS_RELEASETYPE}" == "both" ]; then
-            BODY="${BODY}${DEVASSIST_RELEASE_BODY}\n\n"
+            BODY="${BODY}${DEVASSIST_RELEASE_BODY}${NL}${NL}"
           fi
 
-          # Store in environment variable for the release step
-          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
-          printf "%b" "$BODY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          # Store in environment variable for the release step (random per-run delimiter)
+          DELIM="ghadelim_$(openssl rand -hex 16)"
+          echo "RELEASE_BODY<<${DELIM}" >> $GITHUB_ENV
+          printf '%s\n' "$BODY" >> $GITHUB_ENV
+          echo "${DELIM}" >> $GITHUB_ENV
 
           echo "--- Release body preview ---"
-          printf "%b" "$BODY"
+          printf '%s\n' "$BODY"
         env:
           INPUTS_RELEASETYPE: ${{ inputs.releaseType }}
 

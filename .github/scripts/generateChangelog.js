@@ -112,6 +112,17 @@ function shouldExclude(message) {
 }
 
 /**
+ * Neutralise untrusted text (commit subjects, author names) that downstream
+ * shell steps consume: drop control characters and backslashes so the text
+ * cannot be turned into line breaks or escape sequences.
+ */
+function sanitizeText(text) {
+  return String(text)
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\\/g, "");
+}
+
+/**
  * Run git log from lastTag..HEAD filtered to the package path.
  * Returns array of { hash, message, author, date }
  */
@@ -158,8 +169,8 @@ function getCommits(pkg, lastTag) {
 
     commits.push({
       hash,
-      message,
-      author: githubUsername,
+      message: sanitizeText(message),
+      author: sanitizeText(githubUsername),
     });
   }
 
