@@ -57,7 +57,7 @@ describe("ContainersScannerCommand", () => {
       error: sandbox.stub(),
       debug: sandbox.stub(),
     };
-    configManager = new ConfigurationManager();
+    configManager = new ConfigurationManager(logs as any);
     cmd = new ContainersScannerCommand(context, logs, configManager);
   });
 

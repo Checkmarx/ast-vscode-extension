@@ -60,7 +60,7 @@ describe("AscaScannerCommand", () => {
       error: sandbox.stub(),
       debug: sandbox.stub(),
     };
-    configManager = new ConfigurationManager();
+    configManager = new ConfigurationManager(logs as any);
     cmd = new AscaScannerCommand(context, logs, configManager);
   });
 
