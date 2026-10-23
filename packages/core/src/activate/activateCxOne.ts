@@ -385,9 +385,11 @@ async function setupStatusBars(context: vscode.ExtensionContext, logs: Logs) {
 }
 
 async function setupRealtimeScanners(context: vscode.ExtensionContext, logs: Logs) {
-    const configManager = new ConfigurationManager();
+    const configManager = new ConfigurationManager(logs);
     const scannerRegistry = new ScannerRegistry(context, logs, configManager);
     await scannerRegistry.activateAllScanners();
+
+    await configManager.syncSettingsToPropertiesFile();
 
     const configListener = configManager.registerConfigChangeListener((section) => {
         const ossEffected = section(`${constants.getOssRealtimeScanner()}.${constants.activateOssRealtimeScanner}`);

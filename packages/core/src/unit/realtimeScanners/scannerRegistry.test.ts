@@ -33,7 +33,7 @@ describe("ScannerRegistry", () => {
       error: sandbox.stub(),
       debug: sandbox.stub(),
     };
-    configManager = new ConfigurationManager();
+    configManager = new ConfigurationManager(logs as any);
     registry = new ScannerRegistry(context, logs, configManager);
   });
 
