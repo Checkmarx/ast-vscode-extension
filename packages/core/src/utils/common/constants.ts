@@ -289,6 +289,11 @@ export const constants = {
     "/plugin marketplace add Checkmarx/cx-agentic-ai",
     "/plugin install cx-devassist@cx-devassist-marketplace",
   ],
+  // Arguments for the GitHub Copilot CLI ("copilot ..."): add the marketplace, then install the plugin
+  cxDevAssistPluginCliInstallArgs: [
+    ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"],
+    ["plugin", "install", "cx-devassist@cx-devassist-marketplace"],
+  ],
   // VS Code agent plugins (Chat > Agent Customizations > Plugins)
   cxAgenticAiMarketplaceRepo: "Checkmarx/cx-agentic-ai",
   vscodePluginMarketplacesSection: "chat.plugins",

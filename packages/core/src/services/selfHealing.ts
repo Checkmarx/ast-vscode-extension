@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+import { execFile } from "child_process";
+import { fileURLToPath } from "url";
 import { constants } from "../utils/common/constants";
 import { commands } from "../utils/common/commandBuilder";
 import { isCopilotInstalled } from "../utils/aiAssistantUtil";
@@ -38,7 +40,13 @@ export const selfHealingMessages = {
 	installCopilotButton: "Install Copilot",
 	installPluginButton: "Install plugin",
 	dontShowAgainButton: "Don't show again",
-	pluginHelp: "Install the Checkmarx Copilot plugin (cx-devassist). \"Install in VS Code\" covers VS Code only; the Copilot CLI in a terminal needs its own /plugin install.",
+	pluginHelp: "Install the Checkmarx Copilot plugin (cx-devassist). \"Install in VS Code\" installs it with the GitHub Copilot CLI, for VS Code and the terminal Copilot CLI.",
+	pluginAlreadyInstalled: "The Checkmarx Copilot plugin (cx-devassist) is already installed",
+	installingPlugin: "Installing the Checkmarx Copilot plugin (cx-devassist)...",
+	pluginInstalled: "The Checkmarx Copilot plugin (cx-devassist) is installed. Start a new Copilot chat to use it.",
+	pluginInstallFailed: "Could not install the Checkmarx Copilot plugin (cx-devassist):",
+	copilotCliNotFound: "The GitHub Copilot CLI (copilot) was not found, so the Checkmarx Copilot plugin cannot be installed automatically. Install cx-devassist from the VS Code plugin browser instead.",
+	openPluginBrowserButton: "Open plugin browser",
 	installInVsCodeButton: "Install in VS Code",
 	copyCommandsButton: "Copy install commands",
 	openGuideButton: "Open guide",
@@ -142,24 +150,38 @@ function removeTrailingCommas(text: string): string {
 	return out;
 }
 
-/** True when ~/.copilot/config.json lists an enabled cx-devassist plugin from cx-devassist-marketplace. */
-export function isCxDevAssistPluginInstalled(homeDir?: string): boolean {
+/** Where the Copilot CLI keeps cx-devassist: ~/.copilot/installed-plugins/cx-devassist-marketplace/cx-devassist. */
+export function getCopilotCliPluginDir(homeDir: string = os.homedir()): string {
+	return path.join(homeDir, ".copilot", "installed-plugins", constants.cxDevAssistPluginMarketplace, constants.cxDevAssistPluginName);
+}
+
+/** The folder of the enabled cx-devassist entry in ~/.copilot/config.json, or undefined when there is none. */
+export function getCopilotCliInstallPath(homeDir?: string): string | undefined {
 	try {
 		const raw = fs.readFileSync(getCopilotConfigPath(homeDir), "utf8").replace(BOM_PATTERN, "");
 		const config = JSON.parse(stripJsonComments(raw));
 		const plugins = config?.installedPlugins;
 		if (!Array.isArray(plugins)) {
-			return false;
+			return undefined;
 		}
-		return plugins.some(
+		const entry = plugins.find(
 			(p: { name?: unknown; marketplace?: unknown; enabled?: unknown }) =>
 				p?.name === constants.cxDevAssistPluginName &&
 				p?.marketplace === constants.cxDevAssistPluginMarketplace &&
 				p?.enabled !== false
 		);
+		if (!entry) {
+			return undefined;
+		}
+		return typeof entry.cache_path === "string" && entry.cache_path ? entry.cache_path : getCopilotCliPluginDir(homeDir);
 	} catch {
-		return false;
+		return undefined;
 	}
+}
+
+/** True when ~/.copilot/config.json lists an enabled cx-devassist plugin from cx-devassist-marketplace. */
+export function isCxDevAssistPluginInstalled(homeDir?: string): boolean {
+	return getCopilotCliInstallPath(homeDir) !== undefined;
 }
 
 /** ~/.vscode/agent-plugins/installed.json: plugins installed by VS Code (default profile). */
@@ -309,10 +331,15 @@ export function getVsCodeProfileInstalledPluginsPaths(userDataDir: string): stri
 	return paths;
 }
 
+/** The installed.json files (profile homes, or ~/.vscode/agent-plugins) that list cx-devassist from Checkmarx/cx-agentic-ai. */
+export function getCxDevAssistVsCodeInstalledJsonFiles(homeDir?: string, userDataDir?: string): string[] {
+	const files = [getVsCodeInstalledPluginsPath(homeDir), ...(userDataDir ? getVsCodeProfileInstalledPluginsPaths(userDataDir) : [])];
+	return files.filter(isCxDevAssistInInstalledJsonFile);
+}
+
 /** (a) An installed.json (profile homes, or ~/.vscode/agent-plugins) refers to cx-devassist from Checkmarx/cx-agentic-ai. */
 export function isCxDevAssistInVsCodeInstalledJson(homeDir?: string, userDataDir?: string): boolean {
-	const files = [getVsCodeInstalledPluginsPath(homeDir), ...(userDataDir ? getVsCodeProfileInstalledPluginsPaths(userDataDir) : [])];
-	return files.some(isCxDevAssistInInstalledJsonFile);
+	return getCxDevAssistVsCodeInstalledJsonFiles(homeDir, userDataDir).length > 0;
 }
 
 function isCxDevAssistInInstalledJsonFile(file: string): boolean {
@@ -332,15 +359,28 @@ function isCxDevAssistInInstalledJsonFile(file: string): boolean {
 	}
 }
 
-/** (b) <user-data>/agentPlugins/cache.json lists a cx-devassist plugin uri. */
-export function isCxDevAssistInVsCodeAgentPluginsCache(userDataDir?: string): boolean {
+/** The folder a file: uri (or a plain path) points to, when it still exists. */
+function existingFolderOf(uriOrPath: string): string | undefined {
+	try {
+		const folder = /^file:/i.test(uriOrPath) ? fileURLToPath(uriOrPath) : uriOrPath;
+		return path.isAbsolute(folder) && fs.statSync(folder).isDirectory() ? folder : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * (b) The cx-devassist folders <user-data>/agentPlugins/cache.json lists that still exist on disk. VS Code
+ * keeps an entry after the plugin is removed, so an entry alone does not prove an install.
+ */
+export function getCxDevAssistVsCodeCacheFolders(userDataDir?: string): string[] {
 	if (!userDataDir) {
-		return false;
+		return [];
 	}
 	try {
 		const json = readJsonLenient(getVsCodeAgentPluginsCachePath(userDataDir));
 		if (!json) {
-			return false;
+			return [];
 		}
 		const strings: string[] = [];
 		if (json.kind === "json") {
@@ -348,10 +388,16 @@ export function isCxDevAssistInVsCodeAgentPluginsCache(userDataDir?: string): bo
 		} else {
 			strings.push(...quotedStrings(json.text));
 		}
-		return strings.some(refersToCxDevAssistRunCopy);
+		const folders = strings.filter(refersToCxDevAssistRunCopy).map(existingFolderOf);
+		return [...new Set(folders.filter((f): f is string => !!f))];
 	} catch {
-		return false;
+		return [];
 	}
+}
+
+/** (b) <user-data>/agentPlugins/cache.json lists a cx-devassist plugin folder that still exists. */
+export function isCxDevAssistInVsCodeAgentPluginsCache(userDataDir?: string): boolean {
+	return getCxDevAssistVsCodeCacheFolders(userDataDir).length > 0;
 }
 
 export interface PluginDetectionOptions {
@@ -361,15 +407,61 @@ export interface PluginDetectionOptions {
 
 /** True when VS Code itself installed cx-devassist (installed.json or the agentPlugins cache). */
 export function isCxDevAssistPluginInstalledInVsCode(options: PluginDetectionOptions = {}): boolean {
-	return (
-		isCxDevAssistInVsCodeInstalledJson(options.homeDir, options.userDataDir) ||
-		isCxDevAssistInVsCodeAgentPluginsCache(options.userDataDir)
-	);
+	return getCxDevAssistInstallLocations(options).some(location => location.source === "vscode");
+}
+
+export type CxDevAssistInstallSource = "copilotCli" | "vscode";
+
+export interface CxDevAssistInstallLocation {
+	source: CxDevAssistInstallSource;
+	/** The plugin folder, or the installed.json that records a VS Code install. */
+	path: string;
+}
+
+function isCopilotCliFolder(folder: string): boolean {
+	return normalizeForMatch(folder).includes("/.copilot/installed-plugins/");
+}
+
+/**
+ * Every place cx-devassist is installed: the Copilot CLI (~/.copilot/config.json), VS Code's own installs
+ * (installed.json per profile) and the copies VS Code runs (cache.json, only folders that still exist;
+ * one under ~/.copilot/installed-plugins counts as the Copilot CLI install). Never throws.
+ */
+export function getCxDevAssistInstallLocations(options: PluginDetectionOptions = {}): CxDevAssistInstallLocation[] {
+	const locations: CxDevAssistInstallLocation[] = [];
+	const add = (source: CxDevAssistInstallSource, location: string) => {
+		const key = normalizeForMatch(path.resolve(location));
+		if (!locations.some(l => normalizeForMatch(path.resolve(l.path)) === key)) {
+			locations.push({ source, path: location });
+		}
+	};
+	const cliPath = getCopilotCliInstallPath(options.homeDir);
+	if (cliPath) {
+		add("copilotCli", cliPath);
+	}
+	for (const file of getCxDevAssistVsCodeInstalledJsonFiles(options.homeDir, options.userDataDir)) {
+		add("vscode", file);
+	}
+	for (const folder of getCxDevAssistVsCodeCacheFolders(options.userDataDir)) {
+		const source: CxDevAssistInstallSource = isCopilotCliFolder(folder) ? "copilotCli" : "vscode";
+		if (source === "copilotCli" && locations.some(l => l.source === "copilotCli")) {
+			continue;
+		}
+		add(source, folder);
+	}
+	return locations;
 }
 
 /** Copilot CLI install (~/.copilot/config.json) or VS Code install. Never throws. */
 export function isCxDevAssistPluginAvailable(options: PluginDetectionOptions = {}): boolean {
-	return isCxDevAssistPluginInstalled(options.homeDir) || isCxDevAssistPluginInstalledInVsCode(options);
+	return getCxDevAssistInstallLocations(options).length > 0;
+}
+
+/** "Copilot CLI (<folder>)" / "VS Code (<installed.json or folder>)", joined with "; ". */
+export function describeInstallLocations(locations: CxDevAssistInstallLocation[]): string {
+	return locations
+		.map(location => `${location.source === "copilotCli" ? "Copilot CLI" : "VS Code"} (${location.path})`)
+		.join("; ");
 }
 
 /** Files whose changes may flip the plugin detection. */
@@ -459,8 +551,167 @@ export function mergePluginMarketplaces(userValue: unknown, defaultValue?: unkno
 	return { value: [...base, constants.cxAgenticAiMarketplaceRepo], changed: true };
 }
 
+export interface CopilotCliResult {
+	ok: boolean;
+	output: string;
+}
+
+export interface CopilotCliDeps {
+	find: () => string | undefined;
+	run: (exe: string, args: string[]) => Promise<CopilotCliResult>;
+}
+
+function isFile(filePath: string): boolean {
+	try {
+		return fs.statSync(filePath).isFile();
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * The GitHub Copilot CLI: `copilot` on PATH, else the shim VS Code ships in <install>/bin/copilot-shim,
+ * a few folders above vscode.env.appRoot. On Windows copilot.exe is preferred over npm's copilot.cmd.
+ */
+export function findCopilotCli(
+	envPath: string = process.env.PATH ?? "",
+	appRoot: string | undefined = vscode.env?.appRoot,
+	platform: NodeJS.Platform = process.platform
+): string | undefined {
+	const names = platform === "win32" ? ["copilot.exe", "copilot.cmd"] : ["copilot"];
+	const dirs = envPath.split(path.delimiter).filter(Boolean);
+	let dir = appRoot;
+	for (let i = 0; dir && i < 5; i++) {
+		dirs.push(path.join(dir, "bin", "copilot-shim"));
+		const parent = path.dirname(dir);
+		dir = parent === dir ? undefined : parent;
+	}
+	for (const d of dirs) {
+		for (const name of names) {
+			const candidate = path.join(d, name);
+			if (isFile(candidate)) {
+				return candidate;
+			}
+		}
+	}
+	return undefined;
+}
+
+/** Runs the Copilot CLI with fixed arguments and no input. Never rejects. */
+export function runCopilotCli(exe: string, args: string[]): Promise<CopilotCliResult> {
+	// A .cmd (npm's copilot.cmd) only runs through the shell; the arguments are constants
+	const viaShell = /\.(cmd|bat)$/i.test(exe);
+	return new Promise(resolve => {
+		try {
+			const child = execFile(
+				viaShell ? `"${exe}"` : exe,
+				args,
+				{ shell: viaShell, windowsHide: true, timeout: 120000 },
+				(error, stdout, stderr) => {
+					const output = `${stdout ?? ""}${stderr ?? ""}`.trim();
+					resolve({ ok: !error, output: output || (error ? error.message : "") });
+				}
+			);
+			child.stdin?.end();
+		} catch (error) {
+			resolve({ ok: false, output: error instanceof Error ? error.message : String(error) });
+		}
+	});
+}
+
+const defaultCopilotCliDeps: CopilotCliDeps = { find: () => findCopilotCli(), run: runCopilotCli };
+let copilotCliDeps = defaultCopilotCliDeps;
+
+/** For tests only: replaces how the Copilot CLI is found and run (undefined restores the default). */
+export function setCopilotCliDeps(deps?: CopilotCliDeps): void {
+	copilotCliDeps = deps ?? defaultCopilotCliDeps;
+}
+
+/** copilot plugin marketplace add ..., then copilot plugin install ...; the install result decides. */
+async function installWithCopilotCli(cli: string): Promise<CopilotCliResult> {
+	const [addArgs, installArgs] = constants.cxDevAssistPluginCliInstallArgs;
+	const added = await copilotCliDeps.run(cli, addArgs);
+	if (!added.ok) {
+		// Usually the marketplace is already added; the install below reports any real problem
+		currentLogs?.info(`copilot ${addArgs.join(" ")}: ${added.output}`);
+	}
+	return copilotCliDeps.run(cli, installArgs);
+}
+
+/** "...is already installed: Copilot CLI (<folder>)." or "...is already installed." */
+export function alreadyInstalledMessage(locations: CxDevAssistInstallLocation[]): string {
+	return locations.length > 0
+		? `${selfHealingMessages.pluginAlreadyInstalled}: ${describeInstallLocations(locations)}.`
+		: `${selfHealingMessages.pluginAlreadyInstalled}.`;
+}
+
+/** Offers to install GitHub Copilot when it is missing; true when it is installed. */
+async function ensureCopilotInstalled(): Promise<boolean> {
+	if (isCopilotInstalled()) {
+		return true;
+	}
+	const selection = await vscode.window.showInformationMessage(
+		selfHealingMessages.installCopilot,
+		selfHealingMessages.installCopilotButton
+	);
+	if (selection === selfHealingMessages.installCopilotButton) {
+		await vscode.commands.executeCommand("extension.open", constants.copilotChatExtensionId);
+	}
+	return false;
+}
+
+/**
+ * Installs cx-devassist with the GitHub Copilot CLI (VS Code also runs plugins the Copilot CLI installed):
+ * first GitHub Copilot must be installed, then an existing install is reported with its location instead
+ * of installing again. Without the Copilot CLI it falls back to VS Code's plugin browser. Never throws.
+ */
+export async function installCopilotPluginInVsCode(context?: Pick<vscode.ExtensionContext, "globalStorageUri">): Promise<void> {
+	try {
+		if (!(await ensureCopilotInstalled())) {
+			return;
+		}
+		const locations = getCxDevAssistInstallLocations({ userDataDir: getVsCodeUserDataDir(context) });
+		if (locations.length > 0) {
+			currentLogs?.info(alreadyInstalledMessage(locations));
+			void vscode.window.showInformationMessage(alreadyInstalledMessage(locations));
+			return;
+		}
+		const cli = copilotCliDeps.find();
+		if (!cli) {
+			currentLogs?.warn("GitHub Copilot CLI not found; opening the VS Code plugin browser instead");
+			void vscode.window.showInformationMessage(selfHealingMessages.copilotCliNotFound);
+			await openVsCodePluginBrowser();
+			return;
+		}
+		const result = await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: selfHealingMessages.installingPlugin },
+			() => installWithCopilotCli(cli)
+		);
+		if (result.ok) {
+			currentLogs?.info(`Installed the Checkmarx Copilot plugin with ${cli}`);
+			void vscode.window.showInformationMessage(selfHealingMessages.pluginInstalled);
+			return;
+		}
+		if (/already installed/i.test(result.output)) {
+			void vscode.window.showInformationMessage(alreadyInstalledMessage([{ source: "copilotCli", path: getCopilotCliPluginDir() }]));
+			return;
+		}
+		currentLogs?.error(`${selfHealingMessages.pluginInstallFailed} ${result.output}`);
+		const reason = result.output.split(/\r?\n/).find(line => line.trim()) ?? "";
+		const selection = await vscode.window.showErrorMessage(
+			`${selfHealingMessages.pluginInstallFailed} ${reason}`.trim(),
+			selfHealingMessages.openPluginBrowserButton
+		);
+		if (selection === selfHealingMessages.openPluginBrowserButton) {
+			await openVsCodePluginBrowser();
+		}
+	} catch (error) {
+		currentLogs?.error(`${selfHealingMessages.pluginInstallFailed} ${error instanceof Error ? error.message : String(error)}`);
+	}
+}
+
 /** Adds the Checkmarx marketplace to the user settings and opens VS Code's plugin browser. Never throws. */
-export async function installCopilotPluginInVsCode(): Promise<void> {
+export async function openVsCodePluginBrowser(): Promise<void> {
 	try {
 		const config = vscode.workspace.getConfiguration(constants.vscodePluginMarketplacesSection);
 		const inspected = config.inspect<unknown>(constants.vscodePluginMarketplacesKey);
@@ -480,7 +731,7 @@ export async function installCopilotPluginInVsCode(): Promise<void> {
 	}
 }
 
-export async function showInstallCopilotPluginHelp(): Promise<void> {
+export async function showInstallCopilotPluginHelp(context?: Pick<vscode.ExtensionContext, "globalStorageUri">): Promise<void> {
 	const selection = await vscode.window.showInformationMessage(
 		selfHealingMessages.pluginHelp,
 		selfHealingMessages.installInVsCodeButton,
@@ -488,7 +739,7 @@ export async function showInstallCopilotPluginHelp(): Promise<void> {
 		selfHealingMessages.openGuideButton
 	);
 	if (selection === selfHealingMessages.installInVsCodeButton) {
-		await installCopilotPluginInVsCode();
+		await installCopilotPluginInVsCode(context);
 	} else if (selection === selfHealingMessages.copyCommandsButton) {
 		await vscode.env.clipboard.writeText(constants.cxDevAssistPluginInstallCommands.join("\n"));
 		vscode.window.showInformationMessage(selfHealingMessages.commandsCopied);
@@ -577,7 +828,7 @@ export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs
 
 function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Logs): void {
 	context.subscriptions.push(
-		vscode.commands.registerCommand(commands.installCopilotPlugin, () => showInstallCopilotPluginHelp())
+		vscode.commands.registerCommand(commands.installCopilotPlugin, () => showInstallCopilotPluginHelp(context))
 	);
 
 	context.subscriptions.push(
