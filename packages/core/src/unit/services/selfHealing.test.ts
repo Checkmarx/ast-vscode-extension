@@ -16,6 +16,7 @@ import {
   isCxDevAssistPluginInstalled,
   isCxDevAssistPluginInstalledInVsCode,
   isSelfHealingSupportedHost,
+  onSelfHealingLogout,
   onSelfHealingPostAuth,
   mergePluginMarketplaces,
   maybeShowSelfHealingPrompt,
@@ -511,17 +512,60 @@ describe("Checkmarx Self-Healing", () => {
   });
 
   describe("registerSelfHealing", () => {
-    it("registers the install command, writes the properties file and copies the commands", async () => {
-      const context: any = {
+    const propsFile = () => path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties");
+    const flush = () => new Promise(resolve => setImmediate(resolve));
+    function makeContext(token: string | undefined): any {
+      return {
         subscriptions: [],
         globalState: { get: () => undefined, update: () => Promise.resolve() },
         extension: { packageJSON: { version: "1.26.0" } },
+        secrets: { get: sandbox.stub().resolves(token), onDidChange: sandbox.stub().returns({ dispose: () => undefined }) },
       };
+    }
+
+    it("writes everything OFF on activation when logged out", async () => {
+      const context = makeContext(undefined);
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      registerSelfHealing(context, logs);
+      try {
+        await flush();
+        const content = fs.readFileSync(propsFile(), "utf8");
+        expect(content).to.contain("cx_self_healing_enabled=false");
+        expect(content).to.contain("cx_asca_scanner_enabled=false");
+      } finally {
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
+    });
+
+    it("writes Self-Healing ON after login and OFF with every scanner after logout", async () => {
+      const context = makeContext(undefined);
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({ get: (_k: string, def?: unknown) => def }) as any);
+      registerSelfHealing(context, logs);
+      try {
+        await flush();
+        await onSelfHealingPostAuth(context, logs);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=true");
+
+        onSelfHealingLogout(context, logs);
+        const content = fs.readFileSync(propsFile(), "utf8");
+        expect(content).to.contain("cx_self_healing_enabled=false");
+        for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
+          expect(content).to.contain(`cx_${key}_scanner_enabled=false`);
+        }
+      } finally {
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
+    });
+
+    it("registers the install command, writes the properties file and copies the commands", async () => {
+      const context = makeContext("token");
       const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
 
       registerSelfHealing(context, logs);
       try {
-        const content = fs.readFileSync(path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties"), "utf8");
+        await flush();
+        const content = fs.readFileSync(propsFile(), "utf8");
         expect(content).to.contain("cx_self_healing_enabled=true");
         expect(content).to.contain("cx_ide_extension=cx-dev-assist");
         expect(content).to.contain("cx_ide_version=1.26.0");

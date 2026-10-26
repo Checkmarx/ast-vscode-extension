@@ -410,6 +410,39 @@ describe("AuthService", () => {
   });
 
   describe("logout", () => {
+    // Logout writes ~/.checkmarx/cx-onboarding-ide.properties: keep it in a temp home
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs: typeof import("fs") = require("fs");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const osAny: any = require("os");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const path: typeof import("path") = require("path");
+    let homeDir: string;
+    let originalHomedir: () => string;
+
+    beforeEach(() => {
+      homeDir = fs.mkdtempSync(path.join(osAny.tmpdir(), "cx-auth-logout-"));
+      originalHomedir = osAny.homedir;
+      osAny.homedir = () => homeDir;
+    });
+
+    afterEach(() => {
+      osAny.homedir = originalHomedir;
+      fs.rmSync(homeDir, { recursive: true, force: true });
+    });
+
+    it("should write Self-Healing and every scanner as off to the IDE properties file", async () => {
+      sandbox.stub(authService, "validateAndUpdateState").resolves(false);
+
+      await authService.logout();
+
+      const content = fs.readFileSync(path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties"), "utf8");
+      expect(content).to.include("cx_self_healing_enabled=false\n");
+      for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
+        expect(content).to.include(`cx_${key}_scanner_enabled=false\n`);
+      }
+    });
+
     it("should delete token", async () => {
       sandbox.stub(authService, "validateAndUpdateState").resolves(false);
 

@@ -11,6 +11,7 @@ import {
   getIdeOnboardingValues,
   getIdeOnboardingConfigKeys,
   IdeOnboardingValues,
+  setIdeOnboardingAuthenticated,
   writeIdeOnboardingProperties,
 } from "../../services/ideOnboardingProperties";
 import { setExtensionConfig, resetExtensionConfig } from "../../config/extensionConfig";
@@ -37,6 +38,7 @@ describe("IDE onboarding properties writer", () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     homeDir = fs.mkdtempSync(path.join(os.tmpdir(), "cx-ide-props-"));
+    setIdeOnboardingAuthenticated(true);
     setExtensionConfig({
       extensionId: "ast-results",
       commandPrefix: "ast-results",
@@ -48,6 +50,7 @@ describe("IDE onboarding properties writer", () => {
 
   afterEach(() => {
     sandbox.restore();
+    setIdeOnboardingAuthenticated(false);
     resetExtensionConfig();
     fs.rmSync(homeDir, { recursive: true, force: true });
   });
@@ -155,6 +158,24 @@ describe("IDE onboarding properties writer", () => {
 
   it("defaults self-healing to ON when the setting is not set", () => {
     expect(getIdeOnboardingValues().selfHealingEnabled).to.equal(true);
+  });
+
+  it("reports self-healing and every scanner OFF while logged out, whatever the settings say", () => {
+    sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({ get: () => true }) as any);
+    setIdeOnboardingAuthenticated(false);
+
+    const result = getIdeOnboardingValues({ extension: { packageJSON: { version: "9.9.9" } } } as any);
+
+    expect(result).to.deep.equal({
+      selfHealingEnabled: false,
+      ascaEnabled: false,
+      scaEnabled: false,
+      secretEnabled: false,
+      kicsEnabled: false,
+      containersEnabled: false,
+      ideExtension: "ast-results",
+      ideVersion: "9.9.9",
+    });
   });
 
   it("uses the per-extension config keys", () => {

@@ -11,6 +11,7 @@ import {
 	getIdeOnboardingConfigKeys,
 	isSelfHealingEnabled,
 	BOM_PATTERN,
+	setIdeOnboardingAuthenticated,
 	syncIdeOnboardingProperties,
 } from "./ideOnboardingProperties";
 
@@ -506,14 +507,37 @@ export function isSelfHealingSupportedHost(appName: string = vscode.env?.appName
 	return appName.toLowerCase().includes(constants.vsCodeAgentOrginalName.toLowerCase());
 }
 
-/** Called at the end of a successful login: sync the file, then evaluate the install messages. */
+/** Called at the end of a successful login: write the settings to the file, then evaluate the install messages. */
 export async function onSelfHealingPostAuth(context: vscode.ExtensionContext, logs?: Logs): Promise<void> {
 	if (!isSelfHealingSupportedHost()) {
 		return;
 	}
+	setIdeOnboardingAuthenticated(true);
 	syncIdeOnboardingProperties(context, logs ?? currentLogs);
 	promptArmed = true;
 	await maybeShowSelfHealingPrompt(context);
+}
+
+/** Called on logout: the file then says Self-Healing and every scanner are OFF. Never throws. */
+export function onSelfHealingLogout(context?: vscode.ExtensionContext, logs?: Logs): void {
+	if (!isSelfHealingSupportedHost()) {
+		return;
+	}
+	setIdeOnboardingAuthenticated(false);
+	promptArmed = false;
+	syncIdeOnboardingProperties(context, logs ?? currentLogs);
+}
+
+/** Logged in when the credential is stored; re-syncs the file. Covers activation and other windows. */
+async function syncAuthFromSecrets(context: vscode.ExtensionContext, logs: Logs): Promise<void> {
+	let token: string | undefined;
+	try {
+		token = await context.secrets.get(constants.getAuthCredentialSecretKey());
+	} catch (error) {
+		logs.warn(`Could not read the Checkmarx credential: ${error instanceof Error ? error.message : String(error)}`);
+	}
+	setIdeOnboardingAuthenticated(!!token);
+	syncIdeOnboardingProperties(context, logs);
 }
 
 function sendSelfHealingTelemetry(enabled: boolean): void {
@@ -529,7 +553,7 @@ function sendSelfHealingTelemetry(enabled: boolean): void {
 /**
  * Registers the install-help command, the settings listener and the plugin file watchers
  * (~/.copilot/config.json, ~/.vscode/agent-plugins/installed.json, <user-data>/agentPlugins/cache.json),
- * and writes the properties file once on activation. Logout does not touch the file.
+ * and writes the properties file once on activation, as logged in or logged out.
  */
 export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs): void {
 	currentLogs = logs;
@@ -548,7 +572,7 @@ export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs
 	} catch (error) {
 		logs.error(`Failed to register Checkmarx Self-Healing: ${error instanceof Error ? error.message : String(error)}`);
 	}
-	syncIdeOnboardingProperties(context, logs);
+	void syncAuthFromSecrets(context, logs);
 }
 
 function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Logs): void {
@@ -574,6 +598,14 @@ function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Lo
 		})
 	);
 
+	context.subscriptions.push(
+		context.secrets.onDidChange(event => {
+			if (event.key === constants.getAuthCredentialSecretKey()) {
+				void syncAuthFromSecrets(context, logs);
+			}
+		})
+	);
+
 	const listener = () => {
 		if (promptArmed) {
 			void maybeShowSelfHealingPrompt(context);
@@ -593,4 +625,5 @@ function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Lo
 export function resetSelfHealingSessionState(): void {
 	shownThisSession = false;
 	promptArmed = false;
+	setIdeOnboardingAuthenticated(false);
 }

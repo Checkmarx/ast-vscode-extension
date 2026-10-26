@@ -10,6 +10,7 @@ import { ProxyHelper } from '../utils/proxy/proxy';
 import axios from "axios";
 import { getExtensionType, EXTENSION_TYPE } from '../config/extensionConfig';
 import { getMessages } from '../config/extensionMessages';
+import { onSelfHealingLogout } from './selfHealing';
 
 interface OAuthConfig {
   clientId: string;
@@ -605,6 +606,8 @@ export class AuthService {
     // Delete only the token (for security)
     await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
+    // Tell the Copilot plugin and ast-cli that Self-Healing and every scanner are off until the next login
+    onSelfHealingLogout(this.context, this.logs);
 
     // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)
     // so that returning users can auto-authenticate when they click "Sign in" again.

@@ -9,7 +9,9 @@ import { Logs } from "../models/logs";
 /**
  * Writes ~/.checkmarx/cx-onboarding-ide.properties, the IDE state file read by ast-cli and
  * the Checkmarx Copilot plugin (cx-devassist) hooks. Only this extension writes it.
- * The file is kept on logout on purpose: it reflects IDE settings, not authentication.
+ * While logged in it mirrors the settings (Self-Healing defaults to ON). While logged out it is kept
+ * but says Self-Healing and every scanner are OFF; the settings themselves are left untouched, so the
+ * next login restores the user's choices.
  */
 
 export const IDE_ONBOARDING_SCHEMA_VERSION = 1;
@@ -112,8 +114,33 @@ export function isSelfHealingEnabled(): boolean {
 	return getBooleanSetting(constants.getSelfHealingConfigSection(), constants.activateSelfHealing, true);
 }
 
-/** Reads the current values from the VS Code settings of the running extension. */
+let authenticated = false;
+
+/** Records whether the user is logged in; the next sync writes the matching values. */
+export function setIdeOnboardingAuthenticated(value: boolean): void {
+	authenticated = value;
+}
+
+export function isIdeOnboardingAuthenticated(): boolean {
+	return authenticated;
+}
+
+/** Reads the current values from the VS Code settings of the running extension; all OFF while logged out. */
 export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOnboardingValues {
+	const ideExtension = getExtensionId();
+	const ideVersion = String(context?.extension?.packageJSON?.version ?? "unknown");
+	if (!authenticated) {
+		return {
+			selfHealingEnabled: false,
+			ascaEnabled: false,
+			scaEnabled: false,
+			secretEnabled: false,
+			kicsEnabled: false,
+			containersEnabled: false,
+			ideExtension,
+			ideVersion,
+		};
+	}
 	return {
 		selfHealingEnabled: isSelfHealingEnabled(),
 		ascaEnabled: getBooleanSetting(constants.getAscaRealtimeScanner(), constants.activateAscaRealtimeScanner, false),
@@ -121,8 +148,8 @@ export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOn
 		secretEnabled: getBooleanSetting(constants.getSecretsScanner(), constants.activateSecretsScanner, false),
 		kicsEnabled: getBooleanSetting(constants.getIacRealtimeScanner(), constants.activateIacRealtimeScanner, false),
 		containersEnabled: getBooleanSetting(constants.getContainersRealtimeScanner(), constants.activateContainersRealtimeScanner, false),
-		ideExtension: getExtensionId(),
-		ideVersion: String(context?.extension?.packageJSON?.version ?? "unknown"),
+		ideExtension,
+		ideVersion,
 	};
 }
 
