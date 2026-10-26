@@ -270,6 +270,32 @@ export const constants = {
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
+  // Checkmarx Self-Healing
+  activateSelfHealing: "Enable Self-Healing",
+  getSelfHealingConfigSection: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Self-Healing"
+      : "Checkmarx Developer Assist Self-Healing";
+  },
+  getSelfHealingDontShowAgainKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'selfHealingPromptDismissed' : 'selfHealingPromptDismissedDevAssist';
+  },
+  cxDevAssistPluginName: "cx-devassist",
+  cxDevAssistPluginMarketplace: "cx-devassist-marketplace",
+  cxDevAssistPluginGuideUrl: "https://docs.checkmarx.com/en/34965-766857-copilot-plugin.html",
+  cxDevAssistPluginInstallCommands: [
+    "/plugin marketplace add Checkmarx/cx-agentic-ai",
+    "/plugin install cx-devassist@cx-devassist-marketplace",
+  ],
+  // VS Code agent plugins (Chat > Agent Customizations > Plugins)
+  cxAgenticAiMarketplaceRepo: "Checkmarx/cx-agentic-ai",
+  vscodePluginMarketplacesSection: "chat.plugins",
+  vscodePluginMarketplacesKey: "marketplaces",
+  vscodeDefaultPluginMarketplace: "github/awesome-copilot#marketplace",
+  vscodeBrowseAgentPluginsCommand: "workbench.agentPlugins.browse",
+
   //Agent Assistants
   copilotAssistantName: "copilot",
   claudeAssistantName: "claude",
