@@ -32,7 +32,7 @@ describe("IDE onboarding properties writer", () => {
     kicsEnabled: false,
     containersEnabled: true,
     ideExtension: "ast-results",
-    ideVersion: "2.73.0",
+    ideExtensionVersion: "2.73.0",
   };
 
   beforeEach(() => {
@@ -67,7 +67,7 @@ describe("IDE onboarding properties writer", () => {
         "cx_kics_scanner_enabled=false",
         "cx_containers_scanner_enabled=true",
         "cx_ide_extension=ast-results",
-        "cx_ide_version=2.73.0",
+        "cx_ide_extension_version=2.73.0",
         "cx_updated_at=2026-10-23T00:00:00.000Z",
         "",
       ].join("\n")
@@ -152,7 +152,7 @@ describe("IDE onboarding properties writer", () => {
       kicsEnabled: true,
       containersEnabled: false,
       ideExtension: "ast-results",
-      ideVersion: "9.9.9",
+      ideExtensionVersion: "9.9.9",
     });
   });
 
@@ -174,7 +174,7 @@ describe("IDE onboarding properties writer", () => {
       kicsEnabled: false,
       containersEnabled: false,
       ideExtension: "ast-results",
-      ideVersion: "9.9.9",
+      ideExtensionVersion: "9.9.9",
     });
   });
 

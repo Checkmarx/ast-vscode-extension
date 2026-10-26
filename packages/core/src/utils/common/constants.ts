@@ -296,10 +296,16 @@ export const constants = {
   ],
   // VS Code agent plugins (Chat > Agent Customizations > Plugins)
   cxAgenticAiMarketplaceRepo: "Checkmarx/cx-agentic-ai",
+  // VS Code reads a GitHub marketplace from the "main" branch unless a ref is given; the repo uses "master"
+  cxAgenticAiMarketplaceRef: "master",
+  cxAgenticAiMarketplace: "Checkmarx/cx-agentic-ai#master",
   vscodePluginMarketplacesSection: "chat.plugins",
   vscodePluginMarketplacesKey: "marketplaces",
+  vscodePluginsEnabledKey: "enabled",
   vscodeDefaultPluginMarketplace: "github/awesome-copilot#marketplace",
   vscodeBrowseAgentPluginsCommand: "workbench.agentPlugins.browse",
+  vscodeExtensionsSearchCommand: "workbench.extensions.search",
+  cxDevAssistAgentPluginsQuery: "@agentPlugins cx-devassist",
 
   //Agent Assistants
   copilotAssistantName: "copilot",

@@ -28,7 +28,7 @@ export interface IdeOnboardingValues {
 	kicsEnabled: boolean;
 	containersEnabled: boolean;
 	ideExtension: string;
-	ideVersion: string;
+	ideExtensionVersion: string;
 }
 
 export type IdeOnboardingWriteResult = "written" | "unchanged" | "error";
@@ -47,7 +47,7 @@ export function buildIdeOnboardingProperties(values: IdeOnboardingValues, update
 		`cx_kics_scanner_enabled=${values.kicsEnabled}`,
 		`cx_containers_scanner_enabled=${values.containersEnabled}`,
 		`cx_ide_extension=${values.ideExtension}`,
-		`cx_ide_version=${values.ideVersion}`,
+		`cx_ide_extension_version=${values.ideExtensionVersion}`,
 		`${UPDATED_AT_KEY}=${updatedAt}`,
 	];
 	return lines.join("\n") + "\n";
@@ -128,7 +128,7 @@ export function isIdeOnboardingAuthenticated(): boolean {
 /** Reads the current values from the VS Code settings of the running extension; all OFF while logged out. */
 export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOnboardingValues {
 	const ideExtension = getExtensionId();
-	const ideVersion = String(context?.extension?.packageJSON?.version ?? "unknown");
+	const ideExtensionVersion = String(context?.extension?.packageJSON?.version ?? "unknown");
 	if (!authenticated) {
 		return {
 			selfHealingEnabled: false,
@@ -138,7 +138,7 @@ export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOn
 			kicsEnabled: false,
 			containersEnabled: false,
 			ideExtension,
-			ideVersion,
+			ideExtensionVersion,
 		};
 	}
 	return {
@@ -149,7 +149,7 @@ export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOn
 		kicsEnabled: getBooleanSetting(constants.getIacRealtimeScanner(), constants.activateIacRealtimeScanner, false),
 		containersEnabled: getBooleanSetting(constants.getContainersRealtimeScanner(), constants.activateContainersRealtimeScanner, false),
 		ideExtension,
-		ideVersion,
+		ideExtensionVersion,
 	};
 }
 

@@ -20,6 +20,7 @@ import {
   isCxDevAssistPluginInstalled,
   isCxDevAssistPluginInstalledInVsCode,
   isSelfHealingSupportedHost,
+  onPluginDetectionChanged,
   onSelfHealingLogout,
   onSelfHealingPostAuth,
   mergePluginMarketplaces,
@@ -28,6 +29,7 @@ import {
   registerSelfHealing,
   resetSelfHealingSessionState,
   selfHealingMessages,
+  setPluginDetectedForTests,
   SelfHealingPromptState,
   setCopilotCliDeps,
   stripJsonComments,
@@ -357,7 +359,7 @@ describe("Checkmarx Self-Healing", () => {
   describe("mergePluginMarketplaces", () => {
     it("starts from the inspected default when the user value is unset", () => {
       expect(mergePluginMarketplaces(undefined, ["github/awesome-copilot#marketplace"])).to.deep.equal({
-        value: ["github/awesome-copilot#marketplace", "Checkmarx/cx-agentic-ai"],
+        value: ["github/awesome-copilot#marketplace", "Checkmarx/cx-agentic-ai#master"],
         changed: true,
       });
     });
@@ -365,12 +367,12 @@ describe("Checkmarx Self-Healing", () => {
     it("uses the VS Code default when no default can be inspected", () => {
       expect(mergePluginMarketplaces(undefined, undefined).value).to.deep.equal([
         "github/awesome-copilot#marketplace",
-        "Checkmarx/cx-agentic-ai",
+        "Checkmarx/cx-agentic-ai#master",
       ]);
     });
 
     it("leaves the value unchanged when the marketplace is already present", () => {
-      for (const existing of ["Checkmarx/cx-agentic-ai", "checkmarx/cx-agentic-ai#main", "https://github.com/Checkmarx/cx-agentic-ai.git"]) {
+      for (const existing of ["Checkmarx/cx-agentic-ai#master", "checkmarx/cx-agentic-ai#master", "https://github.com/Checkmarx/cx-agentic-ai.git"]) {
         const userValue = ["github/awesome-copilot#marketplace", existing];
         expect(mergePluginMarketplaces(userValue, ["github/awesome-copilot#marketplace"])).to.deep.equal({
           value: userValue,
@@ -383,8 +385,17 @@ describe("Checkmarx Self-Healing", () => {
       expect(mergePluginMarketplaces(["acme/plugins", "github/awesome-copilot#marketplace"], []).value).to.deep.equal([
         "acme/plugins",
         "github/awesome-copilot#marketplace",
-        "Checkmarx/cx-agentic-ai",
+        "Checkmarx/cx-agentic-ai#master",
       ]);
+    });
+
+    it("replaces a Checkmarx entry VS Code would read from the missing main branch", () => {
+      for (const stale of ["Checkmarx/cx-agentic-ai", "checkmarx/cx-agentic-ai#main"]) {
+        expect(mergePluginMarketplaces(["github/awesome-copilot#marketplace", stale, "acme/plugins"], [])).to.deep.equal({
+          value: ["github/awesome-copilot#marketplace", "acme/plugins", "Checkmarx/cx-agentic-ai#master"],
+          changed: true,
+        });
+      }
     });
   });
 
@@ -419,9 +430,9 @@ describe("Checkmarx Self-Healing", () => {
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCopilotPluginInVsCode();
       expect(run.called).to.equal(false);
-      expect((show.firstCall.args as any[])[0]).to.equal(
-        `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}).`
-      );
+      expect(show.firstCall.args as any[]).to.deep.equal([
+        `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
+      ]);
     });
 
     it("installs again when only a stale cache.json entry is left", async () => {
@@ -464,7 +475,7 @@ describe("Checkmarx Self-Healing", () => {
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCopilotPluginInVsCode();
       expect((show.firstCall.args as any[])[0]).to.equal(
-        alreadyInstalledMessage([{ source: "copilotCli", path: getCopilotCliPluginDir(homeDir) }])
+        `${alreadyInstalledMessage([{ source: "copilotCli", path: getCopilotCliPluginDir(homeDir) }])} ${selfHealingMessages.selfHealingActive}`
       );
     });
 
@@ -475,7 +486,7 @@ describe("Checkmarx Self-Healing", () => {
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
       await installCopilotPluginInVsCode();
       expect((error.firstCall.args as any[])[0]).to.equal(`${selfHealingMessages.pluginInstallFailed} Access is denied. (os error 5)`);
-      expect(execute.firstCall.args[0]).to.equal("workbench.agentPlugins.browse");
+      expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
     });
 
     it("falls back to the plugin browser without the Copilot CLI", async () => {
@@ -484,7 +495,7 @@ describe("Checkmarx Self-Healing", () => {
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
       await installCopilotPluginInVsCode();
       expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.copilotCliNotFound);
-      expect(execute.firstCall.args[0]).to.equal("workbench.agentPlugins.browse");
+      expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
     });
   });
 
@@ -527,15 +538,39 @@ describe("Checkmarx Self-Healing", () => {
       expect(getConfiguration.firstCall.args[0]).to.equal("chat.plugins");
       expect(update.firstCall.args).to.deep.equal([
         "marketplaces",
-        ["github/awesome-copilot#marketplace", "Checkmarx/cx-agentic-ai"],
+        ["github/awesome-copilot#marketplace", "Checkmarx/cx-agentic-ai#master"],
         mock.ConfigurationTarget.Global,
       ]);
-      expect(execute.firstCall.args[0]).to.equal("workbench.agentPlugins.browse");
+      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
+    });
+
+    it("falls back to the plugin browser when the search command fails", async () => {
+      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({}, sandbox.stub().resolves()));
+      const execute = sandbox.stub(mock.commands, "executeCommand");
+      execute.onFirstCall().rejects(new Error("command 'workbench.extensions.search' not found"));
+      execute.onSecondCall().resolves();
+      await openVsCodePluginBrowser();
+      expect(execute.secondCall.args[0]).to.equal("workbench.agentPlugins.browse");
+    });
+
+    it("explains that agent plugins are off instead of opening the browser when chat.plugins.enabled is false", async () => {
+      const update = sandbox.stub().resolves();
+      sandbox.stub(mock.workspace, "getConfiguration").returns({
+        get: (key: string, def?: unknown) => (key === "enabled" ? false : def),
+        inspect: () => undefined,
+        update,
+      } as any);
+      const warn = sandbox.stub(mock.window, "showWarningMessage").resolves(selfHealingMessages.openSettingButton as any);
+      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      await openVsCodePluginBrowser();
+      expect((warn.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginsDisabled);
+      expect(update.called).to.equal(false);
+      expect(execute.firstCall.args).to.deep.equal(["workbench.action.openSettings", "chat.plugins.enabled"]);
     });
 
     it("does not rewrite the setting when the marketplace is already there", async () => {
       const update = sandbox.stub().resolves();
-      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, update));
+      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai#master"] }, update));
       sandbox.stub(mock.commands, "executeCommand").resolves();
       await openVsCodePluginBrowser();
       expect(update.called).to.equal(false);
@@ -555,7 +590,7 @@ describe("Checkmarx Self-Healing", () => {
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
       await openVsCodePluginBrowser();
       expect(warn.calledOnce).to.equal(true);
-      expect(execute.firstCall.args[0]).to.equal("workbench.agentPlugins.browse");
+      expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
     });
   });
 
@@ -729,6 +764,107 @@ describe("Checkmarx Self-Healing", () => {
       }
     });
 
+    it("turns Self-Healing back on after a successful login", async () => {
+      let selfHealing = false;
+      const update = sandbox.stub().callsFake((_key: string, value: boolean) => {
+        selfHealing = value;
+        return Promise.resolve();
+      });
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake((section: string) => ({
+        get: (key: string, def?: unknown) =>
+          section === "Checkmarx Developer Assist Self-Healing" && key === "Enable Self-Healing" ? selfHealing : def,
+        update,
+      }) as any);
+      sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+      const context = makeContext("token");
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      registerSelfHealing(context, logs);
+      try {
+        await flush();
+        expect(update.called).to.equal(false);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=false");
+
+        await onSelfHealingPostAuth(context, logs);
+        expect(update.calledOnceWith("Enable Self-Healing", true, mock.ConfigurationTarget.Global)).to.equal(true);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=true");
+      } finally {
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
+    });
+
+    describe("installed confirmation", () => {
+      const installPlugin = () => writeCopilotConfig(homeDir, JSON.stringify({ installedPlugins: [PLUGIN_ENTRY] }));
+      const logs = () => ({ info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() }) as any;
+
+      it("confirms once when the plugin goes from not detected to detected while logged in", async () => {
+        const context = makeContext("token");
+        registerSelfHealing(context, logs());
+        try {
+          await flush();
+          const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+          await onPluginDetectionChanged(context);
+          expect(show.called).to.equal(false);
+
+          installPlugin();
+          await onPluginDetectionChanged(context);
+          expect(show.firstCall.args as any[]).to.deep.equal([
+            `${selfHealingMessages.pluginInstalledDetected} ${selfHealingMessages.selfHealingActive}`,
+          ]);
+
+          await onPluginDetectionChanged(context);
+          expect(show.calledOnce).to.equal(true);
+        } finally {
+          context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+        }
+      });
+
+      it("stays quiet when the plugin was already installed at startup or the user is logged out", async () => {
+        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+        installPlugin();
+        await onPluginDetectionChanged({} as any);
+        setPluginDetectedForTests(false);
+        await onPluginDetectionChanged({} as any);
+        expect(show.called).to.equal(false);
+      });
+
+      it("offers to turn Self-Healing on when it is off", async () => {
+        const update = sandbox.stub().resolves();
+        sandbox.stub(mock.workspace, "getConfiguration").returns({ get: () => false, update } as any);
+        const context = makeContext("token");
+        registerSelfHealing(context, logs());
+        try {
+          await flush();
+          const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.enableSelfHealingButton as any);
+          installPlugin();
+          await onPluginDetectionChanged(context);
+          expect(show.firstCall.args as any[]).to.deep.equal([
+            `${selfHealingMessages.pluginInstalledDetected} ${selfHealingMessages.selfHealingOff}`,
+            selfHealingMessages.enableSelfHealingButton,
+          ]);
+          expect(update.calledWith("Enable Self-Healing", true, mock.ConfigurationTarget.Global)).to.equal(true);
+        } finally {
+          context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+        }
+      });
+
+      it("only says the plugin is already installed from the install command, without buttons", async () => {
+        const context = makeContext("token");
+        registerSelfHealing(context, logs());
+        try {
+          await flush();
+          installPlugin();
+          const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+          await getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin")();
+          expect(show.calledOnce).to.equal(true);
+          expect(show.firstCall.args as any[]).to.deep.equal([
+            `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
+          ]);
+        } finally {
+          context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+        }
+      });
+    });
+
     it("registers the install command, writes the properties file and copies the commands", async () => {
       const context = makeContext("token");
       const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
@@ -739,7 +875,7 @@ describe("Checkmarx Self-Healing", () => {
         const content = fs.readFileSync(propsFile(), "utf8");
         expect(content).to.contain("cx_self_healing_enabled=true");
         expect(content).to.contain("cx_ide_extension=cx-dev-assist");
-        expect(content).to.contain("cx_ide_version=1.26.0");
+        expect(content).to.contain("cx_ide_extension_version=1.26.0");
 
         const callback = getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin");
         expect(callback).to.be.a("function");
@@ -767,7 +903,7 @@ describe("Checkmarx Self-Healing", () => {
         const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
         await callback();
         expect(update.calledOnce).to.equal(true);
-        expect(execute.firstCall.args[0]).to.equal("workbench.agentPlugins.browse");
+        expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
       }
