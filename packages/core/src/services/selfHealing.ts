@@ -33,6 +33,7 @@ export interface SelfHealingPromptState {
 export const selfHealingMessages = {
 	installCopilot: "Checkmarx Self-Healing works with GitHub Copilot. Install GitHub Copilot to automatically fix newly generated code.",
 	installPlugin: "Install the Checkmarx Copilot plugin (cx-devassist) to enable Self-Healing in Copilot.",
+	vsCodeOnly: "Checkmarx Self-Healing works with GitHub Copilot in Visual Studio Code only.",
 	installCopilotButton: "Install Copilot",
 	installPluginButton: "Install plugin",
 	dontShowAgainButton: "Don't show again",
@@ -495,8 +496,21 @@ export async function showInstallCopilotPluginHelp(): Promise<void> {
 	}
 }
 
+/**
+ * Checkmarx Self-Healing drives the cx-devassist Copilot plugin inside GitHub Copilot in Visual Studio Code
+ * (stable and Insiders) only. The same extension also runs in VS Code forks (Cursor, Windsurf, Kiro,
+ * Devin, ...), where it must do nothing: above all it must not write the shared
+ * ~/.checkmarx/cx-onboarding-ide.properties, or a fork's setting would overwrite the user's VS Code choice.
+ */
+export function isSelfHealingSupportedHost(appName: string = vscode.env?.appName ?? ""): boolean {
+	return appName.toLowerCase().includes(constants.vsCodeAgentOrginalName.toLowerCase());
+}
+
 /** Called at the end of a successful login: sync the file, then evaluate the install messages. */
 export async function onSelfHealingPostAuth(context: vscode.ExtensionContext, logs?: Logs): Promise<void> {
+	if (!isSelfHealingSupportedHost()) {
+		return;
+	}
 	syncIdeOnboardingProperties(context, logs ?? currentLogs);
 	promptArmed = true;
 	await maybeShowSelfHealingPrompt(context);
@@ -519,6 +533,16 @@ function sendSelfHealingTelemetry(enabled: boolean): void {
  */
 export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs): void {
 	currentLogs = logs;
+	if (!isSelfHealingSupportedHost()) {
+		// VS Code forks: only the command declared in package.json, explaining it is VS Code only. No
+		// file write, listeners, watchers, install messages or telemetry.
+		context.subscriptions.push(
+			vscode.commands.registerCommand(commands.installCopilotPlugin, () =>
+				vscode.window.showInformationMessage(selfHealingMessages.vsCodeOnly)
+			)
+		);
+		return;
+	}
 	try {
 		registerSelfHealingListeners(context, logs);
 	} catch (error) {

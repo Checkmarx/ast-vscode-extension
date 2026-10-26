@@ -15,6 +15,8 @@ import {
   isCxDevAssistPluginAvailable,
   isCxDevAssistPluginInstalled,
   isCxDevAssistPluginInstalledInVsCode,
+  isSelfHealingSupportedHost,
+  onSelfHealingPostAuth,
   mergePluginMarketplaces,
   maybeShowSelfHealingPrompt,
   registerSelfHealing,
@@ -472,6 +474,39 @@ describe("Checkmarx Self-Healing", () => {
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       expect(await maybeShowSelfHealingPrompt(context)).to.equal(undefined);
       expect(show.called).to.equal(false);
+    });
+  });
+
+  describe("VS Code forks", () => {
+    it("isSelfHealingSupportedHost accepts VS Code only", () => {
+      expect(isSelfHealingSupportedHost("Visual Studio Code")).to.equal(true);
+      expect(isSelfHealingSupportedHost("Visual Studio Code - Insiders")).to.equal(true);
+      for (const fork of ["Cursor", "Windsurf", "Windsurf - Next", "Kiro", "Devin", "Devin - Next", "VSCodium", ""]) {
+        expect(isSelfHealingSupportedHost(fork), fork).to.equal(false);
+      }
+    });
+
+    it("does nothing in a fork except explain the command", async () => {
+      const origAppName = mock.env.appName;
+      (mock.env as any).appName = "Cursor";
+      const context: any = {
+        subscriptions: [],
+        globalState: { get: () => undefined, update: () => Promise.resolve() },
+        extension: { packageJSON: { version: "1.26.0" } },
+      };
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      try {
+        registerSelfHealing(context, logs);
+        await onSelfHealingPostAuth(context, logs);
+        expect(fs.existsSync(path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties"))).to.equal(false);
+        expect(context.subscriptions.length).to.equal(1);
+        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+        await getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin")();
+        expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.vsCodeOnly);
+      } finally {
+        (mock.env as any).appName = origAppName;
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
     });
   });
 

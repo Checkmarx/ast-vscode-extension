@@ -1045,7 +1045,7 @@
             "default": true,
             "scope": "application",
             "description": "Enable automatically fix and self-heal newly generated code",
-            "markdownDescription": "Enable automatically fix and self-heal newly generated code. Requires GitHub Copilot and the Checkmarx Copilot plugin (cx-devassist)."
+            "markdownDescription": "Enable automatically fix and self-heal newly generated code. Requires GitHub Copilot in Visual Studio Code and the Checkmarx Copilot plugin (cx-devassist); not used in other editors such as Cursor, Windsurf, Kiro or Devin."
           },
           "Checkmarx Self-Healing.Copilot Plugin": {
             "type": "",
