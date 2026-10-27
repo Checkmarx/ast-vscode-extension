@@ -103,7 +103,7 @@
   "overrides": {
     "underscore": "1.13.8",
     "mocha": {
-      "serialize-javascript": "7.0.5",
+      "serialize-javascript": "7.1.3",
       "picomatch": "^2.3.2"
     },
     "undici": "7.29.0",
