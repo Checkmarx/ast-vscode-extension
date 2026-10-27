@@ -284,11 +284,6 @@ export const constants = {
   },
   cxDevAssistPluginName: "cx-devassist",
   cxDevAssistPluginMarketplace: "cx-devassist-marketplace",
-  cxDevAssistPluginGuideUrl: "https://docs.checkmarx.com/en/34965-766857-copilot-plugin.html",
-  cxDevAssistPluginInstallCommands: [
-    "/plugin marketplace add Checkmarx/cx-agentic-ai",
-    "/plugin install cx-devassist@cx-devassist-marketplace",
-  ],
   // Arguments for the GitHub Copilot CLI ("copilot ..."): add the marketplace, then install the plugin
   cxDevAssistPluginCliInstallArgs: [
     ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"],

@@ -8,7 +8,7 @@ import { Logs } from "../models/logs";
 
 /**
  * Writes ~/.checkmarx/cx-onboarding-ide.properties, the IDE state file read by ast-cli and
- * the Checkmarx Copilot plugin (cx-devassist) hooks. Only this extension writes it.
+ * the Checkmarx cx-devassist plugin hooks. Only this extension writes it.
  * While logged in it mirrors the settings (Self-Healing defaults to ON). While logged out it is kept
  * but says Self-Healing and every scanner are OFF; the settings themselves are left untouched, so the
  * next login restores the user's choices.

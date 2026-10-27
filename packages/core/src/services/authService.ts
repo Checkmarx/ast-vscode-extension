@@ -606,7 +606,7 @@ export class AuthService {
     // Delete only the token (for security)
     await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
-    // Tell the Copilot plugin and ast-cli that Self-Healing and every scanner are off until the next login
+    // Tell the cx-devassist plugin and ast-cli that Self-Healing and every scanner are off until the next login
     onSelfHealingLogout(this.context, this.logs);
 
     // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)

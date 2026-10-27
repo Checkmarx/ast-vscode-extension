@@ -13,9 +13,12 @@ import {
   getVsCodeUserDataDir,
   alreadyInstalledMessage,
   findCopilotCli,
+  parseCopilotShimProbe,
+  installCopilotCliWithShim,
+  resolveCopilotCli,
   getCopilotCliPluginDir,
   getCxDevAssistInstallLocations,
-  installCopilotPluginInVsCode,
+  installCxDevAssistPluginInVsCode,
   isCxDevAssistPluginAvailable,
   isCxDevAssistPluginInstalled,
   isCxDevAssistPluginInstalledInVsCode,
@@ -399,28 +402,18 @@ describe("Checkmarx Self-Healing", () => {
     });
   });
 
-  describe("installCopilotPluginInVsCode", () => {
+  describe("installCxDevAssistPluginInVsCode", () => {
     const installArgs = ["plugin", "install", "cx-devassist@cx-devassist-marketplace"];
     const addArgs = ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"];
-    let copilotInstalled: boolean;
-
-    beforeEach(() => {
-      copilotInstalled = true;
-      sandbox.stub(mock.extensions, "getExtension").callsFake((id: string) =>
-        id === constants.copilotChatExtensionId && copilotInstalled ? ({ id } as any) : undefined
-      );
-    });
-
-    it("offers to install GitHub Copilot first and runs nothing", async () => {
-      copilotInstalled = false;
+    it("installs without asking about the GitHub Copilot extension", async () => {
+      sandbox.stub(mock.extensions, "getExtension").returns(undefined);
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
-      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installCopilotButton as any);
-      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
-      await installCopilotPluginInVsCode();
-      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.installCopilot);
-      expect(execute.firstCall.args).to.deep.equal(["extension.open", constants.copilotChatExtensionId]);
-      expect(run.called).to.equal(false);
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      await installCxDevAssistPluginInVsCode();
+      expect(run.calledTwice).to.equal(true);
+      expect(show.calledOnce).to.equal(true);
+      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
     });
 
     it("says the plugin is already installed and runs nothing", async () => {
@@ -428,7 +421,7 @@ describe("Checkmarx Self-Healing", () => {
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      await installCopilotPluginInVsCode();
+      await installCxDevAssistPluginInVsCode();
       expect(run.called).to.equal(false);
       expect(show.firstCall.args as any[]).to.deep.equal([
         `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
@@ -441,7 +434,7 @@ describe("Checkmarx Self-Healing", () => {
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      await installCopilotPluginInVsCode({ globalStorageUri: { fsPath: path.join(userDataDir, "User", "globalStorage", "x") } } as any);
+      await installCxDevAssistPluginInVsCode({ globalStorageUri: { fsPath: path.join(userDataDir, "User", "globalStorage", "x") } } as any);
       expect(run.calledTwice).to.equal(true);
     });
 
@@ -450,7 +443,7 @@ describe("Checkmarx Self-Healing", () => {
       setCopilotCliDeps({ find: () => "C:\cli\copilot.exe", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
-      await installCopilotPluginInVsCode();
+      await installCxDevAssistPluginInVsCode();
       expect(run.args).to.deep.equal([
         ["C:\cli\copilot.exe", addArgs],
         ["C:\cli\copilot.exe", installArgs],
@@ -465,7 +458,7 @@ describe("Checkmarx Self-Healing", () => {
       run.onSecondCall().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      await installCopilotPluginInVsCode();
+      await installCxDevAssistPluginInVsCode();
       expect(run.secondCall.args[1]).to.deep.equal(installArgs);
       expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
     });
@@ -473,29 +466,58 @@ describe("Checkmarx Self-Healing", () => {
     it("mentions an existing install the Copilot CLI reports", async () => {
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Plugin cx-devassist is already installed" }) });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      await installCopilotPluginInVsCode();
+      await installCxDevAssistPluginInVsCode();
       expect((show.firstCall.args as any[])[0]).to.equal(
         `${alreadyInstalledMessage([{ source: "copilotCli", path: getCopilotCliPluginDir(homeDir) }])} ${selfHealingMessages.selfHealingActive}`
       );
     });
 
-    it("shows the failure and can open the plugin browser", async () => {
+    it("opens the plugin browser when the Copilot CLI install fails", async () => {
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Access is denied. (os error 5)\nmore" }) });
-      const error = sandbox.stub(mock.window, "showErrorMessage").resolves(selfHealingMessages.openPluginBrowserButton as any);
+      const error = sandbox.stub(mock.window, "showErrorMessage").resolves(undefined);
       sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
-      await installCopilotPluginInVsCode();
-      expect((error.firstCall.args as any[])[0]).to.equal(`${selfHealingMessages.pluginInstallFailed} Access is denied. (os error 5)`);
-      expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
+      await installCxDevAssistPluginInVsCode();
+      expect(error.called).to.equal(false);
+      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
     });
 
-    it("falls back to the plugin browser without the Copilot CLI", async () => {
+    it("installs the Copilot CLI first, then the plugin with it", async () => {
+      const run = sandbox.stub().resolves({ ok: true, output: "" });
+      const installCli = sandbox.stub().resolves("C:\\cli\\copilot.exe");
+      setCopilotCliDeps({ find: () => undefined, run, installCli });
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      await installCxDevAssistPluginInVsCode();
+      expect(installCli.calledOnce).to.equal(true);
+      expect(run.args.map((call: any[]) => call[0])).to.deep.equal(["C:\\cli\\copilot.exe", "C:\\cli\\copilot.exe"]);
+      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
+      expect(execute.called).to.equal(false);
+    });
+
+    it("opens the plugin browser when the Copilot CLI is not installed", async () => {
+      setCopilotCliDeps({ find: () => undefined, run: sandbox.stub(), installCli: () => Promise.resolve(undefined) });
+      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
+      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      await installCxDevAssistPluginInVsCode();
+      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
+    });
+
+    it("does not ask about the Copilot CLI when it is already found", async () => {
+      const installCli = sandbox.stub().resolves(undefined);
+      setCopilotCliDeps({ find: () => "copilot", run: sandbox.stub().resolves({ ok: true, output: "" }), installCli });
+      sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      await installCxDevAssistPluginInVsCode();
+      expect(installCli.called).to.equal(false);
+    });
+
+    it("opens the plugin browser without the Copilot CLI", async () => {
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
-      await installCopilotPluginInVsCode();
-      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.copilotCliNotFound);
-      expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
+      await installCxDevAssistPluginInVsCode();
+      expect(show.called).to.equal(false);
+      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
     });
   });
 
@@ -524,6 +546,99 @@ describe("Checkmarx Self-Healing", () => {
 
     it("returns undefined when there is no Copilot CLI", () => {
       expect(findCopilotCli(path.join(homeDir, "nothing"), undefined)).to.equal(undefined);
+    });
+  });
+
+  describe("resolveCopilotCli", () => {
+    const shim = path.join("C:", "Microsoft VS Code", "bin", "copilot-shim", "copilot.exe");
+    const probeWriting = (contents: string) =>
+      sandbox.stub().callsFake((_exe: string, args: string[]) => {
+        writeFile(args[args.indexOf("--result-file") + 1], contents);
+        return Promise.resolve({ ok: true, output: "" });
+      });
+
+    it("keeps a Copilot CLI that is not the VS Code shim without probing", async () => {
+      const run = sandbox.stub();
+      expect(await resolveCopilotCli("C:\\npm\\copilot.cmd", run)).to.equal("C:\\npm\\copilot.cmd");
+      expect(run.called).to.equal(false);
+    });
+
+    it("uses the real Copilot CLI the shim reports", async () => {
+      const run = probeWriting("[probe]\nprotocol=1\ncliFound=1\ncliPath=C:\\npm\\copilot.cmd\n");
+      expect(await resolveCopilotCli(shim, run)).to.equal("C:\\npm\\copilot.cmd");
+      expect(run.firstCall.args[1].slice(0, 2)).to.deep.equal(["--vscode-shim", "probe"]);
+    });
+
+    it("returns undefined when the shim reports no Copilot CLI", async () => {
+      expect(await resolveCopilotCli(shim, probeWriting("[probe]\ncliFound=0\ncliPath=\n"))).to.equal(undefined);
+    });
+
+    it("keeps an older shim that has no probe", async () => {
+      const run = sandbox.stub().resolves({ ok: false, output: "unknown option" });
+      expect(await resolveCopilotCli(shim, run)).to.equal(shim);
+    });
+
+    it("parses only cliFound=1 with a path", () => {
+      expect(parseCopilotShimProbe("cliFound=1\r\ncliPath=/usr/local/bin/copilot\r\n")).to.equal("/usr/local/bin/copilot");
+      expect(parseCopilotShimProbe("cliFound=1\ncliPath=\n")).to.equal(undefined);
+      expect(parseCopilotShimProbe("")).to.equal(undefined);
+    });
+  });
+
+  describe("installCopilotCliWithShim", () => {
+    const shim = path.join("C:", "Microsoft VS Code", "bin", "copilot-shim", "copilot.exe");
+    const cliPath = "C:\\Users\\me\\AppData\\Local\\Microsoft\\WinGet\\Links\\copilot.exe";
+    const notFound = "[probe]\nprotocol=1\npolicy=allowed\ncliFound=0\ncliPath=\n";
+    const found = `[probe]\nprotocol=1\npolicy=allowed\ncliFound=1\ncliPath=${cliPath}\n`;
+    /** A fake shim: probe writes notFound until install runs (installs: true), then found. */
+    const fakeShim = (opts: { installs?: boolean; probe?: string } = {}) => {
+      let installed = false;
+      return sandbox.stub().callsFake((_exe: string, args: string[]) => {
+        const resultFile = args[args.indexOf("--result-file") + 1];
+        if (args[1] === "probe") {
+          writeFile(resultFile, opts.probe ?? (installed ? found : notFound));
+        } else if (args[1] === "install") {
+          installed = opts.installs ?? true;
+          writeFile(resultFile, `[install]\nstatus=${installed ? "installed" : "network"}\n`);
+        }
+        return Promise.resolve({ ok: true, output: "" });
+      });
+    };
+
+    it("asks, installs the Copilot CLI and returns the CLI the shim then reports", async () => {
+      const run = fakeShim();
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installCopilotCliButton as any);
+      expect(await installCopilotCliWithShim(shim, run)).to.equal(cliPath);
+      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.installCopilotCli);
+      const install = run.args.find((call: any[]) => call[1][1] === "install");
+      expect(install[1].slice(0, 4)).to.deep.equal(["--vscode-shim", "install", "--non-interactive", "--consent=installer"]);
+    });
+
+    it("installs nothing when the user declines", async () => {
+      const run = fakeShim();
+      sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      expect(await installCopilotCliWithShim(shim, run)).to.equal(undefined);
+      expect(run.args.some((call: any[]) => call[1][1] === "install")).to.equal(false);
+    });
+
+    it("warns and returns undefined when the install fails", async () => {
+      sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installCopilotCliButton as any);
+      const warn = sandbox.stub(mock.window, "showWarningMessage").resolves(undefined);
+      expect(await installCopilotCliWithShim(shim, fakeShim({ installs: false }))).to.equal(undefined);
+      expect((warn.firstCall.args as any[])[0]).to.equal(selfHealingMessages.copilotCliInstallFailed);
+    });
+
+    it("does not ask when a policy turns the install off", async () => {
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      expect(await installCopilotCliWithShim(shim, fakeShim({ probe: notFound.replace("allowed", "disabled") }))).to.equal(undefined);
+      expect(show.called).to.equal(false);
+    });
+
+    it("does not ask with an older shim that has no probe", async () => {
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
+      const run = sandbox.stub().resolves({ ok: false, output: "unknown option" });
+      expect(await installCopilotCliWithShim(shim, run)).to.equal(undefined);
+      expect(show.called).to.equal(false);
     });
   });
 
@@ -708,7 +823,7 @@ describe("Checkmarx Self-Healing", () => {
         expect(fs.existsSync(path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties"))).to.equal(false);
         expect(context.subscriptions.length).to.equal(1);
         const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
-        await getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin")();
+        await getRegisteredCommandCallback("cx-dev-assist.installCxDevAssistPlugin")();
         expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.vsCodeOnly);
       } finally {
         (mock.env as any).appName = origAppName;
@@ -854,7 +969,7 @@ describe("Checkmarx Self-Healing", () => {
           await flush();
           installPlugin();
           const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
-          await getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin")();
+          await getRegisteredCommandCallback("cx-dev-assist.installCxDevAssistPlugin")();
           expect(show.calledOnce).to.equal(true);
           expect(show.firstCall.args as any[]).to.deep.equal([
             `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
@@ -865,7 +980,7 @@ describe("Checkmarx Self-Healing", () => {
       });
     });
 
-    it("registers the install command, writes the properties file and copies the commands", async () => {
+    it("registers the install command, writes the properties file and installs without asking", async () => {
       const context = makeContext("token");
       const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
 
@@ -877,25 +992,10 @@ describe("Checkmarx Self-Healing", () => {
         expect(content).to.contain("cx_ide_extension=cx-dev-assist");
         expect(content).to.contain("cx_ide_extension_version=1.26.0");
 
-        const callback = getRegisteredCommandCallback("cx-dev-assist.installCopilotPlugin");
+        const callback = getRegisteredCommandCallback("cx-dev-assist.installCxDevAssistPlugin");
         expect(callback).to.be.a("function");
-        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.copyCommandsButton as any);
-        const writeText = sandbox.stub(mock.env.clipboard, "writeText").resolves();
-        await callback();
-        expect((writeText.firstCall.args as any[])[0]).to.equal(
-          "/plugin marketplace add Checkmarx/cx-agentic-ai\n/plugin install cx-devassist@cx-devassist-marketplace"
-        );
-        expect((show.firstCall.args as any[]).slice(1)).to.deep.equal([
-          selfHealingMessages.installInVsCodeButton,
-          selfHealingMessages.copyCommandsButton,
-          selfHealingMessages.openGuideButton,
-        ]);
-
-        // GitHub Copilot is installed; there is no Copilot CLI, so it falls back to the plugin browser
-        sandbox.stub(mock.extensions, "getExtension").callsFake((id: string) =>
-          id === constants.copilotChatExtensionId ? ({ id } as any) : undefined
-        );
-        show.resolves(selfHealingMessages.installInVsCodeButton as any);
+        // No dialog first; there is no Copilot CLI, so it opens the plugin browser straight away
+        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
         const update = sandbox.stub().resolves();
         sandbox.stub(mock.workspace, "getConfiguration").returns(
           fakeConfig({ defaultValue: ["github/awesome-copilot#marketplace"] }, update)
@@ -904,6 +1004,7 @@ describe("Checkmarx Self-Healing", () => {
         await callback();
         expect(update.calledOnce).to.equal(true);
         expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
+        expect(show.called).to.equal(false);
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
       }
