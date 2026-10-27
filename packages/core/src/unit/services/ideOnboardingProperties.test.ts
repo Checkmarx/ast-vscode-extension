@@ -12,6 +12,7 @@ import {
   getIdeOnboardingConfigKeys,
   IdeOnboardingValues,
   setIdeOnboardingAuthenticated,
+  readSeverityThresholdFromFile,
   writeIdeOnboardingProperties,
 } from "../../services/ideOnboardingProperties";
 import { setExtensionConfig, resetExtensionConfig } from "../../config/extensionConfig";
@@ -31,8 +32,7 @@ describe("IDE onboarding properties writer", () => {
     secretEnabled: true,
     kicsEnabled: false,
     containersEnabled: true,
-    ideExtension: "ast-results",
-    ideExtensionVersion: "2.73.0",
+    severityThreshold: "low",
   };
 
   beforeEach(() => {
@@ -66,8 +66,7 @@ describe("IDE onboarding properties writer", () => {
         "cx_secret_scanner_enabled=true",
         "cx_kics_scanner_enabled=false",
         "cx_containers_scanner_enabled=true",
-        "cx_ide_extension=ast-results",
-        "cx_ide_extension_version=2.73.0",
+        "cx_severity_threshold=low",
         "cx_updated_at=2026-10-23T00:00:00.000Z",
         "",
       ].join("\n")
@@ -142,7 +141,7 @@ describe("IDE onboarding properties writer", () => {
       get: (key: string, def?: unknown) => settings.get(`${section}.${key}`) ?? def,
     }) as any);
 
-    const result = getIdeOnboardingValues({ extension: { packageJSON: { version: "9.9.9" } } } as any);
+    const result = getIdeOnboardingValues();
 
     expect(result).to.deep.equal({
       selfHealingEnabled: false,
@@ -151,20 +150,19 @@ describe("IDE onboarding properties writer", () => {
       secretEnabled: false,
       kicsEnabled: true,
       containersEnabled: false,
-      ideExtension: "ast-results",
-      ideExtensionVersion: "9.9.9",
+      severityThreshold: "low",
     });
   });
 
-  it("defaults self-healing to ON when the setting is not set", () => {
-    expect(getIdeOnboardingValues().selfHealingEnabled).to.equal(true);
+  it("defaults self-healing to OFF when the setting is not set", () => {
+    expect(getIdeOnboardingValues().selfHealingEnabled).to.equal(false);
   });
 
   it("reports self-healing and every scanner OFF while logged out, whatever the settings say", () => {
     sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({ get: () => true }) as any);
     setIdeOnboardingAuthenticated(false);
 
-    const result = getIdeOnboardingValues({ extension: { packageJSON: { version: "9.9.9" } } } as any);
+    const result = getIdeOnboardingValues();
 
     expect(result).to.deep.equal({
       selfHealingEnabled: false,
@@ -173,8 +171,7 @@ describe("IDE onboarding properties writer", () => {
       secretEnabled: false,
       kicsEnabled: false,
       containersEnabled: false,
-      ideExtension: "ast-results",
-      ideExtensionVersion: "9.9.9",
+      severityThreshold: "low",
     });
   });
 
@@ -190,6 +187,65 @@ describe("IDE onboarding properties writer", () => {
     const keys = getIdeOnboardingConfigKeys();
     expect(keys[0]).to.equal("Checkmarx Developer Assist Self-Healing.Enable Self-Healing");
     expect(keys).to.have.length(6);
-    expect(getIdeOnboardingValues().ideExtension).to.equal("cx-dev-assist");
+  });
+});
+
+describe("cx_severity_threshold in the IDE file", () => {
+  let homeDir: string;
+  const values: IdeOnboardingValues = {
+    selfHealingEnabled: true,
+    ascaEnabled: true,
+    scaEnabled: false,
+    secretEnabled: true,
+    kicsEnabled: false,
+    containersEnabled: true,
+    severityThreshold: "low",
+  };
+  const propsFile = () => path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties");
+  const readFile = () => fs.readFileSync(propsFile(), "utf8");
+  const thresholdLine = () => readFile().split("\n").find((l: string) => l.startsWith("cx_severity_threshold="));
+  const setThreshold = (from: string, to: string) => fs.writeFileSync(propsFile(), readFile().replace(from, to));
+
+  beforeEach(() => {
+    homeDir = fs.mkdtempSync(path.join(os.tmpdir(), "cx-ide-threshold-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(homeDir, { recursive: true, force: true });
+  });
+
+  it("writes low when the file does not exist", () => {
+    writeIdeOnboardingProperties(values, { homeDir });
+    expect(thresholdLine()).to.equal("cx_severity_threshold=low");
+  });
+
+  it("keeps a valid threshold the user set by hand, on every sync", () => {
+    writeIdeOnboardingProperties(values, { homeDir });
+    setThreshold("cx_severity_threshold=low", "cx_severity_threshold=high");
+    expect(writeIdeOnboardingProperties({ ...values, selfHealingEnabled: false }, { homeDir })).to.equal("written");
+    expect(thresholdLine()).to.equal("cx_severity_threshold=high");
+    expect(writeIdeOnboardingProperties(values, { homeDir })).to.equal("written");
+    expect(thresholdLine()).to.equal("cx_severity_threshold=high");
+  });
+
+  it("reports unchanged when only the timestamp would change and the threshold is kept", () => {
+    writeIdeOnboardingProperties(values, { homeDir });
+    setThreshold("cx_severity_threshold=low", "cx_severity_threshold=medium");
+    expect(writeIdeOnboardingProperties(values, { homeDir })).to.equal("unchanged");
+    expect(thresholdLine()).to.equal("cx_severity_threshold=medium");
+  });
+
+  it("falls back to low when the value in the file is invalid", () => {
+    writeIdeOnboardingProperties(values, { homeDir });
+    setThreshold("cx_severity_threshold=low", "cx_severity_threshold=banana");
+    writeIdeOnboardingProperties({ ...values, selfHealingEnabled: false }, { homeDir });
+    expect(thresholdLine()).to.equal("cx_severity_threshold=low");
+  });
+
+  it("reads the last valid value, ignoring case, comments and a BOM", () => {
+    expect(readSeverityThresholdFromFile("# cx_severity_threshold=critical\ncx_severity_threshold=High\n")).to.equal("high");
+    expect(readSeverityThresholdFromFile("cx_severity_threshold=medium\ncx_severity_threshold=\n")).to.equal(undefined);
+    expect(readSeverityThresholdFromFile("\uFEFFcx_severity_threshold=critical\r\n")).to.equal("critical");
+    expect(readSeverityThresholdFromFile("cx_schema_version=1\n")).to.equal(undefined);
   });
 });

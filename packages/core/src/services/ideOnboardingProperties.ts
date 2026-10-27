@@ -3,7 +3,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { constants } from "../utils/common/constants";
-import { getExtensionId } from "../config/extensionConfig";
 import { Logs } from "../models/logs";
 
 /**
@@ -19,6 +18,8 @@ export const IDE_ONBOARDING_DIR = ".checkmarx";
 export const IDE_ONBOARDING_FILE = "cx-onboarding-ide.properties";
 const UPDATED_AT_KEY = "cx_updated_at";
 export const BOM_PATTERN = new RegExp("^" + String.fromCharCode(0xfeff));
+/** cx_severity_threshold written to the file: minimum severity that blocks (low | medium | high | critical). */
+export const IDE_SEVERITY_THRESHOLD_DEFAULT = "low";
 
 export interface IdeOnboardingValues {
 	selfHealingEnabled: boolean;
@@ -27,8 +28,7 @@ export interface IdeOnboardingValues {
 	secretEnabled: boolean;
 	kicsEnabled: boolean;
 	containersEnabled: boolean;
-	ideExtension: string;
-	ideExtensionVersion: string;
+	severityThreshold: string;
 }
 
 export type IdeOnboardingWriteResult = "written" | "unchanged" | "error";
@@ -46,11 +46,29 @@ export function buildIdeOnboardingProperties(values: IdeOnboardingValues, update
 		`cx_secret_scanner_enabled=${values.secretEnabled}`,
 		`cx_kics_scanner_enabled=${values.kicsEnabled}`,
 		`cx_containers_scanner_enabled=${values.containersEnabled}`,
-		`cx_ide_extension=${values.ideExtension}`,
-		`cx_ide_extension_version=${values.ideExtensionVersion}`,
+		`cx_severity_threshold=${values.severityThreshold}`,
 		`${UPDATED_AT_KEY}=${updatedAt}`,
 	];
 	return lines.join("\n") + "\n";
+}
+
+const SEVERITY_THRESHOLD_KEY = "cx_severity_threshold";
+const SEVERITY_THRESHOLDS = ["low", "medium", "high", "critical"];
+
+/** The valid cx_severity_threshold in the file (the last line wins, as ast-cli reads it), or undefined. */
+export function readSeverityThresholdFromFile(content: string): string | undefined {
+	let value: string | undefined;
+	for (const raw of content.replace(BOM_PATTERN, "").split(/\r?\n/)) {
+		const line = raw.trim();
+		const eq = line.indexOf("=");
+		if (line.startsWith("#") || eq === -1) {
+			continue;
+		}
+		if (line.slice(0, eq).trim() === SEVERITY_THRESHOLD_KEY) {
+			value = line.slice(eq + 1).trim().toLowerCase();
+		}
+	}
+	return value !== undefined && SEVERITY_THRESHOLDS.includes(value) ? value : undefined;
 }
 
 /** Content without the timestamp line, used to detect "unchanged except for the timestamp". */
@@ -72,16 +90,19 @@ export function writeIdeOnboardingProperties(
 	options: { homeDir?: string; now?: Date; logs?: Logs } = {}
 ): IdeOnboardingWriteResult {
 	const filePath = getIdeOnboardingPropertiesPath(options.homeDir);
-	const content = buildIdeOnboardingProperties(values, (options.now ?? new Date()).toISOString());
+	let existing: string | undefined;
+	try {
+		existing = fs.readFileSync(filePath, "utf8");
+	} catch {
+		// Missing or unreadable file: write a fresh one
+	}
+	// A threshold the user set in the file (low | medium | high | critical) is kept on every sync.
+	const severityThreshold = (existing !== undefined ? readSeverityThresholdFromFile(existing) : undefined) ?? values.severityThreshold;
+	const content = buildIdeOnboardingProperties({ ...values, severityThreshold }, (options.now ?? new Date()).toISOString());
 	let tempPath: string | undefined;
 	try {
-		try {
-			const existing = fs.readFileSync(filePath, "utf8");
-			if (withoutTimestamp(existing) === withoutTimestamp(content)) {
-				return "unchanged";
-			}
-		} catch {
-			// Missing or unreadable file: write a fresh one
+		if (existing !== undefined && withoutTimestamp(existing) === withoutTimestamp(content)) {
+			return "unchanged";
 		}
 
 		const dir = path.dirname(filePath);
@@ -111,7 +132,7 @@ function getBooleanSetting(section: string, key: string, defaultValue: boolean):
 }
 
 export function isSelfHealingEnabled(): boolean {
-	return getBooleanSetting(constants.getSelfHealingConfigSection(), constants.activateSelfHealing, true);
+	return getBooleanSetting(constants.getSelfHealingConfigSection(), constants.activateSelfHealing, false);
 }
 
 let authenticated = false;
@@ -126,9 +147,7 @@ export function isIdeOnboardingAuthenticated(): boolean {
 }
 
 /** Reads the current values from the VS Code settings of the running extension; all OFF while logged out. */
-export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOnboardingValues {
-	const ideExtension = getExtensionId();
-	const ideExtensionVersion = String(context?.extension?.packageJSON?.version ?? "unknown");
+export function getIdeOnboardingValues(): IdeOnboardingValues {
 	if (!authenticated) {
 		return {
 			selfHealingEnabled: false,
@@ -137,8 +156,7 @@ export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOn
 			secretEnabled: false,
 			kicsEnabled: false,
 			containersEnabled: false,
-			ideExtension,
-			ideExtensionVersion,
+			severityThreshold: IDE_SEVERITY_THRESHOLD_DEFAULT,
 		};
 	}
 	return {
@@ -148,15 +166,14 @@ export function getIdeOnboardingValues(context?: vscode.ExtensionContext): IdeOn
 		secretEnabled: getBooleanSetting(constants.getSecretsScanner(), constants.activateSecretsScanner, false),
 		kicsEnabled: getBooleanSetting(constants.getIacRealtimeScanner(), constants.activateIacRealtimeScanner, false),
 		containersEnabled: getBooleanSetting(constants.getContainersRealtimeScanner(), constants.activateContainersRealtimeScanner, false),
-		ideExtension,
-		ideExtensionVersion,
+		severityThreshold: IDE_SEVERITY_THRESHOLD_DEFAULT,
 	};
 }
 
 /** Syncs the properties file from the current settings. Never throws. */
-export function syncIdeOnboardingProperties(context?: vscode.ExtensionContext, logs?: Logs): IdeOnboardingWriteResult {
+export function syncIdeOnboardingProperties(logs?: Logs): IdeOnboardingWriteResult {
 	try {
-		return writeIdeOnboardingProperties(getIdeOnboardingValues(context), { logs });
+		return writeIdeOnboardingProperties(getIdeOnboardingValues(), { logs });
 	} catch (error) {
 		logs?.error(`Failed to sync IDE onboarding properties: ${error instanceof Error ? error.message : String(error)}`);
 		return "error";
