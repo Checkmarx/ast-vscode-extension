@@ -785,10 +785,6 @@ describe("Checkmarx Self-Healing", () => {
       expect(decideSelfHealingPrompt({ ...base, copilotInstalled: false, pluginInstalled: false })).to.equal("installCopilot");
     });
 
-    it("asks to install the plugin when Copilot is present but the plugin is not", () => {
-      expect(decideSelfHealingPrompt({ ...base, pluginInstalled: false })).to.equal("installPlugin");
-    });
-
     it("shows nothing when everything is installed", () => {
       expect(decideSelfHealingPrompt(base)).to.equal(undefined);
     });
@@ -830,15 +826,6 @@ describe("Checkmarx Self-Healing", () => {
         selfHealingMessages.installCopilotButton,
         selfHealingMessages.dontShowAgainButton,
       ]);
-    });
-
-    it("shows the plugin message when Copilot is installed and the plugin is not", async () => {
-      sandbox.stub(mock.extensions, "getExtension").callsFake((id: string) =>
-        id === constants.copilotChatExtensionId ? ({ id } as any) : undefined
-      );
-      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      expect(await maybeShowSelfHealingPrompt(context)).to.equal("installPlugin");
-      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.installPlugin);
     });
 
     it("stores Don't show again per extension and then stays silent", async () => {

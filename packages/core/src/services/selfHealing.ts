@@ -24,7 +24,7 @@ import {
  * The plugin counts as installed when the Copilot CLI or VS Code (Agent Customizations > Plugins) installed it.
  */
 
-export type SelfHealingPrompt = "installCopilot" | "installPlugin" | undefined;
+export type SelfHealingPrompt = "installCopilot" | undefined;
 
 export interface SelfHealingPromptState {
 	selfHealingEnabled: boolean;
@@ -36,7 +36,6 @@ export interface SelfHealingPromptState {
 
 export const selfHealingMessages = {
 	installCopilot: "Checkmarx Self-Healing works with GitHub Copilot. Install GitHub Copilot to automatically fix newly generated code.",
-	installPlugin: "Install the Checkmarx cx-devassist plugin to enable Self-Healing in Copilot.",
 	vsCodeOnly: "Checkmarx Self-Healing works with GitHub Copilot in Visual Studio Code only.",
 	installCopilotButton: "Install Copilot",
 	installPluginButton: "Install plugin",
@@ -78,9 +77,6 @@ export function decideSelfHealingPrompt(state: SelfHealingPromptState): SelfHeal
 	}
 	if (!state.copilotInstalled) {
 		return "installCopilot";
-	}
-	if (!state.pluginInstalled) {
-		return "installPlugin";
 	}
 	return undefined;
 }
@@ -450,22 +446,14 @@ export async function maybeShowSelfHealingPrompt(context: vscode.ExtensionContex
 			return undefined;
 		}
 		shownThisSession = true;
-		const actionButton = prompt === "installCopilot"
-			? selfHealingMessages.installCopilotButton
-			: selfHealingMessages.installPluginButton;
-		const message = prompt === "installCopilot"
-			? selfHealingMessages.installCopilot
-			: selfHealingMessages.installPlugin;
 		void vscode.window
-			.showInformationMessage(message, actionButton, selfHealingMessages.dontShowAgainButton)
+			.showInformationMessage(selfHealingMessages.installCopilot, selfHealingMessages.installCopilotButton, selfHealingMessages.dontShowAgainButton)
 			.then(async selection => {
 				try {
 					if (selection === selfHealingMessages.dontShowAgainButton) {
 						await context.globalState.update(constants.getSelfHealingDontShowAgainKey(), true);
 					} else if (selection === selfHealingMessages.installCopilotButton) {
 						await vscode.commands.executeCommand("extension.open", constants.copilotChatExtensionId);
-					} else if (selection === selfHealingMessages.installPluginButton) {
-						await vscode.commands.executeCommand(commands.installCxDevAssistPlugin);
 					}
 				} catch (error) {
 					currentLogs?.warn(`Self-Healing prompt action failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -945,8 +933,6 @@ export async function onSelfHealingPostAuth(context: vscode.ExtensionContext, lo
 	}
 	setIdeOnboardingAuthenticated(true);
 	syncIdeOnboardingProperties(logs ?? currentLogs);
-	promptArmed = true;
-	await maybeShowSelfHealingPrompt(context);
 }
 
 /** Called on logout: the file then says Self-Healing and every scanner are OFF. Never throws. */
