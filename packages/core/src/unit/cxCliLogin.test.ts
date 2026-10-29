@@ -111,13 +111,13 @@ describe('cxCliLogin', () => {
     });
 
     describe('removeLoginFromCxCli', () => {
-        it('clears the key by setting an empty value', async () => {
+        it('signs cx out with auth logout', async () => {
             finishWith(null);
 
             const ok = await removeLoginFromCxCli(logs as never);
 
             expect(ok).to.equal(true);
-            expect(cxArgs()).to.deep.equal([['configure', 'set', '--prop-name', 'cx_apikey', '--prop-value', '']]);
+            expect(cxArgs()).to.deep.equal([['auth', 'logout']]);
         });
 
         it('warns when cx fails', async () => {

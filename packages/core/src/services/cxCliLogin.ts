@@ -81,13 +81,13 @@ export async function shareLoginWithCxCli(token: string, logs?: Logs): Promise<b
 
 /**
  * Clears the token from the cx CLI on sign out, so cx-devassist is signed out too.
- * Assumes that `configure set` with an empty value removes the key. Not verified against cx yet.
+ * Runs `cx auth logout`, which carries no secret.
  */
 export async function removeLoginFromCxCli(logs?: Logs): Promise<boolean> {
 	if (isTestRun()) {
 		return false;
 	}
-	const ok = await setCxApiKey('', logs);
+	const ok = await runCx(['auth', 'logout'], 'auth logout', logs);
 	if (!ok) {
 		vscode.window.showWarningMessage(cxCliLoginMessages.removeFailed);
 	}
