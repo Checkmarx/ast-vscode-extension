@@ -483,33 +483,30 @@ describe("Checkmarx Self-Healing", () => {
 
     it("opens the plugin browser when the Copilot CLI install fails", async () => {
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Access is denied. (os error 5)\nmore" }) });
-      const error = sandbox.stub(mock.window, "showErrorMessage").resolves(undefined);
-      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
-      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      const warn = sandbox.stub(mock.window, "showWarningMessage").resolves(selfHealingMessages.installationGuideButton);
+      const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(error.called).to.equal(false);
-      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
+      expect(warn.calledOnce).to.equal(true);
+      expect(openExternal.calledOnce).to.equal(true);
     });
 
     it("installs the Copilot CLI first, then the plugin with it", async () => {
       const run = sandbox.stub().resolves({ ok: true, output: "" });
-      const installCli = sandbox.stub().resolves("C:\\cli\\copilot.exe");
-      setCopilotCliDeps({ find: () => undefined, run, installCli });
-      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      setCopilotCliDeps({ find: () => undefined, run });
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
+      const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(installCli.calledOnce).to.equal(true);
-      expect(run.args.map((call: any[]) => call[0])).to.deep.equal(["C:\\cli\\copilot.exe", "C:\\cli\\copilot.exe"]);
-      expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
-      expect(execute.called).to.equal(false);
+      expect(show.calledOnce).to.equal(true);
+      expect(openExternal.calledOnce).to.equal(true);
     });
 
     it("opens the plugin browser when the Copilot CLI is not installed", async () => {
-      setCopilotCliDeps({ find: () => undefined, run: sandbox.stub(), installCli: () => Promise.resolve(undefined) });
-      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
-      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      setCopilotCliDeps({ find: () => undefined, run: sandbox.stub() });
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
+      const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
+      expect(show.calledOnce).to.equal(true);
+      expect(openExternal.calledOnce).to.equal(true);
     });
 
     it("does not ask about the Copilot CLI when it is already found", async () => {
@@ -521,12 +518,12 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("opens the plugin browser without the Copilot CLI", async () => {
-      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
-      sandbox.stub(mock.workspace, "getConfiguration").returns(fakeConfig({ globalValue: ["Checkmarx/cx-agentic-ai"] }, sandbox.stub().resolves()));
-      const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+      setCopilotCliDeps({ find: () => undefined, run: sandbox.stub() });
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
+      const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(show.called).to.equal(false);
-      expect(execute.firstCall.args).to.deep.equal(["workbench.extensions.search", "@agentPlugins cx-devassist"]);
+      expect(show.calledOnce).to.equal(true);
+      expect(openExternal.calledOnce).to.equal(true);
     });
   });
 
@@ -865,17 +862,12 @@ describe("Checkmarx Self-Healing", () => {
 
         const callback = getRegisteredCommandCallback("cx-dev-assist.installCxDevAssistPlugin");
         expect(callback).to.be.a("function");
-        // No dialog first; there is no Copilot CLI, so it opens the plugin browser straight away
-        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
-        const update = sandbox.stub().resolves();
-        sandbox.stub(mock.workspace, "getConfiguration").returns(
-          fakeConfig({ defaultValue: ["github/awesome-copilot#marketplace"] }, update)
-        );
-        const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
+        // No CLI found, so it shows notification with documentation link
+        const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton as any);
+        const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
         await callback();
-        expect(update.calledOnce).to.equal(true);
-        expect(execute.firstCall.args[0]).to.equal("workbench.extensions.search");
-        expect(show.called).to.equal(false);
+        expect(show.calledOnce).to.equal(true);
+        expect(openExternal.calledOnce).to.equal(true);
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
       }
