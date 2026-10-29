@@ -270,6 +270,38 @@ export const constants = {
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
+  // Checkmarx Self-Healing
+  activateSelfHealing: "Enable Self-Healing",
+  getSelfHealingConfigSection: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Self-Healing"
+      : "Checkmarx Developer Assist Self-Healing";
+  },
+  getSelfHealingDontShowAgainKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'selfHealingPromptDismissed' : 'selfHealingPromptDismissedDevAssist';
+  },
+  cxDevAssistPluginName: "cx-devassist",
+  cxDevAssistPluginMarketplace: "cx-devassist-marketplace",
+  // Arguments for the GitHub Copilot CLI ("copilot ..."): add the marketplace, then install the plugin
+  cxDevAssistPluginCliInstallArgs: [
+    ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"],
+    ["plugin", "install", "cx-devassist@cx-devassist-marketplace"],
+  ],
+  // VS Code agent plugins (Chat > Agent Customizations > Plugins)
+  cxAgenticAiMarketplaceRepo: "Checkmarx/cx-agentic-ai",
+  // VS Code reads a GitHub marketplace from the "main" branch unless a ref is given; the repo uses "master"
+  cxAgenticAiMarketplaceRef: "master",
+  cxAgenticAiMarketplace: "Checkmarx/cx-agentic-ai#master",
+  vscodePluginMarketplacesSection: "chat.plugins",
+  vscodePluginMarketplacesKey: "marketplaces",
+  vscodePluginsEnabledKey: "enabled",
+  vscodeDefaultPluginMarketplace: "github/awesome-copilot#marketplace",
+  vscodeBrowseAgentPluginsCommand: "workbench.agentPlugins.browse",
+  vscodeExtensionsSearchCommand: "workbench.extensions.search",
+  cxDevAssistAgentPluginsQuery: "@agentPlugins cx-devassist",
+
   //Agent Assistants
   copilotAssistantName: "copilot",
   claudeAssistantName: "claude",

@@ -10,6 +10,7 @@ import { initialize } from '../cx';
 import { constants } from '../utils/common/constants';
 import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
+import { registerSelfHealing } from '../services/selfHealing';
 
 // Global context for the extension
 let globalContext: vscode.ExtensionContext;
@@ -50,6 +51,9 @@ export async function activateCore(context: vscode.ExtensionContext) {
 
     // [SHARED] Register MCP settings injector
     registerMcpSettingsInjector(context);
+
+    // [SHARED] Checkmarx Self-Healing: sync ~/.checkmarx/cx-onboarding-ide.properties and install prompts
+    registerSelfHealing(context, logs);
 
     console.log('[CORE] Core activation complete');
 

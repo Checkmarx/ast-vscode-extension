@@ -12,6 +12,7 @@ import { DOC_LINKS } from "@checkmarx/vscode-core/out/constants/documentation";
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
 import { hasAnySupportedAiExtension } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
+import { onSelfHealingPostAuth } from "@checkmarx/vscode-core/out/services/selfHealing";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { AuthenticationWebview } from "../webview/authenticationWebview";
 
@@ -398,6 +399,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
                 await uninstallMcp(this.context, false);
               }
               WelcomeWebview.show(this.context, isAiEnabled);
+              await onSelfHealingPostAuth(this.context, this.logs);
               return;
             }
             // If re-authentication failed, fall through to show the form

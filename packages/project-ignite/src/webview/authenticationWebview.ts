@@ -6,6 +6,7 @@ import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { WebViewCommand } from "@checkmarx/vscode-core/out/commands/webViewCommand";
 import { cx } from "@checkmarx/vscode-core/out/cx";
 import { initializeMcpConfiguration, uninstallMcp } from "@checkmarx/vscode-core/out/services/mcpSettingsInjector";
+import { onSelfHealingPostAuth } from "@checkmarx/vscode-core/out/services/selfHealing";
 import { CommonCommand } from "@checkmarx/vscode-core/out/commands/commonCommand";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
@@ -129,6 +130,7 @@ export class AuthenticationWebview {
         } else {
           await uninstallMcp(this.context, false);
         }
+        await onSelfHealingPostAuth(this.context, this.logs);
         // Removed the second setTimeout that was trying to access disposed webview
         // The panel is already disposed above, so we can't send messages to it
       } catch (e) {
