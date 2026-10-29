@@ -11,6 +11,7 @@ import axios from "axios";
 import { getExtensionType, EXTENSION_TYPE } from '../config/extensionConfig';
 import { getMessages } from '../config/extensionMessages';
 import { onSelfHealingLogout } from './selfHealing';
+import { removeLoginFromCxCli, shareLoginWithCxCli } from './cxCliLogin';
 
 interface OAuthConfig {
   clientId: string;
@@ -383,6 +384,9 @@ export class AuthService {
     console.log("Token validation result:", isValid);
 
     if (isValid) {
+      // Give the cx CLI the same login, so cx-devassist sees it too. Done here, on a real sign-in
+      // (OAuth and API key both end in saveToken), and not in validateApiKey, which every scan calls.
+      await shareLoginWithCxCli(token, this.logs);
       vscode.window.showInformationMessage(getMessages().authSuccessMessage);
       // Only refresh tree for Checkmarx extension (not Developer Assist)
       if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
@@ -605,6 +609,8 @@ export class AuthService {
   public async logout(): Promise<void> {
     // Delete only the token (for security)
     await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
+    // Sign the cx CLI out too, so cx-devassist does not keep a login the extension has dropped
+    await removeLoginFromCxCli(this.logs);
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
     // Tell the cx-devassist plugin and ast-cli that Self-Healing and every scanner are off until the next login
     onSelfHealingLogout(this.logs);
