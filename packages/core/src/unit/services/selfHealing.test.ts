@@ -422,7 +422,17 @@ describe("Checkmarx Self-Healing", () => {
   describe("installCxDevAssistPluginInVsCode", () => {
     const installArgs = ["plugin", "install", "cx-devassist@cx-devassist-marketplace"];
     const addArgs = ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"];
+
+    it("shows error message when user is not authenticated", async () => {
+      setIdeOnboardingAuthenticated(false);
+      const error = sandbox.stub(mock.window, "showErrorMessage").resolves(undefined);
+      await installCxDevAssistPluginInVsCode();
+      expect(error.calledOnce).to.equal(true);
+      expect((error.firstCall.args as any[])[0]).to.include("Authentication required");
+    });
+
     it("installs without asking about the GitHub Copilot extension", async () => {
+      setIdeOnboardingAuthenticated(true);
       sandbox.stub(mock.extensions, "getExtension").returns(undefined);
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
@@ -434,6 +444,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("says the plugin is already installed and runs nothing", async () => {
+      setIdeOnboardingAuthenticated(true);
       stubCopilotCliListing();
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
@@ -442,6 +453,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("installs again when only a stale cache.json entry is left", async () => {
+      setIdeOnboardingAuthenticated(true);
       const userDataDir = path.join(homeDir, "AppData", "Roaming", "Code");
       writeFile(getVsCodeAgentPluginsCachePath(userDataDir), JSON.stringify([{ uri: CACHE_URI_COPILOT_CLI }]));
       const run = sandbox.stub().resolves({ ok: true, output: "" });
@@ -453,6 +465,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("adds the marketplace and installs the plugin with the Copilot CLI", async () => {
+      setIdeOnboardingAuthenticated(true);
       const run = sandbox.stub().resolves({ ok: true, output: "Installed" });
       setCopilotCliDeps({ find: () => "C:\cli\copilot.exe", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
@@ -465,6 +478,7 @@ describe("Checkmarx Self-Healing", () => {
 
 
     it("still installs when the marketplace is already added", async () => {
+      setIdeOnboardingAuthenticated(true);
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
@@ -474,6 +488,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("mentions an existing install the Copilot CLI reports", async () => {
+      setIdeOnboardingAuthenticated(true);
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Plugin cx-devassist is already installed" }) });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
@@ -482,6 +497,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("opens the plugin browser when the Copilot CLI install fails", async () => {
+      setIdeOnboardingAuthenticated(true);
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Access is denied. (os error 5)\nmore" }) });
       const warn = sandbox.stub(mock.window, "showWarningMessage").resolves(selfHealingMessages.installationGuideButton);
       const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
@@ -491,6 +507,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("installs the Copilot CLI first, then the plugin with it", async () => {
+      setIdeOnboardingAuthenticated(true);
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => undefined, run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
@@ -501,6 +518,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("opens the plugin browser when the Copilot CLI is not installed", async () => {
+      setIdeOnboardingAuthenticated(true);
       setCopilotCliDeps({ find: () => undefined, run: sandbox.stub() });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
       const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
@@ -510,6 +528,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("does not ask about the Copilot CLI when it is already found", async () => {
+      setIdeOnboardingAuthenticated(true);
       const installCli = sandbox.stub().resolves(undefined);
       setCopilotCliDeps({ find: () => "copilot", run: sandbox.stub().resolves({ ok: true, output: "" }), installCli });
       sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
@@ -518,6 +537,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("opens the plugin browser without the Copilot CLI", async () => {
+      setIdeOnboardingAuthenticated(true);
       setCopilotCliDeps({ find: () => undefined, run: sandbox.stub() });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.installationGuideButton);
       const openExternal = sandbox.stub(mock.env, "openExternal").resolves(undefined);
