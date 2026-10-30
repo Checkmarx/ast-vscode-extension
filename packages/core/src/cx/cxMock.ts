@@ -1529,6 +1529,18 @@ export class CxMock implements CxPlatform {
     return true;
   }
 
+  async shareLogin(): Promise<boolean> {
+    return false;
+  }
+
+  async removeLogin(): Promise<boolean> {
+    return false;
+  }
+
+  async syncLogin(): Promise<void> {
+    return;
+  }
+
   public getRiskManagementResults(
     projectId: string,
     scanId: string

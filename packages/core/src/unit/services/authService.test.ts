@@ -386,6 +386,7 @@ describe("AuthService", () => {
       const mockCx = {
         authValidate: sandbox.stub().resolves(true),
         isScanEnabled: sandbox.stub().resolves(true),
+        shareLogin: sandbox.stub().resolves(true),
       };
       sandbox.stub(cxModule, "getCx").returns(mockCx as any);
       sandbox.stub(authService, "validateAndUpdateState").resolves(true);
@@ -399,6 +400,7 @@ describe("AuthService", () => {
       const mockCx = {
         authValidate: sandbox.stub().resolves(true),
         isScanEnabled: sandbox.stub().resolves(true),
+        shareLogin: sandbox.stub().resolves(true),
       };
       sandbox.stub(cxModule, "getCx").returns(mockCx as any);
       sandbox.stub(authService, "validateAndUpdateState").resolves(true);
