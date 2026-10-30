@@ -82,7 +82,7 @@ describe("BaseScannerCommand", () => {
       diagnosticCollection: {} as any,
       dispose: sandbox.stub(),
     };
-    configManager = new ConfigurationManager();
+    configManager = new ConfigurationManager(logs as any);
     cmd = new TestScannerCommand(context, logs, config, scannerService, configManager);
   });
 

@@ -57,7 +57,7 @@ describe("SecretsScannerCommand", () => {
       error: sandbox.stub(),
       debug: sandbox.stub(),
     };
-    configManager = new ConfigurationManager();
+    configManager = new ConfigurationManager(logs as any);
     cmd = new SecretsScannerCommand(context, logs, configManager);
   });
 

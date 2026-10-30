@@ -270,6 +270,9 @@ export const constants = {
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
 
+  // IDE Copilot Self-Healing
+  activateIdeCopilotSelfHealing: "Self-Healing",
+
   //Agent Assistants
   copilotAssistantName: "copilot",
   claudeAssistantName: "claude",
