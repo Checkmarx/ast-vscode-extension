@@ -931,6 +931,64 @@ describe("Checkmarx Self-Healing", () => {
       }
     });
 
+    it("turns the checkbox off while logged out and restores it after login", async () => {
+      const state = new Map<string, unknown>();
+      let checked = true;
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
+        get: (key: string, def?: unknown) => (key === constants.activateSelfHealing ? checked : def),
+        update: (_key: string, value: boolean) => {
+          checked = value;
+          return Promise.resolve();
+        },
+      }) as any);
+      let onConfig: ((event: { affectsConfiguration: (key: string) => boolean }) => void) | undefined;
+      sandbox.stub(mock.workspace, "onDidChangeConfiguration").callsFake((listener: typeof onConfig) => {
+        onConfig = listener;
+        return { dispose: () => undefined };
+      });
+      const context = makeContext(undefined);
+      context.globalState = {
+        get: (key: string) => state.get(key),
+        update: (key: string, value: unknown) => {
+          if (value === undefined) {
+            state.delete(key);
+          } else {
+            state.set(key, value);
+          }
+          return Promise.resolve();
+        },
+      };
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+      registerSelfHealing(context, logs);
+      try {
+        await flush();
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=false");
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+        checked = true;
+        onConfig?.({ affectsConfiguration: (key: string) => key.endsWith(constants.activateSelfHealing) });
+        await flush();
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(show.calledOnceWith(selfHealingMessages.signInRequired)).to.equal(true);
+
+        await onSelfHealingPostAuth(context, logs);
+        expect(checked).to.equal(true);
+        expect(state.has(constants.getSelfHealingSavedStateKey())).to.equal(false);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=true");
+
+        await onSelfHealingLogout(logs, context);
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=false");
+      } finally {
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
+    });
+
     it("keeps a fresh user OFF after a successful login", async () => {
       const update = sandbox.stub().resolves();
       sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({

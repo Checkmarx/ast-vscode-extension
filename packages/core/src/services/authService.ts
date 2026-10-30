@@ -614,7 +614,7 @@ export class AuthService {
     await getCx().removeLogin(this.logs);
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
     // Tell the cx-devassist plugin and ast-cli that Self-Healing and every scanner are off until the next login
-    onSelfHealingLogout(this.logs);
+    await onSelfHealingLogout(this.logs, this.context);
 
     // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)
     // so that returning users can auto-authenticate when they click "Sign in" again.
