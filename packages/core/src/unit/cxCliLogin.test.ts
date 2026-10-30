@@ -4,20 +4,15 @@ import * as childProcess from 'child_process';
 import * as vscode from 'vscode';
 import './mocks/vscode-mock';
 import './mocks/cxWrapper-mock';
-import {
-    cxCliLoginMessages,
-    removeLoginFromCxCli,
-    setExecFileForTests,
-    shareLoginWithCxCli,
-    syncLoginWithCxCli,
-} from '../services/cxCliLogin';
+import { Cx, cxLoginMessages, setExecFileForTests } from '../cx/cx';
 import { setExtensionConfig, resetExtensionConfig } from '../config/extensionConfig';
 
 type ExecCallback = (e: Error | null) => void;
 
-describe('cxCliLogin', () => {
+describe('Cx login share', () => {
     const token = 'secret-token-value';
     let sandbox: sinon.SinonSandbox;
+    let cx: Cx;
     let execFile: sinon.SinonStub;
     let warning: sinon.SinonStub;
     let logs: { error: sinon.SinonStub };
@@ -31,6 +26,7 @@ describe('cxCliLogin', () => {
         logs = { error: sandbox.stub() };
         savedTestEnv = process.env.TEST;
         delete process.env.TEST;
+        cx = new Cx({} as vscode.ExtensionContext);
         setExtensionConfig({
             extensionId: 'ast-results',
             commandPrefix: 'ast-results',
@@ -68,19 +64,22 @@ describe('cxCliLogin', () => {
         });
     }
 
-    function contextWithToken(value: string | undefined): vscode.ExtensionContext {
-        return { secrets: { get: async () => value } } as unknown as vscode.ExtensionContext;
+    function contextWithToken(value: string | undefined, state: Record<string, string> = {}): vscode.ExtensionContext {
+        return {
+            secrets: { get: async () => value },
+            globalState: { get: (key: string) => state[key] },
+        } as unknown as vscode.ExtensionContext;
     }
 
     function cxArgs(): string[][] {
         return execFile.getCalls().map((call) => call.args[1] as string[]);
     }
 
-    describe('shareLoginWithCxCli', () => {
+    describe('cx.shareLogin', () => {
         it('passes the token as an argument, with no shell', async () => {
             finishWith(null);
 
-            const ok = await shareLoginWithCxCli(token, logs as never);
+            const ok = await cx.shareLogin(token, logs as never);
 
             expect(ok).to.equal(true);
             const [, args, opts] = execFile.firstCall.args;
@@ -92,29 +91,64 @@ describe('cxCliLogin', () => {
         it('warns and logs without the token when cx fails', async () => {
             finishWith(Object.assign(new Error('boom'), { code: 2 }));
 
-            const ok = await shareLoginWithCxCli(token, logs as never);
+            const ok = await cx.shareLogin(token, logs as never);
 
             expect(ok).to.equal(false);
             expect(logs.error.calledOnce).to.equal(true);
             expect(logs.error.firstCall.args[0]).to.not.include(token);
-            expect(warning.calledOnceWith(cxCliLoginMessages.shareFailed)).to.equal(true);
+            expect(warning.calledOnceWith(cxLoginMessages.shareFailed)).to.equal(true);
         });
 
         it('does nothing during a test run, so a fake token never reaches the real cx', async () => {
             process.env.TEST = 'true';
 
-            const ok = await shareLoginWithCxCli(token, logs as never);
+            const ok = await cx.shareLogin(token, logs as never);
 
             expect(ok).to.equal(false);
             expect(execFile.called).to.equal(false);
         });
-    });
 
-    describe('removeLoginFromCxCli', () => {
-        it('signs cx out with auth logout', async () => {
+        it('stores the browser sign-in base URL and tenant before the refresh token', async () => {
             finishWith(null);
 
-            const ok = await removeLoginFromCxCli(logs as never);
+            const ok = await cx.shareLogin(token, logs as never, {
+                baseUri: ' https://ast.checkmarx.net/ ',
+                tenant: ' org ',
+            });
+
+            expect(ok).to.equal(true);
+            expect(cxArgs()).to.deep.equal([
+                ['configure', 'set', '--prop-name', 'cx_base_uri', '--prop-value', 'https://ast.checkmarx.net/'],
+                ['configure', 'set', '--prop-name', 'cx_base_auth_uri', '--prop-value', 'https://ast.checkmarx.net/'],
+                ['configure', 'set', '--prop-name', 'cx_tenant', '--prop-value', 'org'],
+                ['configure', 'set', '--prop-name', 'cx_apikey', '--prop-value', token],
+            ]);
+            expect(logs.error.called).to.equal(false);
+        });
+
+        it('does not store the token when the account could not be saved', async () => {
+            execFile.callsFake((_file: string, args: string[], _opts: object, cb: ExecCallback) => {
+                cb(args[3] === 'cx_tenant' ? new Error('boom') : null);
+                return undefined as never;
+            });
+
+            const ok = await cx.shareLogin(token, logs as never, {
+                baseUri: 'https://ast.checkmarx.net',
+                tenant: 'org',
+            });
+
+            expect(ok).to.equal(false);
+            expect(cxArgs().some((args) => args.includes('cx_apikey'))).to.equal(false);
+            expect(logs.error.firstCall.args[0]).to.not.include(token);
+            expect(warning.calledOnceWith(cxLoginMessages.shareFailed)).to.equal(true);
+        });
+    });
+
+    describe('cx.removeLogin', () => {
+        it('clears the stored login with cx auth logout', async () => {
+            finishWith(null);
+
+            const ok = await cx.removeLogin(logs as never);
 
             expect(ok).to.equal(true);
             expect(cxArgs()).to.deep.equal([['auth', 'logout']]);
@@ -123,25 +157,25 @@ describe('cxCliLogin', () => {
         it('warns when cx fails', async () => {
             finishWith(new Error('boom'));
 
-            await removeLoginFromCxCli(logs as never);
+            await cx.removeLogin(logs as never);
 
-            expect(warning.calledOnceWith(cxCliLoginMessages.removeFailed)).to.equal(true);
+            expect(warning.calledOnceWith(cxLoginMessages.removeFailed)).to.equal(true);
         });
 
         it('does nothing during a test run', async () => {
             process.env.TEST = 'true';
 
-            await removeLoginFromCxCli(logs as never);
+            await cx.removeLogin(logs as never);
 
             expect(execFile.called).to.equal(false);
         });
     });
 
-    describe('syncLoginWithCxCli', () => {
+    describe('syncLogin', () => {
         it('shares the token when cx has no working login', async () => {
             cxSignedIn(false);
 
-            await syncLoginWithCxCli(contextWithToken(token), logs as never);
+            await new Cx(contextWithToken(token)).syncLogin(logs as never);
 
             expect(cxArgs()).to.deep.equal([
                 ['auth', 'validate'],
@@ -149,10 +183,28 @@ describe('cxCliLogin', () => {
             ]);
         });
 
+        it('shares a stored browser sign-in with its base URL and tenant', async () => {
+            cxSignedIn(false);
+
+            await new Cx(contextWithToken(token, {
+                lastAuthMethod: 'oauth',
+                lastOAuthBaseUri: 'https://eu.ast.checkmarx.net',
+                lastOAuthTenant: 'eu-org',
+            })).syncLogin(logs as never);
+
+            expect(cxArgs()).to.deep.equal([
+                ['auth', 'validate'],
+                ['configure', 'set', '--prop-name', 'cx_base_uri', '--prop-value', 'https://eu.ast.checkmarx.net'],
+                ['configure', 'set', '--prop-name', 'cx_base_auth_uri', '--prop-value', 'https://eu.ast.checkmarx.net'],
+                ['configure', 'set', '--prop-name', 'cx_tenant', '--prop-value', 'eu-org'],
+                ['configure', 'set', '--prop-name', 'cx_apikey', '--prop-value', token],
+            ]);
+        });
+
         it('leaves an existing cx login alone', async () => {
             cxSignedIn(true);
 
-            await syncLoginWithCxCli(contextWithToken(token), logs as never);
+            await new Cx(contextWithToken(token)).syncLogin(logs as never);
 
             expect(cxArgs()).to.deep.equal([['auth', 'validate']]);
         });
@@ -160,7 +212,7 @@ describe('cxCliLogin', () => {
         it('runs no cx command when the extension has no token', async () => {
             cxSignedIn(false);
 
-            await syncLoginWithCxCli(contextWithToken(undefined), logs as never);
+            await new Cx(contextWithToken(undefined)).syncLogin(logs as never);
 
             expect(execFile.called).to.equal(false);
         });
@@ -168,7 +220,7 @@ describe('cxCliLogin', () => {
         it('does nothing during a test run', async () => {
             process.env.TEST = 'true';
 
-            await syncLoginWithCxCli(contextWithToken(token), logs as never);
+            await new Cx(contextWithToken(token)).syncLogin(logs as never);
 
             expect(execFile.called).to.equal(false);
         });
