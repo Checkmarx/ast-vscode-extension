@@ -40,6 +40,7 @@ import { pathToFileURL } from "url";
 import { commands } from "../../utils/common/commandBuilder";
 import { constants } from "../../utils/common/constants";
 import { setExtensionConfig, resetExtensionConfig } from "../../config/extensionConfig";
+import { setIdeOnboardingAuthenticated } from "../../services/ideOnboardingProperties";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs: typeof import("fs") = require("fs");
