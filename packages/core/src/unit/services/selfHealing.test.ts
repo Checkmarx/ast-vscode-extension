@@ -141,7 +141,7 @@ describe("Checkmarx Self-Healing", () => {
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
       await onSelfHealingTurnedOn(context(), logs(), "Cursor");
       expect(show.calledOnce).to.equal(true);
-      expect(show.firstCall.args[0]).to.equal(`${selfHealingMessages.unsupportedEditor} (Cursor)`);
+      expect((show.firstCall.args as any[])[0]).to.equal(`${selfHealingMessages.unsupportedEditor} (Cursor)`);
     });
 
     it("shows the ready message in VS Code when cx-devassist is installed", async () => {
@@ -942,7 +942,7 @@ describe("Checkmarx Self-Healing", () => {
         },
       }) as any);
       let onConfig: ((event: { affectsConfiguration: (key: string) => boolean }) => void) | undefined;
-      sandbox.stub(mock.workspace, "onDidChangeConfiguration").callsFake((listener: typeof onConfig) => {
+      sandbox.stub(mock.workspace as any, "onDidChangeConfiguration").callsFake((listener: typeof onConfig) => {
         onConfig = listener;
         return { dispose: () => undefined };
       });
@@ -973,7 +973,8 @@ describe("Checkmarx Self-Healing", () => {
         await flush();
         expect(checked).to.equal(false);
         expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
-        expect(show.calledOnceWith(selfHealingMessages.signInRequired)).to.equal(true);
+        expect(show.calledOnce).to.equal(true);
+        expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.signInRequired);
 
         await onSelfHealingPostAuth(context, logs);
         expect(checked).to.equal(true);
