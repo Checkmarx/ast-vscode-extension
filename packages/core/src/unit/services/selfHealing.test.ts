@@ -63,6 +63,15 @@ function stubCopilotCliListing(plugins: unknown[] = [PLUGIN_ENTRY]) {
   setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: true, output: JSON.stringify(plugins) }) });
 }
 
+/** The Enable Self-Healing checkbox is ON (it is OFF by default). */
+function turnSelfHealingOn(sandbox: sinon.SinonSandbox) {
+  sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
+    get: (key: string, def?: unknown) => (key === constants.activateSelfHealing ? true : def),
+    inspect: () => undefined,
+    update: () => Promise.resolve(),
+  }) as any);
+}
+
 function writeCopilotConfig(homeDir: string, text: string) {
   fs.mkdirSync(path.join(homeDir, ".copilot"), { recursive: true });
   fs.writeFileSync(getCopilotConfigPath(homeDir), text, "utf8");
@@ -468,26 +477,27 @@ describe("Checkmarx Self-Healing", () => {
   describe("installCxDevAssistPluginInVsCode", () => {
     const installArgs = ["plugin", "install", "cx-devassist@cx-devassist-marketplace"];
     const addArgs = ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"];
+    const listArgs = ["plugin", "list", "--json"];
     it("installs without asking about the GitHub Copilot extension", async () => {
       sandbox.stub(mock.extensions, "getExtension").returns(undefined);
       const run = sandbox.stub().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(run.calledTwice).to.equal(true);
+      expect(run.args.map(args => args[1])).to.deep.equal([listArgs, addArgs, installArgs]);
       expect(show.calledOnce).to.equal(true);
       expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
     });
 
-    it("says the plugin is already installed and runs nothing", async () => {
-      stubCopilotCliListing();
-      const run = sandbox.stub().resolves({ ok: true, output: "" });
+    it("says the plugin is already installed and runs no install", async () => {
+      turnSelfHealingOn(sandbox);
+      const run = sandbox.stub().resolves({ ok: true, output: JSON.stringify([PLUGIN_ENTRY]) });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(run.called).to.equal(false);
+      expect(run.args).to.deep.equal([["copilot", listArgs]]);
       expect(show.firstCall.args as any[]).to.deep.equal([
-        `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
+        `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (copilot). ${selfHealingMessages.selfHealingActive}`,
       ]);
     });
 
@@ -498,7 +508,7 @@ describe("Checkmarx Self-Healing", () => {
       setCopilotCliDeps({ find: () => "copilot", run });
       sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode({ globalStorageUri: { fsPath: path.join(userDataDir, "User", "globalStorage", "x") } } as any);
-      expect(run.calledTwice).to.equal(true);
+      expect(run.args.map(args => args[1])).to.deep.equal([listArgs, addArgs, installArgs]);
     });
 
     it("adds the marketplace and installs the plugin with the Copilot CLI", async () => {
@@ -508,6 +518,7 @@ describe("Checkmarx Self-Healing", () => {
       const execute = sandbox.stub(mock.commands, "executeCommand").resolves();
       await installCxDevAssistPluginInVsCode();
       expect(run.args).to.deep.equal([
+        ["C:\cli\copilot.exe", listArgs],
         ["C:\cli\copilot.exe", addArgs],
         ["C:\cli\copilot.exe", installArgs],
       ]);
@@ -517,21 +528,23 @@ describe("Checkmarx Self-Healing", () => {
 
     it("still installs when the marketplace is already added", async () => {
       const run = sandbox.stub();
-      run.onFirstCall().resolves({ ok: false, output: "Marketplace already exists" });
-      run.onSecondCall().resolves({ ok: true, output: "" });
+      run.onFirstCall().resolves({ ok: true, output: "[]" });
+      run.onSecondCall().resolves({ ok: false, output: "Marketplace already exists" });
+      run.onThirdCall().resolves({ ok: true, output: "" });
       setCopilotCliDeps({ find: () => "copilot", run });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
-      expect(run.secondCall.args[1]).to.deep.equal(installArgs);
+      expect(run.thirdCall.args[1]).to.deep.equal(installArgs);
       expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.pluginInstalled);
     });
 
     it("mentions an existing install the Copilot CLI reports", async () => {
+      turnSelfHealingOn(sandbox);
       setCopilotCliDeps({ find: () => "copilot", run: () => Promise.resolve({ ok: false, output: "Plugin cx-devassist is already installed" }) });
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       await installCxDevAssistPluginInVsCode();
       expect((show.firstCall.args as any[])[0]).to.equal(
-        `${alreadyInstalledMessage([{ source: "copilotCli", path: "copilot" }])} ${selfHealingMessages.selfHealingActive}`
+        `${alreadyInstalledMessage([{ source: "copilotCli", path: getCopilotCliPluginDir() }])} ${selfHealingMessages.selfHealingActive}`
       );
     });
 
@@ -817,6 +830,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("shows the Copilot message at most once per session", async () => {
+      turnSelfHealingOn(sandbox);
       const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined);
       expect(await maybeShowSelfHealingPrompt(context)).to.equal("installCopilot");
       expect(await maybeShowSelfHealingPrompt(context)).to.equal(undefined);
@@ -829,6 +843,7 @@ describe("Checkmarx Self-Healing", () => {
     });
 
     it("stores Don't show again per extension and then stays silent", async () => {
+      turnSelfHealingOn(sandbox);
       sandbox.stub(mock.window, "showInformationMessage").resolves(selfHealingMessages.dontShowAgainButton as any);
       await maybeShowSelfHealingPrompt(context);
       await new Promise(resolve => setImmediate(resolve));
@@ -1015,6 +1030,7 @@ describe("Checkmarx Self-Healing", () => {
       const logs = () => ({ info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() }) as any;
 
       it("confirms once when the plugin goes from not detected to detected while logged in", async () => {
+        turnSelfHealingOn(sandbox);
         const context = makeContext("token");
         registerSelfHealing(context, logs());
         try {
@@ -1066,6 +1082,7 @@ describe("Checkmarx Self-Healing", () => {
       });
 
       it("only says the plugin is already installed from the install command, without buttons", async () => {
+        turnSelfHealingOn(sandbox);
         const context = makeContext("token");
         registerSelfHealing(context, logs());
         try {
@@ -1075,7 +1092,7 @@ describe("Checkmarx Self-Healing", () => {
           await getRegisteredCommandCallback("cx-dev-assist.installCxDevAssistPlugin")();
           expect(show.calledOnce).to.equal(true);
           expect(show.firstCall.args as any[]).to.deep.equal([
-            `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (${PLUGIN_ENTRY.cache_path}). ${selfHealingMessages.selfHealingActive}`,
+            `${selfHealingMessages.pluginAlreadyInstalled}: Copilot CLI (copilot). ${selfHealingMessages.selfHealingActive}`,
           ]);
         } finally {
           context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
