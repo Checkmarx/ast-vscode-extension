@@ -11,6 +11,7 @@ import axios from "axios";
 import { getExtensionType, EXTENSION_TYPE } from '../config/extensionConfig';
 import { getMessages } from '../config/extensionMessages';
 import { onSelfHealingLogout } from './selfHealing';
+import { CxLoginAccount } from '../cx/cxPlatform';
 
 interface OAuthConfig {
   clientId: string;
@@ -221,8 +222,8 @@ export class AuthService {
       }
       const { code, res } = await this.waitForCode(server);
       const token = await this.getRefreshToken(code, config);
-      // Save token
-      await this.saveToken(this.context, token);
+      // Save token, and give cx the base URL and tenant this refresh token belongs to
+      await this.saveToken(this.context, token, { baseUri, tenant });
       console.log("Token saved after authentication");
 
       // Check if validation was successful before showing success page
@@ -376,13 +377,17 @@ export class AuthService {
     await context.globalState.update("recentURLsAndTenant", urlMap);
   }
 
-  public async saveToken(context: vscode.ExtensionContext, token: string) {
+  public async saveToken(context: vscode.ExtensionContext, token: string, account?: CxLoginAccount) {
     await this.context.secrets.store(constants.getAuthCredentialSecretKey(), token);
     console.log("Token stored in secrets");
     const isValid = await this.validateAndUpdateState();
     console.log("Token validation result:", isValid);
 
     if (isValid) {
+      // Give the cx CLI the same login, so cx-devassist sees it too. Done here, on a real sign-in
+      // (OAuth and API key both end in saveToken), and not in validateApiKey, which every scan calls.
+      // account is set only for a browser sign-in; an API key already contains its account.
+      await getCx().shareLogin(token, this.logs, account);
       vscode.window.showInformationMessage(getMessages().authSuccessMessage);
       // Only refresh tree for Checkmarx extension (not Developer Assist)
       if (getExtensionType() === EXTENSION_TYPE.CHECKMARX) {
@@ -605,9 +610,11 @@ export class AuthService {
   public async logout(): Promise<void> {
     // Delete only the token (for security)
     await this.context.secrets.delete(constants.getAuthCredentialSecretKey());
+    // Sign the cx CLI out too, so cx-devassist does not keep a login the extension has dropped
+    await getCx().removeLogin(this.logs);
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
     // Tell the cx-devassist plugin and ast-cli that Self-Healing and every scanner are off until the next login
-    onSelfHealingLogout(this.logs);
+    await onSelfHealingLogout(this.logs, this.context);
 
     // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)
     // so that returning users can auto-authenticate when they click "Sign in" again.

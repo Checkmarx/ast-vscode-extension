@@ -15,6 +15,7 @@ import {
   findCopilotCli,
   parseCopilotShimProbe,
   resolveCopilotCli,
+  runCopilotCli,
   getCopilotCliPluginDir,
   getCopilotCliPluginLocation,
   getCxDevAssistInstallLocations,
@@ -576,6 +577,21 @@ describe("Checkmarx Self-Healing", () => {
     });
   });
 
+  describe("runCopilotCli", () => {
+    it("returns the output of a command that succeeds", async () => {
+      expect(await runCopilotCli(process.execPath, ["-e", "console.log('plugin list')"])).to.deep.equal({
+        ok: true,
+        output: "plugin list",
+      });
+    });
+
+    it("reports a missing executable instead of throwing", async () => {
+      const result = await runCopilotCli(path.join(homeDir, "no-such-copilot"), ["--version"]);
+      expect(result.ok).to.equal(false);
+      expect(result.output).to.not.equal("");
+    });
+  });
+
   describe("resolveCopilotCli", () => {
     const shim = path.join("C:", "Microsoft VS Code", "bin", "copilot-shim", "copilot.exe");
     const probeWriting = (contents: string) =>
@@ -773,6 +789,65 @@ describe("Checkmarx Self-Healing", () => {
         for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
           expect(content).to.contain(`cx_${key}_scanner_enabled=false`);
         }
+      } finally {
+        context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
+      }
+    });
+
+    it("turns the checkbox off while logged out and restores it after login", async () => {
+      const state = new Map<string, unknown>();
+      let checked = true;
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
+        get: (key: string, def?: unknown) => (key === constants.activateSelfHealing ? checked : def),
+        update: (_key: string, value: boolean) => {
+          checked = value;
+          return Promise.resolve();
+        },
+      }) as any);
+      let onConfig: ((event: { affectsConfiguration: (key: string) => boolean }) => void) | undefined;
+      sandbox.stub(mock.workspace as any, "onDidChangeConfiguration").callsFake((listener: typeof onConfig) => {
+        onConfig = listener;
+        return { dispose: () => undefined };
+      });
+      const context = makeContext(undefined);
+      context.globalState = {
+        get: (key: string) => state.get(key),
+        update: (key: string, value: unknown) => {
+          if (value === undefined) {
+            state.delete(key);
+          } else {
+            state.set(key, value);
+          }
+          return Promise.resolve();
+        },
+      };
+      const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      const show = sandbox.stub(mock.window, "showInformationMessage").resolves(undefined as any);
+      registerSelfHealing(context, logs);
+      try {
+        await flush();
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=false");
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+        checked = true;
+        onConfig?.({ affectsConfiguration: (key: string) => key.endsWith(constants.activateSelfHealing) });
+        await flush();
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(show.calledOnce).to.equal(true);
+        expect((show.firstCall.args as any[])[0]).to.equal(selfHealingMessages.signInRequired);
+
+        await onSelfHealingPostAuth(context, logs);
+        expect(checked).to.equal(true);
+        expect(state.has(constants.getSelfHealingSavedStateKey())).to.equal(false);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=true");
+
+        await onSelfHealingLogout(logs, context);
+        expect(checked).to.equal(false);
+        expect(state.get(constants.getSelfHealingSavedStateKey())).to.equal(true);
+        expect(fs.readFileSync(propsFile(), "utf8")).to.contain("cx_self_healing_enabled=false");
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
       }

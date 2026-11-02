@@ -52,12 +52,14 @@ export const selfHealingMessages = {
 	pluginReady: "You’re all set for automatic scanning and remediation of vulnerabilities using Checkmarx DevAssist.",
 	pluginNeeded: "Install the Checkmarx DevAssist (cx-devassist) plugin to turn on automatic scanning and remediation of vulnerabilities for GitHub Copilot in VS Code.",
 	installationGuideButton: "Installation guide",
+	signInRequired: "Sign in to turn on Checkmarx Self-Healing.",
 };
 
 let shownThisSession = false;
 // Set by a login or by turning Self-Healing ON; the Copilot config watcher only re-evaluates after that
 let promptArmed = false;
 let currentLogs: Logs | undefined;
+let selfHealingContext: vscode.ExtensionContext | undefined;
 // Last known plugin detection; a change from false to true shows the "installed" confirmation once
 let pluginDetected: boolean | undefined;
 let installedConfirmationShown = false;
@@ -663,9 +665,54 @@ export function alreadyInstalledMessage(locations: CxDevAssistInstallLocation[])
 
 /** Turns on the Self-Healing setting (application scope, so Global). */
 async function enableSelfHealing(): Promise<void> {
-	await vscode.workspace
-		.getConfiguration(constants.getSelfHealingConfigSection())
-		.update(constants.activateSelfHealing, true, vscode.ConfigurationTarget.Global);
+	await setSelfHealingChecked(true);
+}
+
+/** Ignores the settings event fired by our own checkbox update. */
+let ignoreSelfHealingSettingChange = 0;
+
+/** Sets the Enable Self-Healing checkbox. No-op when it already has that value. */
+async function setSelfHealingChecked(value: boolean): Promise<void> {
+	if (isSelfHealingEnabled() === value) {
+		return;
+	}
+	const configuration = vscode.workspace.getConfiguration(constants.getSelfHealingConfigSection());
+	if (typeof configuration.update !== "function") {
+		return;
+	}
+	ignoreSelfHealingSettingChange++;
+	try {
+		await configuration.update(constants.activateSelfHealing, value, vscode.ConfigurationTarget.Global);
+	} finally {
+		setTimeout(() => {
+			ignoreSelfHealingSettingChange = Math.max(0, ignoreSelfHealingSettingChange - 1);
+		}, 0);
+	}
+}
+
+/**
+ * The checkbox is off while signed out. Remember the signed-in value first, and do not replace a
+ * remembered value with the off state this function just applied.
+ */
+async function rememberAndClearSelfHealingCheckbox(context: vscode.ExtensionContext): Promise<void> {
+	const key = constants.getSelfHealingSavedStateKey();
+	const current = isSelfHealingEnabled();
+	const saved = context.globalState.get<boolean>(key);
+	if (current || typeof saved !== "boolean") {
+		await context.globalState.update(key, current);
+	}
+	await setSelfHealingChecked(false);
+}
+
+/** Puts the remembered checkbox value back. The checkbox is the source of truth again once signed in. */
+async function restoreSelfHealingCheckbox(context: vscode.ExtensionContext): Promise<void> {
+	const key = constants.getSelfHealingSavedStateKey();
+	const saved = context.globalState.get<boolean>(key);
+	if (typeof saved !== "boolean") {
+		return;
+	}
+	await setSelfHealingChecked(saved);
+	await context.globalState.update(key, undefined);
 }
 
 /**
@@ -791,17 +838,29 @@ export async function onSelfHealingPostAuth(context: vscode.ExtensionContext, lo
 		return;
 	}
 	setIdeOnboardingAuthenticated(true);
+	await restoreSelfHealingCheckbox(context);
 	syncIdeOnboardingProperties(logs ?? currentLogs);
 }
 
-/** Called on logout: the file then says Self-Healing and every scanner are OFF. Never throws. */
-export function onSelfHealingLogout(logs?: Logs): void {
+/**
+ * Called on logout: the checkbox is turned off and the file says Self-Healing and every scanner are OFF.
+ * The checkbox value from this session is restored on the next login. Never throws.
+ */
+export async function onSelfHealingLogout(logs?: Logs, context?: vscode.ExtensionContext): Promise<void> {
 	if (!isSelfHealingSupportedHost()) {
 		return;
 	}
 	setIdeOnboardingAuthenticated(false);
 	promptArmed = false;
 	syncIdeOnboardingProperties(logs ?? currentLogs);
+	const stored = context ?? selfHealingContext;
+	if (stored) {
+		try {
+			await rememberAndClearSelfHealingCheckbox(stored);
+		} catch (error) {
+			(logs ?? currentLogs)?.warn(`Could not clear the Self-Healing checkbox: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
 }
 
 /** Logged in when the credential is stored; re-syncs the file. Covers activation and other windows. */
@@ -812,7 +871,17 @@ async function syncAuthFromSecrets(context: vscode.ExtensionContext, logs: Logs)
 	} catch (error) {
 		logs.warn(`Could not read the Checkmarx credential: ${error instanceof Error ? error.message : String(error)}`);
 	}
-	setIdeOnboardingAuthenticated(!!token);
+	try {
+		if (token) {
+			setIdeOnboardingAuthenticated(true);
+			await restoreSelfHealingCheckbox(context);
+		} else {
+			setIdeOnboardingAuthenticated(false);
+			await rememberAndClearSelfHealingCheckbox(context);
+		}
+	} catch (error) {
+		logs.warn(`Could not update the Self-Healing checkbox: ${error instanceof Error ? error.message : String(error)}`);
+	}
 	syncIdeOnboardingProperties(logs);
 }
 
@@ -832,6 +901,7 @@ function sendSelfHealingTelemetry(enabled: boolean): void {
  * and writes the properties file once on activation, as logged in or logged out.
  */
 export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs): void {
+	selfHealingContext = context;
 	currentLogs = logs;
 	if (!isSelfHealingSupportedHost()) {
 		// VS Code forks: only the command declared in package.json, explaining it is VS Code only. No
@@ -851,6 +921,44 @@ export function registerSelfHealing(context: vscode.ExtensionContext, logs: Logs
 	void syncAuthFromSecrets(context, logs);
 }
 
+/** Reads the stored sign-in. A missing credential means signed out. */
+async function hasStoredSignIn(context: vscode.ExtensionContext, logs: Logs): Promise<boolean> {
+	try {
+		const token = await context.secrets.get(constants.getAuthCredentialSecretKey());
+		const signedIn = !!token;
+		setIdeOnboardingAuthenticated(signedIn);
+		return signedIn;
+	} catch (error) {
+		logs.warn(`Could not read the Checkmarx credential: ${error instanceof Error ? error.message : String(error)}`);
+		return isIdeOnboardingAuthenticated();
+	}
+}
+
+/**
+ * Click on Enable Self-Healing. Signed out: the box is turned off again and the user is asked to sign in.
+ * Signed in: the properties file follows the checkbox.
+ */
+async function onSelfHealingCheckboxChanged(context: vscode.ExtensionContext, logs: Logs): Promise<void> {
+	try {
+		const enabled = isSelfHealingEnabled();
+		if (!await hasStoredSignIn(context, logs)) {
+			if (enabled) {
+				await setSelfHealingChecked(false);
+				void vscode.window.showInformationMessage(selfHealingMessages.signInRequired);
+			}
+			return;
+		}
+		syncIdeOnboardingProperties(logs);
+		sendSelfHealingTelemetry(enabled);
+		if (enabled) {
+			promptArmed = true;
+			void onSelfHealingTurnedOn(context, logs);
+		}
+	} catch (error) {
+		logs.warn(`Could not apply the Self-Healing checkbox: ${error instanceof Error ? error.message : String(error)}`);
+	}
+}
+
 function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Logs): void {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(commands.installCxDevAssistPlugin, () => installCxDevAssistPluginInVsCode(context))
@@ -862,14 +970,14 @@ function registerSelfHealingListeners(context: vscode.ExtensionContext, logs: Lo
 			if (!keys.some(key => event.affectsConfiguration(key))) {
 				return;
 			}
-			syncIdeOnboardingProperties(logs);
+			if (ignoreSelfHealingSettingChange > 0) {
+				return;
+			}
 			if (event.affectsConfiguration(keys[0])) {
-				const enabled = isSelfHealingEnabled();
-				sendSelfHealingTelemetry(enabled);
-				if (enabled) {
-					promptArmed = true;
-					void onSelfHealingTurnedOn(context, logs);
-				}
+				void onSelfHealingCheckboxChanged(context, logs);
+			}
+			if (keys.slice(1).some(key => event.affectsConfiguration(key))) {
+				syncIdeOnboardingProperties(logs);
 			}
 		})
 	);
@@ -908,6 +1016,8 @@ export function resetSelfHealingSessionState(): void {
 	setIdeOnboardingAuthenticated(false);
 	pluginDetected = undefined;
 	installedConfirmationShown = false;
+	selfHealingContext = undefined;
+	ignoreSelfHealingSettingChange = 0;
 }
 
 /** For tests only: the last plugin detection result, as seen at registration or by the file watchers. */
