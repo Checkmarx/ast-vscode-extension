@@ -547,7 +547,8 @@ jobs:
           env.OPEN_VSX_TOKEN != '' &&
           (inputs.releaseType == 'checkmarx' || inputs.releaseType == 'both')
         run: |
-          npx ovsx publish packages/checkmarx/ast-results-${CHECKMARX_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
+          cd packages/checkmarx
+          npx --no-install ovsx publish ast-results-${CHECKMARX_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 
       # PUBLISH CHECKMARX DEVELOPER ASSIST TO OPEN VSX
       - name: Publish Checkmarx Developer Assist to Open VSX
@@ -558,7 +559,8 @@ jobs:
           env.OPEN_VSX_TOKEN != '' &&
           (inputs.releaseType == 'devAssist' || inputs.releaseType == 'both')
         run: |
-          npx ovsx publish packages/project-ignite/cx-dev-assist-${IGNITE_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
+          cd packages/project-ignite
+          npx --no-install ovsx publish cx-dev-assist-${IGNITE_VERSION_FINAL}.vsix --pat ${OPEN_VSX_TOKEN}
 
   # notify:
   #   permissions:

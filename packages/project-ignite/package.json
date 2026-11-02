@@ -236,6 +236,7 @@
     "@types/vscode": "^1.63.0",
     "@vscode/vsce": "2.24.0",
     "copyfiles": "2.4.1",
+    "ovsx": "1.2.0",
     "typescript": "^5.3.3"
   },
   "overrides": {
