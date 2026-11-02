@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { Logs } from '../models/logs';
 import { AuthService } from '../services/authService';
-import { initialize } from '../cx';
+import { getCx, initialize } from '../cx';
 import { constants } from '../utils/common/constants';
 import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
@@ -47,7 +47,11 @@ export async function activateCore(context: vscode.ExtensionContext) {
 
     // [SHARED] Integrity check on startup
     const authService = AuthService.getInstance(context, logs);
-    await authService.validateAndUpdateState();
+    const isSignedIn = await authService.validateAndUpdateState();
+    if (isSignedIn) {
+        // Users signed in before logins were shared with the cx CLI: hand it over once, in the background
+        void getCx().syncLogin(logs);
+    }
 
     // [SHARED] Register MCP settings injector
     registerMcpSettingsInjector(context);

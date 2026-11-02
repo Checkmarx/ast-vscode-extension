@@ -282,6 +282,11 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'selfHealingPromptDismissed' : 'selfHealingPromptDismissedDevAssist';
   },
+  // The checkbox value from the last signed-in session. The checkbox itself is off while signed out.
+  getSelfHealingSavedStateKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'selfHealingCheckedBeforeLogout' : 'selfHealingCheckedBeforeLogoutDevAssist';
+  },
   cxDevAssistPluginName: "cx-devassist",
   cxDevAssistPluginMarketplace: "cx-devassist-marketplace",
   // Arguments for the GitHub Copilot CLI ("copilot ..."): add the marketplace, then install the plugin
