@@ -15,6 +15,7 @@ import {
   findCopilotCli,
   parseCopilotShimProbe,
   resolveCopilotCli,
+  runCopilotCli,
   getCopilotCliPluginDir,
   getCopilotCliPluginLocation,
   getCxDevAssistInstallLocations,
@@ -573,6 +574,21 @@ describe("Checkmarx Self-Healing", () => {
 
     it("returns undefined when there is no Copilot CLI", () => {
       expect(findCopilotCli(path.join(homeDir, "nothing"), undefined)).to.equal(undefined);
+    });
+  });
+
+  describe("runCopilotCli", () => {
+    it("returns the output of a command that succeeds", async () => {
+      expect(await runCopilotCli(process.execPath, ["-e", "console.log('plugin list')"])).to.deep.equal({
+        ok: true,
+        output: "plugin list",
+      });
+    });
+
+    it("reports a missing executable instead of throwing", async () => {
+      const result = await runCopilotCli(path.join(homeDir, "no-such-copilot"), ["--version"]);
+      expect(result.ok).to.equal(false);
+      expect(result.output).to.not.equal("");
     });
   });
 
