@@ -33,6 +33,7 @@ const COMMAND_NAMES = {
 
     // MCP
     installMCP: 'installMCP',
+    installCxDevAssistPlugin: 'installCxDevAssistPlugin',
 
     // Settings
     viewSettings: 'viewSettings',
@@ -253,6 +254,10 @@ class CommandBuilder {
     // MCP
     get installMCP(): string {
         return this.buildCommand(COMMAND_NAMES.installMCP);
+    }
+
+    get installCxDevAssistPlugin(): string {
+        return this.buildCommand(COMMAND_NAMES.installCxDevAssistPlugin);
     }
 
     // Settings

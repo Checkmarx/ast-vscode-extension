@@ -19,6 +19,8 @@ export * from './config/extensionMessages';
 export * from './models/logs';
 export * from './services/authService';
 export * from './services/mcpSettingsInjector';
+export * from './services/ideOnboardingProperties';
+export * from './services/selfHealing';
 export * from './constants/documentation';
 export * from './utils/common/constants';
 export * from './utils/common/messages';

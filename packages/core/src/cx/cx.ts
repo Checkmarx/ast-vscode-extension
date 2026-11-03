@@ -13,9 +13,9 @@ import { SastNode } from "../models/sastNode";
 import AstError from "../exceptions/AstError";
 import { CxParamType } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxParamType";
 import { Logs } from "../models/logs";
-import { CxPlatform } from "./cxPlatform";
+import { CxLoginAccount, CxPlatform } from "./cxPlatform";
 import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxCommandOutput";
-import { ChildProcessWithoutNullStreams } from "child_process";
+import { ChildProcessWithoutNullStreams, execFile as execFileCommand } from "child_process";
 import CxLearnMoreDescriptions
     from "@checkmarx/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
@@ -1003,4 +1003,164 @@ export class Cx implements CxPlatform {
             console.error(`Failed to send AI fix outcome telemetry: ${error}`);
         }
     }
+
+    /**
+     * Stores the signed-in token as the cx CLI login. Call it only after a real sign-in, never from a
+     * routine validation, since each call passes the token as an argument. For a browser sign-in, pass
+     * the base URL and tenant; the token is stored only after those are.
+     */
+    async shareLogin(token: string, logs?: Logs, account?: CxLoginAccount): Promise<boolean> {
+        if (isTestRun()) {
+            return false;
+        }
+        if (!await setOAuthAccount(oauthAccount(account), logs)) {
+            void vscode.window.showWarningMessage(cxLoginMessages.shareFailed);
+            return false;
+        }
+        const ok = await setCxProperty(CX_APIKEY_PROP, token, logs);
+        if (!ok) {
+            void vscode.window.showWarningMessage(cxLoginMessages.shareFailed);
+        }
+        return ok;
+    }
+
+    /**
+     * Clears the cx CLI login on sign-out, so cx-devassist is signed out too.
+     * `cx auth logout` deletes the stored cx_apikey (credential manager, or the CLI file when the keyring is off).
+     */
+    async removeLogin(logs?: Logs): Promise<boolean> {
+        if (isTestRun()) {
+            return false;
+        }
+        const ok = await runCx(["auth", "logout"], "auth logout", logs);
+        if (!ok) {
+            void vscode.window.showWarningMessage(cxLoginMessages.removeFailed);
+        }
+        return ok;
+    }
+
+    /**
+     * Startup: covers users who signed in before logins were shared with cx. Call it only when this
+     * extension's own login is valid. Hands the token over once, and only when cx has no working login.
+     */
+    async syncLogin(logs?: Logs): Promise<void> {
+        if (isTestRun()) {
+            return;
+        }
+        try {
+            const token = await this.context.secrets.get(constants.getAuthCredentialSecretKey());
+            if (!token || await isCxCliSignedIn()) {
+                return;
+            }
+            await this.shareLogin(token, logs, oauthAccountFromContext(this.context));
+        } catch (error) {
+            logs?.error(`Could not share the login with the cx CLI: ${error}`);
+        }
+    }
+}
+
+/**
+ * Shares the extension's sign-in with the cx CLI by running the bundled cx directly.
+ * cx `configure set` has no stdin option, so the value is an argument. The wrapper logs every line cx
+ * prints, and cx echoes the value it sets, so these commands stay here instead of CxWrapper.
+ * Sign-out uses `cx auth logout`, which does not put the token on the command line.
+ */
+const CX_APIKEY_PROP = "cx_apikey";
+const CX_BASE_URI_PROP = "cx_base_uri";
+const CX_BASE_AUTH_URI_PROP = "cx_base_auth_uri";
+const CX_TENANT_PROP = "cx_tenant";
+const CX_TIMEOUT_MS = 30000;
+
+export const cxLoginMessages = {
+    shareFailed: "Signed in, but cx-devassist could not get this login. Sign in again, or run \"cx auth login\" in a terminal.",
+    removeFailed: "Signed out, but cx-devassist may still be signed in. Run \"cx auth logout\" in a terminal.",
+};
+
+type ExecFile = typeof execFileCommand;
+let execFileImpl: ExecFile = execFileCommand;
+
+/** Unit tests only: replaces how cx is run. Pass nothing to restore the real execFile. */
+export function setExecFileForTests(impl?: ExecFile): void {
+    execFileImpl = impl ?? execFileCommand;
+}
+
+function cxExecutablePath(): string {
+    return new CxWrapper(new CxConfig()).config.pathToExecutable;
+}
+
+/** UI and integration tests run with TEST set. Never let a fake token replace the developer's cx login. */
+function isTestRun(): boolean {
+    return !!process.env.TEST;
+}
+
+/** Runs cx and resolves true on exit code 0. Logs failures only when `logs` is given. Never throws. */
+function runCx(args: string[], description: string, logs?: Logs): Promise<boolean> {
+    return new Promise((resolve) => {
+        const failed = (code: string | number = "unknown") => {
+            // Never log stdout, stderr, or the error text: cx may echo the value, and the value is the token.
+            logs?.error(`cx ${description} failed (exit code ${code})`);
+            resolve(false);
+        };
+        let executable: string;
+        try {
+            executable = cxExecutablePath();
+        } catch {
+            failed();
+            return;
+        }
+        try {
+            execFileImpl(executable, args, { windowsHide: true, timeout: CX_TIMEOUT_MS }, (error) => {
+                if (error) {
+                    failed((error as NodeJS.ErrnoException).code ?? "unknown");
+                    return;
+                }
+                resolve(true);
+            });
+        } catch {
+            failed();
+        }
+    });
+}
+
+function setCxProperty(name: string, value: string, logs?: Logs): Promise<boolean> {
+    return runCx(["configure", "set", "--prop-name", name, "--prop-value", value], `configure set ${name}`, logs);
+}
+
+function oauthAccount(account?: CxLoginAccount): CxLoginAccount | undefined {
+    const baseUri = account?.baseUri.trim();
+    const tenant = account?.tenant.trim();
+    if (!baseUri || !tenant) {
+        return undefined;
+    }
+    return { baseUri, tenant };
+}
+
+/** A browser login is a refresh token. cx can exchange it only when the base URL and tenant are stored too. */
+async function setOAuthAccount(account: CxLoginAccount | undefined, logs?: Logs): Promise<boolean> {
+    if (!account) {
+        return true;
+    }
+    if (!await setCxProperty(CX_BASE_URI_PROP, account.baseUri, logs)) {
+        return false;
+    }
+    if (!await setCxProperty(CX_BASE_AUTH_URI_PROP, account.baseUri, logs)) {
+        return false;
+    }
+    return setCxProperty(CX_TENANT_PROP, account.tenant, logs);
+}
+
+function isCxCliSignedIn(): Promise<boolean> {
+    return runCx(["auth", "validate"], "auth validate");
+}
+
+function oauthAccountFromContext(context: vscode.ExtensionContext): CxLoginAccount | undefined {
+    if (context.globalState?.get(constants.getLastAuthMethodKey()) !== "oauth") {
+        return undefined;
+    }
+    const baseUri = context.globalState.get<string>(constants.getLastOAuthBaseUriKey());
+    const tenant = context.globalState.get<string>(constants.getLastOAuthTenantKey());
+    if (!baseUri || !tenant) {
+        return undefined;
+    }
+    return { baseUri, tenant };
 }
