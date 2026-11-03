@@ -1,6 +1,6 @@
 import "../mocks/vscode-mock";
 import { expect } from "chai";
-import { setExtensionConfig, resetExtensionConfig, EXTENSION_TYPE } from "../../config/extensionConfig";
+import { setExtensionConfig, resetExtensionConfig, EXTENSION_TYPE, ExtensionType } from "../../config/extensionConfig";
 import {
   SCA_REMEDIATION_PROMPT,
   SCA_EXPLANATION_PROMPT,
@@ -19,7 +19,7 @@ describe("Remediation prompts MCP server name", () => {
     IaC: () => IAC_REMEDIATION_PROMPT("Open port", "desc", "High", "tf", "closed", "open", 3),
   };
 
-  function configure(extensionType: EXTENSION_TYPE) {
+  function configure(extensionType: ExtensionType) {
     setExtensionConfig({
       extensionId: "test",
       commandPrefix: "test",
