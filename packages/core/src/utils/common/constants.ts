@@ -32,6 +32,23 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'mcpConfigSource' : 'mcpConfigSourceDevAssist';
   },
+  // MCP server name written to every editor's config; matches the product name the remediation prompts use
+  getMcpServerName: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx One Assist' : 'Checkmarx Developer Assist';
+  },
+  // Codex (~/.codex/config.toml) server name: same as getMcpServerName, as a TOML-friendly key
+  getCodexMcpServerName: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx_One_Assist' : 'Checkmarx_Developer_Assist';
+  },
+  // Names this extension used before the rename; migrated at activation and removed on every write
+  getLegacyMcpServerNames: (): string[] => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? ['Checkmarx'] : [];
+  },
+  // Path of the Checkmarx MCP endpoint; a legacy entry pointing elsewhere (e.g. the cx-devassist plugin's bridge) is not ours
+  checkmarxMcpUrlMarker: "/api/security-mcp/mcp",
   getAiAssistantConfigSection: (): string => {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'Checkmarx' : 'checkmarxDeveloperAssist';
