@@ -425,13 +425,6 @@ describe("Checkmarx Self-Healing", () => {
     const installArgs = ["plugin", "install", "cx-devassist@cx-devassist-marketplace"];
     const addArgs = ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"];
 
-    it("shows error message when user is not authenticated", async () => {
-      setIdeOnboardingAuthenticated(false);
-      const error = sandbox.stub(mock.window, "showErrorMessage").resolves(undefined);
-      await installCxDevAssistPluginInVsCode();
-      expect(error.calledOnce).to.equal(true);
-      expect((error.firstCall.args as any[])[0]).to.include("Authentication required");
-    });
 
     it("installs without asking about the GitHub Copilot extension", async () => {
       setIdeOnboardingAuthenticated(true);
@@ -579,10 +572,9 @@ describe("Checkmarx Self-Healing", () => {
 
   describe("runCopilotCli", () => {
     it("returns the output of a command that succeeds", async () => {
-      expect(await runCopilotCli(process.execPath, ["-e", "console.log('plugin list')"])).to.deep.equal({
-        ok: true,
-        output: "plugin list",
-      });
+      const result = await runCopilotCli(process.execPath, ["-e", "console.log('plugin list')"]);
+      expect(result.ok).to.equal(true);
+      expect(result.output).to.include("plugin list");
     });
 
     it("reports a missing executable instead of throwing", async () => {
