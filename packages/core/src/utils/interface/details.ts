@@ -177,8 +177,8 @@ export class Details {
 								<a href="#" 
 									class="ast-node"
 									id="ast-node-0"
-									data-filename="${this.result.data.filename}" 
-									data-line="${this.result.data.line}" 
+									data-filename="${this.result.data.fileName}"
+									data-line="${this.result.data.line}"
 									data-column="${0}"
 									data-length="${1}"
 								>
