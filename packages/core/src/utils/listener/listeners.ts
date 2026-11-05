@@ -113,21 +113,29 @@ export function addRealTimeSaveListener(
         }
     });
 
-    // Listen to open action in a KICS file
+    // Listen to open action in a KICS file.
+    // Documents can be loaded in the background (other extensions, AI assistants,
+    // workspace scans). Those loads must not change the active editor or take focus,
+    // so this listener only scans the document the user is actually looking at.
     vscode.workspace.onDidOpenTextDocument(async (e: vscode.TextDocument) => {
         // Skip scan trigger in standalone mode
         if (await cx.isStandaloneEnabled(logs)) {
             return;
         }
-        // Check if on save setting is enabled
+        // Only real files; skip untitled, git and other virtual documents
+        if (e.uri.scheme !== 'file') {
+            return;
+        }
         const isValidKicsFile = isKicsFile(e);
         const isSystemFiles = isSystemFile(e);
         if (isValidKicsFile && isSystemFiles) {
-            // Only show document in VSCode to prevent infinite loop in Cursor IDE
-            // Cursor IDE handles document display differently and doesn't require this call
-            const isVSCode = vscode.env.appName === 'Visual Studio Code';
-            if (isVSCode) {
-                await vscode.window.showTextDocument(e, 1, false);
+            // The open event fires before the editor is shown, so wait briefly
+            // for the active editor to settle before checking it
+            setTimeout(async () => {
+                const activeEditor = vscode.window.activeTextEditor;
+                if (!activeEditor || activeEditor.document.uri.toString() !== e.uri.toString()) {
+                    return;
+                }
                 updateState(context, constants.kicsRealtimeFile, {
                     id: e.uri.fsPath,
                     name: e.uri.fsPath,
@@ -135,22 +143,7 @@ export function addRealTimeSaveListener(
                     scanDatetime: undefined
                 });
                 await vscode.commands.executeCommand(commands.kicsRealtime);
-            } else {
-                // In Cursor IDE, wait a bit to let the active editor get set and only process first file
-                setTimeout(async () => {
-                    const activeEditor = vscode.window.activeTextEditor;
-                    // Only process if this is the active editor (the file user actually opened)
-                    if (activeEditor && activeEditor.document.uri.fsPath === e.uri.fsPath) {
-                        updateState(context, constants.kicsRealtimeFile, {
-                            id: e.uri.fsPath,
-                            name: e.uri.fsPath,
-                            displayScanId: undefined,
-                            scanDatetime: undefined
-                        });
-                        await vscode.commands.executeCommand(commands.kicsRealtime);
-                    }
-                }, 50); // Small delay to let Cursor set the active editor
-            }
+            }, 50);
         }
     });
 }
