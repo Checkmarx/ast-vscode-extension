@@ -12,6 +12,7 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
+import { reportLoginFailure, reportLoginSuccess, toAuthMethod } from "@checkmarx/vscode-core/out/services/loginTelemetry";
 
 export class AuthenticationWebview {
   public static readonly viewType = "checkmarxAuth";
@@ -380,6 +381,7 @@ export class AuthenticationWebview {
                     await commonCommand.executeCheckStandaloneEnabled();
                     await commonCommand.executeCheckCxOneAssistEnabled();
                     if (token !== "") {
+                      reportLoginSuccess(this.context, "OAuth");
                       this.schedulePostAuth(isAiEnabled, { apiKey: token });
                       // Clear flag after delay to allow schedulePostAuth to complete (success case only)
                       setTimeout(() => {
@@ -387,6 +389,7 @@ export class AuthenticationWebview {
                       }, 2000);
                     }
                     else {
+                      reportLoginFailure("OAuth", "Token validation failed");
                       // Clear flag immediately on authentication failure to allow retry
                       AuthenticationWebview.isAuthenticating = false;
                       this._panel.webview.postMessage({ command: "enableAuthButton" });
@@ -409,6 +412,7 @@ export class AuthenticationWebview {
                       message.apiKey
                     );
                     if (!isValid) {
+                      reportLoginFailure("APIKey", "API Key validation failed");
                       // Clear flag immediately on validation failure to allow retry
                       AuthenticationWebview.isAuthenticating = false;
                       // Sending an error message to the window
@@ -434,6 +438,7 @@ export class AuthenticationWebview {
                       type: "validation-success",
                       message: "API Key validated successfully!",
                     });
+                    reportLoginSuccess(this.context, "APIKey");
                     this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                     // Clear flag after delay to allow schedulePostAuth to complete (success case only)
                     setTimeout(() => {
@@ -446,6 +451,7 @@ export class AuthenticationWebview {
                   }
                 }
               } catch (error) {
+                reportLoginFailure(toAuthMethod(message.authMethod), error);
                 // Clear flag immediately on any error to allow retry
                 AuthenticationWebview.isAuthenticating = false;
                 this._panel.webview.postMessage({ command: "enableAuthButton" });

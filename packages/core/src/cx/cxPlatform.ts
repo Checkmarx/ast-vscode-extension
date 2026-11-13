@@ -12,6 +12,7 @@ import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca"
 import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import { TelemetryPayload } from "../models/telemetryEvent";
 
 
 export interface CxPlatform {
@@ -241,13 +242,6 @@ export interface CxPlatform {
 
   getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined>;
 
-  sendAIFixOutcomeTelemetry(
-    eventType: string,
-    scannerType: string,
-    severity: string,
-    mcpSuggestedVersion?: string,
-    actualVersion?: string,
-    retryCount?: number,
-    additionalData?: string
-  ): Promise<void>;
+  /** Sends a Dev Assist analytics event. Resolves to true only when the CLI accepted it. */
+  sendTelemetryEvent(payload: TelemetryPayload): Promise<boolean>;
 }

@@ -10,7 +10,7 @@ import path from "path";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { cx } from "../../../cx";
-import { logScanResults } from "../common";
+import { logScanFailure, logScanResults } from "../common";
 import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class SecretsScannerService extends BaseScannerService {
@@ -130,7 +130,7 @@ export class SecretsScannerService extends BaseScannerService {
 				}
 			});
 
-			logScanResults("secrets", fullScanResults);
+			logScanResults(constants.secretsScannerEngineName, fullScanResults.map(r => r.severity), filePath);
 
 			Object.entries(ignoredData).forEach(([, entry]) => {
 				if (entry.type !== constants.secretsScannerEngineName) { return; }
@@ -171,6 +171,7 @@ export class SecretsScannerService extends BaseScannerService {
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
+			logScanFailure(constants.secretsScannerEngineName, error, filePath);
 			this.storeAndApplyResults(
 				filePath,
 				document.uri,

@@ -200,8 +200,11 @@ const mock = {
         onDidChange: () => ({ dispose: () => { } }),
     },
 
+    version: "1.140.0",
+
     env: {
         appName: "Visual Studio Code",
+        appRoot: undefined as string | undefined,
         openExternal: () => Promise.resolve(true),
         clipboard: {
             writeText: () => Promise.resolve(),

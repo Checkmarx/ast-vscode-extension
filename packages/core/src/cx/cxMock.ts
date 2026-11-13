@@ -13,6 +13,7 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
+import { TelemetryPayload } from "../models/telemetryEvent";
 
 export class CxMock implements CxPlatform {
   private context: vscode.ExtensionContext;
@@ -1675,22 +1676,11 @@ export class CxMock implements CxPlatform {
     });
   }
 
-  setUserEventDataForLogs(): void {
-  }
+  /** Mock implementation: records the payload, sends nothing. */
+  readonly sentTelemetryEvents: TelemetryPayload[] = [];
 
-  setUserEventDataForDetectionLogs(): void {
-  }
-
-  async sendAIFixOutcomeTelemetry(
-    eventType: string,
-    scannerType: string,
-    severity: string,
-    mcpSuggestedVersion?: string,
-    actualVersion?: string,
-    retryCount?: number,
-    additionalData?: string
-  ): Promise<void> {
-    // Mock implementation - no actual telemetry sent in tests
-    console.log(`[CxMock] AI Fix Outcome Telemetry: ${eventType}, ${scannerType}, ${severity}`);
+  async sendTelemetryEvent(payload: TelemetryPayload): Promise<boolean> {
+    this.sentTelemetryEvents.push(payload);
+    return true;
   }
 }

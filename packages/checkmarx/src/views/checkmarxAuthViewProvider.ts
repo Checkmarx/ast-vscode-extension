@@ -14,6 +14,7 @@ import { initializeMcpConfiguration } from "@checkmarx/vscode-core/out/services/
 import { hasAnySupportedAiExtension } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
 import { WelcomeWebview } from "../welcomePage/welcomeWebview";
 import { AuthenticationWebview } from "../webview/authenticationWebview";
+import { reportLoginSuccess } from "@checkmarx/vscode-core/out/services/loginTelemetry";
 
 export type AuthMethodType = "OAuth" | "API Key" | "Both (OAuth and API Key)";
 
@@ -365,6 +366,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             // Try auto-authentication with existing valid token
             const success = await authService.tryAutoAuthenticateOAuth();
             if (success) {
+              reportLoginSuccess(this.context, "OAuth");
               vscode.window.showInformationMessage("Signed in with saved OAuth credentials.");
               return;
             }
@@ -390,6 +392,7 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             vscode.window.showInformationMessage("Re-authenticating with saved OAuth settings...");
             const token = await authService.reAuthenticateWithStoredOAuth();
             if (token) {
+              reportLoginSuccess(this.context, "OAuth");
               // Re-authentication succeeded: Always trigger MCP config and show Welcome page
               const isAiEnabled = await cx.isAiMcpServerEnabled();
               if (isAiEnabled && hasAnySupportedAiExtension()) {

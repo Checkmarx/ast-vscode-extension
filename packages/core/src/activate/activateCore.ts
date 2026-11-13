@@ -10,6 +10,8 @@ import { initialize } from '../cx';
 import { constants } from '../utils/common/constants';
 import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
+import { initTelemetry } from '../services/telemetryService';
+import { ensureInstallationId, flushPendingInstallEvent } from '../services/installationTracker';
 
 // Global context for the extension
 let globalContext: vscode.ExtensionContext;
@@ -44,9 +46,21 @@ export async function activateCore(context: vscode.ExtensionContext) {
     const logs = new Logs(output);
     logs.info(messages.pluginRunning);
 
+    // [SHARED] Analytics telemetry: envelope data and installation id (AST-184025)
+    initTelemetry(context, logs);
+    try {
+        await ensureInstallationId(context);
+    } catch (error) {
+        logs.debug(`Could not create installation id: ${error}`);
+    }
+
     // [SHARED] Integrity check on startup
     const authService = AuthService.getInstance(context, logs);
-    await authService.validateAndUpdateState();
+    const hasValidCredentials = await authService.validateAndUpdateState();
+    if (hasValidCredentials) {
+        // Not awaited, so activation isn't slowed down.
+        void flushPendingInstallEvent(context);
+    }
 
     // [SHARED] Register MCP settings injector
     registerMcpSettingsInjector(context);

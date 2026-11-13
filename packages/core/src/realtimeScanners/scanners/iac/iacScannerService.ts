@@ -13,7 +13,7 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-import { logScanResults } from "../common";
+import { logScanFailure, logScanResults } from "../common";
 import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class IacScannerService extends BaseScannerService {
@@ -151,7 +151,7 @@ export class IacScannerService extends BaseScannerService {
 				fullScanResults = await cx.iacScanResults(tempFilePath, this.getContainersManagementTool(), "");
 			}
 
-			logScanResults("iac", fullScanResults);
+			logScanResults(constants.iacRealtimeScannerEngineName, fullScanResults.map(r => r.severity), filePath);
 
 			ignoreManager.removeMissingIac(fullScanResults, filePath);
 
@@ -224,6 +224,7 @@ export class IacScannerService extends BaseScannerService {
 			this.applyDecorations(document.uri);
 
 		} catch (error) {
+			logScanFailure(constants.iacRealtimeScannerEngineName, error, filePath);
 			this.storeAndApplyResults(
 				filePath,
 				document.uri,

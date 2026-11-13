@@ -20,6 +20,14 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastAuthMethod' : 'lastAuthMethodDevAssist';
   },
+  getInstallationIdKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'cxInstallationId' : 'cxInstallationIdDevAssist';
+  },
+  getPendingInstallEventKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'cxPendingInstallEvent' : 'cxPendingInstallEventDevAssist';
+  },
   getLastOAuthBaseUriKey: (): string => {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastOAuthBaseUri' : 'lastOAuthBaseUriDevAssist';

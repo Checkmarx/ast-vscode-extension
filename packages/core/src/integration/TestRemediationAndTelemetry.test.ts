@@ -47,43 +47,22 @@ describe('Integration: Remediation and Telemetry', function () {
         expect(['success', 'error']).to.include(outcome);
     });
 
-    it('should send user event logs telemetry without throwing', async function () {
-        let threw = false;
-        try {
-            await cx.setUserEventDataForLogs('click', 'accepted', 'sast', 'high');
-        } catch {
-            threw = true;
-        }
-        expect(threw).to.equal(false, 'setUserEventDataForLogs should not throw');
+    it('should send a click telemetry event and resolve to a boolean', async function () {
+        const delivered = await cx.sendTelemetryEvent({
+            eventType: 'click', subType: 'fixWithAIChat', engine: 'Oss', problemSeverity: 'High',
+            aiProvider: 'Copilot', status: 'Success', agent: 'VS Code', pluginType: 'IDE',
+            eventAttributes: { vulnerabilityId: 'lodash@4.17.20', remediationMode: 'DevAssist' },
+        });
+        expect(delivered).to.be.a('boolean');
     });
 
-    it('should send user event detection logs telemetry without throwing', async function () {
-        let threw = false;
-        try {
-            await cx.setUserEventDataForDetectionLogs('sast', 'completed', 1);
-        } catch {
-            threw = true;
-        }
-        expect(threw).to.equal(false, 'setUserEventDataForDetectionLogs should not throw');
-    });
-
-    it('should send AI fix outcome telemetry without throwing', async function () {
-        let threw = false;
-        try {
-            await cx.sendAIFixOutcomeTelemetry(
-                'accepted',
-                'oss',
-                'high',
-                '1.2.3',
-                '1.2.4',
-                0,
-                JSON.stringify({ note: 'integration test' })
-            );
-        } catch {
-            threw = true;
-        }
-        // sendAIFixOutcomeTelemetry swallows its own errors internally and always resolves
-        expect(threw).to.equal(false, 'sendAIFixOutcomeTelemetry should not throw');
+    it('should send a scan telemetry event and resolve to a boolean', async function () {
+        const delivered = await cx.sendTelemetryEvent({
+            eventType: 'Scan', subType: 'scantriggerd', engine: 'Asca', problemSeverity: 'High', totalCount: 1,
+            status: 'Success', statusResult: 'Critical=0, High=1, Medium=0, Low=0, Info=0', agent: 'VS Code', pluginType: 'IDE',
+        });
+        // With a CLI that lacks the analytics flags this falls back to the legacy format.
+        expect(delivered).to.be.a('boolean');
     });
 
     describe('scaScanCreate / getCodeBashing / learnMore / scaRemediation', function () {

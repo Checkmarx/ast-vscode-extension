@@ -253,5 +253,13 @@ mockRequire("@checkmarx/ast-cli-javascript-wrapper", {
     async detectionTelemetry(_scanType: string, _status: string, _count: number) {
       return { exitCode: 0 };
     }
+
+    async telemetryAIEvent() {
+      return { exitCode: 0 };
+    }
+
+    async telemetryEvent() {
+      return { exitCode: 0 };
+    }
   },
 });

@@ -13,6 +13,7 @@ import { minimatch } from "minimatch";
 import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/containersRealtime/CxRealtimeEngineStatus";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 import { ThemeUtils } from "../../../utils/themeUtils";
+import { logScanFailure, logScanResults } from "../common";
 
 export class ContainersScannerService extends BaseScannerService {
 	private themeChangeListener: vscode.Disposable | undefined;
@@ -182,7 +183,11 @@ export class ContainersScannerService extends BaseScannerService {
 			const scanResults = await cx.scanContainers(tempFilePath, ignoredPackagesFile || "");
 
 			this.updateProblems(scanResults, document.uri, this.lastFullScanResults);
+
+			const allImages = Array.isArray(this.lastFullScanResults) ? (this.lastFullScanResults as CxContainerRealtimeResult[]) : [];
+			logScanResults(constants.containersRealtimeScannerEngineName, allImages.map(i => i.status), filePath);
 		} catch (error) {
+			logScanFailure(constants.containersRealtimeScannerEngineName, error, filePath);
 			this.storeAndApplyResults(
 				filePath,
 				document.uri,

@@ -23,10 +23,13 @@ import { AuthService } from "../services/authService";
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxSecretsResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/secrets/CxSecrets";
 import { getMessages } from "../config/extensionMessages";
+import { TELEMETRY_TYPE, TelemetryPayload, parseSeverityCounts } from "../models/telemetryEvent";
 
 export class Cx implements CxPlatform {
     private context: vscode.ExtensionContext;
     private packageVersion: string | undefined;
+    /** Set when the bundled CLI rejects the analytics telemetry flags. */
+    private analyticsFlagsUnsupported = false;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -299,20 +302,6 @@ export class Cx implements CxPlatform {
             throw new Error(scans.status);
         }
         return r;
-    }
-
-    private getSelectedAIAssistant(): string {
-        try {
-            const config = vscode.workspace.getConfiguration("Checkmarx");
-            const setting = config?.get?.("AI Assistant", "Copilot") ?? "Copilot";
-            /* Once will add the custom Json logic. Need to enable current code
-            if (setting === "Custom" || !setting) {
-                 return constants.vsCodeAgent;
-             }*/
-            return setting;
-        } catch {
-            return "Copilot";
-        }
     }
 
     getBaseAstConfiguration() {
@@ -928,79 +917,75 @@ export class Cx implements CxPlatform {
         return r;
     }
 
-    async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
-        const config = await this.getAstConfiguration();
-        const cx = new CxWrapper(config);
-        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
-            isIDE(constants.cursorAgent) ? constants.cursorAgent :
-                (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? "Cascade" : constants.vsCodeAgent;
-        cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
-    }
-
-    async setUserEventDataForDetectionLogs(scanType: string, status: string, totalCount: number) {
-        const config = await this.getAstConfiguration();
-        const cx = new CxWrapper(config);
-        if (totalCount > 0) {
-            cx.telemetryAIEvent("", "", "", "", "",
-                scanType, status, totalCount);
-        }
-    }
-
-    async sendAIFixOutcomeTelemetry(
-        eventType: string,
-        scannerType: string,
-        severity: string,
-        mcpSuggestedVersion?: string,
-        actualVersion?: string,
-        retryCount?: number,
-        additionalData?: string
-    ): Promise<void> {
+    /**
+     * Sends a Dev Assist analytics event through the CLI wrapper.
+     * Resolves to true only when the CLI accepted the event. Never throws.
+     *
+     * Until the bundled CLI supports the analytics flags (AST-182268), the CLI rejects them
+     * with "unknown flag". In that case the event is resent in the legacy format, so the
+     * existing scan and click telemetry keeps working, and the legacy format is used for
+     * the rest of the session.
+     */
+    async sendTelemetryEvent(payload: TelemetryPayload): Promise<boolean> {
         try {
             const config = await this.getAstConfiguration();
             if (!config) {
-                console.warn("Cannot send AI fix telemetry: no configuration");
-                return;
+                // Not authenticated: the CLI can't send anything.
+                return false;
             }
-
-            const cxWrapper = new CxWrapper(config);
-            const vsCodeAssistant = this.getSelectedAIAssistant();
-            const aiProvider = isIDE(constants.kiroAgent)
-                ? constants.kiroAgent
-                : isIDE(constants.cursorAgent)
-                    ? constants.cursorAgent
-                    : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent))
-                        ? "Cascade"
-                        : vsCodeAssistant;
-            const agent = isIDE(constants.kiroAgent)
-                ? constants.kiroAgent
-                : isIDE(constants.cursorAgent)
-                    ? constants.cursorAgent
-                    : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent))
-                        ? constants.windsurfAgent
-                        : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent))
-                            ? constants.devinAgent
-                            : constants.vsCodeAgent;;
-
-            // Build subType with fix outcome details
-            const subTypeData = {
-                mcpSuggestedVersion,
-                actualVersion,
-                retryCount,
-                ...(additionalData ? JSON.parse(additionalData) : {})
-            };
-
-            cxWrapper.telemetryAIEvent(
-                aiProvider,
-                "click",
-                eventType,
-                scannerType,
-                severity,
-                "",
-                "",
-                0
-            );
+            const wrapper = this.createTelemetryWrapper(config);
+            if (!this.analyticsFlagsUnsupported && typeof wrapper.telemetryEvent === "function") {
+                const output = await wrapper.telemetryEvent(payload);
+                if (output?.exitCode === 0) {
+                    return true;
+                }
+                if (!isUnknownFlagError(output?.status)) {
+                    return false;
+                }
+                this.analyticsFlagsUnsupported = true;
+            }
+            return await this.sendLegacyTelemetry(wrapper, payload);
         } catch (error) {
-            console.error(`Failed to send AI fix outcome telemetry: ${error}`);
+            console.error(`[Cx] Failed to send telemetry: ${error}`);
+            return false;
         }
     }
+
+    /** Separate method so unit tests can replace the wrapper. */
+    protected createTelemetryWrapper(config: CxConfig): AnalyticsCapableWrapper {
+        return new CxWrapper(config) as AnalyticsCapableWrapper;
+    }
+
+    /** Legacy `telemetryAIEvent` format, used with CLI versions that don't support the analytics flags. */
+    private async sendLegacyTelemetry(wrapper: CxWrapper, payload: TelemetryPayload): Promise<boolean> {
+        if (payload.eventType === TELEMETRY_TYPE.click) {
+            const output = await wrapper.telemetryAIEvent(
+                payload.aiProvider ?? "", payload.eventType, payload.subType ?? "",
+                payload.engine ?? "", payload.problemSeverity ?? "", "", "", 0);
+            return output?.exitCode === 0;
+        }
+        if (payload.eventType === TELEMETRY_TYPE.scan && payload.status === "Success") {
+            // The legacy format sends one detection event per severity.
+            const scanType = (payload.engine ?? "").toLowerCase();
+            let delivered = true;
+            for (const { label, count } of parseSeverityCounts(payload.statusResult)) {
+                if (count > 0) {
+                    const legacyLabel = label === "Info" ? "Unknown" : label;
+                    const output = await wrapper.telemetryAIEvent("", "", "", "", "", scanType, legacyLabel, count);
+                    delivered = delivered && output?.exitCode === 0;
+                }
+            }
+            return delivered;
+        }
+        // Install, authentication and failed-scan events need the analytics flags.
+        return false;
+    }
+}
+
+type AnalyticsCapableWrapper = CxWrapper & {
+    telemetryEvent?: (options: TelemetryPayload) => Promise<CxCommandOutput>;
+};
+
+function isUnknownFlagError(status: string | undefined): boolean {
+    return typeof status === "string" && /unknown (shorthand )?flag/i.test(status);
 }

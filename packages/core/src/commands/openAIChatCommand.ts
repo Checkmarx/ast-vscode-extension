@@ -35,7 +35,9 @@ import { SecretsScannerService } from "../realtimeScanners/scanners/secrets/secr
 import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerService";
 import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
-import { cx } from "../cx";
+import { getIdeInfo, getIdeKind } from "../utils/ideInfo";
+import { AI_PROVIDER_CLAUDE, AI_PROVIDER_CODEX, toAiProviderName } from "../models/telemetryEvent";
+import { emitHoverClickEvent, emitRemediationEvent } from "./hoverItemTelemetry";
 
 
 export class CopilotChatCommand {
@@ -279,7 +281,11 @@ export class CopilotChatCommand {
         return assistantType;
     }
 
-    private async openChatWithPrompt(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<void> {
+    /**
+     * Sends the prompt to the AI assistant that applies in this IDE.
+     * Returns the assistant actually used (for telemetry), or null when none was available.
+     */
+    private async openChatWithPrompt(question: string, fileContext?: { filePath?: string; line?: number }, isRemediationFlow: boolean = true): Promise<string | null> {
 
         const isNonVsCodeIde = isIDE(constants.cursorAgent)
             || isIDE(constants.windsurfAgent)
@@ -294,17 +300,9 @@ export class CopilotChatCommand {
 
             if (preferNative) {
                 // Prefer Native AI Assistant is enabled: use native IDE AI directly, ignore dropdown
-                if (isIDE(constants.cursorAgent)) {
-                    await this.handleCursorIDE(question);
-                    return;
-                }
-                if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) {
-                    await this.handleWindsurfIDE(question);
-                    return;
-                }
-                if (isIDE(constants.kiroAgent)) {
-                    await this.handleKiroIDE(question);
-                    return;
+                const nativeProvider = await this.sendToNativeAssistant(question);
+                if (nativeProvider) {
+                    return nativeProvider;
                 }
             }
 
@@ -320,7 +318,7 @@ export class CopilotChatCommand {
                 this.newSelectedChatOpenWithQueryCommand = constants.newclaudeChatOpenWithQueryCommand;
                 this.selectedChatclipboardPasteActionCommand = constants.claudeChatclipboardPasteActionCommand;
                 await this.sendPromptToChatUseCopyPass(question);
-                return;
+                return AI_PROVIDER_CLAUDE;
             }
 
             if (userPreference === 'Codex' && codexExtension !== undefined) {
@@ -328,21 +326,13 @@ export class CopilotChatCommand {
                 this.selectedNewChatOpen = constants.codexNewChatOpen;
                 this.selectedChatclipboardPasteActionCommand = constants.codexChatclipboardPasteActionCommand;
                 await this.sendPromptToCodex(question, fileContext, isRemediationFlow);
-                return;
+                return AI_PROVIDER_CODEX;
             }
 
             // Fallback: use native IDE AI
-            if (isIDE(constants.cursorAgent)) {
-                await this.handleCursorIDE(question);
-                return;
-            }
-            if (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) {
-                await this.handleWindsurfIDE(question);
-                return;
-            }
-            if (isIDE(constants.kiroAgent)) {
-                await this.handleKiroIDE(question);
-                return;
+            const fallbackProvider = await this.sendToNativeAssistant(question);
+            if (fallbackProvider) {
+                return fallbackProvider;
             }
         }
         const copilotChatExtension = vscode.extensions.getExtension(constants.copilotChatExtensionId);
@@ -366,7 +356,7 @@ export class CopilotChatCommand {
 
         if (!selectedAssistant) {
             this.logs.error('No AI assistant could be selected');
-            return;
+            return null;
         }
         try {
             if (selectedAssistant === constants.claudeAssistantName) {
@@ -383,6 +373,25 @@ export class CopilotChatCommand {
                 await vscode.commands.executeCommand(this.newSelectedChatOpenWithQueryCommand, { query: `${question}` });
             }
         }
+        return toAiProviderName(selectedAssistant);
+    }
+
+    /**
+     * Sends the prompt to the IDE's own AI assistant (Cursor, Cascade in Windsurf/Devin, Kiro).
+     * Returns the assistant name, or null when this IDE has no native assistant.
+     */
+    private async sendToNativeAssistant(question: string): Promise<string | null> {
+        const ideKind = getIdeKind();
+        if (ideKind === "cursor") {
+            await this.handleCursorIDE(question);
+        } else if (ideKind === "windsurf" || ideKind === "devin") {
+            await this.handleWindsurfIDE(question);
+        } else if (ideKind === "kiro") {
+            await this.handleKiroIDE(question);
+        } else {
+            return null;
+        }
+        return getIdeInfo().nativeAiProvider ?? null;
     }
 
     private async sendPromptToCodexImplementTodo(question: string, fileContext: { filePath: string; line?: number }): Promise<boolean> {
@@ -464,26 +473,7 @@ export class CopilotChatCommand {
     }
 
     private logUserEvent(EventType: string, subType: string, item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData): void {
-        const isSecrets = isSecretsHoverData(item);
-        const isIac = isIacHoverData(item);
-        const isAsca = isAscaHoverData(item);
-        const isContainers = isContainersHoverData(item);
-        const engine = isSecrets ? constants.secretsScannerEngineName :
-            isIac ? constants.iacRealtimeScannerEngineName :
-                isAsca ? constants.ascaRealtimeScannerEngineName :
-                    isContainers ? constants.containersRealtimeScannerEngineName :
-                        constants.ossRealtimeScannerEngineName;
-        let problemSeverity: string | undefined;
-        if (isSecrets) {
-            problemSeverity = item.severity;
-        } else if (isAsca) {
-            problemSeverity = item.severity;
-        } else if (isIac) {
-            problemSeverity = item.severity;
-        } else {
-            problemSeverity = (item as HoverData | ContainersHoverData).status;
-        }
-        cx.setUserEventDataForLogs(EventType, subType, engine, problemSeverity);
+        emitHoverClickEvent(subType, item);
     }
 
 
@@ -491,8 +481,6 @@ export class CopilotChatCommand {
     public registerCopilotChatCommand() {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.openAIChat, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
-                this.logUserEvent("click", constants.openAIChat, item);
-
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
                 if (isSecrets) {
@@ -506,15 +494,23 @@ export class CopilotChatCommand {
                 } else {
                     question = SCA_REMEDIATION_PROMPT(item.packageName, item.version, item.packageManager, item.status);
                 }
+                let aiProvider: string | null = null;
+                let failureReason: string | undefined;
                 try {
                     if (isIDE(constants.kiroAgent)) {
                         let line = isAscaHoverData(item) || isContainersHoverData(item) || isIacHoverData(item) || isSecretsHoverData(item) ? item.location.line : item.line;
                         question = `In ${item.filePath} line ${line} \n${question}`
                     }
-                    await this.openChatWithPrompt(question, this.getFileContext(item), true);
+                    aiProvider = await this.openChatWithPrompt(question, this.getFileContext(item), true);
+                    if (!aiProvider) {
+                        failureReason = "No AI assistant available";
+                    }
                 } catch (error) {
+                    failureReason = String(error?.message ?? error);
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
+                } finally {
+                    emitRemediationEvent(item, aiProvider, failureReason);
                 }
             })
         );
