@@ -12,6 +12,7 @@ import {
   initialize,
   loginWithMockToken,
   logoutIfVisible,
+  waitForTreeItem,
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -61,7 +62,7 @@ describe("Individual pickers load results test", () => {
     await input.setText(projectName);
     await input.confirm();
 
-    const project = await tree?.findItem(PROJECT_KEY_TREE + projectName);
+    const project = await waitForTreeItem(tree, PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
     return projectName;
   }
@@ -76,7 +77,7 @@ describe("Individual pickers load results test", () => {
     await input.setText(branchName);
     await input.confirm();
 
-    const branch = await tree?.findItem(BRANCH_KEY_TREE + branchName);
+    const branch = await waitForTreeItem(tree, BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
     return branchName;
   }
@@ -94,7 +95,7 @@ describe("Individual pickers load results test", () => {
   });
 
   after(async function () {
-    this.timeout(60000);
+    this.timeout(180000);
     try {
       await logoutIfVisible(bench, driver, {
         executeCommandWithRetry: executeCommandWithRetry,
@@ -107,21 +108,21 @@ describe("Individual pickers load results test", () => {
   });
 
   it("should select project", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 60 seconds
 
     treeScans = await initialize();
     await selectProjectForTest(treeScans);
   });
 
   it("should select branch", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 60 seconds
 
     const tree = await initialize();
     await selectBranchForTest(tree);
   });
 
   it("should select scan", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 60 seconds
 
     const tree = await initialize();
     // Execute scan selection command
@@ -136,7 +137,7 @@ describe("Individual pickers load results test", () => {
     // Wait for scan selection to be made
     const scanDetailsparts: string[] = scanDate.split(" ");
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");
-    const scan = await tree?.findItem(SCAN_KEY_TREE + formattedId);
+    const scan = await waitForTreeItem(tree, SCAN_KEY_TREE + formattedId);
     expect(scan).is.not.undefined;
   });
 });

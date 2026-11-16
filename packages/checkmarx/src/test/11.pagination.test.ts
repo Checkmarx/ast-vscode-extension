@@ -15,7 +15,7 @@ import {
 	THREE_SECONDS,
 	TWO_SECONDS,
 } from "./utils/constants";
-import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { CX_TEST_PAGINATION_PROJECT_NAME } from "./utils/envs";
 import {
 	loginWithMockToken,
 	logoutIfVisible,
@@ -57,6 +57,7 @@ describe("Get items with pagination", () => {
 	async function openBranchQuickPick(projectName: string): Promise<void> {
 		await openProjectQuickPick();
 		await selectItem(projectName);
+		await sleep(5000);
 		await executeCommandWithRetry(CX_SELECT_BRANCH);
 	}
 
@@ -110,7 +111,7 @@ describe("Get items with pagination", () => {
 	it("should display pagination buttons in Branch selection", retryTest(async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
-		await openBranchQuickPick(CX_TEST_SCAN_PROJECT_NAME);
+		await openBranchQuickPick(CX_TEST_PAGINATION_PROJECT_NAME);
 
 		await assertFirstPageButtons();
 
@@ -140,7 +141,13 @@ async function assertPaginationButtonVisibility(
 	label: QuickPickPaginationButtons,
 	expectedVisible: boolean,
 ): Promise<void> {
-	const buttonVisible = await isPaginationButtonVisible(driver, label);
+	// Real-tenant pickers load asynchronously; poll until the expected state shows up.
+	const deadline = Date.now() + (expectedVisible ? 45000 : 3000);
+	let buttonVisible = await isPaginationButtonVisible(driver, label);
+	while (buttonVisible !== expectedVisible && Date.now() < deadline) {
+		await sleep(1000);
+		buttonVisible = await isPaginationButtonVisible(driver, label);
+	}
 	expect(buttonVisible, `${label} button should ${expectedVisible ? "" : "not "}be displayed`).to.equal(expectedVisible);
 }
 

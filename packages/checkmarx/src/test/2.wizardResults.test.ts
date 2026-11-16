@@ -13,6 +13,7 @@ import {
   loginWithMockToken,
   logoutIfVisible,
   quickPickSelector,
+  waitForTreeItem,
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -64,7 +65,7 @@ describe("Wizard load results test", () => {
   });
 
   after(async function () {
-    this.timeout(60000);
+    this.timeout(180000);
     try {
       await logoutIfVisible(bench, driver, {
         executeCommandWithRetry: executeCommandWithRetry,
@@ -77,14 +78,16 @@ describe("Wizard load results test", () => {
   });
 
   it("should load results using wizard", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000); // Increase timeout to 60 seconds
 
     // Project selection
     const inputProject = await InputBox.create();
     // Add delay to ensure input box is ready
     await new Promise((res) => setTimeout(res, 1000));
 
+    await inputProject.setText(CX_TEST_SCAN_PROJECT_NAME);
     let projectName = await getQuickPickSelector(inputProject);
+    await inputProject.setText(projectName);
     await inputProject.confirm();
 
     // Branch selection
@@ -104,22 +107,22 @@ describe("Wizard load results test", () => {
     treeScans = await initialize();
 
     // Project tree item validation
-    let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+    let project = await waitForTreeItem(treeScans, PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
 
     // Branch tree item validation
-    let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+    let branch = await waitForTreeItem(treeScans, BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
 
     const scanDetailsparts: string[] = scanDate.split(" ");
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");
     // Scan tree item validation
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
+    let scan = await waitForTreeItem(treeScans, SCAN_KEY_TREE + formattedId);
     const maxAttempts = 30;
     let attempts = 0;
     while (scan === undefined && attempts < maxAttempts) {
       await new Promise((res) => setTimeout(res, 500));
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
+      scan = await waitForTreeItem(treeScans, SCAN_KEY_TREE + formattedId);
       attempts++;
     }
     expect(scan).is.not.undefined;

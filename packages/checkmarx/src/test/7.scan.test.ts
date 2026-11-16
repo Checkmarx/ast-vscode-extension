@@ -99,7 +99,23 @@ describe("Scan from IDE", () => {
         // Clear stale notifications first so we only capture what this scan produces.
         await clearCurrentNotifications();
 
-        const notificationPromise = waitForNotificationWithTimeout(NOTIFICATION_TIMEOUT_MS);
+        // Real-tenant runs first show a transient "Loading results" toast; skip it and
+        // wait for the actual scan-related notification.
+        const waitForRelevantNotification = async () => {
+            const deadline = Date.now() + NOTIFICATION_TIMEOUT_MS;
+            while (Date.now() < deadline) {
+                const all = await new Workbench().getNotifications();
+                for (const n of all) {
+                    const msg = await n.getMessage();
+                    if (!/Loading results/i.test(msg)) {
+                        return n;
+                    }
+                }
+                await new Promise((res) => setTimeout(res, 500));
+            }
+            return undefined;
+        };
+        const notificationPromise = waitForRelevantNotification();
         await runCommandWithRetry("ast-results.createScan");
         const notification = await notificationPromise;
         expect(notification, "Expected a VS Code notification after createScan — none arrived within the timeout").to.not.be.undefined;

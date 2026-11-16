@@ -35,7 +35,7 @@ import {
 	SCAN_KEY_TREE_LABEL,
 	SCS_SECRET_DETECTION_Type,
 } from "./utils/constants";
-import { SCAN_ID } from "./utils/envs";
+import { SECRETS_SCAN_ID } from "./utils/envs";
 
 const SUITE_SETUP_TIMEOUT_MS = 120000;
 const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
@@ -493,7 +493,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 	// Loads the scan by ID and returns the secret detection node from the results tree.
 	async function loadSecretDetectionNode(): Promise<any> {
 		await initializeTree();
-		await openScanById(SCAN_ID);
+		await openScanById(SECRETS_SCAN_ID);
 		// Keep the Checkmarx results panel focused before traversing the tree.
 		await focusResultsPanelAndSelectScan();
 

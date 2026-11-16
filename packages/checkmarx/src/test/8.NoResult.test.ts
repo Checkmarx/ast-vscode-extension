@@ -15,7 +15,7 @@ import {
     logoutIfVisible,
 } from "./utils/utils";
 import { CX_CLEAR, CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
-import { EMPTY_RESULTS_SCAN_ID } from "./utils/envs";
+import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 
 const COMMAND_RETRY_DELAY_MS = 2000;
 
@@ -81,7 +81,7 @@ describe("Scan ID load results test", () => {
         let input = await new InputBox();
         await sleep(1000);
         // Fixed scan ID used as a stable fixture with known non-empty results.
-        await input.setText("e3b2505a-0634-4b41-8fa1-dfeb2edc26f7");
+        await input.setText(SCAN_ID);
         await input.confirm();
     });
 

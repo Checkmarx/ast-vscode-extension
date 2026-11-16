@@ -95,6 +95,26 @@ export async function loginWithMockToken(
 ): Promise<void> {
   await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
   await sleep(options?.waitMs ?? 2000);
+
+  // Only real-tenant runs (CX_APIKEY set) need verification: validation is a network
+  // call that can lose the race with extension start-up, so confirm and retry.
+  if (!process.env.CX_APIKEY) {
+    return;
+  }
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const tree = await initialize();
+      const items = tree ? await tree.getVisibleItems() : [];
+      if (items.length > 0) {
+        return;
+      }
+    } catch {
+      // Tree not ready yet; retry below.
+    }
+    await sleep(8000);
+    await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
+    await sleep(5000);
+  }
 }
 
 export async function logoutIfVisible(
@@ -184,9 +204,34 @@ export async function createTreeSCA(
 export async function quickPickSelector(input: InputBox) {
   await input.selectQuickPick(0);
 }
-export async function getQuickPickSelector(input: InputBox): Promise<string> {
-  let projectList = await input.getQuickPicks();
-  return await projectList[0].getText();
+export async function getQuickPickSelector(input: InputBox, timeoutMs = 60000): Promise<string> {
+  // Against a real tenant the picker list loads asynchronously and the typed filter is
+  // applied after the unfiltered list first renders, so wait for an item matching the
+  // typed text (when any) instead of taking whatever is first.
+  const typed = ((await input.getText()) ?? "").trim().toLowerCase();
+  const deadline = Date.now() + timeoutMs;
+  let picks = await input.getQuickPicks();
+  let match: string | undefined;
+  while (Date.now() < deadline) {
+    const texts: string[] = [];
+    for (const pick of picks) {
+      try {
+        texts.push(await pick.getText());
+      } catch {
+        // Item re-rendered while reading; retry on next poll.
+      }
+    }
+    match = typed
+      ? texts.find((t) => t.trim().toLowerCase() === typed) ??
+        texts.find((t) => t.toLowerCase().includes(typed))
+      : texts[0];
+    if (match !== undefined) {
+      return match;
+    }
+    await sleep(1000);
+    picks = await input.getQuickPicks();
+  }
+  return await picks[0].getText();
 }
 
 export async function getResults(scan: any): Promise<any[]> {
@@ -417,4 +462,17 @@ export async function focusPanelAndCollapseOthers(
   }
 
   return targetSection;
+}
+
+/**
+ * Polls the tree for an item until it appears (real-tenant calls update the tree asynchronously).
+ */
+export async function waitForTreeItem(tree: any, label: string, timeoutMs = 60000): Promise<any> {
+  const deadline = Date.now() + timeoutMs;
+  let item = await tree?.findItem(label);
+  while (!item && Date.now() < deadline) {
+    await sleep(1000);
+    item = await tree?.findItem(label);
+  }
+  return item;
 }
