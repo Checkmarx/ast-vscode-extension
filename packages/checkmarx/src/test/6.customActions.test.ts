@@ -28,6 +28,8 @@ const SCAN_POLL_DELAY_MS = 500;
 const SCAN_POLL_MAX_ATTEMPTS = 30;
 const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
 const FILTER_TOGGLE_REFRESH_DELAY_MS = 6000;
+const GROUP_BY_TOGGLE_CONFIRM_TIMEOUT_MS = 8000;
+const GROUP_BY_TOGGLE_POLL_DELAY_MS = 500;
 
 // Tiny sleep helper to make async test steps easier to read.
 async function sleepFor(ms: number): Promise<void> {
@@ -101,9 +103,47 @@ describe("filter and groups actions tests", () => {
     }
   }
 
+  // Opens the More Actions menu and reads whether menuLabel is currently
+  // active (checkmark-prefixed), returning undefined if it isn't found.
+  async function readGroupByOptionActive(menuLabel: string): Promise<boolean | undefined> {
+    const section = await initialize();
+    if (!section) {
+      throw new Error("Cannot get Checkmarx One Results section");
+    }
+    const menu = await section.moreActions();
+    if (!menu) {
+      throw new Error("Could not open More Actions context menu on Checkmarx One Results");
+    }
+
+    try {
+      const items = await menu.getItems();
+      for (const item of items) {
+        // Strip invisible soft-hyphen (U+00AD) characters VS Code uses as indent
+        // padding in the inactive group-by titles, then collapse extra whitespace.
+        const raw = (await item.getLabel()).trim();
+        const label = raw.replace(/\u00AD/g, '').replace(/\s+/g, ' ').trim();
+        if (label === menuLabel) {
+          return false;
+        }
+        if (label === `\u2713 ${menuLabel}`) {
+          return true;
+        }
+      }
+      return undefined;
+    } finally {
+      await menu.close().catch(() => {
+        // Ignore close failures when menu auto-closes.
+      });
+    }
+  }
+
   /**
    * Opens the "More Actions..." (...) menu on the Checkmarx One Results section
    * and clicks the group-by option whose menu label matches menuLabel exactly,
+   * then polls until the menu itself confirms the toggle applied. Without this
+   * confirmation, a slow CI render can leave the tree still grouped by this
+   * option when the test (or a later test file sharing the same VS Code
+   * session) moves on, breaking any direct child-node lookup downstream.
    */
   async function toggleGroupByOptionFromMoreActions(menuLabel: string): Promise<void> {
     const section = await initialize();
@@ -116,13 +156,14 @@ describe("filter and groups actions tests", () => {
     }
     const items = await menu.getItems();
     let target: any;
+    let desiredActive = false;
     for (const item of items) {
-      // Strip invisible soft-hyphen (U+00AD) characters VS Code uses as indent
-      // padding in the inactive group-by titles, then collapse extra whitespace.
       const raw = (await item.getLabel()).trim();
       const label = raw.replace(/\u00AD/g, '').replace(/\s+/g, ' ').trim();
       if (label === menuLabel || label === `\u2713 ${menuLabel}`) {
         target = item;
+        // Read the current state from this same menu open: toggling flips it.
+        desiredActive = label === menuLabel;
         break;
       }
     }
@@ -131,7 +172,23 @@ describe("filter and groups actions tests", () => {
       throw new Error(`Group-by option "${menuLabel}" not found in More Actions menu`);
     }
     await target.select();
-    await sleepFor(1500);  // Give the tree a moment to refresh after the toggle.
+    await menu.close().catch(() => {
+      // Ignore close failures when menu auto-closes.
+    });
+
+    const giveUpAt = Date.now() + GROUP_BY_TOGGLE_CONFIRM_TIMEOUT_MS;
+    while (Date.now() < giveUpAt) {
+      await sleepFor(GROUP_BY_TOGGLE_POLL_DELAY_MS);
+      const latestActive = await readGroupByOptionActive(menuLabel);
+      if (latestActive === desiredActive) {
+        return;
+      }
+    }
+
+    throw new Error(
+      `Group-by option "${menuLabel}" did not flip to ${desiredActive ? "active" : "inactive"} ` +
+      `after toggling from the More Actions menu.`
+    );
   }
 
   /**
