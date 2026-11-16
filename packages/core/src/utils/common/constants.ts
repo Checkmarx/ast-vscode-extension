@@ -32,6 +32,23 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'mcpConfigSource' : 'mcpConfigSourceDevAssist';
   },
+  // MCP server name written to every editor's config; matches the product name the remediation prompts use
+  getMcpServerName: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx One Assist' : 'Checkmarx Developer Assist';
+  },
+  // Codex (~/.codex/config.toml) server name: same as getMcpServerName, as a TOML-friendly key
+  getCodexMcpServerName: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'Checkmarx_One_Assist' : 'Checkmarx_Developer_Assist';
+  },
+  // Names this extension used before the rename; migrated at activation and removed on every write
+  getLegacyMcpServerNames: (): string[] => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? ['Checkmarx'] : [];
+  },
+  // Path of the Checkmarx MCP endpoint; a legacy entry pointing elsewhere (e.g. the cx-devassist plugin's bridge) is not ours
+  checkmarxMcpUrlMarker: "/api/security-mcp/mcp",
   getAiAssistantConfigSection: (): string => {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'Checkmarx' : 'checkmarxDeveloperAssist';
@@ -269,6 +286,43 @@ export const constants = {
   iacRealtimeScannerEngineName: "IaC",
   iacRealtimeScannerDirectory: "Cx-iac-realtime-scanner",
   errorIacScanRealtime: "Failed to handle IaC Realtime scan",
+
+  // Checkmarx Self-Healing
+  activateSelfHealing: "Enable Self-Healing",
+  getSelfHealingConfigSection: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx'
+      ? "Checkmarx Self-Healing"
+      : "Checkmarx Developer Assist Self-Healing";
+  },
+  getSelfHealingDontShowAgainKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'selfHealingPromptDismissed' : 'selfHealingPromptDismissedDevAssist';
+  },
+  // The checkbox value from the last signed-in session. The checkbox itself is off while signed out.
+  getSelfHealingSavedStateKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'selfHealingCheckedBeforeLogout' : 'selfHealingCheckedBeforeLogoutDevAssist';
+  },
+  cxDevAssistPluginName: "cx-devassist",
+  cxDevAssistPluginMarketplace: "cx-devassist-marketplace",
+  // Arguments for the GitHub Copilot CLI ("copilot ..."): add the marketplace, then install the plugin
+  cxDevAssistPluginCliInstallArgs: [
+    ["plugin", "marketplace", "add", "https://github.com/Checkmarx/cx-agentic-ai"],
+    ["plugin", "install", "cx-devassist@cx-devassist-marketplace"],
+  ],
+  // VS Code agent plugins (Chat > Agent Customizations > Plugins)
+  cxAgenticAiMarketplaceRepo: "Checkmarx/cx-agentic-ai",
+  // VS Code reads a GitHub marketplace from the "main" branch unless a ref is given; the repo uses "master"
+  cxAgenticAiMarketplaceRef: "master",
+  cxAgenticAiMarketplace: "Checkmarx/cx-agentic-ai#master",
+  vscodePluginMarketplacesSection: "chat.plugins",
+  vscodePluginMarketplacesKey: "marketplaces",
+  vscodePluginsEnabledKey: "enabled",
+  vscodeDefaultPluginMarketplace: "github/awesome-copilot#marketplace",
+  vscodeBrowseAgentPluginsCommand: "workbench.agentPlugins.browse",
+  vscodeExtensionsSearchCommand: "workbench.extensions.search",
+  cxDevAssistAgentPluginsQuery: "@agentPlugins cx-devassist",
 
   //Agent Assistants
   copilotAssistantName: "copilot",

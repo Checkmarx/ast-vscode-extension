@@ -64,15 +64,73 @@ function extractTenantFromToken(token: string): string | undefined {
 }
 
 /**
- * Get the MCP server name based on the extension type
- * This allows both extensions to have separate MCP configurations
+ * Get the MCP server name based on the extension type, matching the product name the remediation
+ * prompts refer to ("... tool in Checkmarx One Assist MCP"). It also keeps Checkmarx One apart from
+ * the cx-devassist plugin, which contributes its own "Checkmarx" server.
  */
-function getCheckmarxMcpServerName(): string {
-	const extensionType = getExtensionType();
-	if (extensionType === EXTENSION_TYPE.DEVELOPER_ASSIST) {
-		return "Checkmarx Developer Assist";
+export function getCheckmarxMcpServerName(): string {
+	return constants.getMcpServerName();
+}
+
+/** A legacy entry is ours only when it points at the Checkmarx MCP endpoint. */
+function isOwnLegacyEntry(entry: unknown): boolean {
+	return !!entry && JSON.stringify(entry).includes(constants.checkmarxMcpUrlMarker);
+}
+
+/** The name of our pre-rename entry in this server map, or undefined. */
+function findLegacyServerName(servers: Record<string, McpServer> = {}): string | undefined {
+	return constants.getLegacyMcpServerNames().find(name => isOwnLegacyEntry(servers[name]));
+}
+
+/** A copy of the server map without this extension's entry, current or legacy. */
+function withoutCheckmarxServers(servers: Record<string, McpServer> = {}): Record<string, McpServer> {
+	const updated = { ...servers };
+	const legacyName = findLegacyServerName(servers);
+	delete updated[getCheckmarxMcpServerName()];
+	if (legacyName) {
+		delete updated[legacyName];
 	}
-	return "Checkmarx";
+	return updated;
+}
+
+function hasCheckmarxServer(servers: Record<string, McpServer> = {}): boolean {
+	return !!servers[getCheckmarxMcpServerName()] || !!findLegacyServerName(servers);
+}
+
+/** The server map with our legacy entry moved to the current name (an existing current entry wins), or undefined when there is none. */
+function renameLegacyServer(servers: Record<string, McpServer> = {}): Record<string, McpServer> | undefined {
+	const legacyName = findLegacyServerName(servers);
+	if (!legacyName) {
+		return undefined;
+	}
+	const updated = withoutCheckmarxServers(servers);
+	updated[getCheckmarxMcpServerName()] = servers[getCheckmarxMcpServerName()] ?? servers[legacyName];
+	return updated;
+}
+
+/** Renames our legacy entry under 'servers' (VS Code) and 'mcpServers' (other editors, Claude) in a JSON config file. */
+function migrateLegacyServerInJsonFile(filePath: string): void {
+	try {
+		if (!fs.existsSync(filePath)) {
+			return;
+		}
+		const mcpConfig: McpConfig = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+		const servers = renameLegacyServer(mcpConfig.servers);
+		const mcpServers = renameLegacyServer(mcpConfig.mcpServers);
+		if (!servers && !mcpServers) {
+			return;
+		}
+		if (servers) {
+			mcpConfig.servers = servers;
+		}
+		if (mcpServers) {
+			mcpConfig.mcpServers = mcpServers;
+		}
+		fs.writeFileSync(filePath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+		console.log(`Renamed legacy MCP server to "${getCheckmarxMcpServerName()}" in ${filePath}`);
+	} catch (error) {
+		console.warn(`Failed to rename legacy MCP server entry in ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+	}
 }
 
 /**
@@ -89,11 +147,66 @@ function getCodexConfigPath(): string {
 }
 
 function getCodexMcpServerName(): string {
-	const extensionType = getExtensionType();
-	if (extensionType === EXTENSION_TYPE.DEVELOPER_ASSIST) {
-		return "Checkmarx_Developer_Assist";
+	return constants.getCodexMcpServerName();
+}
+
+/**
+ * Matches a server's table header through to (but not including) the next top-level `[...]`
+ * header or end of file. Nested tables like `[mcp_servers."name".oauth]` are included via the
+ * negative lookahead `(?!mcp_servers\\."${escapedName}\\.")`, which stops at any header not
+ * under this server's namespace.
+ */
+function getCodexBlockPattern(serverName: string, withLeadingNewline = false): RegExp {
+	const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return new RegExp(
+		`${withLeadingNewline ? "\\n?" : ""}\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
+		"g"
+	);
+}
+
+/** Removes this extension's current block and its legacy block (only when it points at the Checkmarx MCP endpoint). */
+function removeCodexCheckmarxBlocks(content: string, withLeadingNewline = false): string {
+	let updated = content.replace(getCodexBlockPattern(getCodexMcpServerName(), withLeadingNewline), "");
+	for (const legacyName of constants.getLegacyMcpServerNames()) {
+		updated = updated.replace(getCodexBlockPattern(legacyName, withLeadingNewline), block =>
+			block.includes(constants.checkmarxMcpUrlMarker) ? "" : block
+		);
 	}
-	return "Checkmarx";
+	return updated;
+}
+
+/** Renames our legacy `[mcp_servers."Checkmarx"]` block (and its sub-tables) in ~/.codex/config.toml. */
+function migrateLegacyCodexServer(): void {
+	if (isCodexRunningInWsl()) {
+		return;
+	}
+	const configPath = getCodexConfigPath();
+	try {
+		if (!fs.existsSync(configPath)) {
+			return;
+		}
+		const content = fs.readFileSync(configPath, "utf-8");
+		const currentName = getCodexMcpServerName();
+		const hasCurrent = getCodexBlockPattern(currentName).test(content);
+		let changed = false;
+		let updated = content;
+		for (const legacyName of constants.getLegacyMcpServerNames()) {
+			updated = updated.replace(getCodexBlockPattern(legacyName, hasCurrent), block => {
+				if (!block.includes(constants.checkmarxMcpUrlMarker)) {
+					return block;
+				}
+				changed = true;
+				// An existing current block wins; otherwise the legacy block keeps its settings under the new name
+				return hasCurrent ? "" : block.split(`[mcp_servers."${legacyName}"`).join(`[mcp_servers."${currentName}"`);
+			});
+		}
+		if (changed) {
+			fs.writeFileSync(configPath, `${updated.trimEnd()}\n`, "utf-8");
+			console.log(`Renamed legacy MCP server to "${currentName}" in ${configPath}`);
+		}
+	} catch (error) {
+		console.warn(`Failed to rename legacy MCP server entry in ${configPath}: ${error instanceof Error ? error.message : String(error)}`);
+	}
 }
 
 function buildCodexTokenTomlBlock(serverName: string, url: string, apiKey: string): string {
@@ -131,7 +244,6 @@ function writeCodexTomlBlock(newBlock: string): void {
 	}
 
 	const configPath = getCodexConfigPath();
-	const serverName = getCodexMcpServerName();
 
 	let content = "";
 	if (fs.existsSync(configPath)) {
@@ -142,17 +254,7 @@ function writeCodexTomlBlock(newBlock: string): void {
 		}
 	}
 
-	const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	// Matches the server's table header through to (but not including) the next top-level `[...]`
-	// header or end of file. Nested tables like `[mcp_servers."name".oauth]` are removed via the
-	// negative lookahead `(?!mcp_servers\\."${escapedName}\\.")`, which stops at any header not
-	// under this server's namespace.
-	const blockPattern = new RegExp(
-		`\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
-		"g"
-	);
-
-	let updated = content.replace(blockPattern, "").trimEnd();
+	let updated = removeCodexCheckmarxBlocks(content).trimEnd();
 	updated = updated.length > 0 ? `${updated}\n\n${newBlock}` : newBlock;
 
 	try {
@@ -185,13 +287,7 @@ function removeFromCodexConfig(): void {
 
 	try {
 		const content = fs.readFileSync(configPath, "utf-8");
-		const serverName = getCodexMcpServerName();
-		const escapedName = serverName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-		const blockPattern = new RegExp(
-			`\\n?\\[mcp_servers\\."${escapedName}"\\][\\s\\S]*?(?=\\n\\[(?!mcp_servers\\."${escapedName}"\\.)|$)`,
-			"g"
-		);
-		const updated = content.replace(blockPattern, "").trimEnd();
+		const updated = removeCodexCheckmarxBlocks(content, true).trimEnd();
 		fs.writeFileSync(configPath, updated.length > 0 ? `${updated}\n` : "", "utf-8");
 	} catch (e) {
 		const msg = `Failed to remove Codex MCP config: ${e}`;
@@ -249,7 +345,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 		};
 	}
 
-	// Windsurf, Windsurf-Next, Devin, Devin-Next, Kiro use 'mcpServers' key with 'Checkmarx' name
+	// Windsurf, Windsurf-Next, Devin, Devin-Next, Kiro use 'mcpServers' key
 	if (isIDE(constants.windsurfAgent) ||
 		isIDE(constants.windsurfNextAgent) ||
 		isIDE(constants.devinAgent) ||
@@ -264,7 +360,7 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 		};
 	}
 
-	// Claude uses 'mcpServers' with 'Checkmarx' name and includes 'type'
+	// Claude uses 'mcpServers' and includes 'type'
 	if (isIDE(constants.claudeAgent)) {
 		return {
 			mcpServers: {
@@ -286,7 +382,51 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 	};
 }
 
+/**
+ * Moves Checkmarx One's pre-rename "Checkmarx" entry to "Checkmarx One Assist" in every place this
+ * extension writes MCP config, keeping its value, so existing installs match the remediation prompts
+ * and stop clashing with the cx-devassist plugin's server without reinstalling MCP. Only entries that
+ * point at the Checkmarx MCP endpoint are moved. Every step is independent and never throws.
+ */
+export async function migrateLegacyMcpServerNames(): Promise<void> {
+	if (constants.getLegacyMcpServerNames().length === 0) {
+		return;
+	}
+	if (isIDE(constants.vsCodeAgentOrginalName)) {
+		try {
+			const config = vscode.workspace.getConfiguration();
+			// User-level value only: get() merges in workspace servers, which must not be copied into user settings
+			const globalMcp = config.inspect<McpConfig>("mcp")?.globalValue;
+			const migrated = renameLegacyServer(globalMcp?.servers);
+			if (migrated) {
+				// Keep the other keys of the user's 'mcp' setting (e.g. inputs)
+				await config.update("mcp", { ...globalMcp, servers: migrated }, vscode.ConfigurationTarget.Global);
+				console.log(`Renamed legacy MCP server to "${getCheckmarxMcpServerName()}" in VS Code settings`);
+			}
+		} catch (error) {
+			console.warn(`Failed to rename legacy MCP server entry in VS Code settings: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+	let jsonFiles: Set<string>;
+	try {
+		// The editor's own file (Cursor, Windsurf, Devin, Kiro, or VS Code's mcp.json fallback) and Claude's files
+		jsonFiles = new Set([
+			getMcpConfigPath(),
+			path.join(os.homedir(), ".claude", "settings.json"),
+			path.join(os.homedir(), ".claude.json"),
+		]);
+	} catch (error) {
+		console.warn(`Failed to resolve MCP config paths: ${error instanceof Error ? error.message : String(error)}`);
+		return;
+	}
+	for (const filePath of jsonFiles) {
+		migrateLegacyServerInJsonFile(filePath);
+	}
+	migrateLegacyCodexServer();
+}
+
 export function registerMcpSettingsInjector(context: vscode.ExtensionContext) {
+	void migrateLegacyMcpServerNames();
 	vscode.commands.registerCommand(commands.installMCP, async () => {
 		const apikey = await context.secrets.get(constants.getAuthCredentialSecretKey());
 		const productName = getMessages().productName;
@@ -378,19 +518,13 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 	}
 
 	if (isIDE(constants.vsCodeAgentOrginalName)) {
-		if (!mcpConfig.servers) {
-			mcpConfig.servers = {};
-		}
-		// Clear old entry to avoid merging with old OAuth config
-		delete mcpConfig.servers[getCheckmarxMcpServerName()];
+		// Clear old entry (and the pre-rename name) to avoid merging with old OAuth config
+		mcpConfig.servers = withoutCheckmarxServers(mcpConfig.servers);
 		mcpConfig.servers[getCheckmarxMcpServerName()] = mcpServer as McpServer;
 	}
 	else {
-		if (!mcpConfig.mcpServers) {
-			mcpConfig.mcpServers = {};
-		}
-		// Clear old entry to avoid merging with old OAuth config
-		delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
+		// Clear old entry (and the pre-rename name) to avoid merging with old OAuth config
+		mcpConfig.mcpServers = withoutCheckmarxServers(mcpConfig.mcpServers);
 		// Claude Code requires "type": "http" in JSON to connect to remote MCP (see code.claude.com/docs/mcp)
 		const serverEntry = mcpConfigPath.includes(".claude")
 			? { type: "http", url: mcpServer.url, headers: mcpServer.headers }
@@ -417,9 +551,8 @@ async function updateMcpJsonFile(mcpServer: McpServer): Promise<void> {
 					console.warn("Failed to read existing .claude.json:", e);
 				}
 			}
-			if (!claudeJson.mcpServers) claudeJson.mcpServers = {};
-			// Clear old entry to prevent mixing old OAuth config with new APIKey config
-			delete claudeJson.mcpServers[getCheckmarxMcpServerName()];
+			// Clear old entry (and the pre-rename name) to prevent mixing old OAuth config with new APIKey config
+			claudeJson.mcpServers = withoutCheckmarxServers(claudeJson.mcpServers);
 			claudeJson.mcpServers[getCheckmarxMcpServerName()] = { type: "http", url: mcpServer.url, headers: mcpServer.headers } as McpServer;
 			fs.writeFileSync(claudeJsonPath, JSON.stringify(claudeJson, null, 2), "utf-8");
 		}
@@ -439,13 +572,13 @@ async function removeMcpFromJsonFile(): Promise<void> {
 	const mcpConfig: McpConfig = JSON.parse(fileContent);
 
 	// Remove from mcpServers (for Cursor, Windsurf, Kiro)
-	if (mcpConfig.mcpServers && mcpConfig.mcpServers[getCheckmarxMcpServerName()]) {
-		delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
+	if (mcpConfig.mcpServers && hasCheckmarxServer(mcpConfig.mcpServers)) {
+		mcpConfig.mcpServers = withoutCheckmarxServers(mcpConfig.mcpServers);
 		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 	}
 	// Remove from servers (for VSCode fallback)
-	else if (mcpConfig.servers && mcpConfig.servers[getCheckmarxMcpServerName()]) {
-		delete mcpConfig.servers[getCheckmarxMcpServerName()];
+	else if (mcpConfig.servers && hasCheckmarxServer(mcpConfig.servers)) {
+		mcpConfig.servers = withoutCheckmarxServers(mcpConfig.servers);
 		fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
 	}
 }
@@ -469,10 +602,9 @@ export async function uninstallMcp(context?: vscode.ExtensionContext, preserveMc
 			const config = vscode.workspace.getConfiguration();
 			const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
 			const existingServers = fullMcp.servers || {};
-			if (existingServers[getCheckmarxMcpServerName()]) {
+			if (hasCheckmarxServer(existingServers)) {
 				// Create a new object without the Checkmarx server to avoid proxy issues
-				const updatedServers = { ...existingServers };
-				delete updatedServers[getCheckmarxMcpServerName()];
+				const updatedServers = withoutCheckmarxServers(existingServers);
 				try {
 					await config.update(
 						"mcp",
@@ -581,7 +713,7 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 
 					const updatedMcp = {
 						servers: {
-							...(existingMcp.servers || {}),
+							...withoutCheckmarxServers(existingMcp.servers),
 							[getCheckmarxMcpServerName()]: oauthTemplate.servers?.[getCheckmarxMcpServerName()]
 						}
 					};
@@ -629,7 +761,7 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 				if (target === 'vscode-settings') {
 					const config = vscode.workspace.getConfiguration();
 					const fullMcp: McpConfig = config.get<McpConfig>("mcp") || {};
-					const updatedServers = { ...(fullMcp.servers || {}) };
+					const updatedServers = withoutCheckmarxServers(fullMcp.servers);
 					updatedServers[getCheckmarxMcpServerName()] = mcpServer;
 
 					try {
@@ -682,9 +814,8 @@ function writeToClaudeConfig(mcpServer: McpServer): void {
 			if (fs.existsSync(filePath)) {
 				try { c = JSON.parse(fs.readFileSync(filePath, "utf-8")); } catch { }
 			}
-			if (!c.mcpServers) c.mcpServers = {};
-			// Clear old entry to avoid merging with old OAuth config
-			delete c.mcpServers[name];
+			// Clear old entry (and the pre-rename name) to avoid merging with old OAuth config
+			c.mcpServers = withoutCheckmarxServers(c.mcpServers);
 			c.mcpServers[name] = server;
 			const dir = path.dirname(filePath);
 			if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -714,20 +845,14 @@ async function updateMcpJsonFileOAuth(oauthUrl: string): Promise<void> {
 
 	// For VS Code: update 'servers' key
 	if (isIDE(constants.vsCodeAgentOrginalName)) {
-		if (!mcpConfig.servers) {
-			mcpConfig.servers = {};
-		}
-		// Clear old entry to avoid merging with old APIKey config
-		delete mcpConfig.servers[getCheckmarxMcpServerName()];
+		// Clear old entry (and the pre-rename name) to avoid merging with old APIKey config
+		mcpConfig.servers = withoutCheckmarxServers(mcpConfig.servers);
 		mcpConfig.servers[getCheckmarxMcpServerName()] = oauthTemplate.servers?.[getCheckmarxMcpServerName()] as any;
 	}
 	// For other IDEs: update 'mcpServers' key
 	else {
-		if (!mcpConfig.mcpServers) {
-			mcpConfig.mcpServers = {};
-		}
-		// Clear old entry to avoid merging with old APIKey config
-		delete mcpConfig.mcpServers[getCheckmarxMcpServerName()];
+		// Clear old entry (and the pre-rename name) to avoid merging with old APIKey config
+		mcpConfig.mcpServers = withoutCheckmarxServers(mcpConfig.mcpServers);
 		mcpConfig.mcpServers[getCheckmarxMcpServerName()] = oauthTemplate.mcpServers?.[getCheckmarxMcpServerName()] as any;
 	}
 
@@ -758,9 +883,8 @@ function writeToClaudeConfigOAuth(oauthUrl: string): void {
 			if (fs.existsSync(filePath)) {
 				try { c = JSON.parse(fs.readFileSync(filePath, "utf-8")); } catch { }
 			}
-			if (!c.mcpServers) c.mcpServers = {};
-			// Clear old entry to avoid merging with old APIKey config
-			delete c.mcpServers[name];
+			// Clear old entry (and the pre-rename name) to avoid merging with old APIKey config
+			c.mcpServers = withoutCheckmarxServers(c.mcpServers);
 			c.mcpServers[name] = server as any;
 			const dir = path.dirname(filePath);
 			if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -776,13 +900,12 @@ function writeToClaudeConfigOAuth(oauthUrl: string): void {
 }
 
 function removeFromClaudeConfig(): void {
-	const name = getCheckmarxMcpServerName();
 	const removeOne = (filePath: string) => {
 		if (!fs.existsSync(filePath)) return;
 		try {
 			const c: McpConfig = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-			if (c.mcpServers?.[name]) {
-				delete c.mcpServers[name];
+			if (hasCheckmarxServer(c.mcpServers)) {
+				c.mcpServers = withoutCheckmarxServers(c.mcpServers);
 				fs.writeFileSync(filePath, JSON.stringify(c, null, 2), "utf-8");
 			}
 		} catch (e) { console.warn("removeFromClaudeConfig:", filePath, e); }
