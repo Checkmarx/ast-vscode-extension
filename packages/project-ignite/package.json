@@ -3,7 +3,7 @@
   "publisher": "Checkmarx",
   "displayName": "Checkmarx Developer Assist",
   "description": "Standalone realtime security scanners - AI Secure Coding, OSS, Secrets, IaC, and Containers",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Checkmarx/ast-vscode-extension.git"
@@ -244,7 +244,7 @@
     "mocha": {
       "serialize-javascript": "7.0.5"
     },
-    "undici": "7.29.0",
+    "undici": "7.30.2",
     "markdown-it": "14.3.3",
     "js-yaml": "4.3.2",
     "brace-expansion": "1.1.21",
