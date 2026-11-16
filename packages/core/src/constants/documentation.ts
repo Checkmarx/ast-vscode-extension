@@ -3,6 +3,6 @@ export const DOC_LINKS = {
 	devAssist: "https://docs.checkmarx.com/en/34965-405960-checkmarx-one-developer-assist.html",
 	checkmarxOneHelpLoginUrl: "https://docs.checkmarx.com/en/34965-123549-installing-and-setting-up-the-checkmarx-vs-code-extension.html#UUID-b74024dd-5f0e-cac7-668c-94049b9d8566_section-idm235062431428611",
 	devAssistHelpLoginUrl: "https://docs.checkmarx.com/en/34965-549178-installation-and-initial-setup.html#UUID-b1540a08-d6cd-0894-262c-526dedf11c6d_id_RemediationToolEli-Step1-InstallingandConfiguringthePlugin",
-	copilotCliPluginUrl: "https://docs.checkmarx.com/en/34965-766857-copilot-cli-plugin.html",
+	copilotCliPluginUrl: "https://docs.checkmarx.com/en/34965-754573-developer-assist-for-vs-code.html#UUID-9d43b8bc-6d5d-1c7a-ac9d-49fd6adcb322_section-id235713190000005",
 	feedback: "https://github.com/Checkmarx/ast-vscode-extension/issues/new/choose"
 };
