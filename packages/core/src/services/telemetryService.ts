@@ -5,6 +5,7 @@ import { cx } from "../cx";
 import { Logs } from "../models/logs";
 import {
   AuthMethod,
+  PLUGIN_NAME,
   PLUGIN_TYPE_IDE,
   TELEMETRY_SUB_TYPE,
   TELEMETRY_TYPE,
@@ -12,6 +13,7 @@ import {
   TelemetryPayload,
 } from "../models/telemetryEvent";
 import { getIdeInfo, getIdeVersion } from "../utils/ideInfo";
+import { EXTENSION_TYPE, getExtensionType } from "../config/extensionConfig";
 
 /**
  * Single entry point for Dev Assist analytics events (AST-184025).
@@ -65,6 +67,15 @@ export function buildEnvelope(): TelemetryEnvelope {
   };
 }
 
+/** Short name of the extension sending the event: CxOne or DevAssist. Empty if not configured yet. */
+export function getPluginName(): string {
+  try {
+    return getExtensionType() === EXTENSION_TYPE.DEVELOPER_ASSIST ? PLUGIN_NAME.devAssist : PLUGIN_NAME.checkmarxOne;
+  } catch {
+    return "";
+  }
+}
+
 export function toPayload(event: TelemetryEvent): TelemetryPayload {
   return {
     ...buildEnvelope(),
@@ -78,7 +89,8 @@ export function toPayload(event: TelemetryEvent): TelemetryPayload {
     statusResult: event.statusResult === undefined ? undefined : sanitizeTelemetryText(event.statusResult),
     repoUrl: event.repoUrl,
     apiVersion: event.apiVersion,
-    eventAttributes: event.eventAttributes,
+    // pluginName goes on every event, so Analytics can tell Checkmarx One and Dev Assist apart.
+    eventAttributes: { pluginName: getPluginName() || undefined, ...event.eventAttributes },
   };
 }
 
@@ -141,7 +153,7 @@ export function sanitizeTelemetryText(value: unknown, maxLength = MAX_STATUS_RES
     }
   }
   text = text
-    // credentials in URLs: https://user:secret@host
+    // credentials in URLs: https://<user>:<secret>@host
     .replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s/@]+@/gi, "$1***@")
     // key=value / key: value pairs that carry secrets
     .replace(/\b(api[-_]?key|apikey|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, "$1=***")

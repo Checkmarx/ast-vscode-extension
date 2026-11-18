@@ -30,12 +30,13 @@ The feature flags (`DEV_ASSIST_ANALYTICS_ENABLED` and `USAGE_DEV_ASSIST_API_ENAB
 
 These findings come from the code at the time of writing.
 
-### JS wrapper (`ast-cli-javascript-wrapper` v0.0.166, CLI 2.3.69)
+### JS wrapper (`ast-cli-javascript-wrapper` v0.0.167, CLI 2.3.71)
 
 - There is one method: `telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, scanType, status, totalCount)`.
 - It always sends every flag, even when the value is an empty string.
 - `--agent` is not a parameter. `initializeCommands()` adds it from `CxConfig.agentName` to every command.
-- The bundled CLI 2.3.69 supports only `--agent, --ai-provider, --engine, --problem-severity, --scan-type, --status, --sub-type, --total-count, --type`.
+- The bundled CLI 2.3.71 doesn't support the new analytics flags (checked: it has no `--agent-version`). Up to at least 2.3.69, `telemetry ai` supports only `--agent, --ai-provider, --engine, --problem-severity, --scan-type, --status, --sub-type, --total-count, --type`.
+- Wrapper 0.0.167 was released from `main` without the analytics changes, so they ship in the next wrapper version.
 
 ### VS Code extension (`packages/core`)
 
@@ -76,7 +77,7 @@ These findings come from the code at the time of writing.
 4. **Tests.**
    - Add a unit test of the generated arguments. It must check that empty values are left out and that attributes are serialized correctly.
    - Extend the integration tests in `TelemetryTest.test.ts` with one case per event type.
-5. **Release** wrapper `0.0.167`.
+5. **Release** the next wrapper version (0.0.168 or later; 0.0.167 is already released without these changes).
 
 ## 4. Changes in the VS Code extension
 
@@ -89,6 +90,7 @@ Add `packages/core/src/services/telemetryService.ts`. It replaces `setUserEventD
   - `agentVersion`: the IDE version from `getIdeVersion()`. See 4.2 ([AST-188318](https://checkmarx.atlassian.net/browse/AST-188318)).
   - `cxPluginVersion`: the version in the extension's `package.json`
   - `pluginType`: `IDE`
+  - `eventAttributes.pluginName`: `CxOne` (Checkmarx One extension) or `DevAssist` (Developer Assist). Both extensions run in the same IDEs, so `agent` and `pluginType` alone can't tell them apart. The design has no field for this and the CLI passes `eventAttributes` through, so it goes there. **The Realtime Scanner API must keep this attribute** when it builds the RabbitMQ message.
   - `repoUrl`: see 4.10
 - `emit(event)` sends the event without waiting for the result:
   - It never throws and never shows anything to the user.
@@ -325,7 +327,7 @@ export async function flushPendingInstallEvent(context: vscode.ExtensionContext)
 **Behavior notes**
 - The event time is when the event is *sent*, which may be days after the install. The real install time goes in `eventAttributes.installationTimestamp`, which the CLI example in the design already includes.
 - Updating the extension keeps `globalState`, so an upgrade is **not** counted as an install.
-- Users who already have the extension get an `installationId` on their first activation after this release, so they appear as new installs once. Tell Analytics about this before rollout.
+- **Upgrades are not installs.** Users who already had the extension get an `installationId` on their first activation after this release, but **no install event**. An earlier version is detected when the extension's `globalState` already has any key (it is per extension and empty on a fresh install, and nothing writes to it before this check) or a credential is stored. A user who installed an older version but never used it looks like a new install; that is acceptable.
 - There is no failure case: if activation fails, no event can be sent anyway.
 
 ### 4.6 Login event: implementation
@@ -496,14 +498,14 @@ For OSS and Containers, the alternative is the CVE list (`item.vulnerabilities.m
 - Add `getRepositoryRemoteUrl(fileUri)` to `utils/utils.ts`. It uses the built-in `vscode.git` API.
 - In a multi-root workspace, pick the repository that contains the scanned file.
 - Prefer the `origin` remote. If there is none, use the first remote.
-- **Remove credentials from the URL** before sending it. For example, `https://user:token@host/...` becomes `https://host/...`.
+- **Remove credentials from the URL** before sending it. For example, `https://<user>:<token>@host/...` becomes `https://host/...`.
 - Convert SSH remotes to HTTPS form: `git@host:org/repo.git` becomes `https://host/org/repo`.
 - If git is not available, leave `repoUrl` empty. The field is optional.
 - Turn on the git extension listener in Dev Assist as well. Today it runs only in Checkmarx One.
 
 ### 4.11 Wrapper dependency
 
-Bump `@checkmarx/ast-cli-javascript-wrapper` to `0.0.167` in `packages/core/package.json`.
+Bump `@checkmarx/ast-cli-javascript-wrapper` to the wrapper version that includes `telemetryEvent` (0.0.168 or later) in `packages/core/package.json`. `main` is already on 0.0.167, which doesn't include it.
 
 ### 4.12 Tests
 
@@ -565,7 +567,7 @@ The AST-CLI change is on ast-cli branch `feature/AST-186973-tele` (not merged or
 | 4b | Is `aiProvider = Cascade` right for Windsurf and Devin? | **Yes: send the native assistant's own name**: `Cursor`, `Cascade` or `Kiro`. | The current telemetry already sends `Cascade`, so historical data stays consistent. It is also the name the user sees. Analytics adds `Cascade` and `Kiro` to the provider list. | Analytics |
 | 5a | What goes in `problemSeverity` for a single scan event? | **The highest severity found**, or empty when there are no findings. | Dashboards can filter scans by their worst finding, and `statusResult` still has the full breakdown. | Analytics |
 | 5b | Is `Unknown` reported as `Info`? | **Yes.** OSS and Containers `Malicious` counts as `Critical`, and `OK` is not counted. | The design's severity list has no `Unknown`, and malicious packages are at least as serious as critical ones. | Analytics |
-| 5c | Are scans with zero findings sent? | **Yes.** They are sent with `totalCount=0` and `statusResult="Critical=0, High=0, …"`, controlled by one constant. | Active-developer and engagement metrics (FR-04) need every scan, not only scans that found something. A clean scan is also an ROI signal. Watch the event volume after rollout; it is still at most one CLI process per scan. | Analytics |
+| 5c | Are scans with zero findings sent? | **Yes, as the design says: one event per realtime scan.** They are sent with `totalCount=0` and `statusResult="Critical=0, High=0, …"`, controlled by one constant. | The design defines the scan event as "when a realtime scan is triggered". Engagement metrics (FR-04) need every scan, and a clean scan is also an ROI signal. Scans run after every 1-second typing pause, so watch the event volume and IDE load after rollout. | Decided |
 | 6 | Is the subType spelled `scantriggerd`? | **Use the value the Realtime Scanner API already uses for detection events.** The design marks it as *Existing*. Ask the API owner for the exact string and keep it in one constant. Until then, use `scantriggerd`, as the design says. | A spelling mismatch would silently break the routing to the detection key. Fixing it once data is flowing is harder than fixing it now. | Realtime Scanner API owner |
 | 7 | Is `vulnerabilityId` for OSS and Containers the CVE list or `package@version`? | **`package@version` for OSS and `image:tag` for Containers.** | One "Fix with AI" action fixes one package or image, and that is also what the prompt sends. The ID is stable and short. A CVE list can be dozens of entries long and changes as new CVEs are published. If CVEs are needed later, they can be added as a separate `cveIds` attribute. | Analytics |
 

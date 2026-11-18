@@ -22,6 +22,15 @@ export const TELEMETRY_SUB_TYPE = {
 } as const;
 
 export const PLUGIN_TYPE_IDE = "IDE";
+
+/**
+ * Which Checkmarx extension sent the event, sent as eventAttributes.pluginName.
+ * Both extensions run in the same IDEs, so agent and pluginType alone can't tell them apart.
+ */
+export const PLUGIN_NAME = {
+  checkmarxOne: "CxOne",
+  devAssist: "DevAssist",
+} as const;
 export const TELEMETRY_API_VERSION = "v2";
 export const REMEDIATION_MODE_DEV_ASSIST = "DevAssist";
 

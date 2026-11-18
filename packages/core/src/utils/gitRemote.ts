@@ -14,7 +14,7 @@ const GIT_EXTENSION_ID = "vscode.git";
  * Removes credentials, query and fragment from a git remote URL, and converts SSH remotes
  * to https form. Returns "" for anything that isn't a recognisable remote.
  *
- *   https://user:token@github.com/org/repo.git -> https://github.com/org/repo
+ *   https://<user>:<token>@github.com/org/repo.git -> https://github.com/org/repo
  *   git@github.com:org/repo.git                -> https://github.com/org/repo
  *   ssh://git@host:2222/org/repo.git           -> https://host/org/repo
  */

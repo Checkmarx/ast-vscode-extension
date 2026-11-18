@@ -73,7 +73,7 @@ describe("hoverItemTelemetry", () => {
         status: "Success",
         statusResult: "Remediation completed successfully.",
       });
-      expect(payload.eventAttributes).to.deep.equal({ vulnerabilityId: "lodash@4.17.20", remediationMode: "DevAssist" });
+      expect(payload.eventAttributes).to.include({ vulnerabilityId: "lodash@4.17.20", remediationMode: "DevAssist" });
     });
 
     it("sends a failure when no assistant was available", async () => {

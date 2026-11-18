@@ -7,6 +7,7 @@ import { constants } from "../../utils/common/constants";
 import { resetIdeInfoCache } from "../../utils/ideInfo";
 import {
   ensureInstallationId,
+  isExistingInstallation,
   flushPendingInstallEvent,
   generateUuidV4,
   resetInstallationTrackerState,
@@ -86,6 +87,30 @@ describe("installationTracker", () => {
         const id = await ensureInstallationId(createTestContext());
         expect(id.startsWith(`${prefix}-`)).to.equal(true, appName);
       }
+    });
+
+    it("gives an existing user an id but no install event (upgrade, not install)", async () => {
+      const context = createTestContext();
+      await context.globalState.update("lastAuthMethod", "apiKey"); // written by an earlier version
+      const id = await ensureInstallationId(context);
+      expect(id).to.match(/^vscode-/);
+      expect(context.globalState.get(constants.getPendingInstallEventKey())).to.equal(undefined);
+    });
+
+    it("treats a stored credential as an existing user", async () => {
+      const context = createTestContext("2.74.0", "stored-token");
+      expect(await isExistingInstallation(context)).to.equal(true);
+    });
+
+    it("treats an empty globalState and no credential as a new installation", async () => {
+      const context = createTestContext();
+      expect(await isExistingInstallation(context)).to.equal(false);
+    });
+
+    it("ignores its own keys when deciding", async () => {
+      const context = createTestContext();
+      await context.globalState.update(constants.getInstallationIdKey(), "vscode-x");
+      expect(await isExistingInstallation(context)).to.equal(false);
     });
 
     it("uses separate keys for Checkmarx One and Dev Assist", () => {

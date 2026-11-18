@@ -15,6 +15,9 @@ import { emitTelemetryAndWait } from "./telemetryService";
  *
  * Each IDE has its own globalState, so VS Code and Cursor on one machine get separate ids.
  * Each extension has its own keys, so Checkmarx One and Dev Assist don't overwrite each other.
+ *
+ * Users who already had the extension before this release also get an id, but no install
+ * event: they upgraded, they didn't install. See isExistingInstallation.
  */
 
 export interface PendingInstallEvent {
@@ -35,20 +38,46 @@ export function generateUuidV4(): string {
   return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}`;
 }
 
-/** Creates the installation id on the first activation. Does nothing afterwards. */
+/**
+ * True when the extension was already used before the release that added installation ids.
+ *
+ * globalState belongs to this extension only, and nothing writes to it before this check runs
+ * on activation. So on a fresh install it is empty. Any key in it, or a stored credential,
+ * means an earlier version already ran.
+ */
+export async function isExistingInstallation(context: vscode.ExtensionContext): Promise<boolean> {
+  const ownKeys = new Set([constants.getInstallationIdKey(), constants.getPendingInstallEventKey()]);
+  const keys = typeof context.globalState.keys === "function" ? context.globalState.keys() : [];
+  if (keys.some((key) => !ownKeys.has(key))) {
+    return true;
+  }
+  try {
+    return !!(await context.secrets.get(constants.getAuthCredentialSecretKey()));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Creates the installation id on the first activation. Does nothing afterwards.
+ * Only a new installation gets a pending install event; an existing user who upgraded doesn't.
+ */
 export async function ensureInstallationId(context: vscode.ExtensionContext): Promise<string> {
   const key = constants.getInstallationIdKey();
   const existing = context.globalState.get<string>(key);
   if (existing) {
     return existing;
   }
+  const upgradedFromOlderVersion = await isExistingInstallation(context);
   const installationId = `${getIdeInfo().installPrefix}-${generateUuidV4()}`;
-  const pending: PendingInstallEvent = {
-    installationId,
-    installationTimestamp: new Date().toISOString(),
-  };
   await context.globalState.update(key, installationId);
-  await context.globalState.update(constants.getPendingInstallEventKey(), pending);
+  if (!upgradedFromOlderVersion) {
+    const pending: PendingInstallEvent = {
+      installationId,
+      installationTimestamp: new Date().toISOString(),
+    };
+    await context.globalState.update(constants.getPendingInstallEventKey(), pending);
+  }
   return installationId;
 }
 

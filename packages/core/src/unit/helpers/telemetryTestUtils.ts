@@ -21,14 +21,15 @@ export function createMemoryGlobalState(): vscode.Memento & { data: Map<string, 
   } as any;
 }
 
-export function createTestContext(version = "2.74.0"): vscode.ExtensionContext {
+/** A fresh installation by default: empty globalState and no stored credential. */
+export function createTestContext(version = "2.74.0", storedToken?: string): vscode.ExtensionContext {
   return {
     subscriptions: [],
     globalState: createMemoryGlobalState(),
     extensionPath: "/test",
     extension: { packageJSON: { version } },
     secrets: {
-      get: sinon.stub().resolves("test-token"),
+      get: sinon.stub().resolves(storedToken),
       store: sinon.stub().resolves(),
       delete: sinon.stub().resolves(),
     },

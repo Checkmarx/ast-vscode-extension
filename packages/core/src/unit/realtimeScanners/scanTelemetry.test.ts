@@ -69,7 +69,7 @@ describe("scan telemetry", () => {
         statusResult: "Critical=0, High=2, Medium=1, Low=1, Info=1",
         apiVersion: "v2",
       });
-      expect(payload.eventAttributes).to.deep.equal({ apiVersion: "v2" });
+      expect(payload.eventAttributes).to.include({ apiVersion: "v2" });
     });
 
     it("counts OSS and Containers statuses, skipping OK", async () => {

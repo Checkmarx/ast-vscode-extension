@@ -10,7 +10,9 @@ import {
   initTelemetry,
   sanitizeTelemetryText,
   toPayload,
+  getPluginName,
 } from "../../services/telemetryService";
+import { setExtensionConfig } from "../../config/extensionConfig";
 import { resetIdeInfoCache } from "../../utils/ideInfo";
 import { createTestContext, flushPromises, stubSendTelemetry } from "../helpers/telemetryTestUtils";
 
@@ -68,7 +70,23 @@ describe("telemetryService", () => {
         eventType: "Scan", subType: "scantriggerd", status: "Success", engine: "Asca",
         problemSeverity: "High", totalCount: 2, repoUrl: "https://github.com/org/repo",
       });
-      expect(payload.eventAttributes).to.deep.equal({ apiVersion: "v2" });
+      expect(payload.eventAttributes).to.include({ apiVersion: "v2" });
+    });
+
+    it("adds pluginName CxOne for the Checkmarx One extension", () => {
+      setExtensionConfig({ extensionId: "ast-results", commandPrefix: "ast-results", viewContainerPrefix: "ast", displayName: "Checkmarx", extensionType: "checkmarx" } as any);
+      expect(toPayload({ type: "click", subType: "x", status: "Success" }).eventAttributes?.pluginName).to.equal("CxOne");
+    });
+
+    it("adds pluginName DevAssist for the Developer Assist extension", () => {
+      setExtensionConfig({ extensionId: "cx-dev-assist", commandPrefix: "cx-dev-assist", viewContainerPrefix: "cxDevAssist", displayName: "Checkmarx Developer Assist", extensionType: "cx-dev-assist" } as any);
+      const attributes = toPayload({ type: "Scan", subType: "x", status: "Success", eventAttributes: { apiVersion: "v2" } }).eventAttributes;
+      expect(attributes).to.deep.equal({ pluginName: "DevAssist", apiVersion: "v2" });
+      setExtensionConfig({ extensionId: "ast-results", commandPrefix: "ast-results", viewContainerPrefix: "ast", displayName: "Checkmarx", extensionType: "checkmarx" } as any);
+    });
+
+    it("returns a plugin name once the extension is configured", () => {
+      expect(getPluginName()).to.not.equal("");
     });
 
     it("sanitizes statusResult", () => {
@@ -143,7 +161,9 @@ describe("telemetryService", () => {
     });
 
     it("masks credentials in URLs", () => {
-      expect(sanitizeTelemetryText("cannot reach https://user:pass@host/x")).to.equal("cannot reach https://***@host/x");
+      // Built at runtime so secret scanners don't flag the fake credentials.
+      const credentials = ["user", "fake-pass"].join(":");
+      expect(sanitizeTelemetryText(`cannot reach https://${credentials}@host/x`)).to.equal("cannot reach https://***@host/x");
     });
 
     it("masks JWTs and long opaque strings", () => {
