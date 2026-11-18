@@ -40,12 +40,15 @@ export interface TelemetryEvent {
   aiProvider?: string;
   statusResult?: string;
   repoUrl?: string;
+  /** Telemetry API version, sent as the top-level apiVersion field (CLI --api-version). */
+  apiVersion?: string;
   eventAttributes?: { [key: string]: string | undefined };
 }
 
 /**
  * The full payload sent to the CLI wrapper.
- * Mirrors TelemetryEventOptions in @checkmarx/ast-cli-javascript-wrapper.
+ * Mirrors TelemetryEventOptions in @checkmarx/ast-cli-javascript-wrapper, whose flags match
+ * the ast-cli `telemetry ai` command (branch feature/AST-186973-tele).
  */
 export interface TelemetryPayload {
   aiProvider?: string;
@@ -62,6 +65,7 @@ export interface TelemetryPayload {
   pluginType?: string;
   statusResult?: string;
   repoUrl?: string;
+  apiVersion?: string;
   eventAttributes?: { [key: string]: string | undefined };
 }
 

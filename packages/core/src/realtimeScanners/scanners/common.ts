@@ -44,6 +44,8 @@ export function logScanResults(engine: string, severities: unknown[], filePath?:
         status: "Success",
         statusResult: formatSeverityCounts(counts),
         repoUrl: getRepositoryRemoteUrl(filePath),
+        // The CLI has a top-level --api-version flag; the design also lists eventAttributes.apiVersion.
+        apiVersion: TELEMETRY_API_VERSION,
         eventAttributes: { apiVersion: TELEMETRY_API_VERSION },
     });
 }
@@ -57,6 +59,7 @@ export function logScanFailure(engine: string, error: unknown, filePath?: string
         status: "Failure",
         statusResult: `Scan failed. Reason: ${sanitizeTelemetryText(error)}, Error Code: N/A`,
         repoUrl: getRepositoryRemoteUrl(filePath),
+        apiVersion: TELEMETRY_API_VERSION,
         eventAttributes: { apiVersion: TELEMETRY_API_VERSION },
     });
 }

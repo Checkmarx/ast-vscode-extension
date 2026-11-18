@@ -77,6 +77,7 @@ export function toPayload(event: TelemetryEvent): TelemetryPayload {
     aiProvider: event.aiProvider,
     statusResult: event.statusResult === undefined ? undefined : sanitizeTelemetryText(event.statusResult),
     repoUrl: event.repoUrl,
+    apiVersion: event.apiVersion,
     eventAttributes: event.eventAttributes,
   };
 }

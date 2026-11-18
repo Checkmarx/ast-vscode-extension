@@ -4,7 +4,7 @@ This document describes how the VS Code extensions and the JavaScript wrapper wi
 
 - **Epic:** [AST-184025](https://checkmarx.atlassian.net/browse/AST-184025), VS Code IDE: emit event data for the Analytics and Gainsight dashboard
 - **Technical design:** [Enhance Dev Assist Analytics Dashboard: Technical Design](https://checkmarx.atlassian.net/wiki/spaces/AID/pages/10325360800)
-- **Depends on:** [AST-182268](https://checkmarx.atlassian.net/browse/AST-182268) (AST-CLI common metrics) and [AST-184024](https://checkmarx.atlassian.net/browse/AST-184024) (Realtime Scanner API)
+- **Depends on:** [AST-182268](https://checkmarx.atlassian.net/browse/AST-182268) (AST-CLI common metrics, implemented on ast-cli branch `feature/AST-186973-tele`) and [AST-184024](https://checkmarx.atlassian.net/browse/AST-184024) (Realtime Scanner API)
 
 ## 1. How an event travels
 
@@ -70,7 +70,7 @@ These findings come from the code at the time of writing.
    ```
 
    - Send a flag only when its value is set.
-   - Serialize `eventAttributes` as `key=value;key=value`. Replace any `;` or `=` inside a value with `_` (see 6.1).
+   - Serialize `eventAttributes` as `key=value;key=value`. Replace any `;` inside a value with `_`; `=` is allowed in a value (see 6.1).
    - Send the event's `--agent` value **instead of** the `--agent` from `CxConfig`, not as well as it. Cobra keeps the last value of a repeated flag, so sending both is unreliable.
 3. **CLI version.** Move to the first AST-CLI release that has the new flags. Use the `update-cli.yml` workflow or `.github/scripts/update_cli.sh <tag>`. Before that release exists, build a dev wrapper with the `cliTag` input of `release.yml`.
 4. **Tests.**
@@ -534,18 +534,31 @@ Steps 3 to 8 can be built against a dev wrapper that uses a pre-release CLI.
 
 Each question below has the approach we are implementing now. Every one of these values lives in a single constant or helper, so changing a decision later is a small change.
 
-### 6.1 CLI flag names and attribute escaping: provisional
+### 6.1 CLI flags: confirmed against the AST-CLI branch
 
-The AST-CLI work (AST-182268) is still in progress, so the flag names can change later. Until then:
-- **Flag names:** use kebab-case, matching the existing flags: `--agent-version`, `--cx-plugin-version`, `--plugin-type`, `--status-result`, `--repo-url` and `--event-attributes`. They are defined only in the wrapper's `CxConstants.ts`, so renaming one is a one-line change.
-- **Escaping:** don't invent an escaping scheme. Before serializing, the wrapper **replaces** any `;` or `=` in an attribute value with `_`. The values we send never legitimately contain either character: they are IDs, enum values, timestamps, `package@version` and `image:tag`.
-- If the CLI team chooses a different format, such as JSON for `--event-attributes`, only the wrapper's serializer changes.
+The AST-CLI change is on ast-cli branch `feature/AST-186973-tele` (not merged or released yet). Checked on 2026-11-18 by building that branch and capturing the request body it sends to `/api/realtime-scanner/log`.
+
+| Wrapper option | CLI flag | Payload field |
+|---|---|---|
+| `agentVersion` | `--agent-version` | `agentVersion` |
+| `cxPluginVersion` | `--cx-plugin-version` | `cxPluginVersion` |
+| `pluginType` | `--plugin-type` | `pluginType` |
+| `statusResult` | `--status-result` | `statusResult` |
+| `repoUrl` | `--repo-url` | `repoUrl` |
+| `apiVersion` | `--api-version` | `apiVersion` (top level) |
+| `eventAttributes` | `--event-attributes` | `eventAttributes` (object) |
+
+- **Set by the CLI, not the IDE:** `sessionId`, `uniqueId` and `machineUniqueId`. `machineUniqueId` comes from the OS (Windows `MachineGuid`, macOS `IOPlatformUUID`, Linux `machine-id`).
+- **Attribute format:** the CLI splits on `;`, then splits each pair on the **first** `=` only and trims both sides. So the wrapper replaces only `;` in values; `=` inside a value is kept (checked: `a=b` arrives as `"a=b"`).
+- **`apiVersion`:** the CLI has a top-level `--api-version` flag, and the design lists `eventAttributes.apiVersion`. Scan events send both until the Realtime Scanner API owner says which one they read.
+- **Header:** with `--agent "VS Code"` on `telemetry ai`, the request's `User-Agent` stays the CLI default. The flag sets only the payload's `agent`.
+- **Session ID (open issue):** the CLI creates and saves a new session ID only when `type == "authentication" && status == "success"`, comparing case-sensitively. The design, and the IDE, send `Success`. With `Success`, `sessionId` is empty and nothing is saved; with `success` it is created and reused by later events. **Ask the CLI owner to compare with `strings.EqualFold`.**
 
 ### 6.2 Recommended approaches
 
 | # | Question | Approach we are taking | Why | Who confirms |
 |---|---|---|---|---|
-| 2 | Does `--agent` on `telemetry ai` set the payload only, or also the request header? | **It sets only the payload** (see the note below). `telemetryEvent` sends `--agent "VS Code"` (the IDE name only) and `--agent-version <IDE version>`. `CxConfig.agentName` stays `VS Code_2.74.0` for every other command, so no header changes anywhere. | Gives the payload values the design wants, and meets the epic's rule not to change the header | AST-CLI owner: one debug run to confirm |
+| 2 | Does `--agent` on `telemetry ai` set the payload only, or also the request header? | **Confirmed: it sets only the payload** (see the note below and 6.1). `telemetryEvent` sends `--agent "VS Code"` (the IDE name only) and `--agent-version <IDE version>`. `CxConfig.agentName` stays `VS Code_2.74.0` for every other command, so no header changes anywhere. | Gives the payload values the design wants, and meets the epic's rule not to change the header | Done |
 | 3 | How are failed logins sent without a token? | **Send them directly, best-effort, with no queue.** A failure is delivered only when a valid credential is still stored, so most failed API-key logins are not delivered. | Keeps the client simple and adds no stored state. Reporting every failure needs a backend change, such as an endpoint that accepts these events without a user token. | Design owner |
 | 4 | What should `agentVersion` be in forks? | **The fork's own version, falling back to `vscode.version`.** Read it once from `product.json` under `vscode.env.appRoot`, using the field found in the POC for each fork. If the field is missing or unreadable, send `vscode.version`. | The design defines `agentVersion` as "IDE or Agent Version". A Cursor user expects to see the Cursor version, and the fallback keeps the field filled. | Analytics |
 | 4a | Is Devin sent as `Devin` or `Windsurf`? | **Send `Devin`.** | It is a separate product with its own app name. Analytics can merge Devin into Windsurf later, but they can't split a merged value back out. Analytics adds `Devin` to the agent list. | Analytics |
@@ -560,7 +573,7 @@ The AST-CLI work (AST-182268) is still in progress, so the flag names can change
 - `--agent` is declared on the root command (`root.go:109`) and bound to viper's `AgentNameKey` (`root.go:162`). That key sets the `User-Agent` header in `client.go` `setAgentNameAndOrigin`.
 - `telemetry ai` declares its **own** local `--agent` flag (`telemetry.go:42`). In Cobra, a command's own flag hides the inherited flag of the same name. So on this command, `--agent` fills only the payload's `agent` field (`telemetry.go:56`).
 - The header falls back to the CLI default. That is how it already behaves today, so nothing the epic forbids changes.
-- To confirm, run `cx telemetry ai ... --agent "VS Code" --debug` behind a proxy and check the request headers.
+- Confirmed on 2026-11-18 with a build of `feature/AST-186973-tele`: the captured request had `User-Agent: ASTCLI/dev` (the CLI default) and `"agent": "VS Code"` in the body.
 
 ## 7. Out of scope
 
