@@ -6,10 +6,11 @@
 import * as vscode from 'vscode';
 import { Logs } from '../models/logs';
 import { AuthService } from '../services/authService';
-import { initialize } from '../cx';
+import { getCx, initialize } from '../cx';
 import { constants } from '../utils/common/constants';
 import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
+import { registerSelfHealing } from '../services/selfHealing';
 import { initTelemetry } from '../services/telemetryService';
 import { ensureInstallationId, flushPendingInstallEvent } from '../services/installationTracker';
 
@@ -56,14 +57,19 @@ export async function activateCore(context: vscode.ExtensionContext) {
 
     // [SHARED] Integrity check on startup
     const authService = AuthService.getInstance(context, logs);
-    const hasValidCredentials = await authService.validateAndUpdateState();
-    if (hasValidCredentials) {
-        // Not awaited, so activation isn't slowed down.
+    const isSignedIn = await authService.validateAndUpdateState();
+    if (isSignedIn) {
+        // Users signed in before logins were shared with the cx CLI: hand it over once, in the background
+        void getCx().syncLogin(logs);
+        // Send the pending install event (AST-184025). Not awaited, so activation isn't slowed down.
         void flushPendingInstallEvent(context);
     }
 
     // [SHARED] Register MCP settings injector
     registerMcpSettingsInjector(context);
+
+    // [SHARED] Checkmarx Self-Healing: sync ~/.checkmarx/cx-onboarding-ide.properties and install prompts
+    registerSelfHealing(context, logs);
 
     console.log('[CORE] Core activation complete');
 

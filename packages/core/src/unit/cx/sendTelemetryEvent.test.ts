@@ -95,6 +95,15 @@ describe("Cx.sendTelemetryEvent", () => {
     expect(telemetryAIEvent.called).to.equal(false);
   });
 
+  it("sends settings events (Self-Healing) in the legacy format", async () => {
+    telemetryEvent.resolves({ exitCode: 1, status: "unknown flag: --agent-version" });
+    const delivered = await createCx().sendTelemetryEvent({
+      eventType: "settings", subType: "selfHealingEnabled", aiProvider: "VS Code", status: "Success",
+    });
+    expect(delivered).to.equal(true);
+    expect(telemetryAIEvent.firstCall.args).to.deep.equal(["VS Code", "settings", "selfHealingEnabled", "", "", "", "", 0]);
+  });
+
   it("uses the legacy format when the wrapper has no analytics method", async () => {
     wrapper = { telemetryAIEvent };
     expect(await createCx().sendTelemetryEvent(scanPayload)).to.equal(true);

@@ -10,6 +10,8 @@ export const TELEMETRY_TYPE = {
   authentication: "authentication",
   scan: "Scan",
   click: "click",
+  /** Settings changes, e.g. Self-Healing turned on or off. */
+  settings: "settings",
 } as const;
 
 export const TELEMETRY_SUB_TYPE = {
