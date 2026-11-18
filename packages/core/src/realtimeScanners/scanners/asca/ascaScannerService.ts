@@ -9,7 +9,7 @@ import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca"
 import { cx } from "../../../cx";
 import fs from "fs";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
-import { logScanResults } from "../common";
+import { logScanFailure, logScanResults } from "../common";
 import { ThemeUtils } from "../../../utils/themeUtils";
 
 export class AscaScannerService extends BaseScannerService {
@@ -106,6 +106,7 @@ export class AscaScannerService extends BaseScannerService {
 
 			if (fullScanResults.error) {
 				logs.warn("ASCA Warning: " + (fullScanResults.error.description ?? fullScanResults.error));
+				logScanFailure(constants.ascaRealtimeScannerEngineName, fullScanResults.error.description ?? fullScanResults.error, filePath);
 				return;
 			}
 
@@ -119,12 +120,13 @@ export class AscaScannerService extends BaseScannerService {
 				this.cleanupIgnoredEntries(fullScanResults.scanDetails, filePath);
 			}
 
-			logScanResults("asca", fullScanResults.scanDetails);
+			logScanResults(constants.ascaRealtimeScannerEngineName, (fullScanResults.scanDetails ?? []).map(r => r.severity), filePath);
 
 			logs.info(`${fullScanResults.scanDetails.length} security best practice violations were found in ${filePath} (${fullScanResults.scanDetails.filter(r => !this.isAscaResultIgnored(r, filePath)).length} active, ${fullScanResults.scanDetails.filter(r => this.isAscaResultIgnored(r, filePath)).length} ignored)`);
 		} catch (error) {
 			console.error(error);
 			logs.error(this.config.errorMessage + `: ${error}`);
+			logScanFailure(constants.ascaRealtimeScannerEngineName, error, filePath);
 			this.clearScanData(document.uri);
 			this.applyDecorations(document.uri);
 		} finally {

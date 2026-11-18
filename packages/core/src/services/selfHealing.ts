@@ -8,7 +8,9 @@ import { commands } from "../utils/common/commandBuilder";
 import { isCopilotInstalled } from "../utils/aiAssistantUtil";
 import { Logs } from "../models/logs";
 import { DOC_LINKS } from "../constants/documentation";
-import { cx } from "../cx";
+import { emitTelemetry } from "./telemetryService";
+import { TELEMETRY_TYPE } from "../models/telemetryEvent";
+import { getIdeInfo } from "../utils/ideInfo";
 import {
 	getIdeOnboardingConfigKeys,
 	isSelfHealingEnabled,
@@ -882,9 +884,13 @@ async function syncAuthFromSecrets(context: vscode.ExtensionContext, logs: Logs)
 
 function sendSelfHealingTelemetry(enabled: boolean): void {
 	try {
-		Promise.resolve(
-			cx.setUserEventDataForLogs("settings", enabled ? "selfHealingEnabled" : "selfHealingDisabled", "", "")
-		).catch(() => undefined);
+		// Same values as before the analytics change; aiProvider keeps the IDE-based value.
+		emitTelemetry({
+			type: TELEMETRY_TYPE.settings,
+			subType: enabled ? "selfHealingEnabled" : "selfHealingDisabled",
+			aiProvider: getIdeInfo().nativeAiProvider ?? constants.vsCodeAgent,
+			status: "Success",
+		});
 	} catch {
 		// Telemetry is best effort
 	}
