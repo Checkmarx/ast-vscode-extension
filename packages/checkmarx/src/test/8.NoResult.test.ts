@@ -14,7 +14,9 @@ import {
     loginWithMockToken,
     logoutIfVisible,
 } from "./utils/utils";
-import { CX_CLEAR, CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
+import { CX_CLEAR, CX_LOOK_SCAN, SCAN_KEY_TREE_LABEL, MESSAGES,
+  CX_RUN_SCAN,
+} from "./utils/constants";
 import { EMPTY_RESULTS_SCAN_ID, SCAN_ID } from "./utils/envs";
 
 const COMMAND_RETRY_DELAY_MS = 2000;
@@ -112,7 +114,7 @@ describe("Scan ID load results test", () => {
         await input.setText(EMPTY_RESULTS_SCAN_ID);
         await input.confirm();
 
-        await runCommandWithRetry("ast-results.createScan");
+        await runCommandWithRetry(CX_RUN_SCAN);
 
         // If the git project does not match the CX project, confirm the mismatch dialog.
         let firstNotification = await waitForNotificationWithTimeout(5000);

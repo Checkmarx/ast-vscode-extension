@@ -15,6 +15,7 @@ import {
   selectItem,
   sleep,
   waitForNotificationWithTimeout,
+  waitForTreeItem,
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -29,6 +30,7 @@ import {
   SCAN_KEY_TREE_LABEL,
   THREE_SECONDS,
   TWO_SECONDS,
+  VSCODE_RELOAD_WINDOW,
 } from "./utils/constants";
 import {
   CX_TEST_SCAN_BRANCH_NAME,
@@ -55,6 +57,7 @@ const ACTION_NO = 1;
 const SUITE_SETUP_TIMEOUT_MS = 120000;
 const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
 const TEST_TIMEOUT_MS = 120000;
+const PICKER_LOAD_TIMEOUT_MS = 30000; // real tenant: branch search is server-side
 
 // scan poller ticks every 15s, so "load results" dialog appears ~15s after the last prompt
 const LOAD_RESULTS_WAIT_MS = 30000;
@@ -90,15 +93,24 @@ describe("Running Scans from VS Code", () => {
     const input = await InputBox.create();
     await sleep(TWO_SECONDS); // let the picker open before typing
     await input.setText(label);
-    await sleep(TWO_SECONDS); // let the picker re-filter its items
 
-    const picks = await input.getQuickPicks();
-    for (const pick of picks) {
-      if ((await pick.getText()).trim() === label) {
-        await pick.select();
-        await sleep(TWO_SECONDS); // let the tree react to the selection
-        return true;
+    // The picker searches the server on every value change, so on a real tenant the
+    // filtered list arrives well after typing: poll for the exact label instead of
+    // checking once after a fixed delay.
+    const deadline = Date.now() + PICKER_LOAD_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      try {
+        for (const pick of await input.getQuickPicks()) {
+          if ((await pick.getText()).trim() === label) {
+            await pick.select();
+            await sleep(TWO_SECONDS); // let the tree react to the selection
+            return true;
+          }
+        }
+      } catch {
+        // list re-rendered while reading; retry
       }
+      await sleep(1000);
     }
 
     // Requested label not offered — close the picker without choosing anything.
@@ -205,7 +217,7 @@ describe("Running Scans from VS Code", () => {
     await acceptParentGitRepositoryPrompt();
 
     // reload ensures Git extension picks up the HEAD if the prompt was missed
-    await runCommand("workbench.action.reloadWindow");
+    await runCommand(VSCODE_RELOAD_WINDOW);
     await sleep(FIVE_SECONDS);
 
     await loginWithMockToken(workbench, {
@@ -238,7 +250,7 @@ describe("Running Scans from VS Code", () => {
   it(
     "should select an existing project and branch as the basis for a rescan",
     retryTest(async function () {
-      this.timeout(TEST_TIMEOUT_MS);
+      this.timeout(LOAD_RESULTS_TEST_TIMEOUT_MS); // project + branch search + latest-scan load
 
       await runCommand(CX_SELECT_PROJECT);
       const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
@@ -248,12 +260,12 @@ describe("Running Scans from VS Code", () => {
         CX_TEST_SCAN_BRANCH_NAME
       );
       expect(branchSelected, `Branch "${CX_TEST_SCAN_BRANCH_NAME}" should be selectable`).to.be.true;
-      await sleep(THREE_SECONDS); // let the latest scan auto-load into the tree
-
+      // Selecting the branch auto-loads its latest scan; on a real tenant a large scan takes
+      // a while and the tree only fills in once it has loaded, so wait for each node.
       const tree = await initialize();
-      const project = await tree?.findItem(PROJECT_KEY_TREE + projectName);
-      const branch = await tree?.findItem(BRANCH_KEY_TREE + CX_TEST_SCAN_BRANCH_NAME);
-      const scan = await tree?.findItem(SCAN_KEY_TREE_LABEL);
+      const branch = await waitForTreeItem(tree, BRANCH_KEY_TREE + CX_TEST_SCAN_BRANCH_NAME, 60000);
+      const project = await waitForTreeItem(tree, PROJECT_KEY_TREE + projectName, 15000);
+      const scan = await waitForTreeItem(tree, SCAN_KEY_TREE_LABEL, 60000);
 
       expect(project, `Should show project ${projectName}`).is.not.undefined;
       expect(branch, `Should show branch ${CX_TEST_SCAN_BRANCH_NAME}`).is.not.undefined;

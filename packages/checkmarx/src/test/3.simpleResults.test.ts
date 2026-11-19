@@ -13,6 +13,7 @@ import {
   loginWithMockToken,
   logoutIfVisible,
   waitForTreeItem,
+  confirmQuickPickItem
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -59,8 +60,7 @@ describe("Individual pickers load results test", () => {
     await wait(1000);
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     const projectName = await getQuickPickSelector(input);
-    await input.setText(projectName);
-    await input.confirm();
+    await confirmQuickPickItem(input, projectName);
 
     const project = await waitForTreeItem(tree, PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
@@ -74,8 +74,7 @@ describe("Individual pickers load results test", () => {
     await wait(1000);
     await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     const branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
+    await confirmQuickPickItem(input, branchName);
 
     const branch = await waitForTreeItem(tree, BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
@@ -132,8 +131,7 @@ describe("Individual pickers load results test", () => {
     await wait(1000);
     // Select from the pickers list
     const scanDate = await getQuickPickSelector(input);
-    await input.setText(scanDate);
-    await input.confirm();
+    await confirmQuickPickItem(input, scanDate);
     // Wait for scan selection to be made
     const scanDetailsparts: string[] = scanDate.split(" ");
     const formattedId: string = scanDetailsparts.slice(-2).join(" ");

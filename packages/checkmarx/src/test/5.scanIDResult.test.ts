@@ -18,6 +18,7 @@ import {
   retryTest,
   selectDetailsTab,
   sleep,
+  waitForScanChild,
 } from "./utils/utils";
 import {
   CHANGES_CONTAINER,
@@ -128,15 +129,7 @@ describe("Scan ID load results test", () => {
     }
 
     // Step 3: Expand the scan root and locate the SAST engine node.
-    const scanRoot = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-    await scanRoot?.expand();
-    await sleep(500);
-
-    let sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    if (sastItem === undefined) {
-      await sleep(2000);
-      sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    }
+    const sastItem = await waitForScanChild(resultsTree, SCAN_KEY_TREE_LABEL, SAST_TYPE);
     expect(sastItem, "SAST node not found").to.not.be.undefined;
 
     // Step 4: Expand the SAST node and fetch the first vulnerability item.

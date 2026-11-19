@@ -27,7 +27,7 @@ describe("Extension settings tests", () => {
 
   // Hides the bottom bar and injects a mock token before any test runs.
   before(async function () {
-    this.timeout(15000);
+    this.timeout(120000); // real-tenant login verifies and retries
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
     const bottomBar = new BottomBarPanel();

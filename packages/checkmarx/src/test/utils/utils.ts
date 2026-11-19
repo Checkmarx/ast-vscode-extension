@@ -14,8 +14,11 @@ import {
 } from "vscode-extension-tester";
 import { WEBVIEW_TITLE } from "./constants";
 
-const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const CX_MOCK_TOKEN_COMMAND = "ast-results.mockTokenTest";
+// Exact command palette label: extest only picks the entry whose label equals this text;
+// anything else (a prefix or a command ID) presses Enter on the top fuzzy match, which VS Code
+// ranks by recent use, so a different command can run.
+const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
+const CX_MOCK_TOKEN_COMMAND = "Mock Token Test";
 const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 
 type CommandExecutor = (command: string) => Promise<void>;
@@ -250,18 +253,42 @@ export async function clickFirstVulnerability(scan: any): Promise<void> {
   }
 }
 
+/**
+ * True once no engine under the loaded scan lists a group for `severity` (i.e. the severity
+ * filter took effect). Polls because the tree re-renders asynchronously after a filter
+ * change, re-reading the tree each time so a stale element from the old render is never used.
+ */
 export async function validateSeverities(
   scan: any,
-  severity: string
+  severity: string,
+  timeoutMs = 60000
 ): Promise<boolean> {
-  var r = true;
-  let children = await scan.getChildren();
-  children.forEach((element: { getLabel: () => any }) => {
-    if (element.getLabel() === severity) {
-      r = false;
+  const deadline = Date.now() + timeoutMs;
+  let root = scan;
+  for (;;) {
+    try {
+      const engines = await root.getChildren();
+      let found = false;
+      for (const engine of engines) {
+        await engine.expand();
+        for (const group of await engine.getChildren()) {
+          if ((await group.getLabel()).trim().toUpperCase() === severity.toUpperCase()) {
+            found = true;
+          }
+        }
+      }
+      if (!found && engines.length > 0) {
+        return true;
+      }
+    } catch {
+      // tree re-rendered while reading; re-read below
     }
-  });
-  return r;
+    if (Date.now() >= deadline) {
+      return false;
+    }
+    await sleep(1000);
+    root = (await (await initialize())?.findItem("Scan")) ?? root;
+  }
 }
 
 export async function getDetailsView(): Promise<WebView> {
@@ -351,12 +378,14 @@ export function retryTest(testFn, retries = 3) {
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
 
-export async function selectItem(text) {
+// Types text into the open picker and clicks the matching entry. The project/branch pickers
+// search the server on every value change, so retyping the match and pressing Enter would
+// clear the list and confirm while it reloads (nothing gets selected on a real tenant).
+export async function selectItem(text: string): Promise<string> {
   const input = await InputBox.create();
   await input.setText(text);
-  let item = await getQuickPickSelector(input);
-  await input.setText(item);
-  await input.confirm();
+  const item = await getQuickPickSelector(input);
+  await clickQuickPickItem(input, item);
   return item;
 }
 
@@ -465,14 +494,103 @@ export async function focusPanelAndCollapseOthers(
 }
 
 /**
- * Polls the tree for an item until it appears (real-tenant calls update the tree asynchronously).
+ * Polls the Checkmarx One Results tree for an item until it appears. Against a real tenant the
+ * view re-renders while a large scan loads, so a section captured earlier can go stale and keep
+ * returning nothing - after a failed lookup the section is fetched again before the next poll.
  */
 export async function waitForTreeItem(tree: any, label: string, timeoutMs = 60000): Promise<any> {
   const deadline = Date.now() + timeoutMs;
-  let item = await tree?.findItem(label);
-  while (!item && Date.now() < deadline) {
+  let section = tree;
+  for (;;) {
+    try {
+      const item = await section?.findItem(label);
+      if (item) {
+        return item;
+      }
+    } catch {
+      // stale section while the view re-renders; fetched again below
+    }
+    if (Date.now() >= deadline) {
+      return undefined;
+    }
     await sleep(1000);
-    item = await tree?.findItem(label);
+    section = (await initialize()) ?? section;
   }
-  return item;
+}
+
+/**
+ * Finds a child node (e.g. SAST, IaC, Secret Detection) of the loaded scan in the results tree.
+ * Re-reads the scan root and the child on every poll: against a real tenant the tree is refreshed
+ * while results load, so a reference captured once can go stale or the child may not exist yet.
+ */
+export async function waitForScanChild(tree: any, scanLabel: string, childLabel: string, timeoutMs = 60000): Promise<any> {
+  const deadline = Date.now() + timeoutMs;
+  let child: any;
+  do {
+    try {
+      const root = await tree?.findItem(scanLabel);
+      if (root) {
+        await root.expand();
+        child = await root.findChildItem(childLabel);
+      }
+    } catch {
+      // stale element while the tree refreshes; retry on the next poll
+    }
+    if (child) {
+      return child;
+    }
+    await sleep(1000);
+  } while (Date.now() < deadline);
+  return undefined;
+}
+
+/**
+ * Types `text` into a quick pick (only if it is not already there) and confirms it once an item with
+ * that text is listed. The extension reloads the list on every text change, so pressing Enter right
+ * after typing hits an empty list on a real tenant and nothing (or undefined) gets selected.
+ */
+export async function confirmQuickPickItem(input: InputBox, text: string, timeoutMs = 60000): Promise<void> {
+  const current = ((await input.getText()) ?? "").trim();
+  if (current !== text.trim()) {
+    await input.setText(text);
+    await sleep(1500); // debounce + list reset before the reload starts
+  }
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      for (const pick of await input.getQuickPicks()) {
+        if ((await pick.getText()).trim() === text.trim()) {
+          // click the item: Enter may not have an active item yet right after a reload
+          await pick.select();
+          return;
+        }
+      }
+    } catch {
+      // list re-rendered while reading; retry
+    }
+    await sleep(500);
+  }
+  await input.confirm();
+}
+
+/**
+ * Clicks the quick pick item with the given text without typing anything. Used for the wizard,
+ * whose lists are loaded up front and filtered client-side.
+ */
+export async function clickQuickPickItem(input: InputBox, text: string, timeoutMs = 60000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      for (const pick of await input.getQuickPicks()) {
+        if ((await pick.getText()).trim() === text.trim()) {
+          await pick.select();
+          return;
+        }
+      }
+    } catch {
+      // list re-rendered while reading; retry
+    }
+    await sleep(500);
+  }
+  throw new Error(`Quick pick item "${text}" was not listed within ${timeoutMs} ms`);
 }

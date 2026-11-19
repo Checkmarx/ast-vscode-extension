@@ -1,3 +1,5 @@
 {
-  "telemetry.telemetryLevel": "off"
+  "telemetry.telemetryLevel": "off",
+  "extensions.ignoreRecommendations": true,
+  "git.openRepositoryInParentFolders": "always"
 }

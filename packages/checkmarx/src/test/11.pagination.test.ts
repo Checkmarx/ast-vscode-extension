@@ -27,7 +27,7 @@ import { expect } from "chai";
 
 const SUITE_SETUP_TIMEOUT_MS = 100000;
 const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
-const TEST_TIMEOUT_MS = 60000;
+const TEST_TIMEOUT_MS = 150000; // real tenant: server-side search + branch load + button poll
 
 describe("Get items with pagination", () => {
 	let bench: Workbench;

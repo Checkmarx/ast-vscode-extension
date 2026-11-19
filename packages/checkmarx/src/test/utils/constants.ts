@@ -37,8 +37,13 @@ export const CX_FILTER_TO_VERIFY = "ast-results:Filter: To Verify";
 export const CX_FILTER_URGENT = "ast-results:Filter: Urgent";
 export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
 
-export const CX_CLEAR = "ast-results: Clear";
+// Must be the exact palette label: extest presses Enter on the top match otherwise, and VS Code
+// ranks recently used commands first, so a prefix can run "Clear SCA results tree" instead.
+export const CX_CLEAR = "ast-results: Clear Results Selection";
 export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
+// Exact palette labels (see the CX_CLEAR note above).
+export const CX_RUN_SCAN = "ast-results: Run Scan";
+export const VSCODE_RELOAD_WINDOW = "Developer: Reload Window";
 export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
 
 export const CX_CATETORY = "Checkmarx One";

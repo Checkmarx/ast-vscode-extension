@@ -17,6 +17,7 @@ import {
   openDetailsFrame,
   retryTest,
   sleep,
+  waitForScanChild,
 } from "./utils/utils";
 import {
   CX_CLEAR,
@@ -100,15 +101,7 @@ describe("AI Security Champion tab for SAST vulnerabilities (TC37)", () => {
       resultsTree = await initialize();
     }
 
-    const scanRoot = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-    await scanRoot?.expand();
-    await sleep(500);
-
-    let sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    if (sastItem === undefined) {
-      await sleep(2000);
-      sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    }
+    const sastItem = await waitForScanChild(resultsTree, SCAN_KEY_TREE_LABEL, SAST_TYPE);
     expect(sastItem, "SAST node not found").to.not.be.undefined;
 
     await sastItem?.expand();
@@ -237,15 +230,7 @@ describe("AI Security Champion tab for IaC vulnerabilities (TC44)", () => {
       resultsTree = await initialize();
     }
 
-    const scanRoot = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-    await scanRoot?.expand();
-    await sleep(500);
-
-    let iacItem = await scanRoot?.findChildItem(IAC_TREE_LABEL);
-    if (iacItem === undefined) {
-      await sleep(2000);
-      iacItem = await scanRoot?.findChildItem(IAC_TREE_LABEL);
-    }
+    const iacItem = await waitForScanChild(resultsTree, SCAN_KEY_TREE_LABEL, IAC_TREE_LABEL);
     expect(iacItem, "IaC node not found").to.not.be.undefined;
 
     await iacItem?.expand();

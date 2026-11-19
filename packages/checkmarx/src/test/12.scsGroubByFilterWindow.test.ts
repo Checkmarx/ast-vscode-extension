@@ -20,7 +20,6 @@ import {
 	openDetailsFrame,
 	selectDetailsTab,
 	sleep,
-	waitForNotificationWithTimeout,
 } from "./utils/utils";
 import {
 	CHANGES_LABEL,
@@ -44,7 +43,51 @@ const TEST_TIMEOUT_MS = 120000;
 // Matches the scan's recorded path for every secret-detection result in this
 // fixture; copied into out/test/resources by the copytestproject build step.
 const SECRETS_FIXTURE_PATH = path.join(__dirname, "resources", "secrets.go");
-const SECRETS_FIXTURE_BACKUP_PATH = `${SECRETS_FIXTURE_PATH}.bak`;
+// Workspace folder the test VS Code opens (packages/checkmarx).
+const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..");
+
+// Every copy of `fileName` that VS Code's workspace.findFiles can see. It follows symlinked
+// folders, and node_modules/@checkmarx/vscode-core links to packages/core, which has its own
+// src/resources/secrets.go - so moving only the out/test copy does not make the file missing.
+function findWorkspaceCopies(fileName: string): string[] {
+	const found = new Set<string>();
+	const visited = new Set<string>();
+	const walk = (dir: string) => {
+		let real: string;
+		try {
+			real = fs.realpathSync(dir);
+		} catch {
+			return;
+		}
+		if (visited.has(real)) {
+			return;
+		}
+		visited.add(real);
+		for (const entry of fs.readdirSync(real, { withFileTypes: true })) {
+			if (entry.name === ".git") {
+				continue;
+			}
+			const full = path.join(real, entry.name);
+			if (entry.isDirectory() || entry.isSymbolicLink()) {
+				let stat: fs.Stats | undefined;
+				try {
+					stat = fs.statSync(full);
+				} catch {
+					stat = undefined;
+				}
+				if (stat?.isDirectory()) {
+					walk(full);
+					continue;
+				}
+			}
+			if (entry.name === fileName) {
+				found.add(fs.realpathSync(full));
+			}
+		}
+	};
+	walk(WORKSPACE_ROOT);
+	return [...found];
+}
 
 const COMMAND_RETRIES = 3;
 const INPUTBOX_RETRIES = 30;
@@ -249,44 +292,43 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	}
 
-	// Toggles a Group By option and confirms the state flipped.
-	async function tryToggleGroupByOption(menuLabel: string): Promise<boolean> {
-		const initialStatuses = await readGroupByStatuses();
-		const initialEntry = initialStatuses.find((status) => status.label === menuLabel);
-		if (!initialEntry) {
-			return false;
-		}
-
-		const desiredState = !initialEntry.isActive;
+	// Toggles a menu option and, when `confirm` is set, waits until a fresh menu read shows the
+	// flipped state. The current state is read from the same menu that is clicked, so a toggle
+	// costs one menu open plus the confirming read(s); each open re-focuses the panel and is
+	// slow against a real tenant, and the extra reads made TC86/TC87 exceed their timeout there.
+	async function toggleMenuOption(
+		openMenu: () => Promise<any | undefined>,
+		readStatuses: () => Promise<MenuStatus[]>,
+		label: string,
+		confirm: boolean
+	): Promise<boolean> {
+		let desiredState: boolean | undefined;
 
 		for (let attempt = 1; attempt <= 2; attempt++) {
-			if (attempt > 1) {
-				const midStatuses = await readGroupByStatuses();
-				const midEntry = midStatuses.find((status) => status.label === menuLabel);
-				if (midEntry && midEntry.isActive === desiredState) {
-					return true;
-				}
-			}
-
-			const menu = await openResultsMoreActionsMenu();
+			const menu = await openMenu();
 			if (!menu) {
 				return false;
 			}
 
 			try {
-				const items = await menu.getItems();
 				let targetItem: any;
-
-				for (const item of items) {
+				let targetActive = false;
+				for (const item of await menu.getItems()) {
 					const parsed = parseMenuItemLabel(await item.getLabel());
-					if (parsed.label === menuLabel) {
+					if (parsed.label === label) {
 						targetItem = item;
+						targetActive = parsed.isActive;
 						break;
 					}
 				}
-
 				if (!targetItem) {
 					return false;
+				}
+
+				if (desiredState === undefined) {
+					desiredState = !targetActive;
+				} else if (targetActive === desiredState) {
+					return true; // the first click landed after the confirm window
 				}
 
 				await targetItem.select();
@@ -298,11 +340,14 @@ describe("Secret detection results tests (OAuth flow)", () => {
 				});
 			}
 
+			if (!confirm) {
+				return true;
+			}
+
 			const giveUpAt = Date.now() + MENU_TOGGLE_TIMEOUT_MS;
 			while (Date.now() < giveUpAt) {
 				await sleep(MENU_REFRESH_DELAY_MS);
-				const latestStatuses = await readGroupByStatuses();
-				const latestEntry = latestStatuses.find((status) => status.label === menuLabel);
+				const latestEntry = (await readStatuses()).find((status) => status.label === label);
 				if (latestEntry && latestEntry.isActive === desiredState) {
 					return true;
 				}
@@ -310,6 +355,11 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 
 		return false;
+	}
+
+	// Toggles a Group By option; confirms the flip unless `confirm` is false (best-effort revert).
+	async function tryToggleGroupByOption(menuLabel: string, confirm = true): Promise<boolean> {
+		return toggleMenuOption(openResultsMoreActionsMenu, readGroupByStatuses, menuLabel, confirm);
 	}
 
 	// Opens the state filter dropdown from the panel header.
@@ -383,67 +433,9 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		}
 	}
 
-	// Toggles a state filter option and confirms the state flipped.
-	async function tryToggleStateFilterOption(filterLabel: string): Promise<boolean> {
-		const initialStatuses = await readStateFilterStatuses();
-		const initialEntry = initialStatuses.find((status) => status.label === filterLabel);
-		if (!initialEntry) {
-			return false;
-		}
-
-		const desiredState = !initialEntry.isActive;
-
-		for (let attempt = 1; attempt <= 2; attempt++) {
-			if (attempt > 1) {
-				const midStatuses = await readStateFilterStatuses();
-				const midEntry = midStatuses.find((status) => status.label === filterLabel);
-				if (midEntry && midEntry.isActive === desiredState) {
-					return true;
-				}
-			}
-
-			const filterMenu = await openFilterDropdownFromHeader();
-			if (!filterMenu) {
-				return false;
-			}
-
-			try {
-				const items = await filterMenu.getItems();
-				let targetItem: any;
-
-				for (const item of items) {
-					const parsed = parseMenuItemLabel(await item.getLabel());
-					if (parsed.label === filterLabel) {
-						targetItem = item;
-						break;
-					}
-				}
-
-				if (!targetItem) {
-					return false;
-				}
-
-				await targetItem.select();
-			} catch {
-				return false;
-			} finally {
-				await filterMenu.close().catch(() => {
-					// Ignore close failures when menu auto-closes.
-				});
-			}
-
-			const giveUpAt = Date.now() + MENU_TOGGLE_TIMEOUT_MS;
-			while (Date.now() < giveUpAt) {
-				await sleep(MENU_REFRESH_DELAY_MS);
-				const latestStatuses = await readStateFilterStatuses();
-				const latestEntry = latestStatuses.find((status) => status.label === filterLabel);
-				if (latestEntry && latestEntry.isActive === desiredState) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+	// Toggles a state filter option; confirms the flip unless `confirm` is false (best-effort revert).
+	async function tryToggleStateFilterOption(filterLabel: string, confirm = true): Promise<boolean> {
+		return toggleMenuOption(openFilterDropdownFromHeader, readStateFilterStatuses, filterLabel, confirm);
 	}
 
 	// Waits until the secret detection node appears under the scan root.
@@ -699,17 +691,43 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
 		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
 
-		fs.renameSync(SECRETS_FIXTURE_PATH, SECRETS_FIXTURE_BACKUP_PATH);
+		// Move every copy the workspace can see aside, so the file is genuinely missing.
+		const copies = findWorkspaceCopies(path.basename(SECRETS_FIXTURE_PATH));
+		expect(copies, "secrets.go fixture should exist before it is removed").to.not.be.empty;
+		for (const copy of copies) {
+			fs.renameSync(copy, `${copy}.bak`);
+		}
 		try {
 			await fileLink.click();
 			await driver.switchTo().defaultContent();
 
-			const notification = await waitForNotificationWithTimeout(10000);
-			expect(notification, "Expected a notification after clicking the file path link").to.not.be.undefined;
-			const notificationText = await notification.getText();
-			expect(notificationText).to.include("not found in workspace");
+			// Other toasts (e.g. "Successfully authenticated") can be shown at the same time, so
+			// look for the not-found message among all of them rather than taking the first one.
+			const seen: string[] = [];
+			let found = false;
+			const deadline = Date.now() + 10000;
+			while (!found && Date.now() < deadline) {
+				for (const notification of await new Workbench().getNotifications()) {
+					try {
+						const text = await notification.getText();
+						if (text.includes("not found in workspace")) {
+							found = true;
+							break;
+						}
+						seen.push(text);
+					} catch {
+						// Notification was dismissed while reading it - keep polling.
+					}
+				}
+				if (!found) {
+					await sleep(500);
+				}
+			}
+			expect(found, `Expected a "not found in workspace" notification. Seen: ${seen.join(" | ") || "none"}`).to.be.true;
 		} finally {
-			fs.renameSync(SECRETS_FIXTURE_BACKUP_PATH, SECRETS_FIXTURE_PATH);
+			for (const copy of copies) {
+				fs.renameSync(`${copy}.bak`, copy);
+			}
 		}
 	});
 
@@ -785,7 +803,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			expect(toggledCount, "All available Group By options should toggle").to.equal(availableLabels.length);
 		} finally {
 			for (const label of toggledLabels) {
-				await tryToggleGroupByOption(label).catch(() => {
+				await tryToggleGroupByOption(label, false).catch(() => {
 					// Best-effort revert to reduce suite side effects.
 				});
 			}
@@ -819,7 +837,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			expect(toggledCount, "All available state filters should toggle").to.equal(availableLabels.length);
 		} finally {
 			for (const label of toggledLabels) {
-				await tryToggleStateFilterOption(label).catch(() => {
+				await tryToggleStateFilterOption(label, false).catch(() => {
 					// Best-effort revert to reduce suite side effects.
 				});
 			}
