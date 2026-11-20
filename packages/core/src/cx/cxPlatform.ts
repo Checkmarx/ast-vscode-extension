@@ -10,6 +10,16 @@ import { CxCommandOutput } from "@checkmarx/ast-cli-javascript-wrapper/dist/main
 import CxLearnMoreDescriptions from "@checkmarx/ast-cli-javascript-wrapper/dist/main/learnmore/CxLearnMoreDescriptions";
 import CxAsca from "@checkmarx/ast-cli-javascript-wrapper/dist/main/asca/CxAsca";
 import { CxConfig } from "@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/CxConfig";
+
+/**
+ * The Checkmarx One base URL and tenant from a browser sign-in. The same URL is where this extension
+ * reached Keycloak (`{baseUri}/auth/realms/{tenant}`), so it is both cx_base_uri and cx_base_auth_uri.
+ * An API key already carries its own account, and must not be given these.
+ */
+export interface CxLoginAccount {
+  baseUri: string;
+  tenant: string;
+}
 import CxOssResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/oss/CxOss";
 import CxIacResult from "@checkmarx/ast-cli-javascript-wrapper/dist/main/iacRealtime/CxIac";
 
@@ -238,6 +248,18 @@ export interface CxPlatform {
   iacScanResults(sourcePath: string, dockerProvider: string, ignoredFilePath?: string): Promise<CxIacResult[] | undefined>;
 
   authValidate(logs: Logs): Promise<boolean>;
+
+  /**
+   * Stores this sign-in as the cx CLI login, so cx-devassist sees it. A browser sign-in also stores
+   * the base URL and tenant. An API key is stored alone.
+   */
+  shareLogin(token: string, logs?: Logs, account?: CxLoginAccount): Promise<boolean>;
+
+  /** Clears the cx CLI login on sign-out. */
+  removeLogin(logs?: Logs): Promise<boolean>;
+
+  /** Hands an existing extension login to cx once, when cx has no working login of its own. */
+  syncLogin(logs?: Logs): Promise<void>;
 
   getRiskManagementResults(projectId: string, scanId: string): Promise<object | undefined>;
 
