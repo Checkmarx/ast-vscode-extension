@@ -49,6 +49,8 @@ interface McpEntry {
   headers?: Record<string, string>;
 }
 
+// Parsed JSON of arbitrary shape (settings.json / mcp.json); callers read optional keys.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function readJson(file: string): any {
   try {
     return JSON.parse(fs.readFileSync(file, "utf-8"));
@@ -225,7 +227,7 @@ describe("Checkmarx real login and MCP configuration", function () {
 
   // Full user journey: logout -> API Key form -> type key -> Log in -> wait for authenticated state.
   async function loginWithApiKeyThroughWindow(): Promise<void> {
-    let webView = await openAuthenticationWebView();
+    const webView = await openAuthenticationWebView();
     try {
       await ensureLoggedOut(webView);
       await showApiKeyForm();

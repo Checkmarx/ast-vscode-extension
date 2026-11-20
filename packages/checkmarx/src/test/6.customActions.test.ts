@@ -1,7 +1,9 @@
 import {
+  By,
   CustomTreeSection,
   EditorView,
   InputBox,
+  ViewPanelAction,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -310,9 +312,7 @@ describe("filter and groups actions tests", () => {
    * Clicks a severity filter action (INFO/LOW/MEDIUM/HIGH/CRITICAL)
    * from the results panel header.
    */
-  async function toggleSeverityFilterFromHeader(severityLabel: string): Promise<void> {
-    await focusResultsPanelAndSelectScan();
-
+  async function findSeverityAction(severityLabel: string): Promise<ViewPanelAction> {
     const section = await initialize();
     if (!section) {
       throw new Error("Cannot get Checkmarx One Results section");
@@ -334,9 +334,44 @@ describe("filter and groups actions tests", () => {
     if (!action || typeof action.click !== "function") {
       throw new Error(`Severity action \"${severityLabel}\" was not found in the results panel header`);
     }
+    return action as ViewPanelAction;
+  }
 
-    await action.click();
-    await sleepFor(1200);
+  // Whether results of this severity are shown. Each click swaps the header button between the
+  // "...Untoggle" command (icon <severity>_untoggle.svg, results shown) and the "...Toggle" one
+  // (<severity>_toggle.svg, results hidden); both are labelled with the severity name.
+  async function isSeverityShown(severityLabel: string): Promise<boolean> {
+    const action = await findSeverityAction(severityLabel);
+    const icon = await action.findElement(By.css(".action-label")).catch(() => action);
+    const style = `${await icon.getAttribute("style")}`.toLowerCase();
+    if (!style.includes(`${severityLabel.toLowerCase()}_`)) {
+      throw new Error(`Cannot read the ${severityLabel} filter state from its icon (style: ${style})`);
+    }
+    return style.includes("_untoggle.svg");
+  }
+
+  // Clicks the severity button and waits until its icon shows the flipped state. A click can be
+  // lost while the panel re-renders; a second click is made only after a fresh read shows the
+  // state is still unchanged, so it can never undo a click that did land.
+  async function toggleSeverityFilterFromHeader(severityLabel: string): Promise<boolean> {
+    await focusResultsPanelAndSelectScan();
+    const before = await isSeverityShown(severityLabel);
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      await (await findSeverityAction(severityLabel)).click();
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline) {
+        await sleepFor(500);
+        try {
+          if ((await isSeverityShown(severityLabel)) !== before) {
+            return !before;
+          }
+        } catch {
+          // Header re-rendered while reading - read again.
+        }
+      }
+    }
+    throw new Error(`${severityLabel} filter did not change after two clicks (still ${before ? "shown" : "hidden"})`);
   }
 
   function parseFilterMenuItemLabel(rawLabel: string): {
@@ -520,13 +555,14 @@ describe("filter and groups actions tests", () => {
     ];
 
     for (const severityLabel of severityLabels) {
-      await toggleSeverityFilterFromHeader(severityLabel);
+      expect(await isSeverityShown(severityLabel), `${severityLabel} results should be shown before filtering`).to.equal(true);
+      expect(await toggleSeverityFilterFromHeader(severityLabel), `${severityLabel} filter should switch to hidden`).to.equal(false);
       const scan = await waitForScanRootItem();
       const isValidated = await validateSeverities(scan, severityLabel);
 
-      expect(isValidated).to.equal(true);
+      expect(isValidated, `${severityLabel} results should be hidden from every engine`).to.equal(true);
       // Reset this severity filter before testing the next one.
-      await toggleSeverityFilterFromHeader(severityLabel);
+      expect(await toggleSeverityFilterFromHeader(severityLabel), `${severityLabel} filter should switch back to shown`).to.equal(true);
     }
   });
 

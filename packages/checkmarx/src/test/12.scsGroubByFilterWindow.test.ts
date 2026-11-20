@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
 	By,
+	ContextMenu,
 	CustomTreeSection,
 	EditorView,
 	InputBox,
@@ -12,6 +13,7 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
+	ensureWorkspaceFolderOpen,
 	focusPanelAndCollapseOthers,
 	getResults,
 	initialize,
@@ -297,7 +299,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 	// costs one menu open plus the confirming read(s); each open re-focuses the panel and is
 	// slow against a real tenant, and the extra reads made TC86/TC87 exceed their timeout there.
 	async function toggleMenuOption(
-		openMenu: () => Promise<any | undefined>,
+		openMenu: () => Promise<ContextMenu | undefined>,
 		readStatuses: () => Promise<MenuStatus[]>,
 		label: string,
 		confirm: boolean
@@ -600,8 +602,11 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	before(async function () {
 		this.timeout(SUITE_SETUP_TIMEOUT_MS);
-		workbench = new Workbench();
 		driver = VSBrowser.instance.driver;
+		// The file-link tests resolve the result's path against the workspace folder. Opening it
+		// reloads the window, so do it before anything else in this suite.
+		await ensureWorkspaceFolderOpen(WORKSPACE_ROOT);
+		workbench = new Workbench();
 
 		await loginWithMockToken(workbench, {
 			executeCommandWithRetry: runCommand,

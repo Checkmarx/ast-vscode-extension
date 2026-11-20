@@ -6,6 +6,7 @@ import {
   SideBarView,
   InputBox,
   QuickPickItem,
+  TreeItem,
   WebView,
   WebDriver,
   ViewSection,
@@ -395,6 +396,48 @@ export async function waitForInputBox(timeoutMs = 30000): Promise<InputBox> {
   }
 }
 
+// Makes sure `folder` is the open workspace folder. extest opens it by running the VS Code CLI
+// (`code -r <folder>`) against the test instance, and on the Linux CI runners that hand-off can
+// leave the window without a folder ("Open Folder" watermark, title without the folder name), so
+// anything resolved against the workspace (e.g. a result's file link) is never found. Falls back
+// to File > Open Folder through VS Code's simple in-window dialog, which extest turns on.
+export async function ensureWorkspaceFolderOpen(folder: string, timeoutMs = 60000): Promise<void> {
+  const driver = VSBrowser.instance.driver;
+  const name = folder.split(/[\\/]/).filter(Boolean).pop() ?? folder;
+  const isOpen = async () => (await driver.getTitle()).includes(name);
+  if (await isOpen()) {
+    return;
+  }
+  console.log(`[ui-tests] No workspace folder open (title "${await driver.getTitle()}"); opening ${folder}`);
+  await new Workbench().executeCommand("File: Open Folder...");
+  const input = await waitForInputBox();
+  await input.setText(folder);
+  // In the simple dialog Enter only acts on the highlighted list entry; OK accepts the typed path.
+  const okButtons = await driver.findElements(
+    By.xpath("//div[contains(@class,'quick-input-widget')]//*[contains(@class,'monaco-button') and normalize-space(.)='OK']")
+  );
+  if (okButtons.length > 0) {
+    await okButtons[0].click();
+  } else {
+    await input.confirm();
+  }
+
+  // Opening a folder reloads the window: wait for the new workbench, then for its title.
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      await VSBrowser.instance.waitForWorkbench(Math.max(1000, deadline - Date.now()));
+      if (await isOpen()) {
+        return;
+      }
+    } catch {
+      // Workbench is reloading - keep waiting.
+    }
+    await sleep(1000);
+  }
+  throw new Error(`Workspace folder ${folder} did not open (title: "${await driver.getTitle()}")`);
+}
+
 // Types text into the open picker and clicks the matching entry. The project/branch pickers
 // search the server on every value change, so retyping the match and pressing Enter would
 // clear the list and confirm while it reloads (nothing gets selected on a real tenant).
@@ -540,9 +583,14 @@ export async function waitForTreeItem(tree: any, label: string, timeoutMs = 6000
  * Re-reads the scan root and the child on every poll: against a real tenant the tree is refreshed
  * while results load, so a reference captured once can go stale or the child may not exist yet.
  */
-export async function waitForScanChild(tree: any, scanLabel: string, childLabel: string, timeoutMs = 60000): Promise<any> {
+export async function waitForScanChild(
+  tree: CustomTreeSection | undefined,
+  scanLabel: string,
+  childLabel: string,
+  timeoutMs = 60000
+): Promise<TreeItem> {
   const deadline = Date.now() + timeoutMs;
-  let child: any;
+  let child: TreeItem | undefined;
   do {
     try {
       const root = await tree?.findItem(scanLabel);
