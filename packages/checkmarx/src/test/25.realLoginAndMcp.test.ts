@@ -85,6 +85,46 @@ function findMcpEntry(): { entry: McpEntry; source: string } | undefined {
   return undefined;
 }
 
+// Server names only (never values, which hold tokens) from a settings/mcp JSON file.
+function describeServers(file: string): string {
+  if (!fs.existsSync(file)) {
+    return `${file}: missing`;
+  }
+  const json = readJson(file);
+  if (json === undefined) {
+    return `${file}: not valid JSON`;
+  }
+  const servers = json.mcp?.servers ?? json.servers ?? json.mcpServers;
+  return `${file}: servers=${JSON.stringify(Object.keys(servers ?? {}))}`;
+}
+
+// What the extension had to work with when no MCP entry appeared: which extensions VS Code has
+// registered (the post-login install needs an AI assistant such as Copilot Chat) and which
+// candidate config files exist. Prints names only.
+function describeMcpSetup(): string {
+  const lines: string[] = [];
+  const extensionsDir = process.env.EXTENSIONS_FOLDER || path.join(os.homedir(), ".vscode", "extensions");
+  const registry = path.join(extensionsDir, "extensions.json");
+  const folders = fs.existsSync(extensionsDir) ? fs.readdirSync(extensionsDir) : [];
+  lines.push(`extensions dir ${extensionsDir}: ${JSON.stringify(folders)}`);
+  const registered = readJson(registry);
+  lines.push(
+    Array.isArray(registered)
+      ? `extensions.json ids: ${JSON.stringify(registered.map((e: { identifier?: { id?: string } }) => e.identifier?.id))}`
+      : `extensions.json: ${fs.existsSync(registry) ? "unreadable" : "missing"}`
+  );
+  const settings = readJson(TEST_SETTINGS_FILE);
+  // "Checkmarx.MCP Authentication" etc. hold modes, not secrets; the "mcp" object is reported by name only.
+  const settingKeys = Object.keys(settings ?? {}).filter((k) => /mcp|assist/i.test(k));
+  lines.push(
+    `settings.json: ${JSON.stringify(settingKeys.map((k) => (k === "mcp" ? k : `${k}=${JSON.stringify(settings[k])}`)))}`
+  );
+  for (const file of [TEST_SETTINGS_FILE, fallbackMcpJson(), path.join(os.homedir(), ".vscode", "mcp.json")]) {
+    lines.push(describeServers(file));
+  }
+  return lines.join("\n");
+}
+
 async function waitForMcpEntry(timeoutMs: number): Promise<{ entry: McpEntry; source: string } | undefined> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
@@ -322,7 +362,10 @@ describe("Checkmarx real login and MCP configuration", function () {
     await loginWithApiKeyThroughWindow();
 
     const found = await waitForMcpEntry(90000);
-    expect(found, "MCP entry for the Checkmarx server should be written after login (is MCP enabled for the tenant?)").to.not.equal(undefined);
+    expect(
+      found,
+      `MCP entry for the Checkmarx server should be written after login (is MCP enabled for the tenant?)\n${found ? "" : describeMcpSetup()}`
+    ).to.not.equal(undefined);
     const { entry } = found!;
 
     const url = entry.url ?? entry.serverUrl ?? "";
@@ -347,7 +390,7 @@ describe("Checkmarx real login and MCP configuration", function () {
     await loginWithApiKeyThroughWindow();
 
     const found = await waitForMcpEntry(90000);
-    expect(found, "MCP entry for the Checkmarx server should be written after login").to.not.equal(undefined);
+    expect(found, `MCP entry for the Checkmarx server should be written after login\n${found ? "" : describeMcpSetup()}`).to.not.equal(undefined);
     const { entry } = found!;
 
     const url = entry.url ?? entry.serverUrl ?? "";
