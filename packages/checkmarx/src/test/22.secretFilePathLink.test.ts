@@ -19,6 +19,7 @@ import {
   retryTest,
   selectDetailsTab,
   sleep,
+  waitForScanChild,
 } from "./utils/utils";
 import {
   CX_CLEAR,
@@ -92,15 +93,7 @@ describe("Secret Detection file path link in General tab (TC83, TC84)", () => {
       resultsTree = await initialize();
     }
 
-    const scanRoot = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-    await scanRoot?.expand();
-    await sleep(500);
-
-    let secretNode = await scanRoot?.findChildItem(SCS_SECRET_DETECTION_Type);
-    if (secretNode === undefined) {
-      await sleep(2000);
-      secretNode = await scanRoot?.findChildItem(SCS_SECRET_DETECTION_Type);
-    }
+    const secretNode = await waitForScanChild(resultsTree, SCAN_KEY_TREE_LABEL, SCS_SECRET_DETECTION_Type);
     expect(secretNode, "Secret detection node not found").to.not.be.undefined;
 
     await secretNode?.expand();

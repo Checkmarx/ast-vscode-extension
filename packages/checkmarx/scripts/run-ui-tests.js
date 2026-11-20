@@ -5,6 +5,13 @@ const path = require('path');
 const [, , testEnvValue, ...testPatterns] = process.argv;
 
 const corePackagePath = path.join(__dirname, '../../core/package.json');
+// Backup written before core's package.json is stripped below. If a previous run was killed
+// mid-way (so the restore never ran), put the real file back before reading it.
+const corePackageBackupPath = `${corePackagePath}.orig`;
+if (fs.existsSync(corePackageBackupPath)) {
+  fs.copyFileSync(corePackageBackupPath, corePackagePath);
+  fs.rmSync(corePackageBackupPath, { force: true });
+}
 const originalCorePackageJson = fs.readFileSync(corePackagePath, 'utf8');
 
 // `vsce` (invoked internally by `extest setup-and-run` when it packages the
@@ -20,6 +27,7 @@ const originalCorePackageJson = fs.readFileSync(corePackagePath, 'utf8');
 // so they are dropped from core's package.json for the duration of this run
 // and restored afterwards regardless of outcome.
 function stripCoreDevDependencies() {
+  fs.writeFileSync(corePackageBackupPath, originalCorePackageJson);
   const corePackage = JSON.parse(originalCorePackageJson);
   delete corePackage.devDependencies;
   fs.writeFileSync(corePackagePath, JSON.stringify(corePackage, null, 2) + '\n');
@@ -27,6 +35,7 @@ function stripCoreDevDependencies() {
 
 function restoreCorePackageJson() {
   fs.writeFileSync(corePackagePath, originalCorePackageJson);
+  fs.rmSync(corePackageBackupPath, { force: true });
 }
 
 const env = { ...process.env, TEST: testEnvValue };
@@ -45,13 +54,20 @@ const testSettingsPath = path.join(__dirname, 'test-vscode-settings.json');
 // Swaps in a reporter that also dumps results to JSON when UI_TEST_RESULTS_FILE is set (used by the CI report).
 const mochaConfigPath = path.join(__dirname, 'mocharc.ui.js');
 const quotedPatterns = testPatterns.map((p) => `"${p}"`).join(' ');
-const extestCommand = `npx extest setup-and-run ${quotedPatterns} -c 1.88.1 -i -r . -o "${testSettingsPath}" -m "${mochaConfigPath}"`;
+// Optional: run the test VS Code against an isolated extensions folder (instead of the shared ~/.vscode/extensions).
+const extensionsFolderFlag = process.env.EXTENSIONS_FOLDER ? ` -e "${process.env.EXTENSIONS_FOLDER}"` : '';
+const extestCommand = `npx extest setup-and-run ${quotedPatterns} -c 1.88.1 -i -r . -o "${testSettingsPath}" -m "${mochaConfigPath}"${extensionsFolderFlag}`;
 
 let exitCode = 0;
 try {
   stripCoreDevDependencies();
   execSync('npm run compile:tests', { stdio: 'inherit', env });
-  execSync(extestCommand, { stdio: 'inherit', env });
+  // extest packages the extension via `vsce.createVSIX()` without exposing
+  // `--allow-star-activation`, so it falls back to an interactive "Do you
+  // want to continue? [y/N]" prompt for the '*' activation event both
+  // extensions intentionally use. Feed it a "y" so the run doesn't abort
+  // when stdin isn't an attached TTY (e.g. launched via a debugger).
+  execSync(extestCommand, { stdio: ['pipe', 'inherit', 'inherit'], input: 'y\n', env });
 } catch (err) {
   exitCode = typeof err.status === 'number' && err.status !== null ? err.status : 1;
 } finally {

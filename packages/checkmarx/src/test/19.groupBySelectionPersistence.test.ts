@@ -21,6 +21,7 @@ import {
   CX_SELECT_BRANCH,
   CX_SELECT_PROJECT,
   SCAN_KEY_TREE_LABEL,
+  VSCODE_RELOAD_WINDOW,
 } from "./utils/constants";
 import { SCAN_ID } from "./utils/envs";
 
@@ -29,7 +30,7 @@ import { SCAN_ID } from "./utils/envs";
 // Uses CxMock backend - no real scan. "Another project" is test-proj-3 (distinct branch list).
 
 const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
-const RELOAD_WINDOW_COMMAND = "workbench.action.reloadWindow";
+const RELOAD_WINDOW_COMMAND = VSCODE_RELOAD_WINDOW;
 
 // test-proj-3 has its own branch set; select "develop" by name to skip "scan my local branch"
 const OTHER_PROJECT_NAME = "test-proj-3";

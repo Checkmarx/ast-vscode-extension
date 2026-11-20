@@ -1,7 +1,9 @@
 import {
+  By,
   CustomTreeSection,
   EditorView,
   InputBox,
+  ViewPanelAction,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -26,10 +28,13 @@ const COMMAND_RETRY_DELAY_MS = 2000;
 const INPUT_READY_DELAY_MS = 1000;
 const SCAN_POLL_DELAY_MS = 500;
 const SCAN_POLL_MAX_ATTEMPTS = 30;
+const SCAN_LOAD_TIMEOUT_MS = 120000;
 const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
 const FILTER_TOGGLE_REFRESH_DELAY_MS = 6000;
 const GROUP_BY_TOGGLE_CONFIRM_TIMEOUT_MS = 8000;
 const GROUP_BY_TOGGLE_POLL_DELAY_MS = 500;
+// A group-by change rebuilds the whole tree; on a large real scan that takes several seconds.
+const GROUP_BY_TREE_UPDATE_TIMEOUT_MS = 30000;
 
 // Tiny sleep helper to make async test steps easier to read.
 async function sleepFor(ms: number): Promise<void> {
@@ -62,12 +67,42 @@ describe("filter and groups actions tests", () => {
   }
 
   // Opens the "Look for Scan" flow and loads a specific scan id.
+  // Loads the scan and waits until its results are in the tree. Clearing first removes the
+  // previous test's Scan node, so the wait cannot be satisfied by the old tree; against a real
+  // tenant loading a large scan takes a while and the tree re-renders when it finishes.
   async function openScanById(scanId: string): Promise<void> {
+    await runCommandWithRetry(CX_CLEAR);
     await runCommandWithRetry(CX_LOOK_SCAN);
     const input = await InputBox.create();
     await sleepFor(INPUT_READY_DELAY_MS);
     await input.setText(scanId);
     await input.confirm();
+
+    // Collapse the other Checkmarx panels first: with them open the results panel is a few
+    // rows tall, the Scan node sits clipped at its bottom edge and expand() is not interactable.
+    await focusPanelAndCollapseOthers(CHECKMARX_RESULTS_PANEL_TITLE);
+    const deadline = Date.now() + SCAN_LOAD_TIMEOUT_MS;
+    let lastError: unknown;
+    while (Date.now() < deadline) {
+      try {
+        const section = await initialize();
+        const scan = await section?.findItem(SCAN_KEY_TREE_LABEL);
+        if (scan) {
+          await scan.expand();
+          if ((await scan.getChildren()).length > 0) {
+            return;
+          }
+        }
+      } catch (err) {
+        // tree re-rendered while reading; retry
+        lastError = err;
+      }
+      await sleepFor(1000);
+    }
+    throw new Error(
+      `Scan ${scanId} did not load into the results tree within ${SCAN_LOAD_TIMEOUT_MS} ms` +
+        (lastError ? ` (last error: ${lastError})` : "")
+    );
   }
 
   // Polls the tree until the scan root node appears, or fails after max attempts.
@@ -192,6 +227,33 @@ describe("filter and groups actions tests", () => {
   }
 
   /**
+   * Polls readGroupingLabels() until `done` accepts the labels or the timeout passes, and
+   * returns the last labels read. Reads that hit the tree mid-rebuild (stale or detached
+   * elements) are retried, since a group-by toggle re-renders every node.
+   */
+  async function waitForGroupingLabels(
+    done: (labels: string[]) => boolean,
+    timeoutMs = GROUP_BY_TREE_UPDATE_TIMEOUT_MS
+  ): Promise<string[]> {
+    const deadline = Date.now() + timeoutMs;
+    let labels: string[] = [];
+    for (;;) {
+      try {
+        labels = await readGroupingLabels();
+        if (done(labels)) {
+          return labels;
+        }
+      } catch {
+        // Tree re-rendered while reading; read again.
+      }
+      if (Date.now() >= deadline) {
+        return labels;
+      }
+      await sleepFor(1000);
+    }
+  }
+
+  /**
    * Expands the scan's first engine node and returns the sorted labels of its
    * direct children — these are the active grouping nodes (e.g. HIGH, MEDIUM
    * for severity; JavaScript for language, etc.).
@@ -250,9 +312,7 @@ describe("filter and groups actions tests", () => {
    * Clicks a severity filter action (INFO/LOW/MEDIUM/HIGH/CRITICAL)
    * from the results panel header.
    */
-  async function toggleSeverityFilterFromHeader(severityLabel: string): Promise<void> {
-    await focusResultsPanelAndSelectScan();
-
+  async function findSeverityAction(severityLabel: string): Promise<ViewPanelAction> {
     const section = await initialize();
     if (!section) {
       throw new Error("Cannot get Checkmarx One Results section");
@@ -274,9 +334,44 @@ describe("filter and groups actions tests", () => {
     if (!action || typeof action.click !== "function") {
       throw new Error(`Severity action \"${severityLabel}\" was not found in the results panel header`);
     }
+    return action as ViewPanelAction;
+  }
 
-    await action.click();
-    await sleepFor(1200);
+  // Whether results of this severity are shown. Each click swaps the header button between the
+  // "...Untoggle" command (icon <severity>_untoggle.svg, results shown) and the "...Toggle" one
+  // (<severity>_toggle.svg, results hidden); both are labelled with the severity name.
+  async function isSeverityShown(severityLabel: string): Promise<boolean> {
+    const action = await findSeverityAction(severityLabel);
+    const icon = await action.findElement(By.css(".action-label")).catch(() => action);
+    const style = `${await icon.getAttribute("style")}`.toLowerCase();
+    if (!style.includes(`${severityLabel.toLowerCase()}_`)) {
+      throw new Error(`Cannot read the ${severityLabel} filter state from its icon (style: ${style})`);
+    }
+    return style.includes("_untoggle.svg");
+  }
+
+  // Clicks the severity button and waits until its icon shows the flipped state. A click can be
+  // lost while the panel re-renders; a second click is made only after a fresh read shows the
+  // state is still unchanged, so it can never undo a click that did land.
+  async function toggleSeverityFilterFromHeader(severityLabel: string): Promise<boolean> {
+    await focusResultsPanelAndSelectScan();
+    const before = await isSeverityShown(severityLabel);
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      await (await findSeverityAction(severityLabel)).click();
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline) {
+        await sleepFor(500);
+        try {
+          if ((await isSeverityShown(severityLabel)) !== before) {
+            return !before;
+          }
+        } catch {
+          // Header re-rendered while reading - read again.
+        }
+      }
+    }
+    throw new Error(`${severityLabel} filter did not change after two clicks (still ${before ? "shown" : "hidden"})`);
   }
 
   function parseFilterMenuItemLabel(rawLabel: string): {
@@ -347,22 +442,23 @@ describe("filter and groups actions tests", () => {
     return result;
   }
 
-  async function isStateFilterActive(filterLabel: string): Promise<boolean> {
-    await focusResultsPanelAndSelectScan();
-    const currentStates = await readStateFilterStatuses();
-    const entry = currentStates.find((s) => s.label === filterLabel);
-    expect(entry, `${filterLabel} should exist in Filter icon menu`).to.not.be.undefined;
-    return entry!.isActive;
-  }
-
-  // Clicks the named filter, waits until the menu confirms the state flipped,
-  // then returns the confirmed new active state.
-  // Returning the state lets callers skip a separate menu-read assertion.
-  async function toggleStateFilterFromDropdown(filterLabel: string): Promise<boolean> {
+  // Clicks the named filter, waits until the menu confirms the state flipped, and returns
+  // the state read before the click together with the confirmed new state, so callers
+  // don't need a separate menu read (each read opens and closes the menu).
+  async function toggleStateFilterFromDropdown(
+    filterLabel: string,
+    // State already confirmed by the caller (e.g. by the previous toggle); skips one menu read.
+    knownActive?: boolean
+  ): Promise<{ before: boolean; after: boolean }> {
     // Read the current state first so we know exactly which direction we're toggling.
-    await focusResultsPanelAndSelectScan();
-    const initialStates = await readStateFilterStatuses();
-    const initialEntry = initialStates.find((s) => s.label === filterLabel);
+    let initialEntry: { label: string; isActive: boolean } | undefined;
+    if (knownActive === undefined) {
+      await focusResultsPanelAndSelectScan();
+      const initialStates = await readStateFilterStatuses();
+      initialEntry = initialStates.find((s) => s.label === filterLabel);
+    } else {
+      initialEntry = { label: filterLabel, isActive: knownActive };
+    }
     if (!initialEntry) {
       throw new Error(`State filter "${filterLabel}" not found in Filter icon menu`);
     }
@@ -377,7 +473,7 @@ describe("filter and groups actions tests", () => {
         const midStates = await readStateFilterStatuses();
         const midEntry = midStates.find((s) => s.label === filterLabel);
         if (midEntry && midEntry.isActive === desiredActiveState) {
-          return desiredActiveState;  // First click landed late — no second click needed.
+          return { before: initialEntry.isActive, after: desiredActiveState };  // First click landed late — no second click needed.
         }
       }
 
@@ -409,7 +505,7 @@ describe("filter and groups actions tests", () => {
         const latestFilterStates = await readStateFilterStatuses();
         const targetFilter = latestFilterStates.find((s) => s.label === filterLabel);
         if (targetFilter && targetFilter.isActive === desiredActiveState) {
-          return desiredActiveState;  // Change confirmed — done.
+          return { before: initialEntry.isActive, after: desiredActiveState };  // Change confirmed — done.
         }
       }
       // Full window elapsed with no change — fall through to try clicking once more.
@@ -447,7 +543,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should click on all filter severity", async function () {
-    this.timeout(180000);
+    this.timeout(300000); // 10 header toggles + 5 full-tree checks; ~2 min on a 4k-result real scan, 180 s was too tight
 
     await openScanById(SCAN_ID);
     const severityLabels = [
@@ -459,13 +555,14 @@ describe("filter and groups actions tests", () => {
     ];
 
     for (const severityLabel of severityLabels) {
-      await toggleSeverityFilterFromHeader(severityLabel);
+      expect(await isSeverityShown(severityLabel), `${severityLabel} results should be shown before filtering`).to.equal(true);
+      expect(await toggleSeverityFilterFromHeader(severityLabel), `${severityLabel} filter should switch to hidden`).to.equal(false);
       const scan = await waitForScanRootItem();
       const isValidated = await validateSeverities(scan, severityLabel);
 
-      expect(isValidated).to.equal(true);
+      expect(isValidated, `${severityLabel} results should be hidden from every engine`).to.equal(true);
       // Reset this severity filter before testing the next one.
-      await toggleSeverityFilterFromHeader(severityLabel);
+      expect(await toggleSeverityFilterFromHeader(severityLabel), `${severityLabel} filter should switch back to shown`).to.equal(true);
     }
   });
 
@@ -489,7 +586,7 @@ describe("filter and groups actions tests", () => {
       await focusResultsPanelAndSelectScan();
 
       // Capture grouping labels before toggle
-      const labelsBeforeToggle = await readGroupingLabels();
+      const labelsBeforeToggle = await waitForGroupingLabels((labels) => labels.length > 0);
       expect(
         labelsBeforeToggle.length,
         `${menuLabel}: should have visible grouping nodes before toggle`
@@ -497,10 +594,13 @@ describe("filter and groups actions tests", () => {
 
       // Toggle group-by ON via the ... context menu
       await toggleGroupByOptionFromMoreActions(menuLabel);
-      await sleepFor(1000);  // Tree needs time to re-render after the group-by change.
 
-      // Capture grouping labels after toggle — they must have changed
-      const labelsAfterToggle = await readGroupingLabels();
+      // Capture grouping labels after toggle — they must have changed. Wait for the
+      // rebuilt tree rather than a fixed delay: the rebuild time depends on the scan size.
+      const before = labelsBeforeToggle.join("|");
+      const labelsAfterToggle = await waitForGroupingLabels(
+        (labels) => labels.length > 0 && labels.join("|") !== before
+      );
       expect(
         labelsAfterToggle.length,
         `${menuLabel}: should have visible grouping nodes after toggle`
@@ -510,9 +610,10 @@ describe("filter and groups actions tests", () => {
         `${menuLabel}: grouping nodes should change after enabling group-by`
       ).to.not.equal(labelsBeforeToggle.join("|"));
 
-      // Restore — toggle the same option off
+      // Restore — toggle the same option off, and wait for the original grouping so the
+      // next option starts from the same tree.
       await toggleGroupByOptionFromMoreActions(menuLabel);
-      await sleepFor(1000);
+      await waitForGroupingLabels((labels) => labels.join("|") === before);
     }
 
     // Single tree-health check at the end avoids repeated scan polling overhead.
@@ -558,7 +659,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should toggle all state filters from Filter icon menu", async function () {
-    this.timeout(300000);
+    this.timeout(480000); // 18 toggles, each rebuilding the tree; ~17 s each on a large real scan
 
     await openScanById(SCAN_ID);
     await focusResultsPanelAndSelectScan();
@@ -576,19 +677,18 @@ describe("filter and groups actions tests", () => {
     ];
 
     for (const filterLabel of allFilterLabels) {
-      const wasActive = await isStateFilterActive(filterLabel);
-
-      // toggleStateFilterFromDropdown waits until the menu confirms the change,
-      // then returns the new state — no extra menu read needed to assert the flip.
-      const stateAfterFirstToggle = await toggleStateFilterFromDropdown(filterLabel);
+      // The toggle reads the state before clicking and confirms the new one, so no
+      // extra menu read is needed to assert the flip.
+      const firstToggle = await toggleStateFilterFromDropdown(filterLabel);
+      const wasActive = firstToggle.before;
       expect(
-        stateAfterFirstToggle,
+        firstToggle.after,
         `${filterLabel} should flip its selected state after toggle`
       ).to.equal(!wasActive);
 
-      const stateAfterSecondToggle = await toggleStateFilterFromDropdown(filterLabel);
+      const secondToggle = await toggleStateFilterFromDropdown(filterLabel, firstToggle.after);
       expect(
-        stateAfterSecondToggle,
+        secondToggle.after,
         `${filterLabel} should return to its original selected state`
       ).to.equal(wasActive);
     }
