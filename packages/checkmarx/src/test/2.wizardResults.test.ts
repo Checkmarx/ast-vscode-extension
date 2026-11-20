@@ -13,6 +13,7 @@ import {
   loginWithMockToken,
   logoutIfVisible,
   waitForTreeItem,
+  waitForInputBox,
   clickQuickPickItem
 } from "./utils/utils";
 import {
@@ -21,8 +22,12 @@ import {
   CX_SELECT_ALL,
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
+  THIRTY_SECONDS,
 } from "./utils/constants";
 import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+
+// Pickers open only after the tenant call returns (real tenant: up to ~15 s for projects).
+const PICKER_OPEN_TIMEOUT_MS = THIRTY_SECONDS;
 
 // Small sleep helper used for UI settling delays between steps.
 async function wait(ms: number) {
@@ -81,7 +86,7 @@ describe("Wizard load results test", () => {
     this.timeout(180000); // Increase timeout to 60 seconds
 
     // Project selection
-    const inputProject = await InputBox.create();
+    const inputProject = await waitForInputBox(PICKER_OPEN_TIMEOUT_MS);
     // Add delay to ensure input box is ready
     await new Promise((res) => setTimeout(res, 1000));
 
@@ -90,7 +95,7 @@ describe("Wizard load results test", () => {
     await clickQuickPickItem(inputProject, projectName);
 
     // Branch selection
-    const input = await InputBox.create();
+    const input = await waitForInputBox(PICKER_OPEN_TIMEOUT_MS);
     await new Promise((res) => setTimeout(res, 1000));
     // wizard lists every branch of the project and VS Code filters client-side: no typing needed.
     // The branch list loads after the project step; until then the picker still shows the

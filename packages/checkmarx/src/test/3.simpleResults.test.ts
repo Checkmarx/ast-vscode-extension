@@ -1,7 +1,6 @@
 import {
   CustomTreeSection,
   EditorView,
-  InputBox,
   VSBrowser,
   WebDriver,
   Workbench,
@@ -13,6 +12,7 @@ import {
   loginWithMockToken,
   logoutIfVisible,
   waitForTreeItem,
+  waitForInputBox,
   confirmQuickPickItem
 } from "./utils/utils";
 import {
@@ -23,8 +23,12 @@ import {
   CX_SELECT_SCAN,
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
+  THIRTY_SECONDS,
 } from "./utils/constants";
 import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+
+// Pickers open only after the tenant call returns (real tenant: up to ~15 s for projects).
+const PICKER_OPEN_TIMEOUT_MS = THIRTY_SECONDS;
 
 // Small sleep helper used for UI settling delays between steps.
 async function wait(ms: number) {
@@ -56,7 +60,7 @@ describe("Individual pickers load results test", () => {
   // Opens the project quick-pick, selects the test project, and asserts it appears in the tree.
   async function selectProjectForTest(tree: CustomTreeSection): Promise<string> {
     await bench.executeCommand(CX_SELECT_PROJECT);
-    const input = await InputBox.create();
+    const input = await waitForInputBox(PICKER_OPEN_TIMEOUT_MS);
     await wait(1000);
     await input.setText(CX_TEST_SCAN_PROJECT_NAME);
     const projectName = await getQuickPickSelector(input);
@@ -70,7 +74,7 @@ describe("Individual pickers load results test", () => {
   // Opens the branch quick-pick, selects the test branch, and asserts it appears in the tree.
   async function selectBranchForTest(tree: CustomTreeSection): Promise<string> {
     await bench.executeCommand(CX_SELECT_BRANCH);
-    const input = await InputBox.create();
+    const input = await waitForInputBox(PICKER_OPEN_TIMEOUT_MS);
     await wait(1000);
     await input.setText(CX_TEST_SCAN_BRANCH_NAME);
     const branchName = await getQuickPickSelector(input);
@@ -126,7 +130,7 @@ describe("Individual pickers load results test", () => {
     const tree = await initialize();
     // Execute scan selection command
     await bench.executeCommand(CX_SELECT_SCAN);
-    const input = await InputBox.create();
+    const input = await waitForInputBox(PICKER_OPEN_TIMEOUT_MS);
     // Add delay to ensure input box is ready
     await wait(1000);
     // Select from the pickers list

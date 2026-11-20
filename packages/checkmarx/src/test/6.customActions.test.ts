@@ -31,6 +31,8 @@ const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
 const FILTER_TOGGLE_REFRESH_DELAY_MS = 6000;
 const GROUP_BY_TOGGLE_CONFIRM_TIMEOUT_MS = 8000;
 const GROUP_BY_TOGGLE_POLL_DELAY_MS = 500;
+// A group-by change rebuilds the whole tree; on a large real scan that takes several seconds.
+const GROUP_BY_TREE_UPDATE_TIMEOUT_MS = 30000;
 
 // Tiny sleep helper to make async test steps easier to read.
 async function sleepFor(ms: number): Promise<void> {
@@ -223,6 +225,33 @@ describe("filter and groups actions tests", () => {
   }
 
   /**
+   * Polls readGroupingLabels() until `done` accepts the labels or the timeout passes, and
+   * returns the last labels read. Reads that hit the tree mid-rebuild (stale or detached
+   * elements) are retried, since a group-by toggle re-renders every node.
+   */
+  async function waitForGroupingLabels(
+    done: (labels: string[]) => boolean,
+    timeoutMs = GROUP_BY_TREE_UPDATE_TIMEOUT_MS
+  ): Promise<string[]> {
+    const deadline = Date.now() + timeoutMs;
+    let labels: string[] = [];
+    for (;;) {
+      try {
+        labels = await readGroupingLabels();
+        if (done(labels)) {
+          return labels;
+        }
+      } catch {
+        // Tree re-rendered while reading; read again.
+      }
+      if (Date.now() >= deadline) {
+        return labels;
+      }
+      await sleepFor(1000);
+    }
+  }
+
+  /**
    * Expands the scan's first engine node and returns the sorted labels of its
    * direct children — these are the active grouping nodes (e.g. HIGH, MEDIUM
    * for severity; JavaScript for language, etc.).
@@ -382,12 +411,19 @@ describe("filter and groups actions tests", () => {
   // the state read before the click together with the confirmed new state, so callers
   // don't need a separate menu read (each read opens and closes the menu).
   async function toggleStateFilterFromDropdown(
-    filterLabel: string
+    filterLabel: string,
+    // State already confirmed by the caller (e.g. by the previous toggle); skips one menu read.
+    knownActive?: boolean
   ): Promise<{ before: boolean; after: boolean }> {
     // Read the current state first so we know exactly which direction we're toggling.
-    await focusResultsPanelAndSelectScan();
-    const initialStates = await readStateFilterStatuses();
-    const initialEntry = initialStates.find((s) => s.label === filterLabel);
+    let initialEntry: { label: string; isActive: boolean } | undefined;
+    if (knownActive === undefined) {
+      await focusResultsPanelAndSelectScan();
+      const initialStates = await readStateFilterStatuses();
+      initialEntry = initialStates.find((s) => s.label === filterLabel);
+    } else {
+      initialEntry = { label: filterLabel, isActive: knownActive };
+    }
     if (!initialEntry) {
       throw new Error(`State filter "${filterLabel}" not found in Filter icon menu`);
     }
@@ -514,7 +550,7 @@ describe("filter and groups actions tests", () => {
       await focusResultsPanelAndSelectScan();
 
       // Capture grouping labels before toggle
-      const labelsBeforeToggle = await readGroupingLabels();
+      const labelsBeforeToggle = await waitForGroupingLabels((labels) => labels.length > 0);
       expect(
         labelsBeforeToggle.length,
         `${menuLabel}: should have visible grouping nodes before toggle`
@@ -522,10 +558,13 @@ describe("filter and groups actions tests", () => {
 
       // Toggle group-by ON via the ... context menu
       await toggleGroupByOptionFromMoreActions(menuLabel);
-      await sleepFor(1000);  // Tree needs time to re-render after the group-by change.
 
-      // Capture grouping labels after toggle — they must have changed
-      const labelsAfterToggle = await readGroupingLabels();
+      // Capture grouping labels after toggle — they must have changed. Wait for the
+      // rebuilt tree rather than a fixed delay: the rebuild time depends on the scan size.
+      const before = labelsBeforeToggle.join("|");
+      const labelsAfterToggle = await waitForGroupingLabels(
+        (labels) => labels.length > 0 && labels.join("|") !== before
+      );
       expect(
         labelsAfterToggle.length,
         `${menuLabel}: should have visible grouping nodes after toggle`
@@ -535,9 +574,10 @@ describe("filter and groups actions tests", () => {
         `${menuLabel}: grouping nodes should change after enabling group-by`
       ).to.not.equal(labelsBeforeToggle.join("|"));
 
-      // Restore — toggle the same option off
+      // Restore — toggle the same option off, and wait for the original grouping so the
+      // next option starts from the same tree.
       await toggleGroupByOptionFromMoreActions(menuLabel);
-      await sleepFor(1000);
+      await waitForGroupingLabels((labels) => labels.join("|") === before);
     }
 
     // Single tree-health check at the end avoids repeated scan polling overhead.
@@ -583,7 +623,7 @@ describe("filter and groups actions tests", () => {
   });
 
   it("should toggle all state filters from Filter icon menu", async function () {
-    this.timeout(300000);
+    this.timeout(480000); // 18 toggles, each rebuilding the tree; ~17 s each on a large real scan
 
     await openScanById(SCAN_ID);
     await focusResultsPanelAndSelectScan();
@@ -610,7 +650,7 @@ describe("filter and groups actions tests", () => {
         `${filterLabel} should flip its selected state after toggle`
       ).to.equal(!wasActive);
 
-      const secondToggle = await toggleStateFilterFromDropdown(filterLabel);
+      const secondToggle = await toggleStateFilterFromDropdown(filterLabel, firstToggle.after);
       expect(
         secondToggle.after,
         `${filterLabel} should return to its original selected state`

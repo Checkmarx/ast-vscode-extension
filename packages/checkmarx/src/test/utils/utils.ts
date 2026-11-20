@@ -5,6 +5,7 @@ import {
   CustomTreeSection,
   SideBarView,
   InputBox,
+  QuickPickItem,
   WebView,
   WebDriver,
   ViewSection,
@@ -378,6 +379,22 @@ export function retryTest(testFn, retries = 3) {
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
 
+// Waits up to timeoutMs for the quick input to be shown. InputBox.create(timeout) applies its
+// timeout only to locating the element (VS Code keeps a hidden one in the DOM); the visibility
+// wait after it is a fixed 5 s, which a picker that opens after a tenant call can exceed.
+export async function waitForInputBox(timeoutMs = 30000): Promise<InputBox> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      return await InputBox.create(Math.max(1000, deadline - Date.now()));
+    } catch (error) {
+      if (Date.now() >= deadline) {
+        throw error;
+      }
+    }
+  }
+}
+
 // Types text into the open picker and clicks the matching entry. The project/branch pickers
 // search the server on every value change, so retyping the match and pressing Enter would
 // clear the list and confirm while it reloads (nothing gets selected on a real tenant).
@@ -544,6 +561,33 @@ export async function waitForScanChild(tree: any, scanLabel: string, childLabel:
   return undefined;
 }
 
+// Finds the quick pick item with the given text once the list has settled: the same entries on
+// two reads in a row. VS Code reuses row elements, so a row found while results are still
+// arriving can show a different entry by the time it is clicked.
+async function findSettledQuickPick(input: InputBox, text: string, deadline: number): Promise<QuickPickItem | undefined> {
+  let previous: string | undefined;
+  while (Date.now() < deadline) {
+    try {
+      const picks = await input.getQuickPicks();
+      const texts: string[] = [];
+      for (const pick of picks) {
+        texts.push((await pick.getText()).trim());
+      }
+      const current = texts.join("|");
+      const index = texts.indexOf(text.trim());
+      if (index >= 0 && current === previous) {
+        return picks[index];
+      }
+      previous = current;
+    } catch {
+      // list re-rendered while reading; retry
+      previous = undefined;
+    }
+    await sleep(500);
+  }
+  return undefined;
+}
+
 /**
  * Types `text` into a quick pick (only if it is not already there) and confirms it once an item with
  * that text is listed. The extension reloads the list on every text change, so pressing Enter right
@@ -555,20 +599,11 @@ export async function confirmQuickPickItem(input: InputBox, text: string, timeou
     await input.setText(text);
     await sleep(1500); // debounce + list reset before the reload starts
   }
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      for (const pick of await input.getQuickPicks()) {
-        if ((await pick.getText()).trim() === text.trim()) {
-          // click the item: Enter may not have an active item yet right after a reload
-          await pick.select();
-          return;
-        }
-      }
-    } catch {
-      // list re-rendered while reading; retry
-    }
-    await sleep(500);
+  // click the item: Enter may not have an active item yet right after a reload
+  const pick = await findSettledQuickPick(input, text, Date.now() + timeoutMs);
+  if (pick) {
+    await pick.select();
+    return;
   }
   await input.confirm();
 }
@@ -578,19 +613,10 @@ export async function confirmQuickPickItem(input: InputBox, text: string, timeou
  * whose lists are loaded up front and filtered client-side.
  */
 export async function clickQuickPickItem(input: InputBox, text: string, timeoutMs = 60000): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      for (const pick of await input.getQuickPicks()) {
-        if ((await pick.getText()).trim() === text.trim()) {
-          await pick.select();
-          return;
-        }
-      }
-    } catch {
-      // list re-rendered while reading; retry
-    }
-    await sleep(500);
+  const pick = await findSettledQuickPick(input, text, Date.now() + timeoutMs);
+  if (pick) {
+    await pick.select();
+    return;
   }
   throw new Error(`Quick pick item "${text}" was not listed within ${timeoutMs} ms`);
 }

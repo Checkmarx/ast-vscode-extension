@@ -105,9 +105,17 @@ describe("Get items with pagination", () => {
 
 		await clickPaginationButton(driver, QuickPickPaginationButtons.nextPage);
 
-		await assertSecondPageButtons();
+		// The tenant's project count is not fixed (shared tenants keep gaining projects),
+		// so page 2 may or may not be the last page: check Previous there, then go back
+		// and check page 1 again instead of assuming whether Next is shown.
+		await assertPaginationButtonVisibility(driver, QuickPickPaginationButtons.previousPage, true);
+
+		await clickPaginationButton(driver, QuickPickPaginationButtons.previousPage);
+
+		await assertFirstPageButtons();
 	}, 3));
 
+	// The pagination fixture project has 21-39 branches, so page 2 is always the last page.
 	it("should display pagination buttons in Branch selection", retryTest(async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
