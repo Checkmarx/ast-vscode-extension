@@ -547,8 +547,35 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			toasts.push(await notification.getMessage().catch(() => "<unreadable>"));
 		}
 		throw new Error(
-			`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)}; notifications: ${JSON.stringify(toasts)})`
+			`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)}; notifications: ${JSON.stringify(toasts)})` +
+				`\nVS Code log lines about "${title}" or errors:\n${readVsCodeLogLines(title).join("\n") || "none"}`
 		);
+	}
+
+	// The extension opens result files without awaiting or catching, so a failed open never reaches
+	// the UI; VS Code logs the rejection in the extension host log of the test instance.
+	function readVsCodeLogLines(needle: string, max = 30): string[] {
+		const logsRoot = path.join(process.env.TEST_RESOURCES ?? "", "settings", "logs");
+		const lines: string[] = [];
+		try {
+			const sessions = fs.readdirSync(logsRoot).sort();
+			for (const session of sessions.slice(-2)) {
+				for (const file of ["window1/exthost/exthost.log", "window1/renderer.log"]) {
+					const full = path.join(logsRoot, session, file);
+					if (!fs.existsSync(full)) {
+						continue;
+					}
+					for (const line of fs.readFileSync(full, "utf8").split(/\r?\n/)) {
+						if (line.includes(needle) || line.includes("[error]")) {
+							lines.push(`${session}/${file}: ${line.slice(0, 400)}`);
+						}
+					}
+				}
+			}
+		} catch (error) {
+			lines.push(`could not read ${logsRoot}: ${error}`);
+		}
+		return lines.slice(-max);
 	}
 
 	// Polls getCoordinates() rather than reading it once - the status bar's cursor
