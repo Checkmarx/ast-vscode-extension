@@ -141,10 +141,22 @@ jobs:
         env:
           UI_TEST_FILES: ${{ matrix.batch.files }}
           UI_TEST_RESULTS_FILE: ${{ github.workspace }}/ui-test-results/${{ matrix.batch.name }}.json
+          BATCH_NAME: ${{ matrix.batch.name }}
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
+          # Isolated extensions folder, so the run never depends on what the runner has installed.
+          export EXTENSIONS_FOLDER="$RUNNER_TEMP/vscode-extensions"
+          mkdir -p "$EXTENSIONS_FOLDER"
+          if [ "$BATCH_NAME" = "real-login" ]; then
+            # After login the extension writes MCP config only for an AI assistant it detects
+            # (Copilot Chat -> settings.json). A manifest-only stub with Copilot Chat's ID makes
+            # vscode.extensions.getExtension() find it, without installing the real assistant.
+            stub="$EXTENSIONS_FOLDER/github.copilot-chat-0.0.1"
+            mkdir -p "$stub"
+            echo '{"name":"copilot-chat","publisher":"GitHub","version":"0.0.1","displayName":"Copilot Chat test stub","engines":{"vscode":"^1.88.0"}}' > "$stub/package.json"
+          fi
           cd packages/checkmarx
           node scripts/run-ui-batch.js "$UI_TEST_RESULTS_FILE" $UI_TEST_FILES
       - name: Upload test results (for the combined report)
@@ -160,8 +172,10 @@ jobs:
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
         with:
           name: real-tenant-screenshots-${{ matrix.batch.name }}
+          # extest saves failure screenshots under <os tmpdir>/test-resources/screenshots/<timestamp>/
           path: |
-            packages/core/test-resources/screenshots/*.png
+            /tmp/test-resources/screenshots/**/*.png
+          if-no-files-found: ignore
           retention-days: 2
 
   # Merges the JSON results of every batch into one report on the run's Summary tab
