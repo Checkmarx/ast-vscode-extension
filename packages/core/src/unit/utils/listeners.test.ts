@@ -160,6 +160,67 @@ describe("listeners", () => {
 
       addRealTimeSaveListener(mockContext, mockLogs);
     });
+
+    describe("open listener focus behavior", () => {
+      let openCallback: (doc: any) => Promise<void>;
+      let executeStub: sinon.SinonStub;
+
+      const fileDoc = (fsPath: string, scheme = "file") => ({
+        fileName: fsPath,
+        uri: { scheme, fsPath, toString: () => `${scheme}://${fsPath}` },
+      });
+      const waitForScheduledWork = () => new Promise((r) => setTimeout(r, 100));
+
+      beforeEach(() => {
+        (vscode.window as any).activeTextEditor = undefined;
+        sandbox.stub(cx, "isStandaloneEnabled").resolves(false);
+        sandbox.stub(globalState, "updateState");
+        executeStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
+        sandbox
+          .stub(vscode.workspace, "onDidOpenTextDocument")
+          .callsFake((cb: any) => {
+            openCallback = cb;
+            return { dispose: () => {} } as any;
+          });
+
+        addRealTimeSaveListener(mockContext, mockLogs);
+      });
+
+      afterEach(() => {
+        (vscode.window as any).activeTextEditor = undefined;
+      });
+
+      it("does not scan a document loaded in the background", async () => {
+        (vscode.window as any).activeTextEditor = {
+          document: fileDoc("/ws/4-containers/Dockerfile"),
+        };
+
+        await openCallback(fileDoc("/ws/4-containers/docker-compose.yml"));
+        await waitForScheduledWork();
+
+        expect(executeStub.called).to.be.false;
+      });
+
+      it("scans the document the user is looking at", async () => {
+        const doc = fileDoc("/ws/4-containers/Dockerfile");
+        (vscode.window as any).activeTextEditor = { document: doc };
+
+        await openCallback(doc);
+        await waitForScheduledWork();
+
+        expect(executeStub.called).to.be.true;
+      });
+
+      it("ignores non-file documents", async () => {
+        const doc = fileDoc("/ws/4-containers/Dockerfile", "untitled");
+        (vscode.window as any).activeTextEditor = { document: doc };
+
+        await openCallback(doc);
+        await waitForScheduledWork();
+
+        expect(executeStub.called).to.be.false;
+      });
+    });
   });
 
   describe("executeCheckSettingsChange", () => {
