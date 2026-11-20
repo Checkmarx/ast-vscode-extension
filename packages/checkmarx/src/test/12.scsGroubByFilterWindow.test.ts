@@ -540,7 +540,15 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			}
 			await sleep(500);
 		}
-		throw new Error(`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)})`);
+		// The extension reports a file it cannot locate with a "not found in workspace" toast, so
+		// listing the visible toasts tells a lookup failure apart from a failed open.
+		const toasts: string[] = [];
+		for (const notification of await new Workbench().getNotifications().catch(() => [])) {
+			toasts.push(await notification.getMessage().catch(() => "<unreadable>"));
+		}
+		throw new Error(
+			`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)}; notifications: ${JSON.stringify(toasts)})`
+		);
 	}
 
 	// Polls getCoordinates() rather than reading it once - the status bar's cursor
@@ -683,6 +691,13 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 		await openFirstSecretResult();
 		await sleep(3000);
+
+		// Drop toasts left by earlier tests: an earlier click that failed to find the file shows
+		// the same "not found in workspace" message, which would let this test pass on its own.
+		await driver.switchTo().defaultContent();
+		const center = await new Workbench().openNotificationsCenter();
+		await center.clearAllNotifications();
+		await center.close();
 
 		const isOpen = await openDetailsFrame(driver);
 		expect(isOpen, "Vulnerability details panel did not open").to.be.true;
