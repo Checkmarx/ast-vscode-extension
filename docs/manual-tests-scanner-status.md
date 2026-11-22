@@ -2,6 +2,20 @@
 
 Branch: `other/remember-scanners-status`
 
+## Summary of code change
+
+Problem: the scanner on/off settings were kept in VS Code settings, but three places overrode them.
+
+1. **IDE onboarding file** (`packages/core/src/services/ideOnboardingProperties.ts`): `getIdeOnboardingValues()` reported every scanner as OFF while signed out. That file is read by ast-cli and the Dev Assist plugin, and it is rewritten on every activation, so a logout or IDE restart overrode the user's choices.
+   - **Fix:** the five scanner flags now always mirror the VS Code settings, signed in or not. Self-Healing still reports OFF while signed out.
+   - **Tests:** `packages/core/src/unit/services/ideOnboardingProperties.test.ts` expects the scanner settings to be kept while signed out.
+2. **Welcome page, first visit** (`packages/checkmarx/src/welcomePage/welcomeWebview.ts` and `packages/project-ignite/src/welcomePage/welcomeWebview.ts`): on the first visit, the page wrote all six scanner settings to Global, forcing them ON or OFF from the AI/MCP state and ignoring the user's choices.
+   - **Fix:** the page only sets the `cxFirstWelcome` flag and reports the scanner settings as they are. It never writes them.
+
+Not changed: the first-visit AI Assistant write in the Checkmarx welcome page, which is a non-scanner setting.
+
+Status: neither change has been run against the unit tests. The `packages/core` dependencies need private registry credentials that were not available.
+
 ## Regression (existing behavior must still work)
 
 1. Logged in, toggle a scanner OFF in settings, restart IDE, and confirm it stays OFF in the IDE and in `~/.checkmarx/cx-onboarding-ide.properties`.
