@@ -158,7 +158,7 @@ describe("IDE onboarding properties writer", () => {
     expect(getIdeOnboardingValues().selfHealingEnabled).to.equal(false);
   });
 
-  it("reports self-healing and every scanner OFF while logged out, whatever the settings say", () => {
+  it("reports self-healing OFF while logged out but keeps the scanner settings the user chose", () => {
     sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({ get: () => true }) as any);
     setIdeOnboardingAuthenticated(false);
 
@@ -166,11 +166,11 @@ describe("IDE onboarding properties writer", () => {
 
     expect(result).to.deep.equal({
       selfHealingEnabled: false,
-      ascaEnabled: false,
-      scaEnabled: false,
-      secretEnabled: false,
-      kicsEnabled: false,
-      containersEnabled: false,
+      ascaEnabled: true,
+      scaEnabled: true,
+      secretEnabled: true,
+      kicsEnabled: true,
+      containersEnabled: true,
       severityThreshold: "low",
     });
   });

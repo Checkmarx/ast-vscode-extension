@@ -146,21 +146,14 @@ export function isIdeOnboardingAuthenticated(): boolean {
 	return authenticated;
 }
 
-/** Reads the current values from the VS Code settings of the running extension; all OFF while logged out. */
+/**
+ * Reads the current values from the VS Code settings of the running extension.
+ * Self-Healing is OFF while logged out. Scanners always mirror the user's settings, so a logout or a
+ * restart does not override the scanner choices the user made.
+ */
 export function getIdeOnboardingValues(): IdeOnboardingValues {
-	if (!authenticated) {
-		return {
-			selfHealingEnabled: false,
-			ascaEnabled: false,
-			scaEnabled: false,
-			secretEnabled: false,
-			kicsEnabled: false,
-			containersEnabled: false,
-			severityThreshold: IDE_SEVERITY_THRESHOLD_DEFAULT,
-		};
-	}
 	return {
-		selfHealingEnabled: isSelfHealingEnabled(),
+		selfHealingEnabled: authenticated && isSelfHealingEnabled(),
 		ascaEnabled: getBooleanSetting(constants.getAscaRealtimeScanner(), constants.activateAscaRealtimeScanner, false),
 		scaEnabled: getBooleanSetting(constants.getOssRealtimeScanner(), constants.activateOssRealtimeScanner, false),
 		secretEnabled: getBooleanSetting(constants.getSecretsScanner(), constants.activateSecretsScanner, false),
