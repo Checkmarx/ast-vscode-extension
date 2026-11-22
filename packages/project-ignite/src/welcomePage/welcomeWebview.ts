@@ -361,36 +361,14 @@ export class WelcomeWebview {
             config.get<boolean>(key, false)
           );
 
-          const isFirstVisit = context.globalState.get<boolean>(
-            "cxFirstWelcome",
-            false
-          );
+          // Scanner settings are the user's choice: report them as they are, never overwrite them here.
+          await context.globalState.update("cxFirstWelcome", true);
 
-          if (isFirstVisit) {
-            if (safeEnabled && !allScannersEnabled) {
-              for (const key of scannerConfigKeys) {
-                await config.update(key, true, vscode.ConfigurationTarget.Global);
-              }
-            } else if (!safeEnabled) {
-              for (const key of scannerConfigKeys) {
-                await config.update(key, false, vscode.ConfigurationTarget.Global);
-              }
-            }
-
-            await context.globalState.update("cxFirstWelcome", true);
-
-            panel.webview.postMessage({
-              type: "setAiFeatureState",
-              enabled: safeEnabled,
-              scannersSettings: safeEnabled,
-            });
-          } else {
-            panel.webview.postMessage({
-              type: "setAiFeatureState",
-              enabled: safeEnabled,
-              scannersSettings: allScannersEnabled,
-            });
-          }
+          panel.webview.postMessage({
+            type: "setAiFeatureState",
+            enabled: safeEnabled,
+            scannersSettings: allScannersEnabled,
+          });
         } catch (e) {
           console.error("Error retrieving AI state:", e);
           panel.webview.postMessage({
