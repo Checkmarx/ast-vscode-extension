@@ -194,7 +194,9 @@ export class AuthService {
 
     const { codeVerifier, codeChallenge } = this.generatePKCE();
     const config: OAuthConfig = {
-      clientId: 'ide-integration',
+      // IAM client whose refresh tokens live 45 days (ide-integration's expire after hours).
+      // The CLI reads this client from the token's azp claim when exchanging it.
+      clientId: 'cx-mcp-client',
       authEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/auth`,
       tokenEndpoint: `${baseUri}/auth/realms/${tenant}/protocol/openid-connect/token`,
       redirectUri: `http://localhost:${port}/checkmarx1/callback`,
