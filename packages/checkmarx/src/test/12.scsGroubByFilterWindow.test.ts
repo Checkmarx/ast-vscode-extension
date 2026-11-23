@@ -583,21 +583,52 @@ describe("Secret detection results tests (OAuth flow)", () => {
 	// Polls getCoordinates() rather than reading it once - the status bar's cursor
 	// indicator may not exist yet immediately after a file opens, and this tolerates
 	// that transient state instead of failing on the first NoSuchElementError.
-	async function waitForCursorLine(editor: TextEditor, line: number, timeoutMs = 10000): Promise<number[]> {
+	// The status bar shows Ln/Col only for the active text editor, and the details webview can keep
+	// focus after the link click, so bring the file's tab to the front before each read. When the
+	// file exists in several workspace folders (e.g. the core package copied under node_modules) the
+	// extension opens every copy but only one lands on the result's line, so check each tab.
+	async function waitForCursorLine(title: string, line: number, timeoutMs = 15000): Promise<number[]> {
 		const deadline = Date.now() + timeoutMs;
-		let lastCoordinates: number[] = [];
+		let lastCoordinates: number[][] = [];
+		let lastError = "";
 		while (Date.now() < deadline) {
 			try {
-				lastCoordinates = await editor.getCoordinates();
-				if (lastCoordinates[0] === line) {
-					return lastCoordinates;
+				lastCoordinates = [];
+				for (const tab of await new EditorView().getOpenTabs()) {
+					if ((await tab.getTitle()) !== title) {
+						continue;
+					}
+					await tab.select();
+					const coordinates = await new TextEditor().getCoordinates();
+					lastCoordinates.push(coordinates);
+					if (coordinates[0] === line) {
+						return coordinates;
+					}
 				}
-			} catch {
-				// Status bar cursor indicator not rendered yet - keep polling.
+			} catch (error) {
+				// Tab or status bar cursor indicator not rendered yet - keep polling.
+				lastError = String(error).slice(0, 200);
 			}
 			await sleep(500);
 		}
-		throw new Error(`Timed out waiting for cursor at line ${line} (last seen: ${JSON.stringify(lastCoordinates)})`);
+		throw new Error(
+			`Timed out waiting for cursor at line ${line} in "${title}" (last seen: ${JSON.stringify(lastCoordinates)}` +
+				`${lastError ? `; last error: ${lastError}` : ""})`
+		);
+	}
+
+	// While any webview is open, extest opens the command palette by sending F1 to the active editor
+	// tab instead of pressing Ctrl+Shift+P. On the Linux runners that keypress can be lost when the
+	// details webview holds focus, and every later palette command then times out ("Waiting until
+	// element is visible"), including the next suites' hooks. Closing the editors with the mouse
+	// first leaves no webview, so the palette opens with the normal shortcut.
+	async function closeEditorsWithoutPalette(): Promise<void> {
+		try { await driver.switchTo().defaultContent(); } catch { /* not in a frame */ }
+		try {
+			await new EditorView().closeAllEditors();
+		} catch (error) {
+			console.log(`[ui-tests] Could not close all editors: ${String(error).slice(0, 200)}`);
+		}
 	}
 
 	before(async function () {
@@ -618,8 +649,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	after(async function () {
 		this.timeout(SUITE_TEARDOWN_TIMEOUT_MS);
-		// Exit any webview frame before interacting with VS Code UI.
-		try { await driver.switchTo().defaultContent(); } catch { /* ignore */ }
+		// Close the details webview before any palette command (see closeEditorsWithoutPalette).
+		await closeEditorsWithoutPalette();
 
 		try {
 			await logoutIfVisible(workbench, driver, {
@@ -629,6 +660,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			// Keep teardown resilient.
 		}
 
+		// logout opened the authentication webview; close it before the palette again
+		await closeEditorsWithoutPalette();
 		await runCommand(CX_CLEAR);
 		await new EditorView().closeAllEditors();
 	});
@@ -711,8 +744,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		await driver.switchTo().defaultContent();
 		await waitForEditorTitle("secrets.go");
 
-		const editor = new TextEditor();
-		const coordinates = await waitForCursorLine(editor, expectedLine);
+		const coordinates = await waitForCursorLine("secrets.go", expectedLine);
 		expect(coordinates[0], "Cursor should land on the result's recorded line").to.equal(expectedLine);
 	});
 
@@ -807,8 +839,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			await driver.switchTo().defaultContent();
 			await waitForEditorTitle("secrets.go");
 
-			const editor = new TextEditor();
-			const coordinates = await waitForCursorLine(editor, Number(line));
+			const coordinates = await waitForCursorLine("secrets.go", Number(line));
 			expect(coordinates[0], `Cursor should land on line ${line}`).to.equal(Number(line));
 
 			return { filename, line };
@@ -825,6 +856,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	it("should toggle available Group By options for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
+		// Earlier tests leave the details webview open; close it so the palette commands below use the normal shortcut.
+		await closeEditorsWithoutPalette();
 
 		await loadSecretDetectionNode();
 
@@ -859,6 +892,8 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	it("should toggle available State filters for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
+		// Earlier tests leave the details webview open; close it so the palette commands below use the normal shortcut.
+		await closeEditorsWithoutPalette();
 
 		await loadSecretDetectionNode();
 
