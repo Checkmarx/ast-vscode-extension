@@ -18,6 +18,7 @@ import {
   retryTest,
   selectDetailsTab,
   sleep,
+  waitForScanChild,
 } from "./utils/utils";
 import {
   CHANGES_TAB_INPUT,
@@ -119,15 +120,7 @@ describe("SAST triage updates (TC33, TC34, TC35)", () => {
       resultsTree = await initialize();
     }
 
-    const scanRoot = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-    await scanRoot?.expand();
-    await sleep(500);
-
-    let sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    if (sastItem === undefined) {
-      await sleep(2000);
-      sastItem = await scanRoot?.findChildItem(SAST_TYPE);
-    }
+    const sastItem = await waitForScanChild(resultsTree, SCAN_KEY_TREE_LABEL, SAST_TYPE);
     expect(sastItem, "SAST node not found").to.not.be.undefined;
 
     await sastItem?.expand();

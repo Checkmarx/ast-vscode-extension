@@ -14,6 +14,7 @@ import {
     logoutIfVisible,
     retryTest,
     sleep,
+  confirmQuickPickItem
 } from "./utils/utils";
 import {
     CX_CLEAR,
@@ -82,8 +83,7 @@ describe("Severity filter icons and vulnerability counts (TC05, TC12)", () => {
             await input.setText(query);
         }
         const firstItem = await getQuickPickSelector(input);
-        await input.setText(firstItem);
-        await input.confirm();
+        await confirmQuickPickItem(input, firstItem);
         await sleep(TWO_SECONDS); // let the tree react to the selection
     }
 

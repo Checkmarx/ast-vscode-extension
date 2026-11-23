@@ -152,9 +152,10 @@ export class AstResult extends CxResult {
         : this.fileName
         }${result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
         })`;
-    } else if (result.data.fileName) {
+    } else if (result.data.fileName || (result.data as { filename?: string }).filename) {
       //Relevant for scs  , because this engine  have the filename inside result.data
-      this.fileName = result.data.fileName;
+      // The Checkmarx One API returns it as `filename`; older/mock data uses `fileName`.
+      this.fileName = result.data.fileName ?? (result.data as { filename?: string }).filename;
       const shortFilename =
         this.fileName && this.fileName.includes("/")
           ? this.fileName.slice(this.fileName.lastIndexOf("/"))

@@ -7,7 +7,9 @@ import {
     Workbench,
     Notification,
 } from "vscode-extension-tester";
-import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL, MESSAGES } from "./utils/constants";
+import { CX_CLEAR, CX_LOOK_SCAN, VS_OPEN_FOLDER, SCAN_KEY_TREE_LABEL, MESSAGES,
+  CX_RUN_SCAN,
+} from "./utils/constants";
 import { waitByLinkText } from "./utils/waiters";
 import { SCAN_ID } from "./utils/envs";
 import { initialize, retryTest, waitForNotificationWithTimeout, loginWithMockToken, logoutIfVisible, } from "./utils/utils";
@@ -99,11 +101,39 @@ describe("Scan from IDE", () => {
         // Clear stale notifications first so we only capture what this scan produces.
         await clearCurrentNotifications();
 
-        const notificationPromise = waitForNotificationWithTimeout(NOTIFICATION_TIMEOUT_MS);
-        await runCommandWithRetry("ast-results.createScan");
-        const notification = await notificationPromise;
-        expect(notification, "Expected a VS Code notification after createScan — none arrived within the timeout").to.not.be.undefined;
-        return notification;
+        // Real-tenant runs first show a transient "Loading results" toast; skip it and
+        // wait for the actual scan-related notification.
+        const waitForRelevantNotification = async () => {
+            const deadline = Date.now() + NOTIFICATION_TIMEOUT_MS;
+            while (Date.now() < deadline) {
+                // A toast can close between listing and reading it (the transient
+                // "Loading results" one does on a real tenant): skip it and poll again.
+                try {
+                    const all = await new Workbench().getNotifications();
+                    for (const n of all) {
+                        try {
+                            const msg = await n.getMessage();
+                            if (!/Loading results/i.test(msg)) {
+                                // Return the text read now: re-reading later fails if the
+                                // toast has closed in the meantime.
+                                return { notification: n, message: msg };
+                            }
+                        } catch {
+                            // notification closed while reading
+                        }
+                    }
+                } catch {
+                    // notification list re-rendered while reading
+                }
+                await new Promise((res) => setTimeout(res, 500));
+            }
+            return undefined;
+        };
+        const notificationPromise = waitForRelevantNotification();
+        await runCommandWithRetry(CX_RUN_SCAN);
+        const captured = await notificationPromise;
+        expect(captured, "Expected a VS Code notification after createScan — none arrived within the timeout").to.not.be.undefined;
+        return captured!;
     }
 
 
@@ -138,15 +168,14 @@ describe("Scan from IDE", () => {
         this.timeout(TEST_TIMEOUT_MS);
 
         await openScanById(SCAN_ID);
-        let firstNotification = await startScanAndCaptureNotification();
-        let message = await firstNotification?.getMessage();
+        const { notification, message } = await startScanAndCaptureNotification();
         if (message === MESSAGES.scanProjectNotMatch) {
-            let actions = await firstNotification?.getActions()
-            let action = await actions[0];
-            await action.click();
-            firstNotification = await waitForNotificationWithTimeout(NOTIFICATION_TIMEOUT_MS);
+            // The mismatch prompt stays open until answered, so its actions are safe to read.
+            const actions = await notification.getActions();
+            await actions[0].click();
+            const next = await waitForNotificationWithTimeout(NOTIFICATION_TIMEOUT_MS);
+            expect(next, "A notification should follow accepting the mismatch prompt").to.not.be.undefined;
         }
-        expect(firstNotification).to.not.be.undefined;
     }));
 
     // SKIPPED: failing - no VS Code notification arrives after createScan within the timeout.
@@ -154,13 +183,11 @@ describe("Scan from IDE", () => {
         this.timeout(TEST_TIMEOUT_MS);
 
         await openScanById(SCAN_ID);
-        let firstNotification = await startScanAndCaptureNotification();
-        let message = await firstNotification?.getMessage();
+        const { notification, message } = await startScanAndCaptureNotification();
         expect(message).to.equal(MESSAGES.scanProjectNotMatch);
-        let actions = await firstNotification?.getActions()
-        expect(actions?.length, "Wrong-project notification should have at least two actions").to.be.greaterThan(1);
-        let action = await actions[1];
-        await action.click();
+        const actions = await notification.getActions();
+        expect(actions.length, "Wrong-project notification should have at least two actions").to.be.greaterThan(1);
+        await actions[1].click();
 
     }));
 });

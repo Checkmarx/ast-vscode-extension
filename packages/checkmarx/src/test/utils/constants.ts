@@ -37,8 +37,13 @@ export const CX_FILTER_TO_VERIFY = "ast-results:Filter: To Verify";
 export const CX_FILTER_URGENT = "ast-results:Filter: Urgent";
 export const CX_FILTER_NOT_IGNORED = "ast-results:Filter: Not Ignored";
 
-export const CX_CLEAR = "ast-results: Clear";
+// Must be the exact palette label: extest presses Enter on the top match otherwise, and VS Code
+// ranks recently used commands first, so a prefix can run "Clear SCA results tree" instead.
+export const CX_CLEAR = "ast-results: Clear Results Selection";
 export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
+// Exact palette labels (see the CX_CLEAR note above).
+export const CX_RUN_SCAN = "ast-results: Run Scan";
+export const VSCODE_RELOAD_WINDOW = "Developer: Reload Window";
 export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
 
 export const CX_CATETORY = "Checkmarx One";
@@ -87,26 +92,6 @@ export const AI_SECURITY_CHAMPION_SETTINGS_CONSTANTS = {
 export const ASCA_REALTIME_SCANNER_CONSTANTS = {
   activateAscaRealtimeScanner: "Activate ASCA Realtime",
   ascaRealtimeScanner: "Checkmarx AI Secure Coding Assistant (ASCA) Realtime Scanner",
-};
-
-export const OSS_REALTIME_SCANNER_CONSTANTS = {
-  activateOssRealtimeScanner: "Activate OSS-Realtime",
-  ossRealtimeScanner: "Checkmarx Open Source Realtime Scanner (OSS-Realtime)",
-};
-
-export const SECRET_DETECTION_REALTIME_SCANNER_CONSTANTS = {
-  activateSecretDetectionRealtimeScanner: "Activate Secret Detection Realtime",
-  secretDetectionRealtimeScanner: "Checkmarx Secret Detection Realtime Scanner",
-};
-
-export const CONTAINERS_REALTIME_SCANNER_CONSTANTS = {
-  activateContainersRealtimeScanner: "Activate Containers Realtime",
-  containersRealtimeScanner: "Checkmarx Containers Realtime Scanner",
-};
-
-export const IAC_REALTIME_SCANNER_CONSTANTS = {
-  activateIacRealtimeScanner: "Activate IAC Realtime",
-  iacRealtimeScanner: "Checkmarx IAC Realtime Scanner",
 };
 
 export const LOCAL_BRANCH_CONSTANT = "scan my local branch";
