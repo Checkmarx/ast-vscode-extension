@@ -1049,6 +1049,21 @@
               "podman"
             ],
             "default": "docker"
+          },
+          "Checkmarx.Severity Threshold": {
+            "type": "string",
+            "order": 6.5,
+            "description": "Severity Threshold",
+            "markdownDescription": "Select the minimum severity level of findings to report.",
+            "enum": [
+              "Malicious",
+              "Critical",
+              "High",
+              "Medium",
+              "Low",
+              "All"
+            ],
+            "default": "High"
           }
         }
       },
