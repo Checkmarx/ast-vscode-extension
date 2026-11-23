@@ -25,7 +25,10 @@ const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
 const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 const MCP_AUTH_SETTING = "Checkmarx.MCP Authentication";
 const MOCK_TOKEN = "FAKE_TOKEN_FROM_TEST";
-const SERVER_NAME = "Checkmarx";
+// constants.getMcpServerName() for the Checkmarx One extension; "Checkmarx" is the pre-rename name,
+// which the extension migrates and removes on every write.
+const SERVER_NAME = "Checkmarx One Assist";
+const LEGACY_SERVER_NAME = "Checkmarx";
 
 const REAL_KEY = process.env.CX_APIKEY ?? "";
 
@@ -149,10 +152,40 @@ function removeMcpEntries(): void {
   updateTestSettings({ mcp: undefined });
   const fallback = fallbackMcpJson();
   const json = readJson(fallback);
-  if (json?.servers?.[SERVER_NAME]) {
-    delete json.servers[SERVER_NAME];
+  const names = [SERVER_NAME, LEGACY_SERVER_NAME].filter((n) => json?.servers?.[n]);
+  if (names.length > 0) {
+    for (const name of names) {
+      delete json.servers[name];
+    }
     fs.writeFileSync(fallback, JSON.stringify(json, null, 2), "utf-8");
   }
+}
+
+// The mcp.json fallback lives in the machine's real VS Code profile, not the test profile, so a local
+// run would otherwise delete the developer's own entry. Snapshot it byte for byte (or its absence)
+// and put it back after the suite.
+let fallbackSnapshot: Buffer | null | undefined;
+function snapshotFallbackMcpJson(): void {
+  const file = fallbackMcpJson();
+  fallbackSnapshot = fs.existsSync(file) ? fs.readFileSync(file) : null;
+}
+function restoreFallbackMcpJson(): void {
+  if (fallbackSnapshot === undefined) {
+    return;
+  }
+  const file = fallbackMcpJson();
+  if (fallbackSnapshot === null) {
+    fs.rmSync(file, { force: true });
+  } else {
+    fs.writeFileSync(file, fallbackSnapshot);
+  }
+}
+
+// The legacy name must not survive a write, in either location.
+function hasLegacyEntry(): boolean {
+  return Boolean(
+    readJson(TEST_SETTINGS_FILE)?.mcp?.servers?.[LEGACY_SERVER_NAME] ?? readJson(fallbackMcpJson())?.servers?.[LEGACY_SERVER_NAME]
+  );
 }
 
 describe("Checkmarx real login and MCP configuration", function () {
@@ -313,6 +346,7 @@ describe("Checkmarx real login and MCP configuration", function () {
     }
     bench = new Workbench();
     driver = VSBrowser.instance.driver;
+    snapshotFallbackMcpJson();
     removeMcpEntries();
   });
 
@@ -325,14 +359,19 @@ describe("Checkmarx real login and MCP configuration", function () {
     if (!REAL_KEY) {
       return;
     }
-    updateTestSettings({ [MCP_AUTH_SETTING]: undefined });
-    await loginWithMockToken(bench, { waitMs: 1000 });
     try {
-      await new EditorView().closeAllEditors();
-    } catch {
-      // a dirty settings.json can raise a modal "save changes?" prompt
-      await clickModalDialogButton(/don'?t save|discard/i);
-      try { await new EditorView().closeAllEditors(); } catch { /* best effort */ }
+      updateTestSettings({ [MCP_AUTH_SETTING]: undefined });
+      await loginWithMockToken(bench, { waitMs: 1000 });
+      try {
+        await new EditorView().closeAllEditors();
+      } catch {
+        // a dirty settings.json can raise a modal "save changes?" prompt
+        await clickModalDialogButton(/don'?t save|discard/i);
+        try { await new EditorView().closeAllEditors(); } catch { /* best effort */ }
+      }
+    } finally {
+      // last, so the mock login above cannot rewrite it afterwards
+      restoreFallbackMcpJson();
     }
   });
 
@@ -367,6 +406,7 @@ describe("Checkmarx real login and MCP configuration", function () {
       `MCP entry for the Checkmarx server should be written after login (is MCP enabled for the tenant?)\n${found ? "" : describeMcpSetup()}`
     ).to.not.equal(undefined);
     const { entry } = found!;
+    expect(hasLegacyEntry(), `legacy "${LEGACY_SERVER_NAME}" MCP entry should not be written`).to.equal(false);
 
     const url = entry.url ?? entry.serverUrl ?? "";
     expect(url).to.match(/^https:\/\//, "MCP url should be https");
