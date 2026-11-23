@@ -433,15 +433,19 @@ describe("AuthService", () => {
       fs.rmSync(homeDir, { recursive: true, force: true });
     });
 
-    it("should write Self-Healing and every scanner as off to the IDE properties file", async () => {
+    it("should write Self-Healing as off but keep the user's scanner settings in the IDE properties file", async () => {
       sandbox.stub(authService, "validateAndUpdateState").resolves(false);
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
+        get: () => true,
+        update: () => Promise.resolve(),
+      }) as any);
 
       await authService.logout();
 
       const content = fs.readFileSync(path.join(homeDir, ".checkmarx", "cx-onboarding-ide.properties"), "utf8");
       expect(content).to.include("cx_self_healing_enabled=false\n");
       for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
-        expect(content).to.include(`cx_${key}_scanner_enabled=false\n`);
+        expect(content).to.include(`cx_${key}_scanner_enabled=true\n`);
       }
     });
 

@@ -21,6 +21,7 @@ export * from './services/authService';
 export * from './services/mcpSettingsInjector';
 export * from './services/ideOnboardingProperties';
 export * from './services/selfHealing';
+export * from './utils/scannerDefaults';
 export * from './constants/documentation';
 export * from './utils/common/constants';
 export * from './utils/common/messages';

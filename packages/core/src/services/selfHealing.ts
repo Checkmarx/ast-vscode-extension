@@ -838,7 +838,8 @@ export async function onSelfHealingPostAuth(context: vscode.ExtensionContext, lo
 }
 
 /**
- * Called on logout: the checkbox is turned off and the file says Self-Healing and every scanner are OFF.
+ * Called on logout: the checkbox is turned off and the file says Self-Healing is OFF. The scanner flags
+ * keep the user's settings.
  * The checkbox value from this session is restored on the next login. Never throws.
  */
 export async function onSelfHealingLogout(logs?: Logs, context?: vscode.ExtensionContext): Promise<void> {

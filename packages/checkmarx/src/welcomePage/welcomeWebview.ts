@@ -7,6 +7,7 @@ import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages
 import { getSelectedConfigFor, getMcpOAuthSetupMessage } from "@checkmarx/vscode-core/out/utils/aiAssistantUtil";
 import { isIDE } from "@checkmarx/vscode-core/out/utils/utils";
 import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder";
+import { applyDefaultScannerSettingsOnce } from "@checkmarx/vscode-core/out/utils/scannerDefaults";
 
 type WelcomeAiBannerScenario = "ok" | "switched" | "multiple" | "none";
 
@@ -375,12 +376,12 @@ export class WelcomeWebview {
           const isEnabled = isAiMcpEnabled;
           const safeEnabled = isEnabled === true;
 
+          // One-time onboarding default: turns ON only scanners the user never set. User choices are never changed.
+          await applyDefaultScannerSettingsOnce(context, config, scannerConfigKeys, safeEnabled);
+
           const allScannersEnabled = scannerConfigKeys.every(key =>
             config.get<boolean>(key, false)
           );
-
-          // Scanner settings are the user's choice: report them as they are, never overwrite them here.
-          await context.globalState.update("cxFirstWelcome", true);
 
           panel.webview.postMessage({
             type: "setAiFeatureState",

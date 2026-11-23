@@ -8,9 +8,8 @@ import { Logs } from "../models/logs";
 /**
  * Writes ~/.checkmarx/cx-onboarding-ide.properties, the IDE state file read by ast-cli and
  * the Checkmarx cx-devassist plugin hooks. Only this extension writes it.
- * While logged in it mirrors the settings (Self-Healing defaults to ON). While logged out it is kept
- * but says Self-Healing and every scanner are OFF; the settings themselves are left untouched, so the
- * next login restores the user's choices.
+ * The scanner flags always mirror the user's settings, logged in or not, so a logout or restart never
+ * overrides them. Self-Healing mirrors its setting while logged in (defaults to ON) and is OFF while logged out.
  */
 
 export const IDE_ONBOARDING_SCHEMA_VERSION = 1;

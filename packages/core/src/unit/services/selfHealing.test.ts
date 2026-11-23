@@ -749,25 +749,31 @@ describe("Checkmarx Self-Healing", () => {
       };
     }
 
-    it("writes everything OFF on activation when logged out", async () => {
+    it("writes Self-Healing OFF but keeps the scanner settings on activation when logged out", async () => {
       const context = makeContext(undefined);
       const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
+      sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
+        get: (key: string, def?: unknown) => (key === "Enable Self-Healing" ? false : typeof def === "boolean" ? true : def),
+        update: () => Promise.resolve(),
+      }) as any);
       registerSelfHealing(context, logs);
       try {
         await flush();
         const content = fs.readFileSync(propsFile(), "utf8");
         expect(content).to.contain("cx_self_healing_enabled=false");
-        expect(content).to.contain("cx_asca_scanner_enabled=false");
+        for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
+          expect(content).to.contain(`cx_${key}_scanner_enabled=true`);
+        }
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());
       }
     });
 
-    it("keeps a saved Self-Healing ON after login and writes everything OFF after logout", async () => {
+    it("keeps a saved Self-Healing ON after login, then writes Self-Healing OFF but keeps the scanners after logout", async () => {
       const context = makeContext(undefined);
       const logs: any = { info: sandbox.stub(), warn: sandbox.stub(), error: sandbox.stub() };
       sandbox.stub(mock.workspace, "getConfiguration").callsFake(() => ({
-        get: (key: string, def?: unknown) => (key === "Enable Self-Healing" ? true : def),
+        get: (key: string, def?: unknown) => (key === "Enable Self-Healing" ? true : typeof def === "boolean" ? true : def),
       }) as any);
       registerSelfHealing(context, logs);
       try {
@@ -779,7 +785,7 @@ describe("Checkmarx Self-Healing", () => {
         const content = fs.readFileSync(propsFile(), "utf8");
         expect(content).to.contain("cx_self_healing_enabled=false");
         for (const key of ["asca", "sca", "secret", "kics", "containers"]) {
-          expect(content).to.contain(`cx_${key}_scanner_enabled=false`);
+          expect(content).to.contain(`cx_${key}_scanner_enabled=true`);
         }
       } finally {
         context.subscriptions.forEach((d: { dispose: () => void }) => d.dispose());

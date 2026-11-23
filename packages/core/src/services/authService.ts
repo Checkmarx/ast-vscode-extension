@@ -613,7 +613,7 @@ export class AuthService {
     // Sign the cx CLI out too, so cx-devassist does not keep a login the extension has dropped
     await getCx().removeLogin(this.logs);
     await this.context.globalState.update(constants.getStandaloneEnabledGlobalState(), undefined);
-    // Tell the cx-devassist plugin and ast-cli that Self-Healing and every scanner are off until the next login
+    // Tell the cx-devassist plugin and ast-cli that Self-Healing is off until the next login; scanners keep the user's settings
     await onSelfHealingLogout(this.logs, this.context);
 
     // NOTE: We intentionally preserve the last auth method and OAuth credentials (baseUri/tenant)
