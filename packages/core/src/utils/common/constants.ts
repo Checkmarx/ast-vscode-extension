@@ -191,6 +191,7 @@ export const constants = {
   devinAgent: "Devin",
   devinNextAgent: "Devin - Next",
   kiroAgent: "Kiro",
+  antigravityAgent: "Antigravity",
   claudeAgent: "Claude",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
@@ -451,6 +452,10 @@ export const constants = {
   codexOpenSidebarCommand: "chatgpt.openSidebar",
   codexNewChatOpen: "chatgpt.newChat",
   codexChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
+
+  // Antigravity IDE native chat commands
+  antigravityNewChatOpen: "antigravity.startNewConversation",
+  antigravitySendPromptCommand: "antigravity.sendPromptToAgentPanel",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

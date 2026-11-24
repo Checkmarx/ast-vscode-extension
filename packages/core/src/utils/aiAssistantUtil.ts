@@ -63,7 +63,8 @@ export function resolveMcpTargets(): McpTarget[] {
       isIDE(constants.windsurfNextAgent) ||
       isIDE(constants.devinAgent) ||
       isIDE(constants.devinNextAgent) ||
-      isIDE(constants.kiroAgent));
+      isIDE(constants.kiroAgent) ||
+      isIDE(constants.antigravityAgent));
 
   if (isNonVsCodeIde) {
     const cfg = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
@@ -161,7 +162,8 @@ export function getMcpOAuthSetupMessage(context?: vscode.ExtensionContext): stri
       isIDE(constants.devinNextAgent) ||
       isIDE(constants.kiroAgent) ||
       isIDE(constants.windsurfAgent) ||
-      isIDE(constants.windsurfNextAgent);
+      isIDE(constants.windsurfNextAgent) ||
+      isIDE(constants.antigravityAgent);
 
     const cfg = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
     const aiAssistantSelection = cfg.get<string>('AI Assistant');
@@ -187,6 +189,8 @@ export function getMcpOAuthSetupMessage(context?: vscode.ExtensionContext): stri
           aiAgentName = 'Windsurf - Next';
         } else if (isIDE(constants.windsurfAgent)) {
           aiAgentName = 'Windsurf';
+        } else if (isIDE(constants.antigravityAgent)) {
+          aiAgentName = 'Antigravity';
         }
       } else {
         // Use AI Assistant dropdown

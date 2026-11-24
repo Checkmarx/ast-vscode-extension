@@ -297,6 +297,9 @@ function removeFromCodexConfig(): void {
 }
 
 function getCxOrigin(): string {
+	if (isIDE(constants.antigravityAgent)) {
+		return constants.antigravityAgent;
+	}
 	if (isIDE(constants.kiroAgent)) {
 		return constants.kiroAgent;
 	}
@@ -345,7 +348,16 @@ function getOAuthMcpTemplateForIde(url: string): { servers?: Record<string, any>
 		};
 	}
 
-	// Windsurf, Windsurf-Next, Devin, Devin-Next, Kiro use 'mcpServers' key
+	// Windsurf, Windsurf-Next, Devin, Devin-Next, Kiro, Antigravity use 'mcpServers' key
+	if (isIDE(constants.antigravityAgent)) {
+		return {
+			mcpServers: {
+				[getCheckmarxMcpServerName()]: {
+					serverUrl: url
+				}
+			}
+		};
+	}
 	if (isIDE(constants.windsurfAgent) ||
 		isIDE(constants.windsurfNextAgent) ||
 		isIDE(constants.devinAgent) ||
@@ -480,6 +492,10 @@ function getMcpConfigPath(): string {
 	}
 	if (isIDE(constants.kiroAgent)) {
 		return path.join(homeDir, ".kiro", "settings", "mcp.json");
+	}
+	// Antigravity IDE: mcpServers key, remote servers use `serverUrl` (like Windsurf)
+	if (isIDE(constants.antigravityAgent)) {
+		return path.join(homeDir, ".gemini", "config", "mcp_config.json");
 	}
 	// Claude: primary path; updateMcpJsonFile also writes to ~/.claude.json for compatibility
 	if (isIDE(constants.claudeAgent)) {
@@ -744,7 +760,7 @@ export async function initializeMcpConfiguration(apiKey: string, context?: vscod
 			const fullUrl = `${baseUrl}/api/security-mcp/mcp`;
 			console.log(`Token Based mode - MCP URL: ${fullUrl}`);
 			const mcpServer: McpServer = {
-				...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
+				...((isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent) || isIDE(constants.antigravityAgent)) ? { serverUrl: fullUrl } : { url: fullUrl }),
 				headers: {
 					"cx-origin": getCxOrigin(),
 					"Authorization": apiKey,

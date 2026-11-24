@@ -215,6 +215,18 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    private async handleAntigravityIDE(question: string) {
+        const executeFunction = async () => {
+            // sendPromptToAgentPanel sends into the current conversation, so start a new one first
+            await vscode.commands.executeCommand(constants.antigravityNewChatOpen);
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await vscode.commands.executeCommand(constants.antigravitySendPromptCommand, question);
+        };
+
+        // Same safety net as the other IDEs: if a command fails, the prompt is left on the clipboard
+        await this.executeWithClipboard(question, executeFunction);
+    }
+
     private setSelectedAIAssistant(userPreferenceAIAssistant: string, copilotAvailable: boolean, claudeAvailable: boolean, codexAvailable: boolean): string | null {
         let assistantType: string | null = null;
         this.logs.debug(`setSelectedAIAssistant - copilotAvailable: ${copilotAvailable}, claudeAvailable: ${claudeAvailable}, codexAvailable: ${codexAvailable}`);
@@ -286,7 +298,8 @@ export class CopilotChatCommand {
             || isIDE(constants.windsurfNextAgent)
             || isIDE(constants.devinAgent)
             || isIDE(constants.devinNextAgent)
-            || isIDE(constants.kiroAgent);
+            || isIDE(constants.kiroAgent)
+            || isIDE(constants.antigravityAgent);
 
         if (isNonVsCodeIde) {
             const config = vscode.workspace.getConfiguration(constants.getAiAssistantConfigSection());
@@ -304,6 +317,10 @@ export class CopilotChatCommand {
                 }
                 if (isIDE(constants.kiroAgent)) {
                     await this.handleKiroIDE(question);
+                    return;
+                }
+                if (isIDE(constants.antigravityAgent)) {
+                    await this.handleAntigravityIDE(question);
                     return;
                 }
             }
@@ -342,6 +359,10 @@ export class CopilotChatCommand {
             }
             if (isIDE(constants.kiroAgent)) {
                 await this.handleKiroIDE(question);
+                return;
+            }
+            if (isIDE(constants.antigravityAgent)) {
+                await this.handleAntigravityIDE(question);
                 return;
             }
         }
