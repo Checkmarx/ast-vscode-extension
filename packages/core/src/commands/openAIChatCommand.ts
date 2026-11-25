@@ -36,7 +36,7 @@ import { IacScannerService } from "../realtimeScanners/scanners/iac/iacScannerSe
 import { AscaScannerService } from "../realtimeScanners/scanners/asca/ascaScannerService";
 import { ContainersScannerService } from '../realtimeScanners/scanners/containers/containersScannerService';
 import { getIdeInfo, getIdeKind } from "../utils/ideInfo";
-import { AI_PROVIDER_CLAUDE, AI_PROVIDER_CODEX, toAiProviderName } from "../models/telemetryEvent";
+import { AI_PROVIDER_CLAUDE, AI_PROVIDER_CODEX, TELEMETRY_CLICK_SUB_TYPE, toAiProviderName } from "../models/telemetryEvent";
 import { emitHoverClickEvent, emitRemediationEvent } from "./hoverItemTelemetry";
 
 
@@ -543,7 +543,7 @@ export class CopilotChatCommand {
 
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.ignorePackage, async (item: HoverData | SecretsHoverData | IacHoverData | AscaHoverData | ContainersHoverData) => {
-                this.logUserEvent("click", constants.ignorePackage, item);
+                this.logUserEvent("click", TELEMETRY_CLICK_SUB_TYPE.ignoreVul, item);
 
 
                 try {

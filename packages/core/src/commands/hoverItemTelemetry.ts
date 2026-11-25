@@ -100,5 +100,6 @@ export function emitHoverClickEvent(subType: string, item: HoverItem): void {
     aiProvider: getIdeInfo().nativeAiProvider ?? constants.vsCodeAgent,
     status: "Success",
     repoUrl: getRepositoryRemoteUrl(getFilePath(item)),
+    eventAttributes: { vulnerabilityId: getVulnerabilityId(item) },
   });
 }

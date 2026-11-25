@@ -21,6 +21,11 @@ export const TELEMETRY_SUB_TYPE = {
   scanTriggered: "scantriggerd",
 } as const;
 
+/** Click subtype for the Ignore only action. The command name stays in constants. */
+export const TELEMETRY_CLICK_SUB_TYPE = {
+  ignoreVul: "Ignore",
+} as const;
+
 export const PLUGIN_TYPE_IDE = "IDE";
 
 /**
@@ -28,8 +33,8 @@ export const PLUGIN_TYPE_IDE = "IDE";
  * Both extensions run in the same IDEs, so agent and pluginType alone can't tell them apart.
  */
 export const PLUGIN_NAME = {
-  checkmarxOne: "CxOne",
-  devAssist: "DevAssist",
+  checkmarxOne: "Checkmarx One Assist",
+  devAssist: "Checkmarx One Developer Assist",
 } as const;
 export const TELEMETRY_API_VERSION = "v2";
 export const REMEDIATION_MODE_DEV_ASSIST = "DevAssist";

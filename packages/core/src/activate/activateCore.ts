@@ -12,7 +12,7 @@ import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
 import { registerSelfHealing } from '../services/selfHealing';
 import { initTelemetry } from '../services/telemetryService';
-import { ensureInstallationId, flushPendingInstallEvent } from '../services/installationTracker';
+import { ensureInstallationId, flushPendingInstallEvent, initInstallationTracker } from '../services/installationTracker';
 
 // Global context for the extension
 let globalContext: vscode.ExtensionContext;
@@ -49,6 +49,7 @@ export async function activateCore(context: vscode.ExtensionContext) {
 
     // [SHARED] Analytics telemetry: envelope data and installation id (AST-184025)
     initTelemetry(context, logs);
+    initInstallationTracker(logs);
     try {
         await ensureInstallationId(context);
     } catch (error) {

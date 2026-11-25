@@ -104,6 +104,27 @@ describe("hoverItemTelemetry", () => {
       await flushPromises();
       expect(stub.firstCall.args[0]).to.include({ subType: "ignorePackage", aiProvider: "VS Code" });
     });
+
+    it("sends vulnerabilityId and no status or statusResult for viewDetails", async () => {
+      const stub = stubSendTelemetry(sandbox);
+      emitHoverClickEvent("viewDetails", ossItem);
+      await flushPromises();
+      const payload = stub.firstCall.args[0];
+      expect(payload).to.include({ eventType: "click", subType: "viewDetails" });
+      expect(payload.status).to.equal("Success");
+      expect(payload.statusResult).to.be.undefined;
+      expect(payload.eventAttributes).to.include({ vulnerabilityId: "lodash@4.17.20" });
+    });
+
+    it("sends Success status for ignore events", async () => {
+      const stub = stubSendTelemetry(sandbox);
+      emitHoverClickEvent("ignoreAll", ossItem);
+      await flushPromises();
+      const payload = stub.firstCall.args[0];
+      expect(payload).to.include({ eventType: "click", subType: "ignoreAll", status: "Success" });
+      expect(payload.statusResult).to.be.undefined;
+      expect(payload.eventAttributes).to.include({ vulnerabilityId: "lodash@4.17.20" });
+    });
   });
 
   it("toAiProviderName maps the internal assistant ids", () => {

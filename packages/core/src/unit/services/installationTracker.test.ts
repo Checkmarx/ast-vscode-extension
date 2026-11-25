@@ -97,6 +97,14 @@ describe("installationTracker", () => {
       expect(context.globalState.get(constants.getPendingInstallEventKey())).to.equal(undefined);
     });
 
+    it("returns the stored id and creates no event when an id already exists (restart or reinstall)", async () => {
+      const context = createTestContext();
+      await context.globalState.update(constants.getInstallationIdKey(), "vscode-old");
+      const id = await ensureInstallationId(context);
+      expect(id).to.equal("vscode-old");
+      expect(context.globalState.get(constants.getPendingInstallEventKey())).to.equal(undefined);
+    });
+
     it("treats a stored credential as an existing user", async () => {
       const context = createTestContext("2.74.0", "stored-token");
       expect(await isExistingInstallation(context)).to.equal(true);

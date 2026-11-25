@@ -383,7 +383,7 @@ export class AuthenticationWebview {
                     await commonCommand.executeCheckStandaloneEnabled();
                     await commonCommand.executeCheckCxOneAssistEnabled();
                     if (token !== "") {
-                      reportLoginSuccess(this.context, "OAuth");
+                      await reportLoginSuccess(this.context, "OAuth");
                       this.schedulePostAuth(isAiEnabled, { apiKey: token });
                       // Clear flag after delay to allow schedulePostAuth to complete (success case only)
                       setTimeout(() => {
@@ -440,7 +440,7 @@ export class AuthenticationWebview {
                       type: "validation-success",
                       message: "API Key validated successfully!",
                     });
-                    reportLoginSuccess(this.context, "APIKey");
+                    await reportLoginSuccess(this.context, "APIKey");
                     this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
                     // Clear flag after delay to allow schedulePostAuth to complete (success case only)
                     setTimeout(() => {

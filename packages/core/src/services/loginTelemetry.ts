@@ -8,10 +8,10 @@ import { flushPendingInstallEvent } from "./installationTracker";
  * never for the silent credential check at startup.
  */
 
-export function reportLoginSuccess(context: vscode.ExtensionContext, authMethod: AuthMethod): void {
+export async function reportLoginSuccess(context: vscode.ExtensionContext, authMethod: AuthMethod): Promise<void> {
   emitLoginEvent(authMethod, true);
   // The first successful login is also when a pending install event can be sent.
-  void flushPendingInstallEvent(context);
+  await flushPendingInstallEvent(context);
 }
 
 export function reportLoginFailure(authMethod: AuthMethod, reason: unknown): void {

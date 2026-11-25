@@ -287,7 +287,7 @@ export class AuthenticationWebview {
                   type: "validation-success",
                   message: "API Key validated successfully!",
                 });
-                reportLoginSuccess(this.context, "APIKey");
+                await reportLoginSuccess(this.context, "APIKey");
                 this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
               } catch (error) {
                 reportLoginFailure("APIKey", error);

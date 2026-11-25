@@ -4,6 +4,7 @@ import { constants } from "../utils/common/constants";
 import { getIdeInfo } from "../utils/ideInfo";
 import { TELEMETRY_SUB_TYPE, TELEMETRY_TYPE } from "../models/telemetryEvent";
 import { emitTelemetryAndWait } from "./telemetryService";
+import { Logs } from "../models/logs";
 
 /**
  * Install event (AST-184025).
@@ -19,6 +20,13 @@ import { emitTelemetryAndWait } from "./telemetryService";
  * Users who already had the extension before this release also get an id, but no install
  * event: they upgraded, they didn't install. See isExistingInstallation.
  */
+
+let installationLogs: Logs | undefined;
+
+/** Initialize logs for installation tracker. Called from activateCore. */
+export function initInstallationTracker(logs?: Logs): void {
+  installationLogs = logs;
+}
 
 export interface PendingInstallEvent {
   installationId: string;
@@ -39,28 +47,22 @@ export function generateUuidV4(): string {
 }
 
 /**
- * True when the extension was already used before the release that added installation ids.
- *
- * globalState belongs to this extension only, and nothing writes to it before this check runs
- * on activation. So on a fresh install it is empty. Any key in it, or a stored credential,
- * means an earlier version already ran.
+ * True when the extension was already used before. Source of truth: globalState only,
+ * not credentials (they can persist across uninstall but don't indicate install status).
  */
 export async function isExistingInstallation(context: vscode.ExtensionContext): Promise<boolean> {
   const ownKeys = new Set([constants.getInstallationIdKey(), constants.getPendingInstallEventKey()]);
   const keys = typeof context.globalState.keys === "function" ? context.globalState.keys() : [];
-  if (keys.some((key) => !ownKeys.has(key))) {
-    return true;
-  }
-  try {
-    return !!(await context.secrets.get(constants.getAuthCredentialSecretKey()));
-  } catch {
-    return false;
-  }
+  return keys.some((key) => !ownKeys.has(key));
+}
+
+function newInstallationId(): string {
+  return `${getIdeInfo().installPrefix}-${generateUuidV4()}`;
 }
 
 /**
- * Creates the installation id on the first activation. Does nothing afterwards.
- * Only a new installation gets a pending install event; an existing user who upgraded doesn't.
+ * Creates the installation id on the first activation and returns it afterwards. Only a fresh
+ * install gets a pending install event; an upgrade or a reinstall keeps the id and gets none.
  */
 export async function ensureInstallationId(context: vscode.ExtensionContext): Promise<string> {
   const key = constants.getInstallationIdKey();
@@ -68,16 +70,23 @@ export async function ensureInstallationId(context: vscode.ExtensionContext): Pr
   if (existing) {
     return existing;
   }
+
   const upgradedFromOlderVersion = await isExistingInstallation(context);
-  const installationId = `${getIdeInfo().installPrefix}-${generateUuidV4()}`;
+  const installationId = newInstallationId();
   await context.globalState.update(key, installationId);
-  if (!upgradedFromOlderVersion) {
-    const pending: PendingInstallEvent = {
-      installationId,
-      installationTimestamp: new Date().toISOString(),
-    };
-    await context.globalState.update(constants.getPendingInstallEventKey(), pending);
+
+  if (upgradedFromOlderVersion) {
+    installationLogs?.info("⚠️ [INSTALL] UPGRADE detected - NO pending event");
+    return installationId;
   }
+
+  installationLogs?.info("🆔 [INSTALL] Fresh Install? true");
+  const event: PendingInstallEvent = {
+    installationId,
+    installationTimestamp: new Date().toISOString(),
+  };
+  await context.globalState.update(constants.getPendingInstallEventKey(), event);
+  installationLogs?.info("✅ [INSTALL] Pending event CREATED");
   return installationId;
 }
 
@@ -99,9 +108,15 @@ export function flushPendingInstallEvent(context: vscode.ExtensionContext): Prom
 async function doFlush(context: vscode.ExtensionContext): Promise<void> {
   const pendingKey = constants.getPendingInstallEventKey();
   const pending = context.globalState.get<PendingInstallEvent>(pendingKey);
+
+  installationLogs?.info(`📦 [FLUSH] Pending event exists? ${!!pending?.installationId}`);
+
+  // Only flush if pending event exists (fresh install, not upgrade)
   if (!pending?.installationId) {
+    installationLogs?.info(`⏭️ [FLUSH] Skipping - no pending event (upgrade or already flushed)`);
     return;
   }
+
   const delivered = await emitTelemetryAndWait({
     type: TELEMETRY_TYPE.install,
     subType: TELEMETRY_SUB_TYPE.installation,
@@ -112,8 +127,13 @@ async function doFlush(context: vscode.ExtensionContext): Promise<void> {
       installationTimestamp: pending.installationTimestamp,
     },
   });
+
+  installationLogs?.info(`📦 [FLUSH] Event delivered? ${delivered}`);
+
+  // Clear pending event only after successful delivery
   if (delivered) {
     await context.globalState.update(pendingKey, undefined);
+    installationLogs?.info(`✅ [FLUSH] Pending event cleared after successful delivery`);
   }
 }
 
