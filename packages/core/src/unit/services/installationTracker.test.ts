@@ -105,9 +105,9 @@ describe("installationTracker", () => {
       expect(context.globalState.get(constants.getPendingInstallEventKey())).to.equal(undefined);
     });
 
-    it("treats a stored credential as an existing user", async () => {
+    it("ignores a stored credential when deciding whether this is an existing user", async () => {
       const context = createTestContext("2.74.0", "stored-token");
-      expect(await isExistingInstallation(context)).to.equal(true);
+      expect(await isExistingInstallation(context)).to.equal(false);
     });
 
     it("treats an empty globalState and no credential as a new installation", async () => {

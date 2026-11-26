@@ -73,15 +73,15 @@ describe("telemetryService", () => {
       expect(payload.eventAttributes).to.include({ apiVersion: "v2" });
     });
 
-    it("adds pluginName CxOne for the Checkmarx One extension", () => {
+    it("adds pluginName Checkmarx One Assist for the Checkmarx One extension", () => {
       setExtensionConfig({ extensionId: "ast-results", commandPrefix: "ast-results", viewContainerPrefix: "ast", displayName: "Checkmarx", extensionType: "checkmarx" } as any);
-      expect(toPayload({ type: "click", subType: "x", status: "Success" }).eventAttributes?.pluginName).to.equal("CxOne");
+      expect(toPayload({ type: "click", subType: "x", status: "Success" }).eventAttributes?.pluginName).to.equal("Checkmarx One Assist");
     });
 
-    it("adds pluginName DevAssist for the Developer Assist extension", () => {
+    it("adds pluginName Checkmarx One Developer Assist for the Developer Assist extension", () => {
       setExtensionConfig({ extensionId: "cx-dev-assist", commandPrefix: "cx-dev-assist", viewContainerPrefix: "cxDevAssist", displayName: "Checkmarx Developer Assist", extensionType: "cx-dev-assist" } as any);
       const attributes = toPayload({ type: "Scan", subType: "x", status: "Success", eventAttributes: { apiVersion: "v2" } }).eventAttributes;
-      expect(attributes).to.deep.equal({ pluginName: "DevAssist", apiVersion: "v2" });
+      expect(attributes).to.deep.equal({ pluginName: "Checkmarx One Developer Assist", apiVersion: "v2" });
       setExtensionConfig({ extensionId: "ast-results", commandPrefix: "ast-results", viewContainerPrefix: "ast", displayName: "Checkmarx", extensionType: "checkmarx" } as any);
     });
 
