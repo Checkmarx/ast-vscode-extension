@@ -3,7 +3,6 @@ import { isAscaHoverData, isContainersHoverData, isIacHoverData, isSecretsHoverD
 import { AscaHoverData, ContainersHoverData, HoverData, IacHoverData, SecretsHoverData } from "../realtimeScanners/common/types";
 import { REMEDIATION_MODE_DEV_ASSIST, TELEMETRY_TYPE } from "../models/telemetryEvent";
 import { emitTelemetry, sanitizeTelemetryText } from "../services/telemetryService";
-import { getIdeInfo } from "../utils/ideInfo";
 import { getRepositoryRemoteUrl } from "../utils/gitRemote";
 
 /**
@@ -88,16 +87,16 @@ export function emitRemediationEvent(item: HoverItem, aiProvider: string | null,
 }
 
 /**
- * Other click events (viewDetails, ignorePackage, ignoreAll). Sent before the action runs,
- * as before. aiProvider keeps its previous value (the IDE's assistant, or "VS Code").
+ * Click events for viewDetails (aiProvider is the assistant that handled its prompt), ignorePackage
+ * and ignoreAll (no aiProvider).
  */
-export function emitHoverClickEvent(subType: string, item: HoverItem): void {
+export function emitHoverClickEvent(subType: string, item: HoverItem, aiProvider?: string): void {
   emitTelemetry({
     type: TELEMETRY_TYPE.click,
     subType,
     engine: getEngine(item),
     problemSeverity: getSeverity(item),
-    aiProvider: getIdeInfo().nativeAiProvider ?? constants.vsCodeAgent,
+    aiProvider,
     status: "Success",
     repoUrl: getRepositoryRemoteUrl(getFilePath(item)),
     eventAttributes: { vulnerabilityId: getVulnerabilityId(item) },

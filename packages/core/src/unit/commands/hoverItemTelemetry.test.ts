@@ -87,22 +87,18 @@ describe("hoverItemTelemetry", () => {
   });
 
   describe("emitHoverClickEvent", () => {
-    it("keeps the IDE-based aiProvider for other clicks", async () => {
+    it("sends the aiProvider it is given for viewDetails", async () => {
       const stub = stubSendTelemetry(sandbox);
-      (mock as any).env.appName = "Windsurf";
-      resetIdeInfoCache();
-      emitHoverClickEvent("viewDetails", ascaItem);
+      emitHoverClickEvent("viewDetails", ascaItem, "Copilot");
       await flushPromises();
-      expect(stub.firstCall.args[0]).to.include({ eventType: "click", subType: "viewDetails", aiProvider: "Cascade", agent: "Windsurf" });
+      expect(stub.firstCall.args[0]).to.include({ eventType: "click", subType: "viewDetails", aiProvider: "Copilot" });
     });
 
-    it("uses VS Code as aiProvider in VS Code", async () => {
+    it("sends no aiProvider for ignore events", async () => {
       const stub = stubSendTelemetry(sandbox);
-      (mock as any).env.appName = "Visual Studio Code";
-      resetIdeInfoCache();
       emitHoverClickEvent("ignorePackage", ossItem);
       await flushPromises();
-      expect(stub.firstCall.args[0]).to.include({ subType: "ignorePackage", aiProvider: "VS Code" });
+      expect(stub.firstCall.args[0].aiProvider).to.equal(undefined);
     });
 
     it("sends vulnerabilityId and no status or statusResult for viewDetails", async () => {

@@ -367,7 +367,6 @@ export class CheckmarxAuthViewProvider implements vscode.WebviewViewProvider {
             // Try auto-authentication with existing valid token
             const success = await authService.tryAutoAuthenticateOAuth();
             if (success) {
-              reportLoginSuccess(this.context, "OAuth");
               vscode.window.showInformationMessage("Signed in with saved OAuth credentials.");
               return;
             }

@@ -391,7 +391,7 @@ export class AuthenticationWebview {
                       }, 2000);
                     }
                     else {
-                      reportLoginFailure("OAuth", "Token validation failed");
+                      reportLoginFailure(this.context, "OAuth");
                       // Clear flag immediately on authentication failure to allow retry
                       AuthenticationWebview.isAuthenticating = false;
                       this._panel.webview.postMessage({ command: "enableAuthButton" });
@@ -414,7 +414,7 @@ export class AuthenticationWebview {
                       message.apiKey
                     );
                     if (!isValid) {
-                      reportLoginFailure("APIKey", "API Key validation failed");
+                      reportLoginFailure(this.context, "APIKey");
                       // Clear flag immediately on validation failure to allow retry
                       AuthenticationWebview.isAuthenticating = false;
                       // Sending an error message to the window
@@ -453,7 +453,7 @@ export class AuthenticationWebview {
                   }
                 }
               } catch (error) {
-                reportLoginFailure(toAuthMethod(message.authMethod), error);
+                reportLoginFailure(this.context, toAuthMethod(message.authMethod));
                 // Clear flag immediately on any error to allow retry
                 AuthenticationWebview.isAuthenticating = false;
                 this._panel.webview.postMessage({ command: "enableAuthButton" });

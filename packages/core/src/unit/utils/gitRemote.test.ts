@@ -20,6 +20,9 @@ describe("gitRemote", () => {
       ["git@github.com:org/repo.git", "https://github.com/org/repo"],
       ["github.com:org/repo.git", "https://github.com/org/repo"],
       ["ssh://git@host.com:2222/org/repo.git", "https://host.com/org/repo"],
+      ["git@gitlab:org/repo.git", "https://gitlab/org/repo"],
+      ["C:\\Users\\bob\\repo.git", ""],
+      ["git@github.com:org/a@b.git", ""],
       ["git@ssh.dev.azure.com:v3/org/project/repo", "https://ssh.dev.azure.com/v3/org/project/repo"],
       ["  https://github.com/org/repo.git  ", "https://github.com/org/repo"],
       ["file:///home/user/repo", ""],
@@ -121,6 +124,11 @@ describe("gitRemote", () => {
     it("strips credentials", () => {
       setGit(gitApi([repo([{ name: "origin", fetchUrl: withCredentials("github.com/org/repo.git") }])]));
       expect(getRepositoryRemoteUrl()).to.equal("https://github.com/org/repo");
+    });
+
+    it("does not fall back to another repository when the file has none", () => {
+      setGit(gitApi([repo([{ name: "origin", fetchUrl: "https://github.com/org/other.git" }])]));
+      expect(getRepositoryRemoteUrl("/outside/file.ts")).to.equal("");
     });
 
     it("never throws", () => {

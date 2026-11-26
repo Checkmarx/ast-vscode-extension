@@ -9,6 +9,8 @@ import { GitExtension, Repository } from "./types/git";
  */
 
 const GIT_EXTENSION_ID = "vscode.git";
+// At least two characters, so a Windows drive letter such as "C:" is not a host.
+const HOST_PATTERN = /^(\[[0-9a-f:.]+\]|[a-z0-9][a-z0-9._-]+)$/i;
 
 /**
  * Removes credentials, query and fragment from a git remote URL, and converts SSH remotes
@@ -47,28 +49,25 @@ export function sanitizeRemoteUrl(remoteUrl: string | undefined): string {
   }
 
   repoPath = repoPath.replace(/^\/+/, "").replace(/\/+$/, "").replace(/\.git$/i, "");
-  if (!host || !repoPath) {
+  if (!host || !repoPath || !HOST_PATTERN.test(host) || /[@\\?]/.test(repoPath)) {
     return "";
   }
   return `https://${host}/${repoPath}`;
 }
 
 function findRepository(repositories: Repository[], getRepository: (uri: vscode.Uri) => Repository | null, filePath?: string): Repository | undefined {
-  if (filePath) {
-    try {
-      const repo = getRepository(vscode.Uri.file(filePath));
-      if (repo) {
-        return repo;
-      }
-    } catch {
-      // fall through to the first repository
-    }
+  if (!filePath) {
+    return repositories[0];
   }
-  return repositories[0];
+  try {
+    return getRepository(vscode.Uri.file(filePath)) ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
- * Sanitized remote URL of the repository that contains filePath (or the first repository).
+ * Sanitized remote URL of the repository that contains filePath, or of the first repository when no file is given.
  * Returns "" when git is unavailable, disabled, or the folder isn't a repository.
  * Never throws and never blocks: if the git extension isn't active yet, it is activated
  * in the background and "" is returned for this call.

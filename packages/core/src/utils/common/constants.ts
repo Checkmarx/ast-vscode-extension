@@ -28,6 +28,10 @@ export const constants = {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'cxPendingInstallEvent' : 'cxPendingInstallEventDevAssist';
   },
+  getPendingLoginFailureKey: (): string => {
+    const extensionType = getExtensionType();
+    return extensionType === 'checkmarx' ? 'cxPendingLoginFailure' : 'cxPendingLoginFailureDevAssist';
+  },
   getLastOAuthBaseUriKey: (): string => {
     const extensionType = getExtensionType();
     return extensionType === 'checkmarx' ? 'lastOAuthBaseUri' : 'lastOAuthBaseUriDevAssist';

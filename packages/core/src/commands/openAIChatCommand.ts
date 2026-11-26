@@ -516,8 +516,6 @@ export class CopilotChatCommand {
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(commands.viewDetails, async (item: HoverData | SecretsHoverData | AscaHoverData | ContainersHoverData | IacHoverData) => {
-                this.logUserEvent("click", constants.viewDetails, item);
-
                 const isSecrets = isSecretsHoverData(item);
                 let question = '';
 
@@ -532,11 +530,14 @@ export class CopilotChatCommand {
                 } else {
                     question = SCA_EXPLANATION_PROMPT(item.packageName, item.version, item.status, item.vulnerabilities);
                 }
+                let aiProvider: string | null = null;
                 try {
-                    await this.openChatWithPrompt(question, this.getFileContext(item), false);
+                    aiProvider = await this.openChatWithPrompt(question, this.getFileContext(item), false);
                 } catch (error) {
                     this.logs.error(`Error opening Chat: ${error}`);
                     vscode.window.showErrorMessage(`Failed to open Chat: ${error}`);
+                } finally {
+                    emitHoverClickEvent(constants.viewDetails, item, aiProvider ?? "");
                 }
             })
         );

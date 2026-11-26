@@ -188,7 +188,11 @@ export class OssScannerService extends BaseScannerService {
       this.updateProblems<CxOssResult[]>(scanResults, document.uri, fullScanResults);
 
       const allPackages: CxOssResult[] = Array.isArray(fullScanResults ?? scanResults) ? (fullScanResults ?? scanResults) : [];
-      logScanResults(constants.ossRealtimeScannerEngineName, allPackages.map(p => p.status), originalFilePath);
+      try {
+        logScanResults(constants.ossRealtimeScannerEngineName, allPackages.map(p => p?.status), originalFilePath);
+      } catch (telemetryError) {
+        logs.debug(`Telemetry for OSS scan failed: ${telemetryError}`);
+      }
     } catch (error) {
       logScanFailure(constants.ossRealtimeScannerEngineName, error, originalFilePath);
       this.storeAndApplyResults(

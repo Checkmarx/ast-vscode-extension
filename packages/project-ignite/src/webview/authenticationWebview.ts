@@ -267,7 +267,7 @@ export class AuthenticationWebview {
                   message.apiKey
                 );
                 if (!isValid) {
-                  reportLoginFailure("APIKey", "API Key validation failed");
+                  reportLoginFailure(this.context, "APIKey");
                   // Sending an error message to the window
                   this._panel.webview.postMessage({
                     type: "validation-error",
@@ -290,7 +290,7 @@ export class AuthenticationWebview {
                 await reportLoginSuccess(this.context, "APIKey");
                 this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
               } catch (error) {
-                reportLoginFailure("APIKey", error);
+                reportLoginFailure(this.context, "APIKey");
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
                 this._panel.webview.postMessage({
                   type: "validation-error",

@@ -181,12 +181,35 @@ describe("installationTracker", () => {
       expect(types).to.include("install");
     });
 
-    it("reportLoginFailure sends a failed login", async () => {
+    it("reportLoginFailure stores the failure instead of sending it", async () => {
       const stub = stubSendTelemetry(sandbox, true);
-      reportLoginFailure("OAuth", "Token validation failed");
+      const context = createTestContext();
+      reportLoginFailure(context, "OAuth");
       await flushPromises();
-      expect(stub.firstCall.args[0]).to.include({ eventType: "authentication", status: "Failure" });
-      expect(stub.firstCall.args[0].statusResult).to.contain("Token validation failed");
+      expect(stub.called).to.equal(false);
+      expect((context.globalState.get(constants.getPendingLoginFailureKey()) as any).authMethod).to.equal("OAuth");
+    });
+
+    it("sends the stored failure after the next successful login and clears it", async () => {
+      const stub = stubSendTelemetry(sandbox, true);
+      const context = createTestContext();
+      reportLoginFailure(context, "OAuth");
+      await reportLoginSuccess(context, "APIKey");
+      await flushPromises();
+      const failure = stub.getCalls().map((c) => c.args[0]).find((p) => p.status === "Failure");
+      expect(failure).to.include({ eventType: "authentication", statusResult: "Authentication Failed." });
+      expect(failure.eventAttributes.authMethod).to.equal("OAuth");
+      expect(context.globalState.get(constants.getPendingLoginFailureKey())).to.equal(undefined);
+    });
+
+    it("keeps the stored failure when the send is not accepted", async () => {
+      const stub = stubSendTelemetry(sandbox, false);
+      const context = createTestContext();
+      reportLoginFailure(context, "APIKey");
+      await reportLoginSuccess(context, "APIKey");
+      await flushPromises();
+      expect(stub.called).to.equal(true);
+      expect(context.globalState.get(constants.getPendingLoginFailureKey())).to.not.equal(undefined);
     });
 
     it("toAuthMethod maps the webview value", () => {
