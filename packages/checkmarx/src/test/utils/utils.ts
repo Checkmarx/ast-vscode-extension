@@ -1,10 +1,12 @@
 import {
   ActivityBar,
   By,
+  ContextMenu,
   ViewControl,
   CustomTreeSection,
   SideBarView,
   InputBox,
+  TreeItem,
   WebView,
   WebDriver,
   ViewSection,
@@ -12,11 +14,10 @@ import {
   Workbench,
   EditorView,
 } from "vscode-extension-tester";
-import { WEBVIEW_TITLE } from "./constants";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND, SCAN_KEY_TREE_LABEL, WEBVIEW_TITLE } from "./constants";
 
-const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const CX_MOCK_TOKEN_COMMAND = "ast-results.mockTokenTest";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
+const CX_MOCK_TOKEN_COMMAND = "Mock Token Test";
+const RESULTS_PANEL_TITLE = "Checkmarx One Results";
 
 type CommandExecutor = (command: string) => Promise<void>;
 
@@ -86,6 +87,10 @@ export async function confirmLogoutToast(
   return false;
 }
 
+export function isRealTenantRun(): boolean {
+  return process.env.TEST === "uiEndToEnd" && Boolean(process.env.CX_APIKEY);
+}
+
 export async function loginWithMockToken(
   bench: Workbench,
   options?: {
@@ -95,6 +100,29 @@ export async function loginWithMockToken(
 ): Promise<void> {
   await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
   await sleep(options?.waitMs ?? 2000);
+
+  // Only real-tenant runs need verification: validation is a network
+  // call that can lose the race with extension start-up, so confirm and retry.
+  if (!isRealTenantRun()) {
+    return;
+  }
+  for (let retry = 0; ; retry++) {
+    try {
+      const tree = await initialize();
+      const items = tree ? await tree.getVisibleItems() : [];
+      if (items.length > 0) {
+        return;
+      }
+    } catch {
+      // Tree not ready yet; retry below.
+    }
+    if (retry === 5) {
+      throw new Error("Real-tenant login did not fill the Checkmarx One Results tree after 5 retries");
+    }
+    await sleep(8000);
+    await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
+    await sleep(5000);
+  }
 }
 
 export async function logoutIfVisible(
@@ -184,10 +212,6 @@ export async function createTreeSCA(
 export async function quickPickSelector(input: InputBox) {
   await input.selectQuickPick(0);
 }
-export async function getQuickPickSelector(input: InputBox): Promise<string> {
-  let projectList = await input.getQuickPicks();
-  return await projectList[0].getText();
-}
 
 export async function getResults(scan: any): Promise<any[]> {
   let children = await scan.getChildren();
@@ -205,18 +229,31 @@ export async function clickFirstVulnerability(scan: any): Promise<void> {
   }
 }
 
+/**
+ * True once no engine under the loaded scan lists a group for `severity` (i.e. the severity
+ * filter took effect). Polls because the tree re-renders asynchronously after a filter
+ * change, re-reading the tree each time so a stale element from the old render is never used.
+ */
 export async function validateSeverities(
   scan: any,
-  severity: string
+  severity: string,
+  timeoutMs = 60000
 ): Promise<boolean> {
-  var r = true;
-  let children = await scan.getChildren();
-  children.forEach((element: { getLabel: () => any }) => {
-    if (element.getLabel() === severity) {
-      r = false;
+  let next = scan;
+  const hidden = await pollUntil(async () => {
+    const root = next ?? (await (await initialize())?.findItem(SCAN_KEY_TREE_LABEL));
+    next = undefined;
+    const engines = await root.getChildren();
+    let found = false;
+    for (const engine of engines) {
+      await engine.expand();
+      for (const group of await engine.getChildren()) {
+        found = found || (await group.getLabel()).trim().toUpperCase() === severity.toUpperCase();
+      }
     }
-  });
-  return r;
+    return engines.length > 0 && !found;
+  }, Boolean, timeoutMs);
+  return hidden === true;
 }
 
 export async function getDetailsView(): Promise<WebView> {
@@ -306,13 +343,71 @@ export function retryTest(testFn, retries = 3) {
 export const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms));
 
-export async function selectItem(text) {
-  const input = await InputBox.create();
+// Waits up to timeoutMs for the quick input to be shown. InputBox.create(timeout) applies its
+// timeout only to locating the element (VS Code keeps a hidden one in the DOM); the visibility
+// wait after it is a fixed 5 s, which a picker that opens after a tenant call can exceed.
+export async function waitForInputBox(timeoutMs = 30000): Promise<InputBox> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      return await InputBox.create(Math.max(1000, deadline - Date.now()));
+    } catch (error) {
+      if (Date.now() >= deadline) {
+        throw error;
+      }
+    }
+  }
+}
+
+// Makes sure `folder` is the open workspace folder. extest opens it by running the VS Code CLI
+// (`code -r <folder>`) against the test instance, and on the Linux CI runners that hand-off can
+// leave the window without a folder ("Open Folder" watermark, title without the folder name), so
+// anything resolved against the workspace (e.g. a result's file link) is never found. Falls back
+// to File > Open Folder through VS Code's simple in-window dialog, which extest turns on.
+export async function ensureWorkspaceFolderOpen(folder: string, timeoutMs = 60000): Promise<void> {
+  const driver = VSBrowser.instance.driver;
+  const name = folder.split(/[\\/]/).filter(Boolean).pop() ?? folder;
+  const isOpen = async () => (await driver.getTitle()).includes(name);
+  if (await isOpen()) {
+    return;
+  }
+  console.log(`[ui-tests] No workspace folder open (title "${await driver.getTitle()}"); opening ${folder}`);
+  await new Workbench().executeCommand("File: Open Folder...");
+  const input = await waitForInputBox();
+  await input.setText(folder);
+  // In the simple dialog Enter only acts on the highlighted list entry; OK accepts the typed path.
+  const okButtons = await driver.findElements(
+    By.xpath("//div[contains(@class,'quick-input-widget')]//*[contains(@class,'monaco-button') and normalize-space(.)='OK']")
+  );
+  if (okButtons.length > 0) {
+    await okButtons[0].click();
+  } else {
+    await input.confirm();
+  }
+
+  // Opening a folder reloads the window: wait for the new workbench, then for its title.
+  const opened = await pollUntil(async () => {
+    await VSBrowser.instance.waitForWorkbench(10000);
+    return isOpen();
+  }, Boolean, timeoutMs);
+  if (!opened) {
+    throw new Error(`Workspace folder ${folder} did not open (title: "${await driver.getTitle()}")`);
+  }
+}
+
+// Types text into the open picker and clicks the matching entry. The project/branch pickers
+// search the server on every value change, so retyping the match and pressing Enter would
+// clear the list and confirm while it reloads (nothing gets selected on a real tenant).
+export async function selectItem(text: string, timeoutMs = 60000): Promise<string> {
+  const input = await waitForInputBox();
   await input.setText(text);
-  let item = await getQuickPickSelector(input);
-  await input.setText(item);
-  await input.confirm();
-  return item;
+  const typed = text.trim().toLowerCase();
+  return clickQuickPickItem(
+    input,
+    (entry, all) =>
+      all.some((t) => t.toLowerCase() === typed) ? entry.toLowerCase() === typed : entry.toLowerCase().includes(typed),
+    timeoutMs
+  );
 }
 
 /**
@@ -417,4 +512,226 @@ export async function focusPanelAndCollapseOthers(
   }
 
   return targetSection;
+}
+
+/**
+ * Polls the Checkmarx One Results tree for an item until it appears. Against a real tenant the
+ * view re-renders while a large scan loads, so a section captured earlier can go stale and keep
+ * returning nothing - after a failed lookup the section is fetched again before the next poll.
+ */
+export async function waitForTreeItem(tree: any, label: string, timeoutMs = 60000): Promise<any> {
+  let next = tree;
+  return pollUntil(async () => {
+    const section = next ?? (await initialize());
+    next = undefined;
+    return section?.findItem(label);
+  }, Boolean, timeoutMs);
+}
+
+/**
+ * Finds a child node (e.g. SAST, IaC, Secret Detection) of the loaded scan in the results tree.
+ * Re-reads the scan root and the child on every poll: against a real tenant the tree is refreshed
+ * while results load, so a reference captured once can go stale or the child may not exist yet.
+ */
+export async function waitForScanChild(
+  tree: CustomTreeSection | undefined,
+  scanLabel: string,
+  childLabel: string,
+  timeoutMs = 60000
+): Promise<TreeItem> {
+  let next = tree;
+  return pollUntil(async () => {
+    const section = next ?? (await initialize());
+    next = undefined;
+    const root = await section?.findItem(scanLabel);
+    await root?.expand();
+    return root?.findChildItem(childLabel);
+  }, Boolean, timeoutMs);
+}
+
+// Polls `read` until `done` accepts the value (a throw counts as a miss); on timeout returns the last value read.
+export async function pollUntil<T>(
+  read: () => Promise<T>,
+  done: (value: NoInfer<T>) => boolean = Boolean,
+  timeoutMs = 60000,
+  intervalMs = 1000
+): Promise<T | undefined> {
+  const deadline = Date.now() + timeoutMs;
+  let value: T | undefined;
+  for (;;) {
+    try {
+      value = await read();
+      if (done(value)) {
+        return value;
+      }
+    } catch {
+      // stale element; read again
+    }
+    if (Date.now() >= deadline) {
+      return value;
+    }
+    await sleep(intervalMs);
+  }
+}
+
+// Clicks the first entry `match` accepts once two reads list the same entries: VS Code reuses rows while results arrive.
+export async function clickQuickPickItem(
+  input: InputBox,
+  match?: string | ((text: string, all: string[]) => boolean),
+  timeoutMs = 60000
+): Promise<string> {
+  const accepts = typeof match === "string" ? (text: string) => text === match.trim() : match ?? (() => true);
+  let previous: string | undefined;
+  let listed: string[] = [];
+  const found = await pollUntil(async () => {
+    const last = previous;
+    previous = undefined;
+    const picks = await input.getQuickPicks();
+    const texts: string[] = [];
+    for (const pick of picks) {
+      texts.push((await pick.getText()).trim());
+    }
+    listed = texts;
+    previous = texts.join("|");
+    const index = previous === last ? texts.findIndex((text) => accepts(text, texts)) : -1;
+    return index >= 0 ? { pick: picks[index], text: texts[index] } : undefined;
+  }, Boolean, timeoutMs, 500);
+  if (!found) {
+    const wanted = typeof match === "string" ? `"${match}"` : "the expected entry";
+    throw new Error(`Quick pick did not list ${wanted} within ${timeoutMs} ms (listed: ${JSON.stringify(listed)})`);
+  }
+  await found.pick.select();
+  return found.text;
+}
+
+type MenuStatus = { label: string; isActive: boolean };
+export type ResultsMenu = "More Actions" | "Filter";
+
+// Unchecked labels are padded with soft hyphens (U+00AD); checked ones start with a check mark.
+function parseMenuItemLabel(rawLabel: string): MenuStatus {
+  const label = rawLabel.replace(/\u00AD/g, "").replace(/\s+/g, " ").trim();
+  const isActive = label.startsWith("\u2713 ");
+  return { label: isActive ? label.slice(2).trim() : label, isActive };
+}
+
+// Selecting the scan enables menu items gated by `view == astResults`.
+export async function focusResultsPanelAndSelectScan(): Promise<void> {
+  await focusPanelAndCollapseOthers(RESULTS_PANEL_TITLE);
+  try {
+    const scan = await (await initialize())?.findItem(SCAN_KEY_TREE_LABEL);
+    if (scan) {
+      await scan.select();
+      await sleep(300);
+    }
+  } catch {
+    // best-effort
+  }
+}
+
+// `refocus` focuses the panel before every open; otherwise only before retries.
+export async function openResultsMenu(kind: ResultsMenu, refocus = true): Promise<ContextMenu | undefined> {
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      if (refocus || attempt > 1) {
+        await focusResultsPanelAndSelectScan();
+      }
+      const section = await initialize();
+      if (kind === "More Actions") {
+        const menu = await section?.moreActions();
+        if (menu) {
+          return menu;
+        }
+      } else {
+        // fall back to any action labelled like "filter"
+        let action = await section?.getAction("Filter");
+        for (const candidate of action ? [] : (await section?.getActions()) ?? []) {
+          if (/filter/i.test(await candidate.getLabel())) {
+            action = candidate;
+            break;
+          }
+        }
+        const menu = await action?.open();
+        if (menu) {
+          return menu;
+        }
+      }
+    } catch {
+      // panel actions not ready yet; retry
+    }
+    await sleep(1000);
+  }
+  return undefined;
+}
+
+export async function readResultsMenu(kind: ResultsMenu, refocus = true): Promise<MenuStatus[]> {
+  const menu = await openResultsMenu(kind, refocus);
+  if (!menu) {
+    return [];
+  }
+  try {
+    const statuses: MenuStatus[] = [];
+    for (const item of await menu.getItems()) {
+      statuses.push(parseMenuItemLabel(await item.getLabel()));
+    }
+    return statuses;
+  } catch {
+    return [];
+  } finally {
+    await menu.close().catch(() => undefined);
+  }
+}
+
+// Clicks `label` and (with `confirm`) waits for a fresh read to show the flip, clicking again only if it has not
+// flipped. Returns undefined if the item is missing or never flips.
+export async function toggleResultsMenuOption(
+  kind: ResultsMenu,
+  label: string,
+  options: { confirm?: boolean; refocus?: boolean; timeoutMs?: number } = {}
+): Promise<{ before: boolean; after: boolean } | undefined> {
+  const { confirm = true, refocus = true, timeoutMs = 8000 } = options;
+  let before: boolean | undefined;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const menu = await openResultsMenu(kind, refocus || attempt > 1);
+    if (!menu) {
+      return undefined;
+    }
+    try {
+      let target;
+      let isActive = false;
+      for (const item of await menu.getItems()) {
+        const status = parseMenuItemLabel(await item.getLabel());
+        if (status.label === label) {
+          target = item;
+          isActive = status.isActive;
+          break;
+        }
+      }
+      if (!target) {
+        return undefined;
+      }
+      if (before === undefined) {
+        before = isActive;
+      } else if (isActive !== before) {
+        return { before, after: isActive }; // first click landed late
+      }
+      await target.select();
+    } catch {
+      return undefined;
+    } finally {
+      await menu.close().catch(() => undefined);
+    }
+    if (!confirm) {
+      return { before, after: !before };
+    }
+    await sleep(1000);
+    const flipped = await pollUntil(
+      async () => (await readResultsMenu(kind, refocus)).find((status) => status.label === label)?.isActive === !before,
+      Boolean,
+      timeoutMs
+    );
+    if (flipped) {
+      return { before, after: !before };
+    }
+  }
+  return undefined;
 }

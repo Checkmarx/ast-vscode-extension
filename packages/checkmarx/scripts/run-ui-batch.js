@@ -24,7 +24,8 @@ const sourceName = (f) => path.basename(f).replace(/\.js$/, '.ts');
 
 function runAttempt(files, outFile) {
   fs.rmSync(outFile, { force: true });
-  const res = spawnSync('node', [path.join(__dirname, 'run-ui-tests.js'), 'true', ...files], {
+  // UI_TEST_MODE=uiEndToEnd runs the batch against a real tenant; default stays mock ('true').
+  const res = spawnSync('node', [path.join(__dirname, 'run-ui-tests.js'), process.env.UI_TEST_MODE || 'true', ...files], {
     stdio: 'inherit',
     env: { ...process.env, UI_TEST_RESULTS_FILE: outFile },
   });

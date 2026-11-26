@@ -10,24 +10,28 @@ import {
 	CX_CLEAR,
 	CX_SELECT_PROJECT,
 	CX_SELECT_BRANCH,
+	PROJECT_KEY_TREE,
 	QuickPickPaginationButtons,
 	TEN_SECONDS,
 	THREE_SECONDS,
 	TWO_SECONDS,
 } from "./utils/constants";
-import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { CX_TEST_PAGINATION_PROJECT_NAME } from "./utils/envs";
 import {
+	initialize,
 	loginWithMockToken,
 	logoutIfVisible,
+	pollUntil,
 	retryTest,
 	selectItem,
 	sleep,
+	waitForTreeItem,
 } from "./utils/utils";
 import { expect } from "chai";
 
 const SUITE_SETUP_TIMEOUT_MS = 100000;
 const SUITE_TEARDOWN_TIMEOUT_MS = 60000;
-const TEST_TIMEOUT_MS = 60000;
+const TEST_TIMEOUT_MS = 150000; // real tenant: server-side search + branch load + button poll
 
 describe("Get items with pagination", () => {
 	let bench: Workbench;
@@ -56,7 +60,8 @@ describe("Get items with pagination", () => {
 
 	async function openBranchQuickPick(projectName: string): Promise<void> {
 		await openProjectQuickPick();
-		await selectItem(projectName);
+		const selected = await selectItem(projectName);
+		expect(await waitForTreeItem(await initialize(), PROJECT_KEY_TREE + selected), `project ${selected} should be selected`).to.not.be.undefined;
 		await executeCommandWithRetry(CX_SELECT_BRANCH);
 	}
 
@@ -104,13 +109,21 @@ describe("Get items with pagination", () => {
 
 		await clickPaginationButton(driver, QuickPickPaginationButtons.nextPage);
 
-		await assertSecondPageButtons();
+		// The tenant's project count is not fixed (shared tenants keep gaining projects),
+		// so page 2 may or may not be the last page: check Previous there, then go back
+		// and check page 1 again instead of assuming whether Next is shown.
+		await assertPaginationButtonVisibility(driver, QuickPickPaginationButtons.previousPage, true);
+
+		await clickPaginationButton(driver, QuickPickPaginationButtons.previousPage);
+
+		await assertFirstPageButtons();
 	}, 3));
 
+	// The pagination fixture project has 21-39 branches, so page 2 is always the last page.
 	it("should display pagination buttons in Branch selection", retryTest(async function () {
 		this.timeout(TEST_TIMEOUT_MS);
 
-		await openBranchQuickPick(CX_TEST_SCAN_PROJECT_NAME);
+		await openBranchQuickPick(CX_TEST_PAGINATION_PROJECT_NAME);
 
 		await assertFirstPageButtons();
 
@@ -140,7 +153,12 @@ async function assertPaginationButtonVisibility(
 	label: QuickPickPaginationButtons,
 	expectedVisible: boolean,
 ): Promise<void> {
-	const buttonVisible = await isPaginationButtonVisible(driver, label);
+	// Real-tenant pickers load asynchronously; poll until the expected state shows up.
+	const buttonVisible = await pollUntil(
+		() => isPaginationButtonVisible(driver, label),
+		(visible) => visible === expectedVisible,
+		expectedVisible ? 45000 : 3000
+	);
 	expect(buttonVisible, `${label} button should ${expectedVisible ? "" : "not "}be displayed`).to.equal(expectedVisible);
 }
 

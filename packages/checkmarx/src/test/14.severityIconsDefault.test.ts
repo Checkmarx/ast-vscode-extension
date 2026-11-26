@@ -1,19 +1,20 @@
 import {
     EditorView,
-    InputBox,
     VSBrowser,
     WebDriver,
     Workbench,
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
+    clickQuickPickItem,
     focusPanelAndCollapseOthers,
-    getQuickPickSelector,
     initialize,
     loginWithMockToken,
     logoutIfVisible,
     retryTest,
+    selectItem,
     sleep,
+    waitForInputBox,
 } from "./utils/utils";
 import {
     CX_CLEAR,
@@ -76,14 +77,7 @@ describe("Severity filter icons and vulnerability counts (TC05, TC12)", () => {
     // opens a quick-pick, types `query` if given, and confirms the first match
     async function pickFirstQuickPickItem(command: string, query?: string): Promise<void> {
         await runCommandWithRetry(command);
-        const input = await InputBox.create();
-        await sleep(TWO_SECONDS); // let the quick-pick fully open before typing
-        if (query) {
-            await input.setText(query);
-        }
-        const firstItem = await getQuickPickSelector(input);
-        await input.setText(firstItem);
-        await input.confirm();
+        await (query ? selectItem(query) : clickQuickPickItem(await waitForInputBox()));
         await sleep(TWO_SECONDS); // let the tree react to the selection
     }
 

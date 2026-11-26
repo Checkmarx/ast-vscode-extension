@@ -13,9 +13,7 @@ import {
     retryTest,
     sleep
 } from "./utils/utils";
-
-const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND } from "./utils/constants";
 
 const WAIT_MS = {
     short: 1000,

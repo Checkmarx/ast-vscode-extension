@@ -13,6 +13,7 @@ import {
   retryTest,
   sleep,
 } from "./utils/utils";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND } from "./utils/constants";
 
 // TC04: OAuth login with invalid Base URL/Tenant shows an error banner.
 // TC02: Invalid API Key shows the "API Key validation failed" banner.
@@ -22,9 +23,6 @@ import {
 //   - non-http(s) protocol   -> "Invalid URL protocol. Please use http:// or https://"
 //   - unreachable https host -> generic "Authentication failed:" banner
 //   - invalid API Key        -> "API Key validation failed. Please check your key."
-
-const CX_AUTHENTICATION_COMMAND = "ast-results.showAuth";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 
 // all OAuth failures use this prefix
 const AUTH_FAILED_PREFIX = "Authentication failed:";

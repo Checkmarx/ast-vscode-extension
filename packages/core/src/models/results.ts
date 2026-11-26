@@ -163,6 +163,9 @@ export class AstResult extends CxResult {
         ? shortFilename
         : this.fileName
         }${result.data.line > 0 ? ":" + result.data.line : ""})`;
+    } else if (result.data.filename) {
+      // API data uses `filename`; record it without changing the label.
+      this.fileName = result.data.filename;
     }
 
     this.cweId = result.cweId || result.vulnerabilityDetails?.cweId;

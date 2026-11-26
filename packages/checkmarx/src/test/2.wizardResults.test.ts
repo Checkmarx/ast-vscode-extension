@@ -8,11 +8,13 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
-  getQuickPickSelector,
+  clickQuickPickItem,
   initialize,
   loginWithMockToken,
   logoutIfVisible,
-  quickPickSelector,
+  selectItem,
+  waitForInputBox,
+  waitForTreeItem,
 } from "./utils/utils";
 import {
   BRANCH_KEY_TREE,
@@ -21,7 +23,7 @@ import {
   PROJECT_KEY_TREE,
   SCAN_KEY_TREE,
 } from "./utils/constants";
-import { CX_TEST_SCAN_BRANCH_NAME, CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
+import { CX_TEST_SCAN_PROJECT_NAME } from "./utils/envs";
 
 // Small sleep helper used for UI settling delays between steps.
 async function wait(ms: number) {
@@ -64,7 +66,7 @@ describe("Wizard load results test", () => {
   });
 
   after(async function () {
-    this.timeout(60000);
+    this.timeout(180000);
     try {
       await logoutIfVisible(bench, driver, {
         executeCommandWithRetry: executeCommandWithRetry,
@@ -77,51 +79,30 @@ describe("Wizard load results test", () => {
   });
 
   it("should load results using wizard", async function () {
-    this.timeout(60000); // Increase timeout to 60 seconds
+    this.timeout(180000);
 
     // Project selection
-    const inputProject = await InputBox.create();
-    // Add delay to ensure input box is ready
-    await new Promise((res) => setTimeout(res, 1000));
+    const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
 
-    let projectName = await getQuickPickSelector(inputProject);
-    await inputProject.confirm();
-
-    // Branch selection
-    const input = await InputBox.create();
-    await new Promise((res) => setTimeout(res, 1000));
-    await input.setText(CX_TEST_SCAN_BRANCH_NAME);
-    let branchName = await getQuickPickSelector(input);
-    await input.setText(branchName);
-    await input.confirm();
+    // Branch selection: until this step loads, the picker still lists the project
+    const branchName = await clickQuickPickItem(await waitForInputBox(), (_, all) => !all.includes(projectName));
 
     // Scan selection
-    const inputScan = new InputBox();
-    await new Promise((res) => setTimeout(res, 1000));
-    let scanDate = await getQuickPickSelector(inputScan);
-    await quickPickSelector(inputScan);
+    const scanDate = await clickQuickPickItem(new InputBox(), (text) => /^[0-9]{4}[/][0-9]{2}[/][0-9]{2} /.test(text));
 
     treeScans = await initialize();
 
     // Project tree item validation
-    let project = await treeScans?.findItem(PROJECT_KEY_TREE + projectName);
+    const project = await waitForTreeItem(treeScans, PROJECT_KEY_TREE + projectName);
     expect(project).is.not.undefined;
 
     // Branch tree item validation
-    let branch = await treeScans?.findItem(BRANCH_KEY_TREE + branchName);
+    const branch = await waitForTreeItem(treeScans, BRANCH_KEY_TREE + branchName);
     expect(branch).is.not.undefined;
 
-    const scanDetailsparts: string[] = scanDate.split(" ");
-    const formattedId: string = scanDetailsparts.slice(-2).join(" ");
+    const formattedId: string = scanDate.split(" ").slice(-2).join(" ");
     // Scan tree item validation
-    let scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
-    const maxAttempts = 30;
-    let attempts = 0;
-    while (scan === undefined && attempts < maxAttempts) {
-      await new Promise((res) => setTimeout(res, 500));
-      scan = await treeScans?.findItem(SCAN_KEY_TREE + formattedId);
-      attempts++;
-    }
+    const scan = await waitForTreeItem(treeScans, SCAN_KEY_TREE + formattedId);
     expect(scan).is.not.undefined;
   });
 });

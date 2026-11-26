@@ -1,0 +1,224 @@
+name: UI Tests on Real Tenant (galactica)
+
+# Runs the VS Code UI suites against a real Checkmarx One tenant instead of mock data.
+# Kept off the per-PR path on purpose: suites 7 and 17 start real scans, and a full run
+# takes longer than the mock batches in ci-linux.yml.
+#   - Manual:  Actions > "UI Tests on Real Tenant (galactica)" > Run workflow
+#   - Nightly: schedule below
+#   - On a PR: add the label "real-tenant-ui-tests"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1-5" # 02:00 UTC, Monday-Friday
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read # For reading repository code
+  packages: read # For reading package versions
+
+concurrency:
+  # Tenant runs queue in one group (never cancelled mid-triage); PR events that skip the tests get their own.
+  group: >-
+    ${{ (github.event_name != 'pull_request' ||
+    (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+    (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests')))
+    && 'ui-tests-real-tenant' || format('ui-tests-real-tenant-skipped-{0}', github.run_id) }}
+  cancel-in-progress: false
+
+env:
+  UI_TEST_MODE: uiEndToEnd
+  # Tenant fixtures (IDs, not secrets). Override with repository variables to point
+  # the run at other data without editing this file.
+  CX_TEST_PROJECT_NAME: ${{ vars.CX_UI_TEST_PROJECT_NAME || 'cx-ui-automation-results' }}
+  CX_TEST_BRANCH_NAME: ${{ vars.CX_UI_TEST_BRANCH_NAME || 'master' }}
+  CX_TEST_SCAN_ID: ${{ vars.CX_UI_TEST_SCAN_ID || '75892baa-6b1d-461c-8a72-e78d30a1b241' }}
+  CX_TEST_EMPTY_SCAN_ID: ${{ vars.CX_UI_TEST_EMPTY_SCAN_ID || '99ef8063-510d-446b-87db-a6c0c3af08a3' }}
+  CX_TEST_SECRETS_SCAN_ID: ${{ vars.CX_UI_TEST_SECRETS_SCAN_ID || 'af638eca-30e9-4e3d-8593-43ed8c0b226a' }}
+  CX_TEST_PAGINATION_PROJECT_NAME: ${{ vars.CX_UI_TEST_PAGINATION_PROJECT_NAME || 'cx-ui-automation-empty' }}
+
+jobs:
+  ui-tests-real-tenant:
+    name: Real Tenant UI Tests (${{ matrix.batch.name }})
+    # PR runs only when the label is present (on add, and on later pushes while it stays).
+    if: >-
+      github.event_name != 'pull_request' ||
+      (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests'))
+    timeout-minutes: 45
+    env:
+      # Same galactica key the core integration tests use (ci-linux.yml).
+      CX_APIKEY: ${{ secrets.CX_API_KEY }}
+    strategy:
+      fail-fast: false
+      # Sequential: every batch shares the same tenant data (triage, scans).
+      max-parallel: 1
+      matrix:
+        os: [cx-public-ubuntu-x64]
+        batch:
+          - name: filter-and-groupby-actions
+            files: >-
+              ./out/test/6.customActions.test.js
+              ./out/test/2.wizardResults.test.js
+              ./out/test/3.simpleResults.test.js
+          - name: secret-detection-window
+            files: >-
+              ./out/test/0.welcome.test.js
+              ./out/test/12.scsGroubByFilterWindow.test.js
+              ./out/test/9.scaResults.test.js
+              ./out/test/16.branchFilterByProject.test.js
+              ./out/test/24.scaRealtimeScanner.test.js
+          - name: groupby-persistence-and-menus
+            files: >-
+              ./out/test/19.groupBySelectionPersistence.test.js
+              ./out/test/18.groupByMenuOptions.test.js
+              ./out/test/20.oauthInvalidAuthentication.test.js
+              ./out/test/15.scaVulnerabilityDetails.test.js
+          - name: auth-scan-and-details
+            files: >-
+              ./out/test/1.settings.test.js
+              ./out/test/4.oauthAuthentication.test.js
+              ./out/test/5.scanIDResult.test.js
+              ./out/test/7.scan.test.js
+              ./out/test/8.NoResult.test.js
+              ./out/test/13.editIconErrors.test.js
+              ./out/test/14.severityIconsDefault.test.js
+              ./out/test/21.sastTriageUpdate.test.js
+              ./out/test/11.pagination.test.js
+              ./out/test/17.runScanFromIde.test.js
+              ./out/test/22.secretFilePathLink.test.js
+              ./out/test/23.aiSecurityChampionTab.test.js
+          - name: real-login
+            files: >-
+              ./out/test/25.realLoginAndMcp.test.js
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
+      - name: Check API key is available
+        run: |
+          if [ -z "$CX_APIKEY" ]; then
+            echo "::error::secrets.CX_API_KEY is not available to this run (forked PRs do not receive secrets)."
+            exit 1
+          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 22.11.0
+      - name: Authenticate with npm registries
+        env:
+          ECHO_TOKEN: ${{ secrets.ECHO_LIBRARIES_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          echo "registry=https://npm.echohq.com/" > ~/.npmrc
+          echo "//npm.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//packages.echohq.com/:_authToken=${ECHO_TOKEN}" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
+      - name: Install dependencies
+        run: npm run ci:all
+      - name: Check tenant fixtures
+        # Fails fast with a clear message if the key cannot see the data the suites need,
+        # instead of failing deep inside a UI test.
+        run: |
+          CX=packages/core/node_modules/@checkmarx/ast-cli-javascript-wrapper/dist/main/wrapper/resources/cx-linux
+          chmod +x "$CX"
+          fail=0
+          for id in "$CX_TEST_SCAN_ID" "$CX_TEST_EMPTY_SCAN_ID" "$CX_TEST_SECRETS_SCAN_ID"; do
+            status=$("$CX" scan show --scan-id "$id" --apikey "$CX_APIKEY" --format json 2>/dev/null \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).Status)}catch{console.log("")}})')
+            if [ "$status" != "Completed" ]; then
+              echo "::error::Scan $id is not visible to CX_API_KEY or not Completed (status: '${status:-not found}')."
+              fail=1
+            fi
+          done
+          for name in "$CX_TEST_PROJECT_NAME" "$CX_TEST_PAGINATION_PROJECT_NAME"; do
+            found=$("$CX" project list --apikey "$CX_APIKEY" --format json --filter "name=$name" 2>/dev/null \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).some(p=>p.Name===process.argv[1])?"yes":"")}catch{console.log("")}})' "$name")
+            if [ "$found" != "yes" ]; then
+              echo "::error::Project '$name' is not visible to CX_API_KEY."
+              fail=1
+            fi
+          done
+          exit $fail
+      - name: Build all packages
+        run: npm run build:all
+      - name: Run UI tests against the real tenant
+        env:
+          UI_TEST_FILES: ${{ matrix.batch.files }}
+          UI_TEST_RESULTS_FILE: ${{ github.workspace }}/ui-test-results/${{ matrix.batch.name }}.json
+          BATCH_NAME: ${{ matrix.batch.name }}
+        run: |
+          sudo apt-get install xvfb
+          export DISPLAY=:99.0
+          Xvfb -ac :99 -screen 0 1920x1080x16 &
+          # Isolated extensions folder, so the run never depends on what the runner has installed.
+          export EXTENSIONS_FOLDER="$RUNNER_TEMP/vscode-extensions"
+          mkdir -p "$EXTENSIONS_FOLDER"
+          if [ "$BATCH_NAME" = "real-login" ]; then
+            # After login the extension writes MCP config only for an AI assistant it detects
+            # (Copilot Chat -> settings.json). A manifest-only stub with Copilot Chat's ID makes
+            # vscode.extensions.getExtension() find it, without installing the real assistant.
+            stub="$EXTENSIONS_FOLDER/github.copilot-chat-0.0.1"
+            mkdir -p "$stub"
+            echo '{"name":"copilot-chat","publisher":"GitHub","version":"0.0.1","displayName":"Copilot Chat test stub","engines":{"vscode":"^1.88.0"}}' > "$stub/package.json"
+          fi
+          cd packages/checkmarx
+          node scripts/run-ui-batch.js "$UI_TEST_RESULTS_FILE" $UI_TEST_FILES
+      - name: Upload test results (for the combined report)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: real-tenant-ui-test-results-${{ matrix.batch.name }}
+          path: ui-test-results/${{ matrix.batch.name }}.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload screenshots
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: real-tenant-screenshots-${{ matrix.batch.name }}
+          # extest saves failure screenshots under <os tmpdir>/test-resources/screenshots/<timestamp>/
+          path: |
+            /tmp/test-resources/screenshots/**/*.png
+          if-no-files-found: ignore
+          retention-days: 2
+
+  # Merges the JSON results of every batch into one report on the run's Summary tab
+  ui-test-report:
+    name: Real Tenant UI Test Report
+    needs: ui-tests-real-tenant
+    if: >-
+      always() && (github.event_name != 'pull_request' ||
+      (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests')))
+    timeout-minutes: 10
+    runs-on: cx-public-ubuntu-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 22.11.0
+      - name: Download batch results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 #v4.3.0
+        with:
+          pattern: real-tenant-ui-test-results-*
+          path: ui-test-results
+          merge-multiple: true
+      - name: Publish combined report
+        env:
+          UI_TEST_REPORT_FILE: ${{ github.workspace }}/ui-test-report.md
+        run: node packages/checkmarx/scripts/ui-test-summary.js ui-test-results packages/checkmarx/src/test
+      - name: Upload combined report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
+        with:
+          name: real-tenant-ui-test-report
+          path: ui-test-report.md
+          if-no-files-found: warn
+          retention-days: 14
