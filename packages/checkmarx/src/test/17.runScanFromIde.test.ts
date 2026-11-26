@@ -94,8 +94,6 @@ describe("Running Scans from VS Code", () => {
     await sleep(TWO_SECONDS); // let the picker open before typing
     await input.setText(label);
 
-    // The picker searches the server on every value change, so on a real tenant the
-    // filtered list arrives well after typing.
     try {
       await clickQuickPickItem(input, label, PICKER_LOAD_TIMEOUT_MS);
     } catch {

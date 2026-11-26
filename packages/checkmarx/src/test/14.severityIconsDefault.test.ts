@@ -74,7 +74,7 @@ describe("Severity filter icons and vulnerability counts (TC05, TC12)", () => {
         return backgroundImage.toLowerCase();
     }
 
-    // opens a quick-pick, types `query` if given, and clicks its match (the first entry without a query)
+    // opens a quick-pick, types `query` if given, and confirms the first match
     async function pickFirstQuickPickItem(command: string, query?: string): Promise<void> {
         await runCommandWithRetry(command);
         await (query ? selectItem(query) : clickQuickPickItem(await waitForInputBox()));

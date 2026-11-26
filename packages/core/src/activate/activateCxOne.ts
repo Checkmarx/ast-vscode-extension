@@ -313,11 +313,9 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
 
     setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
-    // Development/testing command used by the UI tests ("Mock Token Test" in package.json)
+    // Development/testing command used by the UI tests
     vscode.commands.registerCommand(commands.mockTokenTest, async () => {
         const authService = AuthService.getInstance(context);
-        // Real-tenant UI test runs (TEST=uiEndToEnd) log in with the CX_APIKEY they are given;
-        // anything else gets the mock token.
         const realKey = process.env.TEST === 'uiEndToEnd' ? process.env.CX_APIKEY : undefined;
         await authService.saveToken(context, realKey || 'FAKE_TOKEN_FROM_TEST');
         await authService.saveLastAuthMethod('apiKey');

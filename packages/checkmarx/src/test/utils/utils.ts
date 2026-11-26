@@ -87,8 +87,6 @@ export async function confirmLogoutToast(
   return false;
 }
 
-// Real-tenant runs (TEST=uiEndToEnd with an API key): the "Mock Token Test" command logs in with
-// CX_APIKEY instead of the mock token.
 export function isRealTenantRun(): boolean {
   return process.env.TEST === "uiEndToEnd" && Boolean(process.env.CX_APIKEY);
 }
@@ -103,8 +101,8 @@ export async function loginWithMockToken(
   await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
   await sleep(options?.waitMs ?? 2000);
 
-  // Only real-tenant runs need verification: validation is a network call that can lose
-  // the race with extension start-up, so confirm and retry.
+  // Only real-tenant runs need verification: validation is a network
+  // call that can lose the race with extension start-up, so confirm and retry.
   if (!isRealTenantRun()) {
     return;
   }
@@ -397,9 +395,8 @@ export async function ensureWorkspaceFolderOpen(folder: string, timeoutMs = 6000
   }
 }
 
-// Types text into the open picker and clicks the entry it matches: the exact text if listed (case
-// insensitive), else the first entry containing it. Returns that entry's text. The project/branch
-// pickers search the server on every value change, so retyping the match and pressing Enter would
+// Types text into the open picker and clicks the matching entry. The project/branch pickers
+// search the server on every value change, so retyping the match and pressing Enter would
 // clear the list and confirm while it reloads (nothing gets selected on a real tenant).
 export async function selectItem(text: string, timeoutMs = 60000): Promise<string> {
   const input = await waitForInputBox();
@@ -533,9 +530,8 @@ export async function waitForTreeItem(tree: any, label: string, timeoutMs = 6000
 
 /**
  * Finds a child node (e.g. SAST, IaC, Secret Detection) of the loaded scan in the results tree.
- * Re-reads the tree, the scan root and the child on every poll: against a real tenant the tree is
- * refreshed while results load, so a reference captured once can go stale or the child may not
- * exist yet.
+ * Re-reads the scan root and the child on every poll: against a real tenant the tree is refreshed
+ * while results load, so a reference captured once can go stale or the child may not exist yet.
  */
 export async function waitForScanChild(
   tree: CustomTreeSection | undefined,
@@ -553,11 +549,7 @@ export async function waitForScanChild(
   }, Boolean, timeoutMs);
 }
 
-/**
- * Calls `read` until `done` accepts its result or `timeoutMs` passes, waiting `intervalMs` between
- * calls. A call that throws (usually a stale element while VS Code re-renders) counts as a miss.
- * Returns the accepted value or, on timeout, the last value read (undefined if every call threw).
- */
+// Polls `read` until `done` accepts the value (a throw counts as a miss); on timeout returns the last value read.
 export async function pollUntil<T>(
   read: () => Promise<T>,
   done: (value: NoInfer<T>) => boolean = Boolean,
@@ -573,7 +565,7 @@ export async function pollUntil<T>(
         return value;
       }
     } catch {
-      // Stale element or re-render while reading; read again.
+      // stale element; read again
     }
     if (Date.now() >= deadline) {
       return value;
@@ -582,12 +574,7 @@ export async function pollUntil<T>(
   }
 }
 
-/**
- * Clicks the first quick pick entry that `match` accepts (its exact text, or a predicate that also
- * sees the whole list; any entry when omitted) and returns that entry's text. Waits until the list
- * has settled - the same entries on two reads in a row - because VS Code reuses row elements, so a
- * row found while results are still arriving can show a different entry by the time it is clicked.
- */
+// Clicks the first entry `match` accepts once two reads list the same entries: VS Code reuses rows while results arrive.
 export async function clickQuickPickItem(
   input: InputBox,
   match?: string | ((text: string, all: string[]) => boolean),
@@ -620,16 +607,14 @@ export async function clickQuickPickItem(
 type MenuStatus = { label: string; isActive: boolean };
 export type ResultsMenu = "More Actions" | "Filter";
 
-// Menu labels can carry invisible soft hyphens (U+00AD, VS Code's padding for unchecked items);
-// a checked item starts with a check mark.
+// Unchecked labels are padded with soft hyphens (U+00AD); checked ones start with a check mark.
 function parseMenuItemLabel(rawLabel: string): MenuStatus {
   const label = rawLabel.replace(/\u00AD/g, "").replace(/\s+/g, " ").trim();
   const isActive = label.startsWith("\u2713 ");
   return { label: isActive ? label.slice(2).trim() : label, isActive };
 }
 
-// Focuses the Checkmarx One Results panel and selects the scan node, so menu items gated by
-// `view == astResults` are available.
+// Selecting the scan enables menu items gated by `view == astResults`.
 export async function focusResultsPanelAndSelectScan(): Promise<void> {
   await focusPanelAndCollapseOthers(RESULTS_PANEL_TITLE);
   try {
@@ -639,12 +624,11 @@ export async function focusResultsPanelAndSelectScan(): Promise<void> {
       await sleep(300);
     }
   } catch {
-    // Best-effort - proceed even if selection fails.
+    // best-effort
   }
 }
 
-// Opens the results panel's "More Actions..." menu or its Filter icon menu, retrying while the panel
-// actions initialize. `refocus` re-focuses the panel before every open; otherwise only before retries.
+// `refocus` focuses the panel before every open; otherwise only before retries.
 export async function openResultsMenu(kind: ResultsMenu, refocus = true): Promise<ContextMenu | undefined> {
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
@@ -658,7 +642,7 @@ export async function openResultsMenu(kind: ResultsMenu, refocus = true): Promis
           return menu;
         }
       } else {
-        // Some UI builds label the action slightly differently; fall back to any "filter" action.
+        // fall back to any action labelled like "filter"
         let action = await section?.getAction("Filter");
         for (const candidate of action ? [] : (await section?.getActions()) ?? []) {
           if (/filter/i.test(await candidate.getLabel())) {
@@ -672,14 +656,13 @@ export async function openResultsMenu(kind: ResultsMenu, refocus = true): Promis
         }
       }
     } catch {
-      // Panel actions still initializing; retry.
+      // panel actions not ready yet; retry
     }
     await sleep(1000);
   }
   return undefined;
 }
 
-// Reads the state of every item in a results menu ([] if the menu could not be opened or read).
 export async function readResultsMenu(kind: ResultsMenu, refocus = true): Promise<MenuStatus[]> {
   const menu = await openResultsMenu(kind, refocus);
   if (!menu) {
@@ -694,16 +677,12 @@ export async function readResultsMenu(kind: ResultsMenu, refocus = true): Promis
   } catch {
     return [];
   } finally {
-    await menu.close().catch(() => undefined); // the menu may have closed itself
+    await menu.close().catch(() => undefined);
   }
 }
 
-/**
- * Clicks `label` in a results menu and, when `confirm` is set, waits until a fresh read shows it flipped.
- * The state is read from the same menu that is clicked. A second click is made only when a fresh open
- * still shows the old state, so it never undoes a click that landed late. Returns the state before and
- * after the click, or undefined if the item is missing or the flip is not confirmed.
- */
+// Clicks `label` and (with `confirm`) waits for a fresh read to show the flip, clicking again only if it has not
+// flipped. Returns undefined if the item is missing or never flips.
 export async function toggleResultsMenuOption(
   kind: ResultsMenu,
   label: string,
@@ -733,13 +712,13 @@ export async function toggleResultsMenuOption(
       if (before === undefined) {
         before = isActive;
       } else if (isActive !== before) {
-        return { before, after: isActive }; // the first click landed after the confirm window
+        return { before, after: isActive }; // first click landed late
       }
       await target.select();
     } catch {
       return undefined;
     } finally {
-      await menu.close().catch(() => undefined); // the menu may have closed itself
+      await menu.close().catch(() => undefined);
     }
     if (!confirm) {
       return { before, after: !before };

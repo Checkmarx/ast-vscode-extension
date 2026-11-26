@@ -51,7 +51,6 @@ describe("Individual pickers load results test", () => {
     throw lastError;
   }
 
-  // Opens a project/branch quick-pick, selects the entry matching `text`, and asserts the tree shows it.
   async function selectForTest(command: string, text: string, treeKey: string): Promise<void> {
     await bench.executeCommand(command);
     const selected = await selectItem(text);
@@ -98,7 +97,7 @@ describe("Individual pickers load results test", () => {
     this.timeout(180000);
 
     await bench.executeCommand(CX_SELECT_SCAN);
-    // Select the first (latest) scan in the picker
+    // first (latest) scan
     const scanDate = await clickQuickPickItem(await waitForInputBox());
     const formattedId: string = scanDate.split(" ").slice(-2).join(" ");
     const scan = await waitForTreeItem(await initialize(), SCAN_KEY_TREE + formattedId);

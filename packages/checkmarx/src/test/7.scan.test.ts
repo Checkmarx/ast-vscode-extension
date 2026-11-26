@@ -101,12 +101,11 @@ describe("Scan from IDE", () => {
         // Clear stale notifications first so we only capture what this scan produces.
         await clearCurrentNotifications();
 
-        // Real-tenant runs first show a transient "Loading results" toast; skip it and wait for
-        // the actual scan-related notification. Keep the text read now: re-reading it later fails
-        // if the toast has closed in the meantime.
+        // Real-tenant runs first show a transient "Loading results" toast; skip it and
+        // wait for the actual scan-related notification.
         const notificationPromise = pollUntil(async () => {
             for (const notification of await new Workbench().getNotifications()) {
-                const message = await notification.getMessage().catch(() => undefined); // closed while reading
+                const message = await notification.getMessage().catch(() => undefined);
                 if (message !== undefined && !/Loading results/i.test(message)) {
                     return { notification, message };
                 }

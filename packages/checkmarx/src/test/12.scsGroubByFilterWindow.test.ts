@@ -48,8 +48,7 @@ const TEST_TIMEOUT_MS = 120000;
 
 // Matches the scan's recorded path for every secret-detection result in this
 // fixture; copied into out/test/resources by the copytestproject build step.
-// It is the only copy the test VS Code can find: test-vscode-settings.json excludes node_modules,
-// where the @checkmarx/vscode-core link exposes core's own src/resources/secrets.go.
+// The only copy VS Code can find: test-vscode-settings.json excludes node_modules.
 const SECRETS_FIXTURE_PATH = path.join(__dirname, "resources", "secrets.go");
 // Workspace folder the test VS Code opens (packages/checkmarx).
 const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..");
@@ -129,9 +128,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		await sleep(5000);
 	}
 
-	// Waits until the secret detection node appears under the scan root. waitForScanChild re-reads the
-	// tree on every poll, so an item left stale by a re-render (e.g. right after the scan's results
-	// finish loading) is never reused.
 	async function waitForSecretDetectionNode(): Promise<any> {
 		const node = await waitForScanChild(await initializeTree(), SCAN_KEY_TREE_LABEL, SCS_SECRET_DETECTION_Type);
 		if (!node) {
@@ -224,10 +220,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		);
 	}
 
-	// Polls getCoordinates() rather than reading it once - the status bar's cursor
-	// indicator may not exist yet immediately after a file opens.
-	// The status bar shows Ln/Col only for the active text editor, and the details webview can keep
-	// focus after the link click, so bring the file's tab to the front before each read.
+	// Selects the tab first: the status bar shows Ln/Col only for the active editor.
 	async function waitForCursorLine(title: string, line: number, timeoutMs = 15000): Promise<number[]> {
 		const coordinates = await pollUntil(async () => {
 			for (const tab of await new EditorView().getOpenTabs()) {
@@ -244,9 +237,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		return coordinates;
 	}
 
-	// Toggles every option in `labels` that the menu offers, then toggles them back and checks they
-	// are restored, so later suites in the batch start from the same state. Earlier tests leave the
-	// details webview open; it is closed first so the palette commands use the normal shortcut.
 	async function toggleAvailableOptions(kind: ResultsMenu, labels: string[]): Promise<void> {
 		await closeEditorsWithoutPalette();
 		await loadSecretDetectionNode();
@@ -266,7 +256,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			}
 			expect(toggledLabels.length, `All available ${kind} options should toggle`).to.equal(availableLabels.length);
 		} finally {
-			// Toggle back even after a failure; each flip is confirmed (and retried once) by a fresh read.
 			for (const label of toggledLabels) {
 				await toggleResultsMenuOption(kind, label).catch(() => undefined);
 			}
@@ -427,7 +416,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
 		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
 
-		// Move the fixture aside so the file is genuinely missing.
 		fs.renameSync(SECRETS_FIXTURE_PATH, `${SECRETS_FIXTURE_PATH}.bak`);
 		try {
 			await fileLink.click();
@@ -438,7 +426,7 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			const seen = new Set<string>();
 			const found = await pollUntil(async () => {
 				for (const notification of await new Workbench().getNotifications()) {
-					const text = await notification.getText().catch(() => ""); // dismissed while reading
+					const text = await notification.getText().catch(() => "");
 					if (text.includes("not found in workspace")) {
 						return true;
 					}

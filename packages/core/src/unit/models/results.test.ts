@@ -313,7 +313,6 @@ describe("AstResult Model Tests", () => {
     });
   });
 
-  // The Checkmarx One API returns scs/kics files as data.filename; mock data uses data.fileName.
   describe("File name and label of results without nodes", () => {
     const resultWithData = (type: string, data: Record<string, unknown>) =>
       new AstResult({

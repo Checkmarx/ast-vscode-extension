@@ -164,8 +164,7 @@ export class AstResult extends CxResult {
         : this.fileName
         }${result.data.line > 0 ? ":" + result.data.line : ""})`;
     } else if (result.data.filename) {
-      // The Checkmarx One API returns scs/kics files as `filename`. Only the file is recorded; the
-      // label is left as built (formatFilenameLine already adds this file when there is no query name).
+      // API data uses `filename`; record it without changing the label.
       this.fileName = result.data.filename;
     }
 

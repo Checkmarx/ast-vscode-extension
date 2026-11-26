@@ -61,7 +61,6 @@ describe("Get items with pagination", () => {
 	async function openBranchQuickPick(projectName: string): Promise<void> {
 		await openProjectQuickPick();
 		const selected = await selectItem(projectName);
-		// The branch picker lists the selected project's branches: wait until the selection is applied.
 		expect(await waitForTreeItem(await initialize(), PROJECT_KEY_TREE + selected), `project ${selected} should be selected`).to.not.be.undefined;
 		await executeCommandWithRetry(CX_SELECT_BRANCH);
 	}

@@ -98,10 +98,7 @@ describe("filter and groups actions tests", () => {
     return scan;
   }
 
-  // Clicks a results menu option and returns its state before and after, failing unless the menu
-  // confirms the flip: a slow CI render could otherwise leave the tree still grouped/filtered by it
-  // when the test (or a later test file sharing the VS Code session) moves on. The panel keeps focus
-  // after a click, so the menu is reopened without re-focusing it (saves ~1 s per read).
+  // Throws unless a fresh menu read confirms the flip.
   async function toggleMenuOption(kind: ResultsMenu, label: string): Promise<{ before: boolean; after: boolean }> {
     const toggled = await toggleResultsMenuOption(kind, label, { refocus: false });
     if (!toggled) {
@@ -110,8 +107,6 @@ describe("filter and groups actions tests", () => {
     return toggled;
   }
 
-  // Polls readGroupingLabels() until `done` accepts the labels or the timeout passes, and returns the
-  // last labels read. A group-by toggle re-renders every node, so a read can hit a stale element.
   async function waitForGroupingLabels(done: (labels: string[]) => boolean): Promise<string[]> {
     return (await pollUntil(readGroupingLabels, done, GROUP_BY_TREE_UPDATE_TIMEOUT_MS)) ?? [];
   }
@@ -322,7 +317,7 @@ describe("filter and groups actions tests", () => {
         `${menuLabel}: grouping nodes should change after enabling group-by`
       ).to.not.equal(labelsBeforeToggle.join("|"));
 
-      // Restore — toggle the same option off; the original grouping must come back, so the
+      // Restore — toggle the same option off, and wait for the original grouping so the
       // next option starts from the same tree.
       await toggleMenuOption("More Actions", menuLabel);
       const labelsAfterRestore = await waitForGroupingLabels((labels) => labels.join("|") === before);
@@ -400,7 +395,6 @@ describe("filter and groups actions tests", () => {
 
     for (const filterLabel of allFilterLabels) {
       await focusResultsPanelAndSelectScan();
-      // toggleMenuOption fails unless a fresh menu read shows the filter flipped.
       const firstToggle = await toggleMenuOption("Filter", filterLabel);
       const secondToggle = await toggleMenuOption("Filter", filterLabel);
       expect(

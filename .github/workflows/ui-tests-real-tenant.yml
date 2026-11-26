@@ -18,10 +18,7 @@ permissions:
   packages: read # For reading package versions
 
 concurrency:
-  # Runs that test against the tenant share one group, across all branches, because they triage and
-  # scan the same tenant data. A running one is never cancelled (it could stop mid-triage); a newer
-  # queued run replaces an older queued one. PR events that do not run the tests (see the job `if`)
-  # get a group of their own, so they never queue behind or replace a real run.
+  # Tenant runs queue in one group (never cancelled mid-triage); PR events that skip the tests get their own.
   group: >-
     ${{ (github.event_name != 'pull_request' ||
     (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
@@ -43,15 +40,14 @@ env:
 jobs:
   ui-tests-real-tenant:
     name: Real Tenant UI Tests (${{ matrix.batch.name }})
-    # PR runs only while the label is present: when that label is added, and on later pushes.
+    # PR runs only when the label is present (on add, and on later pushes while it stays).
     if: >-
       github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
       (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests'))
     timeout-minutes: 45
     env:
-      # Same galactica key the core integration tests use (ci-linux.yml); set on this job only,
-      # so the report job does not receive it.
+      # Same galactica key the core integration tests use (ci-linux.yml).
       CX_APIKEY: ${{ secrets.CX_API_KEY }}
     strategy:
       fail-fast: false

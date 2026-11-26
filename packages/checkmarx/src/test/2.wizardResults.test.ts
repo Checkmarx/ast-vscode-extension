@@ -84,13 +84,10 @@ describe("Wizard load results test", () => {
     // Project selection
     const projectName = await selectItem(CX_TEST_SCAN_PROJECT_NAME);
 
-    // Branch selection. The wizard lists every branch and VS Code filters client-side, so the
-    // entry is clicked without typing. Until the branch step loads, the picker still lists the
-    // project, so wait for a list without it.
+    // Branch selection: until this step loads, the picker still lists the project
     const branchName = await clickQuickPickItem(await waitForInputBox(), (_, all) => !all.includes(projectName));
 
-    // Scan selection: entries start with a date (e.g. "2026/11/16 19:29:38 <id>"); until the scan
-    // step loads, the picker still lists the branch.
+    // Scan selection
     const scanDate = await clickQuickPickItem(new InputBox(), (text) => /^[0-9]{4}[/][0-9]{2}[/][0-9]{2} /.test(text));
 
     treeScans = await initialize();
