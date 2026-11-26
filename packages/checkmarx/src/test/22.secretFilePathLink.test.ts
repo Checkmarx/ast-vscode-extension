@@ -217,7 +217,7 @@ describe("Secret Detection file path link in General tab (TC83, TC84)", () => {
       await link.click();
       await sleep(1000);
 
-      // mock doesn't have the file so a "not found" toast may appear - dismiss it
+      // the result's file may not be in the test workspace; dismiss the "not found" toast if one appears
       await driver.switchTo().defaultContent();
       await dismissAllNotifications();
     }, 2)

@@ -7,7 +7,7 @@ import {
 } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
-  getQuickPickSelector,
+  clickQuickPickItem,
   initialize,
   loginWithMockToken,
   logoutIfVisible,
@@ -95,27 +95,16 @@ describe("Running Scans from VS Code", () => {
     await input.setText(label);
 
     // The picker searches the server on every value change, so on a real tenant the
-    // filtered list arrives well after typing: poll for the exact label instead of
-    // checking once after a fixed delay.
-    const deadline = Date.now() + PICKER_LOAD_TIMEOUT_MS;
-    while (Date.now() < deadline) {
-      try {
-        for (const pick of await input.getQuickPicks()) {
-          if ((await pick.getText()).trim() === label) {
-            await pick.select();
-            await sleep(TWO_SECONDS); // let the tree react to the selection
-            return true;
-          }
-        }
-      } catch {
-        // list re-rendered while reading; retry
-      }
-      await sleep(1000);
+    // filtered list arrives well after typing.
+    try {
+      await clickQuickPickItem(input, label, PICKER_LOAD_TIMEOUT_MS);
+    } catch {
+      // Requested label not offered — close the picker without choosing anything.
+      await input.cancel();
+      return false;
     }
-
-    // Requested label not offered — close the picker without choosing anything.
-    await input.cancel();
-    return false;
+    await sleep(TWO_SECONDS); // let the tree react to the selection
+    return true;
   }
 
   // clear notifications between tests so prompts don't bleed across

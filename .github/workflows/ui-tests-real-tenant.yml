@@ -18,13 +18,18 @@ permissions:
   packages: read # For reading package versions
 
 concurrency:
-  # One run at a time per ref: parallel runs would triage the same tenant findings.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Runs that test against the tenant share one group, across all branches, because they triage and
+  # scan the same tenant data. A running one is never cancelled (it could stop mid-triage); a newer
+  # queued run replaces an older queued one. PR events that do not run the tests (see the job `if`)
+  # get a group of their own, so they never queue behind or replace a real run.
+  group: >-
+    ${{ (github.event_name != 'pull_request' ||
+    (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+    (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests')))
+    && 'ui-tests-real-tenant' || format('ui-tests-real-tenant-skipped-{0}', github.run_id) }}
+  cancel-in-progress: false
 
 env:
-  # Same galactica key the core integration tests use (ci-linux.yml).
-  CX_APIKEY: ${{ secrets.CX_API_KEY }}
   UI_TEST_MODE: uiEndToEnd
   # Tenant fixtures (IDs, not secrets). Override with repository variables to point
   # the run at other data without editing this file.
@@ -38,10 +43,16 @@ env:
 jobs:
   ui-tests-real-tenant:
     name: Real Tenant UI Tests (${{ matrix.batch.name }})
-    # PR runs only when the label is present (on add, and on later pushes while it stays).
+    # PR runs only while the label is present: when that label is added, and on later pushes.
     if: >-
       github.event_name != 'pull_request' ||
-      contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests')
+      (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests'))
+    timeout-minutes: 45
+    env:
+      # Same galactica key the core integration tests use (ci-linux.yml); set on this job only,
+      # so the report job does not receive it.
+      CX_APIKEY: ${{ secrets.CX_API_KEY }}
     strategy:
       fail-fast: false
       # Sequential: every batch shares the same tenant data (triage, scans).
@@ -184,7 +195,9 @@ jobs:
     needs: ui-tests-real-tenant
     if: >-
       always() && (github.event_name != 'pull_request' ||
-      contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests'))
+      (contains(github.event.pull_request.labels.*.name, 'real-tenant-ui-tests') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'real-tenant-ui-tests')))
+    timeout-minutes: 10
     runs-on: cx-public-ubuntu-x64
     steps:
       - name: Checkout

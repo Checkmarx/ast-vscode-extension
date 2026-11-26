@@ -313,6 +313,56 @@ describe("AstResult Model Tests", () => {
     });
   });
 
+  // The Checkmarx One API returns scs/kics files as data.filename; mock data uses data.fileName.
+  describe("File name and label of results without nodes", () => {
+    const resultWithData = (type: string, data: Record<string, unknown>) =>
+      new AstResult({
+        type,
+        id: `${type}-1`,
+        status: "OPEN",
+        state: "TO_VERIFY",
+        severity: "HIGH",
+        description: "",
+        descriptionHTML: "",
+        traits: {},
+        data,
+        comments: [],
+        vulnerabilityDetails: {},
+      });
+
+    it("should record the API filename of a secret without repeating it in the label", () => {
+      const result = resultWithData(constants.scsSecretDetection, {
+        ruleName: "Generic-Api-Key",
+        filename: "/.github/workflows/main.yml",
+        line: 45,
+      });
+
+      expect(result.fileName).to.equal("/.github/workflows/main.yml");
+      expect(result.label).to.equal("Generic-Api-Key (/main.yml:45)");
+    });
+
+    it("should record the API filename of a KICS result without adding it to the label", () => {
+      const result = resultWithData(constants.kics, {
+        queryName: "Healthcheck Instruction Missing",
+        filename: "/Dockerfile",
+        line: 3,
+      });
+
+      expect(result.fileName).to.equal("/Dockerfile");
+      expect(result.label).to.equal("Healthcheck Instruction Missing");
+    });
+
+    it("should add a fileName (mock data) to the label", () => {
+      const result = resultWithData(constants.scsSecretDetection, {
+        fileName: "/config/secrets.env",
+        line: 5,
+      });
+
+      expect(result.fileName).to.equal("/config/secrets.env");
+      expect(result.label).to.equal(`${constants.scsSecretDetection}-1 (/secrets.env:5)`);
+    });
+  });
+
   describe("setSeverity() method", () => {
     it("should update severity and kicsNode severity", () => {
       const result = new AstResult({

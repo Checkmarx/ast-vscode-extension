@@ -45,6 +45,8 @@ export const CX_SCA_CLEAR = "ast-results: Clear SCA results tree";
 export const CX_RUN_SCAN = "ast-results: Run Scan";
 export const VSCODE_RELOAD_WINDOW = "Developer: Reload Window";
 export const CX_SCA_SCAN = "ast-results: Run SCA Realtime Scan";
+export const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
+export const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 
 export const CX_CATETORY = "Checkmarx One";
 export const CX_API_KEY_SETTINGS = "Api Key";

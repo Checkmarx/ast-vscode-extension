@@ -275,8 +275,6 @@ jobs:
       - name: Run integration tests (Linux)
         if: runner.os == 'Linux'
         env:
-          CX_API_KEY: ${{ secrets.CX_API_KEY }}
-          CX_TEST_SCAN_ID: ${{ secrets.CX_TEST_SCAN_ID }}
           UI_TEST_FILES: ${{ matrix.batch.files }}
           UI_TEST_RESULTS_FILE: ${{ github.workspace }}/ui-test-results/${{ matrix.batch.name }}.json
         run: |
@@ -303,13 +301,7 @@ jobs:
           retention-days: 2
       - name: Upload screenshots
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        if: failure() && runner.os == 'macOS'
-        with:
-          name: screenshots-${{ matrix.extension }}-${{ matrix.batch.name }}
-          path: /Users/runner/work/ast-vscode-extension/ast-vscode-extension/packages/core/test-resources/screenshots/*.png
-      - name: Upload screenshots (Linux)
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 #v4
-        if: failure() && runner.os == 'Linux'
+        if: failure()
         with:
           name: screenshots-${{ matrix.extension }}-${{ matrix.batch.name }}
           # extest saves failure screenshots under <os tmpdir>/test-resources/screenshots/<timestamp>/

@@ -13,12 +13,7 @@ import {
     retryTest,
     sleep
 } from "./utils/utils";
-
-// Exact command palette label: extest only picks the entry whose label equals this text;
-// anything else (a prefix or a command ID) presses Enter on the top fuzzy match, which VS Code
-// ranks by recent use, so a different command can run.
-const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND } from "./utils/constants";
 
 const WAIT_MS = {
     short: 1000,

@@ -313,14 +313,15 @@ export async function activateCxOne(context: vscode.ExtensionContext, logs: Logs
 
     setupIgnoredStatusBar(context, logs, ignoreFileManager, ignoredStatusBarItem, cxOneAssistProvider);
 
-    // Development/testing command - not exposed in package.json
+    // Development/testing command used by the UI tests ("Mock Token Test" in package.json)
     vscode.commands.registerCommand(commands.mockTokenTest, async () => {
         const authService = AuthService.getInstance(context);
-        // When CX_APIKEY is provided (real-login test runs) use it, otherwise fall back to the mock token.
-        const token = process.env.CX_APIKEY || 'FAKE_TOKEN_FROM_TEST';
-        await authService.saveToken(context, token);
+        // Real-tenant UI test runs (TEST=uiEndToEnd) log in with the CX_APIKEY they are given;
+        // anything else gets the mock token.
+        const realKey = process.env.TEST === 'uiEndToEnd' ? process.env.CX_APIKEY : undefined;
+        await authService.saveToken(context, realKey || 'FAKE_TOKEN_FROM_TEST');
         await authService.saveLastAuthMethod('apiKey');
-        console.log(`>> ${process.env.CX_APIKEY ? 'API key' : 'Mock token'} has been saved to secrets`);
+        console.log(`>> ${realKey ? 'API key' : 'Mock token'} has been saved to secrets`);
         await authService.validateAndUpdateState();
     });
 

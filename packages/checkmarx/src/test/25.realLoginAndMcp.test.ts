@@ -10,19 +10,15 @@ import { expect } from "chai";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { confirmLogoutToast, loginWithMockToken, sleep } from "./utils/utils";
+import { confirmLogoutToast, isRealTenantRun, loginWithMockToken, pollUntil, safeSwitchBackFromWebView, sleep } from "./utils/utils";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND } from "./utils/constants";
 
-// Real-tenant suite (needs CX_APIKEY, i.e. TEST=uiEndToEnd):
+// Real-tenant suite (runs only with TEST=uiEndToEnd and CX_APIKEY):
 //  1. drives the authentication window like a user (type API key, click "Log in")
 //  2. verifies the MCP configuration written after login holds the REAL values
 //     (tenant host, real token) and not the mock placeholder.
 // The token is only ever compared, never logged.
 
-// Exact command palette label: extest only picks the entry whose label equals this text;
-// anything else (a prefix or a command ID) presses Enter on the top fuzzy match, which VS Code
-// ranks by recent use, so a different command can run.
-const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
 const MCP_AUTH_SETTING = "Checkmarx.MCP Authentication";
 const MOCK_TOKEN = "FAKE_TOKEN_FROM_TEST";
 // constants.getMcpServerName() for the Checkmarx One extension; "Checkmarx" is the pre-rename name,
@@ -84,58 +80,6 @@ function findMcpEntry(): { entry: McpEntry; source: string } | undefined {
   const fromFile = readJson(fallbackMcpJson())?.servers?.[SERVER_NAME];
   if (fromFile) {
     return { entry: fromFile, source: "mcp.json" };
-  }
-  return undefined;
-}
-
-// Server names only (never values, which hold tokens) from a settings/mcp JSON file.
-function describeServers(file: string): string {
-  if (!fs.existsSync(file)) {
-    return `${file}: missing`;
-  }
-  const json = readJson(file);
-  if (json === undefined) {
-    return `${file}: not valid JSON`;
-  }
-  const servers = json.mcp?.servers ?? json.servers ?? json.mcpServers;
-  return `${file}: servers=${JSON.stringify(Object.keys(servers ?? {}))}`;
-}
-
-// What the extension had to work with when no MCP entry appeared: which extensions VS Code has
-// registered (the post-login install needs an AI assistant such as Copilot Chat) and which
-// candidate config files exist. Prints names only.
-function describeMcpSetup(): string {
-  const lines: string[] = [];
-  const extensionsDir = process.env.EXTENSIONS_FOLDER || path.join(os.homedir(), ".vscode", "extensions");
-  const registry = path.join(extensionsDir, "extensions.json");
-  const folders = fs.existsSync(extensionsDir) ? fs.readdirSync(extensionsDir) : [];
-  lines.push(`extensions dir ${extensionsDir}: ${JSON.stringify(folders)}`);
-  const registered = readJson(registry);
-  lines.push(
-    Array.isArray(registered)
-      ? `extensions.json ids: ${JSON.stringify(registered.map((e: { identifier?: { id?: string } }) => e.identifier?.id))}`
-      : `extensions.json: ${fs.existsSync(registry) ? "unreadable" : "missing"}`
-  );
-  const settings = readJson(TEST_SETTINGS_FILE);
-  // "Checkmarx.MCP Authentication" etc. hold modes, not secrets; the "mcp" object is reported by name only.
-  const settingKeys = Object.keys(settings ?? {}).filter((k) => /mcp|assist/i.test(k));
-  lines.push(
-    `settings.json: ${JSON.stringify(settingKeys.map((k) => (k === "mcp" ? k : `${k}=${JSON.stringify(settings[k])}`)))}`
-  );
-  for (const file of [TEST_SETTINGS_FILE, fallbackMcpJson(), path.join(os.homedir(), ".vscode", "mcp.json")]) {
-    lines.push(describeServers(file));
-  }
-  return lines.join("\n");
-}
-
-async function waitForMcpEntry(timeoutMs: number): Promise<{ entry: McpEntry; source: string } | undefined> {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    const found = findMcpEntry();
-    if (found) {
-      return found;
-    }
-    await sleep(1000);
   }
   return undefined;
 }
@@ -207,24 +151,10 @@ describe("Checkmarx real login and MCP configuration", function () {
     return webView;
   }
 
-  async function safeSwitchBack(webView: WebView): Promise<void> {
-    try {
-      await webView.switchBack();
-    } catch {
-      // frame may already be detached
-    }
-  }
-
   async function waitForVisible(webView: WebView, id: string, timeoutMs: number): Promise<void> {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-      const els = await webView.findWebElements(By.id(id));
-      if (els.length > 0 && (await els[0].isDisplayed())) {
-        return;
-      }
-      await sleep(300);
+    if (!(await pollUntil(() => isVisible(webView, id), Boolean, timeoutMs, 300))) {
+      throw new Error(`Timed out waiting for visible element: ${id}`);
     }
-    throw new Error(`Timed out waiting for visible element: ${id}`);
   }
 
   async function isVisible(webView: WebView, id: string): Promise<boolean> {
@@ -238,30 +168,20 @@ describe("Checkmarx real login and MCP configuration", function () {
     if (await isVisible(webView, "logoutButton")) {
       const logout = await webView.findWebElement(By.id("logoutButton"));
       await logout.click();
-      await safeSwitchBack(webView);
+      await safeSwitchBackFromWebView(webView);
       // the confirmation can take a moment to appear: poll for it
-      let confirmed = false;
-      for (let i = 0; i < 15 && !confirmed; i++) {
-        await sleep(1000);
-        confirmed =
+      logoutConfirmed = await pollUntil(
+        async () =>
           (await confirmLogoutToast(driver, "Are you sure you want to log out?", 2000)) ||
-          (await clickModalDialogButton(/yes|log ?out|confirm|ok/i));
-      }
-      logoutConfirmed = confirmed;
+          (await clickModalDialogButton(/yes|log ?out|confirm|ok/i)),
+        Boolean,
+        15000
+      );
       await webView.switchToFrame(5000);
     }
-    try {
-      await waitForVisible(webView, "loginForm", 15000);
-    } catch (e) {
-      await safeSwitchBack(webView);
-      const toasts = await driver.findElements(By.className("notification-toast"));
-      const dialogs = await driver.findElements(By.css(".monaco-dialog-box"));
-      const seen: string[] = [];
-      for (const el of [...toasts, ...dialogs]) {
-        try { seen.push((await el.getText()).replace(/s+/g, " ").slice(0, 200)); } catch { /* gone */ }
-      }
-      throw new Error(`Logout did not show the login form (confirmation clicked: ${logoutConfirmed}). Visible toasts/dialogs: ${JSON.stringify(seen)}`);
-    }
+    await waitForVisible(webView, "loginForm", 15000).catch((error) => {
+      throw new Error(`Logout did not show the login form (confirmation clicked: ${logoutConfirmed}): ${error}`);
+    });
   }
 
   // Clicks a button in a VS Code modal dialog whose label matches (best-effort).
@@ -315,17 +235,11 @@ describe("Checkmarx real login and MCP configuration", function () {
       await authButton.click();
 
       // On success the panel closes itself and the Welcome tab opens. Leave the frame and poll tab titles.
-      await safeSwitchBack(webView);
-      const start = Date.now();
-      let ok = false;
-      while (Date.now() - start < 60000) {
+      await safeSwitchBackFromWebView(webView);
+      const ok = await pollUntil(async () => {
         const titles = await new EditorView().getOpenEditorTitles();
-        if (titles.includes("Welcome to Checkmarx") || !titles.includes(AUTH_EDITOR_TITLE)) {
-          ok = true;
-          break;
-        }
-        await sleep(1000);
-      }
+        return titles.includes("Welcome to Checkmarx") || !titles.includes(AUTH_EDITOR_TITLE);
+      }, Boolean, 60000);
       if (!ok) {
         // still on the auth window: report whatever banner it shows
         await new EditorView().openEditor(AUTH_EDITOR_TITLE);
@@ -335,13 +249,13 @@ describe("Checkmarx real login and MCP configuration", function () {
         throw new Error("Authenticated state was not reached after clicking Log in. Window says: " + banner);
       }
     } finally {
-      await safeSwitchBack(webView);
+      await safeSwitchBackFromWebView(webView);
     }
   }
 
   before(async function () {
     this.timeout(30000);
-    if (!REAL_KEY) {
+    if (!isRealTenantRun()) {
       this.skip();
     }
     bench = new Workbench();
@@ -356,7 +270,7 @@ describe("Checkmarx real login and MCP configuration", function () {
 
   after(async function () {
     this.timeout(60000);
-    if (!REAL_KEY) {
+    if (!isRealTenantRun()) {
       return;
     }
     try {
@@ -389,7 +303,7 @@ describe("Checkmarx real login and MCP configuration", function () {
       await input.sendKeys("x");
       expect(await authButton.getAttribute("disabled")).to.equal(null);
     } finally {
-      await safeSwitchBack(webView);
+      await safeSwitchBackFromWebView(webView);
     }
   });
 
@@ -400,11 +314,8 @@ describe("Checkmarx real login and MCP configuration", function () {
 
     await loginWithApiKeyThroughWindow();
 
-    const found = await waitForMcpEntry(90000);
-    expect(
-      found,
-      `MCP entry for the Checkmarx server should be written after login (is MCP enabled for the tenant?)\n${found ? "" : describeMcpSetup()}`
-    ).to.not.equal(undefined);
+    const found = await pollUntil(async () => findMcpEntry(), Boolean, 90000);
+    expect(found, "MCP entry for the Checkmarx server should be written after login (is MCP enabled for the tenant?)").to.not.equal(undefined);
     const { entry } = found!;
     expect(hasLegacyEntry(), `legacy "${LEGACY_SERVER_NAME}" MCP entry should not be written`).to.equal(false);
 
@@ -429,8 +340,8 @@ describe("Checkmarx real login and MCP configuration", function () {
 
     await loginWithApiKeyThroughWindow();
 
-    const found = await waitForMcpEntry(90000);
-    expect(found, `MCP entry for the Checkmarx server should be written after login\n${found ? "" : describeMcpSetup()}`).to.not.equal(undefined);
+    const found = await pollUntil(async () => findMcpEntry(), Boolean, 90000);
+    expect(found, "MCP entry for the Checkmarx server should be written after login").to.not.equal(undefined);
     const { entry } = found!;
 
     const url = entry.url ?? entry.serverUrl ?? "";

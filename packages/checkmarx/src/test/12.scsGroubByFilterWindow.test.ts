@@ -2,10 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import {
 	By,
-	ContextMenu,
 	CustomTreeSection,
 	EditorView,
-	InputBox,
 	TextEditor,
 	VSBrowser,
 	WebDriver,
@@ -14,14 +12,20 @@ import {
 import { expect } from "chai";
 import {
 	ensureWorkspaceFolderOpen,
-	focusPanelAndCollapseOthers,
+	focusResultsPanelAndSelectScan,
 	getResults,
 	initialize,
 	loginWithMockToken,
 	logoutIfVisible,
 	openDetailsFrame,
+	pollUntil,
+	readResultsMenu,
+	ResultsMenu,
 	selectDetailsTab,
 	sleep,
+	toggleResultsMenuOption,
+	waitForInputBox,
+	waitForScanChild,
 } from "./utils/utils";
 import {
 	CHANGES_LABEL,
@@ -44,68 +48,20 @@ const TEST_TIMEOUT_MS = 120000;
 
 // Matches the scan's recorded path for every secret-detection result in this
 // fixture; copied into out/test/resources by the copytestproject build step.
+// It is the only copy the test VS Code can find: test-vscode-settings.json excludes node_modules,
+// where the @checkmarx/vscode-core link exposes core's own src/resources/secrets.go.
 const SECRETS_FIXTURE_PATH = path.join(__dirname, "resources", "secrets.go");
 // Workspace folder the test VS Code opens (packages/checkmarx).
 const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..");
 
-// Every copy of `fileName` that VS Code's workspace.findFiles can see. It follows symlinked
-// folders, and node_modules/@checkmarx/vscode-core links to packages/core, which has its own
-// src/resources/secrets.go - so moving only the out/test copy does not make the file missing.
-function findWorkspaceCopies(fileName: string): string[] {
-	const found = new Set<string>();
-	const visited = new Set<string>();
-	const walk = (dir: string) => {
-		let real: string;
-		try {
-			real = fs.realpathSync(dir);
-		} catch {
-			return;
-		}
-		if (visited.has(real)) {
-			return;
-		}
-		visited.add(real);
-		for (const entry of fs.readdirSync(real, { withFileTypes: true })) {
-			if (entry.name === ".git") {
-				continue;
-			}
-			const full = path.join(real, entry.name);
-			if (entry.isDirectory() || entry.isSymbolicLink()) {
-				let stat: fs.Stats | undefined;
-				try {
-					stat = fs.statSync(full);
-				} catch {
-					stat = undefined;
-				}
-				if (stat?.isDirectory()) {
-					walk(full);
-					continue;
-				}
-			}
-			if (entry.name === fileName) {
-				found.add(fs.realpathSync(full));
-			}
-		}
-	};
-	walk(WORKSPACE_ROOT);
-	return [...found];
-}
-
 const COMMAND_RETRIES = 3;
-const INPUTBOX_RETRIES = 30;
-const INPUTBOX_RETRY_DELAY_MS = 800;
 const TREE_RETRIES = 30;
 const TREE_RETRY_DELAY_MS = 700;
-const MENU_OPEN_RETRIES = 6;
 
 const OPEN_PICKER_DELAY_MS = 1000;
 const POST_SELECTION_DELAY_MS = 2500;
 const AUTH_WAIT_MS = 3000;
-const MENU_REFRESH_DELAY_MS = 1000;
-const MENU_TOGGLE_TIMEOUT_MS = 8000;
 const LONG_TEST_TIMEOUT_MS = 300000;
-
-const CHECKMARX_RESULTS_PANEL_TITLE = "Checkmarx One Results";
 
 const GROUP_BY_MENU_LABELS = [
 	"Group by: Language",
@@ -125,11 +81,8 @@ const STATE_FILTER_MENU_LABELS = [
 	"Filter: Not Ignored",
 ];
 
-type MenuStatus = { label: string; isActive: boolean };
-
 describe("Secret detection results tests (OAuth flow)", () => {
 	let workbench: Workbench;
-	let resultsTree: CustomTreeSection;
 	let driver: WebDriver;
 
 	// Retries a VS Code command up to `retries` times to absorb transient UI delays.
@@ -156,7 +109,6 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
 			const tree = await initialize();
 			if (tree) {
-				resultsTree = tree;
 				return tree;
 			}
 
@@ -166,302 +118,26 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		throw new Error("Could not initialize Checkmarx results tree");
 	}
 
-	// Waits for InputBox to become available, retrying on transient failures.
-	async function waitForInputBox(contextLabel: string): Promise<InputBox> {
-		for (let attempt = 1; attempt <= INPUTBOX_RETRIES; attempt++) {
-			try {
-				return await InputBox.create();
-			} catch {
-				if (attempt < INPUTBOX_RETRIES) {
-					await sleep(INPUTBOX_RETRY_DELAY_MS);
-				}
-			}
-		}
-
-		throw new Error(`${contextLabel} InputBox did not open in time`);
-	}
-
-	// Waits for a named tree item to appear in the results tree.
-	async function waitForTreeItem(treeItemLabel: string, contextLabel: string): Promise<any> {
-		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
-			try {
-				const item = await resultsTree?.findItem(treeItemLabel);
-				if (item) {
-					return item;
-				}
-			} catch {
-				// Continue retrying while tree is refreshing.
-			}
-
-			await sleep(TREE_RETRY_DELAY_MS);
-		}
-
-		throw new Error(`Could not find ${contextLabel} in results tree`);
-	}
-
 	// Opens a scan by ID using the look-for-scan command and input box.
 	async function openScanById(scanId: string): Promise<void> {
 		await runCommand(CX_LOOK_SCAN);
 		await sleep(OPEN_PICKER_DELAY_MS);
 
-		const input = await waitForInputBox("scan id");
+		const input = await waitForInputBox();
 		await input.setText(scanId);
 		await input.confirm();
 		await sleep(5000);
 	}
 
-	function normalizeMenuItemLabel(rawLabel: string): string {
-		return rawLabel.replace(/\u00AD/g, "").replace(/\s+/g, " ").trim();
-	}
-
-	function parseMenuItemLabel(rawLabel: string): MenuStatus {
-		const normalizedLabel = normalizeMenuItemLabel(rawLabel);
-		const isActive = normalizedLabel.startsWith("\u2713 ");
-
-		return {
-			label: isActive ? normalizedLabel.slice(2).trim() : normalizedLabel,
-			isActive,
-		};
-	}
-
-	// Focuses the Checkmarx results panel and selects the scan root node.
-	async function focusResultsPanelAndSelectScan(): Promise<void> {
-		await focusPanelAndCollapseOthers(CHECKMARX_RESULTS_PANEL_TITLE);
-
-		try {
-			resultsTree = await initialize();
-			const scan = await resultsTree?.findItem(SCAN_KEY_TREE_LABEL);
-			if (scan) {
-				await scan.select();
-				await sleep(300);
-			}
-		} catch {
-			// Best-effort: continue even if focus/select fails.
-		}
-	}
-
-	// Opens the "More Actions" overflow menu of the results panel.
-	async function openResultsMoreActionsMenu(): Promise<any | undefined> {
-		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
-			await focusResultsPanelAndSelectScan();
-
-			const section = await initialize();
-			if (!section) {
-				await sleep(MENU_REFRESH_DELAY_MS);
-				continue;
-			}
-
-			try {
-				const menu = await section.moreActions();
-				if (menu) {
-					return menu;
-				}
-			} catch {
-				// Retry while panel actions are still initializing.
-			}
-
-			await sleep(MENU_REFRESH_DELAY_MS);
-		}
-
-		return undefined;
-	}
-
-	// Reads the current active/inactive state of all Group By menu items.
-	async function readGroupByStatuses(): Promise<MenuStatus[]> {
-		const menu = await openResultsMoreActionsMenu();
-		if (!menu) {
-			return [];
-		}
-
-		try {
-			const items = await menu.getItems();
-			const statuses: MenuStatus[] = [];
-
-			for (const item of items) {
-				const parsed = parseMenuItemLabel(await item.getLabel());
-				if (GROUP_BY_MENU_LABELS.includes(parsed.label)) {
-					statuses.push(parsed);
-				}
-			}
-
-			return statuses;
-		} catch {
-			return [];
-		} finally {
-			await menu.close().catch(() => {
-				// Ignore close failures when menu auto-closes.
-			});
-		}
-	}
-
-	// Toggles a menu option and, when `confirm` is set, waits until a fresh menu read shows the
-	// flipped state. The current state is read from the same menu that is clicked, so a toggle
-	// costs one menu open plus the confirming read(s); each open re-focuses the panel and is
-	// slow against a real tenant, and the extra reads made TC86/TC87 exceed their timeout there.
-	async function toggleMenuOption(
-		openMenu: () => Promise<ContextMenu | undefined>,
-		readStatuses: () => Promise<MenuStatus[]>,
-		label: string,
-		confirm: boolean
-	): Promise<boolean> {
-		let desiredState: boolean | undefined;
-
-		for (let attempt = 1; attempt <= 2; attempt++) {
-			const menu = await openMenu();
-			if (!menu) {
-				return false;
-			}
-
-			try {
-				let targetItem: any;
-				let targetActive = false;
-				for (const item of await menu.getItems()) {
-					const parsed = parseMenuItemLabel(await item.getLabel());
-					if (parsed.label === label) {
-						targetItem = item;
-						targetActive = parsed.isActive;
-						break;
-					}
-				}
-				if (!targetItem) {
-					return false;
-				}
-
-				if (desiredState === undefined) {
-					desiredState = !targetActive;
-				} else if (targetActive === desiredState) {
-					return true; // the first click landed after the confirm window
-				}
-
-				await targetItem.select();
-			} catch {
-				return false;
-			} finally {
-				await menu.close().catch(() => {
-					// Ignore close failures when menu auto-closes after selection.
-				});
-			}
-
-			if (!confirm) {
-				return true;
-			}
-
-			const giveUpAt = Date.now() + MENU_TOGGLE_TIMEOUT_MS;
-			while (Date.now() < giveUpAt) {
-				await sleep(MENU_REFRESH_DELAY_MS);
-				const latestEntry = (await readStatuses()).find((status) => status.label === label);
-				if (latestEntry && latestEntry.isActive === desiredState) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	// Toggles a Group By option; confirms the flip unless `confirm` is false (best-effort revert).
-	async function tryToggleGroupByOption(menuLabel: string, confirm = true): Promise<boolean> {
-		return toggleMenuOption(openResultsMoreActionsMenu, readGroupByStatuses, menuLabel, confirm);
-	}
-
-	// Opens the state filter dropdown from the panel header.
-	async function openFilterDropdownFromHeader(): Promise<any | undefined> {
-		for (let attempt = 1; attempt <= MENU_OPEN_RETRIES; attempt++) {
-			await focusResultsPanelAndSelectScan();
-
-			const section = await initialize();
-			if (!section) {
-				await sleep(MENU_REFRESH_DELAY_MS);
-				continue;
-			}
-
-			let filterAction: any = await (section as any).getAction("Filter");
-			if (!filterAction && typeof (section as any).getActions === "function") {
-				const actions = await (section as any).getActions();
-				for (const action of actions) {
-					const actionLabel = `${await action.getLabel()}`.trim();
-					if (/filter/i.test(actionLabel)) {
-						filterAction = action;
-						break;
-					}
-				}
-			}
-
-			if (!filterAction || typeof filterAction.open !== "function") {
-				await sleep(MENU_REFRESH_DELAY_MS);
-				continue;
-			}
-
-			try {
-				const filterMenu = await filterAction.open();
-				if (filterMenu) {
-					return filterMenu;
-				}
-			} catch {
-				// Retry while panel actions are still initializing.
-			}
-
-			await sleep(MENU_REFRESH_DELAY_MS);
-		}
-
-		return undefined;
-	}
-
-	// Reads the current active/inactive state of all state filter items.
-	async function readStateFilterStatuses(): Promise<MenuStatus[]> {
-		const filterMenu = await openFilterDropdownFromHeader();
-		if (!filterMenu) {
-			return [];
-		}
-
-		try {
-			const items = await filterMenu.getItems();
-			const statuses: MenuStatus[] = [];
-
-			for (const item of items) {
-				const parsed = parseMenuItemLabel(await item.getLabel());
-				if (STATE_FILTER_MENU_LABELS.includes(parsed.label)) {
-					statuses.push(parsed);
-				}
-			}
-
-			return statuses;
-		} catch {
-			return [];
-		} finally {
-			await filterMenu.close().catch(() => {
-				// Ignore close failures when menu auto-closes.
-			});
-		}
-	}
-
-	// Toggles a state filter option; confirms the flip unless `confirm` is false (best-effort revert).
-	async function tryToggleStateFilterOption(filterLabel: string, confirm = true): Promise<boolean> {
-		return toggleMenuOption(openFilterDropdownFromHeader, readStateFilterStatuses, filterLabel, confirm);
-	}
-
-	// Waits until the secret detection node appears under the scan root.
-	// Re-fetches the scan tree item on every attempt instead of reusing a
-	// single reference: a tree re-render (e.g. right after the scan's results
-	// finish loading) can leave a previously fetched item stale, and a stale
-	// Selenium element fails identically on every retry no matter how many
-	// times or how long it's retried, since it's the same broken handle.
+	// Waits until the secret detection node appears under the scan root. waitForScanChild re-reads the
+	// tree on every poll, so an item left stale by a re-render (e.g. right after the scan's results
+	// finish loading) is never reused.
 	async function waitForSecretDetectionNode(): Promise<any> {
-		for (let attempt = 1; attempt <= TREE_RETRIES; attempt++) {
-			try {
-				const scan = await waitForTreeItem(SCAN_KEY_TREE_LABEL, `scan "${SCAN_KEY_TREE_LABEL}"`);
-				const secretDetectionNode = await scan?.findChildItem(SCS_SECRET_DETECTION_Type);
-				if (secretDetectionNode) {
-					return secretDetectionNode;
-				}
-			} catch {
-				// Keep retrying while tree elements are being refreshed.
-			}
-
-			await sleep(TREE_RETRY_DELAY_MS);
+		const node = await waitForScanChild(await initializeTree(), SCAN_KEY_TREE_LABEL, SCS_SECRET_DETECTION_Type);
+		if (!node) {
+			throw new Error("Could not find secret detection node");
 		}
-
-		throw new Error("Could not find secret detection node");
+		return node;
 	}
 
 	// Returns individual vulnerabilities from the secret detection node with retry.
@@ -533,14 +209,9 @@ describe("Secret detection results tests (OAuth flow)", () => {
 	// CI runners are slower than local dev machines, so opening a file after
 	// clicking the link can take longer than a fixed wait accounts for.
 	async function waitForEditorTitle(title: string, timeoutMs = 20000): Promise<void> {
-		const deadline = Date.now() + timeoutMs;
-		let lastTitles: string[] = [];
-		while (Date.now() < deadline) {
-			lastTitles = await new EditorView().getOpenEditorTitles();
-			if (lastTitles.includes(title)) {
-				return;
-			}
-			await sleep(500);
+		const titles = await pollUntil(() => new EditorView().getOpenEditorTitles(), (open) => open.includes(title), timeoutMs, 500);
+		if (titles?.includes(title)) {
+			return;
 		}
 		// The extension reports a file it cannot locate with a "not found in workspace" toast, so
 		// listing the visible toasts tells a lookup failure apart from a failed open.
@@ -549,72 +220,58 @@ describe("Secret detection results tests (OAuth flow)", () => {
 			toasts.push(await notification.getMessage().catch(() => "<unreadable>"));
 		}
 		throw new Error(
-			`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(lastTitles)}; notifications: ${JSON.stringify(toasts)})` +
-				`\nVS Code log lines about "${title}" or errors:\n${readVsCodeLogLines(title).join("\n") || "none"}`
+			`Timed out waiting for editor tab "${title}" to open (last seen: ${JSON.stringify(titles)}; notifications: ${JSON.stringify(toasts)})`
 		);
-	}
-
-	// The extension opens result files without awaiting or catching, so a failed open never reaches
-	// the UI; VS Code logs the rejection in the extension host log of the test instance.
-	function readVsCodeLogLines(needle: string, max = 30): string[] {
-		const logsRoot = path.join(process.env.TEST_RESOURCES ?? "", "settings", "logs");
-		const lines: string[] = [];
-		try {
-			const sessions = fs.readdirSync(logsRoot).sort();
-			for (const session of sessions.slice(-2)) {
-				for (const file of ["window1/exthost/exthost.log", "window1/renderer.log"]) {
-					const full = path.join(logsRoot, session, file);
-					if (!fs.existsSync(full)) {
-						continue;
-					}
-					for (const line of fs.readFileSync(full, "utf8").split(/\r?\n/)) {
-						if (line.includes(needle) || line.includes("[error]")) {
-							lines.push(`${session}/${file}: ${line.slice(0, 400)}`);
-						}
-					}
-				}
-			}
-		} catch (error) {
-			lines.push(`could not read ${logsRoot}: ${error}`);
-		}
-		return lines.slice(-max);
 	}
 
 	// Polls getCoordinates() rather than reading it once - the status bar's cursor
-	// indicator may not exist yet immediately after a file opens, and this tolerates
-	// that transient state instead of failing on the first NoSuchElementError.
+	// indicator may not exist yet immediately after a file opens.
 	// The status bar shows Ln/Col only for the active text editor, and the details webview can keep
-	// focus after the link click, so bring the file's tab to the front before each read. When the
-	// file exists in several workspace folders (e.g. the core package copied under node_modules) the
-	// extension opens every copy but only one lands on the result's line, so check each tab.
+	// focus after the link click, so bring the file's tab to the front before each read.
 	async function waitForCursorLine(title: string, line: number, timeoutMs = 15000): Promise<number[]> {
-		const deadline = Date.now() + timeoutMs;
-		let lastCoordinates: number[][] = [];
-		let lastError = "";
-		while (Date.now() < deadline) {
-			try {
-				lastCoordinates = [];
-				for (const tab of await new EditorView().getOpenTabs()) {
-					if ((await tab.getTitle()) !== title) {
-						continue;
-					}
+		const coordinates = await pollUntil(async () => {
+			for (const tab of await new EditorView().getOpenTabs()) {
+				if ((await tab.getTitle()) === title) {
 					await tab.select();
-					const coordinates = await new TextEditor().getCoordinates();
-					lastCoordinates.push(coordinates);
-					if (coordinates[0] === line) {
-						return coordinates;
-					}
+					return new TextEditor().getCoordinates();
 				}
-			} catch (error) {
-				// Tab or status bar cursor indicator not rendered yet - keep polling.
-				lastError = String(error).slice(0, 200);
 			}
-			await sleep(500);
+			return undefined;
+		}, (seen) => seen?.[0] === line, timeoutMs, 500);
+		if (coordinates?.[0] !== line) {
+			throw new Error(`Timed out waiting for cursor at line ${line} in "${title}" (last seen: ${JSON.stringify(coordinates)})`);
 		}
-		throw new Error(
-			`Timed out waiting for cursor at line ${line} in "${title}" (last seen: ${JSON.stringify(lastCoordinates)}` +
-				`${lastError ? `; last error: ${lastError}` : ""})`
-		);
+		return coordinates;
+	}
+
+	// Toggles every option in `labels` that the menu offers, then toggles them back and checks they
+	// are restored, so later suites in the batch start from the same state. Earlier tests leave the
+	// details webview open; it is closed first so the palette commands use the normal shortcut.
+	async function toggleAvailableOptions(kind: ResultsMenu, labels: string[]): Promise<void> {
+		await closeEditorsWithoutPalette();
+		await loadSecretDetectionNode();
+
+		const initialMenu = await readResultsMenu(kind);
+		const states = (menu = initialMenu): string[] =>
+			labels.map((label) => `${label}: ${menu.find((status) => status.label === label)?.isActive}`);
+		const availableLabels = labels.filter((label) => initialMenu.some((status) => status.label === label));
+		expect(availableLabels.length, `Expected options in the ${kind} menu of the results panel`).to.be.greaterThan(0);
+
+		const toggledLabels: string[] = [];
+		try {
+			for (const label of availableLabels) {
+				if (await toggleResultsMenuOption(kind, label)) {
+					toggledLabels.push(label);
+				}
+			}
+			expect(toggledLabels.length, `All available ${kind} options should toggle`).to.equal(availableLabels.length);
+		} finally {
+			// Toggle back even after a failure; each flip is confirmed (and retried once) by a fresh read.
+			for (const label of toggledLabels) {
+				await toggleResultsMenuOption(kind, label).catch(() => undefined);
+			}
+		}
+		expect(states(await readResultsMenu(kind)), `${kind} options should be back to their original state`).to.deep.equal(states());
 	}
 
 	// While any webview is open, extest opens the command palette by sending F1 to the active editor
@@ -770,43 +427,28 @@ describe("Secret detection results tests (OAuth flow)", () => {
 		const fileLink = await driver.findElement(By.className(RESULT_FILE_LINK));
 		expect(fileLink, "Clickable file path link not found on General tab").to.not.be.undefined;
 
-		// Move every copy the workspace can see aside, so the file is genuinely missing.
-		const copies = findWorkspaceCopies(path.basename(SECRETS_FIXTURE_PATH));
-		expect(copies, "secrets.go fixture should exist before it is removed").to.not.be.empty;
-		for (const copy of copies) {
-			fs.renameSync(copy, `${copy}.bak`);
-		}
+		// Move the fixture aside so the file is genuinely missing.
+		fs.renameSync(SECRETS_FIXTURE_PATH, `${SECRETS_FIXTURE_PATH}.bak`);
 		try {
 			await fileLink.click();
 			await driver.switchTo().defaultContent();
 
 			// Other toasts (e.g. "Successfully authenticated") can be shown at the same time, so
 			// look for the not-found message among all of them rather than taking the first one.
-			const seen: string[] = [];
-			let found = false;
-			const deadline = Date.now() + 10000;
-			while (!found && Date.now() < deadline) {
+			const seen = new Set<string>();
+			const found = await pollUntil(async () => {
 				for (const notification of await new Workbench().getNotifications()) {
-					try {
-						const text = await notification.getText();
-						if (text.includes("not found in workspace")) {
-							found = true;
-							break;
-						}
-						seen.push(text);
-					} catch {
-						// Notification was dismissed while reading it - keep polling.
+					const text = await notification.getText().catch(() => ""); // dismissed while reading
+					if (text.includes("not found in workspace")) {
+						return true;
 					}
+					seen.add(text);
 				}
-				if (!found) {
-					await sleep(500);
-				}
-			}
-			expect(found, `Expected a "not found in workspace" notification. Seen: ${seen.join(" | ") || "none"}`).to.be.true;
+				return false;
+			}, Boolean, 10000, 500);
+			expect(found, `Expected a "not found in workspace" notification. Seen: ${[...seen].join(" | ") || "none"}`).to.be.true;
 		} finally {
-			for (const copy of copies) {
-				fs.renameSync(`${copy}.bak`, copy);
-			}
+			fs.renameSync(`${SECRETS_FIXTURE_PATH}.bak`, SECRETS_FIXTURE_PATH);
 		}
 	});
 
@@ -856,73 +498,11 @@ describe("Secret detection results tests (OAuth flow)", () => {
 
 	it("should toggle available Group By options for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
-		// Earlier tests leave the details webview open; close it so the palette commands below use the normal shortcut.
-		await closeEditorsWithoutPalette();
-
-		await loadSecretDetectionNode();
-
-		const initialStatuses = await readGroupByStatuses();
-		const availableLabels = GROUP_BY_MENU_LABELS.filter((label) =>
-			initialStatuses.some((status) => status.label === label)
-		);
-
-		expect(availableLabels.length, "Expected Group By options in results panel").to.be.greaterThan(0);
-
-		const toggledLabels: string[] = [];
-		let toggledCount = 0;
-
-		try {
-			for (const label of availableLabels) {
-				const toggled = await tryToggleGroupByOption(label);
-				if (toggled) {
-					toggledLabels.push(label);
-					toggledCount++;
-				}
-			}
-
-			expect(toggledCount, "All available Group By options should toggle").to.equal(availableLabels.length);
-		} finally {
-			for (const label of toggledLabels) {
-				await tryToggleGroupByOption(label, false).catch(() => {
-					// Best-effort revert to reduce suite side effects.
-				});
-			}
-		}
+		await toggleAvailableOptions("More Actions", GROUP_BY_MENU_LABELS);
 	});
 
 	it("should toggle available State filters for secret results", async function () {
 		this.timeout(LONG_TEST_TIMEOUT_MS);
-		// Earlier tests leave the details webview open; close it so the palette commands below use the normal shortcut.
-		await closeEditorsWithoutPalette();
-
-		await loadSecretDetectionNode();
-
-		const initialStatuses = await readStateFilterStatuses();
-		const availableLabels = STATE_FILTER_MENU_LABELS.filter((label) =>
-			initialStatuses.some((status) => status.label === label)
-		);
-
-		expect(availableLabels.length, "Expected state filter options in Filter dropdown").to.be.greaterThan(0);
-
-		const toggledLabels: string[] = [];
-		let toggledCount = 0;
-
-		try {
-			for (const label of availableLabels) {
-				const toggled = await tryToggleStateFilterOption(label);
-				if (toggled) {
-					toggledLabels.push(label);
-					toggledCount++;
-				}
-			}
-
-			expect(toggledCount, "All available state filters should toggle").to.equal(availableLabels.length);
-		} finally {
-			for (const label of toggledLabels) {
-				await tryToggleStateFilterOption(label, false).catch(() => {
-					// Best-effort revert to reduce suite side effects.
-				});
-			}
-		}
+		await toggleAvailableOptions("Filter", STATE_FILTER_MENU_LABELS);
 	});
 });

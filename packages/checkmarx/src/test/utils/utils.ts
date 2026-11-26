@@ -1,11 +1,11 @@
 import {
   ActivityBar,
   By,
+  ContextMenu,
   ViewControl,
   CustomTreeSection,
   SideBarView,
   InputBox,
-  QuickPickItem,
   TreeItem,
   WebView,
   WebDriver,
@@ -14,14 +14,10 @@ import {
   Workbench,
   EditorView,
 } from "vscode-extension-tester";
-import { WEBVIEW_TITLE } from "./constants";
+import { AUTH_EDITOR_TITLE, CX_AUTHENTICATION_COMMAND, SCAN_KEY_TREE_LABEL, WEBVIEW_TITLE } from "./constants";
 
-// Exact command palette label: extest only picks the entry whose label equals this text;
-// anything else (a prefix or a command ID) presses Enter on the top fuzzy match, which VS Code
-// ranks by recent use, so a different command can run.
-const CX_AUTHENTICATION_COMMAND = "Checkmarx: Checkmarx: Show Authentication";
 const CX_MOCK_TOKEN_COMMAND = "Mock Token Test";
-const AUTH_EDITOR_TITLE = "Checkmarx Authentication";
+const RESULTS_PANEL_TITLE = "Checkmarx One Results";
 
 type CommandExecutor = (command: string) => Promise<void>;
 
@@ -91,6 +87,12 @@ export async function confirmLogoutToast(
   return false;
 }
 
+// Real-tenant runs (TEST=uiEndToEnd with an API key): the "Mock Token Test" command logs in with
+// CX_APIKEY instead of the mock token.
+export function isRealTenantRun(): boolean {
+  return process.env.TEST === "uiEndToEnd" && Boolean(process.env.CX_APIKEY);
+}
+
 export async function loginWithMockToken(
   bench: Workbench,
   options?: {
@@ -101,12 +103,12 @@ export async function loginWithMockToken(
   await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
   await sleep(options?.waitMs ?? 2000);
 
-  // Only real-tenant runs (CX_APIKEY set) need verification: validation is a network
-  // call that can lose the race with extension start-up, so confirm and retry.
-  if (!process.env.CX_APIKEY) {
+  // Only real-tenant runs need verification: validation is a network call that can lose
+  // the race with extension start-up, so confirm and retry.
+  if (!isRealTenantRun()) {
     return;
   }
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let retry = 0; ; retry++) {
     try {
       const tree = await initialize();
       const items = tree ? await tree.getVisibleItems() : [];
@@ -115,6 +117,9 @@ export async function loginWithMockToken(
       }
     } catch {
       // Tree not ready yet; retry below.
+    }
+    if (retry === 5) {
+      throw new Error("Real-tenant login did not fill the Checkmarx One Results tree after 5 retries");
     }
     await sleep(8000);
     await executeCommand(bench, CX_MOCK_TOKEN_COMMAND, options?.executeCommandWithRetry);
@@ -209,35 +214,6 @@ export async function createTreeSCA(
 export async function quickPickSelector(input: InputBox) {
   await input.selectQuickPick(0);
 }
-export async function getQuickPickSelector(input: InputBox, timeoutMs = 60000): Promise<string> {
-  // Against a real tenant the picker list loads asynchronously and the typed filter is
-  // applied after the unfiltered list first renders, so wait for an item matching the
-  // typed text (when any) instead of taking whatever is first.
-  const typed = ((await input.getText()) ?? "").trim().toLowerCase();
-  const deadline = Date.now() + timeoutMs;
-  let picks = await input.getQuickPicks();
-  let match: string | undefined;
-  while (Date.now() < deadline) {
-    const texts: string[] = [];
-    for (const pick of picks) {
-      try {
-        texts.push(await pick.getText());
-      } catch {
-        // Item re-rendered while reading; retry on next poll.
-      }
-    }
-    match = typed
-      ? texts.find((t) => t.trim().toLowerCase() === typed) ??
-        texts.find((t) => t.toLowerCase().includes(typed))
-      : texts[0];
-    if (match !== undefined) {
-      return match;
-    }
-    await sleep(1000);
-    picks = await input.getQuickPicks();
-  }
-  return await picks[0].getText();
-}
 
 export async function getResults(scan: any): Promise<any[]> {
   let children = await scan.getChildren();
@@ -265,32 +241,21 @@ export async function validateSeverities(
   severity: string,
   timeoutMs = 60000
 ): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs;
-  let root = scan;
-  for (;;) {
-    try {
-      const engines = await root.getChildren();
-      let found = false;
-      for (const engine of engines) {
-        await engine.expand();
-        for (const group of await engine.getChildren()) {
-          if ((await group.getLabel()).trim().toUpperCase() === severity.toUpperCase()) {
-            found = true;
-          }
-        }
+  let next = scan;
+  const hidden = await pollUntil(async () => {
+    const root = next ?? (await (await initialize())?.findItem(SCAN_KEY_TREE_LABEL));
+    next = undefined;
+    const engines = await root.getChildren();
+    let found = false;
+    for (const engine of engines) {
+      await engine.expand();
+      for (const group of await engine.getChildren()) {
+        found = found || (await group.getLabel()).trim().toUpperCase() === severity.toUpperCase();
       }
-      if (!found && engines.length > 0) {
-        return true;
-      }
-    } catch {
-      // tree re-rendered while reading; re-read below
     }
-    if (Date.now() >= deadline) {
-      return false;
-    }
-    await sleep(1000);
-    root = (await (await initialize())?.findItem("Scan")) ?? root;
-  }
+    return engines.length > 0 && !found;
+  }, Boolean, timeoutMs);
+  return hidden === true;
 }
 
 export async function getDetailsView(): Promise<WebView> {
@@ -423,30 +388,29 @@ export async function ensureWorkspaceFolderOpen(folder: string, timeoutMs = 6000
   }
 
   // Opening a folder reloads the window: wait for the new workbench, then for its title.
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      await VSBrowser.instance.waitForWorkbench(Math.max(1000, deadline - Date.now()));
-      if (await isOpen()) {
-        return;
-      }
-    } catch {
-      // Workbench is reloading - keep waiting.
-    }
-    await sleep(1000);
+  const opened = await pollUntil(async () => {
+    await VSBrowser.instance.waitForWorkbench(10000);
+    return isOpen();
+  }, Boolean, timeoutMs);
+  if (!opened) {
+    throw new Error(`Workspace folder ${folder} did not open (title: "${await driver.getTitle()}")`);
   }
-  throw new Error(`Workspace folder ${folder} did not open (title: "${await driver.getTitle()}")`);
 }
 
-// Types text into the open picker and clicks the matching entry. The project/branch pickers
-// search the server on every value change, so retyping the match and pressing Enter would
+// Types text into the open picker and clicks the entry it matches: the exact text if listed (case
+// insensitive), else the first entry containing it. Returns that entry's text. The project/branch
+// pickers search the server on every value change, so retyping the match and pressing Enter would
 // clear the list and confirm while it reloads (nothing gets selected on a real tenant).
-export async function selectItem(text: string): Promise<string> {
-  const input = await InputBox.create();
+export async function selectItem(text: string, timeoutMs = 60000): Promise<string> {
+  const input = await waitForInputBox();
   await input.setText(text);
-  const item = await getQuickPickSelector(input);
-  await clickQuickPickItem(input, item);
-  return item;
+  const typed = text.trim().toLowerCase();
+  return clickQuickPickItem(
+    input,
+    (entry, all) =>
+      all.some((t) => t.toLowerCase() === typed) ? entry.toLowerCase() === typed : entry.toLowerCase().includes(typed),
+    timeoutMs
+  );
 }
 
 /**
@@ -559,29 +523,19 @@ export async function focusPanelAndCollapseOthers(
  * returning nothing - after a failed lookup the section is fetched again before the next poll.
  */
 export async function waitForTreeItem(tree: any, label: string, timeoutMs = 60000): Promise<any> {
-  const deadline = Date.now() + timeoutMs;
-  let section = tree;
-  for (;;) {
-    try {
-      const item = await section?.findItem(label);
-      if (item) {
-        return item;
-      }
-    } catch {
-      // stale section while the view re-renders; fetched again below
-    }
-    if (Date.now() >= deadline) {
-      return undefined;
-    }
-    await sleep(1000);
-    section = (await initialize()) ?? section;
-  }
+  let next = tree;
+  return pollUntil(async () => {
+    const section = next ?? (await initialize());
+    next = undefined;
+    return section?.findItem(label);
+  }, Boolean, timeoutMs);
 }
 
 /**
  * Finds a child node (e.g. SAST, IaC, Secret Detection) of the loaded scan in the results tree.
- * Re-reads the scan root and the child on every poll: against a real tenant the tree is refreshed
- * while results load, so a reference captured once can go stale or the child may not exist yet.
+ * Re-reads the tree, the scan root and the child on every poll: against a real tenant the tree is
+ * refreshed while results load, so a reference captured once can go stale or the child may not
+ * exist yet.
  */
 export async function waitForScanChild(
   tree: CustomTreeSection | undefined,
@@ -589,82 +543,216 @@ export async function waitForScanChild(
   childLabel: string,
   timeoutMs = 60000
 ): Promise<TreeItem> {
+  let next = tree;
+  return pollUntil(async () => {
+    const section = next ?? (await initialize());
+    next = undefined;
+    const root = await section?.findItem(scanLabel);
+    await root?.expand();
+    return root?.findChildItem(childLabel);
+  }, Boolean, timeoutMs);
+}
+
+/**
+ * Calls `read` until `done` accepts its result or `timeoutMs` passes, waiting `intervalMs` between
+ * calls. A call that throws (usually a stale element while VS Code re-renders) counts as a miss.
+ * Returns the accepted value or, on timeout, the last value read (undefined if every call threw).
+ */
+export async function pollUntil<T>(
+  read: () => Promise<T>,
+  done: (value: NoInfer<T>) => boolean = Boolean,
+  timeoutMs = 60000,
+  intervalMs = 1000
+): Promise<T | undefined> {
   const deadline = Date.now() + timeoutMs;
-  let child: TreeItem | undefined;
-  do {
+  let value: T | undefined;
+  for (;;) {
     try {
-      const root = await tree?.findItem(scanLabel);
-      if (root) {
-        await root.expand();
-        child = await root.findChildItem(childLabel);
+      value = await read();
+      if (done(value)) {
+        return value;
       }
     } catch {
-      // stale element while the tree refreshes; retry on the next poll
+      // Stale element or re-render while reading; read again.
     }
-    if (child) {
-      return child;
+    if (Date.now() >= deadline) {
+      return value;
+    }
+    await sleep(intervalMs);
+  }
+}
+
+/**
+ * Clicks the first quick pick entry that `match` accepts (its exact text, or a predicate that also
+ * sees the whole list; any entry when omitted) and returns that entry's text. Waits until the list
+ * has settled - the same entries on two reads in a row - because VS Code reuses row elements, so a
+ * row found while results are still arriving can show a different entry by the time it is clicked.
+ */
+export async function clickQuickPickItem(
+  input: InputBox,
+  match?: string | ((text: string, all: string[]) => boolean),
+  timeoutMs = 60000
+): Promise<string> {
+  const accepts = typeof match === "string" ? (text: string) => text === match.trim() : match ?? (() => true);
+  let previous: string | undefined;
+  let listed: string[] = [];
+  const found = await pollUntil(async () => {
+    const last = previous;
+    previous = undefined;
+    const picks = await input.getQuickPicks();
+    const texts: string[] = [];
+    for (const pick of picks) {
+      texts.push((await pick.getText()).trim());
+    }
+    listed = texts;
+    previous = texts.join("|");
+    const index = previous === last ? texts.findIndex((text) => accepts(text, texts)) : -1;
+    return index >= 0 ? { pick: picks[index], text: texts[index] } : undefined;
+  }, Boolean, timeoutMs, 500);
+  if (!found) {
+    const wanted = typeof match === "string" ? `"${match}"` : "the expected entry";
+    throw new Error(`Quick pick did not list ${wanted} within ${timeoutMs} ms (listed: ${JSON.stringify(listed)})`);
+  }
+  await found.pick.select();
+  return found.text;
+}
+
+type MenuStatus = { label: string; isActive: boolean };
+export type ResultsMenu = "More Actions" | "Filter";
+
+// Menu labels can carry invisible soft hyphens (U+00AD, VS Code's padding for unchecked items);
+// a checked item starts with a check mark.
+function parseMenuItemLabel(rawLabel: string): MenuStatus {
+  const label = rawLabel.replace(/\u00AD/g, "").replace(/\s+/g, " ").trim();
+  const isActive = label.startsWith("\u2713 ");
+  return { label: isActive ? label.slice(2).trim() : label, isActive };
+}
+
+// Focuses the Checkmarx One Results panel and selects the scan node, so menu items gated by
+// `view == astResults` are available.
+export async function focusResultsPanelAndSelectScan(): Promise<void> {
+  await focusPanelAndCollapseOthers(RESULTS_PANEL_TITLE);
+  try {
+    const scan = await (await initialize())?.findItem(SCAN_KEY_TREE_LABEL);
+    if (scan) {
+      await scan.select();
+      await sleep(300);
+    }
+  } catch {
+    // Best-effort - proceed even if selection fails.
+  }
+}
+
+// Opens the results panel's "More Actions..." menu or its Filter icon menu, retrying while the panel
+// actions initialize. `refocus` re-focuses the panel before every open; otherwise only before retries.
+export async function openResultsMenu(kind: ResultsMenu, refocus = true): Promise<ContextMenu | undefined> {
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      if (refocus || attempt > 1) {
+        await focusResultsPanelAndSelectScan();
+      }
+      const section = await initialize();
+      if (kind === "More Actions") {
+        const menu = await section?.moreActions();
+        if (menu) {
+          return menu;
+        }
+      } else {
+        // Some UI builds label the action slightly differently; fall back to any "filter" action.
+        let action = await section?.getAction("Filter");
+        for (const candidate of action ? [] : (await section?.getActions()) ?? []) {
+          if (/filter/i.test(await candidate.getLabel())) {
+            action = candidate;
+            break;
+          }
+        }
+        const menu = await action?.open();
+        if (menu) {
+          return menu;
+        }
+      }
+    } catch {
+      // Panel actions still initializing; retry.
     }
     await sleep(1000);
-  } while (Date.now() < deadline);
+  }
   return undefined;
 }
 
-// Finds the quick pick item with the given text once the list has settled: the same entries on
-// two reads in a row. VS Code reuses row elements, so a row found while results are still
-// arriving can show a different entry by the time it is clicked.
-async function findSettledQuickPick(input: InputBox, text: string, deadline: number): Promise<QuickPickItem | undefined> {
-  let previous: string | undefined;
-  while (Date.now() < deadline) {
-    try {
-      const picks = await input.getQuickPicks();
-      const texts: string[] = [];
-      for (const pick of picks) {
-        texts.push((await pick.getText()).trim());
-      }
-      const current = texts.join("|");
-      const index = texts.indexOf(text.trim());
-      if (index >= 0 && current === previous) {
-        return picks[index];
-      }
-      previous = current;
-    } catch {
-      // list re-rendered while reading; retry
-      previous = undefined;
+// Reads the state of every item in a results menu ([] if the menu could not be opened or read).
+export async function readResultsMenu(kind: ResultsMenu, refocus = true): Promise<MenuStatus[]> {
+  const menu = await openResultsMenu(kind, refocus);
+  if (!menu) {
+    return [];
+  }
+  try {
+    const statuses: MenuStatus[] = [];
+    for (const item of await menu.getItems()) {
+      statuses.push(parseMenuItemLabel(await item.getLabel()));
     }
-    await sleep(500);
+    return statuses;
+  } catch {
+    return [];
+  } finally {
+    await menu.close().catch(() => undefined); // the menu may have closed itself
+  }
+}
+
+/**
+ * Clicks `label` in a results menu and, when `confirm` is set, waits until a fresh read shows it flipped.
+ * The state is read from the same menu that is clicked. A second click is made only when a fresh open
+ * still shows the old state, so it never undoes a click that landed late. Returns the state before and
+ * after the click, or undefined if the item is missing or the flip is not confirmed.
+ */
+export async function toggleResultsMenuOption(
+  kind: ResultsMenu,
+  label: string,
+  options: { confirm?: boolean; refocus?: boolean; timeoutMs?: number } = {}
+): Promise<{ before: boolean; after: boolean } | undefined> {
+  const { confirm = true, refocus = true, timeoutMs = 8000 } = options;
+  let before: boolean | undefined;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const menu = await openResultsMenu(kind, refocus || attempt > 1);
+    if (!menu) {
+      return undefined;
+    }
+    try {
+      let target;
+      let isActive = false;
+      for (const item of await menu.getItems()) {
+        const status = parseMenuItemLabel(await item.getLabel());
+        if (status.label === label) {
+          target = item;
+          isActive = status.isActive;
+          break;
+        }
+      }
+      if (!target) {
+        return undefined;
+      }
+      if (before === undefined) {
+        before = isActive;
+      } else if (isActive !== before) {
+        return { before, after: isActive }; // the first click landed after the confirm window
+      }
+      await target.select();
+    } catch {
+      return undefined;
+    } finally {
+      await menu.close().catch(() => undefined); // the menu may have closed itself
+    }
+    if (!confirm) {
+      return { before, after: !before };
+    }
+    await sleep(1000);
+    const flipped = await pollUntil(
+      async () => (await readResultsMenu(kind, refocus)).find((status) => status.label === label)?.isActive === !before,
+      Boolean,
+      timeoutMs
+    );
+    if (flipped) {
+      return { before, after: !before };
+    }
   }
   return undefined;
-}
-
-/**
- * Types `text` into a quick pick (only if it is not already there) and confirms it once an item with
- * that text is listed. The extension reloads the list on every text change, so pressing Enter right
- * after typing hits an empty list on a real tenant and nothing (or undefined) gets selected.
- */
-export async function confirmQuickPickItem(input: InputBox, text: string, timeoutMs = 60000): Promise<void> {
-  const current = ((await input.getText()) ?? "").trim();
-  if (current !== text.trim()) {
-    await input.setText(text);
-    await sleep(1500); // debounce + list reset before the reload starts
-  }
-  // click the item: Enter may not have an active item yet right after a reload
-  const pick = await findSettledQuickPick(input, text, Date.now() + timeoutMs);
-  if (pick) {
-    await pick.select();
-    return;
-  }
-  await input.confirm();
-}
-
-/**
- * Clicks the quick pick item with the given text without typing anything. Used for the wizard,
- * whose lists are loaded up front and filtered client-side.
- */
-export async function clickQuickPickItem(input: InputBox, text: string, timeoutMs = 60000): Promise<void> {
-  const pick = await findSettledQuickPick(input, text, Date.now() + timeoutMs);
-  if (pick) {
-    await pick.select();
-    return;
-  }
-  throw new Error(`Quick pick item "${text}" was not listed within ${timeoutMs} ms`);
 }

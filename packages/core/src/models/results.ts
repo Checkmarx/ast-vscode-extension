@@ -152,10 +152,9 @@ export class AstResult extends CxResult {
         : this.fileName
         }${result.data.nodes[0].line > 0 ? ":" + result.data.nodes[0].line : ""
         })`;
-    } else if (result.data.fileName || (result.data as { filename?: string }).filename) {
+    } else if (result.data.fileName) {
       //Relevant for scs  , because this engine  have the filename inside result.data
-      // The Checkmarx One API returns it as `filename`; older/mock data uses `fileName`.
-      this.fileName = result.data.fileName ?? (result.data as { filename?: string }).filename;
+      this.fileName = result.data.fileName;
       const shortFilename =
         this.fileName && this.fileName.includes("/")
           ? this.fileName.slice(this.fileName.lastIndexOf("/"))
@@ -164,6 +163,10 @@ export class AstResult extends CxResult {
         ? shortFilename
         : this.fileName
         }${result.data.line > 0 ? ":" + result.data.line : ""})`;
+    } else if (result.data.filename) {
+      // The Checkmarx One API returns scs/kics files as `filename`. Only the file is recorded; the
+      // label is left as built (formatFilenameLine already adds this file when there is no query name).
+      this.fileName = result.data.filename;
     }
 
     this.cweId = result.cweId || result.vulnerabilityDetails?.cweId;
