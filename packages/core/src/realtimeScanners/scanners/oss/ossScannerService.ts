@@ -12,6 +12,7 @@ import { CxRealtimeEngineStatus } from "@checkmarx/ast-cli-javascript-wrapper/di
 import { minimatch } from "minimatch";
 import { IgnoreFileManager } from "../../common/ignoreFileManager";
 import { ThemeUtils } from "../../../utils/themeUtils";
+import { logScanFailure, logScanResults } from "../common";
 
 export class OssScannerService extends BaseScannerService {
   private themeChangeListener: vscode.Disposable | undefined;
@@ -185,7 +186,15 @@ export class OssScannerService extends BaseScannerService {
         : undefined;
 
       this.updateProblems<CxOssResult[]>(scanResults, document.uri, fullScanResults);
+
+      const allPackages: CxOssResult[] = Array.isArray(fullScanResults ?? scanResults) ? (fullScanResults ?? scanResults) : [];
+      try {
+        logScanResults(constants.ossRealtimeScannerEngineName, allPackages.map(p => p?.status), originalFilePath);
+      } catch (telemetryError) {
+        logs.debug(`Telemetry for OSS scan failed: ${telemetryError}`);
+      }
     } catch (error) {
+      logScanFailure(constants.ossRealtimeScannerEngineName, error, originalFilePath);
       this.storeAndApplyResults(
         originalFilePath,
         document.uri,

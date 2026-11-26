@@ -12,6 +12,7 @@ import { commands } from "@checkmarx/vscode-core/out/utils/common/commandBuilder
 import { MediaPathResolver } from "@checkmarx/vscode-core/out/utils/mediaPathResolver";
 import { ThemeUtils } from "@checkmarx/vscode-core/out/utils/themeUtils";
 import { getMessages } from "@checkmarx/vscode-core/out/config/extensionMessages";
+import { reportLoginFailure, reportLoginSuccess } from "@checkmarx/vscode-core/out/services/loginTelemetry";
 
 export class AuthenticationWebview {
   public static readonly viewType = "devAssistAuth";
@@ -266,6 +267,7 @@ export class AuthenticationWebview {
                   message.apiKey
                 );
                 if (!isValid) {
+                  reportLoginFailure(this.context, "APIKey");
                   // Sending an error message to the window
                   this._panel.webview.postMessage({
                     type: "validation-error",
@@ -285,8 +287,10 @@ export class AuthenticationWebview {
                   type: "validation-success",
                   message: "API Key validated successfully!",
                 });
+                await reportLoginSuccess(this.context, "APIKey");
                 this.schedulePostAuth(isAiEnabled, { apiKey: message.apiKey });
               } catch (error) {
+                reportLoginFailure(this.context, "APIKey");
                 this._panel.webview.postMessage({ command: "enableAuthButton" });
                 this._panel.webview.postMessage({
                   type: "validation-error",

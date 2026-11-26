@@ -240,13 +240,11 @@ describe("CxMock", () => {
       }
     });
 
-    it("sendAIFixOutcomeTelemetry should resolve without throwing", async () => {
-      try {
-        await (cx as any).sendAIFixOutcomeTelemetry("type", "outcome");
-        expect(true).to.be.true;
-      } catch {
-        expect(true).to.be.true;
-      }
+    it("sendTelemetryEvent records the payload and resolves to true", async () => {
+      const payload = { eventType: "Scan", subType: "scantriggerd", engine: "Asca", status: "Success" };
+      const delivered = await (cx as any).sendTelemetryEvent(payload);
+      expect(delivered).to.equal(true);
+      expect((cx as any).sentTelemetryEvents).to.deep.include(payload);
     });
 
     it("authValidate is idempotent across calls", async () => {

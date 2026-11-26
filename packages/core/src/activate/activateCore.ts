@@ -11,6 +11,8 @@ import { constants } from '../utils/common/constants';
 import { messages } from '../utils/common/messages';
 import { registerMcpSettingsInjector } from '../services/mcpSettingsInjector';
 import { registerSelfHealing } from '../services/selfHealing';
+import { initTelemetry } from '../services/telemetryService';
+import { ensureInstallationId, flushPendingInstallEvent, initInstallationTracker } from '../services/installationTracker';
 
 // Global context for the extension
 let globalContext: vscode.ExtensionContext;
@@ -45,12 +47,23 @@ export async function activateCore(context: vscode.ExtensionContext) {
     const logs = new Logs(output);
     logs.info(messages.pluginRunning);
 
+    // [SHARED] Analytics telemetry: envelope data and installation id (AST-184025)
+    initTelemetry(context, logs);
+    initInstallationTracker(logs);
+    try {
+        await ensureInstallationId(context);
+    } catch (error) {
+        logs.debug(`Could not create installation id: ${error}`);
+    }
+
     // [SHARED] Integrity check on startup
     const authService = AuthService.getInstance(context, logs);
     const isSignedIn = await authService.validateAndUpdateState();
     if (isSignedIn) {
         // Users signed in before logins were shared with the cx CLI: hand it over once, in the background
         void getCx().syncLogin(logs);
+        // Send the pending install event (AST-184025). Not awaited, so activation isn't slowed down.
+        void flushPendingInstallEvent(context);
     }
 
     // [SHARED] Register MCP settings injector
