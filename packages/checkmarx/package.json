@@ -1049,6 +1049,20 @@
               "podman"
             ],
             "default": "docker"
+          },
+          "Checkmarx.Severity Threshold": {
+            "type": "string",
+            "order": 7,
+            "description": "Choose the lowest severity that Dev Assist should scan for. Vulnerabilities at this severity and above are included. Default: High.",
+            "markdownDescription": "Choose the lowest severity that Dev Assist should scan for. Vulnerabilities at this severity and above are included. Default: High.",
+            "enum": [
+              "Critical",
+              "High",
+              "Medium",
+              "Low",
+              "Informational"
+            ],
+            "default": "High"
           }
         }
       },
