@@ -143,6 +143,7 @@ describe("MCP Settings Injector", () => {
     const pluginBridge = { command: "sh", args: ["cx_run.sh", "mcp", "bridge"] };
     const cursorPath = path.join("/home/user", ".cursor", "mcp.json");
     const windsurfPath = path.join("/home/user", ".codeium", "windsurf", "mcp_config.json");
+    const antigravityPath = path.join("/home/user", ".gemini", "config", "mcp_config.json");
     const claudeJsonPath = path.join("/home/user", ".claude.json");
     const codexPath = path.join("/home/user", ".codex", "config.toml");
 
@@ -255,6 +256,15 @@ describe("MCP Settings Injector", () => {
       await migrateLegacyMcpServerNames();
 
       expect(JSON.parse(written.get(windsurfPath) as string)).to.deep.equal({ mcpServers: { "Checkmarx One Assist": { serverUrl: ourUrl } } });
+    });
+
+    it("Antigravity: migrates the legacy entry in ~/.gemini/config/mcp_config.json", async () => {
+      (utils.isIDE as sinon.SinonStub).withArgs(constants.antigravityAgent).returns(true);
+      const written = stubFiles({ [antigravityPath]: JSON.stringify({ mcpServers: { Checkmarx: { serverUrl: ourUrl } } }) });
+
+      await migrateLegacyMcpServerNames();
+
+      expect(JSON.parse(written.get(antigravityPath) as string)).to.deep.equal({ mcpServers: { "Checkmarx One Assist": { serverUrl: ourUrl } } });
     });
 
     it("Claude: migrates the legacy entry in ~/.claude.json", async () => {

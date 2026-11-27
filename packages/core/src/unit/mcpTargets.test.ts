@@ -182,4 +182,20 @@ describe("resolveMcpTargets", () => {
             expect(resolveMcpTargets()).to.deep.equal([]);
         });
     });
+
+    // ── Antigravity ───────────────────────────────────────────────────────────────
+
+    describe("Antigravity IDE", () => {
+        beforeEach(() => setAppName("Antigravity"));
+
+        it("Prefer Native = true, no extensions → ['ide-native-json']", () => {
+            setPreferNative(true);
+            expect(resolveMcpTargets()).to.deep.equal(["ide-native-json"]);
+        });
+
+        it("Prefer Native = false, no extensions → []", () => {
+            setPreferNative(false);
+            expect(resolveMcpTargets()).to.deep.equal([]);
+        });
+    });
 });

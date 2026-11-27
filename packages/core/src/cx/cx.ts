@@ -320,7 +320,7 @@ export class Cx implements CxPlatform {
         config.additionalParameters = vscode.workspace
             .getConfiguration("checkmarxOne")
             .get("additionalParams") as string;
-        const agentName = isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent)) ? constants.devinAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
+        const agentName = isIDE(constants.antigravityAgent) ? constants.antigravityAgent : isIDE(constants.kiroAgent) ? constants.kiroAgent : isIDE(constants.cursorAgent) ? constants.cursorAgent : (isIDE(constants.devinNextAgent) || isIDE(constants.devinAgent)) ? constants.devinAgent : (isIDE(constants.windsurfNextAgent) || isIDE(constants.windsurfAgent)) ? constants.windsurfAgent : constants.vsCodeAgent;
         const version = this.getPackageVersion();
         config.agentName = version ? `${agentName}_${version}` : agentName;
         console.log(`Package version from VSCODE Plugin  ${config.agentName}: ${config.agentName}`);
@@ -931,7 +931,8 @@ export class Cx implements CxPlatform {
     async setUserEventDataForLogs(eventType: string, subType: string, engine: string, problemSeverity: string) {
         const config = await this.getAstConfiguration();
         const cx = new CxWrapper(config);
-        const aiProvider = isIDE(constants.kiroAgent) ? constants.kiroAgent :
+        const aiProvider = isIDE(constants.antigravityAgent) ? constants.antigravityAgent :
+            isIDE(constants.kiroAgent) ? constants.kiroAgent :
             isIDE(constants.cursorAgent) ? constants.cursorAgent :
                 (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent)) ? "Cascade" : constants.vsCodeAgent;
         cx.telemetryAIEvent(aiProvider, eventType, subType, engine, problemSeverity, "", "", 0);
@@ -964,14 +965,18 @@ export class Cx implements CxPlatform {
 
             const cxWrapper = new CxWrapper(config);
             const vsCodeAssistant = this.getSelectedAIAssistant();
-            const aiProvider = isIDE(constants.kiroAgent)
+            const aiProvider = isIDE(constants.antigravityAgent)
+                ? constants.antigravityAgent
+                : isIDE(constants.kiroAgent)
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent
                     : (isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent))
                         ? "Cascade"
                         : vsCodeAssistant;
-            const agent = isIDE(constants.kiroAgent)
+            const agent = isIDE(constants.antigravityAgent)
+                ? constants.antigravityAgent
+                : isIDE(constants.kiroAgent)
                 ? constants.kiroAgent
                 : isIDE(constants.cursorAgent)
                     ? constants.cursorAgent

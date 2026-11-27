@@ -966,7 +966,7 @@
           "Checkmarx.AI Assistant": {
             "type": "string",
             "description": "AI Assistant",
-            "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
+            "markdownDescription": "Select the AI Assistant to use for remediation. For non-VS Code IDEs (Cursor, Windsurf, Kiro, Antigravity), when **Prefer Native AI Assistant** is enabled this setting is ignored.",
             "enum": [
               "Copilot",
               "Claude",
@@ -1049,6 +1049,20 @@
               "podman"
             ],
             "default": "docker"
+          },
+          "Checkmarx.Severity Threshold": {
+            "type": "string",
+            "order": 7,
+            "description": "Choose the lowest severity that Dev Assist should scan for. Vulnerabilities at this severity and above are included. Default: High.",
+            "markdownDescription": "Choose the lowest severity that Dev Assist should scan for. Vulnerabilities at this severity and above are included. Default: High.",
+            "enum": [
+              "Critical",
+              "High",
+              "Medium",
+              "Low",
+              "Informational"
+            ],
+            "default": "High"
           }
         }
       },

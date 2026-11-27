@@ -191,6 +191,7 @@ export const constants = {
   devinAgent: "Devin",
   devinNextAgent: "Devin - Next",
   kiroAgent: "Kiro",
+  antigravityAgent: "Antigravity",
   claudeAgent: "Claude",
   cxOne: "checkmarxOne",
   additionalParams: "additionalParams",
@@ -451,6 +452,14 @@ export const constants = {
   codexOpenSidebarCommand: "chatgpt.openSidebar",
   codexNewChatOpen: "chatgpt.newChat",
   codexChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
+
+  // Antigravity IDE native chat commands (verified on Antigravity IDE 1.107.0; not a documented public API)
+  // Opens a fresh agent conversation
+  antigravityNewChatOpen: "antigravity.startNewConversation",
+  // Hidden command: fills the chat input with the given text without submitting
+  antigravityAddContextCommand: "antigravity.addContext",
+  // Focuses the chat input and submits it
+  antigravityTriggerSendCommand: "antigravity.triggerSend",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

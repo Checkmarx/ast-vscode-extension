@@ -19,7 +19,7 @@ interface WelcomeAiBannerState {
 export class WelcomeWebview {
   private static getWelcomeAiBannerState(): WelcomeAiBannerState {
     // Non-VS Code IDEs (Cursor, Windsurf, Devin, Kiro) have built-in AI assistants
-    const isNonVsCodeIde = isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent) || isIDE(constants.kiroAgent);
+    const isNonVsCodeIde = isIDE(constants.cursorAgent) || isIDE(constants.windsurfAgent) || isIDE(constants.windsurfNextAgent) || isIDE(constants.devinAgent) || isIDE(constants.devinNextAgent) || isIDE(constants.kiroAgent) || isIDE(constants.antigravityAgent);
     const config = vscode.workspace.getConfiguration("Checkmarx");
     if (isNonVsCodeIde) {
       const preferNative = config.get<boolean>('Prefer Native AI Assistant', true);
