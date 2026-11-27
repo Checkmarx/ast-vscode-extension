@@ -453,9 +453,13 @@ export const constants = {
   codexNewChatOpen: "chatgpt.newChat",
   codexChatclipboardPasteActionCommand: "editor.action.clipboardPasteAction",
 
-  // Antigravity IDE native chat commands
+  // Antigravity IDE native chat commands (verified on Antigravity IDE 1.107.0; not a documented public API)
+  // Opens a fresh agent conversation
   antigravityNewChatOpen: "antigravity.startNewConversation",
-  antigravitySendPromptCommand: "antigravity.sendPromptToAgentPanel",
+  // Hidden command: fills the chat input with the given text without submitting
+  antigravityAddContextCommand: "antigravity.addContext",
+  // Focuses the chat input and submits it
+  antigravityTriggerSendCommand: "antigravity.triggerSend",
 
   openAIChat: "fixWithAIChat",
   viewDetails: "viewDetails",

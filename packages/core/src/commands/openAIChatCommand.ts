@@ -215,15 +215,32 @@ export class CopilotChatCommand {
         await this.executeWithClipboard(question, executeFunction);
     }
 
+    /**
+     * Sends the remediation prompt to Antigravity IDE's native agent chat.
+     *
+     * Unlike the Cursor/Windsurf/Kiro handlers, which paste and press Enter through the OS (PowerShell/osascript),
+     * this drives Antigravity's own IDE commands, so it does not depend on window focus and also works on Linux.
+     * Verified against Antigravity IDE 1.107.0. These commands are not a documented public API (addContext and
+     * triggerSend are hidden), so re-check this flow after Antigravity updates.
+     *
+     * Flow: new conversation -> fill the input with the plain prompt -> submit.
+     * Only the prompt text is sent: no file/line mention is attached, and Antigravity adds no "Explain and fix" prefix.
+     */
     private async handleAntigravityIDE(question: string) {
         const executeFunction = async () => {
-            // sendPromptToAgentPanel sends into the current conversation, so start a new one first
+            // Always start from a fresh conversation so the prompt never lands in an unrelated chat
             await vscode.commands.executeCommand(constants.antigravityNewChatOpen);
-            await new Promise(resolve => setTimeout(resolve, 300));
-            await vscode.commands.executeCommand(constants.antigravitySendPromptCommand, question);
+            // Give the new conversation time to mount; a command sent to an unmounted panel is silently dropped
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            // addContext fills (and focuses) the chat input with the prompt text; it does not submit
+            await vscode.commands.executeCommand(constants.antigravityAddContextCommand, question);
+            // Let the input update before submitting
+            await new Promise(resolve => setTimeout(resolve, 500));
+            // triggerSend focuses the input and submits it
+            await vscode.commands.executeCommand(constants.antigravityTriggerSendCommand);
         };
 
-        // Same safety net as the other IDEs: if a command fails, the prompt is left on the clipboard
+        // Same safety net as the other IDEs: if a command fails, the error is logged and the prompt stays on the clipboard
         await this.executeWithClipboard(question, executeFunction);
     }
 
@@ -359,10 +376,6 @@ export class CopilotChatCommand {
             }
             if (isIDE(constants.kiroAgent)) {
                 await this.handleKiroIDE(question);
-                return;
-            }
-            if (isIDE(constants.antigravityAgent)) {
-                await this.handleAntigravityIDE(question);
                 return;
             }
         }
